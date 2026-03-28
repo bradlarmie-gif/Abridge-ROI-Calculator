@@ -133,15 +133,15 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             narrative = `Recovered time is generating value. It hasn't been counted yet. Organizations at your scale (${providers > 0 ? providers.toLocaleString() + ' providers' : 'similar size'}) typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in access revenue when they first run this analysis.\n\nOPPORTUNITY AHEAD: Start with a time-tracking study across a cohort of providers. Even a 30-day pilot generates the data needed to confirm or refute the benchmark range.`;
             formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: MGMA Physician Compensation data; published literature on access revenue from documentation efficiency`;
           } else if (level === 2) {
-            const minsPerEncounter = domainInputs.minsPerEncounter || 3;
-            const recoveredHours = Math.round(documentedEncounters * minsPerEncounter / 60);
-            const estimatedVisits = Math.round(recoveredHours * 0.15);
             const revenuePerVisit = inputs.revenuePerVisit || 200;
-            const calculated = Math.round(estimatedVisits * revenuePerVisit);
-            lowEstimate = calculated;
-            highEstimate = Math.round(calculated * 1.5);
-            narrative = `Time savings are measured. Now the question is whether that time is being actively redeployed into patient access.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in access revenue is accessible if recovered time converts to additional appointments.`;
-            formula = `${documentedEncounters.toLocaleString()} encounters × ${minsPerEncounter} min ÷ 60 = ${recoveredHours.toLocaleString()} hrs → ${estimatedVisits.toLocaleString()} visits (15% conversion) × $${revenuePerVisit}/visit = ${formatDollarFull(calculated)}`;
+            const benchmarkPatientsLow = 3;
+            const benchmarkPatientsHigh = 8;
+            const annualVisitsLow = Math.round(providers * benchmarkPatientsLow * 11);
+            const annualVisitsHigh = Math.round(providers * benchmarkPatientsHigh * 11);
+            lowEstimate = Math.round(annualVisitsLow * revenuePerVisit);
+            highEstimate = Math.round(annualVisitsHigh * revenuePerVisit);
+            narrative = `Recovered time is actively being directed. The next step is measuring how many additional patients are being seen.\n\nOPPORTUNITY AHEAD: Organizations with structured access redesign report 3–8 additional patients/provider/month. At ${providers.toLocaleString()} providers × $${revenuePerVisit}/visit, that's ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually.`;
+            formula = `${providers} providers × ${benchmarkPatientsLow}–${benchmarkPatientsHigh} patients/month × 11 months × $${revenuePerVisit}/visit = ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)}`;
           } else if (level === 3) {
             const accessRevenue = domainInputs.accessRevenue || 0;
             const revenuePerVisit = inputs.revenuePerVisit || 200;
@@ -159,13 +159,10 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             narrative = `Documentation quality has improved. Whether reimbursement followed is the question — and the answer is almost always yes. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in coding and denial impact when they first run this analysis.\n\nOPPORTUNITY AHEAD: A retrospective coding audit — comparing pre/post ambient documentation — typically takes 4–6 weeks and produces the data needed to confirm the benchmark range.`;
             formula = `Benchmark range: ${providers} providers × $4,000–$12,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: AMA/MGMA coding benchmarks; published studies on documentation-driven revenue improvement (2–7%)`;
           } else if (level === 2) {
-            const wrvuLift = domainInputs.wrvuLift || 0.05;
-            const conversionFactor = inputs.conversionFactor || 33;
-            const calculated = Math.round(documentedEncounters * wrvuLift * conversionFactor);
-            lowEstimate = calculated;
-            highEstimate = Math.round(calculated * 1.4);
-            narrative = `Coding signals are showing up in the data. Formalizing that signal into a validated reimbursement metric is the next step.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in confirmed coding impact once the metric is validated.`;
-            formula = `${documentedEncounters.toLocaleString()} encounters × ${wrvuLift} wRVU lift × $${conversionFactor} conversion = ${formatDollarFull(calculated)}`;
+            narrative = `Directional signals are visible. Your organization has observed trends suggesting documentation is affecting reimbursement, but the impact has not been formally validated.\n\nOPPORTUNITY AHEAD: A formal before/after analysis (Level 3) would quantify the signal. Organizations with validated measurement have reported 2–7% revenue improvement.`;
+            formula = null;
+            lowEstimate = null;
+            highEstimate = null;
           } else if (level === 3) {
             const codingGain = domainInputs.codingGain || 0;
             lowEstimate = Math.round(codingGain * 0.85);
@@ -252,10 +249,6 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
     }
     return sum;
   }, [domainHasValue, domainGaps, domainLevels]);
-
-  const revL2Value = (domainLevels.revenue === 2 && domainHasValue.revenue)
-    ? (domainGaps.revenue || 0)
-    : 0;
 
   const unmeasuredLow = useMemo(() => {
     let sum = 0;
@@ -439,14 +432,14 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                   )}
                 </div>
               </div>
-              {revL2Value > 0 && (
+              {domainLevels.revenue === 2 && !domainHasValue.revenue && (
                 <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[#FFFBEB] border border-[#F59E0B]/30 mt-2 mb-3">
                   <div>
                     <span className="text-[10px] font-semibold uppercase tracking-[1.2px] text-[#92400E]">Revenue</span>
-                    <span className="text-[9px] text-[#92400E]/70 ml-2">Signals observed · not yet confirmed in billing data · Next: retrospective coding audit</span>
+                    <span className="text-[9px] text-[#92400E]/70 ml-2">Directional signal observed · not yet validated · Next: before/after analysis</span>
                   </div>
-                  <span className="text-sm font-bold text-[#92400E]">
-                    ~{formatDollar(revL2Value)}/yr
+                  <span className="text-xs font-semibold text-[#92400E]">
+                    Qualitative
                   </span>
                 </div>
               )}

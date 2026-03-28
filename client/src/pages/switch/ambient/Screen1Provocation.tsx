@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,11 @@ interface Screen1Props {
 }
 
 export default function Screen1Provocation({ onNext, onHome }: Screen1Props) {
+  const [ctaReady, setCtaReady] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setCtaReady(true), 800);
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
       <div className="flex items-center justify-center py-5 px-6 border-b border-[#F0EFED]">
@@ -71,10 +77,11 @@ export default function Screen1Provocation({ onNext, onHome }: Screen1Props) {
           >
             <Button
               onClick={onNext}
-              className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
+              disabled={!ctaReady}
+              className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
               data-testid="button-begin-assessment"
             >
-              Begin the Assessment
+              Begin
               <ArrowRight className="w-4 h-4" />
             </Button>
           </motion.div>

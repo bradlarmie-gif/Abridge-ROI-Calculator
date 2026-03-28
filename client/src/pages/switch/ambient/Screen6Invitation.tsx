@@ -89,14 +89,10 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
   if (domain === 'capacity') {
     if (raw.timeSaved) out['Time saved per encounter'] = `${raw.timeSaved} min`;
     if (level === 2) {
-      if (raw.accessDecisionStage) {
-        const stageLabels: Record<string, string> = {
-          evaluating: 'Evaluating',
-          planning: 'Planning',
-          piloting: 'Piloting',
-          implementing: 'Implementing',
-        };
-        out['Access decision stage'] = stageLabels[raw.accessDecisionStage as string] || String(raw.accessDecisionStage);
+      const usageCsv = (raw.capacityTimeUsage as string) || '';
+      const usageIndices = usageCsv.split(',').filter(Boolean);
+      if (usageIndices.length > 0) {
+        out['Active uses of recovered time'] = `${usageIndices.length} selected`;
       }
     }
     if (level === 3) {
@@ -150,9 +146,9 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
       if (findings.length) out['Survey findings'] = findings.join(', ');
     }
     if (level === 3) {
-      if (raw.turnoverRate) out['Annual turnover rate'] = `${raw.turnoverRate}%`;
+      if (raw.beforeTurnoverRate) out['Pre-deployment turnover rate'] = `${raw.beforeTurnoverRate}%`;
+      if (raw.afterTurnoverRate) out['Post-deployment turnover rate'] = `${raw.afterTurnoverRate}%`;
       if (raw.replacementCost) out['Replacement cost per provider'] = fmtDollar(Number(raw.replacementCost));
-      if (raw.docBurdenShare) out['Documentation burden share'] = `${raw.docBurdenShare}%`;
     }
     if (level === 4) {
       const WORKFORCE_STRATEGY_SHORT = [
@@ -184,23 +180,19 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
 
   if (domain === 'risk') {
     if (level === 1) {
-      if (raw.qualityDownstreamConnected) {
-        const labels: Record<string, string> = { yes: 'One team formally engaged', informal: 'Starting informally', no: 'Not yet' };
-        out['Downstream connection'] = labels[String(raw.qualityDownstreamConnected)] || String(raw.qualityDownstreamConnected);
-      }
+      out['Status'] = 'Quality improving — downstream not yet connected';
     }
     if (level === 2) {
       const attrs = resolveChecklist(raw.qualityAttributes as string, QUALITY_ATTRIBUTES_LABELS);
       if (attrs.length) out['Quality attributes tracked'] = attrs.join(', ');
     }
     if (level === 3) {
-      const wf = resolveChecklist(raw.connectedWorkflows as string, DOWNSTREAM_WORKFLOWS_LABELS);
-      if (wf.length) out['Connected areas'] = wf.join(', ');
-      if (raw.qualityMeasurementDepth) {
-        const depthLabels: Record<string, string> = { qualitative: 'Qualitative', partial: 'Partially measured', measured: 'Measured data available' };
-        out['Measurement depth'] = depthLabels[String(raw.qualityMeasurementDepth)] || String(raw.qualityMeasurementDepth);
+      if (raw.financialPathway) {
+        const pathLabels: Record<string, string> = { mips: 'MIPS / quality measures', denials: 'Denial rate reduction', none_yet: 'No pathway connected yet' };
+        out['Financial pathway'] = pathLabels[String(raw.financialPathway)] || String(raw.financialPathway);
       }
-      if (raw.downstreamValue && raw.noDownstreamValue !== 'true') out['Downstream quality value'] = fmtDollar(Number(raw.downstreamValue));
+      if (raw.financialPathway === 'mips' && raw.mipsScoreImprovement) out['MIPS score improvement'] = `${raw.mipsScoreImprovement} points`;
+      if (raw.financialPathway === 'denials' && raw.denialReductionPct) out['Denial rate reduction'] = `${raw.denialReductionPct}%`;
     }
     if (level === 4) {
       const si = resolveChecklist(raw.strategicIntegrations as string, STRATEGIC_INTEGRATIONS_LABELS);

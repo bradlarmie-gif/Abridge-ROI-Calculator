@@ -14,6 +14,7 @@ import {
   computeCapacityFeedback, computeRevenueFeedback,
   computeWorkforceFeedback, computeRiskFeedback,
   QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_INTEGRATIONS,
+  CAPACITY_TIME_USAGE_LABELS,
   type DomainFeedback,
   CLINICAL_WEEKS, ANNUAL_HOURS,
 } from "./domainCalculations";
@@ -61,18 +62,18 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     reframe: '',
     cards: [
       { level: 1, label: 'Time Recovered', description: 'Providers report reduced documentation time. No operational decision made yet.' },
-      { level: 2, label: 'Access Decision Made', description: 'Organization has decided to convert recovered time into patient access.' },
+      { level: 2, label: 'Time Actively Used', description: 'Organization is actively directing recovered time toward patient access, research, teaching, or other priorities.' },
       { level: 3, label: 'Access Measured', description: 'Additional patients are being seen with recovered time.' },
       { level: 4, label: 'Access Impact Tracked', description: 'Downstream access outcomes are tracked and attributed to recovered time.' },
     ],
     framingQuestions: {
       1: undefined,
-      2: 'Where does your organization stand on converting recovered time to patient access?',
+      2: 'How is your organization using recovered documentation time?',
       3: 'How many additional patients are being seen with recovered time?',
       4: 'Which downstream access outcomes are you tracking?',
     },
     unlockTeasers: {
-      2: 'Decide how recovered time will be used for patient access.',
+      2: 'Identify how recovered time is actively being used.',
       3: 'Measure how many additional patients are seen with recovered time.',
       4: 'Track downstream access impact from recovered time.',
     },
@@ -108,7 +109,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     cards: [
       { level: 1, label: 'Time Is Returning', description: 'Providers report less after-hours documentation time.' },
       { level: 2, label: 'Burden Measured', description: 'In-clinic time savings and provider sentiment are tracked.' },
-      { level: 3, label: 'Retention Modeled', description: 'Turnover costs are modeled with documentation burden as a factor.' },
+      { level: 3, label: 'Retention Confirmed', description: 'Before/after turnover comparison shows improvement since ambient deployment.' },
       { level: 4, label: 'Workforce Strategically Managed', description: 'Documentation burden reduction is a variable in workforce strategy — recruitment, retention programs, and staffing decisions.' },
     ],
     framingQuestions: {
@@ -119,7 +120,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     },
     unlockTeasers: {
       2: 'Measure in-clinic time savings and survey providers.',
-      3: 'Model turnover costs with documentation burden as a variable.',
+      3: 'Compare before/after turnover rates to confirm retention impact.',
       4: 'Connect burden reduction to workforce strategy decisions.',
     },
   },
@@ -129,20 +130,20 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     subheadline: 'How far has documentation quality traveled downstream?',
     reframe: '',
     cards: [
-      { level: 1, label: 'Downstream Unmeasured', description: 'Documentation quality has improved. The teams that benefit from it — coding, CDI, compliance — haven\'t been formally connected to it yet.' },
+      { level: 1, label: 'Quality Improving', description: 'Documentation quality has improved but downstream teams — coding, CDI, compliance — haven\'t been formally connected yet.' },
       { level: 2, label: 'Actively Monitored', description: 'Documentation quality attributes are being tracked systematically.' },
       { level: 3, label: 'Downstream Connected', description: 'Documentation quality improvements are connected to at least one downstream program or workflow.' },
       { level: 4, label: 'Documentation as a Strategic Asset', description: 'Structured documentation informs organizational strategy — quality programs, value-based care, compliance governance, and AI readiness.' },
     ],
     framingQuestions: {
-      1: 'Have any downstream teams — coding, CDI, compliance — started working with the improved documentation?',
+      1: undefined,
       2: 'How are documentation quality metrics being tracked?',
-      3: 'Which downstream areas have been connected to documentation quality improvements?',
+      3: 'Which financial pathway has documentation quality been connected to?',
       4: 'Where does documentation quality inform organizational strategy?',
     },
     unlockTeasers: {
       2: 'Establish systematic tracking of documentation quality attributes.',
-      3: 'Connect documentation quality to at least one downstream program.',
+      3: 'Connect documentation quality to a financial pathway.',
       4: 'Position documentation quality as a strategic organizational asset.',
     },
   },
@@ -158,11 +159,11 @@ const FUTURE_DESCRIPTIONS: Record<string, Record<number, string>> = {
     4: 'Documentation intelligence drives revenue strategy, payer positioning, and financial planning.',
   },
   workforce: {
-    3: 'Model turnover costs with documentation burden as a contributing factor.',
+    3: 'Compare before/after turnover rates to quantify retention improvement.',
     4: 'Documentation burden reduction informs recruitment, retention programs, and staffing decisions.',
   },
   risk: {
-    3: 'Connect documentation quality improvements to downstream programs — CDI, coding, quality measures.',
+    3: 'Connect documentation quality to a financial pathway — MIPS performance or denial reduction.',
     4: 'Structured documentation informs quality programs, value-based care, compliance, and AI readiness.',
   },
 };
@@ -341,33 +342,35 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     }
 
     if (level === 2) {
-      const accessDecisionStage = currentState.inputs.accessDecisionStage as string | undefined;
       return (
-        <div className="mb-5">
-          <div className="flex flex-col gap-2.5">
-            {[
-              { id: 'evaluating', label: 'Evaluating — exploring whether recovered time can drive access' },
-              { id: 'planning', label: 'Planning — scoping scheduling or template changes' },
-              { id: 'piloting', label: 'Piloting — testing access changes with a subset of providers' },
-              { id: 'implementing', label: 'Implementing — rolling out access redesign broadly' },
-            ].map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => setDomainInput('accessDecisionStage', opt.id)}
-                className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                  accessDecisionStage === opt.id
-                    ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                    : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                }`}
-                data-testid={`radio-access-stage-${opt.id}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${accessDecisionStage === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
-                  <span>{opt.label}</span>
-                </div>
-              </button>
-            ))}
+        <div className="flex flex-col gap-5">
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
+              How is recovered time being used?
+            </label>
+            <div className="flex flex-col gap-2.5">
+              {CAPACITY_TIME_USAGE_LABELS.map((label, i) => {
+                const checked = isChecked('capacityTimeUsage', i);
+                return (
+                  <label
+                    key={i}
+                    htmlFor={`capacity-usage-${i}`}
+                    className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                      checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                    }`}
+                    data-testid={`checkbox-capacity-usage-${i}`}
+                  >
+                    <Checkbox
+                      id={`capacity-usage-${i}`}
+                      checked={checked}
+                      onCheckedChange={() => toggleCheckboxItem('capacityTimeUsage', i)}
+                      className="mt-0.5"
+                    />
+                    <span className="text-sm text-[#525252] select-none leading-snug">{label}</span>
+                  </label>
+                );
+              })}
+            </div>
           </div>
         </div>
       );
@@ -969,30 +972,39 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     }
 
     if (level === 3) {
-      const docBurdenOptions = [
-        { value: 10, label: '~10%' },
-        { value: 20, label: '~20%' },
-        { value: 30, label: '~30%' },
-        { value: 40, label: '~40%' },
-        { value: 60, label: '~60%' },
-      ];
       return (
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Annual physician turnover rate
+              Turnover rate before ambient deployment
             </label>
             <div className="flex items-center gap-2">
               <FormattedNumberInput
-                value={(currentState.inputs.turnoverRate as number) || 0}
-                onChange={(v) => setDomainInput('turnoverRate', v)}
+                value={(currentState.inputs.beforeTurnoverRate as number) || 0}
+                onChange={(v) => setDomainInput('beforeTurnoverRate', v)}
                 placeholder=""
                 className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-turnover-rate"
+                data-testid="input-before-turnover-rate"
               />
               <span className="text-sm text-[#888888]">%</span>
             </div>
             <BenchmarkContext text="National average: 6–8% annually (AAMC)" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Turnover rate after ambient deployment
+            </label>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.afterTurnoverRate as number) || 0}
+                onChange={(v) => setDomainInput('afterTurnoverRate', v)}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-after-turnover-rate"
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+            <p className="text-xs text-[#888888] mt-1">Enter your current turnover rate. If it hasn't been measured yet, leave at 0.</p>
           </div>
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
@@ -1014,29 +1026,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                 Using AMGA benchmark default ($350K). Enter your organization's actual replacement cost for a more precise estimate.
               </p>
             )}
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              How much of turnover is burden-related?
-            </label>
-            <div className="flex flex-col gap-2">
-              {docBurdenOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setDomainInput('docBurdenShare', opt.value)}
-                  className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                    (currentState.inputs.docBurdenShare as number) === opt.value
-                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                  }`}
-                  data-testid={`radio-burden-share-${opt.value}`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-[#888888] mt-2">Shanafelt et al.: documentation burden is a top-3 driver of voluntary turnover.</p>
           </div>
         </div>
       );
@@ -1176,43 +1165,14 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     if (!level) return null;
 
     if (level === 1) {
-      const downstreamConnected = (currentState.inputs.qualityDownstreamConnected as string) || '';
       return (
-        <div className="flex flex-col gap-5">
-          <div>
-            <div className="flex flex-col gap-2">
-              {[
-                { id: 'no', label: 'Not yet' },
-                { id: 'informal', label: 'Starting informally' },
-                { id: 'yes', label: 'One team is formally in' },
-              ].map((opt) => (
-                <label
-                  key={opt.id}
-                  className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
-                    downstreamConnected === opt.id
-                      ? 'border-[#EA2C00] bg-[#EA2C00]/5'
-                      : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
-                  }`}
-                  data-testid={`radio-downstream-${opt.id}`}
-                >
-                  <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    downstreamConnected === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
-                  }`}>
-                    {downstreamConnected === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
-                  </div>
-                  <span className="text-sm text-black">{opt.label}</span>
-                  <input
-                    type="radio"
-                    name="qualityDownstreamConnected"
-                    value={opt.id}
-                    checked={downstreamConnected === opt.id}
-                    onChange={() => setDomainInput('qualityDownstreamConnected', opt.id)}
-                    className="sr-only"
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-[#525252] leading-relaxed bg-[#F9FAFB] p-4 rounded-lg border border-[#E5E7EB]" data-testid="text-quality-l1-context">
+            Documentation quality is improving, but the downstream teams that benefit — coding, CDI, compliance — haven't been formally connected yet. At this level, the quality improvement is real but untracked.
+          </p>
+          <p className="text-xs text-[#888888] italic">
+            No inputs required. Select this level to capture the current state.
+          </p>
         </div>
       );
     }
@@ -1296,70 +1256,41 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     }
 
     if (level === 3) {
-      const depth = currentState.inputs.qualityMeasurementDepth as string || '';
-      const noDownstreamValue = currentState.inputs.noDownstreamValue === 'true';
+      const financialPathway = (currentState.inputs.financialPathway as string) || '';
 
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <div className="flex flex-col gap-2.5">
-              {DOWNSTREAM_WORKFLOWS.map((wf, i) => {
-                const checked = isChecked('connectedWorkflows', i);
-                return (
-                  <label
-                    key={i}
-                    htmlFor={`workflow-${i}`}
-                    className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
-                      checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
-                    }`}
-                  >
-                    <Checkbox
-                      id={`workflow-${i}`}
-                      checked={checked}
-                      onCheckedChange={() => toggleCheckboxItem('connectedWorkflows', i)}
-                      data-testid={`checkbox-workflow-${i}`}
-                      className="mt-0.5"
-                    />
-                    <span className="text-sm text-[#525252] select-none leading-snug">
-                      {wf}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              For connected areas, has the impact been measured?
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
+              Which financial pathway has documentation quality been connected to?
             </label>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               {[
-                { id: 'qualitative', label: 'Qualitatively — we can see improvement but haven\'t quantified it' },
-                { id: 'partial', label: 'Partially — some areas have before/after data' },
-                { id: 'measured', label: 'Yes — we have measured data for connected workflows' },
+                { id: 'mips', label: 'MIPS / quality measure performance' },
+                { id: 'denials', label: 'Denial rate reduction' },
+                { id: 'none_yet', label: 'No financial pathway connected yet' },
               ].map((opt) => (
                 <label
                   key={opt.id}
-                  className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
-                    depth === opt.id
+                  className={`flex items-center gap-3 p-3.5 sm:p-4 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                    financialPathway === opt.id
                       ? 'border-[#EA2C00] bg-[#EA2C00]/5'
                       : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
                   }`}
-                  data-testid={`radio-measurement-depth-${opt.id}`}
+                  data-testid={`radio-financial-pathway-${opt.id}`}
                 >
                   <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    depth === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                    financialPathway === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                   }`}>
-                    {depth === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                    {financialPathway === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
                   </div>
                   <span className="text-sm text-[#525252]">{opt.label}</span>
                   <input
                     type="radio"
-                    name="qualityMeasurementDepth"
+                    name="financialPathway"
                     value={opt.id}
-                    checked={depth === opt.id}
-                    onChange={() => setDomainInput('qualityMeasurementDepth', opt.id)}
+                    checked={financialPathway === opt.id}
+                    onChange={() => setDomainInput('financialPathway', opt.id)}
                     className="sr-only"
                   />
                 </label>
@@ -1367,38 +1298,51 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Combined annual value of documentation quality improvements across connected workflows (optional)
-            </label>
-            <p className="text-xs text-[#888888] mb-2">
-              This could include CDI efficiency gains, coding accuracy improvements, quality measure incentives captured, abstraction time saved, or other measurable downstream value.
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[#888888]">$</span>
-              <FormattedNumberInput
-                value={(currentState.inputs.downstreamValue as number) || 0}
-                onChange={(v) => setDomainInput('downstreamValue', Math.max(0, v))}
-                placeholder=""
-                className="w-full h-12 bg-white border-[#E5E7EB]"
-                data-testid="input-downstream-value"
-                disabled={noDownstreamValue}
-              />
-            </div>
-            <div className="flex items-center gap-2.5 mt-3">
-              <Checkbox
-                id="no-downstream-value"
-                checked={noDownstreamValue}
-                onCheckedChange={(checked) => {
-                  setDomainInput('noDownstreamValue', checked ? 'true' : 'false');
-                }}
-                data-testid="checkbox-no-downstream-value"
-              />
-              <label htmlFor="no-downstream-value" className="text-sm text-[#525252] cursor-pointer select-none">
-                Don't have a combined number yet
-              </label>
-            </div>
-          </div>
+          <AnimatePresence>
+            {financialPathway === 'mips' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                  MIPS score improvement (points)
+                </label>
+                <FormattedNumberInput
+                  value={(currentState.inputs.mipsScoreImprovement as number) || 0}
+                  onChange={(v) => setDomainInput('mipsScoreImprovement', Math.max(0, v))}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-mips-score"
+                />
+                <BenchmarkContext text="MIPS score improvement since ambient deployment. Even small improvements affect payment adjustments." />
+              </motion.div>
+            )}
+            {financialPathway === 'denials' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                  Denial rate reduction (%)
+                </label>
+                <div className="flex items-center gap-2">
+                  <FormattedNumberInput
+                    value={(currentState.inputs.denialReductionPct as number) || 0}
+                    onChange={(v) => setDomainInput('denialReductionPct', Math.min(100, Math.max(0, v)))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-denial-reduction-pct"
+                  />
+                  <span className="text-sm text-[#888888]">%</span>
+                </div>
+                <BenchmarkContext text="Documentation-related denial reduction since deployment. Organizations have reported 5–15% reduction." />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       );
     }
@@ -1646,8 +1590,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                       return `${hrs.toLocaleString()} hrs/yr`;
                     }
                     if (card.level === 2) {
-                      const stage = inp.accessDecisionStage as string;
-                      if (stage) return stage.charAt(0).toUpperCase() + stage.slice(1);
+                      const usageCsv = (inp.capacityTimeUsage as string) || '';
+                      const usageCount = usageCsv.split(',').filter(Boolean).length;
+                      if (usageCount > 0) return `${usageCount} active use${usageCount !== 1 ? 's' : ''}`;
                       return 'Confirmed';
                     }
                     if (card.level === 3) {
@@ -1676,17 +1621,16 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                       }
                     }
                     if (card.level === 3) {
-                      const dbs = (inp.docBurdenShare as number) || 0;
-                      const tr = (inp.turnoverRate as number) || 0;
-                      const rc = (inp.replacementCost as number) || 0;
-                      if (dbs > 0 && tr > 0 && rc > 0) {
-                        const totalCost = Math.round(providers * (tr / 100) * rc);
-                        const docDriven = Math.round(totalCost * (dbs / 100));
-                        return formatDollar(docDriven);
+                      const btr = (inp.beforeTurnoverRate as number) || 0;
+                      const atr = (inp.afterTurnoverRate as number) || 0;
+                      const rc = (inp.replacementCost as number) || 350000;
+                      if (btr > 0 && atr >= 0 && btr > atr) {
+                        const prevented = Math.round(providers * ((btr - atr) / 100) * 10) / 10;
+                        const savings = Math.round(prevented * rc);
+                        return formatDollar(savings);
                       }
-                      if (tr > 0 && rc > 0) {
-                        const departures = (providers * (tr / 100)).toFixed(1);
-                        return `${departures} departures/yr`;
+                      if (btr > 0) {
+                        return `${btr}% → ${atr}%`;
                       }
                     }
                   }
@@ -1985,12 +1929,13 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               const mins = currentState.activationLevel >= 2 ? ((inp.editTimeSaved as number) || 0) : 0;
               const clinicHrs = mins > 0 ? Math.round(mins * providers * 230 / 60) : 0;
 
-              const tr = currentState.activationLevel >= 3 ? ((inp.turnoverRate as number) || 0) : 0;
+              const btr = currentState.activationLevel >= 3 ? ((inp.beforeTurnoverRate as number) || 0) : 0;
+              const atr = currentState.activationLevel >= 3 ? ((inp.afterTurnoverRate as number) || 0) : 0;
               const rcRaw = (inp.replacementCost as number) || 0;
               const rc = rcRaw > 0 ? rcRaw : 350000;
-              const dbs = currentState.activationLevel >= 3 ? ((inp.docBurdenShare as number) || 0) : 0;
-              const retentionExposure = (currentState.activationLevel >= 3 && tr > 0 && dbs > 0)
-                ? Math.round(providers * (tr / 100) * rc * (dbs / 100))
+              const rateDelta = Math.max(0, btr - atr);
+              const retentionSavings = (currentState.activationLevel >= 3 && rateDelta > 0)
+                ? Math.round(providers * (rateDelta / 100) * rc)
                 : null;
 
               const strategyCsv = (inp.workforceStrategies as string) || '';
@@ -1999,8 +1944,8 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               const ar = currentState.activationLevel >= 4 ? ((inp.agencyReduction as number) || 0) : 0;
               const agencyAnnual = ar > 0 ? Math.round(ar * 12) : null;
 
-              const totalDollar = (retentionExposure || 0) + (agencyAnnual || 0);
-              const hasDollarValue = retentionExposure !== null || agencyAnnual !== null;
+              const totalDollar = (retentionSavings || 0) + (agencyAnnual || 0);
+              const hasDollarValue = retentionSavings !== null || agencyAnnual !== null;
 
               return (
                 <>
@@ -2022,9 +1967,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-white/60">Retention Exposure</span>
+                      <span className="text-white/60">Retention Savings</span>
                       <span className="text-white font-medium" data-testid="text-workforce-summary-retention">
-                        {retentionExposure !== null ? formatDollar(retentionExposure) : '—'}
+                        {retentionSavings !== null ? formatDollar(retentionSavings) : '—'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -2192,19 +2137,17 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               const attrCsv = (inp.qualityAttributes as string) || '';
               const attrCount = currentState.activationLevel >= 2 ? attrCsv.split(',').filter(Boolean).length : 0;
 
-              const wfCsv = (inp.connectedWorkflows as string) || '';
-              const wfCount = currentState.activationLevel >= 3 ? wfCsv.split(',').filter(Boolean).length : 0;
+              const financialPathway = currentState.activationLevel >= 3 ? (inp.financialPathway as string || '') : '';
+              const pathwayLabel = financialPathway === 'mips' ? 'MIPS' : financialPathway === 'denials' ? 'Denials' : financialPathway === 'none_yet' ? 'None yet' : '—';
 
               const siCsv = (inp.strategicIntegrations as string) || '';
               const siCount = currentState.activationLevel >= 4 ? siCsv.split(',').filter(Boolean).length : 0;
 
-              const noDownstream = inp.noDownstreamValue === 'true';
               const noStrategic = inp.noConfirmedStrategicValue === 'true';
-              const dv = (currentState.activationLevel >= 3 && !noDownstream) ? ((inp.downstreamValue as number) || 0) : 0;
               const sv = (currentState.activationLevel >= 4 && !noStrategic) ? ((inp.strategicValue as number) || 0) : 0;
 
-              const totalDollar = dv + sv;
-              const hasDollarValue = dv > 0 || sv > 0;
+              const totalDollar = sv;
+              const hasDollarValue = sv > 0;
 
               return (
                 <>
@@ -2220,9 +2163,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-white/60">Downstream Connected</span>
-                      <span className="text-white font-medium" data-testid="text-quality-summary-downstream-count">
-                        {currentState.activationLevel >= 3 && wfCount > 0 ? `${wfCount} of 6` : '—'}
+                      <span className="text-white/60">Financial Pathway</span>
+                      <span className="text-white font-medium" data-testid="text-quality-summary-pathway">
+                        {pathwayLabel}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

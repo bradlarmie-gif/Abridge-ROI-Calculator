@@ -19,7 +19,7 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> = {
   capacity: {
     1: 'Time Recovered',
-    2: 'Access Decision Made',
+    2: 'Time Actively Used',
     3: 'Access Measured',
     4: 'Access Impact Tracked',
   },
@@ -32,7 +32,7 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
   workforce: {
     1: 'Time Is Returning',
     2: 'Burden Measured',
-    3: 'Retention Modeled',
+    3: 'Retention Confirmed',
     4: 'Workforce Strategically Managed',
   },
   risk: {
@@ -43,6 +43,15 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
   },
 };
 
+
+export const CAPACITY_TIME_USAGE_LABELS = [
+  'Additional patient appointments being scheduled',
+  'Extended visit time for complex patients',
+  'Same-day or urgent access slots opened',
+  'Teaching, mentoring, or supervision time',
+  'Administrative or committee work',
+  'Research or quality improvement projects',
+];
 
 export interface DomainFeedback {
   label: string;
@@ -63,9 +72,8 @@ export function computeDomainScore(domain: Domain, level: ActivationLevel, input
   const base = SCORE_MAP[level] || 0;
   if (domain === 'workforce' && (level === 3 || level === 4)) {
     if (level === 3) {
-      const turnoverRate = inputs.turnoverRate as number | undefined;
-      const replacementCost = inputs.replacementCost as number | undefined;
-      if (!turnoverRate || turnoverRate <= 0 || !replacementCost || replacementCost <= 0) {
+      const beforeTurnoverRate = inputs.beforeTurnoverRate as number | undefined;
+      if (!beforeTurnoverRate || beforeTurnoverRate <= 0) {
         return 12;
       }
     }
@@ -123,28 +131,36 @@ export function computeCapacityFeedback(
     const ts = (inputs.timeSaved as number) || 0;
     const recoveredHrs = ts > 0 ? Math.round(documentedEncounters * ts / 60) : 0;
     const fte2 = recoveredHrs > 0 ? (recoveredHrs / ANNUAL_HOURS).toFixed(1) : '0.0';
-    const stage = (inputs.accessDecisionStage as string) || '';
 
-    const stageNarratives: Record<string, string> = {
-      evaluating: 'Your organization is evaluating whether recovered time can be converted to patient access. No structural changes have been made yet.',
-      planning: 'Leadership is planning how to convert recovered time into patient access. Scheduling or template changes are being scoped.',
-      piloting: 'Your organization is piloting access changes — scheduling adjustments or template redesigns are underway in a subset of providers.',
-      implementing: 'Access redesign is being implemented across the deployment. Scheduling changes are rolling out broadly.',
-    };
+    const { checked, unchecked } = parseCheckedItems(inputs.capacityTimeUsage as string, CAPACITY_TIME_USAGE_LABELS);
+    const count = checked.length;
+    const checkedList = checked.map(c => `• ${c}`).join('\n');
+    const uncheckedList = unchecked.map(c => `• ${c}`).join('\n');
 
-    const stageLabel = stage ? stage.charAt(0).toUpperCase() + stage.slice(1) : 'Not selected';
-    const narrative = stageNarratives[stage] || 'Select where your organization stands on converting recovered time to patient access.';
     const hoursContext = recoveredHrs > 0 ? `\n\n${recoveredHrs.toLocaleString()} hours (${fte2} FTE) recovered annually across ${providers.toLocaleString()} providers.` : '';
+
+    if (count === 0) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Select how recovered time is being used',
+        context: `Select the ways your organization is actively using recovered documentation time.${hoursContext}\n\n$0 deployed. The value at this level is understanding where time goes — not dollars.`,
+        formula: recoveredHrs > 0 ? `[hours] = ${documentedEncounters.toLocaleString()} encounters × ${ts} min / 60 = ${recoveredHrs.toLocaleString()}\n[FTE] = ${recoveredHrs.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} = ${fte2}` : '',
+        footnote: '',
+        nextLevelTeaser: 'Level 3 measures how many additional patients are seen with recovered time.',
+      };
+    }
 
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: stage ? `Access decision: ${stageLabel}` : 'Select your access decision stage',
-      context: `${narrative}${hoursContext}\n\n$0 deployed. The value at this level is the decision itself — not dollars.`,
+      headlineMetric: `${count} active use${count !== 1 ? 's' : ''} of recovered time`,
+      context: `Recovered time is actively being used in ${count} way${count !== 1 ? 's' : ''}:\n${checkedList}${hoursContext}${unchecked.length > 0 ? `\n\nNot yet active:\n${uncheckedList}` : ''}\n\n$0 deployed. The value at this level is understanding where time goes — not dollars.`,
       formula: recoveredHrs > 0 ? `[hours] = ${documentedEncounters.toLocaleString()} encounters × ${ts} min / 60 = ${recoveredHrs.toLocaleString()}\n[FTE] = ${recoveredHrs.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} = ${fte2}` : '',
       footnote: '',
-      nextLevelTeaser: 'Organizations with structured access redesign report 3–8 additional patients/provider/month.',
+      nextLevelTeaser: 'Level 3 measures how many additional patients are seen with recovered time.',
     };
   }
 
@@ -295,35 +311,30 @@ export function computeRevenueFeedback(
 
     const checkedLabels = checked.map(shortLabel).join(', ');
 
-    if (directionalEstimate && directionalEstimate !== 'not_sure' && ESTIMATE_RANGES[directionalEstimate]) {
-      const range = ESTIMATE_RANGES[directionalEstimate];
-      const lowEstimate = Math.round(documentedEncounters * revenuePerVisit * range.lowPct);
-      const highEstimate = Math.round(documentedEncounters * revenuePerVisit * range.highPct);
+    const estimateLabel = directionalEstimate && directionalEstimate !== 'not_sure' && ESTIMATE_RANGES[directionalEstimate]
+      ? ESTIMATE_RANGES[directionalEstimate].label
+      : null;
 
-      let context = `Your organization estimates ${range.label} of encounter revenue is being affected by documentation improvements.\n\nAt ${documentedEncounters.toLocaleString()} documented encounters × ${formatDollar(revenuePerVisit)} per visit:\n${(range.lowPct * 100).toFixed(1)}% = ${formatDollar(lowEstimate)}\n${(range.highPct * 100).toFixed(1)}% = ${formatDollar(highEstimate)}\n\nThis is your team's directional estimate based on trending data. A formal before/after analysis (Level 3) would validate this figure.`;
+    if (count > 0 || estimateLabel) {
+      let context = '';
       if (count > 0) {
-        context += `\n\n${count} area${count !== 1 ? 's' : ''} showing movement:\n${checkedLabels}`;
+        context = `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}`;
       }
+      if (estimateLabel) {
+        context += `${count > 0 ? '\n\n' : ''}Your team's directional estimate: ${estimateLabel} of encounter revenue affected by documentation improvements.`;
+      }
+      context += '\n\nMovement is visible. A formal before/after analysis (Level 3) would validate the signal and quantify the impact.';
 
-      return {
-        label: 'Estimated Impact',
-        value: Math.round((lowEstimate + highEstimate) / 2),
-        hasValue: true,
-        headlineMetric: `${formatDollar(lowEstimate)}–${formatDollar(highEstimate)} directional estimate`,
-        context,
-        formula: `[lowEstimate] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${(range.lowPct * 100).toFixed(1)}% = ${formatDollar(lowEstimate)}\n[highEstimate] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${(range.highPct * 100).toFixed(1)}% = ${formatDollar(highEstimate)}`,
-        footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Organizations with before/after measurement have reported 2–7% revenue improvement.',
-      };
-    }
+      const headlineParts: string[] = [];
+      if (count > 0) headlineParts.push(`${count} area${count !== 1 ? 's' : ''} showing movement`);
+      if (estimateLabel) headlineParts.push(`directional estimate: ${estimateLabel}`);
 
-    if (count > 0) {
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: `${count} area${count !== 1 ? 's' : ''} showing movement`,
-        context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nMovement is visible but the impact hasn't been estimated yet. A formal before/after analysis (Level 3) would quantify it.`,
+        headlineMetric: headlineParts.join(' · '),
+        context,
         formula: '',
         footnote: 'Estimates based on your inputs. Individual results vary.',
         nextLevelTeaser: 'Organizations with before/after measurement have reported 2–7% revenue improvement.',
@@ -334,8 +345,8 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'Select observed areas and estimate impact.',
-      context: 'Select the areas where your organization has observed movement, and provide a directional estimate of the revenue impact.',
+      headlineMetric: 'Select observed areas to continue.',
+      context: 'Select the areas where your organization has observed movement since deployment.',
       formula: '',
       footnote: '',
       nextLevelTeaser: 'Level 3 requires before/after measurement data.',
@@ -626,44 +637,48 @@ export function computeWorkforceFeedback(
   }
 
   if (level === 3) {
-    const turnoverRate = inputs.turnoverRate as number | undefined;
+    const beforeTurnoverRate = inputs.beforeTurnoverRate as number | undefined;
+    const afterTurnoverRate = inputs.afterTurnoverRate as number | undefined;
     const replacementCostRaw = inputs.replacementCost as number | undefined;
     const replacementCost = (replacementCostRaw && replacementCostRaw > 0) ? replacementCostRaw : 350000;
-    const rawDocBurdenShare = (inputs.docBurdenShare as number) || 0;
-    const docBurdenShare = Math.min(rawDocBurdenShare, 40);
-    if (!turnoverRate || turnoverRate <= 0) {
+
+    if (!beforeTurnoverRate || beforeTurnoverRate <= 0) {
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Enter turnover data to calculate exposure.',
-        context: `Enter your turnover rate and replacement cost to see estimated retention exposure.`,
+        headlineMetric: 'Enter before/after turnover rates to calculate.',
+        context: 'Enter your turnover rate before and after ambient deployment to see prevented departures and annual savings.',
         formula: '',
         footnote: '',
         nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
       };
     }
-    const totalTurnover = providers * (turnoverRate / 100);
-    const totalCost = Math.round(totalTurnover * replacementCost);
-    const docDrivenCost = docBurdenShare > 0 ? Math.round(totalCost * (docBurdenShare / 100)) : 0;
 
-    const hasDocShare = docBurdenShare > 0 && docDrivenCost > 0;
+    const afterRate = (afterTurnoverRate && afterTurnoverRate >= 0) ? afterTurnoverRate : beforeTurnoverRate;
+    const rateDelta = Math.max(0, beforeTurnoverRate - afterRate);
+    const preventedDepartures = Math.round(providers * (rateDelta / 100) * 10) / 10;
+    const annualSavings = Math.round(preventedDepartures * replacementCost);
+    const hasSavings = rateDelta > 0 && annualSavings > 0;
+
     const replacementLabel = replacementCost === 350000
       ? `Using AMGA benchmark midpoint: ${formatDollar(replacementCost)}`
       : `Based on your input: ${formatDollar(replacementCost)}`;
 
-    const headlineMetric = hasDocShare
-      ? `${formatDollar(docDrivenCost)} in documentation-attributable turnover exposure.`
-      : `${totalTurnover.toFixed(1)} projected departure${totalTurnover !== 1 ? 's' : ''} per year. Enter documentation burden share to see attributable exposure.`;
+    const headlineMetric = hasSavings
+      ? `${formatDollar(annualSavings)} in annual retention savings`
+      : afterRate >= beforeTurnoverRate
+        ? 'Turnover has not decreased since deployment.'
+        : `Enter your post-deployment turnover rate to calculate savings.`;
 
     return {
       label: 'Estimated Impact',
-      value: hasDocShare ? docDrivenCost : null,
-      hasValue: hasDocShare,
+      value: hasSavings ? annualSavings : null,
+      hasValue: hasSavings,
       headlineMetric,
-      context: `At ${turnoverRate}% annual turnover across ${providers} providers, your organization sees approximately ${totalTurnover.toFixed(1)} departure${totalTurnover !== 1 ? 's' : ''} per year.\n\nReplacement cost: ${replacementLabel}. Total turnover cost is ${formatDollar(totalCost)} annually.\n\n${hasDocShare ? `Of that, your estimate of ${docBurdenShare}% attributable to documentation burden represents ${formatDollar(docDrivenCost)} — the portion potentially attributable to documentation burden reduction.` : 'Enter the share of turnover you attribute to documentation burden to see the portion potentially attributable to documentation burden reduction.'}`,
-      formula: `[annualDepartures] = ${providers} × ${turnoverRate}% = ${totalTurnover.toFixed(1)}\n[totalCost] = ${totalTurnover.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(totalCost)}${hasDocShare ? `\n[docDriven] = ${formatDollar(totalCost)} × ${docBurdenShare}% = ${formatDollar(docDrivenCost)}` : ''}`,
-      footnote: 'All inputs are your organization\'s data. No external correlation estimates applied.',
+      context: `Before deployment: ${beforeTurnoverRate}% annual turnover.\nAfter deployment: ${afterRate}% annual turnover.\n\n${hasSavings ? `Improvement: ${rateDelta.toFixed(1)} percentage points → ${preventedDepartures.toFixed(1)} prevented departure${preventedDepartures !== 1 ? 's' : ''} per year.\n\nReplacement cost: ${replacementLabel}.\nAnnual savings: ${formatDollar(annualSavings)}.` : afterRate >= beforeTurnoverRate ? 'No improvement observed yet. Turnover reduction takes time — most organizations see measurable change after 12–18 months of deployment.' : 'Enter your post-deployment turnover rate to see the comparison.'}`,
+      formula: hasSavings ? `[rateDelta] = ${beforeTurnoverRate}% − ${afterRate}% = ${rateDelta.toFixed(1)}%\n[preventedDepartures] = ${providers} × ${rateDelta.toFixed(1)}% = ${preventedDepartures.toFixed(1)}\n[annualSavings] = ${preventedDepartures.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(annualSavings)}` : '',
+      footnote: 'All inputs are your organization\'s data. Turnover reduction may be influenced by multiple factors beyond documentation burden.',
       nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
     };
   }
@@ -812,20 +827,12 @@ export function computeRiskFeedback(
   _revenuePerVisit: number = 200,
 ): DomainFeedback {
   if (level === 1) {
-    const downstreamConnected = inputs.qualityDownstreamConnected as string | undefined;
-
-    const statusText = downstreamConnected === 'yes'
-      ? 'One downstream team is formally engaged.'
-      : downstreamConnected === 'informal'
-        ? 'Informal conversations have started with downstream teams.'
-        : 'Downstream connection not yet started. The value of improved documentation depends on whether coding, quality reporting, compliance, and other teams can see and use the improvement.';
-
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
       headlineMetric: `${documentedEncounters.toLocaleString()} encounters with improved documentation.`,
-      context: `${documentedEncounters.toLocaleString()} encounters with improved documentation.\n\n${statusText}`,
+      context: `${documentedEncounters.toLocaleString()} encounters with improved documentation.\n\nThe value of improved documentation depends on whether coding, quality reporting, compliance, and other teams can see and use the improvement. At this level, the quality improvement is real but the downstream connection has not been established.`,
       formula: '',
       footnote: 'Estimates based on your inputs. Individual results vary.',
       nextLevelTeaser: 'Level 2 establishes systematic quality tracking.',
@@ -901,44 +908,53 @@ export function computeRiskFeedback(
   }
 
   if (level === 3) {
-    const { checked, unchecked } = parseCheckedItems(inputs.connectedWorkflows as string, DOWNSTREAM_WORKFLOWS);
-    const count = checked.length;
-    const checkedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
-    const uncheckedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
-    const depth = inputs.qualityMeasurementDepth as string | undefined;
-    const noDownstreamValue = inputs.noDownstreamValue === 'true';
-    const downstreamValue = noDownstreamValue ? 0 : ((inputs.downstreamValue as number) || 0);
+    const financialPathway = inputs.financialPathway as string | undefined;
 
-    if (count === 0) {
+    if (!financialPathway || financialPathway === 'none_yet') {
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Select connected downstream areas.',
-        context: 'Select which downstream areas have been connected to documentation quality improvements.',
+        headlineMetric: financialPathway === 'none_yet' ? 'No financial pathway connected yet' : 'Select a financial pathway',
+        context: financialPathway === 'none_yet'
+          ? 'Documentation quality improvements are happening, but no downstream financial mechanism has been connected yet. This is the most common gap at Level 3 — the quality is real, but the financial proof hasn\'t been built.'
+          : 'Select which financial pathway documentation quality is connected to.',
         formula: '',
         footnote: 'Estimates based on your inputs. Individual results vary.',
         nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
       };
     }
 
-    const depthText = depth === 'measured'
-      ? 'Measured data is available.'
-      : depth === 'partial'
-        ? 'Some areas have measured data.'
-        : depth === 'qualitative'
-          ? 'Impact is visible but not yet quantified.'
-          : '';
-
-    if (downstreamValue > 0) {
+    if (financialPathway === 'mips') {
+      const mipsScore = inputs.mipsScoreImprovement as number | undefined;
+      const mipsContext = mipsScore && mipsScore > 0
+        ? `MIPS score improved by ${mipsScore} points since deployment. Documentation quality is driving measure compliance and data completeness.`
+        : 'MIPS performance is the selected pathway. Enter your score improvement to quantify the connection.';
       return {
         label: 'Estimated Impact',
-        value: downstreamValue,
-        hasValue: true,
-        headlineMetric: `${formatDollar(downstreamValue)} in downstream quality value`,
-        context: `Documentation quality is driving ${formatDollar(downstreamValue)} in annual value across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
-        formula: `[annualValue] = ${formatDollar(downstreamValue)} (organization estimate)`,
-        footnote: 'Based on your organization\'s estimate. Estimates based on your inputs. Individual results vary.',
+        value: null,
+        hasValue: false,
+        headlineMetric: mipsScore && mipsScore > 0 ? `MIPS score improved ${mipsScore} points` : 'MIPS pathway selected',
+        context: `${mipsContext}\n\nMIPS payment adjustments are tied directly to documentation quality — completeness, specificity, and measure capture all affect the final score.`,
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+      };
+    }
+
+    if (financialPathway === 'denials') {
+      const denialReduction = inputs.denialReductionPct as number | undefined;
+      const denialContext = denialReduction && denialReduction > 0
+        ? `Documentation-related denial rate reduced by ${denialReduction}%. Better documentation specificity is preventing denials before claims are submitted.`
+        : 'Denial reduction is the selected pathway. Enter your denial rate improvement to quantify the connection.';
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: denialReduction && denialReduction > 0 ? `Denial rate reduced ${denialReduction}%` : 'Denial reduction pathway selected',
+        context: `${denialContext}\n\nDocumentation-driven denial prevention is one of the fastest financial returns from ambient documentation — it reduces rework, accelerates payment, and improves payer relationships.`,
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
         nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
       };
     }
@@ -947,8 +963,8 @@ export function computeRiskFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${count} downstream area${count > 1 ? 's' : ''} connected`,
-      context: `Documentation quality is driving improvement across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+      headlineMetric: 'Select a financial pathway',
+      context: 'Select which financial pathway documentation quality is connected to.',
       formula: '',
       footnote: 'Estimates based on your inputs. Individual results vary.',
       nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
