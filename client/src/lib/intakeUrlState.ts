@@ -32,6 +32,15 @@ export interface ExploreIntakeResponse {
   ipAvgClaimValue?: number | null;
   ipTurnoverRate?: number | null;
   ipReplacementCost?: number | null;
+  ipDrgAtRiskRate?: number | null;
+  ipDrgWeightIncrease?: number | null;
+  ipDrgBasePayment?: number | null;
+  ipCdiQueryRate?: number | null;
+  ipCdiCostPerQuery?: number | null;
+  ipConcurrentReviewRate?: number | null;
+  ipConcurrentDenialRate?: number | null;
+  ipConcurrentAvgDays?: number | null;
+  ipConcurrentDailyRate?: number | null;
 
   nursingFTEs?: number | null;
   nursingStaffedBeds?: number | null;
@@ -144,6 +153,15 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
         line('Annual admissions', data.ipAnnualAdmissions),
         line('Obs/IP status denial rate', data.ipDenialRate, { suffix: '%' }),
         line('Avg claim value at risk', data.ipAvgClaimValue, { suffix: ' $' }),
+        line('DRG at-risk rate', data.ipDrgAtRiskRate, { suffix: '%' }),
+        line('DRG weight increase', data.ipDrgWeightIncrease, { decimals: 2 }),
+        line('Base DRG payment', data.ipDrgBasePayment, { suffix: ' $' }),
+        line('CDI query rate', data.ipCdiQueryRate, { suffix: '%' }),
+        line('Cost per CDI query', data.ipCdiCostPerQuery, { suffix: ' $' }),
+        line('Concurrent review rate', data.ipConcurrentReviewRate, { suffix: '%' }),
+        line('Concurrent denial rate', data.ipConcurrentDenialRate, { suffix: '%' }),
+        line('Avg continued-stay days', data.ipConcurrentAvgDays, { decimals: 1 }),
+        line('Daily rate', data.ipConcurrentDailyRate, { suffix: ' $' }),
         line('Annual hospitalist turnover', data.ipTurnoverRate, { suffix: '%' }),
         line('Cost to replace one hospitalist', data.ipReplacementCost, { suffix: ' $' }),
       );

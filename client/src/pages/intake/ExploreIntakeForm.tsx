@@ -153,6 +153,10 @@ interface IntakeFormState {
   edTurnoverRate: number | null; edReplacementCost: number | null;
   ipProviders: number | null; ipAdmissions: number | null; ipDenialRate: number | null;
   ipAvgClaimValue: number | null; ipTurnoverRate: number | null; ipReplacementCost: number | null;
+  ipDrgAtRiskRate: number | null; ipDrgWeightIncrease: number | null; ipDrgBasePayment: number | null;
+  ipCdiQueryRate: number | null; ipCdiCostPerQuery: number | null;
+  ipConcurrentReviewRate: number | null; ipConcurrentDenialRate: number | null;
+  ipConcurrentAvgDays: number | null; ipConcurrentDailyRate: number | null;
   nursingFTEs: number | null; nursingStaffedBeds: number | null; nursingOccupancyRate: number | null;
   nursingOtHoursPerWeek: number | null; nursingOtHourlyRate: number | null; nursingTurnoverRate: number | null;
   nursingReplacementCost: number | null; hapiRate: number | null; fallRate: number | null;
@@ -171,6 +175,10 @@ function getEmptyState(preseed?: IntakeFormPreseed): IntakeFormState {
     edTurnoverRate: null, edReplacementCost: null,
     ipProviders: null, ipAdmissions: null, ipDenialRate: null,
     ipAvgClaimValue: null, ipTurnoverRate: null, ipReplacementCost: null,
+    ipDrgAtRiskRate: null, ipDrgWeightIncrease: null, ipDrgBasePayment: null,
+    ipCdiQueryRate: null, ipCdiCostPerQuery: null,
+    ipConcurrentReviewRate: null, ipConcurrentDenialRate: null,
+    ipConcurrentAvgDays: null, ipConcurrentDailyRate: null,
     nursingFTEs: null, nursingStaffedBeds: null, nursingOccupancyRate: null,
     nursingOtHoursPerWeek: null, nursingOtHourlyRate: null, nursingTurnoverRate: null,
     nursingReplacementCost: null, hapiRate: null, fallRate: null,
@@ -219,6 +227,10 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
       edAdmissionRevenue: s.edAdmissionRevenue, edTurnoverRate: s.edTurnoverRate, edReplacementCost: s.edReplacementCost,
       ipProviders: s.ipProviders, ipAnnualAdmissions: s.ipAdmissions, ipDenialRate: s.ipDenialRate,
       ipAvgClaimValue: s.ipAvgClaimValue, ipTurnoverRate: s.ipTurnoverRate, ipReplacementCost: s.ipReplacementCost,
+      ipDrgAtRiskRate: s.ipDrgAtRiskRate, ipDrgWeightIncrease: s.ipDrgWeightIncrease, ipDrgBasePayment: s.ipDrgBasePayment,
+      ipCdiQueryRate: s.ipCdiQueryRate, ipCdiCostPerQuery: s.ipCdiCostPerQuery,
+      ipConcurrentReviewRate: s.ipConcurrentReviewRate, ipConcurrentDenialRate: s.ipConcurrentDenialRate,
+      ipConcurrentAvgDays: s.ipConcurrentAvgDays, ipConcurrentDailyRate: s.ipConcurrentDailyRate,
       nursingFTEs: s.nursingFTEs, nursingStaffedBeds: s.nursingStaffedBeds,
       nursingOccupancyRate: s.nursingOccupancyRate, nursingOtHoursPerWeek: s.nursingOtHoursPerWeek,
       nursingOtHourlyRate: s.nursingOtHourlyRate, nursingTurnoverRate: s.nursingTurnoverRate,
@@ -412,13 +424,55 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('ipAdmissions', v)} placeholder="e.g. 5,000" />
                     </div>
 
-                    <SectionDivider label="Documentation Quality" />
+                    <SectionDivider label="Obs/IP Status Defense" />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Obs/IP status denial rate" value={formState.ipDenialRate}
                         onChange={v => update('ipDenialRate', v)} placeholder="e.g. 5" suffix="%" />
                       <NumberField label="Avg claim value at risk" value={formState.ipAvgClaimValue}
                         onChange={v => update('ipAvgClaimValue', v)} placeholder="e.g. 10,000" suffix="$"
                         hint="avg $ of claims where Obs vs IP status is disputed" />
+                    </div>
+
+                    <SectionDivider label="DRG Accuracy / CC-MCC Capture" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="DRG at-risk rate" value={formState.ipDrgAtRiskRate}
+                        onChange={v => update('ipDrgAtRiskRate', v)} placeholder="e.g. 18" suffix="%"
+                        hint="% of admissions with documentation gaps" />
+                      <NumberField label="DRG weight increase" value={formState.ipDrgWeightIncrease}
+                        onChange={v => update('ipDrgWeightIncrease', v)} placeholder="e.g. 0.4" step="0.1"
+                        hint="avg weight lift when CC/MCC is captured" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Base DRG payment" value={formState.ipDrgBasePayment}
+                        onChange={v => update('ipDrgBasePayment', v)} placeholder="e.g. 6,000" suffix="$"
+                        hint="hospital-specific base rate" />
+                    </div>
+
+                    <SectionDivider label="CDI Query Reduction" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="CDI query rate" value={formState.ipCdiQueryRate}
+                        onChange={v => update('ipCdiQueryRate', v)} placeholder="e.g. 30" suffix="%"
+                        hint="% of admissions generating CDI queries" />
+                      <NumberField label="Cost per CDI query" value={formState.ipCdiCostPerQuery}
+                        onChange={v => update('ipCdiCostPerQuery', v)} placeholder="e.g. 50" suffix="$" />
+                    </div>
+
+                    <SectionDivider label="Concurrent Review / Continued Stay" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Concurrent review rate" value={formState.ipConcurrentReviewRate}
+                        onChange={v => update('ipConcurrentReviewRate', v)} placeholder="e.g. 45" suffix="%"
+                        hint="% of cases reviewed by payer" />
+                      <NumberField label="Concurrent denial rate" value={formState.ipConcurrentDenialRate}
+                        onChange={v => update('ipConcurrentDenialRate', v)} placeholder="e.g. 8" suffix="%"
+                        hint="% of reviews resulting in doc-sensitive denials" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Avg continued-stay days" value={formState.ipConcurrentAvgDays}
+                        onChange={v => update('ipConcurrentAvgDays', v)} placeholder="e.g. 1.5" step="0.1"
+                        hint="average days protected per defended stay" />
+                      <NumberField label="Daily rate" value={formState.ipConcurrentDailyRate}
+                        onChange={v => update('ipConcurrentDailyRate', v)} placeholder="e.g. 2,800" suffix="$"
+                        hint="hospital daily revenue rate" />
                     </div>
 
                     <SectionDivider label="Workforce" />

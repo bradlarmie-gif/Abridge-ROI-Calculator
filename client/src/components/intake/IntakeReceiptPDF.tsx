@@ -115,9 +115,24 @@ function getInpatientFields(d: ExploreIntakeResponse): { section: string; fields
       { label: "Hospitalists", value: fmt(d.ipProviders) },
       { label: "Annual admissions", value: fmt(d.ipAnnualAdmissions) },
     ]},
-    { section: "Documentation Quality", fields: [
+    { section: "Obs/IP Status Defense", fields: [
       { label: "Obs/IP status denial rate", value: fmt(d.ipDenialRate, { suffix: "%" }) },
       { label: "Avg claim value at risk", value: fmt(d.ipAvgClaimValue, { prefix: "$" }) },
+    ]},
+    { section: "DRG Accuracy / CC-MCC Capture", fields: [
+      { label: "DRG at-risk rate", value: fmt(d.ipDrgAtRiskRate, { suffix: "%" }) },
+      { label: "DRG weight increase", value: d.ipDrgWeightIncrease != null ? d.ipDrgWeightIncrease.toFixed(2) : "" },
+      { label: "Base DRG payment", value: fmt(d.ipDrgBasePayment, { prefix: "$" }) },
+    ]},
+    { section: "CDI Query Reduction", fields: [
+      { label: "CDI query rate", value: fmt(d.ipCdiQueryRate, { suffix: "%" }) },
+      { label: "Cost per CDI query", value: fmt(d.ipCdiCostPerQuery, { prefix: "$" }) },
+    ]},
+    { section: "Concurrent Review", fields: [
+      { label: "Concurrent review rate", value: fmt(d.ipConcurrentReviewRate, { suffix: "%" }) },
+      { label: "Concurrent denial rate", value: fmt(d.ipConcurrentDenialRate, { suffix: "%" }) },
+      { label: "Avg continued-stay days", value: d.ipConcurrentAvgDays != null ? d.ipConcurrentAvgDays.toFixed(1) : "" },
+      { label: "Daily rate", value: fmt(d.ipConcurrentDailyRate, { prefix: "$" }) },
     ]},
     { section: "Workforce", fields: [
       { label: "Annual hospitalist turnover", value: fmt(d.ipTurnoverRate, { suffix: "%" }) },
