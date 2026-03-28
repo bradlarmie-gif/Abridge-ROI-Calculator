@@ -367,7 +367,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
       return `${mStr} ${mVerb} generating confirmed, calculable value. ${uStr} ${uVerb} been formally measured yet — and at 1–2 years in deployment, the question isn't whether that value exists. It's how long it's been there.`;
     }
     if (tenure === '24+') {
-      return `${mStr} ${mVerb} generating confirmed value. ${uStr} ${uVerb} been measured — and at 2+ years, that's a long time for value to be generating without being counted. The ranges below are benchmarks. At your tenure, the more useful question is: what has the cost of not measuring been?`;
+      return `${mStr} ${mVerb} generating confirmed value. ${uStr} ${uVerb} been measured — and at 2+ years, that value has been accumulating without formal measurement. The ranges below are benchmarks. At your tenure, the more useful question is: what has the value of acting now become?`;
     }
 
     return `Your score reflects what your organization has chosen to analyze. ${mStr} ${mVerb} generating confirmed, calculable value. ${uStr} ${uVerb} been formally measured yet. The range sitting in those domains — based on what organizations your size typically find — is significant.`;
@@ -603,7 +603,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                               <div className="mt-4 bg-white/70 rounded-lg p-4" data-testid={`cost-of-time-${domain}`}>
                                 <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-2">What May Already Be On The Table</p>
                                 <p className="text-sm text-[#525252] leading-relaxed">
-                                  If the benchmark range applies to your organization, and you've been deployed for approximately {months} months, the value that has been generating without being counted could be in the range of{' '}
+                                  If the benchmark range applies to your organization, and you've been deployed for approximately {months} months, the value that has been accumulating unmeasured could be in the range of{' '}
                                   <span className="font-semibold text-black">
                                     ${costLow.toLocaleString()}–${costHigh.toLocaleString()}
                                   </span>

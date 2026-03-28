@@ -309,11 +309,11 @@ function computeTenureModifier(tenure: string, totalScore: number): string {
     },
     "12-24": {
       low: "One to two years in, and most of the value story hasn\u2019t been told yet. The window to build measurement infrastructure is narrowing \u2014 not because it closes, but because every month without it is a month of value sitting uncounted.",
-      mid: "One to two years in with moderate maturity. Some domains are yielding confirmed value; others haven\u2019t been analyzed. At this stage, the gap isn\u2019t about adoption \u2014 it\u2019s about whether there\u2019s a structured program to capture what\u2019s already generating returns.",
+      mid: "One to two years in with moderate maturity. Some domains are yielding confirmed value; others haven\u2019t been analyzed. At this stage, the next chapter is about measurement discipline, not adoption \u2014 it\u2019s about whether there\u2019s a structured program to capture what\u2019s already generating returns.",
       high: "One to two years in with strong maturity. You\u2019ve used the deployment period to build real infrastructure. The work ahead is integration and depth.",
     },
     "24+": {
-      low: "Two or more years live, and the measurement foundation hasn\u2019t been built. This is the highest-urgency profile in this assessment \u2014 not because the deployment has failed, but because value has been generating without being counted for a long time. What you find when you look will be surprising.",
+      low: "Two or more years live, and the measurement foundation hasn\u2019t been built. This profile has the most immediate strategic opportunity in this assessment \u2014 not because the deployment has failed, but because value is already generating \u2014 this is the measurement story waiting to be told. What you find when you look will be surprising.",
       mid: "Two or more years live with mixed maturity. Some domains are yielding confirmed value; others have been generating returns that no one has looked at yet. At this tenure, that\u2019s a prioritization problem, not a knowledge problem.",
       high: "Two or more years live with strong maturity. This is where few organizations arrive. The deployment isn\u2019t just generating value \u2014 it\u2019s being managed as a strategic asset.",
     },
@@ -336,7 +336,7 @@ function computeInvitationCopy(
   const tenureAppends: Record<string, string> = {
     "0-6": "At less than 6 months, you\u2019re in the window where the measurement habits get set. The organizations that build them now don\u2019t have to rebuild them at 24 months.",
     "6-12": "At 6\u201312 months, you\u2019re at the decision point. The deployment is stable. The question is whether measurement becomes a program or stays informal.",
-    "12-24": "At 1\u20132 years, the urgency is real. Every month the measurement infrastructure doesn\u2019t exist, value that\u2019s already there goes uncounted.",
+    "12-24": "At 1\u20132 years, the opportunity is sharpening. Every month the measurement infrastructure doesn\u2019t exist, value that\u2019s already there goes uncounted.",
     "24+": "At 2+ years, the conversation is different. It\u2019s not about building measurement habits. It\u2019s about what\u2019s been sitting on the table \u2014 and what it takes to count it this year.",
   };
   return {
@@ -1222,6 +1222,12 @@ function DomainPage({
           <Text style={{ fontSize: 8, color: "rgba(255,255,255,0.3)", marginTop: 5 }}>Level {level} of 4</Text>
         </View>
       </View>
+
+      {bench.source && (
+        <Text style={{ fontSize: 7, color: "#BBBBBB", fontStyle: "italic", marginTop: 4 }}>
+          {bench.source}
+        </Text>
+      )}
 
       <PageFooter pageNum={pageNum} orgName={data.organizationName} />
     </Page>
