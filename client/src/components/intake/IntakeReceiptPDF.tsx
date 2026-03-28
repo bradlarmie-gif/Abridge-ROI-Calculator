@@ -121,7 +121,7 @@ function getInpatientFields(d: ExploreIntakeResponse): { section: string; fields
     ]},
     { section: "DRG Accuracy / CC-MCC Capture", fields: [
       { label: "DRG at-risk rate", value: fmt(d.ipDrgAtRiskRate, { suffix: "%" }) },
-      { label: "DRG weight increase", value: d.ipDrgWeightIncrease != null ? d.ipDrgWeightIncrease.toFixed(2) : "" },
+      { label: "DRG weight increase", value: d.ipDrgWeightIncrease != null ? d.ipDrgWeightIncrease.toFixed(2) : null },
       { label: "Base DRG payment", value: fmt(d.ipDrgBasePayment, { prefix: "$" }) },
     ]},
     { section: "CDI Query Reduction", fields: [
@@ -131,7 +131,7 @@ function getInpatientFields(d: ExploreIntakeResponse): { section: string; fields
     { section: "Concurrent Review", fields: [
       { label: "Concurrent review rate", value: fmt(d.ipConcurrentReviewRate, { suffix: "%" }) },
       { label: "Concurrent denial rate", value: fmt(d.ipConcurrentDenialRate, { suffix: "%" }) },
-      { label: "Avg continued-stay days", value: d.ipConcurrentAvgDays != null ? d.ipConcurrentAvgDays.toFixed(1) : "" },
+      { label: "Avg continued-stay days", value: d.ipConcurrentAvgDays != null ? d.ipConcurrentAvgDays.toFixed(1) : null },
       { label: "Daily rate", value: fmt(d.ipConcurrentDailyRate, { prefix: "$" }) },
     ]},
     { section: "Workforce", fields: [
