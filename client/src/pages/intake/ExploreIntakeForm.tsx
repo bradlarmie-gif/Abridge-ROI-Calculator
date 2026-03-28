@@ -336,6 +336,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
 
                 {settingId === "outpatient" && (
                   <div className="space-y-4">
+                    <SectionDivider label="Deployment" />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Physicians / APPs" value={formState.opProviders}
                         onChange={v => update('opProviders', v)} placeholder="e.g. 50" />
@@ -383,6 +384,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
 
                 {settingId === "ed" && (
                   <div className="space-y-4">
+                    <SectionDivider label="Deployment" />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="ED physicians / APPs" value={formState.edProviders}
                         onChange={v => update('edProviders', v)} placeholder="e.g. 20" />
@@ -417,6 +419,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
 
                 {settingId === "inpatient" && (
                   <div className="space-y-4">
+                    <SectionDivider label="Deployment" />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Hospitalists" value={formState.ipProviders}
                         onChange={v => update('ipProviders', v)} placeholder="e.g. 15" />
@@ -487,6 +490,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
 
                 {settingId === "nursing" && (
                   <div className="space-y-4">
+                    <SectionDivider label="Deployment" />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Nurse FTEs" value={formState.nursingFTEs}
                         onChange={v => update('nursingFTEs', v)} placeholder="e.g. 300" />
