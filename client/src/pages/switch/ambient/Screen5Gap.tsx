@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
+import { Stethoscope, Zap, HeartPulse, ClipboardList } from "lucide-react";
 import { useAssessment } from "@/lib/assessment";
 import { formatDollar, formatDollarFull } from "./ambientCalculator";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
   Tooltip,
 } from "recharts";
 import {
@@ -54,6 +55,13 @@ function CustomTooltip({ active, payload, label }: any) {
     </div>
   );
 }
+
+const DOMAIN_ICONS: Record<Domain, typeof Stethoscope> = {
+  capacity: Stethoscope,
+  revenue: Zap,
+  workforce: HeartPulse,
+  risk: ClipboardList,
+};
 
 export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Screen5Props) {
   const { state } = useAssessment();
@@ -385,252 +393,275 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
   }, [topDomain]);
   const toggleDomain = (domain: Domain) => setExpandedDomains(prev => ({ ...prev, [domain]: !prev[domain] }));
 
+  const revL2Value = useMemo(() => {
+    if (domainLevels.revenue === 2 && domainHasValue.revenue) return domainGaps.revenue;
+    return 0;
+  }, [domainLevels.revenue, domainHasValue.revenue, domainGaps.revenue]);
+
+  const qualityAttrCount = useMemo(() => {
+    const inp = inputs.riskDomainInputs as string || '{}';
+    try {
+      const parsed = JSON.parse(inp);
+      const csv = (parsed.qualityAttributes as string) || '';
+      return csv.split(',').filter(Boolean).length;
+    } catch { return 0; }
+  }, [inputs.riskDomainInputs]);
+
+  const domainStatusLine = useMemo((): Record<Domain, { text: string; isConfirmed: boolean; isSignal: boolean }> => {
+    const result = {} as Record<Domain, { text: string; isConfirmed: boolean; isSignal: boolean }>;
+
+    for (const d of DOMAIN_ORDER) {
+      const level = domainLevels[d];
+      const hasValue = domainHasValue[d];
+      const gap = domainGaps[d];
+      const low = nextLevelContents[d].lowEstimate;
+      const high = nextLevelContents[d].highEstimate;
+      const range = low && high && high > low
+        ? `$${low.toLocaleString()}–$${high.toLocaleString()} est.`
+        : low ? `$${low.toLocaleString()} est.` : null;
+
+      if (d === 'capacity') {
+        if (level >= 2 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        else if (level === 2) result[d] = { text: 'Time savings measured · access revenue not yet modeled', isConfirmed: false, isSignal: false };
+        else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
+      } else if (d === 'revenue') {
+        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        else if (level === 2 && hasValue) result[d] = { text: `${formatDollar(gap)}/yr signal · not yet confirmed in billing`, isConfirmed: false, isSignal: true };
+        else if (level === 2) result[d] = { text: 'Coding signals observed · not yet confirmed in billing', isConfirmed: false, isSignal: true };
+        else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
+      } else if (d === 'workforce') {
+        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        else if (level === 2) result[d] = { text: 'Satisfaction data present · retention value not yet modeled', isConfirmed: false, isSignal: false };
+        else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
+      } else {
+        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        else if (level === 2) result[d] = { text: qualityAttrCount > 0 ? `${qualityAttrCount} of 5 quality dimensions tracked · financial connection not yet built` : 'Quality monitoring active · financial connection not yet built', isConfirmed: false, isSignal: false };
+        else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
+      }
+    }
+    return result;
+  }, [domainLevels, domainHasValue, domainGaps, nextLevelContents, qualityAttrCount]);
+
+  const bradsRead = useMemo(() => {
+    const tenure = inputs.deploymentTenure || '';
+    const measuredCount = measuredDomainsList.length;
+    const unmeasuredCount = unmeasuredDomainsList.length;
+
+    if (unmeasuredCount === 0) {
+      return "You're measuring across all four domains. The next chapter is about deepening each one — not finding new ones. The organizations that move fastest from here are the ones that embed measurement into the regular operating rhythm.";
+    }
+    if (measuredCount === 0) {
+      if (tenure === '24+') {
+        return `Two or more years live, and none of the four domains have been formally measured. The value has been there. The question — the one worth asking in this room — is how much longer it waits.`;
+      }
+      return `The deployment is live. The measurement program hasn't started yet. That's the most common profile at this stage — and it's exactly where the strategic opportunity sits. The organizations that define this internally are the ones that own the story.`;
+    }
+    if (tenure === '24+' && unmeasuredCount > 0) {
+      const uNames = unmeasuredDomainsList.map(d => DOMAIN_LABELS[d]).join(' and ');
+      return `At 2+ years, ${uNames} ${unmeasuredCount === 1 ? 'has' : 'have'} been generating value without being counted. The question is whether your organization is going to own that story — or whether it stays in the background.`;
+    }
+    return `The measurement foundation is in place. ${unmeasuredDomainsList.map(d => DOMAIN_LABELS[d]).join(' and ')} ${unmeasuredDomainsList.length === 1 ? 'is' : 'are'} the next chapter. The question isn't whether the value is there — it's whether this quarter is when the organization decides to measure it.`;
+  }, [measuredDomainsList, unmeasuredDomainsList, inputs.deploymentTenure]);
+
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
+
       <motion.div
-        className="text-center mb-8"
+        className="mb-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
       >
-        <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-gap-heading">
-          The full picture.
+        <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
+          Your Trajectory
+        </p>
+        <h1 className="text-2xl md:text-3xl font-bold text-black mb-4 font-abridge uppercase tracking-tight" data-testid="text-gap-heading">
+          {inputs.deploymentTenure
+            ? `Here's what ${tenureLabel(inputs.deploymentTenure)} of ambient documentation looks like, measured.`
+            : "Here's what your ambient deployment looks like, measured."
+          }
         </h1>
+        <p className="text-sm text-[#525252] leading-relaxed max-w-2xl" data-testid="text-reframe">
+          {reframeText}
+        </p>
       </motion.div>
 
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="flex-1 max-w-[700px]">
 
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05, duration: 0.5 }}>
-            <p className="text-sm text-[#525252] leading-relaxed mb-6" data-testid="text-reframe">
-              {reframeText}
-            </p>
-          </motion.div>
-
           {(totalMeasured > 0 || unmeasuredLow > 0) && (
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="bg-[#FFF0ED] rounded-lg p-4" data-testid="tile-measured">
-                  <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">What the Math Shows</p>
-                  <p className="font-bold text-xl text-[#EA2C00] leading-none mb-1" data-testid="value-measured">
-                    {totalMeasured > 0 ? <CountUpNumber target={totalMeasured} /> : '—'}
-                  </p>
-                  <p className="text-xs text-[#888888]">per year · from your data</p>
-                </div>
-                <div className="bg-[#F5F0EB] rounded-lg p-4" data-testid="tile-unmeasured">
-                  <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-2">What Hasn't Been Measured</p>
-                  {unmeasuredLow > 0 ? (
-                    <>
-                      <p className="font-bold text-xl text-[#888888] leading-none mb-1" data-testid="value-unmeasured">
-                        {unmeasuredHigh > unmeasuredLow
-                          ? `$${unmeasuredLow.toLocaleString()}–$${unmeasuredHigh.toLocaleString()}`
-                          : `$${unmeasuredLow.toLocaleString()}`}
-                      </p>
-                      <p className="text-xs text-[#888888]">per year · benchmark range</p>
-                    </>
-                  ) : (
-                    <p className="font-bold text-xl text-[#888888] leading-none mb-1">—</p>
-                  )}
-                </div>
-              </div>
-              {domainLevels.revenue === 2 && !domainHasValue.revenue && (
-                <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[#FFFBEB] border border-[#F59E0B]/30 mt-2 mb-3">
-                  <div>
-                    <span className="text-[10px] font-semibold uppercase tracking-[1.2px] text-[#92400E]">Revenue</span>
-                    <span className="text-[9px] text-[#92400E]/70 ml-2">Directional signal observed · not yet validated · Next: before/after analysis</span>
+            <motion.div
+              className="mb-10"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+            >
+              <div className="bg-[#1A1A1A] rounded-xl p-6 sm:p-8">
+                {totalMeasured > 0 ? (
+                  <>
+                    <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annual Value</p>
+                    <p className="font-bold text-[56px] sm:text-[72px] leading-none text-[#EA2C00] tracking-tight mb-2" data-testid="value-measured">
+                      <CountUpNumber target={totalMeasured} />
+                    </p>
+                    <p className="text-sm text-white/40 mb-4">
+                      Confirmed across {DOMAIN_ORDER.filter(d => domainHasValue[d] && !(d === 'revenue' && domainLevels[d] === 2)).length} of 4 domains · per year
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annual Value</p>
+                    <p className="font-bold text-[56px] leading-none text-white/15 tracking-tight mb-2">—</p>
+                    <p className="text-sm text-white/30 mb-4">No domains formally measured yet</p>
+                  </>
+                )}
+
+                {unmeasuredLow > 0 && (
+                  <div className="pt-4 border-t border-white/[0.08]">
+                    <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-1">Not yet in the picture</p>
+                    <p className="text-xl font-bold text-white/40" data-testid="value-unmeasured">
+                      + {unmeasuredHigh > unmeasuredLow
+                        ? `$${unmeasuredLow.toLocaleString()}–$${unmeasuredHigh.toLocaleString()}`
+                        : `$${unmeasuredLow.toLocaleString()}`} est.
+                    </p>
+                    <p className="text-[11px] text-white/20 mt-1">benchmark range · based on your scale</p>
                   </div>
-                  <span className="text-xs font-semibold text-[#92400E]">
-                    Qualitative
-                  </span>
-                </div>
-              )}
-              <p className="text-xs text-[#888888] italic leading-relaxed mb-8">
-                The first number is what the math shows based on your data. The second is a benchmark range — what organizations your size typically find when they analyze domains you haven't measured yet.
-              </p>
+                )}
+
+                {revL2Value > 0 && (
+                  <div className="mt-4 pt-4 border-t border-white/[0.08] flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] font-semibold text-[#F59E0B]/70 uppercase tracking-[1.5px]">Revenue Signal</p>
+                      <p className="text-xs text-white/30 mt-0.5">Signals observed · not yet confirmed in billing data · Next: retrospective coding audit</p>
+                    </div>
+                    <span className="text-sm font-bold text-[#F59E0B]/80 flex-shrink-0">~{formatDollar(revL2Value)}/yr</span>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
 
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-next-level">
+          <motion.div
+            className="mb-10"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-3" data-testid="domain-band">
+              {DOMAIN_ORDER.map((domain) => {
+                const Icon = DOMAIN_ICONS[domain];
+                const level = domainLevels[domain];
+                const status = domainStatusLine[domain];
+                const content = nextLevelContents[domain];
+                const isExpanded = expandedDomains[domain];
 
-              {measuredDomainsList.length > 0 && (
-                <div className={unmeasuredDomainsList.length > 0 ? 'mb-8' : ''}>
-                  <div className="flex items-center gap-2 mb-5">
-                    <span className="w-2 h-2 rounded-full bg-[#EA2C00] flex-shrink-0" />
-                    <p className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
-                      What You're Capturing
-                    </p>
-                  </div>
-                  {measuredDomainsList.map((domain, idx) => {
-                    const content = nextLevelContents[domain];
-                    const isExpanded = expandedDomains[domain];
-                    return (
-                      <div key={domain} data-testid={`next-level-${domain}`}>
-                        <button
-                          type="button"
-                          className="w-full text-left py-4 cursor-pointer bg-transparent border-none hover:bg-white/30 rounded-lg transition-colors px-2 -mx-2"
-                          onClick={() => toggleDomain(domain)}
-                          data-testid={`toggle-next-level-${domain}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <p className="text-xs font-semibold uppercase tracking-[1px] text-[#EA2C00]">
-                                  {content.domainLabel}
-                                </p>
-                                <span className="text-xs text-[#EA2C00]">— Level {domainLevels[domain]}</span>
-                              </div>
-                              {content.nextLevelLabel && (
-                                <p className="text-xs text-[#888888]">Next level: {content.nextLevelLabel}</p>
-                              )}
-                            </div>
-                            <span className="text-[#888888] text-lg transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+                return (
+                  <div
+                    key={domain}
+                    className="bg-[#F5F0EB] rounded-xl overflow-hidden"
+                    data-testid={`domain-card-${domain}`}
+                  >
+                    <button
+                      type="button"
+                      className="w-full text-left p-4 sm:p-5 bg-transparent border-none cursor-pointer hover:bg-black/[0.02] transition-colors"
+                      onClick={() => toggleDomain(domain)}
+                      data-testid={`toggle-domain-${domain}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0 mt-0.5" style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
+                            <Icon className={`w-4 h-4 ${status.isConfirmed ? 'text-[#EA2C00]' : status.isSignal ? 'text-[#F59E0B]' : 'text-[#AAAAAA]'}`} />
                           </div>
-                        </button>
-
-                        {isExpanded && (
-                          <div className="px-2 pb-4">
-                            {content.narrative.includes('OPPORTUNITY AHEAD:') ? (
-                              <div data-testid={`narrative-${domain}`}>
-                                <p className="text-sm text-[#888888] leading-relaxed mb-3">
-                                  {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
-                                </p>
-                                <div className="mt-3 pt-3 border-t border-[#E5E7EB]/50">
-                                  <p className="text-[11px] font-semibold text-[#C8372D] uppercase tracking-[1.5px] mb-1.5">The Next Level Unlocks</p>
-                                  <p className="text-sm text-[#888888] italic leading-relaxed">
-                                    {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
-                                  </p>
-                                </div>
-                              </div>
-                            ) : (
-                              <p className="text-sm text-[#888888] leading-relaxed mb-3" data-testid={`narrative-${domain}`}>
-                                {content.narrative}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <p className="text-xs font-bold uppercase tracking-[1px] text-[#1A1A1A]">
+                                {DOMAIN_LABELS[domain]}
                               </p>
-                            )}
-                            {content.formula && (
-                              <div className="bg-white/50 rounded-md p-3 mt-3">
-                                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-2">How We Got Here</p>
-                                <pre className="text-xs text-[#888888] font-mono whitespace-pre-wrap leading-relaxed" data-testid={`formula-${domain}`}>
-                                  {content.formula}
-                                </pre>
-                              </div>
-                            )}
-                            {domain === 'capacity' && domainLevels.capacity >= 3 && inputs.capacityAccessConfidence === 'aspirational' && (
-                              <div className="mt-3 pt-3 border-t border-[#E5E7EB]/50 flex gap-2" data-testid="warning-aspirational-capacity">
-                                <span className="text-[#888888] text-sm flex-shrink-0">⚠</span>
-                                <p className="text-xs text-[#888888] italic leading-relaxed">
-                                  Your access data is marked as a planning target, not confirmed scheduling data. This figure is a planning scenario — validate with actual scheduling records before using it in leadership conversations.
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {idx < measuredDomainsList.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {measuredDomainsList.length > 0 && unmeasuredDomainsList.length > 0 && (
-                <div className="h-px bg-[#E5E7EB] mb-8" />
-              )}
-
-              {unmeasuredDomainsList.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-5">
-                    <span className="w-2 h-2 rounded-full bg-[#888888] flex-shrink-0" />
-                    <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px]">
-                      What You Haven't Measured Yet
-                    </p>
-                  </div>
-                  {unmeasuredDomainsList.map((domain, idx) => {
-                    const content = nextLevelContents[domain];
-                    const isExpanded = expandedDomains[domain];
-                    const isLongTenure = tenureIsLong(inputs.deploymentTenure || '');
-                    const months = tenureMonthsMidpoint(inputs.deploymentTenure || '');
-                    const years = months / 12;
-                    const costLow = isLongTenure && content.lowEstimate ? Math.round(content.lowEstimate * years) : 0;
-                    const costHigh = isLongTenure && content.highEstimate ? Math.round(content.highEstimate * years) : 0;
-                    return (
-                      <div key={domain} data-testid={`next-level-${domain}`}>
-                        <button
-                          type="button"
-                          className="w-full text-left py-4 cursor-pointer bg-transparent border-none hover:bg-white/30 rounded-lg transition-colors px-2 -mx-2"
-                          onClick={() => toggleDomain(domain)}
-                          data-testid={`toggle-next-level-${domain}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <p className="text-xs font-semibold uppercase tracking-[1px] text-[#888888]">
-                                  {content.domainLabel}
-                                </p>
-                                <span className="text-[10px] font-semibold text-[#888888] border border-[#D1D5DB] rounded px-1.5 py-0.5 uppercase tracking-[1px]">
-                                  Not Yet Measured
-                                </span>
-                              </div>
-                              <p className="text-xs text-[#888888]">
-                                First step: {ACTIVATION_LABELS[domain][2]}
-                              </p>
+                              <span className={`text-[9px] font-semibold uppercase tracking-[1px] px-1.5 py-0.5 rounded ${
+                                level >= 3 ? 'bg-[#EA2C00]/10 text-[#EA2C00]' :
+                                level === 2 ? 'bg-[#1A1A1A]/[0.08] text-[#666666]' :
+                                'bg-[#1A1A1A]/[0.05] text-[#AAAAAA]'
+                              }`}>
+                                L{level}
+                              </span>
                             </div>
-                            <span className="text-[#888888] text-lg transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
-                          </div>
-                        </button>
-
-                        {isExpanded && (
-                          <div className="px-2 pb-4">
-                            <p className="text-sm text-[#888888] leading-relaxed mb-3" data-testid={`narrative-${domain}`}>
-                              {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
+                            <p className={`text-[11px] leading-snug ${
+                              status.isConfirmed ? 'text-[#EA2C00] font-medium' :
+                              status.isSignal ? 'text-[#92400E]' :
+                              'text-[#888888]'
+                            }`}>
+                              {status.text}
                             </p>
-                            {content.formula && (
-                              <div className="bg-white/50 rounded-md p-3 mt-3">
-                                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-2">Benchmark Range Formula</p>
-                                <pre className="text-xs text-[#888888] font-mono whitespace-pre-wrap leading-relaxed" data-testid={`formula-${domain}`}>
-                                  {content.formula}
-                                </pre>
-                                <p className="text-[11px] text-[#888888] italic mt-2 pt-2 border-t border-[#E5E7EB]/50">
-                                  Benchmark range — reflects what organizations at your scale typically find when they first run this analysis. Not a projection.
-                                </p>
-                              </div>
-                            )}
-                            {isLongTenure && costLow > 0 && (
-                              <div className="mt-4 bg-white/70 rounded-lg p-4" data-testid={`cost-of-time-${domain}`}>
-                                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-2">What May Already Be On The Table</p>
-                                <p className="text-sm text-[#525252] leading-relaxed">
-                                  If the benchmark range applies to your organization, and you've been deployed for approximately {months} months, the value that has been accumulating unmeasured could be in the range of{' '}
-                                  <span className="font-semibold text-black">
-                                    ${costLow.toLocaleString()}–${costHigh.toLocaleString()}
-                                  </span>
-                                  {' '}over that period.
-                                </p>
-                                <p className="text-xs text-[#888888] italic mt-2">
-                                  This is illustrative, not a confirmed figure. It uses the benchmark range multiplied by your approximate deployment tenure.
-                                </p>
-                              </div>
-                            )}
+                          </div>
+                        </div>
+                        <span className="text-[#AAAAAA] text-base flex-shrink-0 mt-1 transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+                      </div>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="px-4 sm:px-5 pb-4 border-t border-[#E5E5E5]/60">
+                        <p className="text-xs text-[#888888] leading-relaxed mt-3" data-testid={`narrative-${domain}`}>
+                          {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
+                        </p>
+                        {content.narrative.includes('OPPORTUNITY AHEAD:') && (
+                          <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60">
+                            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">The next level unlocks</p>
+                            <p className="text-xs text-[#888888] leading-relaxed">
+                              {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
+                            </p>
                           </div>
                         )}
-                        {idx < unmeasuredDomainsList.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
+                        {content.formula && (
+                          <div className="bg-white/50 rounded-md p-3 mt-3">
+                            <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-2">
+                              {domainLevels[domain] === 1 ? 'Benchmark Range Formula' : 'How We Got Here'}
+                            </p>
+                            <pre className="text-xs text-[#888888] font-mono whitespace-pre-wrap leading-relaxed" data-testid={`formula-${domain}`}>
+                              {content.formula}
+                            </pre>
+                          </div>
+                        )}
+                        {domain === 'capacity' && domainLevels.capacity >= 3 && (inputs as any).capacityAccessConfidence === 'aspirational' && (
+                          <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60 flex gap-2">
+                            <span className="text-[#888888] text-xs flex-shrink-0">⚠</span>
+                            <p className="text-[11px] text-[#888888] italic leading-relaxed">
+                              Access data marked as a planning target — validate with scheduling records before using in a formal business case.
+                            </p>
+                          </div>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
 
-          {annualGap > 0 && (
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
-              <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-chart">
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
-                  Value of Acting Now — 36-Month Trajectory
+          {chartData.length > 0 && (
+            <motion.div
+              className="mb-10"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.5 }}
+            >
+              <div className="bg-[#F5F0EB] rounded-xl p-5 sm:p-7" data-testid="card-chart">
+                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-1">
+                  Value of Acting Now
                 </p>
-                <p className="text-sm text-[#888888] mb-6">
-                  What measurement compounds over time — at your scale.
+                <p className="text-sm font-medium text-[#1A1A1A] mb-1">
+                  {formatDollar(gap36mo)} in value at stake over 36 months.
                 </p>
-                <div className="h-[220px] sm:h-[260px]">
+                <p className="text-xs text-[#888888] mb-5">
+                  What closing the measurement gap is worth at your scale.
+                </p>
+                <div className="h-[200px] sm:h-[240px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                    <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#EA2C00" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#EA2C00" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                       <XAxis
                         dataKey="month"
@@ -644,34 +675,45 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                         width={70}
                       />
                       <Tooltip content={<CustomTooltip />} />
-                      <Line
+                      <Area
                         type="monotone"
                         dataKey="gap"
                         stroke="#EA2C00"
                         strokeWidth={2.5}
-                        dot={{ fill: '#EA2C00', r: 5 }}
-                        activeDot={{ r: 7 }}
-                        name="Unmeasured value accumulating"
+                        fill="url(#gapGradient)"
+                        dot={{ fill: '#EA2C00', r: 4 }}
+                        activeDot={{ r: 6 }}
+                        name="Value of acting now"
                       />
-                    </LineChart>
+                    </AreaChart>
                   </ResponsiveContainer>
                 </div>
-                <p className="text-sm text-[#888888] leading-relaxed mt-4" data-testid="text-chart-summary">
-                  At your current measurement pace, approximately <span className="font-bold text-black">{formatDollar(gap36mo)}</span> in value will have accumulated unmeasured over 36 months.
-                </p>
-                <p className="text-xs text-gray-400 italic mt-2">
+                <p className="text-xs text-[#888888] italic leading-relaxed mt-4" data-testid="text-chart-rationale">
                   Compounds because measurement enables optimization — organizations that measure early improve faster, widening the gap with each passing quarter.
-                </p>
-                <p className="text-xs text-[#888888] italic mt-1">
-                  Based on low-end benchmark ranges for unmeasured domains at your scale. Individual results vary.
                 </p>
               </div>
             </motion.div>
           )}
 
-          <div className="mt-10 pt-6 border-t border-[#E5E5E5]">
+          <motion.div
+            className="mb-10"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
+            <div className="border-l-4 border-[#EA2C00] pl-5 py-1" data-testid="brads-read">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[2px] mb-3">
+                Brad's Read
+              </p>
+              <p className="text-sm text-[#1A1A1A] leading-relaxed font-medium">
+                {bradsRead}
+              </p>
+            </div>
+          </motion.div>
+
+          <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
             <p className="text-xs text-[#AAAAAA] leading-relaxed">
-              Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Benchmark ranges for unmeasured domains reflect published literature and aggregated deployment patterns, not a database of actual customer outcomes. Sources cited per domain. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
+              Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Capacity: based on MGMA Physician Compensation data and published literature on time-to-access in ambulatory care. Revenue: based on published studies reporting 2–7% revenue improvement from documentation specificity; AMA and MGMA coding benchmarks. Workforce: based on AMGA Physician Retention Survey; replacement cost literature range $250K–$500K per physician. Quality: based on CMS quality penalty exposure data and CDI program ROI literature. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
             </p>
           </div>
 
@@ -710,9 +752,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
 
             <div className="h-px bg-white/[0.08] mb-6" />
 
-            <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-3">
-              Confirmed Today
-            </p>
+            <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-3">Confirmed Today</p>
             {totalMeasured > 0 ? (
               <p className="font-bold text-[52px] leading-none text-[#EA2C00] tracking-tight mb-1" data-testid="panel-confirmed-value">
                 {formatDollar(totalMeasured)}
@@ -721,6 +761,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
               <p className="font-bold text-[52px] leading-none text-white/15 tracking-tight mb-1">—</p>
             )}
             <p className="text-[11px] text-white/25 mb-6">per year · from your inputs</p>
+
             {domainHasValue.capacity && domainHasValue.revenue && (
               <p className="text-[10px] text-white/25 leading-relaxed mb-4">
                 If your Capacity and Revenue figures reflect activity from the same patient encounters, review the combined total with your finance team before use in a formal business case.
@@ -730,9 +771,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             {unmeasuredLow > 0 && (
               <>
                 <div className="h-px bg-white/[0.08] mb-5" />
-                <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-2">
-                  Not Yet Measured
-                </p>
+                <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-2">Not Yet in the Picture</p>
                 <p className="font-bold text-2xl text-white/50 leading-none tracking-tight mb-1" data-testid="panel-unmeasured-range">
                   {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
                 </p>
@@ -743,12 +782,8 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             {!allAtLevel4 && (
               <>
                 <div className="h-px bg-white/[0.08] mb-5" />
-                <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-2">
-                  Full Picture
-                </p>
-                <p className="font-bold text-lg text-white/35 leading-none tracking-tight mb-1">
-                  {formatDollar(strategicAnnual)}
-                </p>
+                <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-2">Full Picture</p>
+                <p className="font-bold text-lg text-white/35 leading-none tracking-tight mb-1">{formatDollar(strategicAnnual)}</p>
                 <p className="text-[11px] text-white/20 mb-5">confirmed + benchmark low</p>
               </>
             )}
@@ -762,7 +797,6 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             )}
 
             <div className="h-px bg-white/[0.08] mt-6 mb-5" />
-
             <p className="text-[11px] text-white/25 leading-relaxed italic">
               The gap between confirmed and potential is the conversation ahead.
             </p>

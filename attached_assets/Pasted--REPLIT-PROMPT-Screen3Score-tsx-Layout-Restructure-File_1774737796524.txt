@@ -1,0 +1,91 @@
+  REPLIT PROMPT — Screen3Score.tsx Layout Restructure
+
+  File: client/src/pages/switch/ambient/Screen3Score.tsx
+
+  This is a layout change only — no logic, no data, no calculations change.
+
+  The problem: The "YOUR AMBIENT PROFILE" dark card is a full-width block sitting between the score card and the decision mirror on the left. It should be the right sidebar. The current sidebar has a small
+  dark card with score + confirmed value + biggest opportunity — that content gets absorbed into the new sidebar.
+
+  New layout:
+
+  LEFT column (unchanged width, flex-1 max-w-[700px]):
+  1. Score card (beige bg) — exact same as today
+  2. "WHAT YOU TOLD US — BY DOMAIN" label
+  3. 2×2 decision mirror grid — wrap it in a bg-[#F5F0EB] rounded-xl p-5 sm:p-7 container so the cards feel grounded, not floating
+  4. StepFooter + disclaimer — same as today
+
+  RIGHT sidebar (w-full lg:w-[300px] flex-shrink-0, lg:sticky lg:top-24):
+  Absorbs ALL archetype content AND the current sidebar content into one black card:
+
+  <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-score-hero">
+
+    {/* Score + band */}
+    <div className="mb-5">
+      <p className="text-3xl font-bold text-[#EA2C00]" data-testid="sidebar-score">{totalScore}</p>
+      <p className="text-sm text-white/70">{scoreBandLabel}</p>
+    </div>
+
+    <div className="h-px bg-white/10 mb-5" />
+
+    {/* Archetype profile — headline Brad reads, body exec reads */}
+    <p className="text-[10px] font-medium text-white/35 uppercase tracking-[1.5px] mb-3">
+      Your Ambient Profile &nbsp;·&nbsp; {archetype.name}
+    </p>
+    <p className="text-base font-bold text-white leading-snug mb-4" data-testid="text-verdict-headline">
+      {archetype.headline}
+    </p>
+    <div className="h-px bg-white/10 mb-4" />
+    {tenureModifier && (
+      <p className="text-xs text-white/60 leading-relaxed mb-3" data-testid="text-tenure-modifier">
+        {tenureModifier}
+      </p>
+    )}
+    <p className="text-xs text-white/40 leading-relaxed" data-testid="text-verdict-body">
+      {archetype.body}
+    </p>
+
+    <div className="h-px bg-white/10 mt-5 mb-5" />
+
+    {/* Confirmed value */}
+    <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Confirmed Value</p>
+    <p className="text-white font-bold text-sm leading-tight mb-1">
+      {DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).length} of 4 domains
+    </p>
+    <p className="text-xs text-white/40 leading-relaxed mb-5">
+      {DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).length > 0
+        ? DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d]).join(', ') + ' generating confirmed value'
+        : 'Building toward confirmed value across all domains'}
+    </p>
+
+    <div className="h-px bg-white/10 mb-5" />
+
+    {/* Biggest opportunity */}
+    <p className="text-[10px] font-medium text-[#EA2C00]/70 uppercase tracking-[1.5px] mb-2">Biggest Opportunity</p>
+    <p className="font-bold text-white text-sm leading-tight mb-2" data-testid="snapshot-weakest-domain">
+      {DOMAIN_LABELS[lowestDomain]}
+    </p>
+    <p className="text-xs text-white/45 leading-relaxed mb-5">
+      {domainLevels[lowestDomain] >= 4
+        ? 'All domains at full activation — the work ahead is deepening strategic integration.'
+        : DOMAIN_INSIGHTS[lowestDomain][Math.min(domainLevels[lowestDomain], 3) as 1 | 2 | 3]}
+    </p>
+
+    <div className="h-px bg-white/10 mb-4" />
+
+    <p className="text-[11px] text-white/25 leading-relaxed italic">
+      The next screen translates each domain into dollar terms — what's confirmed, and what the opportunity is worth.
+    </p>
+
+  </div>
+
+  Specific deletions:
+  - Delete the entire {/* ── Archetype card (two-tier) ── */} motion.div block (lines ~692–717) from the left column — it's now absorbed into the sidebar
+  - The {/* ── Decision mirror ── */} section stays in the left column but wrap the grid <div> in <div className="bg-[#F5F0EB] rounded-xl p-5 sm:p-7"> — put the "WHAT YOU TOLD US — BY DOMAIN" label inside
+  that wrapper above the grid
+
+  Result:
+  - Left: score card → beige wrapper containing the label + 2×2 domain cards → footer
+  - Right: one tall dark card — score + archetype headline + tenure modifier + body + confirmed value + biggest opportunity
+
+  No logic changes. Only JSX structure.
