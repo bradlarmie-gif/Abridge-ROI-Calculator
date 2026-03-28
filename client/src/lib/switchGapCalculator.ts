@@ -265,11 +265,11 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const netImpactGap = benchmarkNetImpact - currentNetImpact;
 
   const netEfficiencyGapHours = Math.round((netImpactGap * encountersWithAI) / 60);
-  const netEfficiencyGapValue = 0;
+  const netEfficiencyGapValue = Math.round(netEfficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.efficiencyTimeConversionRate);
 
   const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - timeSavedPerEncounter);
   const efficiencyGapHours = Math.round((encountersWithAI * efficiencyGapMin) / 60);
-  const efficiencyGapValue = 0;
+  const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.efficiencyTimeConversionRate);
 
   const editTimeErosionPct = timeSavedPerEncounter > 0
     ? Math.round(((editTimePerEncounter || 0) / timeSavedPerEncounter) * 100)
@@ -285,7 +285,7 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
 
   const yourTimeSavedMinutes = yourEncountersDocumented * timeSavedPerEncounter;
   const yourTimeSavedHours = yourTimeSavedMinutes / 60;
-  const yourAnnualValue = 0;
+  const yourAnnualValue = Math.round(yourTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
   const abridgeAnnualValue = yourAnnualValue + annualGap;
 
   const currentYear1 = 0;
