@@ -1,0 +1,155 @@
+Deep defensibility and tone pass on the Ambient Assessment.
+  All changes are in pages/switch/ambient/ and lib/ambient-assessment-pdf.tsx.
+  No structural changes to the scoring math or domain framework.
+
+  ---
+
+  ### Issue G — Remove Screen 1 data mode choice
+
+  Screen1Provocation.tsx currently presents two paths ("I have a rough sense" / "I've never calculated it") that set dataMode but don't meaningfully change the downstream experience.
+
+  Remove the two-path choice entirely. Screen 1 should just be the provocation landing — the compelling question/hook — with a single "Begin Assessment" CTA that goes directly to Screen 2.
+
+  In Screen2Baseline.tsx, remove any conditional rendering or logic gated on dataMode.
+
+  In assessmentTypes.ts and assessmentReducer.ts, check whether dataMode is used anywhere else in the codebase. If it's only used by Screen 1 and Screen 2, remove the field from state and any related
+  actions/reducer cases. If it's referenced elsewhere, leave it and just remove the Screen 1 UI.
+
+  ---
+
+  ### Issue D — Rename L1 activation labels for Revenue and Quality
+
+  In domainCalculations.ts, find the activation level label constants and make these changes:
+
+  Revenue domain L1:
+  - "Not Yet Analyzed" → "Documentation Improved — Impact Unmeasured"
+
+  Quality/Risk domain L1:
+  - "Improvement Untracked" → "Quality Improving — Downstream Not Yet Connected"
+
+  Leave Capacity L1 ("Time Recovered") and Workforce L1 ("Time Is Returning") unchanged.
+
+  These strings are used in Screen3Score.tsx, Screen4Domains.tsx, Screen5Gap.tsx, and ambient-assessment-pdf.tsx — the rename in domainCalculations.ts should propagate if they're referenced from constants.
+  If any of those files hardcode these strings, update them there too.
+
+  ---
+
+  ### Issue H — Quality L2 needs a narrative output
+
+  In domainCalculations.ts, in computeRiskFeedback (or equivalent), the L2 output currently has no headline metric or dollar value — leaving orgs at Quality L2 looking like they have nothing measured.
+
+  Add a context/narrative output for L2:
+  - Determine how many of the 5 quality attributes the user has checked
+  - Set the context string to: "[X] of 5 quality dimensions actively tracked — structured foundation for downstream value connection."
+  - This appears wherever the domain context/narrative is shown (Screen 3 domain card, Screen 5, PDF) but does NOT add a dollar figure to the financial model
+
+  ---
+
+  ### Issue C — Surface $350K workforce default visibly
+
+  In Screen4Domains.tsx, in the Workforce L3 input section, the replacement cost input currently defaults to $350,000 silently.
+
+  Add helper text below the replacement cost input field:
+  "Using AMGA benchmark of $350K per physician — update if your organization tracks this differently."
+
+  Only show this helper text when the field value equals the default ($350,000) or is empty/zero. When the user has entered a custom value, the helper text disappears.
+
+  In ambient-assessment-pdf.tsx, on the Workforce domain page, if the replacement cost used in the calculation equals $350,000, add a footnote: "Replacement cost: AMGA benchmark ($350K) — organization did
+  not provide custom figure."
+
+  ---
+
+  ### Issue B — Cost-of-waiting chart rationale footnote
+
+  In Screen5Gap.tsx, below the AreaChart that shows the 36-month accumulation curve, add a footnote paragraph:
+
+  "Compounds because measurement enables optimization — organizations that measure early improve faster, widening the gap with each passing quarter."
+
+  Style: text-xs, text-gray-400 or text-[#999999], centered or left-aligned matching the existing chart layout.
+
+  Also: Change the chart section title from "Cost of Waiting" to "Value of Acting Now" — same chart, different framing.
+
+  ---
+
+  ### Issue F — Revenue L2 label: add forward momentum
+
+  In Screen5Gap.tsx, find the Revenue L2 sidebar/callout label that currently reads something like:
+  "Revenue Signal — directional estimate — not from billing data"
+
+  Replace with:
+  "Revenue — Signals observed · not yet confirmed in billing data · Next: retrospective coding audit"
+
+  ---
+
+  ### Issue A — Benchmark source attribution
+
+  In Screen5Gap.tsx, for each of the 4 domain benchmark callouts (shown when a domain is at L1 or showing unmeasured range), add a source attribution line beneath the benchmark range. Style it as subtle
+  footnote text (text-xs, text-[#AAAAAA]):
+
+  Capacity: "Source: MGMA Physician Compensation data; published literature on access revenue from documentation efficiency"
+  Revenue: "Source: AMA/MGMA coding benchmarks; published studies on documentation-driven revenue improvement (2–7%)"
+  Workforce: "Source: AMGA Physician Retention Survey; replacement cost literature range $250K–$500K per physician"
+  Quality: "Source: CMS quality penalty exposure data; CDI program ROI literature"
+
+  In ambient-assessment-pdf.tsx, on each domain page, add the same source line as a footer note for that domain.
+
+  Remove or replace the existing generic disclaimer ("Benchmark ranges are modeled estimates, not derived from a database of actual customer outcomes") — it weakens the benchmarks. The per-domain source
+  attributions replace it.
+
+  ---
+
+  ### Issue E — Two-tier archetype structure on Screen 3
+
+  In Screen3Score.tsx, the archetype map currently has a name and a body (2-3 sentences). Restructure each archetype to have three fields:
+  - name: string (unchanged)
+  - headline: string (1 punchy sentence — Brad reads this aloud)
+  - body: string (2-3 sentences — exec reads this themselves)
+
+  Update the archetype card UI to show:
+  - name: small label/eyebrow text above (existing)
+  - headline: larger, bold or semi-bold text
+  - body: smaller, regular weight, slightly muted color below
+
+  The visual hierarchy: name (label) → headline (bold, reads aloud) → body (regular, supporting).
+
+  For each archetype, write the two-tier content. Headline should feel like a one-liner the exec will remember. Body should be specific enough to feel personal (reference score band, tenure, or domain
+  pattern where possible).
+
+  Examples to guide the rewrite of all archetypes:
+
+  "Live. Not Yet Measured." (all L1):
+  - headline: "You're generating value. You just haven't started counting it yet."
+  - body: "This is the most common profile at early deployment — adoption is real and the measurement infrastructure hasn't been built yet. The organizations that move fastest from here decide, in a
+  conversation like this one, that the measurement program starts now. Your providers are the proof of concept. The question is whether the organization owns that story."
+
+  "Strategic Maturity." (all L3+):
+  - headline: "Four domains measured, connected, and managed. This is what full capture looks like."
+  - body: "Most organizations reach one or two domains with confirmed value and stop. You've built the measurement discipline across all four. The next step is integration — using documentation data as a
+  strategic input to financial planning, workforce strategy, and quality governance."
+
+  "Early Measurement Across All Domains." (all L2):
+  - headline: "Every domain is showing signals. None have been confirmed yet."
+  - body: "You're at the measurement frontier — data is moving in every area but hasn't been validated through billing, retention modeling, or downstream connection. This is a high-leverage moment: one
+  domain confirmed changes the entire organization's posture toward measurement."
+
+  Apply this same two-tier pattern to all other archetypes in the map. Make each headline punchy and each body 2-3 sentences that feel like they describe a real org.
+
+  In ambient-assessment-pdf.tsx, replicate the two-tier structure on the archetype section — headline in larger text, body in regular text below.
+
+  ---
+
+  ### Tone recalibration — string replacements across all files
+
+  In Screen5Gap.tsx, Screen3Score.tsx, domainCalculations.ts, and ambient-assessment-pdf.tsx, find and replace these specific strings (case-insensitive where appropriate):
+
+  | Find | Replace with |
+  |------|-------------|
+  | "This is the highest-urgency profile" | "This profile has the most immediate strategic opportunity" |
+  | "highest urgency" | "most immediate strategic opportunity" |
+  | "Cost of Waiting" | "Value of Acting Now" |
+  | "value has been generating without being counted" | "value is already generating — this is the measurement story waiting to be told" |
+  | "The gap isn't about adoption" | "The next chapter is about measurement discipline, not adoption" |
+  | "value has been generating for [X] months without being counted" | "value has been generating for [X] months — the measurement framework is what's missing" |
+
+  General principle: anywhere the current copy implies the organization is behind, missing something, or urgently at risk — reframe to show them what's already happening and position the measurement program
+  as the strategic opportunity they get to own.
