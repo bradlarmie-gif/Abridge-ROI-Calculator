@@ -56,16 +56,16 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-const DOMAIN_ICONS: Record<Domain, typeof Stethoscope> = {
-  capacity: Stethoscope,
-  revenue: Zap,
-  workforce: HeartPulse,
-  risk: ClipboardList,
-};
-
 export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Screen5Props) {
   const { state } = useAssessment();
   const { inputs } = state;
+
+  const DOMAIN_ICONS: Record<Domain, typeof Stethoscope> = {
+    capacity: Stethoscope,
+    revenue: Zap,
+    workforce: HeartPulse,
+    risk: ClipboardList,
+  };
 
   const providers = inputs.providers || 0;
   const annualEncounters = inputs.annualEncounters || 0;
@@ -399,13 +399,21 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
   }, [domainLevels.revenue, domainHasValue.revenue, domainGaps.revenue]);
 
   const qualityAttrCount = useMemo(() => {
-    const inp = inputs.riskDomainInputs as string || '{}';
+    const inp = (inputs.riskDomainInputs as string) || '{}';
     try {
-      const parsed = JSON.parse(inp);
+      const parsed: Record<string, string | number> = JSON.parse(inp);
       const csv = (parsed.qualityAttributes as string) || '';
       return csv.split(',').filter(Boolean).length;
     } catch { return 0; }
   }, [inputs.riskDomainInputs]);
+
+  const capacityConfidence = useMemo(() => {
+    const inp = (inputs.capacityDomainInputs as string) || '{}';
+    try {
+      const parsed: Record<string, string | number> = JSON.parse(inp);
+      return (parsed.capacityAccessConfidence as string) || '';
+    } catch { return ''; }
+  }, [inputs.capacityDomainInputs]);
 
   const domainStatusLine = useMemo((): Record<Domain, { text: string; isConfirmed: boolean; isSignal: boolean }> => {
     const result = {} as Record<Domain, { text: string; isConfirmed: boolean; isSignal: boolean }>;
@@ -489,56 +497,54 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
         <div className="flex-1 max-w-[700px]">
 
-          {(totalMeasured > 0 || unmeasuredLow > 0) && (
-            <motion.div
-              className="mb-10"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-            >
-              <div className="bg-[#1A1A1A] rounded-xl p-6 sm:p-8">
-                {totalMeasured > 0 ? (
-                  <>
-                    <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annual Value</p>
-                    <p className="font-bold text-[56px] sm:text-[72px] leading-none text-[#EA2C00] tracking-tight mb-2" data-testid="value-measured">
-                      <CountUpNumber target={totalMeasured} />
-                    </p>
-                    <p className="text-sm text-white/40 mb-4">
-                      Confirmed across {DOMAIN_ORDER.filter(d => domainHasValue[d] && !(d === 'revenue' && domainLevels[d] === 2)).length} of 4 domains · per year
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annual Value</p>
-                    <p className="font-bold text-[56px] leading-none text-white/15 tracking-tight mb-2">—</p>
-                    <p className="text-sm text-white/30 mb-4">No domains formally measured yet</p>
-                  </>
-                )}
+          <motion.div
+            className="mb-10"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <div className="bg-[#1A1A1A] rounded-xl p-6 sm:p-8">
+              {totalMeasured > 0 ? (
+                <>
+                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annual Value</p>
+                  <p className="font-bold text-[56px] sm:text-[72px] leading-none text-[#EA2C00] tracking-tight mb-2" data-testid="value-measured">
+                    <CountUpNumber target={totalMeasured} />
+                  </p>
+                  <p className="text-sm text-white/40 mb-4">
+                    Confirmed across {DOMAIN_ORDER.filter(d => domainHasValue[d] && !(d === 'revenue' && domainLevels[d] === 2)).length} of 4 domains · per year
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annual Value</p>
+                  <p className="font-bold text-[56px] leading-none text-white/15 tracking-tight mb-2" data-testid="value-measured">—</p>
+                  <p className="text-sm text-white/30 mb-4">No domains formally measured yet</p>
+                </>
+              )}
 
-                {unmeasuredLow > 0 && (
-                  <div className="pt-4 border-t border-white/[0.08]">
-                    <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-1">Not yet in the picture</p>
-                    <p className="text-xl font-bold text-white/40" data-testid="value-unmeasured">
-                      + {unmeasuredHigh > unmeasuredLow
-                        ? `$${unmeasuredLow.toLocaleString()}–$${unmeasuredHigh.toLocaleString()}`
-                        : `$${unmeasuredLow.toLocaleString()}`} est.
-                    </p>
-                    <p className="text-[11px] text-white/20 mt-1">benchmark range · based on your scale</p>
-                  </div>
-                )}
+              {unmeasuredLow > 0 && (
+                <div className="pt-4 border-t border-white/[0.08]">
+                  <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-1">Not yet in the picture</p>
+                  <p className="text-xl font-bold text-white/40" data-testid="value-unmeasured">
+                    + {unmeasuredHigh > unmeasuredLow
+                      ? `$${unmeasuredLow.toLocaleString()}–$${unmeasuredHigh.toLocaleString()}`
+                      : `$${unmeasuredLow.toLocaleString()}`} est.
+                  </p>
+                  <p className="text-[11px] text-white/20 mt-1">benchmark range · based on your scale</p>
+                </div>
+              )}
 
-                {revL2Value > 0 && (
-                  <div className="mt-4 pt-4 border-t border-white/[0.08] flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-[10px] font-semibold text-[#F59E0B]/70 uppercase tracking-[1.5px]">Revenue Signal</p>
-                      <p className="text-xs text-white/30 mt-0.5">Signals observed · not yet confirmed in billing data · Next: retrospective coding audit</p>
-                    </div>
-                    <span className="text-sm font-bold text-[#F59E0B]/80 flex-shrink-0">~{formatDollar(revL2Value)}/yr</span>
+              {revL2Value > 0 && (
+                <div className="mt-4 pt-4 border-t border-white/[0.08] flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-semibold text-[#F59E0B]/70 uppercase tracking-[1.5px]">Revenue Signal</p>
+                    <p className="text-xs text-white/30 mt-0.5">Signals observed · not yet confirmed in billing data · Next: retrospective coding audit</p>
                   </div>
-                )}
-              </div>
-            </motion.div>
-          )}
+                  <span className="text-sm font-bold text-[#F59E0B]/80 flex-shrink-0">~{formatDollar(revL2Value)}/yr</span>
+                </div>
+              )}
+            </div>
+          </motion.div>
 
           <motion.div
             className="mb-10"
@@ -620,7 +626,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                             </pre>
                           </div>
                         )}
-                        {domain === 'capacity' && domainLevels.capacity >= 3 && (inputs as any).capacityAccessConfidence === 'aspirational' && (
+                        {domain === 'capacity' && domainLevels.capacity >= 3 && capacityConfidence === 'aspirational' && (
                           <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60 flex gap-2">
                             <span className="text-[#888888] text-xs flex-shrink-0">⚠</span>
                             <p className="text-[11px] text-[#888888] italic leading-relaxed">
