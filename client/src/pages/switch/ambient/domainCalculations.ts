@@ -501,7 +501,7 @@ export function computeRevenueFeedback(
   if (count > 0) {
     let context = `Documentation intelligence is driving revenue strategy across ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}`;
     if (noConfirmedRevenue) {
-      context += `\n\nNo confirmed revenue attribution yet. Abridge deployment benchmark at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. This can serve as a planning estimate until formal attribution is available.`;
+      context += `\n\nNo confirmed revenue attribution yet. Organizations at ${documentedEncounters.toLocaleString()} documented encounters with active revenue cycle integration typically attribute $200K–$600K annually to documentation quality programs. This can serve as a planning estimate until formal attribution is available.`;
     } else {
       context += `\n\nEnter your attributed annual revenue when available. Organizations at this level typically have a figure that revenue cycle and finance leadership reference in planning.`;
     }
@@ -524,7 +524,7 @@ export function computeRevenueFeedback(
     value: null,
     hasValue: false,
     headlineMetric: 'Select strategic integrations and enter attributed revenue.',
-    context: `Abridge deployment benchmark at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. This can serve as a working estimate.`,
+    context: `Organizations at ${documentedEncounters.toLocaleString()} documented encounters with active revenue cycle integration typically attribute $200K–$600K annually to documentation quality programs. This can serve as a planning estimate until formal attribution is available.`,
     formula: '',
     footnote: '',
   };

@@ -93,7 +93,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       1: undefined,
       2: 'What movement has your team observed since deployment?',
       3: undefined,
-      4: 'How is documentation quality being used strategically in revenue decisions?',
+      4: undefined,
     },
     unlockTeasers: {
       2: 'Observe trends in coding, denials, and collections.',
