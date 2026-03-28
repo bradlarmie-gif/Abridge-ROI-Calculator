@@ -1,0 +1,348 @@
+  Replit Prompt — Quality Domain Patch
+
+  We need to patch the Quality / Risk domain across two files in the Ambient Assessment:
+    - client/src/pages/switch/ambient/domainCalculations.ts
+    - client/src/pages/switch/ambient/Screen4Domains.tsx
+
+  Make ALL of the following changes exactly as described. Do not add or remove anything else.
+
+  ---
+
+  ### 1. domainCalculations.ts — QUALITY_ATTRIBUTES constant
+
+  Find the existing QUALITY_ATTRIBUTES array. Replace it with:
+
+  const QUALITY_ATTRIBUTES = [
+    'Note completeness (history, exam, assessment, plan)',
+    'Diagnostic specificity (ICD-10 code level and accuracy)',
+    'Quality measure documentation (HEDIS, MIPS, Stars gaps)',
+    'Compliance and audit readiness',
+    'HCC and risk adjustment capture (for value-based populations)',
+  ];
+
+  (This may already match — confirm the 5th item includes "HCC and risk adjustment capture". If it does, no change needed.)
+
+  ---
+
+  ### 2. domainCalculations.ts — DOWNSTREAM_WORKFLOWS constant
+
+  Find the DOWNSTREAM_WORKFLOWS array. Replace it (or confirm it already matches) with exactly these 6 items:
+
+  const DOWNSTREAM_WORKFLOWS = [
+    'CDI — fewer queries, faster turnaround, or improved capture rates',
+    'Coding accuracy — specificity improvements or denial reduction',
+    'Quality measures — HEDIS, MIPS, or Stars gap closure improved',
+    'Prior authorization — documentation supporting faster or higher approval rates',
+    'Chart abstraction — less manual effort for registries, research, or reporting',
+    'Risk adjustment — HCC capture or RAF accuracy improved for VBC populations',
+  ];
+
+  ---
+
+  ### 3. domainCalculations.ts — STRATEGIC_INTEGRATIONS constant
+
+  Find STRATEGIC_INTEGRATIONS. Replace the second item (index 1) with:
+
+    'Value-based care — documentation supports HCC accuracy, risk stratification, and population health initiatives',
+
+  The full array should be:
+
+  const STRATEGIC_INTEGRATIONS = [
+    'Quality program design — documentation data shapes HEDIS, MIPS, or Stars strategy',
+    'Value-based care — documentation supports HCC accuracy, risk stratification, and population health initiatives',
+    'Compliance governance — documentation quality is a governed metric with executive oversight',
+    'AI and automation readiness — structured documentation is positioned as the foundation for clinical AI, predictive models, or automated reporting',
+    'Payer strategy — documentation quality data informs payer negotiations or contract design',
+    'Clinical research — structured documentation supports research data extraction or registry participation',
+  ];
+
+  ---
+
+  ### 4. domainCalculations.ts — computeRiskFeedback, Level 2
+
+  Find the `if (level === 2)` block inside `computeRiskFeedback`. Replace the entire block with:
+
+    if (level === 2) {
+      const approach = inputs.monitoringApproach as string | undefined;
+      if (!approach) {
+        return {
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          headlineMetric: 'Select your monitoring approach to continue.',
+          context: 'Select how rigorously documentation quality is being tracked at your organization.',
+          formula: '',
+          footnote: 'Estimates based on your inputs. Individual results vary.',
+          nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
+        };
+      }
+
+      const { checked, unchecked } = parseCheckedItems(inputs.qualityAttributes as string, QUALITY_ATTRIBUTES);
+      const count = checked.length;
+      const trackedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
+      const untrackedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
+
+      const approachLabel = approach === 'realtime'
+        ? 'real-time dashboards or automated reporting'
+        : approach === 'systematic'
+          ? 'structured audits or dashboards'
+          : 'spot checks and informal review';
+
+      if (count === 0) {
+        return {
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          headlineMetric: `Quality monitored via ${approachLabel}.`,
+          context: `Your organization is actively monitoring documentation quality. Select which quality dimensions are being tracked to complete this level.`,
+          formula: '',
+          footnote: 'Estimates based on your inputs. Individual results vary.',
+          nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
+        };
+      }
+
+      const headlineMetric = approach === 'realtime'
+        ? `${count} of 5 quality dimensions in real-time tracking`
+        : approach === 'systematic'
+          ? `${count} of 5 quality dimensions systematically tracked`
+          : `${count} of 5 quality dimensions monitored (informal)`;
+
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric,
+        context: `Documentation quality is actively monitored via ${approachLabel}.\n\nDimensions tracked:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}`,
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
+      };
+    }
+
+  Key change: there is NO `not_yet` branch. All three approach values (spot_checks / systematic / realtime) represent real monitoring. The options are not "are you tracking" — they describe HOW you're
+  tracking.
+
+  ---
+
+  ### 5. domainCalculations.ts — computeRiskFeedback, Level 4
+
+  Find the Level 4 section (it starts after `if (level === 3)` block ends). Find the `ownerLine` variable. Replace with:
+
+    const boardPresented = inputs.executiveBoardPresented as string | undefined;
+    const ownerLine = executiveOwner === 'yes'
+      ? `\n\nNamed executive owner: Yes${boardPresented === 'yes' ? ' · Presented to executive committee or board: Yes' : boardPresented === 'no' ? ' · Not yet presented at board level' : ''}`
+      : executiveOwner === 'no'
+        ? '\n\nNamed executive owner: Not yet established'
+        : '';
+
+  Then find the no-value return at the end of computeRiskFeedback (the `return` that fires when `count > 0` but `strategicValue <= 0`). Replace it with:
+
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} strategic area${count > 1 ? 's' : ''} — documentation quality is an organizational asset`,
+      context: `Documentation quality is embedded in organizational strategy across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${ownerLine}\n\nThis is the profile where documentation quality shifts
+   from an operational metric to a board-level asset. The financial value lives across quality penalties avoided, VBC contract performance, compliance governance, and AI readiness — organizations at this
+  level that formalize attribution typically find it materially significant.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+      formula: '',
+      footnote: 'Estimates based on your inputs. Individual results vary.',
+    };
+
+  ---
+
+  ### 6. Screen4Domains.tsx — MONITORING_OPTIONS
+
+  Find the MONITORING_OPTIONS array (it's inside the renderRiskInputs function). Replace it with:
+
+    const MONITORING_OPTIONS = [
+      { id: 'spot_checks', label: 'Spot checks and informal review' },
+      { id: 'systematic', label: 'Structured audits or dashboards' },
+      { id: 'realtime', label: 'Real-time dashboard or automated quality reporting' },
+    ];
+
+  Remove any option with id: 'not_yet' if it exists.
+
+  ---
+
+  ### 7. Screen4Domains.tsx — DOMAIN_CONFIGS.risk
+
+  Find the `risk` entry in DOMAIN_CONFIGS. Replace the entire risk config with:
+
+    risk: {
+      label: 'QUALITY',
+      headline: 'QUALITY',
+      subheadline: 'How far has documentation quality traveled downstream?',
+      reframe: '',
+      cards: [
+        { level: 1, label: 'Quality Improving — Downstream Not Yet Connected', description: 'Documentation quality has improved. The teams that benefit from it — coding, CDI, compliance — haven\'t been
+  formally connected to it yet.' },
+        { level: 2, label: 'Actively Monitored', description: 'Documentation quality dimensions are being actively tracked — completeness, specificity, HCC capture, compliance readiness.' },
+        { level: 3, label: 'Downstream Connected', description: 'Documentation quality improvements are connected to downstream programs — CDI, coding accuracy, quality measures, HCC/risk adjustment, or
+  denial reduction.' },
+        { level: 4, label: 'Documentation as a Strategic Asset', description: 'Documentation quality informs organizational strategy — quality programs, value-based care, HCC/risk adjustment, compliance
+  governance, and AI readiness.' },
+      ],
+      framingQuestions: {
+        1: 'Have any downstream teams — coding, CDI, compliance — started working with the improved documentation?',
+        2: undefined,
+        3: undefined,
+        4: undefined,
+      },
+      unlockTeasers: {
+        2: 'Track which documentation quality dimensions are improving.',
+        3: 'Connect documentation quality to downstream programs — CDI, coding, HCC capture, or denial reduction.',
+        4: 'Position documentation quality as a strategic organizational asset.',
+      },
+    },
+
+  ---
+
+  ### 8. Screen4Domains.tsx — renderRiskInputs, Level 2
+
+  Find the `if (level === 2)` block inside `renderRiskInputs`. The quality attribute checkboxes should render whenever `approach` has ANY value (not just when approach === 'systematic'). The condition that
+  reveals the quality attributes section must be:
+
+    {approach && (
+      <motion.div
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: 'auto' }}
+        exit={{ opacity: 0, height: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <label className="block text-sm font-medium text-black mb-3">
+          Which quality dimensions are being tracked?
+        </label>
+        <div className="flex flex-col gap-2.5">
+          {QUALITY_ATTRIBUTES.map((attr, i) => {
+            const checked = isChecked('qualityAttributes', i);
+            return (
+              <label
+                key={i}
+                htmlFor={`quality-attr-${i}`}
+                className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                  checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                }`}
+              >
+                <Checkbox
+                  id={`quality-attr-${i}`}
+                  checked={checked}
+                  onCheckedChange={() => toggleCheckboxItem('qualityAttributes', i)}
+                  data-testid={`checkbox-quality-${i}`}
+                  className="mt-0.5"
+                />
+                <span className="text-sm text-[#525252] select-none leading-snug">
+                  {attr}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </motion.div>
+    )}
+
+  The wrapper should be inside an `<AnimatePresence>` tag.
+
+  ---
+
+  ### 9. Screen4Domains.tsx — renderRiskInputs, Level 4
+
+  After the existing executive owner radio group, add a second radio group for board presentation. Insert it between the executive owner block and the optional strategic value dollar input:
+
+    <div>
+      <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+        Has documentation quality been presented to the executive committee or board?
+      </label>
+      <div className="flex flex-col gap-2">
+        {[
+          { id: 'yes', label: 'Yes — it has been presented at the executive or board level' },
+          { id: 'no', label: 'Not yet — it lives at the operational or department level' },
+        ].map((opt) => (
+          <label
+            key={opt.id}
+            className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+              boardPresented === opt.id
+                ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+            }`}
+            data-testid={`radio-board-presented-${opt.id}`}
+          >
+            <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+              boardPresented === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+            }`}>
+              {boardPresented === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+            </div>
+            <span className="text-sm text-black">{opt.label}</span>
+            <input
+              type="radio"
+              name="executiveBoardPresented"
+              value={opt.id}
+              checked={boardPresented === opt.id}
+              onChange={() => setDomainInput('executiveBoardPresented', opt.id)}
+              className="sr-only"
+            />
+          </label>
+        ))}
+      </div>
+    </div>
+
+  At the top of the Level 4 return block, make sure `boardPresented` is read from state:
+    const boardPresented = currentState.inputs.executiveBoardPresented as string || '';
+
+  ---
+
+  ### 10. Screen4Domains.tsx — quality card badge text (staircaseCompletedSummary)
+
+  Find the `staircaseCompletedSummary` block — it's a large IIFE (immediately-invoked function expression) that returns different summary text for completed cards based on `activeDomain` and `card.level`. It
+   currently handles capacity, workforce, and revenue domains.
+
+  Add a risk domain block BEFORE the final `return 'Confirmed'` line:
+
+                    if (activeDomain === 'risk') {
+                      if (card.level === 2) {
+                        const attrCsv = (inp.qualityAttributes as string) || '';
+                        const attrCount = attrCsv.split(',').filter(Boolean).length;
+                        const approach = inp.monitoringApproach as string;
+                        const approachLabel = approach === 'realtime' ? 'Real-time' : approach === 'systematic' ? 'Structured' : approach === 'spot_checks' ? 'Informal' : '';
+                        if (attrCount > 0) return `${attrCount} of 5${approachLabel ? ` · ${approachLabel}` : ''}`;
+                        if (approachLabel) return approachLabel;
+                      }
+                      if (card.level === 3) {
+                        const wfCsv = (inp.connectedWorkflows as string) || '';
+                        const wfCount = wfCsv.split(',').filter(Boolean).length;
+                        if (wfCount > 0) return `${wfCount} workflow${wfCount !== 1 ? 's' : ''} connected`;
+                      }
+                      if (card.level === 4) {
+                        const siCsv = (inp.strategicIntegrations as string) || '';
+                        const siCount = siCsv.split(',').filter(Boolean).length;
+                        if (siCount > 0) return `${siCount} strategic area${siCount !== 1 ? 's' : ''}`;
+                      }
+                    }
+                    return 'Confirmed';
+
+  ---
+
+  ### 11. Screen4Domains.tsx — Quality mini-summary panel
+
+  Find the mini-summary section for the risk domain (inside `activeDomain === 'risk' && currentState.activationLevel && (() => {`). It shows Quality Tracking, Connected Workflows, Strategic Areas, etc.
+
+  Make sure the Quality Tracking row reads:
+
+    {currentState.activationLevel >= 2 && attrCount > 0 ? `${attrCount} of 5${monitoringLabel ? ` · ${monitoringLabel}` : ''}` : '—'}
+
+  Where `monitoringLabel` is derived as:
+    const monitoringApproach = currentState.activationLevel >= 2 ? (inp.monitoringApproach as string) || '' : '';
+    const monitoringLabel = monitoringApproach === 'realtime' ? 'Real-time' : monitoringApproach === 'systematic' ? 'Structured' : monitoringApproach === 'spot_checks' ? 'Informal' : '';
+
+  ---
+
+  ### Verification after changes:
+
+  1. Quality L2: selecting any monitoring approach (spot checks, structured, or real-time) immediately shows the quality attribute checkboxes. There is no "not tracking" option.
+  2. Quality L2 completed card badge shows: "X of 5 · [Approach]" (e.g., "3 of 5 · Structured")
+  3. Quality L3: checkboxes show all 6 downstream workflow options including "Risk adjustment — HCC capture or RAF accuracy improved for VBC populations"
+  4. Quality L3 completed card badge shows: "X workflows connected"
+  5. Quality L4: after strategic integrations checkboxes, there are TWO radio questions — executive owner AND board presentation
+  6. Quality L4 completed card badge shows: "X strategic areas"
+  7. computeRiskFeedback L4: context string includes board presented status when executiveBoardPresented is set
+  8. No TypeScript errors. No unused imports introduced.
