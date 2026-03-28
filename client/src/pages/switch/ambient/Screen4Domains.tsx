@@ -260,7 +260,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
       }
       case 'revenue': return computeRevenueFeedback(level, inp, documentedEncounters, revenuePerVisit, inputs.conversionFactor || 33);
       case 'workforce': return computeWorkforceFeedback(level, inp, providers);
-      case 'risk': return computeRiskFeedback(level, inp, documentedEncounters, revenuePerVisit);
+      case 'risk': return computeRiskFeedback(level, inp, documentedEncounters, revenuePerVisit, providers);
     }
   }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, inputs.conversionFactor, inputs.timeSavedPerEncounter]);
 
