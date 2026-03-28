@@ -1,11 +1,8 @@
 import { useState, useCallback } from "react";
-import { Copy, Check, Loader2, ArrowRight, Stethoscope, Zap, ClipboardList, HeartPulse, Send } from "lucide-react";
+import { Copy, Check, Loader2, ArrowRight, Stethoscope, Zap, ClipboardList, HeartPulse, Link2, FileText, Download } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
@@ -92,23 +89,29 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden" data-testid="dialog-data-request">
+      <DialogContent
+        className={`p-0 gap-0 bg-white border-0 shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25)] rounded-2xl overflow-hidden [&>button]:top-5 [&>button]:right-5 [&>button]:text-[#999] [&>button]:hover:text-[#333] ${
+          phase === 'pick' ? 'sm:max-w-[460px]' : 'sm:max-w-[520px]'
+        }`}
+        data-testid="dialog-data-request"
+      >
 
         {phase === 'pick' ? (
-          <>
-            <DialogHeader className="px-7 pt-7 pb-1">
-              <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
-                Send a Data Request
-              </DialogTitle>
-              <DialogDescription className="text-[#888888] text-[13px] mt-1.5 leading-relaxed">
+          <div className="flex flex-col">
+            <div className="px-8 pt-8 pb-2">
+              <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#EA2C00] mb-2">Data Request</p>
+              <h2 className="text-[20px] font-bold text-[#1A1A1A] tracking-[-0.02em] leading-tight">
+                {singleSelect ? 'Choose a Care Setting' : 'Select Care Settings'}
+              </h2>
+              <p className="text-[13px] text-[#888888] mt-2 leading-relaxed">
                 {singleSelect
-                  ? 'Choose the care setting to request data for.'
-                  : 'Select the care settings you need data for.'}
-              </DialogDescription>
-            </DialogHeader>
+                  ? 'Pick the setting you need deployment data for.'
+                  : 'Pick the settings you need deployment data for. Select one or more.'}
+              </p>
+            </div>
 
-            <div className="px-7 pt-4 pb-7 space-y-5">
-              <div className={`grid gap-2.5 ${visibleSettings.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+            <div className="px-8 pt-4 pb-8">
+              <div className={`grid gap-3 ${visibleSettings.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 {visibleSettings.map(setting => {
                   const Icon = setting.icon;
                   const isSelected = selected.includes(setting.id);
@@ -116,27 +119,25 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
                     <button
                       key={setting.id}
                       onClick={() => toggleSetting(setting.id)}
-                      className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border-[1.5px] text-left transition-all duration-150 ${
+                      className={`group relative flex flex-col items-center text-center px-4 py-5 rounded-2xl border-[1.5px] transition-all duration-200 ${
                         isSelected
-                          ? 'border-[#EA2C00] bg-[#FFF8F5] shadow-[0_0_0_1px_rgba(234,44,0,0.08)]'
-                          : 'border-[#E8E2DA] bg-[#FAFAF8] hover:border-[#D0C8BF] hover:bg-[#F7F4F0]'
+                          ? 'border-[#EA2C00] bg-gradient-to-b from-[#FFF8F5] to-[#FFF3ED] shadow-[0_2px_12px_rgba(234,44,0,0.1)]'
+                          : 'border-[#E8E2DA] bg-[#FAFAF8] hover:border-[#CCC5BB] hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]'
                       }`}
                       data-testid={`pick-setting-${setting.id}`}
                     >
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
-                        isSelected ? 'bg-[#EA2C00]' : 'bg-white border border-[#E8E2DA]'
-                      }`}>
-                        <Icon className={`w-[18px] h-[18px] ${isSelected ? 'text-white' : 'text-[#999999]'}`} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className={`text-[13px] font-semibold leading-tight ${isSelected ? 'text-[#1A1A1A]' : 'text-[#555555]'}`}>{setting.label}</p>
-                        <p className="text-[11px] text-[#AAAAAA] leading-tight mt-0.5">{setting.desc}</p>
-                      </div>
                       {isSelected && (
-                        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#EA2C00] flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                        <div className="absolute top-2.5 right-2.5 w-[18px] h-[18px] rounded-full bg-[#EA2C00] flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                         </div>
                       )}
+                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-2.5 transition-all duration-200 ${
+                        isSelected ? 'bg-[#EA2C00] shadow-[0_2px_8px_rgba(234,44,0,0.25)]' : 'bg-white border border-[#E8E2DA] group-hover:border-[#D0C8BF]'
+                      }`}>
+                        <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#888888] group-hover:text-[#666666]'}`} />
+                      </div>
+                      <p className={`text-[13px] font-semibold leading-tight ${isSelected ? 'text-[#1A1A1A]' : 'text-[#555555]'}`}>{setting.label}</p>
+                      <p className={`text-[11px] leading-tight mt-0.5 ${isSelected ? 'text-[#AA5533]' : 'text-[#AAAAAA]'}`}>{setting.desc}</p>
                     </button>
                   );
                 })}
@@ -145,10 +146,10 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
               <button
                 onClick={handleContinue}
                 disabled={selected.length === 0 || generating}
-                className={`w-full h-11 rounded-xl text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                className={`w-full h-12 rounded-xl text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 mt-5 ${
                   selected.length > 0
-                    ? 'bg-[#1A1A1A] text-white hover:bg-[#333333] shadow-sm'
-                    : 'bg-[#F0EEEC] text-[#BBBBBB] cursor-not-allowed'
+                    ? 'bg-[#EA2C00] text-white hover:bg-[#D42800] shadow-[0_2px_12px_rgba(234,44,0,0.25)]'
+                    : 'bg-[#F0EEEC] text-[#CCCCCC] cursor-not-allowed'
                 }`}
                 data-testid="button-continue-data-request"
               >
@@ -165,83 +166,80 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
                 )}
               </button>
             </div>
-          </>
+          </div>
         ) : (
-          <>
-            <DialogHeader className="px-7 pt-7 pb-1">
-              <div className="flex items-center gap-2.5 mb-1">
-                <div className="w-8 h-8 rounded-lg bg-[#FFF3EE] flex items-center justify-center">
-                  <Send className="w-4 h-4 text-[#EA2C00]" />
+          <div className="flex flex-col">
+            <div className="bg-gradient-to-b from-[#FAFAF8] to-white px-8 pt-8 pb-6 border-b border-[#F0EDE8]">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[#EA2C00] flex items-center justify-center shadow-[0_2px_8px_rgba(234,44,0,0.2)]">
+                  <Link2 className="w-4 h-4 text-white" />
                 </div>
-                <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
-                  Share with Your Partner
-                </DialogTitle>
+                <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#EA2C00]">Link Ready</p>
               </div>
-              <DialogDescription className="text-[#888888] text-[13px] mt-1 leading-relaxed">
-                Send this link to collect deployment data for {settingLabels}.
-              </DialogDescription>
-            </DialogHeader>
+              <h2 className="text-[20px] font-bold text-[#1A1A1A] tracking-[-0.02em] leading-tight">
+                Share with Your Partner
+              </h2>
+              <p className="text-[13px] text-[#888888] mt-1.5 leading-relaxed">
+                Send this link to collect {settingLabels} deployment data.
+              </p>
 
-            <div className="px-7 pt-5 pb-7 space-y-0">
-              <div className="flex items-start gap-3.5">
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div className="w-7 h-7 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-[11px] font-bold">1</div>
-                  <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
-                </div>
-                <div className="flex-1 min-w-0 pb-5">
-                  <p className="text-[13px] font-semibold text-[#1A1A1A] mb-2.5">Copy and share this link</p>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 min-w-0 bg-[#FAF8F5] border border-[#E8E2DA] rounded-lg px-3.5 py-2.5 font-mono text-[11px] text-[#666666] truncate select-all" data-testid="text-data-request-url">
-                      {url}
-                    </div>
-                    <button
-                      onClick={handleCopy}
-                      className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
-                        copied ? "bg-emerald-600 text-white" : "bg-[#1A1A1A] text-white hover:bg-[#333333]"
-                      }`}
-                      data-testid="button-copy-link"
-                    >
-                      {copied ? (<><Check className="w-3.5 h-3.5" />Copied!</>) : (<><Copy className="w-3.5 h-3.5" />Copy</>)}
-                    </button>
+              <div className="mt-5 bg-white rounded-xl border border-[#E8E2DA] p-1 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
+                <div className="flex items-center gap-0">
+                  <div className="flex-1 min-w-0 px-4 py-3 font-mono text-[12px] text-[#555555] truncate select-all" data-testid="text-data-request-url">
+                    {url}
                   </div>
-                  {copyFailed && (
-                    <p className="text-[11px] text-red-500 mt-1.5">Couldn't copy — select the link above and copy manually.</p>
-                  )}
+                  <button
+                    onClick={handleCopy}
+                    className={`flex-shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-lg text-[13px] font-semibold transition-all duration-200 ${
+                      copied
+                        ? "bg-emerald-500 text-white shadow-[0_2px_8px_rgba(16,185,129,0.3)]"
+                        : "bg-[#1A1A1A] text-white hover:bg-[#333333] shadow-sm"
+                    }`}
+                    data-testid="button-copy-link"
+                  >
+                    {copied ? (<><Check className="w-4 h-4" />Copied!</>) : (<><Copy className="w-4 h-4" />Copy Link</>)}
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-start gap-3.5">
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">2</div>
-                  <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
-                </div>
-                <div className="pb-5">
-                  <p className="text-[13px] font-semibold text-[#1A1A1A]">Partner fills out the form</p>
-                  <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">They'll open the link and enter their deployment data for the selected care settings.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3.5">
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">3</div>
-                </div>
-                <div className="pb-1">
-                  <p className="text-[13px] font-semibold text-[#1A1A1A]">They send the completed data</p>
-                  <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">Once submitted, they'll download a PDF with their data to share with you.</p>
-                </div>
-              </div>
-
-              <div className="pt-5">
-                <button
-                  onClick={() => handleOpenChange(false)}
-                  className="w-full h-10 rounded-xl text-[13px] font-medium bg-[#F5F3F0] text-[#666666] hover:bg-[#ECEAE6] hover:text-[#1A1A1A] transition-all duration-200"
-                  data-testid="button-close-dialog"
-                >
-                  Done
-                </button>
-              </div>
+              {copyFailed && (
+                <p className="text-[11px] text-red-500 mt-2">Couldn't copy automatically — select the link above and copy manually.</p>
+              )}
             </div>
-          </>
+
+            <div className="px-8 py-6">
+              <p className="text-[11px] font-semibold tracking-[0.06em] uppercase text-[#BBBBBB] mb-4">What happens next</p>
+
+              <div className="flex gap-4">
+                <div className="flex-1 flex items-start gap-3 bg-[#FAFAF8] rounded-xl p-4 border border-[#F0EDE8]">
+                  <div className="w-8 h-8 rounded-lg bg-white border border-[#E8E2DA] flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-4 h-4 text-[#999999]" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-semibold text-[#444444] leading-tight">Partner fills out the form</p>
+                    <p className="text-[11px] text-[#999999] mt-1 leading-relaxed">They enter their deployment data for the selected care settings.</p>
+                  </div>
+                </div>
+
+                <div className="flex-1 flex items-start gap-3 bg-[#FAFAF8] rounded-xl p-4 border border-[#F0EDE8]">
+                  <div className="w-8 h-8 rounded-lg bg-white border border-[#E8E2DA] flex items-center justify-center flex-shrink-0">
+                    <Download className="w-4 h-4 text-[#999999]" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-semibold text-[#444444] leading-tight">They send you the data</p>
+                    <p className="text-[11px] text-[#999999] mt-1 leading-relaxed">Once submitted, they download a PDF to share with you.</p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => handleOpenChange(false)}
+                className="w-full h-11 rounded-xl text-[13px] font-semibold mt-5 bg-[#F5F3F0] text-[#777777] hover:bg-[#ECEAE6] hover:text-[#1A1A1A] transition-all duration-200"
+                data-testid="button-close-dialog"
+              >
+                Done
+              </button>
+            </div>
+          </div>
         )}
       </DialogContent>
     </Dialog>
