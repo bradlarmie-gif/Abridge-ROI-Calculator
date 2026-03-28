@@ -289,7 +289,7 @@ export function computeRevenueFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'Not yet analyzed.',
+      headlineMetric: 'Documentation quality has improved. Revenue impact not yet analyzed.',
       context: `Documentation specificity has improved across ${documentedEncounters.toLocaleString()} encounters. No one has analyzed whether this is affecting coding, collections, or reimbursement.`,
       formula: '',
       footnote: 'Estimates based on your inputs. Individual results vary.',

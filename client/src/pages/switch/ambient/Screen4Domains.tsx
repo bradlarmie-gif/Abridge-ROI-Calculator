@@ -90,7 +90,7 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 4, label: 'Documentation as a Revenue Lever', description: 'Documentation intelligence drives revenue cycle strategy, payer positioning, and financial planning.' },
     ],
     framingQuestions: {
-      1: 'Has your organization reviewed how documentation changes from ambient affect coding or reimbursement?',
+      1: undefined,
       2: 'What movement has your team observed since deployment?',
       3: undefined,
       4: 'How is documentation quality being used strategically in revenue decisions?',

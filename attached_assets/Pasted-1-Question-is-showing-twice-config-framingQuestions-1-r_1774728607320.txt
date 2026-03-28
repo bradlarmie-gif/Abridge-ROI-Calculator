@@ -1,0 +1,32 @@
+1. Question is showing twice — config.framingQuestions[1] renders it in the card header, AND renderRevenueInputs() level 1 has the same text as a <label> above the radio buttons. Two separate places, same 
+  copy.                                                                                                                                                                                                        
+  2. "Not yet analyzed." in red — that's the headlineMetric returned from computeRevenueFeedback level 1. The activation label was renamed but the headlineMetric string inside the function wasn't.           
+                                                                                                                                                                                                               
+  Quick Replit patch:                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  REPLIT PATCH — Revenue L1 duplicate question + stale headlineMetric
+                                                                                                                                                                                                               
+  Fix 1 — client/src/pages/switch/ambient/Screen4Domains.tsx                                                                                                                                                   
+                                              
+  In DOMAIN_CONFIGS.revenue.framingQuestions, set level 1 to undefined:                                                                                                                                        
+                                                                                                          
+  // Find:                                                                                                                                                                                                     
+  framingQuestions: {                                                                                                                                                                                          
+    1: 'Has your organization reviewed how documentation changes from ambient affect coding or reimbursement?',                                                                                                
+                                                                                                                                                                                                               
+  // Replace with:                                                                                        
+  framingQuestions: {
+    1: undefined,                                                                                                                                                                                              
+  
+  The question already appears as a label inside the radio input section — removing it from framingQuestions eliminates the duplicate.                                                                         
+                                                                                                          
+  Fix 2 — client/src/pages/switch/ambient/domainCalculations.ts
+                                                                                                                                                                                                               
+  In computeRevenueFeedback, the if (level === 1) block returns headlineMetric: 'Not yet analyzed.' — update it:
+                                                                                                                                                                                                               
+  // Find:                                                                                                
+  headlineMetric: 'Not yet analyzed.',                                                                                                                                                                         
+                                                                                                          
+  // Replace with:                                                                                                                                                                                             
+  headlineMetric: 'Documentation quality has improved. Revenue impact not yet analyzed.',  
