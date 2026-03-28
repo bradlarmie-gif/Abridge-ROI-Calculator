@@ -1,8 +1,13 @@
 import { useEffect, useRef, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { Check } from "lucide-react";
 import { useAssessment } from "@/lib/assessment";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
-import { DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS, scoreToActivationLevel, tenureScoreBand, type Domain, type ActivationLevel } from "./domainCalculations";
+import {
+  DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS,
+  scoreToActivationLevel, tenureScoreBand,
+  type Domain, type ActivationLevel,
+} from "./domainCalculations";
 
 interface Screen3Props {
   onNext: () => void;
@@ -12,26 +17,14 @@ interface Screen3Props {
 
 type DomainKey = Domain;
 
-const DOMAIN_INSIGHTS: Record<DomainKey, Record<1 | 2, string>> = {
-  capacity: {
-    1: "Recovered time isn't being tracked or deployed.",
-    2: "Recovered time is measured but not being converted to access.",
-  },
-  revenue: {
-    1: "No one has analyzed whether documentation changes are affecting reimbursement.",
-    2: "Directional signals observed but not formally validated.",
-  },
-  workforce: {
-    1: "After-hours burden reduced but broader workforce impact isn't tracked.",
-    2: "Burden is measured but not connected to retention or labor costs.",
-  },
-  risk: {
-    1: "Documentation quality improved but nothing downstream has changed.",
-    2: "Quality monitoring started but downstream workflows aren't connected.",
-  },
-};
+function parseDomainInputs(json: unknown): Record<string, number | string> {
+  try { return JSON.parse(json as string); } catch { return {}; }
+}
 
-const TIEBREAKER_ORDER: DomainKey[] = ['risk', 'revenue', 'workforce', 'capacity'];
+function csvCount(csv: unknown): number {
+  if (!csv) return 0;
+  return String(csv).split(',').filter(Boolean).length;
+}
 
 const SCORE_BANDS = [
   { label: 'Quantifying', max: 16 },
@@ -46,6 +39,276 @@ function getScoreBandLabel(score: number): string {
     if (score <= band.max) return band.label;
   }
   return SCORE_BANDS[SCORE_BANDS.length - 1].label;
+}
+
+const TIEBREAKER_ORDER: DomainKey[] = ['risk', 'revenue', 'workforce', 'capacity'];
+
+const DOMAIN_INSIGHTS: Record<DomainKey, Record<1 | 2 | 3, string>> = {
+  capacity: {
+    1: "Recovered time hasn't been deployed yet — where it goes is the decision in front of you.",
+    2: "Access decision is in place — measuring the patient volume is the next confirmation.",
+    3: "Patients are being seen — tracking the downstream access impact completes the story.",
+  },
+  revenue: {
+    1: "The documentation-to-revenue connection hasn't been analyzed yet — that's where the financial story begins.",
+    2: "Directional signals are visible — a formal before/after analysis would confirm the number.",
+    3: "Impact is measured — embedding documentation into revenue strategy makes it a permanent capability.",
+  },
+  workforce: {
+    1: "Provider experience is improving — connecting it to retention data is the next chapter.",
+    2: "Observable changes are documented — turnover data would close the retention story.",
+    3: "Retention is connected — integrating this into workforce strategy makes it a competitive asset.",
+  },
+  risk: {
+    1: "Documentation quality is improving — connecting it to CDI and coding is what unlocks downstream value.",
+    2: "Quality monitoring is in place — connecting it to downstream workflows is next.",
+    3: "Workflows are connected — elevating documentation quality to a board-level strategic asset is what comes next.",
+  },
+};
+
+type Checkpoint = { label: string; done: boolean };
+
+function buildCheckpoints(
+  domain: Domain,
+  level: number,
+  inp: Record<string, number | string>,
+  g: Record<string, number | string>,
+): Checkpoint[] {
+  switch (domain) {
+    case 'capacity': {
+      const timeSaved = (inp.timeSaved as number) || (g.timeSavedPerEncounter as number) || 0;
+      const stage = inp.accessDecisionStage as string | undefined;
+      const stageLabels: Record<string, string> = { planning: 'in planning', piloting: 'in pilot', live: 'live' };
+      const additionalPts = (inp.additionalPatientsPerMonth as number) || 0;
+      return [
+        {
+          label: timeSaved > 0
+            ? `${timeSaved} min/encounter recovered from documentation`
+            : 'Documentation time recovered per encounter',
+          done: level >= 1,
+        },
+        {
+          label: stage
+            ? `Recovered time being converted to patient access — ${stageLabels[stage] || stage}`
+            : 'Recovered time being converted to patient access',
+          done: level >= 2,
+        },
+        {
+          label: additionalPts > 0
+            ? `${additionalPts.toLocaleString()} additional patients/month being seen`
+            : 'Additional patient volume confirmed',
+          done: level >= 3,
+        },
+        {
+          label: 'Downstream access impact tracked and attributed',
+          done: level >= 4,
+        },
+      ];
+    }
+
+    case 'revenue': {
+      const engaged = inp.revenueCycleEngaged as string | undefined;
+      const movementCount = csvCount(inp.observedMovement);
+      const metricType = inp.revenueMetricType as string | undefined;
+      const metricLabels: Record<string, string> = {
+        wrvu: 'wRVU lift', collections: 'collections increase', denial_rate: 'denial rate reduction',
+      };
+      const integrationsCount = csvCount(inp.revenueIntegrations);
+      return [
+        {
+          label: engaged === 'yes'
+            ? 'Revenue cycle team formally engaged'
+            : engaged === 'informal'
+              ? 'Revenue cycle team informally aware'
+              : 'Revenue cycle team engaged',
+          done: engaged === 'yes' || engaged === 'informal' || level >= 2,
+        },
+        {
+          label: movementCount > 0
+            ? `${movementCount} directional signal${movementCount !== 1 ? 's' : ''} observed in coding and collections`
+            : 'Directional movement observed',
+          done: level >= 2,
+        },
+        {
+          label: metricType
+            ? `Before/after analysis complete — ${metricLabels[metricType] || 'impact'} measured`
+            : 'Before/after analysis completed and impact measured',
+          done: level >= 3,
+        },
+        {
+          label: integrationsCount > 0
+            ? `Documentation integrated into ${integrationsCount} revenue strategy area${integrationsCount !== 1 ? 's' : ''}`
+            : 'Documentation integrated into revenue strategy',
+          done: level >= 4,
+        },
+      ];
+    }
+
+    case 'workforce': {
+      const editTimeSaved = (inp.editTimeSaved as number) || 0;
+      const surveyType = inp.surveyType as string | undefined;
+      const behaviorCount = csvCount(inp.observedBehaviors);
+      const trBefore = (inp.beforeTurnoverRate as number) || 0;
+      const trAfter = inp.afterTurnoverRate !== undefined ? (inp.afterTurnoverRate as number) : undefined;
+      const hasDelta = trBefore > 0 && trAfter !== undefined && trAfter < trBefore;
+      const strategyCount = csvCount(inp.workforceStrategies);
+      return [
+        {
+          label: editTimeSaved > 0
+            ? `${editTimeSaved} min/day per provider recovered in clinic`
+            : 'In-clinic documentation time savings measured',
+          done: editTimeSaved > 0 || level >= 1,
+        },
+        {
+          label: surveyType === 'structured'
+            ? 'Structured provider survey completed'
+            : surveyType === 'informal'
+              ? 'Provider feedback informally captured'
+              : 'Provider sentiment captured',
+          done: !!surveyType && surveyType !== 'not_yet',
+        },
+        {
+          label: behaviorCount > 0
+            ? `${behaviorCount} observable behavioral change${behaviorCount !== 1 ? 's' : ''} documented`
+            : 'Observable behavioral changes documented',
+          done: level >= 2 && behaviorCount > 0,
+        },
+        {
+          label: hasDelta
+            ? `Turnover rate improved ${trBefore}% → ${trAfter}% — retention connected`
+            : trBefore > 0
+              ? 'Turnover rate tracked since deployment'
+              : 'Retention data connected to burden reduction',
+          done: level >= 3 && trBefore > 0,
+        },
+        {
+          label: strategyCount > 0
+            ? 'Workforce strategy informed by documentation burden data'
+            : 'Documentation burden integrated into workforce strategy',
+          done: level >= 4,
+        },
+      ];
+    }
+
+    case 'risk': {
+      const monitoringApproach = inp.monitoringApproach as string | undefined;
+      const attrCount = csvCount(inp.qualityAttributes);
+      const approachLabels: Record<string, string> = {
+        realtime: 'real-time', systematic: 'structured', spot_checks: 'informal',
+      };
+      const financialPathway = inp.financialPathway as string | undefined;
+      const pathwayLabels: Record<string, string> = {
+        mips: 'MIPS/quality measures', denials: 'denial reduction',
+      };
+      const siCount = csvCount(inp.strategicIntegrations);
+      const executiveOwner = inp.executiveOwner as string | undefined;
+      const boardPresented = inp.executiveBoardPresented as string | undefined;
+
+      const checkpoints: Checkpoint[] = [
+        {
+          label: 'Documentation quality improving — downstream teams not yet connected',
+          done: level >= 1,
+        },
+        {
+          label: monitoringApproach && attrCount > 0
+            ? `${attrCount} of 5 quality dimensions tracked — ${approachLabels[monitoringApproach] || ''} monitoring`
+            : monitoringApproach
+              ? 'Quality dimensions actively monitored'
+              : 'Quality dimensions being actively monitored',
+          done: level >= 2 && !!monitoringApproach,
+        },
+        {
+          label: financialPathway && financialPathway !== 'none_yet'
+            ? `Downstream connected — ${pathwayLabels[financialPathway] || financialPathway} pathway`
+            : 'Connected to CDI, coding, and downstream programs',
+          done: level >= 3 && !!financialPathway && financialPathway !== 'none_yet',
+        },
+        {
+          label: siCount > 0
+            ? `Documentation quality integrated into ${siCount} strategic area${siCount !== 1 ? 's' : ''}`
+            : 'Documentation quality an organizational strategic asset',
+          done: level >= 4 && siCount > 0,
+        },
+      ];
+
+      if (level >= 4) {
+        checkpoints.push({
+          label: executiveOwner === 'yes'
+            ? boardPresented === 'yes'
+              ? 'Named executive owner · Presented to board'
+              : 'Named executive owner in place'
+            : 'Executive ownership established',
+          done: executiveOwner === 'yes',
+        });
+      }
+
+      return checkpoints;
+    }
+  }
+}
+
+function DomainDecisionCard({
+  domain, level, domainInputs, globalInputs, onClick,
+}: {
+  domain: Domain;
+  level: number;
+  domainInputs: Record<string, number | string>;
+  globalInputs: Record<string, number | string>;
+  onClick?: () => void;
+}) {
+  const checkpoints = buildCheckpoints(domain, level, domainInputs, globalInputs);
+  const doneCount = checkpoints.filter(cp => cp.done).length;
+  const allDone = doneCount === checkpoints.length;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="bg-white border border-[#E8E3DC] rounded-xl p-4 text-left w-full hover:border-[#EA2C00]/40 hover:shadow-sm transition-all duration-200 cursor-pointer"
+      data-testid={`decision-card-${domain}`}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="min-w-0 flex-1 pr-3">
+          <p className="text-sm font-bold text-[#1A1A1A] leading-tight">
+            {DOMAIN_LABELS[domain]}
+          </p>
+          <p className="text-[11px] text-[#888888] mt-0.5 leading-tight">
+            {ACTIVATION_LABELS[domain][level as ActivationLevel]}
+          </p>
+        </div>
+        <span
+          className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${
+            allDone
+              ? 'bg-[#EA2C00]/10 text-[#EA2C00]'
+              : 'bg-[#F0EDEA] text-[#888888]'
+          }`}
+        >
+          {doneCount}/{checkpoints.length}
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {checkpoints.map((cp, i) => (
+          <div key={i} className="flex items-start gap-2.5">
+            <div
+              className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                cp.done ? 'bg-[#EA2C00]' : 'bg-[#E8E3DC]'
+              }`}
+            >
+              {cp.done && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+            </div>
+            <span
+              className={`text-xs leading-relaxed ${
+                cp.done ? 'text-[#1A1A1A] font-medium' : 'text-[#BBBBBB]'
+              }`}
+            >
+              {cp.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </button>
+  );
 }
 
 function AnimatedCounter({ target, duration = 800, delay = 0 }: { target: number; duration?: number; delay?: number }) {
@@ -98,6 +361,7 @@ function AnimatedBar({ percent, delay = 0, height = 5 }: { percent: number; dela
 export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Screen3Props) {
   const { state } = useAssessment();
   const { inputs } = state;
+
   const domainScores: Record<DomainKey, number> = useMemo(() => ({
     capacity: inputs.capacityScore || 0,
     revenue: inputs.revenueScore || 0,
@@ -105,9 +369,16 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     risk: inputs.riskScore || 0,
   }), [inputs.capacityScore, inputs.revenueScore, inputs.workforceScore, inputs.riskScore]);
 
+  const parsedDomainInputs: Record<DomainKey, Record<string, number | string>> = useMemo(() => ({
+    capacity: parseDomainInputs(inputs.capacityDomainInputs),
+    revenue: parseDomainInputs(inputs.revenueDomainInputs),
+    workforce: parseDomainInputs(inputs.workforceDomainInputs),
+    risk: parseDomainInputs(inputs.riskDomainInputs),
+  }), [inputs.capacityDomainInputs, inputs.revenueDomainInputs, inputs.workforceDomainInputs, inputs.riskDomainInputs]);
+
   const totalScore = useMemo(() =>
-    domainScores.capacity + domainScores.revenue + domainScores.workforce + domainScores.risk
-  , [domainScores]);
+    domainScores.capacity + domainScores.revenue + domainScores.workforce + domainScores.risk,
+  [domainScores]);
 
   const scoreBandLabel = useMemo(() => getScoreBandLabel(totalScore), [totalScore]);
 
@@ -122,18 +393,9 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     let lowest: DomainKey = TIEBREAKER_ORDER[0];
     let lowestLevel = domainLevels[lowest];
     for (const d of TIEBREAKER_ORDER) {
-      if (domainLevels[d] < lowestLevel) {
-        lowest = d;
-        lowestLevel = domainLevels[d];
-      }
+      if (domainLevels[d] < lowestLevel) { lowest = d; lowestLevel = domainLevels[d]; }
     }
     return lowest;
-  }, [domainLevels]);
-
-  const strongestDomain = useMemo(() => {
-    return DOMAIN_ORDER.reduce((best, d) =>
-      domainLevels[d] > domainLevels[best] ? d : best
-    , DOMAIN_ORDER[0]);
   }, [domainLevels]);
 
   const providers = inputs.providers || 0;
@@ -154,16 +416,18 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     if (allL1) {
       return {
         name: 'Live. Not Yet Measured.',
-        headline: 'The deployment is running. The measurement story hasn\u2019t started.',
-        body: `The deployment is running across ${providers > 0 ? providers.toLocaleString() + ' providers' : 'your organization'}. What it's returning — in revenue, workforce, and quality terms — hasn't been formally analyzed yet. That's where most organizations begin. It's also where most stay longest.`,
+        headline: providers > 0
+          ? `${providers.toLocaleString()} providers generating value — the measurement story hasn't been written yet.`
+          : 'Your deployment is live — the value is generating, and the measurement story hasn\'t been written yet.',
+        body: `This is the most common profile at this stage — adoption is real, and the measurement infrastructure hasn't been built yet. The organizations that move fastest from here decide, in a room like this one, that the measurement program starts now.`,
       };
     }
 
     if (allHigh) {
       return {
         name: 'Strategic Maturity.',
-        headline: 'Four domains measured, connected, and managed.',
-        body: 'This is where most ambient deployments aspire to be and few reach. The work ahead is deepening strategic integration — not building the measurement foundation.',
+        headline: `Four domains measured, connected, and managed. This is where most ambient deployments aspire to be — and few arrive.`,
+        body: 'The work ahead is deepening strategic integration — not building the measurement foundation.',
       };
     }
 
@@ -172,14 +436,30 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
       if (l2count >= 3) {
         return {
           name: 'Early Measurement Across All Domains.',
-          headline: 'Every domain has moved from awareness to data.',
-          body: 'None has been pushed to validated, actionable impact yet. The measurement foundation is in place — the question is which domain gets pushed first, and what it unlocks.',
+          headline: 'Every domain has moved from awareness to data — none has been pushed to confirmed value yet.',
+          body: 'The measurement foundation is in place. The question is which domain gets pushed first and what it unlocks.',
         };
       }
       return {
         name: 'Measuring the Basics. Opportunity Ahead.',
-        headline: 'Some measurement is underway. Most of the value story is still ahead.',
-        body: `Some domains have moved from awareness to data. Most of the ambient value story hasn't been told yet.${providers > 0 ? ` At ${providers.toLocaleString()} providers, the confirmed value is a starting point — not the ceiling.` : ''}`,
+        headline: providers > 0
+          ? `At ${providers.toLocaleString()} providers, the confirmed value is a starting point — not the ceiling.`
+          : 'The measurement foundation is forming — most of the value story is still ahead.',
+        body: `Some domains have moved from awareness to data. Most of the ambient value story hasn't been told yet.`,
+      };
+    }
+
+    if (high.length >= 3) {
+      const gap = DOMAIN_ORDER.filter(d => domainLevels[d] < 3);
+      const gapStr = joinNames(gap);
+      return {
+        name: 'Measuring Across Most Domains.',
+        headline: gapStr
+          ? `Three of four domains confirming value — ${gapStr} is the one story still to tell.`
+          : 'Three or more domains generating confirmed value — the work ahead is deepening each one.',
+        body: gapStr
+          ? `Three or more domains are generating confirmed, validated value. ${gapStr} is the remaining gap — and at your scale, it's worth closing before the next planning cycle.`
+          : 'The work ahead is deepening each domain, not widening the foundation.',
       };
     }
 
@@ -190,36 +470,28 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
       const profiles: Record<DomainKey, { name: string; headline: string; body: string }> = {
         capacity: {
           name: 'Time Captured. Financial Story Unwritten.',
-          headline: 'Recovered time is in operational action. The broader value story is next.',
-          body: `Recovered time has moved into operational action. The revenue, workforce, and quality implications of that decision — what it's producing beyond the time itself — haven't been formally analyzed.${uStr ? ` ${uStr} ${uVerb} been measured yet.` : ''}`,
+          headline: 'Recovered time has moved into operational action — the revenue, workforce, and quality implications haven\'t been formally counted yet.',
+          body: `The access decision is live.${uStr ? ` ${uStr} ${uVerb} been measured yet — and at your scale, those domains typically carry significant additional value.` : ''}`,
         },
         revenue: {
           name: 'Revenue Signal Measured. Ecosystem Unmeasured.',
-          headline: 'Revenue impact is on the radar. The rest of the value chain awaits.',
-          body: `The documentation-to-revenue connection is on your radar and being measured. The capacity, workforce, and quality dimensions that inform and amplify that signal ${uVerb} been connected yet.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured.` : ''}`,
+          headline: 'The documentation-to-revenue connection is on the board — the capacity, workforce, and quality dimensions haven\'t been connected yet.',
+          body: `The revenue signal is measured and real.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured.` : ''}`,
         },
         workforce: {
           name: 'Provider Experience Quantified. Broader Picture Unmeasured.',
-          headline: 'Provider relief is quantified. Organizational implications are next.',
-          body: `You've quantified what ambient is doing for your providers. The organizational implications — what that relief means for access capacity, revenue, and downstream quality — ${uVerb} been formally connected yet.`,
+          headline: providers > 0
+            ? `${providers.toLocaleString()} providers — you've quantified what ambient is doing for them. What it means for access and revenue hasn't been connected yet.`
+            : 'Provider experience is quantified — what that means for access and revenue hasn\'t been connected yet.',
+          body: `The organizational implications — what provider relief means for capacity, revenue, and quality — ${uVerb} been formally connected yet.`,
         },
         risk: {
           name: 'Quality Infrastructure Present. Value Chain Not Yet Built.',
-          headline: 'Quality tracking is in place. The downstream connections are next.',
-          body: `Documentation quality is being tracked and monitored. The connection from that quality improvement to coding accuracy, CDI, and compliance programs ${uVerb} been formalized yet.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured.` : ''}`,
+          headline: 'The quality foundation is solid — connecting it to CDI, coding, and compliance programs is the work ahead.',
+          body: `Documentation quality is tracked and monitored.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured.` : ''}`,
         },
       };
       return profiles[d];
-    }
-
-    if (high.length >= 3) {
-      const gap = DOMAIN_ORDER.filter(d => domainLevels[d] < 3);
-      const gapStr = joinNames(gap);
-      return {
-        name: 'Measuring Across Most Domains.',
-        headline: 'Three or more domains are generating confirmed value.',
-        body: `Three or more domains are generating confirmed, validated value.${gapStr ? ` ${gapStr} is the remaining gap — and at your scale, it's worth closing before the next planning cycle.` : ' The work ahead is deepening each domain, not widening the foundation.'}`,
-      };
     }
 
     const pair = [...high].sort().join('+') as string;
@@ -227,40 +499,42 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     const pairMap: Record<string, { name: string; headline: string; body: string }> = {
       'capacity+revenue': {
         name: 'Operational and Financial Capture Underway.',
-        headline: 'Time recovery and revenue impact are both being measured.',
-        body: `Time recovery is in action and revenue impact is measured.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured — and at your scale, those domains typically carry significant additional value.` : ''}`,
+        headline: 'Time recovery is in action and revenue impact is measured — workforce and quality are the next chapters.',
+        body: uStr ? `${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured — and at your scale, those domains typically carry significant additional value.` : 'The foundation is strong.',
       },
       'capacity+workforce': {
         name: 'Provider and Operational Value Captured.',
-        headline: 'Time recovery and workforce dimensions are connected.',
-        body: `The time recovery and workforce dimensions are measured and connected. Revenue impact and quality downstream effects — often the highest-value domains per provider — haven't been formally analyzed yet.`,
+        headline: 'Time recovery and workforce dimensions are measured — revenue impact and quality downstream effects haven\'t been formally analyzed yet.',
+        body: 'Revenue and quality are often the highest-value domains per provider — they remain ahead.',
       },
       'capacity+risk': {
         name: 'Operations and Quality Tracked. Revenue and Workforce Unmeasured.',
-        headline: 'Time conversion and quality monitoring are in place.',
-        body: `Time conversion and quality monitoring are in place. Revenue impact and workforce implications — which typically represent the largest financial returns at scale — haven't been formally measured.`,
+        headline: 'Time conversion and quality monitoring are in place — revenue impact and workforce implications haven\'t been formally measured yet.',
+        body: 'Revenue and workforce typically represent the largest financial returns at scale.',
       },
       'revenue+workforce': {
         name: 'Financial and Provider Value Both Measured.',
-        headline: 'Revenue impact and workforce implications are both on the table.',
-        body: `Revenue impact and workforce implications are both on the table. Capacity conversion strategy and quality downstream effects haven't been connected yet — and they compound the value of what you've already built.`,
+        headline: 'Revenue impact and workforce implications are both on the table — capacity conversion and quality downstream effects haven\'t been connected yet.',
+        body: 'Capacity and quality compound the value of what you\'ve already built.',
       },
       'revenue+risk': {
         name: 'Financial and Clinical Intelligence Present.',
-        headline: 'Revenue and quality dimensions are being measured.',
-        body: `Revenue and quality dimensions are measured. Capacity conversion and workforce implications — often where the largest per-provider ROI lives — haven't been formally analyzed yet.`,
+        headline: 'Revenue and quality dimensions are measured — capacity conversion and workforce implications are where the largest per-provider ROI typically lives.',
+        body: 'Both dimensions are formally measured. Capacity and workforce remain ahead.',
       },
       'risk+workforce': {
         name: 'Clinical Quality and Provider Experience Measured.',
-        headline: 'Documentation quality and workforce impact are tracked.',
-        body: `Documentation quality and workforce impact are tracked. The capacity and revenue dimensions — what recovered time produces and what documentation quality is worth in billing — remain unmeasured.`,
+        headline: 'Documentation quality and workforce impact are tracked — capacity and revenue are what recovered time and quality improvement are actually worth.',
+        body: 'The operational and financial picture remains unmeasured.',
       },
     };
 
     return pairMap[pair] || {
       name: 'Multiple Domains Measured.',
-      headline: 'Multiple dimensions of ambient value are being captured.',
-      body: `Multiple dimensions of ambient value are being captured.${uStr ? ` ${uStr} ${unmeasured.length === 1 ? 'hasn\'t' : 'haven\'t'} been formally analyzed yet.` : ' The work ahead is connecting the measured domains into a unified strategic picture.'}`,
+      headline: `Multiple dimensions of ambient value are being captured.`,
+      body: uStr
+        ? `${uStr} ${unmeasured.length === 1 ? 'hasn\'t' : 'haven\'t'} been formally analyzed yet. The work ahead is connecting the measured domains into a unified strategic picture.`
+        : 'The work ahead is connecting the measured domains into a unified strategic picture.',
     };
   }, [domainLevels, providers]);
 
@@ -270,24 +544,24 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     const band = tenureScoreBand(totalScore);
     const matrix: Record<string, Record<'low' | 'mid' | 'high', string>> = {
       '0-6': {
-        low: "You're early. Most organizations at this stage are still stabilizing adoption — this profile is expected. The question at 6 months isn't your score. It's whether you're building the measurement habits now.",
-        mid: "Six months in with meaningful measurement already underway. You're ahead of the typical adoption curve.",
-        high: "Less than 6 months in with strong measurement across multiple domains. That's unusual — it typically signals a pre-existing measurement culture or a focused implementation team.",
+        low: "Early stage — most organizations at 6 months are still stabilizing adoption. The question isn't the score. It's whether measurement habits are being built now.",
+        mid: "Six months in with meaningful measurement already underway — ahead of the typical adoption curve.",
+        high: "Less than 6 months in with strong measurement across multiple domains. That typically signals a pre-existing measurement culture or a focused implementation team.",
       },
       '6-12': {
-        low: "A year in, and the measurement infrastructure is still forming. This is common — and also when the pattern gets set. Organizations that build measurement habits at 12 months don't usually have to rebuild them at 24.",
-        mid: "A year in with several domains measured. You're past early adoption and moving into deliberate value realization. The next 12 months determine whether this becomes a strategic capability or stays informal.",
-        high: "One year in with strong maturity. This pace is uncommon. Organizations that move this fast typically have explicit executive sponsorship of the measurement work — not just the deployment.",
+        low: "A year in, and the measurement infrastructure is still forming. Organizations that build measurement habits at 12 months don't usually have to rebuild them at 24.",
+        mid: "A year in with several domains measured — past early adoption and moving into deliberate value realization.",
+        high: "One year in with strong maturity. This pace is uncommon — it typically signals explicit executive sponsorship of the measurement work, not just the deployment.",
       },
       '12-24': {
-        low: "One to two years in, and most of the value story hasn't been told yet. The window to build measurement infrastructure is narrowing — not because it closes, but because every month without it is a month of value sitting uncounted.",
-        mid: "One to two years in with moderate maturity. Some domains are yielding confirmed value; others haven't been analyzed. At this stage, the next chapter is about measurement discipline, not adoption — it's about whether there's a structured program to capture what's already generating returns.",
+        low: "One to two years in, and most of the value story hasn't been told yet. Every month without measurement is a month of value sitting uncounted.",
+        mid: "One to two years in with moderate maturity. Some domains are yielding confirmed value — the gap isn't about adoption, it's about building the measurement program.",
         high: "One to two years in with strong maturity. You've used the deployment period to build real infrastructure. The work ahead is integration and depth.",
       },
       '24+': {
-        low: "Two or more years live, and the measurement foundation hasn't been built. This profile has the most immediate strategic opportunity in this assessment — not because the deployment has failed, but because value is already generating — this is the measurement story waiting to be told. What you find when you look will be surprising.",
-        mid: "Two or more years live with mixed maturity. Some domains are yielding confirmed value; others have been generating returns that no one has looked at yet. At this tenure, that's a prioritization problem, not a knowledge problem.",
-        high: "Two or more years live with strong maturity. This is where few organizations arrive. The deployment isn't just generating value — it's being managed as a strategic asset.",
+        low: "Two or more years live, and the measurement foundation hasn't been built. What you find when you look will be surprising.",
+        mid: "Two or more years live with mixed maturity — some domains yielding confirmed value, others generating returns that haven't been looked at yet.",
+        high: "Two or more years live with strong maturity. The deployment isn't just generating value — it's being managed as a strategic asset.",
       },
     };
     return matrix[tenure]?.[band] ?? null;
@@ -296,13 +570,14 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
       <motion.div
-        className="text-center mb-8"
-        initial={{ opacity: 0, y: 20 }}
+        className="text-center mb-6"
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
       >
-        <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
-          Here's where you stand.
-        </h1>
+        <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[2px]">
+          Your Assessment
+        </p>
       </motion.div>
 
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
@@ -313,8 +588,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.5 }}
           >
-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-buildup">
-
+            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-6" data-testid="card-buildup">
               <div
                 className="rounded-lg px-5 py-4 mb-6 flex items-center justify-between gap-4 bg-white/60"
                 data-testid="card-composite-score"
@@ -331,19 +605,15 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1">
-                    Band
-                  </p>
-                  <p className="font-bold text-sm text-[#EA2C00]">
-                    {scoreBandLabel}
-                  </p>
+                  <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1">Band</p>
+                  <p className="font-bold text-sm text-[#EA2C00]">{scoreBandLabel}</p>
                   {(() => {
                     const bands = ['Quantifying', 'Measuring', 'Acting', 'Managing', 'Full Capture'];
                     const activeBand = totalScore <= 16 ? 0 : totalScore <= 38 ? 1 : totalScore <= 60 ? 2 : totalScore <= 79 ? 3 : 4;
                     return (
                       <div className="flex items-center gap-2 mt-2 justify-end">
                         {bands.map((band, i) => (
-                          <div key={band} className="flex items-center gap-2">
+                          <div key={band}>
                             <div
                               className="rounded-full transition-all duration-300"
                               style={{
@@ -364,9 +634,8 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
               <div className="h-px bg-[#E5E7EB] mb-4" />
 
               {DOMAIN_ORDER.map((domain, idx) => {
-                const level = scoreToActivationLevel(domain, domainScores[domain]) as 1 | 2 | 3 | 4;
-                const domainScore = domainScores[domain];
-                const barPercent = (domainScore / 25) * 100;
+                const level = scoreToActivationLevel(domain, domainScores[domain]) as ActivationLevel;
+                const barPercent = (domainScores[domain] / 25) * 100;
                 return (
                   <div key={domain}>
                     <motion.div
@@ -381,24 +650,18 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                         data-testid={`domain-row-${domain}`}
                       >
                         <div className="w-[40%] sm:w-[35%] text-left">
-                          <p className="font-semibold text-xs sm:text-sm text-black leading-tight">
-                            {DOMAIN_LABELS[domain]}
-                          </p>
-                          <p className="text-[11px] sm:text-xs text-[#888888]">
-                            {ACTIVATION_LABELS[domain][level]}
-                          </p>
+                          <p className="font-semibold text-xs sm:text-sm text-black leading-tight">{DOMAIN_LABELS[domain]}</p>
+                          <p className="text-[11px] sm:text-xs text-[#888888]">{ACTIVATION_LABELS[domain][level]}</p>
                         </div>
                         <div className="hidden sm:block w-[45%]">
                           <AnimatedBar percent={barPercent} delay={400 + idx * 150 + 100} height={5} />
                         </div>
                         <p className="font-bold text-sm text-black w-[60%] sm:w-[20%] text-right" data-testid={`domain-score-${domain}`}>
-                          {domainScore} / 25
+                          {domainScores[domain]} / 25
                         </p>
                       </button>
                     </motion.div>
-                    {idx < DOMAIN_ORDER.length - 1 && (
-                      <div className="h-px bg-[#E5E7EB]/50" />
-                    )}
+                    {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
                   </div>
                 );
               })}
@@ -410,35 +673,53 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.5 }}
           >
-            <div className="bg-[#1A1A1A] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-verdict">
-              <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-4">
-                Your Ambient Profile
-              </p>
-              <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-[1.2px] mb-2" data-testid="text-verdict-eyebrow">
-                {archetype.name}
+            <div className="bg-[#1A1A1A] rounded-lg p-5 sm:p-8 md:p-10 mb-6" data-testid="card-verdict">
+              <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
+                Your Ambient Profile &nbsp;&middot;&nbsp; {archetype.name}
               </p>
               <p className="text-xl sm:text-2xl font-bold text-white leading-tight mb-4" data-testid="text-verdict-headline">
                 {archetype.headline}
               </p>
               <div className="h-px bg-white/10 mb-4" />
-              <p className="text-sm text-white/60 leading-relaxed" data-testid="text-verdict-body">
+              {tenureModifier && (
+                <p className="text-sm text-white/60 leading-relaxed mb-3" data-testid="text-tenure-modifier">
+                  {tenureModifier}
+                </p>
+              )}
+              <p className="text-sm text-white/45 leading-relaxed" data-testid="text-verdict-body">
                 {archetype.body}
               </p>
-              {tenureModifier && (
-                <>
-                  <div className="h-px bg-white/10 mt-4" />
-                  <p className="text-xs text-white/40 italic leading-relaxed mt-4" data-testid="text-tenure-modifier">
-                    {tenureModifier}
-                  </p>
-                </>
-              )}
             </div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.4, duration: 0.5 }}
+            transition={{ delay: 1.5, duration: 0.5 }}
+          >
+            <div className="mb-6">
+              <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">
+                What you told us — by domain
+              </p>
+              <div className="grid grid-cols-1 min-[560px]:grid-cols-2 gap-3" data-testid="grid-decision-mirror">
+                {DOMAIN_ORDER.map((domain) => (
+                  <DomainDecisionCard
+                    key={domain}
+                    domain={domain}
+                    level={domainLevels[domain]}
+                    domainInputs={parsedDomainInputs[domain]}
+                    globalInputs={inputs as unknown as Record<string, number | string>}
+                    onClick={() => onNavigateToDomain?.(domain)}
+                  />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.7, duration: 0.5 }}
           >
             <StepFooter onBack={onBack} onNext={onNext} nextLabel="See What This Means in Dollars →" />
           </motion.div>
@@ -446,7 +727,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.5, duration: 0.5 }}
+            transition={{ delay: 1.8, duration: 0.5 }}
           >
             <p className="text-xs text-[#888888] italic mt-4 leading-relaxed" data-testid="text-disclaimer">
               Self-reported maturity assessment across four domains. Scores reflect activation level, not guaranteed financial outcomes.
@@ -457,7 +738,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
         </div>
 
         <motion.div
-          className="w-full lg:w-[320px] flex-shrink-0"
+          className="w-full lg:w-[300px] flex-shrink-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 2.0, duration: 0.6, ease: "easeOut" }}
@@ -468,26 +749,22 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
               <p className="text-3xl font-bold text-[#EA2C00]" data-testid="sidebar-score">
                 {totalScore}
               </p>
-              <p className="text-sm text-white/70">
-                {scoreBandLabel}
-              </p>
+              <p className="text-sm text-white/70">{scoreBandLabel}</p>
             </div>
 
             <div className="h-px bg-white/10 mb-5" />
 
-            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-5">
-              Strategic Snapshot
-            </p>
-
             <div className="mb-5">
               <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">
-                Where You're Measuring
+                Confirmed Value
               </p>
-              <p className="font-bold text-white text-base leading-tight mb-1.5" data-testid="snapshot-strongest-domain">
-                {DOMAIN_LABELS[strongestDomain]}
+              <p className="text-white font-bold text-base leading-tight mb-1">
+                {DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).length} of 4 domains
               </p>
               <p className="text-xs text-white/50 leading-relaxed">
-                Level {domainLevels[strongestDomain]} — {ACTIVATION_LABELS[strongestDomain][domainLevels[strongestDomain] as ActivationLevel]}
+                {DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).length > 0
+                  ? DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d]).join(', ') + ' generating confirmed value'
+                  : 'Building toward confirmed value across all domains'}
               </p>
             </div>
 
@@ -497,18 +774,20 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
               <p className="text-[11px] font-medium text-[#EA2C00]/80 uppercase tracking-[1.5px] mb-2">
                 Biggest Opportunity
               </p>
-              <p className="font-bold text-white text-base leading-tight mb-1.5" data-testid="snapshot-weakest-domain">
+              <p className="font-bold text-white text-base leading-tight mb-2" data-testid="snapshot-weakest-domain">
                 {DOMAIN_LABELS[lowestDomain]}
               </p>
-              <p className="text-xs text-white/50 leading-relaxed">
-                {DOMAIN_INSIGHTS[lowestDomain][Math.min(domainLevels[lowestDomain], 2) as 1 | 2]}
+              <p className="text-xs text-white/55 leading-relaxed">
+                {domainLevels[lowestDomain] >= 4
+                  ? 'All domains at full activation — the work ahead is deepening strategic integration.'
+                  : DOMAIN_INSIGHTS[lowestDomain][Math.min(domainLevels[lowestDomain], 3) as 1 | 2 | 3]}
               </p>
             </div>
 
-            <div className="h-px bg-white/10 mb-5" />
+            <div className="h-px bg-white/10 mb-4" />
 
-            <p className="text-xs text-white/30 leading-relaxed italic">
-              The next screen translates each domain into dollar terms — what's confirmed, and what hasn't been looked at yet.
+            <p className="text-xs text-white/35 leading-relaxed">
+              The next screen translates each domain into dollar terms — what's confirmed, and what the opportunity is worth.
             </p>
 
           </div>
