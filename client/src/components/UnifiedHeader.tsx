@@ -160,10 +160,10 @@ export function UnifiedHeader({
             <>
               <button
                 onClick={() => setDrDialogOpen(true)}
-                className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-[11px] font-medium bg-[#FAF8F5] border border-[#E8E2DA] text-[#666666] hover:bg-[#F5F0EB] hover:border-[#D0C8BF] hover:text-[#1A1A1A] transition-all"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-[7px] rounded-lg text-[11px] sm:text-[12px] font-medium bg-[#FAF8F5] border border-[#E8E2DA] text-[#555555] hover:bg-[#F5F0EB] hover:border-[#D0C8BF] hover:text-[#1A1A1A] transition-all duration-150"
                 data-testid="button-header-data-request"
               >
-                <FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <FileText className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Data Request</span>
               </button>
               <DataRequestDialog
