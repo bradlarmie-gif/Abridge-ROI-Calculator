@@ -77,8 +77,8 @@ function buildCheckpoints(
   switch (domain) {
     case 'capacity': {
       const timeSaved = (inp.timeSaved as number) || (g.timeSavedPerEncounter as number) || 0;
-      const stage = inp.accessDecisionStage as string | undefined;
-      const stageLabels: Record<string, string> = { planning: 'in planning', piloting: 'in pilot', live: 'live' };
+      const usageCount = csvCount(inp.capacityTimeUsage);
+      const confidence = inp.capacityAccessConfidence as string | undefined;
       const additionalPts = (inp.additionalPatientsPerMonth as number) || 0;
       return [
         {
@@ -88,14 +88,14 @@ function buildCheckpoints(
           done: level >= 1,
         },
         {
-          label: stage
-            ? `Recovered time being converted to patient access — ${stageLabels[stage] || stage}`
+          label: usageCount > 0
+            ? `Recovered time deployed across ${usageCount} use${usageCount !== 1 ? 's' : ''}`
             : 'Recovered time being converted to patient access',
-          done: level >= 2,
+          done: level >= 2 && usageCount > 0,
         },
         {
           label: additionalPts > 0
-            ? `${additionalPts.toLocaleString()} additional patients/month being seen`
+            ? `${additionalPts.toLocaleString()} additional patients/month${confidence === 'confirmed' ? ' — confirmed' : ' — estimated'}`
             : 'Additional patient volume confirmed',
           done: level >= 3,
         },
@@ -708,7 +708,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                     domain={domain}
                     level={domainLevels[domain]}
                     domainInputs={parsedDomainInputs[domain]}
-                    globalInputs={inputs as unknown as Record<string, number | string>}
+                    globalInputs={{ timeSavedPerEncounter: (inputs.timeSavedPerEncounter as number) || 0 }}
                     onClick={() => onNavigateToDomain?.(domain)}
                   />
                 ))}
