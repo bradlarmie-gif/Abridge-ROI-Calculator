@@ -673,31 +673,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.5 }}
           >
-            <div className="bg-[#1A1A1A] rounded-lg p-5 sm:p-8 md:p-10 mb-6" data-testid="card-verdict">
-              <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-3">
-                Your Ambient Profile &nbsp;&middot;&nbsp; {archetype.name}
-              </p>
-              <p className="text-xl sm:text-2xl font-bold text-white leading-tight mb-4" data-testid="text-verdict-headline">
-                {archetype.headline}
-              </p>
-              <div className="h-px bg-white/10 mb-4" />
-              {tenureModifier && (
-                <p className="text-sm text-white/60 leading-relaxed mb-3" data-testid="text-tenure-modifier">
-                  {tenureModifier}
-                </p>
-              )}
-              <p className="text-sm text-white/45 leading-relaxed" data-testid="text-verdict-body">
-                {archetype.body}
-              </p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.5, duration: 0.5 }}
-          >
-            <div className="mb-6">
+            <div className="bg-[#F5F0EB] rounded-xl p-5 sm:p-7 mb-6">
               <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">
                 What you told us — by domain
               </p>
@@ -754,39 +730,49 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
 
             <div className="h-px bg-white/10 mb-5" />
 
-            <div className="mb-5">
-              <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">
-                Confirmed Value
+            <p className="text-[10px] font-medium text-white/35 uppercase tracking-[1.5px] mb-3">
+              Your Ambient Profile &nbsp;&middot;&nbsp; {archetype.name}
+            </p>
+            <p className="text-base font-bold text-white leading-snug mb-4" data-testid="text-verdict-headline">
+              {archetype.headline}
+            </p>
+            <div className="h-px bg-white/10 mb-4" />
+            {tenureModifier && (
+              <p className="text-xs text-white/60 leading-relaxed mb-3" data-testid="text-tenure-modifier">
+                {tenureModifier}
               </p>
-              <p className="text-white font-bold text-base leading-tight mb-1">
-                {DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).length} of 4 domains
-              </p>
-              <p className="text-xs text-white/50 leading-relaxed">
-                {DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).length > 0
-                  ? DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d]).join(', ') + ' generating confirmed value'
-                  : 'Building toward confirmed value across all domains'}
-              </p>
-            </div>
+            )}
+            <p className="text-xs text-white/40 leading-relaxed" data-testid="text-verdict-body">
+              {archetype.body}
+            </p>
+
+            <div className="h-px bg-white/10 mt-5 mb-5" />
+
+            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Confirmed Value</p>
+            <p className="text-white font-bold text-sm leading-tight mb-1">
+              {DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).length} of 4 domains
+            </p>
+            <p className="text-xs text-white/40 leading-relaxed mb-5">
+              {DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).length > 0
+                ? DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d]).join(', ') + ' generating confirmed value'
+                : 'Building toward confirmed value across all domains'}
+            </p>
 
             <div className="h-px bg-white/10 mb-5" />
 
-            <div className="mb-5">
-              <p className="text-[11px] font-medium text-[#EA2C00]/80 uppercase tracking-[1.5px] mb-2">
-                Biggest Opportunity
-              </p>
-              <p className="font-bold text-white text-base leading-tight mb-2" data-testid="snapshot-weakest-domain">
-                {DOMAIN_LABELS[lowestDomain]}
-              </p>
-              <p className="text-xs text-white/55 leading-relaxed">
-                {domainLevels[lowestDomain] >= 4
-                  ? 'All domains at full activation — the work ahead is deepening strategic integration.'
-                  : DOMAIN_INSIGHTS[lowestDomain][Math.min(domainLevels[lowestDomain], 3) as 1 | 2 | 3]}
-              </p>
-            </div>
+            <p className="text-[10px] font-medium text-[#EA2C00]/70 uppercase tracking-[1.5px] mb-2">Biggest Opportunity</p>
+            <p className="font-bold text-white text-sm leading-tight mb-2" data-testid="snapshot-weakest-domain">
+              {DOMAIN_LABELS[lowestDomain]}
+            </p>
+            <p className="text-xs text-white/45 leading-relaxed mb-5">
+              {domainLevels[lowestDomain] >= 4
+                ? 'All domains at full activation — the work ahead is deepening strategic integration.'
+                : DOMAIN_INSIGHTS[lowestDomain][Math.min(domainLevels[lowestDomain], 3) as 1 | 2 | 3]}
+            </p>
 
             <div className="h-px bg-white/10 mb-4" />
 
-            <p className="text-xs text-white/35 leading-relaxed">
+            <p className="text-[11px] text-white/25 leading-relaxed italic">
               The next screen translates each domain into dollar terms — what's confirmed, and what the opportunity is worth.
             </p>
 
