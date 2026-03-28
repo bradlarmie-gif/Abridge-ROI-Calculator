@@ -1,0 +1,313 @@
+ File 1: client/src/pages/switch/ambient/Screen4Domains.tsx
+
+  Step 1 — Remove "Overall revenue change" from the options list:
+
+  // Find REVENUE_METRIC_OPTIONS and remove the revenue_pct entry:
+  const REVENUE_METRIC_OPTIONS = [
+    { id: 'wrvu', label: 'wRVU per encounter' },
+    { id: 'collections', label: 'Collections per encounter' },
+    { id: 'denial_rate', label: 'Denial rate' },
+    // 'revenue_pct' removed entirely
+  ];
+
+  Step 2 — Add direction toggle + fix denial rate inputs. In renderRevenueInputs(), level 3, after each metric's number input, add a direction toggle. Also add a monthly billed field for denial rate. Replace
+   the three AnimatePresence motion blocks:
+
+  {metricType === 'wrvu' && (
+    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
+      <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+        Measured wRVU change per encounter
+      </label>
+      <FormattedNumberInput
+        value={(currentState.inputs.measuredWrvuDelta as number) || 0}
+        onChange={(v) => setDomainInput('measuredWrvuDelta', Math.max(0, v))}
+        placeholder=""
+        className="w-full h-12 bg-white border-[#E5E7EB]"
+        data-testid="input-wrvu-delta"
+        step={0.01}
+      />
+      <BenchmarkContext text="Abridge benchmark: 0.05–0.15 wRVU per encounter" />
+      <div className="mt-3">
+        <label className="block text-xs font-medium text-[#1A1A1A] mb-2">Direction</label>
+        <div className="flex gap-2">
+          {[{ id: 'increase', label: '↑ Increased' }, { id: 'decrease', label: '↓ Decreased' }].map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => setDomainInput('revenueMetricDirection', opt.id)}
+              className={`px-4 py-2 rounded-full text-sm transition-all cursor-pointer ${
+                (currentState.inputs.revenueMetricDirection as string) === opt.id
+                  ? opt.id === 'increase' ? 'bg-[#EA2C00] text-white font-medium' : 'bg-[#525252] text-white font-medium'
+                  : 'bg-[#F0EFED] text-[#525252] hover:bg-[#E5E3E0]'
+              }`}
+              data-testid={`pill-direction-${opt.id}`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  )}
+
+  {metricType === 'collections' && (
+    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
+      <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+        Collections change per encounter since deployment
+      </label>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-[#888888]">$</span>
+        <FormattedNumberInput
+          value={(currentState.inputs.measuredCollectionsDelta as number) || 0}
+          onChange={(v) => setDomainInput('measuredCollectionsDelta', Math.max(0, v))}
+          placeholder=""
+          className="w-full h-12 bg-white border-[#E5E7EB]"
+          data-testid="input-collections-delta"
+        />
+      </div>
+      <BenchmarkContext text="Organizations at this level have reported $3–$10 increase per encounter." />
+      <div className="mt-3">
+        <label className="block text-xs font-medium text-[#1A1A1A] mb-2">Direction</label>
+        <div className="flex gap-2">
+          {[{ id: 'increase', label: '↑ Increased' }, { id: 'decrease', label: '↓ Decreased' }].map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => setDomainInput('revenueMetricDirection', opt.id)}
+              className={`px-4 py-2 rounded-full text-sm transition-all cursor-pointer ${
+                (currentState.inputs.revenueMetricDirection as string) === opt.id
+                  ? opt.id === 'increase' ? 'bg-[#EA2C00] text-white font-medium' : 'bg-[#525252] text-white font-medium'
+                  : 'bg-[#F0EFED] text-[#525252] hover:bg-[#E5E3E0]'
+              }`}
+              data-testid={`pill-direction-${opt.id}`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  )}
+
+  {metricType === 'denial_rate' && (
+    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
+      <div className="flex flex-col gap-4">
+        <div>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+            Denial rate change (percentage points)
+          </label>
+          <div className="flex items-center gap-2">
+            <FormattedNumberInput
+              value={(currentState.inputs.measuredDenialReduction as number) || 0}
+              onChange={(v) => setDomainInput('measuredDenialReduction', Math.min(100, Math.max(0, v)))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-denial-reduction"
+              step={0.1}
+            />
+            <span className="text-sm text-[#888888]">pp</span>
+          </div>
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-[#1A1A1A] mb-2">Direction</label>
+            <div className="flex gap-2">
+              {[{ id: 'decrease', label: '↓ Decreased (improved)' }, { id: 'increase', label: '↑ Increased (worsened)' }].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDomainInput('revenueMetricDirection', opt.id)}
+                  className={`px-4 py-2 rounded-full text-sm transition-all cursor-pointer ${
+                    (currentState.inputs.revenueMetricDirection as string) === opt.id
+                      ? opt.id === 'decrease' ? 'bg-[#EA2C00] text-white font-medium' : 'bg-[#525252] text-white font-medium'
+                      : 'bg-[#F0EFED] text-[#525252] hover:bg-[#E5E3E0]'
+                  }`}
+                  data-testid={`pill-direction-${opt.id}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <BenchmarkContext text="Industry average: 3–5% documentation-related denial rate. A 1–2 point decrease is meaningful." />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+            Average monthly billed amount <span className="font-normal text-[#888888]">(optional — needed to calculate dollars)</span>
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.monthlyBilledAmount as number) || 0}
+              onChange={(v) => setDomainInput('monthlyBilledAmount', Math.max(0, v))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-monthly-billed"
+            />
+          </div>
+          <p className="text-xs text-[#888888] mt-1">Total billed charges across all payers. Leave blank to show rate change only.</p>
+        </div>
+      </div>
+    </motion.div>
+  )}
+
+  Also reset revenueMetricDirection when metric type changes — add this to the metric type onClick:
+  onClick={() => {                        
+    setDomainInput('revenueMetricType', opt.id);
+    setDomainInput('revenueMetricDirection', '');                                                                                                                                                              
+  }}                                      
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  File 2: client/src/pages/switch/ambient/domainCalculations.ts
+                                                                                                                                                                                                               
+  Replace the three metric branches inside if (level === 3) with direction-aware logic. Also remove the revenue_pct branch entirely.                                                                         
+                                              
+  if (level === 3) {                                                                                                                                                                                           
+    const metricType = inputs.revenueMetricType as string | undefined;
+    const direction = (inputs.revenueMetricDirection as string) || 'increase';                                                                                                                                 
+    const isDecrease = direction === 'decrease';                                                                                                                                                             
+                                                                                                                                                                                                               
+    if (!metricType) {                                                                                                                                                                                         
+      return {                                                                                                                                                                                                 
+        label: 'Impact Measured',                                                                                                                                                                              
+        value: null, hasValue: false,                                                                                                                                                                          
+        headlineMetric: 'Select what you measured.',                                                                                                                                                         
+        context: 'Choose the metric your organization has data on.',                                                                                                                                           
+        formula: '', footnote: '',            
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',                                                                    
+      };                                                                                                                                                                                                       
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    if (metricType === 'wrvu') {                                                                                                                                                                               
+      const wrvuDelta = inputs.measuredWrvuDelta as number | undefined;                                                                                                                                      
+      if (!wrvuDelta || wrvuDelta <= 0) {                                                                                                                                                                      
+        return {                                                                                                                                                                                             
+          label: 'Impact Measured',
+          value: null, hasValue: false,                                                                                                                                                                        
+          headlineMetric: 'Enter measured wRVU change to calculate.',
+          context: 'Enter your wRVU change per encounter, then select the direction.',                                                                                                                         
+          formula: '', footnote: '',                                                                                                                                                                         
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
+        };                                                                                                                                                                                                     
+      }                                                                                                                                                                                                        
+      if (isDecrease) {                                                                                                                                                                                        
+        return {                                                                                                                                                                                               
+          label: 'Impact Measured',                                                                                                                                                                          
+          value: null, hasValue: false,                                                                                                                                                                        
+          headlineMetric: `wRVU per encounter decreased ${wrvuDelta}`,
+          context: `A decrease in wRVU per encounter is unexpected with documentation improvement. This may indicate the analysis hasn't been isolated from other variables yet — case mix shifts, specialty   
+  changes, or payer mix could be factors.\n\nAbridge benchmark: 0.05–0.15 wRVU increase per encounter.`,                                                                                                     
+          formula: '', footnote: '',      
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',                                                                  
+        };                                                                                                                                                                                                     
+      }                                                                                                                                                                                                        
+      const revenueImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);                                                                                                                   
+      return {                                                                                                                                                                                               
+        label: 'Impact Measured',         
+        value: revenueImpact, hasValue: true,
+        headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,                                                                                                                           
+        context: `wRVU per encounter increased ${wrvuDelta} × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(revenueImpact)}\n\nBased on your 
+  organization's measured data.`,                                                                                                                                                                              
+        formula: `[revenueImpact] = ${wrvuDelta} × ${documentedEncounters.toLocaleString()} × $${conversionFactor} = ${formatDollar(revenueImpact)}`,                                                        
+        footnote: `CMS conversion factor from your baseline inputs. Individual results vary.`,                                                                                                                 
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',                                                                    
+      };                                                                                                                                                                                                       
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    if (metricType === 'collections') {                                                                                                                                                                        
+      const collectionsDelta = inputs.measuredCollectionsDelta as number | undefined;                                                                                                                          
+      if (!collectionsDelta || collectionsDelta <= 0) {                                                                                                                                                        
+        return {                                                                                                                                                                                             
+          label: 'Impact Measured',
+          value: null, hasValue: false,       
+          headlineMetric: 'Enter measured collections change to calculate.',
+          context: 'Enter the dollar change per encounter, then select the direction.',
+          formula: '', footnote: '',                                                                                                                                                                           
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
+        };                                                                                                                                                                                                     
+      }                                                                                                                                                                                                        
+      if (isDecrease) {
+        return {                                                                                                                                                                                               
+          label: 'Impact Measured',                                                                                                                                                                          
+          value: null, hasValue: false,   
+          headlineMetric: `Collections per encounter decreased ${formatDollar(collectionsDelta)}`,
+          context: `A decrease in collections per encounter warrants investigation — this may reflect payer mix changes or other variables unrelated to documentation quality.`,                               
+          formula: '', footnote: '',          
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',                                                                  
+        };                                                                                                                                                                                                   
+      }                                                                                                                                                                                                        
+      const revenueImpact = Math.round(collectionsDelta * documentedEncounters);
+      return {                                                                                                                                                                                                 
+        label: 'Impact Measured',                                                                                                                                                                            
+        value: revenueImpact, hasValue: true,
+        headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,                                                                                                                           
+        context: `${formatDollar(collectionsDelta)} increase per encounter × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured 
+  data.`,                                                                                                                                                                                                      
+        formula: `[revenueImpact] = ${formatDollar(collectionsDelta)} × ${documentedEncounters.toLocaleString()} = ${formatDollar(revenueImpact)}`,                                                          
+        footnote: 'Individual results vary.',                                                                                                                                                                  
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',                                                                    
+      };                                                                                                                                                                                                       
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    if (metricType === 'denial_rate') {       
+      const denialPct = inputs.measuredDenialReduction as number | undefined;                                                                                                                                  
+      const monthlyBilled = inputs.monthlyBilledAmount as number | undefined;                                                                                                                                
+                                                                                                                                                                                                               
+      if (!denialPct || denialPct <= 0) { 
+        return {                                                                                                                                                                                               
+          label: 'Impact Measured',                                                                                                                                                                            
+          value: null, hasValue: false,
+          headlineMetric: 'Enter denial rate change to calculate.',                                                                                                                                            
+          context: 'Enter the percentage point change in your documentation-related denial rate, select the direction, and optionally enter monthly billed amount for a dollar figure.',                     
+          formula: '', footnote: '',          
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
+        };                                                                                                                                                                                                     
+      }                                                                                                                                                                                                        
+                                                                                                                                                                                                               
+      if (isDecrease) {                                                                                                                                                                                        
+        // Denial rate decreased = good                                                                                                                                                                      
+        if (monthlyBilled && monthlyBilled > 0) {                                                                                                                                                              
+          const annualRecovery = Math.round((denialPct / 100) * monthlyBilled * 12);                                                                                                                         
+          return {                            
+            label: 'Impact Measured',                                                                                                                                                                          
+            value: annualRecovery, hasValue: true,
+            headlineMetric: `${formatDollar(annualRecovery)} in recovered annual revenue`,                                                                                                                     
+            context: `Denial rate decreased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}.\n\n${denialPct}% × ${formatDollar(monthlyBilled)} monthly billed × 12 months =                       
+  ${formatDollar(annualRecovery)} annually.\n\nBased on your organization's measured data.`,                                                                                                                   
+            formula: `[annualRecovery] = ${denialPct}% × ${formatDollar(monthlyBilled)} × 12 = ${formatDollar(annualRecovery)}`,                                                                               
+            footnote: 'Based on total billed charges. Actual recovery depends on denial resolution rate. Individual results vary.',
+            nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',                                                                
+          };                                                                                                                                                                                                 
+        }                                                                                                                                                                                                      
+        return {                                                                                                                                                                                               
+          label: 'Impact Measured',                                                                                                                                                                            
+          value: null, hasValue: false,                                                                                                                                                                        
+          headlineMetric: `Denial rate decreased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}`,                                                                                                  
+          context: `Documentation-related denial rate improved by ${denialPct}pp.\n\nTo calculate the dollar impact, enter your average monthly billed amount above.`,                                       
+          formula: '', footnote: '',          
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
+        };                                                                                                                                                                                                     
+      }                                                                                                                                                                                                        
+                                                                                                                                                                                                               
+      // Denial rate increased = bad                                                                                                                                                                           
+      return {                                                                                                                                                                                               
+        label: 'Impact Measured',                                                                                                                                                                              
+        value: null, hasValue: false,
+        headlineMetric: `Denial rate increased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}`,                                                                                                    
+        context: `An increase in documentation-related denials is unexpected with ambient documentation deployment. This may indicate the analysis includes denial categories outside documentation quality, or
+   other operational factors are at play. Worth isolating documentation-specific denial codes before drawing conclusions.`,
+        formula: '', footnote: '',        
+        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',                                                                    
+      };                                                                                                                                                                                                       
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    // Fallback                                                                                                                                                                                                
+    return {
+      label: 'Impact Measured',                                                                                                                                                                                
+      value: null, hasValue: false,                                                                                                                                                                          
+      headlineMetric: 'Select measurement type to calculate.',
+      context: '',                            
+      formula: '', footnote: '',          
+      nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
+    };                                                                                                                                                                                                         
+  }
+                                                                                                                                                                                                               
+  Also remove the entire revenue_pct branch that currently exists — it is no longer a valid metric type.

@@ -497,8 +497,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
   const REVENUE_METRIC_OPTIONS = [
     { id: 'wrvu', label: 'wRVU per encounter' },
     { id: 'collections', label: 'Collections per encounter' },
-    { id: 'revenue_pct', label: 'Overall revenue change' },
-    { id: 'denial_rate', label: 'Denial rate reduction' },
+    { id: 'denial_rate', label: 'Denial rate' },
   ];
 
   const REVENUE_METRIC_BENCHMARKS: Record<string, string> = {
@@ -641,7 +640,10 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                 <button
                   key={opt.id}
                   type="button"
-                  onClick={() => setDomainInput('revenueMetricType', opt.id)}
+                  onClick={() => {
+                    setDomainInput('revenueMetricType', opt.id);
+                    setDomainInput('revenueMetricDirection', '');
+                  }}
                   className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
                     metricType === opt.id
                       ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
@@ -660,12 +662,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
 
           <AnimatePresence>
             {metricType === 'wrvu' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
                 <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                   Measured wRVU change per encounter
                 </label>
@@ -678,17 +675,33 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                   step={0.01}
                 />
                 <BenchmarkContext text="Abridge benchmark: 0.05–0.15 wRVU per encounter" />
+                <div className="mt-3">
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-2">Direction</label>
+                  <div className="flex gap-2">
+                    {[{ id: 'increase', label: '↑ Increased' }, { id: 'decrease', label: '↓ Decreased' }].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setDomainInput('revenueMetricDirection', opt.id)}
+                        className={`px-4 py-2 rounded-full text-sm transition-all cursor-pointer ${
+                          (currentState.inputs.revenueMetricDirection as string) === opt.id
+                            ? opt.id === 'increase' ? 'bg-[#EA2C00] text-white font-medium' : 'bg-[#525252] text-white font-medium'
+                            : 'bg-[#F0EFED] text-[#525252] hover:bg-[#E5E3E0]'
+                        }`}
+                        data-testid={`pill-direction-${opt.id}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </motion.div>
             )}
+
             {metricType === 'collections' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
                 <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                  Measured collections change per encounter since deployment
+                  Collections change per encounter since deployment
                 </label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-[#888888]">$</span>
@@ -700,54 +713,87 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                     data-testid="input-collections-delta"
                   />
                 </div>
-                <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.collections} />
-              </motion.div>
-            )}
-            {metricType === 'revenue_pct' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                  Measured revenue change (%) attributed to documentation
-                </label>
-                <div className="flex items-center gap-2">
-                  <FormattedNumberInput
-                    value={(currentState.inputs.measuredRevenuePct as number) || 0}
-                    onChange={(v) => setDomainInput('measuredRevenuePct', Math.min(100, Math.max(0, v)))}
-                    placeholder=""
-                    className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-revenue-pct"
-                  />
-                  <span className="text-sm text-[#888888]">%</span>
+                <BenchmarkContext text="Organizations at this level have reported $3–$10 increase per encounter." />
+                <div className="mt-3">
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-2">Direction</label>
+                  <div className="flex gap-2">
+                    {[{ id: 'increase', label: '↑ Increased' }, { id: 'decrease', label: '↓ Decreased' }].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setDomainInput('revenueMetricDirection', opt.id)}
+                        className={`px-4 py-2 rounded-full text-sm transition-all cursor-pointer ${
+                          (currentState.inputs.revenueMetricDirection as string) === opt.id
+                            ? opt.id === 'increase' ? 'bg-[#EA2C00] text-white font-medium' : 'bg-[#525252] text-white font-medium'
+                            : 'bg-[#F0EFED] text-[#525252] hover:bg-[#E5E3E0]'
+                        }`}
+                        data-testid={`pill-direction-${opt.id}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.revenue_pct} />
               </motion.div>
             )}
+
             {metricType === 'denial_rate' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                  Measured denial rate reduction
-                </label>
-                <div className="flex items-center gap-2">
-                  <FormattedNumberInput
-                    value={(currentState.inputs.measuredDenialReduction as number) || 0}
-                    onChange={(v) => setDomainInput('measuredDenialReduction', Math.min(100, Math.max(0, v)))}
-                    placeholder=""
-                    className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-denial-reduction"
-                    step={0.1}
-                  />
-                  <span className="text-sm text-[#888888]">%</span>
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2 }}>
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                      Denial rate change (percentage points)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <FormattedNumberInput
+                        value={(currentState.inputs.measuredDenialReduction as number) || 0}
+                        onChange={(v) => setDomainInput('measuredDenialReduction', Math.min(100, Math.max(0, v)))}
+                        placeholder=""
+                        className="w-full h-12 bg-white border-[#E5E7EB]"
+                        data-testid="input-denial-reduction"
+                        step={0.1}
+                      />
+                      <span className="text-sm text-[#888888]">pp</span>
+                    </div>
+                    <div className="mt-3">
+                      <label className="block text-xs font-medium text-[#1A1A1A] mb-2">Direction</label>
+                      <div className="flex gap-2">
+                        {[{ id: 'decrease', label: '↓ Decreased (improved)' }, { id: 'increase', label: '↑ Increased (worsened)' }].map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setDomainInput('revenueMetricDirection', opt.id)}
+                            className={`px-4 py-2 rounded-full text-sm transition-all cursor-pointer ${
+                              (currentState.inputs.revenueMetricDirection as string) === opt.id
+                                ? opt.id === 'decrease' ? 'bg-[#EA2C00] text-white font-medium' : 'bg-[#525252] text-white font-medium'
+                                : 'bg-[#F0EFED] text-[#525252] hover:bg-[#E5E3E0]'
+                            }`}
+                            data-testid={`pill-direction-${opt.id}`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <BenchmarkContext text="Industry average: 3–5% documentation-related denial rate. A 1–2 point decrease is meaningful." />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                      Average monthly billed amount <span className="font-normal text-[#888888]">(optional — needed to calculate dollars)</span>
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-[#888888]">$</span>
+                      <FormattedNumberInput
+                        value={(currentState.inputs.monthlyBilledAmount as number) || 0}
+                        onChange={(v) => setDomainInput('monthlyBilledAmount', Math.max(0, v))}
+                        placeholder=""
+                        className="w-full h-12 bg-white border-[#E5E7EB]"
+                        data-testid="input-monthly-billed"
+                      />
+                    </div>
+                    <p className="text-xs text-[#888888] mt-1">Total billed charges across all payers. Leave blank to show rate change only.</p>
+                  </div>
                 </div>
-                <BenchmarkContext text={REVENUE_METRIC_BENCHMARKS.denial_rate} />
               </motion.div>
             )}
           </AnimatePresence>

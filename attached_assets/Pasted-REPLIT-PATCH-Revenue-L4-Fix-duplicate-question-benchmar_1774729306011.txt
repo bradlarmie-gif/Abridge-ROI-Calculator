@@ -1,0 +1,24 @@
+REPLIT PATCH — Revenue L4: Fix duplicate question + benchmark language                                                                                                                                       
+                                                                                                                                                                                                             
+  File: client/src/pages/switch/ambient/Screen4Domains.tsx
+                                              
+  In DOMAIN_CONFIGS.revenue.framingQuestions, set level 4 to undefined:                                                                                                                                        
+                                          
+  framingQuestions: {                                                                                                                                                                                          
+    1: undefined,                                                                                                                                                                                              
+    2: 'What has your organization observed?',                                                                                                                                                                 
+    3: undefined,                                                                                                                                                                                              
+    4: undefined,   // was: 'How is documentation quality being used strategically in revenue decisions?'                                                                                                      
+  },                                          
+                                                                                                                                                                                                               
+  File: client/src/pages/switch/ambient/domainCalculations.ts                                                                                                                                                
+                                                                                                                                                                                                               
+  In computeRevenueFeedback Level 4, find the two places that say "Abridge deployment benchmark at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually" 
+  and update both:                                                                                                                                                                                             
+                                                                                                                                                                                                             
+  // Find (appears twice — in the noConfirmedRevenue branch and the fallback context):                                                                                                                         
+  `Abridge deployment benchmark at ${documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. This can serve as a working estimate.`
+                                                                                                                                                                                                               
+  // Replace with:                                                                                                                                                                                           
+  `Organizations at ${documentedEncounters.toLocaleString()} documented encounters with active revenue cycle integration typically attribute $200K–$600K annually to documentation quality programs. This can  
+  serve as a planning estimate until formal attribution is available.` 

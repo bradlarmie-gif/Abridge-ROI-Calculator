@@ -329,15 +329,16 @@ export function computeRevenueFeedback(
 
   if (level === 3) {
     const metricType = inputs.revenueMetricType as string | undefined;
+    const direction = (inputs.revenueMetricDirection as string) || 'increase';
+    const isDecrease = direction === 'decrease';
+
     if (!metricType) {
       return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: 'Select measurement type to calculate.',
-        context: 'Select what was measured to calculate the revenue impact. Based on aggregated deployment experience.',
-        formula: '',
-        footnote: '',
+        label: 'Impact Measured',
+        value: null, hasValue: false,
+        headlineMetric: 'Select what you measured.',
+        context: 'Choose the metric your organization has data on.',
+        formula: '', footnote: '',
         nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
@@ -346,25 +347,32 @@ export function computeRevenueFeedback(
       const wrvuDelta = inputs.measuredWrvuDelta as number | undefined;
       if (!wrvuDelta || wrvuDelta <= 0) {
         return {
-          label: 'Estimated Impact',
-          value: null,
-          hasValue: false,
+          label: 'Impact Measured',
+          value: null, hasValue: false,
           headlineMetric: 'Enter measured wRVU change to calculate.',
-          context: 'Enter your measured wRVU change per encounter. Abridge benchmark: 0.05–0.15 wRVU per encounter. Based on aggregated deployment experience.',
-          formula: '',
-          footnote: '',
+          context: 'Enter your wRVU change per encounter, then select the direction.',
+          formula: '', footnote: '',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
+        };
+      }
+      if (isDecrease) {
+        return {
+          label: 'Impact Measured',
+          value: null, hasValue: false,
+          headlineMetric: `wRVU per encounter decreased ${wrvuDelta}`,
+          context: `A decrease in wRVU per encounter is unexpected with documentation improvement. This may indicate the analysis hasn't been isolated from other variables yet — case mix shifts, specialty changes, or payer mix could be factors.\n\nAbridge benchmark: 0.05–0.15 wRVU increase per encounter.`,
+          formula: '', footnote: '',
           nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
       const revenueImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);
       return {
-        label: 'Estimated Impact',
-        value: revenueImpact,
-        hasValue: true,
+        label: 'Impact Measured',
+        value: revenueImpact, hasValue: true,
         headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,
-        context: `${wrvuDelta} wRVU × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.\nNo attribution discount applied to user-measured values.`,
+        context: `wRVU per encounter increased ${wrvuDelta} × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.`,
         formula: `[revenueImpact] = ${wrvuDelta} × ${documentedEncounters.toLocaleString()} × $${conversionFactor} = ${formatDollar(revenueImpact)}`,
-        footnote: `CMS conversion factor from your baseline inputs.\nEstimates based on your inputs. Individual results vary.`,
+        footnote: `CMS conversion factor from your baseline inputs. Individual results vary.`,
         nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
@@ -373,92 +381,90 @@ export function computeRevenueFeedback(
       const collectionsDelta = inputs.measuredCollectionsDelta as number | undefined;
       if (!collectionsDelta || collectionsDelta <= 0) {
         return {
-          label: 'Estimated Impact',
-          value: null,
-          hasValue: false,
+          label: 'Impact Measured',
+          value: null, hasValue: false,
           headlineMetric: 'Enter measured collections change to calculate.',
-          context: 'Enter your measured collections change per encounter. Organizations at this level have reported $3–$10 increase per encounter. Based on aggregated deployment experience.',
-          formula: '',
-          footnote: '',
+          context: 'Enter the dollar change per encounter, then select the direction.',
+          formula: '', footnote: '',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
+        };
+      }
+      if (isDecrease) {
+        return {
+          label: 'Impact Measured',
+          value: null, hasValue: false,
+          headlineMetric: `Collections per encounter decreased ${formatDollar(collectionsDelta)}`,
+          context: `A decrease in collections per encounter warrants investigation — this may reflect payer mix changes or other variables unrelated to documentation quality.`,
+          formula: '', footnote: '',
           nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
       const revenueImpact = Math.round(collectionsDelta * documentedEncounters);
       return {
-        label: 'Estimated Impact',
-        value: revenueImpact,
-        hasValue: true,
+        label: 'Impact Measured',
+        value: revenueImpact, hasValue: true,
         headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,
-        context: `${formatDollar(collectionsDelta)} per encounter × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.\nNo attribution discount applied to user-measured values.`,
+        context: `${formatDollar(collectionsDelta)} increase per encounter × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.`,
         formula: `[revenueImpact] = ${formatDollar(collectionsDelta)} × ${documentedEncounters.toLocaleString()} = ${formatDollar(revenueImpact)}`,
-        footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
-      };
-    }
-
-    if (metricType === 'revenue_pct') {
-      const revenuePct = inputs.measuredRevenuePct as number | undefined;
-      if (!revenuePct || revenuePct <= 0) {
-        return {
-          label: 'Estimated Impact',
-          value: null,
-          hasValue: false,
-          headlineMetric: 'Enter measured revenue change to calculate.',
-          context: 'Enter your measured revenue change percentage. Organizations at this level have reported 2–7% improvement. Based on aggregated deployment experience.',
-          formula: '',
-          footnote: '',
-          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
-        };
-      }
-      const revenueImpact = Math.round(documentedEncounters * revenuePerVisit * (revenuePct / 100));
-      return {
-        label: 'Estimated Impact',
-        value: revenueImpact,
-        hasValue: true,
-        headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,
-        context: `${revenuePct}% × ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.\nNo attribution discount applied to user-measured values.`,
-        formula: `[revenueImpact] = ${documentedEncounters.toLocaleString()} × ${formatDollar(revenuePerVisit)} × ${revenuePct}% = ${formatDollar(revenueImpact)}`,
-        footnote: 'Estimates based on your inputs. Individual results vary.',
+        footnote: 'Individual results vary.',
         nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
 
     if (metricType === 'denial_rate') {
       const denialPct = inputs.measuredDenialReduction as number | undefined;
+      const monthlyBilled = inputs.monthlyBilledAmount as number | undefined;
 
       if (!denialPct || denialPct <= 0) {
         return {
-          label: 'Estimated Impact',
-          value: null,
-          hasValue: false,
-          headlineMetric: 'Enter measured denial rate reduction to calculate.',
-          context: 'Enter your measured denial rate reduction percentage. Organizations at this level have reported 5–15% reduction in documentation-related denials. Based on aggregated deployment experience.',
-          formula: '',
-          footnote: '',
+          label: 'Impact Measured',
+          value: null, hasValue: false,
+          headlineMetric: 'Enter denial rate change to calculate.',
+          context: 'Enter the percentage point change in your documentation-related denial rate, select the direction, and optionally enter monthly billed amount for a dollar figure.',
+          formula: '', footnote: '',
+          nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
+        };
+      }
+
+      if (isDecrease) {
+        if (monthlyBilled && monthlyBilled > 0) {
+          const annualRecovery = Math.round((denialPct / 100) * monthlyBilled * 12);
+          return {
+            label: 'Impact Measured',
+            value: annualRecovery, hasValue: true,
+            headlineMetric: `${formatDollar(annualRecovery)} in recovered annual revenue`,
+            context: `Denial rate decreased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}.\n\n${denialPct}% × ${formatDollar(monthlyBilled)} monthly billed × 12 months = ${formatDollar(annualRecovery)} annually.\n\nBased on your organization's measured data.`,
+            formula: `[annualRecovery] = ${denialPct}% × ${formatDollar(monthlyBilled)} × 12 = ${formatDollar(annualRecovery)}`,
+            footnote: 'Based on total billed charges. Actual recovery depends on denial resolution rate. Individual results vary.',
+            nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
+          };
+        }
+        return {
+          label: 'Impact Measured',
+          value: null, hasValue: false,
+          headlineMetric: `Denial rate decreased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}`,
+          context: `Documentation-related denial rate improved by ${denialPct}pp.\n\nTo calculate the dollar impact, enter your average monthly billed amount above.`,
+          formula: '', footnote: '',
           nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
 
       return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: `Denial rate reduced ${denialPct}%`,
-        context: `Your documentation-related denial rate decreased by ${denialPct}%.\n\nTo estimate dollar impact, multiply your average monthly documentation-related denial volume by the reduction percentage and your average denial value.\n\nBased on your organization's measured data.`,
-        formula: '',
-        footnote: 'Estimates based on your inputs. Individual results vary.',
+        label: 'Impact Measured',
+        value: null, hasValue: false,
+        headlineMetric: `Denial rate increased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}`,
+        context: `An increase in documentation-related denials is unexpected with ambient documentation deployment. This may indicate the analysis includes denial categories outside documentation quality, or other operational factors are at play. Worth isolating documentation-specific denial codes before drawing conclusions.`,
+        formula: '', footnote: '',
         nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
 
     return {
-      label: 'Estimated Impact',
-      value: null,
-      hasValue: false,
+      label: 'Impact Measured',
+      value: null, hasValue: false,
       headlineMetric: 'Select measurement type to calculate.',
-      context: 'Select what was measured to calculate the revenue impact. Based on aggregated deployment experience.',
-      formula: '',
-      footnote: '',
+      context: '',
+      formula: '', footnote: '',
       nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
     };
   }
