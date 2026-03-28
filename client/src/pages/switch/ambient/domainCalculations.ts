@@ -655,11 +655,12 @@ export function computeWorkforceFeedback(
       };
     }
 
-    const afterRate = (afterTurnoverRate && afterTurnoverRate >= 0) ? afterTurnoverRate : beforeTurnoverRate;
-    const rateDelta = Math.max(0, beforeTurnoverRate - afterRate);
+    const afterMeasured = afterTurnoverRate !== undefined && afterTurnoverRate !== null && afterTurnoverRate > 0;
+    const afterRate = afterMeasured ? afterTurnoverRate : beforeTurnoverRate;
+    const rateDelta = afterMeasured ? Math.max(0, beforeTurnoverRate - afterRate) : 0;
     const preventedDepartures = Math.round(providers * (rateDelta / 100) * 10) / 10;
     const annualSavings = Math.round(preventedDepartures * replacementCost);
-    const hasSavings = rateDelta > 0 && annualSavings > 0;
+    const hasSavings = afterMeasured && rateDelta > 0 && annualSavings > 0;
 
     const replacementLabel = replacementCost === 350000
       ? `Using AMGA benchmark midpoint: ${formatDollar(replacementCost)}`
@@ -667,16 +668,18 @@ export function computeWorkforceFeedback(
 
     const headlineMetric = hasSavings
       ? `${formatDollar(annualSavings)} in annual retention savings`
-      : afterRate >= beforeTurnoverRate
-        ? 'Turnover has not decreased since deployment.'
-        : `Enter your post-deployment turnover rate to calculate savings.`;
+      : !afterMeasured
+        ? 'Enter your post-deployment turnover rate to calculate savings.'
+        : afterRate >= beforeTurnoverRate
+          ? 'Turnover has not decreased since deployment.'
+          : 'Enter your post-deployment turnover rate to calculate savings.';
 
     return {
       label: 'Estimated Impact',
       value: hasSavings ? annualSavings : null,
       hasValue: hasSavings,
       headlineMetric,
-      context: `Before deployment: ${beforeTurnoverRate}% annual turnover.\nAfter deployment: ${afterRate}% annual turnover.\n\n${hasSavings ? `Improvement: ${rateDelta.toFixed(1)} percentage points → ${preventedDepartures.toFixed(1)} prevented departure${preventedDepartures !== 1 ? 's' : ''} per year.\n\nReplacement cost: ${replacementLabel}.\nAnnual savings: ${formatDollar(annualSavings)}.` : afterRate >= beforeTurnoverRate ? 'No improvement observed yet. Turnover reduction takes time — most organizations see measurable change after 12–18 months of deployment.' : 'Enter your post-deployment turnover rate to see the comparison.'}`,
+      context: `Before deployment: ${beforeTurnoverRate}% annual turnover.\n${afterMeasured ? `After deployment: ${afterRate}% annual turnover.` : 'After deployment: not yet measured.'}\n\n${hasSavings ? `Improvement: ${rateDelta.toFixed(1)} percentage points → ${preventedDepartures.toFixed(1)} prevented departure${preventedDepartures !== 1 ? 's' : ''} per year.\n\nReplacement cost: ${replacementLabel}.\nAnnual savings: ${formatDollar(annualSavings)}.` : !afterMeasured ? 'Enter your post-deployment turnover rate to see the comparison. If it hasn\'t been measured yet, leave at 0.' : afterRate >= beforeTurnoverRate ? 'No improvement observed yet. Turnover reduction takes time — most organizations see measurable change after 12–18 months of deployment.' : 'Enter your post-deployment turnover rate to see the comparison.'}`,
       formula: hasSavings ? `[rateDelta] = ${beforeTurnoverRate}% − ${afterRate}% = ${rateDelta.toFixed(1)}%\n[preventedDepartures] = ${providers} × ${rateDelta.toFixed(1)}% = ${preventedDepartures.toFixed(1)}\n[annualSavings] = ${preventedDepartures.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(annualSavings)}` : '',
       footnote: 'All inputs are your organization\'s data. Turnover reduction may be influenced by multiple factors beyond documentation burden.',
       nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',

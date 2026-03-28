@@ -1623,14 +1623,18 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                     if (card.level === 3) {
                       const btr = (inp.beforeTurnoverRate as number) || 0;
                       const atr = (inp.afterTurnoverRate as number) || 0;
+                      const afterMeasured = atr > 0;
                       const rc = (inp.replacementCost as number) || 350000;
-                      if (btr > 0 && atr >= 0 && btr > atr) {
+                      if (btr > 0 && afterMeasured && btr > atr) {
                         const prevented = Math.round(providers * ((btr - atr) / 100) * 10) / 10;
                         const savings = Math.round(prevented * rc);
                         return formatDollar(savings);
                       }
-                      if (btr > 0) {
+                      if (btr > 0 && afterMeasured) {
                         return `${btr}% → ${atr}%`;
+                      }
+                      if (btr > 0) {
+                        return `${btr}% before — awaiting post-deployment rate`;
                       }
                     }
                   }
@@ -1931,10 +1935,11 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
 
               const btr = currentState.activationLevel >= 3 ? ((inp.beforeTurnoverRate as number) || 0) : 0;
               const atr = currentState.activationLevel >= 3 ? ((inp.afterTurnoverRate as number) || 0) : 0;
+              const afterMeasured = atr > 0;
               const rcRaw = (inp.replacementCost as number) || 0;
               const rc = rcRaw > 0 ? rcRaw : 350000;
-              const rateDelta = Math.max(0, btr - atr);
-              const retentionSavings = (currentState.activationLevel >= 3 && rateDelta > 0)
+              const rateDelta = afterMeasured ? Math.max(0, btr - atr) : 0;
+              const retentionSavings = (currentState.activationLevel >= 3 && afterMeasured && rateDelta > 0)
                 ? Math.round(providers * (rateDelta / 100) * rc)
                 : null;
 
