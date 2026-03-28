@@ -1757,9 +1757,10 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                       if (approachLabel) return approachLabel;
                     }
                     if (card.level === 3) {
-                      const wfCsv = (inp.connectedWorkflows as string) || '';
-                      const wfCount = wfCsv.split(',').filter(Boolean).length;
-                      if (wfCount > 0) return `${wfCount} workflow${wfCount !== 1 ? 's' : ''} connected`;
+                      const fp = inp.financialPathway as string;
+                      if (fp === 'mips') return 'MIPS connected';
+                      if (fp === 'denials') return 'Denials connected';
+                      if (fp === 'none_yet') return 'No pathway yet';
                     }
                     if (card.level === 4) {
                       const siCsv = (inp.strategicIntegrations as string) || '';

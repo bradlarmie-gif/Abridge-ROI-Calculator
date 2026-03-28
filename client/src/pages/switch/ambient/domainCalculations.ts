@@ -998,11 +998,12 @@ export function computeRiskFeedback(
   const uncheckedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
 
   const boardPresented = inputs.executiveBoardPresented as string | undefined;
+  const boardLine = boardPresented === 'yes' ? ' · Presented to executive committee or board: Yes' : boardPresented === 'no' ? ' · Not yet presented at board level' : '';
   const ownerLine = executiveOwner === 'yes'
-    ? `\n\nNamed executive owner: Yes${boardPresented === 'yes' ? ' · Presented to executive committee or board: Yes' : boardPresented === 'no' ? ' · Not yet presented at board level' : ''}`
+    ? `\n\nNamed executive owner: Yes${boardLine}`
     : executiveOwner === 'no'
-      ? '\n\nNamed executive owner: Not yet established'
-      : '';
+      ? `\n\nNamed executive owner: Not yet established${boardLine}`
+      : boardLine ? `\n\n${boardLine.slice(3)}` : '';
 
   if (count === 0 && strategicValue <= 0) {
     return {
