@@ -87,7 +87,6 @@ export function computeCapacityFeedback(
   providers: number,
   documentedEncounters: number,
   revenuePerVisit: number,
-  providerRate: number,
 ): DomainFeedback {
   const timeSaved = inputs.timeSaved as number | undefined;
   const hasTimeSaved = timeSaved !== undefined && timeSaved > 0;
@@ -552,7 +551,6 @@ export function computeWorkforceFeedback(
   level: ActivationLevel,
   inputs: Record<string, number | string>,
   providers: number,
-  providerRate: number,
 ): DomainFeedback {
   if (level === 1) {
     const afterHoursReduction = inputs.afterHoursReduction as number | undefined;
@@ -1014,20 +1012,19 @@ export function computeGapForDomain(
   annualEncounters: number,
   utilization: number,
   revenuePerVisit: number,
-  providerRate: number,
   conversionFactor: number = 33,
 ): { value: number; hasValue: boolean } {
   const documentedEncounters = Math.round(annualEncounters * (utilization / 100));
   let feedback: DomainFeedback;
   switch (domain) {
     case 'capacity':
-      feedback = computeCapacityFeedback(level, inputs, providers, documentedEncounters, revenuePerVisit, providerRate);
+      feedback = computeCapacityFeedback(level, inputs, providers, documentedEncounters, revenuePerVisit);
       break;
     case 'revenue':
       feedback = computeRevenueFeedback(level, inputs, documentedEncounters, revenuePerVisit, conversionFactor);
       break;
     case 'workforce':
-      feedback = computeWorkforceFeedback(level, inputs, providers, providerRate);
+      feedback = computeWorkforceFeedback(level, inputs, providers);
       break;
     case 'risk':
       feedback = computeRiskFeedback(level, inputs, documentedEncounters, revenuePerVisit);

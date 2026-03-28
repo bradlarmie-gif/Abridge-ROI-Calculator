@@ -55,7 +55,6 @@ export interface AmbientAssessmentPDFData {
   permanentlyLost6mo: number;
   permanentlyLost12mo: number;
   revenuePerVisit?: number;
-  providerRate?: number;
   conversionFactor?: number;
   assessmentNarrative: string;
   deploymentTenure?: string;
@@ -1250,9 +1249,9 @@ function MethodologyPage({ data }: { data: AmbientAssessmentPDFData }) {
         `Providers in scope: ${data.providers.toLocaleString()}`,
         `Encounters/year: ${data.annualEncounters.toLocaleString()}`,
         `Current utilization: ${data.utilization ?? 0}%`,
-        "Time savings applied: 8 min/encounter (Abridge deployment average)",
-        "Conversion to access: 25% of recovered time converts to new encounters",
-        "Revenue per new encounter: $150 (adjustable by org)",
+        "Time savings applied: 2 min/encounter (default benchmark)",
+        "Conversion to access: 15% of recovered hours convert to new appointments",
+        "Revenue per new encounter: $200 (adjustable by org)",
         capacityLevel === 2
           ? "Confidence adjustment: 30% reduction applied (estimated data, not confirmed)"
           : capacityLevel === 3

@@ -42,7 +42,6 @@ export interface SwitchInputs {
   structuredDataUsability: "yes" | "some" | "no";
   entryEstimate: number | null;
   revenuePerVisit: number;
-  providerRate: number;
   conversionFactor: number;
   capacityScore: number;
   capacityGap: number;
@@ -182,8 +181,11 @@ export const ABRIDGE_BENCHMARKS = {
 export const VALUE_ASSUMPTIONS = {
   hourlyRate: 150,
   timeConversionRate: 0.25,
+  utilizationTimeConversionRate: 0.25,
+  efficiencyTimeConversionRate: 0.15,
   wrvuDollarValue: 33,
   wrvuRealization: 0.85,
+  wrvuAttribution: 0.6,
   avgWRVUPerEncounter: 1.5,
 };
 
@@ -257,20 +259,17 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
 
   const utilizationGapPP = Math.max(0, ABRIDGE_BENCHMARKS.utilization - utilization);
   const encountersWithoutAI = Math.round(annualEncounters * (utilizationGapPP / 100));
-  const utilizationTimeSavedHours = (encountersWithoutAI * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60;
-  const utilizationGapValue = Math.round(utilizationTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
+  const utilizationGapValue = Math.round(encountersWithoutAI * 0.15 * 200);
 
   const encountersWithAI = yourEncountersDocumented;
   const netImpactGap = benchmarkNetImpact - currentNetImpact;
 
   const netEfficiencyGapHours = Math.round((netImpactGap * encountersWithAI) / 60);
-  const netEfficiencyGapValue = Math.round(
-    Math.max(0, netEfficiencyGapHours) * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate
-  );
+  const netEfficiencyGapValue = Math.round(netEfficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.efficiencyTimeConversionRate);
 
   const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - timeSavedPerEncounter);
   const efficiencyGapHours = Math.round((encountersWithAI * efficiencyGapMin) / 60);
-  const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
+  const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.efficiencyTimeConversionRate);
 
   const editTimeErosionPct = timeSavedPerEncounter > 0
     ? Math.round(((editTimePerEncounter || 0) / timeSavedPerEncounter) * 100)
@@ -286,7 +285,7 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
 
   const yourTimeSavedMinutes = yourEncountersDocumented * timeSavedPerEncounter;
   const yourTimeSavedHours = yourTimeSavedMinutes / 60;
-  const yourAnnualValue = yourTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate;
+  const yourAnnualValue = Math.round(yourTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
   const abridgeAnnualValue = yourAnnualValue + annualGap;
 
   const currentYear1 = 0;

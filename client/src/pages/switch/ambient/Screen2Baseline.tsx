@@ -30,7 +30,6 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
   const utilization = inputs.utilization || 0;
   const revenuePerVisit = inputs.revenuePerVisit || 200;
-  const providerRate = inputs.providerRate || 150;
   const conversionFactor = inputs.conversionFactor || 33;
 
   const estimatedEncounters = useMemo(() => inputs.providers * 2000, [inputs.providers]);
@@ -263,23 +262,6 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                             placeholder="200"
                             className="w-full h-12 bg-white border-[#E5E7EB]"
                             data-testid="input-revenue-per-visit"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-black mb-1">
-                          Blended provider hourly rate
-                        </label>
-                        <p className="text-xs text-[#888888] mb-2">Blended hourly rate for provider time. Used in workforce calculations.</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-[#888888]">$</span>
-                          <FormattedNumberInput
-                            value={providerRate}
-                            onChange={(v) => updateInput("providerRate", v || 150)}
-                            placeholder="150"
-                            className="w-full h-12 bg-white border-[#E5E7EB]"
-                            data-testid="input-provider-rate"
                           />
                         </div>
                       </div>

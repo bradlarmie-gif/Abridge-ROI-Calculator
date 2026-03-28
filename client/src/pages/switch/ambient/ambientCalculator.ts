@@ -64,16 +64,10 @@ export function calculateAmbientScore(
   const efficiencyGapHours = Math.max(0, Math.round(
     (documentedEncounters * Math.max(0, 3.0 - timeSavings)) / 60,
   ));
-  const revenueValue = Math.round(
-    efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate,
-  );
 
-  const afterHoursExposure = Math.round(
-    providers * 52 * Math.max(0, timeSavings < 3.0 ? (3.0 - timeSavings) * 0.4 : 0) * VALUE_ASSUMPTIONS.hourlyRate,
-  );
-  const workforceValue = Math.round(afterHoursExposure * 0.20);
-
-  const riskValue = Math.round((capacityValue + revenueValue) * 0.08);
+  const revenueValue = 0;
+  const workforceValue = 0;
+  const riskValue = 0;
 
   const domains: AmbientDomainValues = {
     capacity: capacityValue,

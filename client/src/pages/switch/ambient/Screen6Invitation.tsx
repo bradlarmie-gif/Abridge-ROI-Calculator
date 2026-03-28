@@ -650,7 +650,6 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
         permanentlyLost6mo,
         permanentlyLost12mo,
         revenuePerVisit,
-        providerRate: inputs.providerRate || 150,
         conversionFactor: inputs.conversionFactor || 33,
         assessmentNarrative,
         deploymentTenure: inputs.deploymentTenure || '',

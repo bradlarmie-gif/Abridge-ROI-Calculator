@@ -203,7 +203,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
   const annualEncounters = inputs.annualEncounters || 0;
   const utilization = inputs.utilization || 45;
   const revenuePerVisit = inputs.revenuePerVisit || 200;
-  const providerRate = inputs.providerRate || 150;
   const documentedEncounters = Math.round(annualEncounters * (utilization / 100));
 
   const currentState = domainStates[activeDomain];
@@ -256,13 +255,13 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     switch (activeDomain) {
       case 'capacity': {
         const capacityInp = inp.timeSaved ? inp : { ...inp, timeSaved: inputs.timeSavedPerEncounter || 0 };
-        return computeCapacityFeedback(level, capacityInp, providers, documentedEncounters, revenuePerVisit, providerRate);
+        return computeCapacityFeedback(level, capacityInp, providers, documentedEncounters, revenuePerVisit);
       }
       case 'revenue': return computeRevenueFeedback(level, inp, documentedEncounters, revenuePerVisit, inputs.conversionFactor || 33);
-      case 'workforce': return computeWorkforceFeedback(level, inp, providers, providerRate);
+      case 'workforce': return computeWorkforceFeedback(level, inp, providers);
       case 'risk': return computeRiskFeedback(level, inp, documentedEncounters, revenuePerVisit);
     }
-  }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, providerRate, inputs.conversionFactor, inputs.timeSavedPerEncounter]);
+  }, [activeDomain, currentState.activationLevel, currentState.inputs, providers, documentedEncounters, revenuePerVisit, inputs.conversionFactor, inputs.timeSavedPerEncounter]);
 
   const handleAdvance = () => {
     if (currentState.activationLevel) {

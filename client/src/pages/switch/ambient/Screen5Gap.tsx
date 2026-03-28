@@ -134,13 +134,14 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: MGMA Physician Compensation data; published literature on access revenue from documentation efficiency`;
           } else if (level === 2) {
             const minsPerEncounter = domainInputs.minsPerEncounter || 3;
-            const conversionRate = domainInputs.conversionRate || 0.25;
-            const providerRate = inputs.providerRate || 150;
-            const calculated = Math.round((documentedEncounters * minsPerEncounter / 60) * conversionRate * providerRate);
+            const recoveredHours = Math.round(documentedEncounters * minsPerEncounter / 60);
+            const estimatedVisits = Math.round(recoveredHours * 0.15);
+            const revenuePerVisit = inputs.revenuePerVisit || 200;
+            const calculated = Math.round(estimatedVisits * revenuePerVisit);
             lowEstimate = calculated;
             highEstimate = Math.round(calculated * 1.5);
-            narrative = `Time savings are measured. Now the question is whether that time is being actively redeployed into clinical revenue.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in access revenue is accessible if recovered time converts to additional appointments.`;
-            formula = `${documentedEncounters.toLocaleString()} encounters × ${minsPerEncounter} min saved ÷ 60 × ${Math.round(conversionRate * 100)}% conversion × $${providerRate}/hr = ${formatDollarFull(calculated)}`;
+            narrative = `Time savings are measured. Now the question is whether that time is being actively redeployed into patient access.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in access revenue is accessible if recovered time converts to additional appointments.`;
+            formula = `${documentedEncounters.toLocaleString()} encounters × ${minsPerEncounter} min ÷ 60 = ${recoveredHours.toLocaleString()} hrs → ${estimatedVisits.toLocaleString()} visits (15% conversion) × $${revenuePerVisit}/visit = ${formatDollarFull(calculated)}`;
           } else if (level === 3) {
             const accessRevenue = domainInputs.accessRevenue || 0;
             const revenuePerVisit = inputs.revenuePerVisit || 200;

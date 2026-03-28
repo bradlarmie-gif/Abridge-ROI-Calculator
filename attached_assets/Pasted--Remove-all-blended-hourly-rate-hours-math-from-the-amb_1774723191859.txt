@@ -1,0 +1,118 @@
+ Remove all blended hourly rate × hours math from the ambient assessment.
+  This is spread across ambientCalculator.ts, switchGapCalculator.ts, and
+  potentially AssessmentContext. The principle: no dollar value is ever
+  calculated as hours × hourlyRate. Dollars only come from real financial
+  mechanisms (access revenue, billing improvement, turnover cost avoidance).
+
+  ---
+
+  ### Step 1 — Remove providerRate from all inputs and calculations
+
+  In assessmentTypes.ts, remove providerRate from DEFAULT_SWITCH_INPUTS and
+  from the SwitchInputs interface.
+
+  In Screen2Baseline.tsx, remove the "Blended provider hourly rate" input field.
+  This input should not exist.
+
+  Search domainCalculations.ts for every place providerRate is used as a parameter
+  or in a calculation. Audit each use:
+  - If it's multiplied by hours to produce a dollar value → remove that calculation
+  - If it's used in a calculation that doesn't multiply hours × rate → keep it
+
+  ---
+
+  ### Step 2 — Audit and fix ambientCalculator.ts
+
+  In calculateAmbientScore:
+
+  revenueValue currently = efficiencyGapHours × hourlyRate × timeConversionRate
+  → This is hours × rate. Replace with:
+    If utilization >= 76 (at benchmark): revenueValue = 0 (no gap)
+    If utilization < 76: this represents unmeasured encounters, not an hourly value
+    Remove revenueValue from this calculation entirely — it belongs in the
+    per-domain L3 flow where the user confirms billing impact
+
+  afterHoursExposure currently = providers × 52 × (3.0 - timeSavings) × 0.4 × hourlyRate
+  → This is hours × rate. Remove entirely.
+    workforceValue derived from this → also remove.
+
+  riskValue = (capacityValue + revenueValue) × 0.08
+  → Remove or replace with null since it's derived from garbage inputs.
+
+  The only value that can stay in calculateAmbientScore is:
+    capacityValue = utilizationGapEncounters × 0.15 × 200
+    (gap encounters × 15% access conversion × $200/visit)
+    This is access revenue math, not hours × rate. Keep this.
+
+  ---
+
+  ### Step 3 — Audit calculateSwitchGap in switchGapCalculator.ts
+
+  Read the full function. Find every instance of:
+    - Any variable × hourlyRate
+    - hours × any dollar rate
+    - "value" calculations that multiply time by a rate
+
+  Remove or replace each with either:
+    - null / 0 (no value at this level)
+    - A benchmark range pulled from BENCHMARK_RANGES (per-provider ranges)
+    - Access revenue math (encounters × conversion × revenue/visit)
+
+  If calculateSwitchGap produces a total gap value that flows into Screen 5
+  or the PDF as the primary financial figure, and that total includes hours × rate
+  components, those components need to be zeroed out.
+
+  ---
+
+  ### Step 4 — Capacity L1: show operational metrics only, never dollars
+
+  In domainCalculations.ts, computeCapacityFeedback at L1:
+  - Already returns value: null ✅
+  - Keep showing: recoveredHours, FTE equivalent
+  - Add to the context string: a clear note that dollar value appears at L3 when
+    recovered time is connected to access outcomes
+  - The footnote already says "Recovered hours represent available capacity.
+    Financial value depends on how this time is allocated at higher maturity levels."
+    Keep this. It's the right framing.
+
+  ---
+
+  ### Step 5 — Fix the timeSavings benchmark
+
+  In ambientCalculator.ts line 47:
+    efficiencyPct = Math.min(100, Math.round((timeSavings / 3.0) * 100))
+
+  The benchmark is 3.0 minutes. This is the right number to benchmark against
+  for competitive displacement.
+
+  In Screen2Baseline.tsx or wherever the default timeSaved input appears:
+  Change any default or placeholder from 8 to 2.
+  The benchmark comparison should be 3 min (what high-performing programs
+  achieve), not 8 min.
+
+  In ambient-assessment-pdf.tsx line ~1215:
+  "Time savings applied: 8 min/encounter (Abridge deployment average)"
+  → Change to 2 min default. Also verify this line only appears when
+    timeSaved was defaulted (not user-provided).
+
+  ---
+
+  ### Step 6 — Remove VALUE_ASSUMPTIONS.hourlyRate from all output paths
+
+  In switchGapCalculator.ts, find VALUE_ASSUMPTIONS.hourlyRate.
+  Check every line that uses it. Remove any that produce user-visible dollar
+  output (shown on screens or in PDF). It can stay for internal scoring
+  comparisons that don't surface as dollar values to the user, but ideally
+  remove it entirely if all its uses are the garbage math.
+
+  ---
+
+  ### What NOT to change
+
+  - Domain L3 dollar calculations using wRVU × conversion factor (revenue math) ✅
+  - Domain L3 workforce calculations using replacementCost × turnover rate ✅
+  - Domain L3 capacity using new patients × revenue per visit ✅
+  - Benchmark ranges ($1K-$12K/provider) shown for L1 unmeasured domains ✅
+  - FTE equivalent shown at Capacity L1 with no dollar attached ✅
+  - The SCORE (0-100) calculation — leave the formula alone even if some
+    inputs change

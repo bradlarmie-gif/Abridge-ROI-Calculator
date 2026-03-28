@@ -71,7 +71,6 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   structuredDataUsability: "some" as const,
   entryEstimate: null,
   revenuePerVisit: 200,
-  providerRate: 150,
   conversionFactor: 33,
   capacityScore: 0,
   capacityGap: 0,
