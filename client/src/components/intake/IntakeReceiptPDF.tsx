@@ -35,9 +35,9 @@ const s = StyleSheet.create({
   metaLabel: { fontSize: 9, color: C.muted, textTransform: "uppercase", letterSpacing: 1, width: 110 },
   metaValue: { fontSize: 10, color: C.text },
   settingHeader: { fontSize: 16, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: C.text, marginBottom: 16, borderBottomWidth: 2, borderBottomColor: C.primary, paddingBottom: 8 },
-  sectionLabel: { fontSize: 8.5, color: C.primary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 700, marginTop: 14, marginBottom: 6 },
+  sectionLabel: { fontSize: 8.5, color: C.primary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 700, marginTop: 12, marginBottom: 5, paddingBottom: 3, borderBottomWidth: 0.5, borderBottomColor: C.border },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 0 },
-  cell: { width: "50%", paddingVertical: 5, paddingRight: 12 },
+  cell: { width: "50%", paddingVertical: 4, paddingRight: 12 },
   fieldLabel: { fontSize: 8, color: C.muted, textTransform: "uppercase", letterSpacing: 0.8 },
   fieldValue: { fontSize: 11, fontWeight: 700, color: C.text, marginTop: 2 },
   footer: { marginTop: "auto", paddingTop: 10, borderTopWidth: 1, borderTopColor: C.border },
@@ -197,7 +197,7 @@ function SettingContent({ setting, data }: { setting: ExploreCareSetting; data: 
         const filled = g.fields.filter(f => f.value !== null);
         if (filled.length === 0) return null;
         return (
-          <View key={g.section}>
+          <View key={g.section} wrap={false}>
             <Text style={s.sectionLabel}>{g.section}</Text>
             <View style={s.grid}>
               {filled.map((f) => (
