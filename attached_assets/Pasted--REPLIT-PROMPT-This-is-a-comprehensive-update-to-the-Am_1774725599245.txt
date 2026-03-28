@@ -1,0 +1,727 @@
+ REPLIT PROMPT:
+
+  This is a comprehensive update to the Ambient Assessment (6-screen sales flow). UX, colors, animations, and component structure stay exactly as they are. We are updating: domain content (questions, logic,
+  outputs), math, activation labels, and a few screen-level changes. Work through each file carefully and completely.
+
+  ---
+
+  ## FILE 1: client/src/pages/switch/ambient/domainCalculations.ts
+
+  ### 1A. ACTIVATION_LABELS — update 4 labels
+
+  ```ts
+  capacity: {
+    1: 'Time Recovered',
+    2: 'Time Actively Used',        // was: 'Access Decision Made'
+    3: 'Access Measured',
+    4: 'Access Impact Tracked',
+  },
+  revenue: {
+    1: 'Documentation Improved — Impact Unmeasured',  // was: 'Not Yet Analyzed'
+    2: 'Directional Signal',
+    3: 'Impact Measured',
+    4: 'Documentation as a Revenue Lever',
+  },
+  workforce: {
+    1: 'Time Is Returning',
+    2: 'Burden Measured',
+    3: 'Retention Confirmed',       // was: 'Retention Modeled'
+    4: 'Workforce Strategically Managed',
+  },
+  risk: {
+    1: 'Quality Improving — Downstream Not Yet Connected',  // was: 'Improvement Untracked'
+    2: 'Actively Monitored',
+    3: 'Downstream Connected',
+    4: 'Documentation as a Strategic Asset',
+  },
+
+  1B. Remove providerRate parameter from all function signatures
+
+  - computeCapacityFeedback — remove providerRate: number from signature (it's declared but unused in the actual capacity calculations — confirm there's no reference to it in the function body, then remove)
+  - computeWorkforceFeedback — remove providerRate: number from signature
+  - computeGapForDomain — remove providerRate: number from signature and from all internal computeXFeedback(...) calls within
+
+  1C. computeCapacityFeedback — redesign Level 2
+
+  Replace the existing Level 2 block. New L2 uses input key capacityTimeUsage (comma-separated indices, same pattern as other checkboxes in this file).
+
+  Add this constant near the top of the file (or inline in the function):
+  const CAPACITY_TIME_USAGE_LABELS = [
+    'After-hours documentation eliminated',
+    'In-clinic time between patients freed',
+    'New appointment slots opened',
+    'Panel size increased',
+    'Same-day or urgent scheduling enabled',
+    'Provider burnout indicators improving',
+    'Note-to-attestation time shortened',
+  ];
+
+  New Level 2 block:
+  if (level === 2) {
+    const ts = (inputs.timeSaved as number) || 0;
+    const recoveredHrs = ts > 0 ? Math.round(documentedEncounters * ts / 60) : 0;
+    const fte2 = recoveredHrs > 0 ? (recoveredHrs / ANNUAL_HOURS).toFixed(1) : '0.0';
+
+    const { checked, unchecked } = parseCheckedItems(inputs.capacityTimeUsage as string, CAPACITY_TIME_USAGE_LABELS);
+    const count = checked.length;
+
+    if (count === 0) {
+      return {
+        label: 'Recovered Time Deployed',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Select how recovered time is being used.',
+        context: `${providers.toLocaleString()} providers have recovered time from documentation. Select the operational ways that time is being deployed.${recoveredHrs > 0 ?
+  `\n\n${recoveredHrs.toLocaleString()} hours (${fte2} FTE) recovered annually.` : ''}`,
+        formula: '',
+        footnote: '',
+        nextLevelTeaser: 'Level 3 confirms whether recovered time translated into additional patient encounters — that\'s where access revenue gets confirmed.',
+      };
+    }
+
+    const checkedList = checked.map(l => `• ${l}`).join('\n');
+    const uncheckedList = unchecked.map(l => `• ${l}`).join('\n');
+
+    return {
+      label: 'Recovered Time Deployed',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} operational use${count !== 1 ? 's' : ''} of recovered time confirmed`,
+      context: `Recovered time is being actively deployed in ${count} way${count !== 1 ? 's' : ''}:\n${checkedList}${recoveredHrs > 0 ? `\n\n${recoveredHrs.toLocaleString()} hours (${fte2} FTE) recovered
+  annually across ${providers.toLocaleString()} providers.` : ''}${unchecked.length > 0 ? `\n\nNot yet deployed:\n${uncheckedList}` : ''}`,
+      formula: recoveredHrs > 0 ? `[recoveredHrs] = ${documentedEncounters.toLocaleString()} encounters × ${ts} min / 60 = ${recoveredHrs.toLocaleString()}` : '',
+      footnote: 'The value at this level is operational — the time is in motion. Financial confirmation comes at Level 3.',
+      nextLevelTeaser: 'Level 3 confirms whether recovered time translated into additional patient encounters.',
+    };
+  }
+
+  1D. computeRevenueFeedback — Level 2: Remove dollar estimates, signals only
+
+  In the if (level === 2) block, remove all dollar calculation. The directionalEstimate path currently calculates lowEstimate/highEstimate and returns value: Math.round(...), hasValue: true.
+
+  Change it so Level 2 ALWAYS returns value: null, hasValue: false. Show the directional estimate as qualitative text only.
+
+  Replace the if (directionalEstimate && directionalEstimate !== 'not_sure' && ESTIMATE_RANGES[directionalEstimate]) return block with:
+  if (directionalEstimate && directionalEstimate !== 'not_sure' && ESTIMATE_RANGES[directionalEstimate]) {
+    const range = ESTIMATE_RANGES[directionalEstimate];
+    return {
+      label: 'Revenue Signals Observed',
+      value: null,
+      hasValue: false,
+      headlineMetric: count > 0
+        ? `${count} area${count !== 1 ? 's' : ''} showing movement · ${range.label} estimated impact`
+        : `${range.label} estimated impact observed`,
+      context: `Your organization observes movement in ${count > 0 ? `${count} area${count !== 1 ? 's' : ''}` : 'the data'} and estimates a ${range.label} revenue impact from documentation
+  improvements.${count > 0 ? `\n\nAreas moving: ${checkedLabels}` : ''}\n\nThis is your team's directional read. A before/after billing analysis (Level 3) would confirm it.\n\nNext step: A retrospective
+  coding audit comparing pre/post ambient documentation typically takes 4–6 weeks and produces a confirmed dollar figure.`,
+      formula: '',
+      footnote: 'Revenue signal observed. No dollar estimate at this level — directional only.',
+      nextLevelTeaser: 'Level 3: Run a retrospective coding audit to confirm the revenue impact. Published literature reports 2–7% revenue improvement from documentation specificity.',
+    };
+  }
+
+  The count > 0, no directionalEstimate path:
+  if (count > 0) {
+    return {
+      label: 'Revenue Signals Observed',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} area${count !== 1 ? 's' : ''} showing movement`,
+      context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nMovement is visible. A formal before/after billing analysis (Level 3) would quantify
+  it.`,
+      formula: '',
+      footnote: '',
+      nextLevelTeaser: 'Level 3: Run a retrospective coding audit. Organizations that do this typically confirm 2–7% revenue improvement from documentation specificity.',
+    };
+  }
+
+  1E. computeWorkforceFeedback — Redesign Level 3
+
+  Replace the entire if (level === 3) block. New inputs: turnoverRateBefore, turnoverRateAfter, replacementCost (default 350000).
+
+  if (level === 3) {
+    const turnoverRateBefore = inputs.turnoverRateBefore as number | undefined;
+    const turnoverRateAfter = inputs.turnoverRateAfter as number | undefined;
+    const replacementCostRaw = inputs.replacementCost as number | undefined;
+    const replacementCost = (replacementCostRaw && replacementCostRaw > 0) ? replacementCostRaw : 350000;
+    const isDefaultCost = !replacementCostRaw || replacementCostRaw === 350000;
+    const replacementLabel = isDefaultCost
+      ? `AMGA benchmark midpoint: ${formatDollar(replacementCost)} per physician`
+      : `Your input: ${formatDollar(replacementCost)} per physician`;
+
+    if (!turnoverRateBefore || turnoverRateBefore <= 0) {
+      return {
+        label: 'Retention Analysis',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Enter your physician turnover rate before deployment to begin.',
+        context: 'To confirm a retention financial outcome, we compare your turnover rate before ambient documentation to your rate now. Enter both rates and we\'ll calculate the value of the difference.',
+        formula: '',
+        footnote: '',
+        nextLevelTeaser: 'Level 4 connects retention data to workforce strategy — recruitment, retention programs, staffing decisions.',
+      };
+    }
+
+    if (turnoverRateAfter === undefined || turnoverRateAfter === null || isNaN(turnoverRateAfter as any)) {
+      return {
+        label: 'Retention Analysis',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Enter your current physician turnover rate to compare.',
+        context: `Before deployment: ${turnoverRateBefore}% annual turnover. Enter your current rate to see the financial value of any improvement.`,
+        formula: '',
+        footnote: '',
+        nextLevelTeaser: 'Level 4 connects retention data to workforce strategy — recruitment, retention programs, staffing decisions.',
+      };
+    }
+
+    const delta = turnoverRateBefore - turnoverRateAfter;
+    const preventedDepartures = providers * (Math.max(0, delta) / 100);
+    const annualSaving = Math.round(preventedDepartures * replacementCost);
+
+    if (delta <= 0) {
+      const currentDepartures = providers * (turnoverRateAfter / 100);
+      return {
+        label: 'Retention Analysis',
+        value: null,
+        hasValue: false,
+        headlineMetric: `Turnover: ${turnoverRateBefore}% → ${turnoverRateAfter}% — no reduction yet confirmed`,
+        context: `Your turnover rate hasn't decreased since deployment. Before: ${turnoverRateBefore}%. Now: ${turnoverRateAfter}%.\n\nThis may be too early to see a retention effect, or other factors are at
+   play. Keep tracking — the operational signals from Level 2 are typically the leading indicator.\n\n${replacementLabel}.\nAt your current rate: ${currentDepartures.toFixed(1)} departures annually at
+  ${formatDollar(replacementCost)} each = ${formatDollar(Math.round(currentDepartures * replacementCost))} total exposure.`,
+        formula: `[annualExposure] = ${currentDepartures.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDollar(Math.round(currentDepartures * replacementCost))}`,
+        footnote: replacementLabel,
+        nextLevelTeaser: 'Level 4 connects retention data to workforce strategy — recruitment, retention programs, staffing decisions.',
+      };
+    }
+
+    return {
+      label: 'Confirmed Retention Value',
+      value: annualSaving,
+      hasValue: true,
+      headlineMetric: `${formatDollar(annualSaving)} in avoided replacement cost annually`,
+      context: `Turnover rate decreased from ${turnoverRateBefore}% to ${turnoverRateAfter}% across ${providers} providers.\n\nRate delta: ${delta.toFixed(1)} percentage points × ${providers} providers =
+  ${preventedDepartures.toFixed(1)} fewer departures per year.\n\n${preventedDepartures.toFixed(1)} prevented departures × ${replacementLabel} = ${formatDollar(annualSaving)} annually.\n\nThis is a confirmed
+   financial outcome based on your observed turnover change — not an attribution estimate.`,
+      formula: `[preventedDepartures] = ${providers} × (${turnoverRateBefore}% − ${turnoverRateAfter}%) / 100 = ${preventedDepartures.toFixed(1)}\n[annualSaving] = ${preventedDepartures.toFixed(1)} ×
+  ${formatDollar(replacementCost)} = ${formatDollar(annualSaving)}`,
+      footnote: `${replacementLabel}. Turnover rate change is user-reported. Individual results vary.`,
+      nextLevelTeaser: 'Level 4 connects retention data to workforce strategy — recruitment, retention programs, staffing decisions.',
+    };
+  }
+
+  1F. computeRiskFeedback — Level 1: Remove conditional logic, clean statement
+
+  Replace the entire if (level === 1) block with:
+  if (level === 1) {
+    return {
+      label: 'Quality Impact',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${documentedEncounters.toLocaleString()} encounters with improved documentation.`,
+      context: `Documentation quality has improved across ${documentedEncounters.toLocaleString()} encounters. The downstream value — in coding accuracy, CDI, quality programs, and compliance — hasn't been
+  formally connected yet.\n\nThis is the starting point. The documentation is better. The question is whether the teams that depend on it know it.`,
+      formula: '',
+      footnote: 'Estimates based on your inputs. Individual results vary.',
+      nextLevelTeaser: 'Level 2 establishes systematic quality tracking across documentation dimensions.',
+    };
+  }
+
+  Remove the downstreamConnected conditional logic entirely — it is no longer used.
+
+  1G. computeRiskFeedback — Level 3: Add financial pathway logic
+
+  Keep the existing connectedWorkflows checkbox logic and count === 0 early return.
+
+  After computing count and checkedList/uncheckedList, add pathway logic:
+
+  const pathway = inputs.qualityFinancialPathway as string | undefined;
+  const mipsDelta = inputs.mipsPaymentDelta as number | undefined;
+  const denialBefore = inputs.denialRateBefore as number | undefined;
+  const denialAfter = inputs.denialRateAfter as number | undefined;
+  const monthlyBilled = inputs.monthlyBilledAmount as number | undefined;
+
+  let confirmedValue: number | null = null;
+  let pathwayNarrative = '';
+  let pathwayFormula = '';
+
+  if (pathway === 'mips' && mipsDelta && mipsDelta > 0) {
+    confirmedValue = mipsDelta;
+    pathwayNarrative = `\n\nMIPS/quality payment improvement confirmed: ${formatDollar(mipsDelta)} annually.`;
+    pathwayFormula = `[mipsValue] = ${formatDollar(mipsDelta)} (organization-reported)`;
+  } else if (pathway === 'denials' && denialBefore && denialAfter !== undefined && monthlyBilled) {
+    if (denialBefore > (denialAfter || 0)) {
+      const annualReduction = Math.round(((denialBefore - (denialAfter || 0)) / 100) * monthlyBilled * 12);
+      confirmedValue = annualReduction;
+      pathwayNarrative = `\n\nDenial rate reduced from ${denialBefore}% to ${denialAfter}%. At ${formatDollar(monthlyBilled)} monthly billed: ${formatDollar(annualReduction)} annually in recovered revenue.`;
+      pathwayFormula = `[annualReduction] = (${denialBefore}% − ${denialAfter}%) × ${formatDollar(monthlyBilled)} × 12 = ${formatDollar(annualReduction)}`;
+    }
+  } else if (pathway === 'none_yet') {
+    pathwayNarrative = '\n\nFinancial value not yet confirmed. Downstream workflows are connected — the next step is running the numbers.';
+  }
+
+  Then use confirmedValue in the return statements for Level 3 where downstreamValue was previously used. Specifically:
+  - If confirmedValue > 0: return with value: confirmedValue, hasValue: true
+  - If pathway === 'none_yet' or no pathway: return with value: null, hasValue: false
+  - If count > 0 and pathway not set: return qualitative only (value: null)
+
+  Replace the existing if (downstreamValue > 0) condition with if (confirmedValue && confirmedValue > 0) and update the context/formula to use the new pathway narrative and formula.
+
+  ---
+  FILE 2: client/src/pages/switch/ambient/Screen4Domains.tsx
+
+  2A. Remove providerRate from all computation calls
+
+  Remove: const providerRate = inputs.providerRate || 150;
+
+  Update:
+  - computeCapacityFeedback(level, capacityInp, providers, documentedEncounters, revenuePerVisit) — remove last arg
+  - computeWorkforceFeedback(level, inp, providers) — remove last arg
+  - Any call to computeGapForDomain(...) — remove providerRate arg
+
+  2B. renderCapacityInputs — Level 2: Replace radio with checkboxes
+
+  Replace the entire if (level === 2) block:
+
+  if (level === 2) {
+    const TIME_USAGE_OPTIONS = [
+      'After-hours documentation eliminated — providers are done when they leave',
+      'In-clinic time between patients freed — notes completed before next patient',
+      'New appointment slots opened — schedulers adding visits',
+      'Panel size increased — more patients enrolled per provider',
+      'Same-day or urgent scheduling enabled — capacity for acute visits',
+      'Provider burnout indicators improving — satisfaction or survey data shows it',
+      'Note-to-attestation time shortened — same-day signing rate improved',
+    ];
+    return (
+      <div>
+        <label className="block text-sm font-medium text-black mb-2">
+          How is recovered time being used?
+        </label>
+        <p className="text-xs text-[#888888] mb-3 leading-relaxed">
+          Select all that apply — this shapes the operational story.
+        </p>
+        <div className="flex flex-col gap-2.5">
+          {TIME_USAGE_OPTIONS.map((item, i) => {
+            const checked = isChecked('capacityTimeUsage', i);
+            return (
+              <label
+                key={i}
+                htmlFor={`time-usage-${i}`}
+                className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                  checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                }`}
+              >
+                <Checkbox
+                  id={`time-usage-${i}`}
+                  checked={checked}
+                  onCheckedChange={() => toggleCheckboxItem('capacityTimeUsage', i)}
+                  data-testid={`checkbox-time-usage-${i}`}
+                  className="mt-0.5"
+                />
+                <span className="text-sm text-[#525252] select-none leading-snug">{item}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  2C. renderWorkforceInputs — Level 3: Replace with before/after turnover comparison
+
+  Replace the entire if (level === 3) block (currently shows turnoverRate + docBurdenOptions):
+
+  if (level === 3) {
+    const isDefaultCost = !(currentState.inputs.replacementCost as number) || (currentState.inputs.replacementCost as number) === 350000;
+    return (
+      <div className="flex flex-col gap-5">
+        <div>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+            Physician turnover rate before ambient deployment
+          </label>
+          <div className="flex items-center gap-2">
+            <FormattedNumberInput
+              value={(currentState.inputs.turnoverRateBefore as number) || 0}
+              onChange={(v) => setDomainInput('turnoverRateBefore', v)}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-turnover-before"
+            />
+            <span className="text-sm text-[#888888]">%</span>
+          </div>
+          <BenchmarkContext text="National average: 6–8% annually (AAMC)" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+            Physician turnover rate now
+          </label>
+          <div className="flex items-center gap-2">
+            <FormattedNumberInput
+              value={(currentState.inputs.turnoverRateAfter as number) || 0}
+              onChange={(v) => setDomainInput('turnoverRateAfter', v)}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-turnover-after"
+            />
+            <span className="text-sm text-[#888888]">%</span>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+            Replacement cost per physician
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.replacementCost as number) || 350000}
+              onChange={(v) => setDomainInput('replacementCost', Math.max(0, v))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-replacement-cost"
+            />
+          </div>
+          {isDefaultCost && (
+            <p className="text-xs text-[#888888] italic mt-1.5 leading-relaxed">
+              Using AMGA benchmark of $350K per physician — update if your organization tracks this separately.
+            </p>
+          )}
+          {!isDefaultCost && (
+            <BenchmarkContext text="AMGA benchmark midpoint: $350K. Industry range: $250K–$500K." />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  2D. renderRiskInputs — Level 1: Remove question, replace with context note
+
+  Replace the entire if (level === 1) block (currently renders qualityDownstreamConnected radio):
+
+  if (level === 1) {
+    return (
+      <p className="text-xs text-[#888888] leading-relaxed bg-[#F9FAFB] rounded-lg p-3">
+        Documentation quality has improved across your deployment. The teams that depend on it — coding, CDI, quality programs, compliance — haven't been formally connected to it yet. That connection is what
+   Level 2 starts.
+      </p>
+    );
+  }
+
+  2E. renderRiskInputs — Level 3: Add financial pathway selection
+
+  In the Level 3 block, after the connected workflows checkboxes section and before any existing dollar-entry section, add the pathway selector. Remove the existing free-form downstreamValue dollar input and
+   replace with:
+
+  // Add near top of the level 3 section:
+  const pathway = currentState.inputs.qualityFinancialPathway as string | undefined;
+
+  // After the connectedWorkflows checkboxes, add:
+  <div>
+    <label className="block text-sm font-medium text-black mb-3">
+      Has your organization confirmed a financial outcome from quality improvement?
+    </label>
+    <div className="flex flex-col gap-2.5">
+      {[
+        { id: 'mips', label: 'MIPS/quality performance improvement — penalties avoided or bonuses earned' },
+        { id: 'denials', label: 'Documentation-related denial reduction — denial rate has measurably improved' },
+        { id: 'none_yet', label: 'Not yet confirmed — workflows connected but value not yet quantified' },
+      ].map((opt) => (
+        <button
+          key={opt.id}
+          type="button"
+          onClick={() => setDomainInput('qualityFinancialPathway', opt.id)}
+          className={`rounded-lg p-3.5 sm:p-4 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+            pathway === opt.id
+              ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+              : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+          }`}
+          data-testid={`radio-quality-pathway-${opt.id}`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${pathway === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
+            <span>{opt.label}</span>
+          </div>
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <AnimatePresence>
+    {pathway === 'mips' && (
+      <motion.div
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: 'auto' }}
+        exit={{ opacity: 0, height: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+          Annual MIPS/quality payment improvement
+        </label>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-[#888888]">$</span>
+          <FormattedNumberInput
+            value={(currentState.inputs.mipsPaymentDelta as number) || 0}
+            onChange={(v) => setDomainInput('mipsPaymentDelta', Math.max(0, v))}
+            placeholder=""
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-mips-delta"
+          />
+        </div>
+        <BenchmarkContext text="Enter your actual MIPS payment improvement or penalty avoidance. CMS data: typical physician MIPS exposure is $5K–$8K annually." />
+      </motion.div>
+    )}
+    {pathway === 'denials' && (
+      <motion.div
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: 'auto' }}
+        exit={{ opacity: 0, height: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Documentation-related denial rate before deployment (%)
+            </label>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.denialRateBefore as number) || 0}
+                onChange={(v) => setDomainInput('denialRateBefore', Math.min(100, Math.max(0, v)))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-denial-before"
+                step={0.1}
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+            <BenchmarkContext text="Industry average: 3–5% of claims involve documentation-related denial reasons." />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Documentation-related denial rate now (%)
+            </label>
+            <div className="flex items-center gap-2">
+              <FormattedNumberInput
+                value={(currentState.inputs.denialRateAfter as number) || 0}
+                onChange={(v) => setDomainInput('denialRateAfter', Math.min(100, Math.max(0, v)))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-denial-after"
+                step={0.1}
+              />
+              <span className="text-sm text-[#888888]">%</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Average monthly billed amount
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[#888888]">$</span>
+              <FormattedNumberInput
+                value={(currentState.inputs.monthlyBilledAmount as number) || 0}
+                onChange={(v) => setDomainInput('monthlyBilledAmount', Math.max(0, v))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-monthly-billed"
+              />
+            </div>
+            <p className="text-xs text-[#888888] mt-1">Total billed charges across all payers — not net revenue.</p>
+          </div>
+        </div>
+      </motion.div>
+    )}
+    {pathway === 'none_yet' && (
+      <motion.div
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: 'auto' }}
+        exit={{ opacity: 0, height: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <p className="text-xs text-[#888888] italic leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+          Your downstream workflows are connected — the quality improvement is visible operationally. Confirming the dollar value typically requires running a retrospective analysis with your CDI or revenue
+  cycle team.
+        </p>
+      </motion.div>
+    )}
+  </AnimatePresence>
+
+  Remove the existing noDownstreamValue checkbox and downstreamValue input entirely — they are replaced by the pathway structure above.
+
+  2F. DOMAIN_CONFIGS — Update card descriptions and framing questions
+
+  Capacity:
+  cards: [
+    { level: 1, label: 'Time Recovered', description: 'Providers report less documentation time. The organization hasn\'t decided what to do with it yet — that\'s where this conversation begins.' },
+    { level: 2, label: 'Time Actively Used', description: 'Recovered time is being actively deployed — fewer after-hours hours, new appointment slots, or better access. The question now is whether it\'s
+  translating to confirmed patient volume.' },
+    { level: 3, label: 'Access Measured', description: 'Additional patients are being seen with recovered time, and the revenue is confirmed.' },
+    { level: 4, label: 'Access Impact Tracked', description: 'Panel optimization, service line access design, and waitlist elimination are organizational metrics. Capacity strategy is data-driven — and
+  ambient is the enabler.' },
+  ],
+  framingQuestions: {
+    1: undefined,
+    2: 'How is your organization using the recovered time?',
+    3: 'How many additional patients are being seen with recovered time?',
+    4: 'Which downstream access outcomes are you tracking?',
+  },
+
+  Workforce:
+  cards: [
+    { level: 1, label: 'Time Is Returning', description: 'Providers report less after-hours documentation time.' },
+    { level: 2, label: 'Burden Measured', description: 'In-clinic time savings and provider sentiment are tracked.' },
+    { level: 3, label: 'Retention Confirmed', description: 'Your organization has seen measurable turnover improvement since deployment — the financial value in avoided replacement costs is confirmed.' },
+    { level: 4, label: 'Workforce Strategically Managed', description: 'Ambient documentation is a talent differentiator — it\'s in offer letters, retention programs, and provider experience strategy. This
+  is where the industry is going.' },
+  ],
+
+  Quality:
+  cards: [
+    { level: 1, label: 'Quality Improving — Downstream Not Yet Connected', description: 'Documentation quality has improved. The teams that depend on it — coding, CDI, compliance, quality programs — haven\'t
+   been formally connected to it yet.' },
+    { level: 2, label: 'Actively Monitored', description: 'Documentation quality attributes are being tracked systematically.' },
+    { level: 3, label: 'Downstream Connected', description: 'Documentation quality improvements are connected to at least one downstream workflow, with a confirmed financial outcome.' },
+    { level: 4, label: 'Documentation as a Strategic Asset', description: 'Structured documentation is the foundation for population health, value-based care, and AI readiness. Your documentation strategy
+  informs your clinical AI strategy.' },
+  ],
+
+  ---
+  FILE 3: client/src/pages/switch/ambient/Screen1Provocation.tsx
+
+  Remove the two-path choice entirely. The screen should go directly to Screen2.
+
+  Keep the full-screen layout, header/logo, and animation. Replace the PillChoice state, PILLS array, RESPONSES map, and the handleSelect flow with a single CTA button.
+
+  New flow:
+  1. Animated headline (keep current copy — the provocation question)
+  2. Single CTA button appears after a short delay (800ms): "Begin →" → calls onNext() directly
+  3. Remove all dispatch(assessmentActions.updateInput("dataMode", ...)) calls
+
+  The DataMode import from @/lib/switchGapCalculator can be removed. The dataMode input no longer needs to be set here.
+
+  Keep the onHome click on the logo.
+
+  ---
+  FILE 4: client/src/pages/switch/ambient/Screen2Baseline.tsx
+
+  Remove the providerRate input field entirely:
+  - Find the form section with label "Provider billing rate" or similar and the providerRate input
+  - Remove the entire section (label + FormattedNumberInput + any helper text)
+  - Remove providerRate from the dispatch call when form is submitted/changed
+
+  Also check: if timeSavedPerEncounter has a default value of 8, change it to 2.
+
+  ---
+  FILE 5: client/src/pages/switch/ambient/Screen3Score.tsx
+
+  5A. Two-tier archetype card rendering
+
+  Find where archetype.name and archetype.body are rendered in the card. Currently it renders as a title + body text block. Change to a visual two-tier structure:
+
+  {/* Headline — Brad reads this aloud */}
+  <p className="text-base font-bold text-black leading-snug mb-2">
+    {archetype.name}
+  </p>
+  {/* Context — exec reads this themselves */}
+  <p className="text-sm text-[#525252] leading-relaxed">
+    {archetype.body}
+  </p>
+
+  The headline is the name (bold, black). The body is the context (regular weight, gray). This preserves all existing content without breaking UX — it's purely a visual hierarchy change within the existing
+  card.
+
+  5B. Tone fix in tenureModifier matrix
+
+  In the '24+' / low entry, change:
+  - "This is the highest-urgency profile in this assessment" → "This profile has the most immediate strategic opportunity in this assessment"
+
+  Full replacement:
+  '24+': {
+    low: "Two or more years live, and the measurement foundation hasn't been built. This profile has the most immediate strategic opportunity in this assessment — not because the deployment has failed, but
+  because value has been generating without being counted for a long time. What you find when you look will be surprising.",
+    mid: "...", // keep existing
+    high: "...", // keep existing
+  },
+
+  ---
+  FILE 6: client/src/pages/switch/ambient/Screen5Gap.tsx
+
+  6A. Revenue L2 sidebar
+
+  Find the block that renders when revL2Value > 0 (the yellow Revenue Signal banner). Since Revenue L2 no longer produces a dollar value, change the condition and content:
+
+  Remove revL2Value calculation entirely (the whole const revL2Value = ... line).
+
+  Replace the condition {revL2Value > 0 && ( with {domainLevels.revenue === 2 && ( and update the content:
+
+  {domainLevels.revenue === 2 && (
+    <div className="flex items-center px-4 py-2.5 rounded-lg bg-[#FFFBEB] border border-[#F59E0B]/30 mt-2 mb-3">
+      <div>
+        <span className="text-[10px] font-semibold uppercase tracking-[1.2px] text-[#92400E]">Revenue</span>
+        <span className="text-[9px] text-[#92400E]/70 ml-2">Signals observed · not yet confirmed in billing data · Next: retrospective coding audit</span>
+      </div>
+    </div>
+  )}
+
+  6B. Chart title and subtitle
+
+  Find:
+  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+    36-Month Value Trajectory
+  </p>
+  <p className="text-sm text-[#888888] mb-6">
+    What measurement compounds over time — at your scale.
+  </p>
+
+  Replace with:
+  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+    Value of Acting Now
+  </p>
+  <p className="text-sm text-[#888888] mb-6">
+    Organizations that start measuring earlier capture more — because measurement enables optimization.
+  </p>
+
+  6C. Add rationale footnote below chart
+
+  After the existing <p className="text-xs ... Based on low-end benchmark ranges ... footnote line, add:
+  <p className="text-xs text-[#888888] italic mt-1">
+    Compounds because measurement enables optimization — organizations that measure early improve faster, widening the gap with each passing quarter.
+  </p>
+
+  6D. Remove providerRate usage in nextLevelContents
+
+  Find the capacity Level 2 branch inside nextLevelContents useMemo. It currently has:
+  const providerRate = inputs.providerRate || 150;
+  const calculated = Math.round((documentedEncounters * minsPerEncounter / 60) * conversionRate * providerRate);
+
+  Remove providerRate usage. Replace with a benchmark calculation based on additional patients:
+  const additionalPatientsPerMonth = 3; // benchmark midpoint
+  const revenuePerVisitLocal = inputs.revenuePerVisit || 200;
+  const calculated = Math.round(providers * additionalPatientsPerMonth * 11 * revenuePerVisitLocal * 0.5);
+  lowEstimate = calculated;
+  highEstimate = Math.round(providers * additionalPatientsPerMonth * 11 * revenuePerVisitLocal * 0.85);
+  narrative = `Recovered time is being actively deployed operationally. The next step is confirming whether that use has translated into additional patient encounters — that\'s what Level 3
+  measures.\n\nOPPORTUNITY AHEAD: At ${providers} providers, ${additionalPatientsPerMonth} additional patients/provider/month × 11 months × $${revenuePerVisitLocal}/visit = up to
+  ${formatDollarFull(highEstimate)} in annual access revenue when confirmed.`;
+  formula = `Benchmark: ${providers} providers × ${additionalPatientsPerMonth} patients/mo × 11 months × $${revenuePerVisitLocal}/visit = ${formatDollarFull(highEstimate)}`;
+
+  ---
+  FILE 7: client/src/lib/assessment/assessmentTypes.ts
+
+  Remove providerRate from DEFAULT_SWITCH_INPUTS (or wherever the default inputs are defined).
+
+  Check if dataMode is used anywhere beyond Screen1's dispatch. If it's only used in Screen1 (which now skips the two-path choice), you can remove it from the type definition and defaults. If it's referenced
+   in Screen2 or other files, just leave it — don't break anything.
+
+  ---
+  IMPORTANT: Preserve all existing functionality
+
+  - All Screen4 domain input rendering that is NOT mentioned above stays exactly as-is
+  - Revenue L3 and L4 logic in domainCalculations.ts — do not touch
+  - Workforce L2 and L4 — do not touch
+  - Quality L2 and L4 — do not touch
+  - Capacity L3 and L4 — do not touch
+  - Screen3 archetype names and body text — do not rewrite any of the copy, only change the visual rendering structure (two-tier)
+  - Screen5 chart data coefficients [0.08, 0.22, 0.42... 3.1] — do not change
+  - All DOMAIN_CONFIGS.unlockTeasers entries — do not change
+  - PDF file — do not touch in this pass
+  - assessmentReducer — do not touch unless dataMode needs cleanup
