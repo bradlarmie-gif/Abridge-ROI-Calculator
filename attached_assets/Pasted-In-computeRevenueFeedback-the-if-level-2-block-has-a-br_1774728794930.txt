@@ -1,0 +1,33 @@
+In computeRevenueFeedback, the if (level === 2) block has a branch for directionalEstimate. Since we're removing that input, simplify the entire L2 block to signals-only:                                   
+                                                                                                                                                                                                             
+  if (level === 2) {                      
+    const { checked } = parseCheckedItems(inputs.observedMovement as string, REVENUE_SIGNALS);
+    const count = checked.length;                                                                                                                                                                              
+    const checkedLabels = checked.map(shortLabel).join(', ');
+                                                                                                                                                                                                               
+    if (count === 0) {                                                                                                                                                                                         
+      return {
+        label: 'Revenue Signals Observed',                                                                                                                                                                     
+        value: null,                                                                                                                                                                                         
+        hasValue: false,                                                                                                                                                                                       
+        headlineMetric: 'Select the revenue signals your organization has observed.',                                                                                                                        
+        context: 'Check the areas where your team has seen movement since ambient documentation deployment.',                                                                                                  
+        formula: '',                          
+        footnote: '',                                                                                                                                                                                          
+        nextLevelTeaser: 'Level 3: A retrospective coding audit confirms the dollar value behind what you\'re seeing.',                                                                                        
+      };                                                                                                                                                                                                       
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    return {                                                                                                                                                                                                   
+      label: 'Revenue Signals Observed',                                                                                                                                                                     
+      value: null,                                                                                                                                                                                             
+      hasValue: false,                                                                                                                                                                                       
+      headlineMetric: `${count} area${count !== 1 ? 's' : ''} showing movement`,
+      context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nMovement is visible. A before/after billing analysis (Level 3) would quantify it.`,
+      formula: '',                            
+      footnote: '',                                                                                                                                                                                            
+      nextLevelTeaser: 'Level 3: Run a retrospective coding audit. Organizations that do this typically confirm 2–7% revenue improvement from documentation specificity.',
+    };                                                                                                                                                                                                         
+  }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Delete the ESTIMATE_RANGES constant and the directionalEstimate conditional block entirely — they are no longer used.           

@@ -300,56 +300,30 @@ export function computeRevenueFeedback(
   if (level === 2) {
     const { checked } = parseCheckedItems(inputs.observedMovement as string, REVENUE_SIGNALS);
     const count = checked.length;
-    const directionalEstimate = inputs.directionalEstimate as string | undefined;
-
-    const ESTIMATE_RANGES: Record<string, { lowPct: number; highPct: number; label: string }> = {
-      'under_1': { lowPct: 0.005, highPct: 0.01, label: 'Under 1%' },
-      '1_3': { lowPct: 0.01, highPct: 0.03, label: '1–3%' },
-      '3_5': { lowPct: 0.03, highPct: 0.05, label: '3–5%' },
-      '5_plus': { lowPct: 0.05, highPct: 0.07, label: '5%+' },
-    };
-
     const checkedLabels = checked.map(shortLabel).join(', ');
 
-    const estimateLabel = directionalEstimate && directionalEstimate !== 'not_sure' && ESTIMATE_RANGES[directionalEstimate]
-      ? ESTIMATE_RANGES[directionalEstimate].label
-      : null;
-
-    if (count > 0 || estimateLabel) {
-      let context = '';
-      if (count > 0) {
-        context = `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}`;
-      }
-      if (estimateLabel) {
-        context += `${count > 0 ? '\n\n' : ''}Your team's directional estimate: ${estimateLabel} of encounter revenue affected by documentation improvements.`;
-      }
-      context += '\n\nMovement is visible. A formal before/after analysis (Level 3) would validate the signal and quantify the impact.';
-
-      const headlineParts: string[] = [];
-      if (count > 0) headlineParts.push(`${count} area${count !== 1 ? 's' : ''} showing movement`);
-      if (estimateLabel) headlineParts.push(`directional estimate: ${estimateLabel}`);
-
+    if (count === 0) {
       return {
-        label: 'Estimated Impact',
+        label: 'Revenue Signals Observed',
         value: null,
         hasValue: false,
-        headlineMetric: headlineParts.join(' · '),
-        context,
+        headlineMetric: 'Select the revenue signals your organization has observed.',
+        context: 'Check the areas where your team has seen movement since ambient documentation deployment.',
         formula: '',
-        footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Organizations with before/after measurement have reported 2–7% revenue improvement.',
+        footnote: '',
+        nextLevelTeaser: 'Level 3: A retrospective coding audit confirms the dollar value behind what you\'re seeing.',
       };
     }
 
     return {
-      label: 'Estimated Impact',
+      label: 'Revenue Signals Observed',
       value: null,
       hasValue: false,
-      headlineMetric: 'Select observed areas to continue.',
-      context: 'Select the areas where your organization has observed movement since deployment.',
+      headlineMetric: `${count} area${count !== 1 ? 's' : ''} showing movement`,
+      context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nMovement is visible. A before/after billing analysis (Level 3) would quantify it.`,
       formula: '',
       footnote: '',
-      nextLevelTeaser: 'Level 3 requires before/after measurement data.',
+      nextLevelTeaser: 'Level 3: Run a retrospective coding audit. Organizations that do this typically confirm 2–7% revenue improvement from documentation specificity.',
     };
   }
 
