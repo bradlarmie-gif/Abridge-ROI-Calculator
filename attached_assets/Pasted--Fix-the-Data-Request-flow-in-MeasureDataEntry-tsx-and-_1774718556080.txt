@@ -1,0 +1,68 @@
+ Fix the Data Request flow in MeasureDataEntry.tsx and MeasureDataRequest.tsx
+  to support multiple care settings instead of forcing a single-setting picker.
+
+  ---
+
+  ### Step 1 — dataRequestUrlState.ts
+
+  Change DataFormPreseed from single to multi-setting:
+
+  // Before:
+  export interface DataFormPreseed {
+    setting: MeasureCareSetting;
+    preSelectedIds?: string[];
+  }
+
+  // After:
+  export interface DataFormPreseed {
+    settings: MeasureCareSetting[];   // all active settings
+    preSelectedIds?: string[];
+  }
+
+  Update decodeDataFormPreseed to handle old single-setting links gracefully:
+  if parsed.setting exists but parsed.settings doesn't, convert:
+    parsed.settings = [parsed.setting]
+
+  ---
+
+  ### Step 2 — MeasureDataEntry.tsx
+
+  Remove the "Send a Data Request" modal entirely. The Data Request button
+  should just generate and copy the link immediately using ALL active settings:
+
+  // Before (inside button onClick):
+  const setting = state.careSetting || activeSettings[0] || 'outpatient';
+  const url = generateDataFormUrl({ setting });
+
+  // After:
+  const url = generateDataFormUrl({ settings: activeSettings });
+  navigator.clipboard.writeText(url)...
+
+  No modal, no picker. Button copies the link instantly and shows "Copied!"
+  for 2.5 seconds. Same behavior as before, minus the extra step.
+
+  Same fix in MeasureMetricSelection.tsx wherever the Data Request button exists.
+
+  ---
+
+  ### Step 3 — MeasureDataRequest.tsx
+
+  Update to render metric sections for each setting in preseed.settings
+  (not just one setting).
+
+  Change:
+    const setting: MeasureCareSetting = preseed?.setting ?? "outpatient";
+    const allMetrics = getMetricsForSetting(setting);
+
+  To:
+    const settings: MeasureCareSetting[] = preseed?.settings ?? ["outpatient"];
+
+  Render one domain group per setting, with a setting label header
+  (e.g. "OUTPATIENT", "EMERGENCY") above each group's domain cards.
+  Use the existing SETTING_LABELS record for the header text.
+
+  The checkedIds, entries, and localStorage state all stay the same —
+  metric IDs are already unique across settings so no collision.
+
+  The setting badge at the top of the page changes from showing one setting
+  to showing all settings joined: "Outpatient · Emergency Department"

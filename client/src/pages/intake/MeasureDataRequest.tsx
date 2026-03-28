@@ -121,11 +121,14 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
 }
 
 export default function MeasureDataRequest({ preseed, storageFingerprint }: { preseed?: DataFormPreseed; storageFingerprint?: string }) {
-  const setting: MeasureCareSetting = preseed?.setting ?? "outpatient";
-  const allMetrics = getMetricsForSetting(setting);
-  const byDomain = allMetrics.reduce<Record<string, MetricDefinition[]>>((acc, m) => {
-    acc[m.domain] = [...(acc[m.domain] ?? []), m]; return acc;
-  }, {});
+  const settings: MeasureCareSetting[] = preseed?.settings ?? (preseed?.setting ? [preseed.setting] : ["outpatient"]);
+  const primarySetting = settings[0];
+
+  const settingMetricGroups = settings.map(s => ({
+    setting: s,
+    metrics: getMetricsForSetting(s),
+  }));
+  const allMetrics = settingMetricGroups.flatMap(g => g.metrics);
 
   const defaultCheckedIds = new Set(preseed?.preSelectedIds ?? allMetrics.filter((m) => m.phase === 1).map((m) => m.id));
 
@@ -133,7 +136,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>({});
   const [deployment, setDeployment] = useState<DeploymentSnapshot>(defaultDeployment);
   const [pdfLoading, setPdfLoading] = useState(false);
-  const isSettingLocked = !!preseed?.setting;
+  const isSettingLocked = settings.length > 0 && !!preseed;
 
   function toggleMetric(id: string) {
     setCheckedIds((prev) => {
@@ -172,7 +175,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   function buildResponse(): MeasureDataRequestResponse {
     const metrics = Array.from(checkedIds).map((id) => entries[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false })
       .filter((e) => e.before !== null || e.after !== null || e.isMonthlyMode);
-    return { setting, deployment, metrics };
+    return { setting: primarySetting, deployment, metrics };
   }
 
   async function handleDownloadPDF() {
@@ -197,10 +200,10 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
         </div>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FAF8F5] border border-[#E8E2DA] rounded-full text-xs text-[#888888] mb-4">
           {isSettingLocked && <Lock className="w-3 h-3 text-[#EA2C00]" />}
-          {SETTING_LABELS[setting]}
+          {settings.map(s => SETTING_LABELS[s]).join(" · ")}
         </div>
         {isSettingLocked && (
-          <p className="text-xs text-[#AAAAAA] mb-2 italic">Your Abridge contact has scoped this review to {SETTING_LABELS[setting]}.</p>
+          <p className="text-xs text-[#AAAAAA] mb-2 italic">Your Abridge contact has scoped this review to {settings.map(s => SETTING_LABELS[s]).join(" & ")}.</p>
         )}
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Pre-EBR Data Request</p>
         <h1 className="text-3xl font-bold text-black mb-3 uppercase tracking-tight" data-testid="text-data-request-title">Help us tell your story</h1>
@@ -362,17 +365,33 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           </div>
         </div>
 
-        {Object.entries(byDomain).map(([domain, metrics]) => (
-          <div key={domain} className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
-            <h2 className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">{DOMAIN_LABELS[domain] || domain}</h2>
-            <div className="space-y-3">
-              {metrics.map((metric) => (
-                <MetricRow key={metric.id} metric={metric} checked={checkedIds.has(metric.id)} entry={entries[metric.id]}
-                  onToggle={() => toggleMetric(metric.id)} onUpdate={(updates) => updateEntry(metric.id, updates)} />
+        {settingMetricGroups.map(({ setting: s, metrics: settingMetrics }) => {
+          const byDomain = settingMetrics.reduce<Record<string, MetricDefinition[]>>((acc, m) => {
+            acc[m.domain] = [...(acc[m.domain] ?? []), m]; return acc;
+          }, {});
+          return (
+            <div key={s}>
+              {settings.length > 1 && (
+                <div className="flex items-center gap-2 mb-3 mt-2">
+                  <div className="h-px flex-1 bg-[#E8E2DA]" />
+                  <span className="text-[10px] font-bold text-[#1A1A1A] uppercase tracking-widest">{SETTING_LABELS[s]}</span>
+                  <div className="h-px flex-1 bg-[#E8E2DA]" />
+                </div>
+              )}
+              {Object.entries(byDomain).map(([domain, metrics]) => (
+                <div key={`${s}-${domain}`} className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm mb-6">
+                  <h2 className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">{DOMAIN_LABELS[domain] || domain}</h2>
+                  <div className="space-y-3">
+                    {metrics.map((metric) => (
+                      <MetricRow key={metric.id} metric={metric} checked={checkedIds.has(metric.id)} entry={entries[metric.id]}
+                        onToggle={() => toggleMetric(metric.id)} onUpdate={(updates) => updateEntry(metric.id, updates)} />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
           <button onClick={handleDownloadPDF} disabled={!hasAnyData || pdfLoading}
             className={`w-full inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${

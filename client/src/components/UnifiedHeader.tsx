@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, FileText, Check } from "lucide-react";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import { DataRequestDialog } from "@/components/DataRequestDialog";
 
@@ -62,6 +62,7 @@ interface UnifiedHeaderProps {
   dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
   dataRequestCareSettingOptions?: import("@/components/DataRequestDialog").CareSettingOption[];
   dataRequestSingleSelect?: boolean;
+  dataRequestDirectCopy?: boolean;
 }
 
 const PATH_LABELS: Record<PathType, string> = {
@@ -84,9 +85,11 @@ export function UnifiedHeader({
   dataRequestGenerateUrl,
   dataRequestCareSettingOptions,
   dataRequestSingleSelect,
+  dataRequestDirectCopy,
 }: UnifiedHeaderProps) {
   const [, setLocation] = useLocation();
   const [drDialogOpen, setDrDialogOpen] = useState(false);
+  const [directCopied, setDirectCopied] = useState(false);
   
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -157,23 +160,54 @@ export function UnifiedHeader({
         {/* Right: Data Request + Progress indicator */}
         <div className="flex items-center flex-shrink-0 gap-2 sm:gap-3">
           {dataRequestGenerateUrl && (
-            <>
+            dataRequestDirectCopy ? (
               <button
-                onClick={() => setDrDialogOpen(true)}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-[7px] rounded-lg text-[11px] sm:text-[12px] font-medium bg-[#FAF8F5] border border-[#E8E2DA] text-[#555555] hover:bg-[#F5F0EB] hover:border-[#D0C8BF] hover:text-[#1A1A1A] transition-all duration-150"
+                onClick={async () => {
+                  try {
+                    const url = await dataRequestGenerateUrl([]);
+                    await navigator.clipboard.writeText(url);
+                    setDirectCopied(true);
+                    setTimeout(() => setDirectCopied(false), 2500);
+                  } catch { /* ignore */ }
+                }}
+                className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-[7px] rounded-lg text-[11px] sm:text-[12px] font-medium transition-all duration-150 ${
+                  directCopied
+                    ? "bg-green-50 border border-green-200 text-green-700"
+                    : "bg-[#FAF8F5] border border-[#E8E2DA] text-[#555555] hover:bg-[#F5F0EB] hover:border-[#D0C8BF] hover:text-[#1A1A1A]"
+                }`}
                 data-testid="button-header-data-request"
               >
-                <FileText className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Data Request</span>
+                {directCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Data Request</span>
+                  </>
+                )}
               </button>
-              <DataRequestDialog
-                open={drDialogOpen}
-                onOpenChange={setDrDialogOpen}
-                generateUrl={dataRequestGenerateUrl}
-                careSettingOptions={dataRequestCareSettingOptions}
-                singleSelect={dataRequestSingleSelect}
-              />
-            </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setDrDialogOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-[7px] rounded-lg text-[11px] sm:text-[12px] font-medium bg-[#FAF8F5] border border-[#E8E2DA] text-[#555555] hover:bg-[#F5F0EB] hover:border-[#D0C8BF] hover:text-[#1A1A1A] transition-all duration-150"
+                  data-testid="button-header-data-request"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Data Request</span>
+                </button>
+                <DataRequestDialog
+                  open={drDialogOpen}
+                  onOpenChange={setDrDialogOpen}
+                  generateUrl={dataRequestGenerateUrl}
+                  careSettingOptions={dataRequestCareSettingOptions}
+                  singleSelect={dataRequestSingleSelect}
+                />
+              </>
+            )
           )}
 
           {/* Narrow phones (<480px): compact step counter only */}

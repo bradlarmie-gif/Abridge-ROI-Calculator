@@ -140,7 +140,7 @@ function getInitialDeepLink(): InitialDeepLink {
     const fp = simpleHash(dataFormParam);
     setPartnerSession('data_request', fp);
     const decoded = decodeDataFormPreseed(dataFormParam);
-    return { type: 'measure_data_form', preseed: decoded ?? { setting: 'outpatient' }, fingerprint: fp };
+    return { type: 'measure_data_form', preseed: decoded ?? { settings: ['outpatient'] }, fingerprint: fp };
   }
 
   const exploreSetting = params.get('explore');

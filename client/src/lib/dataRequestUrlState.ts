@@ -27,7 +27,8 @@ export interface MeasureDataRequestResponse {
 }
 
 export interface DataFormPreseed {
-  setting: MeasureCareSetting;
+  settings: MeasureCareSetting[];
+  setting?: MeasureCareSetting;
   preSelectedIds?: string[];
 }
 
@@ -85,7 +86,14 @@ export function decodeDataFormPreseed(encoded: string): DataFormPreseed | null {
   try {
     const decompressed = LZString.decompressFromEncodedURIComponent(encoded);
     if (!decompressed) return null;
-    return JSON.parse(decompressed) as DataFormPreseed;
+    const parsed = JSON.parse(decompressed) as Record<string, unknown>;
+    if (!parsed.settings && parsed.setting) {
+      parsed.settings = [parsed.setting];
+    }
+    if (!Array.isArray(parsed.settings) || parsed.settings.length === 0) {
+      parsed.settings = ['outpatient'];
+    }
+    return parsed as unknown as DataFormPreseed;
   } catch {
     return null;
   }
