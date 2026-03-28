@@ -24,7 +24,7 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     4: 'Access Impact Tracked',
   },
   revenue: {
-    1: 'Not Yet Analyzed',
+    1: 'Documentation Improved — Impact Unmeasured',
     2: 'Directional Signal',
     3: 'Impact Measured',
     4: 'Documentation as a Revenue Lever',
@@ -36,7 +36,7 @@ export const ACTIVATION_LABELS: Record<Domain, Record<ActivationLevel, string>> 
     4: 'Workforce Strategically Managed',
   },
   risk: {
-    1: 'Improvement Untracked',
+    1: 'Quality Improving — Downstream Not Yet Connected',
     2: 'Actively Monitored',
     3: 'Downstream Connected',
     4: 'Documentation as a Strategic Asset',
@@ -894,8 +894,8 @@ export function computeRiskFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${count} of 5 quality dimensions tracked`,
-      context: `Your organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}`,
+      headlineMetric: `${count} of 5 quality dimensions actively tracked`,
+      context: `${count} of 5 quality dimensions actively tracked — structured foundation for downstream value connection.\n\nYour organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}`,
       formula: '',
       footnote: 'Estimates based on your inputs. Individual results vary.',
       nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',

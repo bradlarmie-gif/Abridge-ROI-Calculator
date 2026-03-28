@@ -1010,6 +1010,11 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               />
             </div>
             <BenchmarkContext text="AMGA benchmark midpoint: $350K. Industry range: $250K–$500K." />
+            {((currentState.inputs.replacementCost as number) === 350000 || !(currentState.inputs.replacementCost as number)) && (
+              <p className="text-[11px] text-[#999999] italic mt-1 leading-relaxed">
+                Using AMGA benchmark default ($350K). Enter your organization's actual replacement cost for a more precise estimate.
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">

@@ -131,7 +131,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             lowEstimate = Math.round(providers * 1000);
             highEstimate = Math.round(providers * 3000);
             narrative = `Recovered time is generating value. It hasn't been counted yet. Organizations at your scale (${providers > 0 ? providers.toLocaleString() + ' providers' : 'similar size'}) typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in access revenue when they first run this analysis.\n\nOPPORTUNITY AHEAD: Start with a time-tracking study across a cohort of providers. Even a 30-day pilot generates the data needed to confirm or refute the benchmark range.`;
-            formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
+            formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: MGMA Physician Compensation data; published literature on access revenue from documentation efficiency`;
           } else if (level === 2) {
             const minsPerEncounter = domainInputs.minsPerEncounter || 3;
             const conversionRate = domainInputs.conversionRate || 0.25;
@@ -156,7 +156,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             lowEstimate = Math.round(providers * 4000);
             highEstimate = Math.round(providers * 12000);
             narrative = `Documentation quality has improved. Whether reimbursement followed is the question — and the answer is almost always yes. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in coding and denial impact when they first run this analysis.\n\nOPPORTUNITY AHEAD: A retrospective coding audit — comparing pre/post ambient documentation — typically takes 4–6 weeks and produces the data needed to confirm the benchmark range.`;
-            formula = `Benchmark range: ${providers} providers × $4,000–$12,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
+            formula = `Benchmark range: ${providers} providers × $4,000–$12,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: AMA/MGMA coding benchmarks; published studies on documentation-driven revenue improvement (2–7%)`;
           } else if (level === 2) {
             const wrvuLift = domainInputs.wrvuLift || 0.05;
             const conversionFactor = inputs.conversionFactor || 33;
@@ -179,7 +179,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             lowEstimate = Math.round(providers * 1500);
             highEstimate = Math.round(providers * 4000);
             narrative = `Provider burden has decreased. The retention and workforce economics of that decrease haven't been formally counted yet. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in avoided turnover and burden costs when they first run this analysis.\n\nOPPORTUNITY AHEAD: A provider satisfaction survey benchmarked against pre-ambient baseline is typically the fastest path to confirming this range.`;
-            formula = `Benchmark range: ${providers} providers × $1,500–$4,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
+            formula = `Benchmark range: ${providers} providers × $1,500–$4,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: AMGA Physician Retention Survey; replacement cost literature range $250K–$500K per physician`;
           } else if (level === 2) {
             const satisfactionLift = domainInputs.satisfactionLift || 10;
             const turnoverCost = domainInputs.turnoverCost || 50000;
@@ -203,7 +203,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             lowEstimate = Math.round(providers * 1000);
             highEstimate = Math.round(providers * 3000);
             narrative = `Documentation quality has improved. The downstream value — in quality programs, compliance, and CDI — hasn't been connected to it yet. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in quality and compliance value when they first run this analysis.\n\nOPPORTUNITY AHEAD: Start with a documentation completeness audit. It typically generates the baseline data needed to build the quality program.`;
-            formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
+            formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: CMS quality penalty exposure data; CDI program ROI literature`;
           } else if (level === 2) {
             const qualityScore = domainInputs.qualityScore || 70;
             const complianceRisk = domainInputs.complianceRisk || 0.02;
@@ -441,8 +441,8 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
               {revL2Value > 0 && (
                 <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[#FFFBEB] border border-[#F59E0B]/30 mt-2 mb-3">
                   <div>
-                    <span className="text-[10px] font-semibold uppercase tracking-[1.2px] text-[#92400E]">Revenue Signal</span>
-                    <span className="text-[9px] text-[#92400E]/70 ml-2">directional estimate — not from billing data</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[1.2px] text-[#92400E]">Revenue</span>
+                    <span className="text-[9px] text-[#92400E]/70 ml-2">Signals observed · not yet confirmed in billing data · Next: retrospective coding audit</span>
                   </div>
                   <span className="text-sm font-bold text-[#92400E]">
                     ~{formatDollar(revL2Value)}/yr
@@ -629,7 +629,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }}>
               <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-8" data-testid="card-chart">
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
-                  36-Month Value Trajectory
+                  Value of Acting Now — 36-Month Trajectory
                 </p>
                 <p className="text-sm text-[#888888] mb-6">
                   What measurement compounds over time — at your scale.
@@ -665,7 +665,10 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                 <p className="text-sm text-[#888888] leading-relaxed mt-4" data-testid="text-chart-summary">
                   At your current measurement pace, approximately <span className="font-bold text-black">{formatDollar(gap36mo)}</span> in value will have accumulated unmeasured over 36 months.
                 </p>
-                <p className="text-xs text-[#888888] italic mt-2">
+                <p className="text-xs text-gray-400 italic mt-2">
+                  Compounds because measurement enables optimization — organizations that measure early improve faster, widening the gap with each passing quarter.
+                </p>
+                <p className="text-xs text-[#888888] italic mt-1">
                   Based on low-end benchmark ranges for unmeasured domains at your scale. Individual results vary.
                 </p>
               </div>
@@ -674,7 +677,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
 
           <div className="mt-10 pt-6 border-t border-[#E5E5E5]">
             <p className="text-xs text-[#AAAAAA] leading-relaxed">
-              Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Benchmark ranges for unmeasured domains are modeled estimates, not derived from a database of actual customer outcomes. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
+              Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Benchmark ranges for unmeasured domains reflect published literature and aggregated deployment patterns, not a database of actual customer outcomes. Sources cited per domain. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
             </p>
           </div>
 

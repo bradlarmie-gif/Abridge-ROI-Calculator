@@ -154,6 +154,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     if (allL1) {
       return {
         name: 'Live. Not Yet Measured.',
+        headline: 'The deployment is running. The measurement story hasn\u2019t started.',
         body: `The deployment is running across ${providers > 0 ? providers.toLocaleString() + ' providers' : 'your organization'}. What it's returning — in revenue, workforce, and quality terms — hasn't been formally analyzed yet. That's where most organizations begin. It's also where most stay longest.`,
       };
     }
@@ -161,7 +162,8 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     if (allHigh) {
       return {
         name: 'Strategic Maturity.',
-        body: 'Four domains measured, connected, and managed. This is where most ambient deployments aspire to be and few reach. The work ahead is deepening strategic integration — not building the measurement foundation.',
+        headline: 'Four domains measured, connected, and managed.',
+        body: 'This is where most ambient deployments aspire to be and few reach. The work ahead is deepening strategic integration — not building the measurement foundation.',
       };
     }
 
@@ -170,11 +172,13 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
       if (l2count >= 3) {
         return {
           name: 'Early Measurement Across All Domains.',
-          body: 'Every domain has moved from awareness to data. None has been pushed to validated, actionable impact yet. The measurement foundation is in place — the question is which domain gets pushed first, and what it unlocks.',
+          headline: 'Every domain has moved from awareness to data.',
+          body: 'None has been pushed to validated, actionable impact yet. The measurement foundation is in place — the question is which domain gets pushed first, and what it unlocks.',
         };
       }
       return {
         name: 'Measuring the Basics. Opportunity Ahead.',
+        headline: 'Some measurement is underway. Most of the value story is still ahead.',
         body: `Some domains have moved from awareness to data. Most of the ambient value story hasn't been told yet.${providers > 0 ? ` At ${providers.toLocaleString()} providers, the confirmed value is a starting point — not the ceiling.` : ''}`,
       };
     }
@@ -183,21 +187,25 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
       const d = high[0];
       const uStr = unmeasured.length > 0 ? joinNames(unmeasured) : '';
       const uVerb = unmeasured.length === 1 ? 'hasn\'t' : 'haven\'t';
-      const profiles: Record<DomainKey, { name: string; body: string }> = {
+      const profiles: Record<DomainKey, { name: string; headline: string; body: string }> = {
         capacity: {
           name: 'Time Captured. Financial Story Unwritten.',
+          headline: 'Recovered time is in operational action. The broader value story is next.',
           body: `Recovered time has moved into operational action. The revenue, workforce, and quality implications of that decision — what it's producing beyond the time itself — haven't been formally analyzed.${uStr ? ` ${uStr} ${uVerb} been measured yet.` : ''}`,
         },
         revenue: {
           name: 'Revenue Signal Measured. Ecosystem Unmeasured.',
+          headline: 'Revenue impact is on the radar. The rest of the value chain awaits.',
           body: `The documentation-to-revenue connection is on your radar and being measured. The capacity, workforce, and quality dimensions that inform and amplify that signal ${uVerb} been connected yet.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured.` : ''}`,
         },
         workforce: {
           name: 'Provider Experience Quantified. Broader Picture Unmeasured.',
+          headline: 'Provider relief is quantified. Organizational implications are next.',
           body: `You've quantified what ambient is doing for your providers. The organizational implications — what that relief means for access capacity, revenue, and downstream quality — ${uVerb} been formally connected yet.`,
         },
         risk: {
           name: 'Quality Infrastructure Present. Value Chain Not Yet Built.',
+          headline: 'Quality tracking is in place. The downstream connections are next.',
           body: `Documentation quality is being tracked and monitored. The connection from that quality improvement to coding accuracy, CDI, and compliance programs ${uVerb} been formalized yet.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured.` : ''}`,
         },
       };
@@ -209,41 +217,49 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
       const gapStr = joinNames(gap);
       return {
         name: 'Measuring Across Most Domains.',
+        headline: 'Three or more domains are generating confirmed value.',
         body: `Three or more domains are generating confirmed, validated value.${gapStr ? ` ${gapStr} is the remaining gap — and at your scale, it's worth closing before the next planning cycle.` : ' The work ahead is deepening each domain, not widening the foundation.'}`,
       };
     }
 
     const pair = [...high].sort().join('+') as string;
     const uStr = unmeasured.length > 0 ? joinNames(unmeasured) : '';
-    const pairMap: Record<string, { name: string; body: string }> = {
+    const pairMap: Record<string, { name: string; headline: string; body: string }> = {
       'capacity+revenue': {
         name: 'Operational and Financial Capture Underway.',
+        headline: 'Time recovery and revenue impact are both being measured.',
         body: `Time recovery is in action and revenue impact is measured.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured — and at your scale, those domains typically carry significant additional value.` : ''}`,
       },
       'capacity+workforce': {
         name: 'Provider and Operational Value Captured.',
+        headline: 'Time recovery and workforce dimensions are connected.',
         body: `The time recovery and workforce dimensions are measured and connected. Revenue impact and quality downstream effects — often the highest-value domains per provider — haven't been formally analyzed yet.`,
       },
       'capacity+risk': {
         name: 'Operations and Quality Tracked. Revenue and Workforce Unmeasured.',
+        headline: 'Time conversion and quality monitoring are in place.',
         body: `Time conversion and quality monitoring are in place. Revenue impact and workforce implications — which typically represent the largest financial returns at scale — haven't been formally measured.`,
       },
       'revenue+workforce': {
         name: 'Financial and Provider Value Both Measured.',
+        headline: 'Revenue impact and workforce implications are both on the table.',
         body: `Revenue impact and workforce implications are both on the table. Capacity conversion strategy and quality downstream effects haven't been connected yet — and they compound the value of what you've already built.`,
       },
       'revenue+risk': {
         name: 'Financial and Clinical Intelligence Present.',
+        headline: 'Revenue and quality dimensions are being measured.',
         body: `Revenue and quality dimensions are measured. Capacity conversion and workforce implications — often where the largest per-provider ROI lives — haven't been formally analyzed yet.`,
       },
       'risk+workforce': {
         name: 'Clinical Quality and Provider Experience Measured.',
+        headline: 'Documentation quality and workforce impact are tracked.',
         body: `Documentation quality and workforce impact are tracked. The capacity and revenue dimensions — what recovered time produces and what documentation quality is worth in billing — remain unmeasured.`,
       },
     };
 
     return pairMap[pair] || {
       name: 'Multiple Domains Measured.',
+      headline: 'Multiple dimensions of ambient value are being captured.',
       body: `Multiple dimensions of ambient value are being captured.${uStr ? ` ${uStr} ${unmeasured.length === 1 ? 'hasn\'t' : 'haven\'t'} been formally analyzed yet.` : ' The work ahead is connecting the measured domains into a unified strategic picture.'}`,
     };
   }, [domainLevels, providers]);
@@ -265,11 +281,11 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
       },
       '12-24': {
         low: "One to two years in, and most of the value story hasn't been told yet. The window to build measurement infrastructure is narrowing — not because it closes, but because every month without it is a month of value sitting uncounted.",
-        mid: "One to two years in with moderate maturity. Some domains are yielding confirmed value; others haven't been analyzed. At this stage, the gap isn't about adoption — it's about whether there's a structured program to capture what's already generating returns.",
+        mid: "One to two years in with moderate maturity. Some domains are yielding confirmed value; others haven't been analyzed. At this stage, the next chapter is about measurement discipline, not adoption — it's about whether there's a structured program to capture what's already generating returns.",
         high: "One to two years in with strong maturity. You've used the deployment period to build real infrastructure. The work ahead is integration and depth.",
       },
       '24+': {
-        low: "Two or more years live, and the measurement foundation hasn't been built. This is the highest-urgency profile in this assessment — not because the deployment has failed, but because value has been generating without being counted for a long time. What you find when you look will be surprising.",
+        low: "Two or more years live, and the measurement foundation hasn't been built. This profile has the most immediate strategic opportunity in this assessment — not because the deployment has failed, but because value is already generating — this is the measurement story waiting to be told. What you find when you look will be surprising.",
         mid: "Two or more years live with mixed maturity. Some domains are yielding confirmed value; others have been generating returns that no one has looked at yet. At this tenure, that's a prioritization problem, not a knowledge problem.",
         high: "Two or more years live with strong maturity. This is where few organizations arrive. The deployment isn't just generating value — it's being managed as a strategic asset.",
       },
@@ -398,8 +414,11 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
               <p className="text-[11px] font-medium text-white/40 uppercase tracking-[1.5px] mb-4">
                 Your Ambient Profile
               </p>
-              <p className="text-xl sm:text-2xl font-bold text-white leading-tight mb-4" data-testid="text-verdict-headline">
+              <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-[1.2px] mb-2" data-testid="text-verdict-eyebrow">
                 {archetype.name}
+              </p>
+              <p className="text-xl sm:text-2xl font-bold text-white leading-tight mb-4" data-testid="text-verdict-headline">
+                {archetype.headline}
               </p>
               <div className="h-px bg-white/10 mb-4" />
               <p className="text-sm text-white/60 leading-relaxed" data-testid="text-verdict-body">

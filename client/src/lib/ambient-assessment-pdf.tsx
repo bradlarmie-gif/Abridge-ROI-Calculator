@@ -137,26 +137,30 @@ function tenureScoreBand(score: number): "low" | "mid" | "high" {
   return "high";
 }
 
-const BENCH: Record<string, { low: (p: number) => number; high: (p: number) => number; desc: string }> = {
+const BENCH: Record<string, { low: (p: number) => number; high: (p: number) => number; desc: string; source: string }> = {
   capacity: {
     low: (p) => Math.round(p * 1000),
     high: (p) => Math.round(p * 3000),
     desc: "in access revenue from recovered time, annually",
+    source: "Source: MGMA Physician Compensation data; published literature on access revenue from documentation efficiency",
   },
   revenue: {
     low: (p) => Math.round(p * 4000),
     high: (p) => Math.round(p * 12000),
     desc: "from documentation-driven coding and denial impact, annually",
+    source: "Source: AMA/MGMA coding benchmarks; published studies on documentation-driven revenue improvement (2\u20137%)",
   },
   workforce: {
     low: (p) => Math.round(p * 1500),
     high: (p) => Math.round(p * 4000),
     desc: "in avoided turnover and reduced burden costs, annually",
+    source: "Source: AMGA Physician Retention Survey; replacement cost literature range $250K\u2013$500K per physician",
   },
   risk: {
     low: (p) => Math.round(p * 1000),
     high: (p) => Math.round(p * 3000),
     desc: "in downstream quality and compliance value, annually",
+    source: "Source: CMS quality penalty exposure data; CDI program ROI literature",
   },
 };
 
@@ -167,7 +171,7 @@ const BENCH: Record<string, { low: (p: number) => number; high: (p: number) => n
 function computeArchetype(
   domainLevels: Record<string, number>,
   providers: number
-): { name: string; body: string } {
+): { name: string; headline: string; body: string } {
   const DOMAIN_KEYS = ["capacity", "revenue", "workforce", "risk"];
   const LABELS: Record<string, string> = {
     capacity: "Capacity", revenue: "Revenue", workforce: "Workforce", risk: "Quality",
@@ -185,14 +189,15 @@ function computeArchetype(
   if (allL1) {
     return {
       name: "Live. Not Yet Measured.",
-      body: `The deployment is running across ${providers > 0 ? providers.toLocaleString() + " providers" : "your organization"}. What it\u2019s returning \u2014 in revenue, workforce, and quality terms
-\u2014 hasn\u2019t been formally analyzed yet. That\u2019s where most organizations begin. It\u2019s also where most stay longest.`,
+      headline: "The deployment is running. The measurement story hasn\u2019t started.",
+      body: `The deployment is running across ${providers > 0 ? providers.toLocaleString() + " providers" : "your organization"}. What it\u2019s returning \u2014 in revenue, workforce, and quality terms \u2014 hasn\u2019t been formally analyzed yet. That\u2019s where most organizations begin. It\u2019s also where most stay longest.`,
     };
   }
   if (allHigh) {
     return {
       name: "Strategic Maturity.",
-      body: "Four domains measured, connected, and managed. This is where most ambient deployments aspire to be and few reach. The work ahead is deepening strategic integration \u2014 not building the measurement foundation.",
+      headline: "Four domains measured, connected, and managed.",
+      body: "This is where most ambient deployments aspire to be and few reach. The work ahead is deepening strategic integration \u2014 not building the measurement foundation.",
     };
   }
   if (high.length === 0) {
@@ -200,84 +205,90 @@ function computeArchetype(
     if (l2count >= 3) {
       return {
         name: "Early Measurement Across All Domains.",
-        body: "Every domain has moved from awareness to data. None has been pushed to validated, actionable impact yet. The measurement foundation is in place \u2014 the question is which domain gets pushed first.",
+        headline: "Every domain has moved from awareness to data.",
+        body: "None has been pushed to validated, actionable impact yet. The measurement foundation is in place \u2014 the question is which domain gets pushed first, and what it unlocks.",
       };
     }
     return {
       name: "Measuring the Basics. Opportunity Ahead.",
-      body: `Some domains have moved from awareness to data. Most of the ambient value story hasn\u2019t been told yet.${providers > 0 ? ` At ${providers.toLocaleString()} providers, the confirmed value is
- a starting point \u2014 not the ceiling.` : ""}`,
+      headline: "Some measurement is underway. Most of the value story is still ahead.",
+      body: `Some domains have moved from awareness to data. Most of the ambient value story hasn\u2019t been told yet.${providers > 0 ? ` At ${providers.toLocaleString()} providers, the confirmed value is a starting point \u2014 not the ceiling.` : ""}`,
     };
   }
   if (high.length === 1) {
     const d = high[0];
     const uStr = unmeasured.length > 0 ? join(unmeasured.map((k) => LABELS[k])) : "";
     const uVerb = unmeasured.length === 1 ? "hasn\u2019t" : "haven\u2019t";
-    const profiles: Record<string, { name: string; body: string }> = {
+    const profiles: Record<string, { name: string; headline: string; body: string }> = {
       capacity: {
         name: "Time Captured. Financial Story Unwritten.",
-        body: `Recovered time has moved into operational action. The revenue, workforce, and quality implications of that decision haven\u2019t been formally analyzed.${uStr ? ` ${uStr} ${uVerb} been
-measured yet.` : ""}`,
+        headline: "Recovered time is in operational action. The broader value story is next.",
+        body: `Recovered time has moved into operational action. The revenue, workforce, and quality implications of that decision haven\u2019t been formally analyzed.${uStr ? ` ${uStr} ${uVerb} been measured yet.` : ""}`,
       },
       revenue: {
         name: "Revenue Signal Measured. Ecosystem Unmeasured.",
-        body: `The documentation-to-revenue connection is on your radar and being measured. The capacity, workforce, and quality dimensions that inform and amplify that signal ${uVerb} been connected
-yet.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? "s" : ""} unmeasured.` : ""}`,
+        headline: "Revenue impact is on the radar. The rest of the value chain awaits.",
+        body: `The documentation-to-revenue connection is on your radar and being measured. The capacity, workforce, and quality dimensions that inform and amplify that signal ${uVerb} been connected yet.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? "s" : ""} unmeasured.` : ""}`,
       },
       workforce: {
         name: "Provider Experience Quantified. Broader Picture Unmeasured.",
-        body: `You\u2019ve quantified what ambient is doing for your providers. The organizational implications \u2014 what that relief means for access capacity, revenue, and downstream quality \u2014
-${uVerb} been formally connected yet.`,
+        headline: "Provider relief is quantified. Organizational implications are next.",
+        body: `You\u2019ve quantified what ambient is doing for your providers. The organizational implications \u2014 what that relief means for access capacity, revenue, and downstream quality \u2014 ${uVerb} been formally connected yet.`,
       },
       risk: {
         name: "Quality Infrastructure Present. Value Chain Not Yet Built.",
-        body: `Documentation quality is being tracked and monitored. The connection from that quality improvement to coding accuracy, CDI, and compliance programs ${uVerb} been formalized yet.${uStr ? `
-${uStr} remain${unmeasured.length === 1 ? "s" : ""} unmeasured.` : ""}`,
+        headline: "Quality tracking is in place. The downstream connections are next.",
+        body: `Documentation quality is being tracked and monitored. The connection from that quality improvement to coding accuracy, CDI, and compliance programs ${uVerb} been formalized yet.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? "s" : ""} unmeasured.` : ""}`,
       },
     };
-    return profiles[d] || { name: "Single Domain Measured.", body: "" };
+    return profiles[d] || { name: "Single Domain Measured.", headline: "", body: "" };
   }
   if (high.length >= 3) {
     const gap = DOMAIN_KEYS.filter((d) => domainLevels[d] < 3);
     const gapStr = join(gap.map((k) => LABELS[k]));
     return {
       name: "Measuring Across Most Domains.",
-      body: `Three or more domains are generating confirmed, validated value.${gapStr ? ` ${gapStr} is the remaining gap \u2014 and at your scale, it\u2019s worth closing before the next planning cycle.` :
- " The work ahead is deepening each domain, not widening the foundation."}`,
+      headline: "Three or more domains are generating confirmed value.",
+      body: `Three or more domains are generating confirmed, validated value.${gapStr ? ` ${gapStr} is the remaining gap \u2014 and at your scale, it\u2019s worth closing before the next planning cycle.` : " The work ahead is deepening each domain, not widening the foundation."}`,
     };
   }
   const pair = [...high].sort().join("+");
   const uStr = unmeasured.length > 0 ? join(unmeasured.map((k) => LABELS[k])) : "";
-  const pairMap: Record<string, { name: string; body: string }> = {
+  const pairMap: Record<string, { name: string; headline: string; body: string }> = {
     "capacity+revenue": {
       name: "Operational and Financial Capture Underway.",
-      body: `Time recovery is in action and revenue impact is measured.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? "s" : ""} unmeasured \u2014 and at your scale, those domains typically carry
-significant additional value.` : ""}`,
+      headline: "Time recovery and revenue impact are both being measured.",
+      body: `Time recovery is in action and revenue impact is measured.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? "s" : ""} unmeasured \u2014 and at your scale, those domains typically carry significant additional value.` : ""}`,
     },
     "capacity+workforce": {
       name: "Provider and Operational Value Captured.",
+      headline: "Time recovery and workforce dimensions are connected.",
       body: "The time recovery and workforce dimensions are measured and connected. Revenue impact and quality downstream effects \u2014 often the highest-value domains per provider \u2014 haven\u2019t been formally analyzed yet.",
     },
     "capacity+risk": {
       name: "Operations and Quality Tracked. Revenue and Workforce Unmeasured.",
+      headline: "Time conversion and quality monitoring are in place.",
       body: "Time conversion and quality monitoring are in place. Revenue impact and workforce implications \u2014 which typically represent the largest financial returns at scale \u2014 haven\u2019t been formally measured.",
     },
     "revenue+workforce": {
       name: "Financial and Provider Value Both Measured.",
-      body: `Revenue impact and workforce implications are both on the table. Capacity conversion strategy and quality downstream effects haven\u2019t been connected yet \u2014 and they compound the value
-of what you\u2019ve already built.`,
+      headline: "Revenue impact and workforce implications are both on the table.",
+      body: "Revenue impact and workforce implications are both on the table. Capacity conversion strategy and quality downstream effects haven\u2019t been connected yet \u2014 and they compound the value of what you\u2019ve already built.",
     },
     "revenue+risk": {
       name: "Financial and Clinical Intelligence Present.",
+      headline: "Revenue and quality dimensions are being measured.",
       body: "Revenue and quality dimensions are measured. Capacity conversion and workforce implications \u2014 often where the largest per-provider ROI lives \u2014 haven\u2019t been formally analyzed yet.",
     },
     "risk+workforce": {
       name: "Clinical Quality and Provider Experience Measured.",
+      headline: "Documentation quality and workforce impact are tracked.",
       body: "Documentation quality and workforce impact are tracked. The capacity and revenue dimensions \u2014 what recovered time produces and what documentation quality is worth in billing \u2014 remain unmeasured.",
     },
   };
   return pairMap[pair] || {
     name: "Multiple Domains Measured.",
+    headline: "Multiple dimensions of ambient value are being captured.",
     body: `Multiple dimensions of ambient value are being captured.${uStr ? ` ${uStr} ${unmeasured.length === 1 ? "hasn\u2019t" : "haven\u2019t"} been formally analyzed yet.` : ""}`,
   };
 }
@@ -556,7 +567,8 @@ function ExecutiveSummaryPage({ data }: { data: AmbientAssessmentPDFData }) {
 
       <View style={s.divider} />
       <Text style={[s.eyebrow, { marginBottom: 6 }]}>WHAT THIS ASSESSMENT FOUND</Text>
-      <Text style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.35, marginBottom: 8 }}>{archetype.name}</Text>
+      <Text style={{ fontSize: 9, fontWeight: 700, color: "#EA2C00", letterSpacing: 1, marginBottom: 4, textTransform: "uppercase" }}>{archetype.name}</Text>
+      <Text style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.35, marginBottom: 8 }}>{archetype.headline}</Text>
       <Text style={[s.body, { color: "#444444", lineHeight: 1.7, marginBottom: 12 }]}>{archetype.body}</Text>
 
       {findings.length > 0 && (
@@ -572,7 +584,7 @@ function ExecutiveSummaryPage({ data }: { data: AmbientAssessmentPDFData }) {
 
       {unmeasuredLow > 0 && yr3 > measuredTotal && (
         <View>
-          <Text style={[s.eyebrow, { marginBottom: 8 }]}>36-MONTH VALUE TRAJECTORY</Text>
+          <Text style={[s.eyebrow, { marginBottom: 8 }]}>VALUE OF ACTING NOW — 36-MONTH TRAJECTORY</Text>
           <View style={[s.beigeBox, { paddingVertical: 12 }]}>
             {[
               { label: "TODAY", value: measuredTotal, note: "confirmed", highlight: false },
@@ -641,8 +653,11 @@ function StrategicProfilePage({ data }: { data: AmbientAssessmentPDFData }) {
 
       <View style={{ flexDirection: "row", gap: 24, marginBottom: 20 }}>
         <View style={{ flex: 1.6 }}>
-          <Text style={{ fontSize: 26, fontWeight: 800, color: "#1A1A1A", lineHeight: 1.2, marginBottom: 10 }}>
+          <Text style={{ fontSize: 10, fontWeight: 700, color: "#EA2C00", letterSpacing: 1, marginBottom: 4, textTransform: "uppercase" }}>
             {archetype.name}
+          </Text>
+          <Text style={{ fontSize: 26, fontWeight: 800, color: "#1A1A1A", lineHeight: 1.2, marginBottom: 10 }}>
+            {archetype.headline}
           </Text>
           <Text style={[s.body, { fontSize: 11, color: "#444444", lineHeight: 1.7 }]}>
             {archetype.body}
@@ -1069,6 +1084,11 @@ function DomainPage({
               <Text style={{ fontSize: 8, color: "#AAAAAA", marginTop: 4, fontStyle: "italic" }}>
                 Benchmark range based on organizations your size. Not a projection for your organization.
               </Text>
+              {bench.source && (
+                <Text style={{ fontSize: 7, color: "#BBBBBB", marginTop: 3, fontStyle: "italic" }}>
+                  {bench.source}
+                </Text>
+              )}
             </View>
           )}
 
@@ -1103,6 +1123,18 @@ function DomainPage({
               {footnote}
             </Text>
           ) : null}
+
+          {domainKey === "workforce" && (
+            (() => {
+              const rc = userInputs["Replacement cost per physician"] || userInputs["replacementCost"];
+              const isDefault = !rc || rc === "$350,000" || rc === "350000" || rc === "$350K";
+              return isDefault ? (
+                <Text style={{ fontSize: 7.5, color: "#AAAAAA", lineHeight: 1.4, fontStyle: "italic", marginTop: 6 }}>
+                  Replacement cost uses AMGA benchmark default ($350K). Source: AMGA Physician Retention Survey; industry range $250K–$500K per physician.
+                </Text>
+              ) : null;
+            })()
+          )}
         </View>
 
         <View style={[s.darkTile, { flex: 0.9, padding: 20 }]}>

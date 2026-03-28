@@ -614,7 +614,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
     const tenureAppends: Record<string, string> = {
       '0-6': "At less than 6 months, you're in the window where the measurement habits get set. The organizations that build them now don't have to rebuild them at 24 months.",
       '6-12': "At 6–12 months, you're at the decision point. The deployment is stable. The question is whether measurement becomes a program or stays informal.",
-      '12-24': "At 1–2 years, the urgency is real. Every month the measurement infrastructure doesn't exist, value that's already there goes uncounted.",
+      '12-24': "At 1–2 years, the opportunity is sharpening. Every month the measurement infrastructure doesn't exist, value that's already there goes uncounted.",
       '24+': "At 2+ years, the conversation is different. It's not about building measurement habits. It's about what's been sitting on the table — and what it takes to count it this year.",
     };
 
