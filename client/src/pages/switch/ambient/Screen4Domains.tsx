@@ -130,20 +130,20 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
     subheadline: 'How far has documentation quality traveled downstream?',
     reframe: '',
     cards: [
-      { level: 1, label: 'Quality Improving', description: 'Documentation quality has improved but downstream teams — coding, CDI, compliance — haven\'t been formally connected yet.' },
-      { level: 2, label: 'Actively Monitored', description: 'Documentation quality attributes are being tracked systematically.' },
-      { level: 3, label: 'Downstream Connected', description: 'Documentation quality improvements are connected to at least one downstream program or workflow.' },
-      { level: 4, label: 'Documentation as a Strategic Asset', description: 'Structured documentation informs organizational strategy — quality programs, value-based care, compliance governance, and AI readiness.' },
+      { level: 1, label: 'Quality Improving — Downstream Not Yet Connected', description: 'Documentation quality has improved. The teams that benefit from it — coding, CDI, compliance — haven\'t been formally connected to it yet.' },
+      { level: 2, label: 'Actively Monitored', description: 'Documentation quality dimensions are being actively tracked — completeness, specificity, HCC capture, compliance readiness.' },
+      { level: 3, label: 'Downstream Connected', description: 'Documentation quality improvements are connected to downstream programs — CDI, coding accuracy, quality measures, HCC/risk adjustment, or denial reduction.' },
+      { level: 4, label: 'Documentation as a Strategic Asset', description: 'Documentation quality informs organizational strategy — quality programs, value-based care, HCC/risk adjustment, compliance governance, and AI readiness.' },
     ],
     framingQuestions: {
-      1: undefined,
-      2: 'How are documentation quality metrics being tracked?',
-      3: 'Which financial pathway has documentation quality been connected to?',
-      4: 'Where does documentation quality inform organizational strategy?',
+      1: 'Have any downstream teams — coding, CDI, compliance — started working with the improved documentation?',
+      2: undefined,
+      3: undefined,
+      4: undefined,
     },
     unlockTeasers: {
-      2: 'Establish systematic tracking of documentation quality attributes.',
-      3: 'Connect documentation quality to a financial pathway.',
+      2: 'Track which documentation quality dimensions are improving.',
+      3: 'Connect documentation quality to downstream programs — CDI, coding, HCC capture, or denial reduction.',
       4: 'Position documentation quality as a strategic organizational asset.',
     },
   },
@@ -1233,9 +1233,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
   };
 
   const MONITORING_OPTIONS = [
-    { id: 'not_yet', label: "Not tracking formally yet" },
-    { id: 'spot_checks', label: 'Spot checks and anecdotal' },
+    { id: 'spot_checks', label: 'Spot checks and informal review' },
     { id: 'systematic', label: 'Structured audits or dashboards' },
+    { id: 'realtime', label: 'Real-time dashboard or automated quality reporting' },
   ];
 
   const renderRiskInputs = () => {
@@ -1291,7 +1291,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
           </div>
 
           <AnimatePresence>
-            {approach === 'systematic' && (
+            {approach && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1299,7 +1299,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                 transition={{ duration: 0.2 }}
               >
                 <label className="block text-sm font-medium text-black mb-3">
-                  What documentation attributes are you tracking?
+                  Which quality dimensions are being tracked?
                 </label>
                 <div className="flex flex-col gap-2.5">
                   {QUALITY_ATTRIBUTES.map((attr, i) => {
@@ -1426,6 +1426,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     }
 
     const executiveOwner = currentState.inputs.executiveOwner as string || '';
+    const boardPresented = currentState.inputs.executiveBoardPresented as string || '';
     return (
       <div className="flex flex-col gap-5">
         <div>
@@ -1486,6 +1487,43 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                   value={opt.id}
                   checked={executiveOwner === opt.id}
                   onChange={() => setDomainInput('executiveOwner', opt.id)}
+                  className="sr-only"
+                />
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+            Has documentation quality been presented to the executive committee or board?
+          </label>
+          <div className="flex flex-col gap-2">
+            {[
+              { id: 'yes', label: 'Yes — it has been presented at the executive or board level' },
+              { id: 'no', label: 'Not yet — it lives at the operational or department level' },
+            ].map((opt) => (
+              <label
+                key={opt.id}
+                className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                  boardPresented === opt.id
+                    ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                    : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                }`}
+                data-testid={`radio-board-presented-${opt.id}`}
+              >
+                <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  boardPresented === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                }`}>
+                  {boardPresented === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                </div>
+                <span className="text-sm text-black">{opt.label}</span>
+                <input
+                  type="radio"
+                  name="executiveBoardPresented"
+                  value={opt.id}
+                  checked={boardPresented === opt.id}
+                  onChange={() => setDomainInput('executiveBoardPresented', opt.id)}
                   className="sr-only"
                 />
               </label>
@@ -1707,6 +1745,26 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                       if (trBefore > 0) {
                         return `${trBefore}% → enter after rate`;
                       }
+                    }
+                  }
+                  if (activeDomain === 'risk') {
+                    if (card.level === 2) {
+                      const attrCsv = (inp.qualityAttributes as string) || '';
+                      const attrCount = attrCsv.split(',').filter(Boolean).length;
+                      const approach = inp.monitoringApproach as string;
+                      const approachLabel = approach === 'realtime' ? 'Real-time' : approach === 'systematic' ? 'Structured' : approach === 'spot_checks' ? 'Informal' : '';
+                      if (attrCount > 0) return `${attrCount} of 5${approachLabel ? ` · ${approachLabel}` : ''}`;
+                      if (approachLabel) return approachLabel;
+                    }
+                    if (card.level === 3) {
+                      const wfCsv = (inp.connectedWorkflows as string) || '';
+                      const wfCount = wfCsv.split(',').filter(Boolean).length;
+                      if (wfCount > 0) return `${wfCount} workflow${wfCount !== 1 ? 's' : ''} connected`;
+                    }
+                    if (card.level === 4) {
+                      const siCsv = (inp.strategicIntegrations as string) || '';
+                      const siCount = siCsv.split(',').filter(Boolean).length;
+                      if (siCount > 0) return `${siCount} strategic area${siCount !== 1 ? 's' : ''}`;
                     }
                   }
                   if (activeDomain === 'revenue') {
@@ -2215,6 +2273,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               const attrCsv = (inp.qualityAttributes as string) || '';
               const attrCount = currentState.activationLevel >= 2 ? attrCsv.split(',').filter(Boolean).length : 0;
 
+              const monitoringApproach = currentState.activationLevel >= 2 ? (inp.monitoringApproach as string) || '' : '';
+              const monitoringLabel = monitoringApproach === 'realtime' ? 'Real-time' : monitoringApproach === 'systematic' ? 'Structured' : monitoringApproach === 'spot_checks' ? 'Informal' : '';
+
               const financialPathway = currentState.activationLevel >= 3 ? (inp.financialPathway as string || '') : '';
               const pathwayLabel = financialPathway === 'mips' ? 'MIPS' : financialPathway === 'denials' ? 'Denials' : financialPathway === 'none_yet' ? 'None yet' : '—';
 
@@ -2237,7 +2298,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                     <div className="flex items-center justify-between">
                       <span className="text-white/60">Quality Tracking</span>
                       <span className="text-white font-medium" data-testid="text-quality-summary-attributes">
-                        {currentState.activationLevel >= 2 && attrCount > 0 ? `${attrCount} of 5` : '—'}
+                        {currentState.activationLevel >= 2 && attrCount > 0 ? `${attrCount} of 5${monitoringLabel ? ` · ${monitoringLabel}` : ''}` : '—'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

@@ -797,7 +797,7 @@ const DOWNSTREAM_WORKFLOWS = [
 
 const STRATEGIC_INTEGRATIONS = [
   'Quality program design — documentation data shapes HEDIS, MIPS, or Stars strategy',
-  'Value-based care — documentation supports risk stratification and population health initiatives',
+  'Value-based care — documentation supports HCC accuracy, risk stratification, and population health initiatives',
   'Compliance governance — documentation quality is a governed metric with executive oversight',
   'AI and automation readiness — structured documentation is positioned as the foundation for clinical AI, predictive models, or automated reporting',
   'Payer strategy — documentation quality data informs payer negotiations or contract design',
@@ -864,61 +864,50 @@ export function computeRiskFeedback(
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Quality monitoring not yet formalized.',
-        context: 'Select how documentation quality metrics are being tracked.',
+        headlineMetric: 'Select your monitoring approach to continue.',
+        context: 'Select how rigorously documentation quality is being tracked at your organization.',
         formula: '',
         footnote: 'Estimates based on your inputs. Individual results vary.',
         nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
       };
     }
-    if (approach === 'not_yet') {
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: 'Quality monitoring not yet formalized.',
-        context: 'Without measurement, the value of improved documentation remains invisible to the organization.',
-        formula: '',
-        footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
-      };
-    }
-    if (approach === 'spot_checks') {
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: 'Quality monitoring not yet formalized.',
-        context: 'Informal monitoring is a start. Establishing structured tracking creates the baseline needed to measure downstream impact.',
-        formula: '',
-        footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
-      };
-    }
+
     const { checked, unchecked } = parseCheckedItems(inputs.qualityAttributes as string, QUALITY_ATTRIBUTES);
     const count = checked.length;
+    const trackedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
+    const untrackedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
+
+    const approachLabel = approach === 'realtime'
+      ? 'real-time dashboards or automated reporting'
+      : approach === 'systematic'
+        ? 'structured audits or dashboards'
+        : 'spot checks and informal review';
 
     if (count === 0) {
       return {
         label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Structured tracking active.',
-        context: 'Your organization is systematically tracking documentation quality. Select which attributes are being tracked.',
+        headlineMetric: `Quality monitored via ${approachLabel}.`,
+        context: `Your organization is actively monitoring documentation quality. Select which quality dimensions are being tracked to complete this level.`,
         formula: '',
         footnote: 'Estimates based on your inputs. Individual results vary.',
         nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
       };
     }
-    const trackedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
-    const untrackedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
+
+    const headlineMetric = approach === 'realtime'
+      ? `${count} of 5 quality dimensions in real-time tracking`
+      : approach === 'systematic'
+        ? `${count} of 5 quality dimensions systematically tracked`
+        : `${count} of 5 quality dimensions monitored (informal)`;
 
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${count} of 5 quality dimensions actively tracked`,
-      context: `${count} of 5 quality dimensions actively tracked — structured foundation for downstream value connection.\n\nYour organization is systematically tracking ${count} documentation quality attribute${count > 1 ? 's' : ''}:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}`,
+      headlineMetric,
+      context: `Documentation quality is actively monitored via ${approachLabel}.\n\nDimensions tracked:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}`,
       formula: '',
       footnote: 'Estimates based on your inputs. Individual results vary.',
       nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
@@ -1008,10 +997,11 @@ export function computeRiskFeedback(
   const checkedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
   const uncheckedList = unchecked.map(c => `• ${shortLabel(c)}`).join('\n');
 
+  const boardPresented = inputs.executiveBoardPresented as string | undefined;
   const ownerLine = executiveOwner === 'yes'
-    ? '\n\nExecutive owner: Yes'
+    ? `\n\nNamed executive owner: Yes${boardPresented === 'yes' ? ' · Presented to executive committee or board: Yes' : boardPresented === 'no' ? ' · Not yet presented at board level' : ''}`
     : executiveOwner === 'no'
-      ? '\n\nExecutive owner: Not yet'
+      ? '\n\nNamed executive owner: Not yet established'
       : '';
 
   if (count === 0 && strategicValue <= 0) {
@@ -1042,8 +1032,8 @@ export function computeRiskFeedback(
     label: 'Estimated Impact',
     value: null,
     hasValue: false,
-    headlineMetric: `${count} strategic area${count > 1 ? 's' : ''} connected`,
-    context: `Documentation quality informs organizational strategy across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${ownerLine}\n\nStrategic value not yet quantified. Organizations at this level typically identify significant value across quality, compliance, and VBC programs when they formalize attribution.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+    headlineMetric: `${count} strategic area${count > 1 ? 's' : ''} — documentation quality is an organizational asset`,
+    context: `Documentation quality is embedded in organizational strategy across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${ownerLine}\n\nThis is the profile where documentation quality shifts from an operational metric to a board-level asset. The financial value lives across quality penalties avoided, VBC contract performance, compliance governance, and AI readiness — organizations at this level that formalize attribution typically find it materially significant.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
     formula: '',
     footnote: 'Estimates based on your inputs. Individual results vary.',
   };
