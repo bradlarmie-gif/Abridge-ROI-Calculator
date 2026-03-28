@@ -1,0 +1,471 @@
+ File to modify: client/src/pages/switch/ambient/Screen5Gap.tsx
+
+  This is a complete visual/structural redesign of Screen 5. The math engine is NOT changing — all existing calculations (totalMeasured, unmeasuredLow/High, strategicAnnual, chartData, gap36mo, reframeText,
+  nextLevelContents, domainLevels, domainHasValue) stay exactly as-is. What changes is everything the user sees.
+
+  ---
+  ADD these imports at the top (alongside existing imports):
+  import { Stethoscope, Zap, HeartPulse, ClipboardList } from "lucide-react";
+  import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
+  Remove LineChart, Line from the recharts import — we're switching to AreaChart.
+
+  ---
+  ADD this helper near the top of the component (after domainLevels/domainHasValue are derived):
+
+  const DOMAIN_ICONS: Record<Domain, typeof Stethoscope> = {
+    capacity: Stethoscope,
+    revenue: Zap,
+    workforce: HeartPulse,
+    risk: ClipboardList,
+  };
+
+  // Parse quality attributes count for L2 status line
+  const qualityAttrCount = useMemo(() => {
+    const inp = inputs.riskDomainInputs as string || '{}';
+    try {
+      const parsed = JSON.parse(inp);
+      const csv = (parsed.qualityAttributes as string) || '';
+      return csv.split(',').filter(Boolean).length;
+    } catch { return 0; }
+  }, [inputs.riskDomainInputs]);
+
+  // One-line status per domain for the domain band cards
+  const domainStatusLine = useMemo((): Record<Domain, { text: string; isConfirmed: boolean; isSignal: boolean }> => {
+    const result = {} as Record<Domain, { text: string; isConfirmed: boolean; isSignal: boolean }>;
+
+    for (const d of DOMAIN_ORDER) {
+      const level = domainLevels[d];
+      const hasValue = domainHasValue[d];
+      const gap = domainGaps[d];
+      const low = nextLevelContents[d].lowEstimate;
+      const high = nextLevelContents[d].highEstimate;
+      const range = low && high && high > low
+        ? `$${low.toLocaleString()}–$${high.toLocaleString()} est.`
+        : low ? `$${low.toLocaleString()} est.` : null;
+
+      if (d === 'capacity') {
+        if (level >= 2 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        else if (level === 2) result[d] = { text: 'Time savings measured · access revenue not yet modeled', isConfirmed: false, isSignal: false };
+        else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
+      } else if (d === 'revenue') {
+        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        else if (level === 2 && hasValue) result[d] = { text: `${formatDollar(gap)}/yr signal · not yet confirmed in billing`, isConfirmed: false, isSignal: true };
+        else if (level === 2) result[d] = { text: 'Coding signals observed · not yet confirmed in billing', isConfirmed: false, isSignal: true };
+        else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
+      } else if (d === 'workforce') {
+        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        else if (level === 2) result[d] = { text: 'Satisfaction data present · retention value not yet modeled', isConfirmed: false, isSignal: false };
+        else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
+      } else { // risk/quality
+        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        else if (level === 2) result[d] = { text: qualityAttrCount > 0 ? `${qualityAttrCount} of 5 quality dimensions tracked · financial connection not yet built` : 'Quality monitoring active · financial
+  connection not yet built', isConfirmed: false, isSignal: false };
+        else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
+      }
+    }
+    return result;
+  }, [domainLevels, domainHasValue, domainGaps, nextLevelContents, qualityAttrCount]);
+
+  // Brad's read — forward question based on scenario
+  const bradsRead = useMemo(() => {
+    const tenure = inputs.deploymentTenure || '';
+    const measuredCount = measuredDomainsList.length;
+    const unmeasuredCount = unmeasuredDomainsList.length;
+
+    if (unmeasuredCount === 0) {
+      return "You're measuring across all four domains. The next chapter is about deepening each one — not finding new ones. The organizations that move fastest from here are the ones that embed measurement
+  into the regular operating rhythm.";
+    }
+    if (measuredCount === 0) {
+      if (tenure === '24+') {
+        return `Two or more years live, and none of the four domains have been formally measured. The value has been there. The question — the one worth asking in this room — is how much longer it waits.`;
+      }
+      return `The deployment is live. The measurement program hasn't started yet. That's the most common profile at this stage — and it's exactly where the strategic opportunity sits. The organizations that
+  define this internally are the ones that own the story.`;
+    }
+    if (tenure === '24+' && unmeasuredCount > 0) {
+      const uNames = unmeasuredDomainsList.map(d => DOMAIN_LABELS[d]).join(' and ');
+      return `At 2+ years, ${uNames} ${unmeasuredCount === 1 ? 'has' : 'have'} been generating value without being counted. The question is whether your organization is going to own that story — or whether
+  it stays in the background.`;
+    }
+    return `The measurement foundation is in place. ${unmeasuredDomainsList.map(d => DOMAIN_LABELS[d]).join(' and ')} ${unmeasuredDomainsList.length === 1 ? 'is' : 'are'} the next chapter. The question isn't
+   whether the value is there — it's whether this quarter is when the organization decides to measure it.`;
+  }, [measuredDomainsList, unmeasuredDomainsList, inputs.deploymentTenure]);
+
+  ---
+  REPLACE the entire return (...) block with this new layout:
+
+  return (
+    <div className={STEP_FOOTER_SPACER_CLASS}>
+
+      {/* ── SECTION 1: ADVISOR OPENING ── */}
+      <motion.div
+        className="mb-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
+          Your Trajectory
+        </p>
+        <h1 className="text-2xl md:text-3xl font-bold text-black mb-4 font-abridge uppercase tracking-tight" data-testid="text-gap-heading">
+          {inputs.deploymentTenure
+            ? `Here's what ${tenureLabel(inputs.deploymentTenure)} of ambient documentation looks like, measured.`
+            : "Here's what your ambient deployment looks like, measured."
+          }
+        </h1>
+        <p className="text-sm text-[#525252] leading-relaxed max-w-2xl" data-testid="text-reframe">
+          {reframeText}
+        </p>
+      </motion.div>
+
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+        <div className="flex-1 max-w-[700px]">
+
+          {/* ── SECTION 2: HERO NUMBER ── */}
+          {(totalMeasured > 0 || unmeasuredLow > 0) && (
+            <motion.div
+              className="mb-10"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+            >
+              <div className="bg-[#1A1A1A] rounded-xl p-6 sm:p-8">
+                {totalMeasured > 0 ? (
+                  <>
+                    <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annual Value</p>
+                    <p className="font-bold text-[56px] sm:text-[72px] leading-none text-[#EA2C00] tracking-tight mb-2" data-testid="value-measured">
+                      <CountUpNumber target={totalMeasured} />
+                    </p>
+                    <p className="text-sm text-white/40 mb-4">
+                      Confirmed across {DOMAIN_ORDER.filter(d => domainHasValue[d] && !(d === 'revenue' && domainLevels[d] === 2)).length} of 4 domains · per year
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annual Value</p>
+                    <p className="font-bold text-[56px] leading-none text-white/15 tracking-tight mb-2">—</p>
+                    <p className="text-sm text-white/30 mb-4">No domains formally measured yet</p>
+                  </>
+                )}
+
+                {unmeasuredLow > 0 && (
+                  <div className="pt-4 border-t border-white/[0.08]">
+                    <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-1">Not yet in the picture</p>
+                    <p className="text-xl font-bold text-white/40" data-testid="value-unmeasured">
+                      + {unmeasuredHigh > unmeasuredLow
+                        ? `$${unmeasuredLow.toLocaleString()}–$${unmeasuredHigh.toLocaleString()}`
+                        : `$${unmeasuredLow.toLocaleString()}`} est.
+                    </p>
+                    <p className="text-[11px] text-white/20 mt-1">benchmark range · based on your scale</p>
+                  </div>
+                )}
+
+                {revL2Value > 0 && (
+                  <div className="mt-4 pt-4 border-t border-white/[0.08] flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] font-semibold text-[#F59E0B]/70 uppercase tracking-[1.5px]">Revenue Signal</p>
+                      <p className="text-xs text-white/30 mt-0.5">Signals observed · not yet confirmed in billing data · Next: retrospective coding audit</p>
+                    </div>
+                    <span className="text-sm font-bold text-[#F59E0B]/80 flex-shrink-0">~{formatDollar(revL2Value)}/yr</span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── SECTION 3: DOMAIN BAND ── */}
+          <motion.div
+            className="mb-10"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-3" data-testid="domain-band">
+              {DOMAIN_ORDER.map((domain) => {
+                const Icon = DOMAIN_ICONS[domain];
+                const level = domainLevels[domain];
+                const status = domainStatusLine[domain];
+                const content = nextLevelContents[domain];
+                const isExpanded = expandedDomains[domain];
+
+                return (
+                  <div
+                    key={domain}
+                    className="bg-[#F5F0EB] rounded-xl overflow-hidden"
+                    data-testid={`domain-card-${domain}`}
+                  >
+                    <button
+                      type="button"
+                      className="w-full text-left p-4 sm:p-5 bg-transparent border-none cursor-pointer hover:bg-black/[0.02] transition-colors"
+                      onClick={() => toggleDomain(domain)}
+                      data-testid={`toggle-domain-${domain}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0 mt-0.5" style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
+                            <Icon className={`w-4 h-4 ${status.isConfirmed ? 'text-[#EA2C00]' : status.isSignal ? 'text-[#F59E0B]' : 'text-[#AAAAAA]'}`} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <p className="text-xs font-bold uppercase tracking-[1px] text-[#1A1A1A]">
+                                {DOMAIN_LABELS[domain]}
+                              </p>
+                              <span className={`text-[9px] font-semibold uppercase tracking-[1px] px-1.5 py-0.5 rounded ${
+                                level >= 3 ? 'bg-[#EA2C00]/10 text-[#EA2C00]' :
+                                level === 2 ? 'bg-[#1A1A1A]/8 text-[#666666]' :
+                                'bg-[#1A1A1A]/5 text-[#AAAAAA]'
+                              }`}>
+                                L{level}
+                              </span>
+                            </div>
+                            <p className={`text-[11px] leading-snug ${
+                              status.isConfirmed ? 'text-[#EA2C00] font-medium' :
+                              status.isSignal ? 'text-[#92400E]' :
+                              'text-[#888888]'
+                            }`}>
+                              {status.text}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-[#AAAAAA] text-base flex-shrink-0 mt-1 transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+                      </div>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="px-4 sm:px-5 pb-4 border-t border-[#E5E5E5]/60">
+                        <p className="text-xs text-[#888888] leading-relaxed mt-3" data-testid={`narrative-${domain}`}>
+                          {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
+                        </p>
+                        {content.narrative.includes('OPPORTUNITY AHEAD:') && (
+                          <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60">
+                            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">The next level unlocks</p>
+                            <p className="text-xs text-[#888888] leading-relaxed">
+                              {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
+                            </p>
+                          </div>
+                        )}
+                        {domain === 'capacity' && domainLevels.capacity >= 3 && inputs.capacityAccessConfidence === 'aspirational' && (
+                          <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60 flex gap-2">
+                            <span className="text-[#888888] text-xs flex-shrink-0">⚠</span>
+                            <p className="text-[11px] text-[#888888] italic leading-relaxed">
+                              Access data marked as a planning target — validate with scheduling records before using in a formal business case.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* ── SECTION 4: TRAJECTORY CHART ── */}
+          {chartData.length > 0 && (
+            <motion.div
+              className="mb-10"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.5 }}
+            >
+              <div className="bg-[#F5F0EB] rounded-xl p-5 sm:p-7" data-testid="card-chart">
+                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-1">
+                  Value of Acting Now
+                </p>
+                <p className="text-sm font-medium text-[#1A1A1A] mb-1">
+                  {formatDollar(gap36mo)} in value at stake over 36 months.
+                </p>
+                <p className="text-xs text-[#888888] mb-5">
+                  What closing the measurement gap is worth at your scale.
+                </p>
+                <div className="h-[200px] sm:h-[240px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#EA2C00" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#EA2C00" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis
+                        dataKey="month"
+                        ticks={[0, 12, 24, 36]}
+                        tickFormatter={(v: number) => v === 0 ? 'Now' : `Mo ${v}`}
+                        tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                      />
+                      <YAxis
+                        tickFormatter={(v) => formatDollar(v)}
+                        tick={{ fontSize: 11, fill: '#888888' }}
+                        width={70}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        dataKey="gap"
+                        stroke="#EA2C00"
+                        strokeWidth={2.5}
+                        fill="url(#gapGradient)"
+                        dot={{ fill: '#EA2C00', r: 4 }}
+                        activeDot={{ r: 6 }}
+                        name="Value of acting now"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <p className="text-xs text-[#888888] italic leading-relaxed mt-4" data-testid="text-chart-rationale">
+                  Compounds because measurement enables optimization — organizations that measure early improve faster, widening the gap with each passing quarter.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── SECTION 5: BRAD'S READ ── */}
+          <motion.div
+            className="mb-10"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
+            <div className="border-l-4 border-[#EA2C00] pl-5 py-1" data-testid="brads-read">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[2px] mb-3">
+                Brad's Read
+              </p>
+              <p className="text-sm text-[#1A1A1A] leading-relaxed font-medium">
+                {bradsRead}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* ── LEGAL FOOTNOTE ── */}
+          <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
+            <p className="text-xs text-[#AAAAAA] leading-relaxed">
+              Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Capacity: based on MGMA Physician Compensation data and published literature on
+  time-to-access in ambulatory care. Revenue: based on published studies reporting 2–7% revenue improvement from documentation specificity; AMA and MGMA coding benchmarks. Workforce: based on AMGA Physician
+  Retention Survey; replacement cost literature range $250K–$500K per physician. Quality: based on CMS quality penalty exposure data and CDI program ROI literature. Actual results depend on implementation
+  approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
+            </p>
+          </div>
+
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
+            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary →" />
+          </motion.div>
+
+          <div className={STEP_FOOTER_SPACER_CLASS} />
+        </div>
+
+        {/* ── SIDEBAR (keep existing, minor label updates) ── */}
+        <motion.div
+          className="w-full lg:w-[280px] flex-shrink-0"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-gap-summary">
+
+            {(() => {
+              const totalScore = DOMAIN_ORDER.reduce((sum, d) => {
+                const lvl = domainLevels[d];
+                const scoreMap: Record<number, number> = { 1: 4, 2: 12, 3: 19, 4: 25 };
+                return sum + (scoreMap[lvl] ?? 0);
+              }, 0);
+              const band = totalScore <= 16 ? 'Quantifying' : totalScore <= 38 ? 'Measuring' : totalScore <= 60 ? 'Acting' : totalScore <= 79 ? 'Managing' : 'Full Capture';
+              return (
+                <div className="flex items-center justify-between mb-6">
+                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px]">Maturity Score</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-white">{totalScore}</span>
+                    <span className="text-[9px] font-semibold text-white/30 border border-white/15 rounded-full px-2 py-0.5 uppercase tracking-[1.5px]">{band}</span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <div className="h-px bg-white/[0.08] mb-6" />
+
+            <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-3">Confirmed Today</p>
+            {totalMeasured > 0 ? (
+              <p className="font-bold text-[52px] leading-none text-[#EA2C00] tracking-tight mb-1" data-testid="panel-confirmed-value">
+                {formatDollar(totalMeasured)}
+              </p>
+            ) : (
+              <p className="font-bold text-[52px] leading-none text-white/15 tracking-tight mb-1">—</p>
+            )}
+            <p className="text-[11px] text-white/25 mb-6">per year · from your inputs</p>
+
+            {domainHasValue.capacity && domainHasValue.revenue && (
+              <p className="text-[10px] text-white/25 leading-relaxed mb-4">
+                If your Capacity and Revenue figures reflect activity from the same patient encounters, review the combined total with your finance team before use in a formal business case.
+              </p>
+            )}
+
+            {unmeasuredLow > 0 && (
+              <>
+                <div className="h-px bg-white/[0.08] mb-5" />
+                <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-2">Not Yet in the Picture</p>
+                <p className="font-bold text-2xl text-white/50 leading-none tracking-tight mb-1" data-testid="panel-unmeasured-range">
+                  {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
+                </p>
+                <p className="text-[11px] text-white/25 mb-5">per year · benchmark range</p>
+              </>
+            )}
+
+            {!allAtLevel4 && (
+              <>
+                <div className="h-px bg-white/[0.08] mb-5" />
+                <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-2">Full Picture</p>
+                <p className="font-bold text-lg text-white/35 leading-none tracking-tight mb-1">{formatDollar(strategicAnnual)}</p>
+                <p className="text-[11px] text-white/20 mb-5">confirmed + benchmark low</p>
+              </>
+            )}
+
+            {inputs.deploymentTenure && (
+              <>
+                <div className="h-px bg-white/[0.08] mb-5" />
+                <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-1">In Deployment</p>
+                <p className="text-sm font-medium text-white/55">{tenureLabel(inputs.deploymentTenure)}</p>
+              </>
+            )}
+
+            <div className="h-px bg-white/[0.08] mt-6 mb-5" />
+            <p className="text-[11px] text-white/25 leading-relaxed italic">
+              The measurement program is the next chapter. This screen is where it starts.
+            </p>
+
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+
+  ---
+  Also update CustomTooltip to reflect the new chart framing:
+  function CustomTooltip({ active, payload, label }: any) {
+    if (!active || !payload?.length) return null;
+    const gap = payload.find((p: any) => p.dataKey === 'gap');
+    return (
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-sm text-xs">
+        <p className="font-semibold text-black mb-1">Month {label}</p>
+        {gap && <p className="text-[#EA2C00] font-bold">Value of acting now: {formatDollar(gap.value)}</p>}
+        <p className="text-[#888888] mt-1">cumulative since measurement starts</p>
+      </div>
+    );
+  }
+
+  ---
+  What was removed vs. what stays:
+  - REMOVED: "THE FULL PICTURE" title → replaced with "YOUR TRAJECTORY" label + dynamic h1
+  - REMOVED: Two-panel grid ("What the Math Shows" / "What Hasn't Been Measured") → absorbed into hero dark card
+  - REMOVED: The big accordion card with "WHAT YOU'RE CAPTURING" / "WHAT YOU HAVEN'T MEASURED YET" headers → replaced with the 2×2 domain band cards
+  - REMOVED: All "HOW WE GOT HERE" formula code blocks and "Benchmark Range Formula" code blocks — narratives stay, formulas are gone
+  - REMOVED: LineChart → replaced with AreaChart with gradient fill
+  - REMOVED: {annualGap > 0} chart render condition → replaced with {chartData.length > 0} so chart appears for any org with a gap to close (not just L1 domains)
+  - KEPT: All math calculations, reframeText, domainLevels, domainHasValue, domainGaps, all existing state
+  - KEPT: Sidebar — all values, just updated "Not Yet Measured" label to "Not Yet in the Picture"
+  - KEPT: Legal disclaimer paragraph (moved to footer, source attributions per domain added inline)
+  - ADDED: Hero dark card (confirmed number + not yet in picture + revenue signal)
+  - ADDED: Domain band with 4 expandable cards per domain showing one-line status
+  - ADDED: Brad's Read callout block
+  - ADDED: Rationale footnote below trajectory chart
+
