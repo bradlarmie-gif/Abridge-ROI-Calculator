@@ -825,6 +825,7 @@ export function computeRiskFeedback(
   inputs: Record<string, number | string>,
   documentedEncounters: number = 0,
   _revenuePerVisit: number = 200,
+  providers: number = 0,
 ): DomainFeedback {
   if (level === 1) {
     return {
@@ -926,35 +927,46 @@ export function computeRiskFeedback(
     }
 
     if (financialPathway === 'mips') {
-      const mipsScore = inputs.mipsScoreImprovement as number | undefined;
-      const mipsContext = mipsScore && mipsScore > 0
-        ? `MIPS score improved by ${mipsScore} points since deployment. Documentation quality is driving measure compliance and data completeness.`
+      const mipsScore = (inputs.mipsScoreImprovement as number) || 0;
+      const MIPS_PAYMENT_PER_PROVIDER = 10000;
+      const mipsPaymentDelta = mipsScore > 0 ? Math.round(mipsScore * 0.04 * MIPS_PAYMENT_PER_PROVIDER * providers) : 0;
+      const hasVal = mipsPaymentDelta > 0;
+      const mipsContext = hasVal
+        ? `MIPS score improved by ${mipsScore} points since deployment. Each point shifts the payment adjustment by ~4% of the per-provider MIPS payment pool (${formatDollar(MIPS_PAYMENT_PER_PROVIDER)}/provider benchmark), yielding an estimated ${formatDollar(mipsPaymentDelta)} in annual payment impact across ${providers.toLocaleString()} providers.`
         : 'MIPS performance is the selected pathway. Enter your score improvement to quantify the connection.';
       return {
         label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: mipsScore && mipsScore > 0 ? `MIPS score improved ${mipsScore} points` : 'MIPS pathway selected',
+        value: hasVal ? mipsPaymentDelta : null,
+        hasValue: hasVal,
+        headlineMetric: hasVal ? `${formatDollar(mipsPaymentDelta)} MIPS payment impact` : 'MIPS pathway selected',
         context: `${mipsContext}\n\nMIPS payment adjustments are tied directly to documentation quality — completeness, specificity, and measure capture all affect the final score.`,
-        formula: '',
-        footnote: 'Estimates based on your inputs. Individual results vary.',
+        formula: hasVal ? `[mipsPaymentDelta] = ${mipsScore} points × 4% × ${formatDollar(MIPS_PAYMENT_PER_PROVIDER)}/provider × ${providers} providers = ${formatDollar(mipsPaymentDelta)}` : '',
+        footnote: 'Estimates based on your inputs. Individual results vary. MIPS payment adjustment rate is approximate.',
         nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
       };
     }
 
     if (financialPathway === 'denials') {
-      const denialReduction = inputs.denialReductionPct as number | undefined;
-      const denialContext = denialReduction && denialReduction > 0
-        ? `Documentation-related denial rate reduced by ${denialReduction}%. Better documentation specificity is preventing denials before claims are submitted.`
+      const denialReduction = (inputs.denialReductionPct as number) || 0;
+      const AVG_CLAIM_VALUE = 250;
+      const DENIAL_REWORK_COST = 35;
+      const denialVolume = Math.round(documentedEncounters * 0.08);
+      const preventedDenials = denialReduction > 0 ? Math.round(denialVolume * denialReduction / 100) : 0;
+      const recoveredRevenue = preventedDenials * AVG_CLAIM_VALUE;
+      const savedReworkCost = preventedDenials * DENIAL_REWORK_COST;
+      const totalDenialValue = recoveredRevenue + savedReworkCost;
+      const hasVal = totalDenialValue > 0;
+      const denialContext = hasVal
+        ? `Documentation-related denial rate reduced by ${denialReduction}%. Of the estimated ${denialVolume.toLocaleString()} documentation-related denials annually, ${preventedDenials.toLocaleString()} are now prevented — recovering ${formatDollar(recoveredRevenue)} in claims and saving ${formatDollar(savedReworkCost)} in rework costs.`
         : 'Denial reduction is the selected pathway. Enter your denial rate improvement to quantify the connection.';
       return {
         label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: denialReduction && denialReduction > 0 ? `Denial rate reduced ${denialReduction}%` : 'Denial reduction pathway selected',
+        value: hasVal ? totalDenialValue : null,
+        hasValue: hasVal,
+        headlineMetric: hasVal ? `${formatDollar(totalDenialValue)} denial prevention value` : 'Denial reduction pathway selected',
         context: `${denialContext}\n\nDocumentation-driven denial prevention is one of the fastest financial returns from ambient documentation — it reduces rework, accelerates payment, and improves payer relationships.`,
-        formula: '',
-        footnote: 'Estimates based on your inputs. Individual results vary.',
+        formula: hasVal ? `[denialVolume] = ${documentedEncounters.toLocaleString()} encounters × 8% denial rate = ${denialVolume.toLocaleString()}\n[prevented] = ${denialVolume.toLocaleString()} × ${denialReduction}% = ${preventedDenials.toLocaleString()}\n[recoveredRevenue] = ${preventedDenials.toLocaleString()} × ${formatDollar(AVG_CLAIM_VALUE)} = ${formatDollar(recoveredRevenue)}\n[reworkSaved] = ${preventedDenials.toLocaleString()} × ${formatDollar(DENIAL_REWORK_COST)} = ${formatDollar(savedReworkCost)}\n[total] = ${formatDollar(recoveredRevenue)} + ${formatDollar(savedReworkCost)} = ${formatDollar(totalDenialValue)}` : '',
+        footnote: 'Estimates based on your inputs. Assumes 8% baseline documentation-related denial rate and $250 average claim value.',
         nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
       };
     }
@@ -1043,7 +1055,7 @@ export function computeGapForDomain(
       feedback = computeWorkforceFeedback(level, inputs, providers);
       break;
     case 'risk':
-      feedback = computeRiskFeedback(level, inputs, documentedEncounters, revenuePerVisit);
+      feedback = computeRiskFeedback(level, inputs, documentedEncounters, revenuePerVisit, providers);
       break;
   }
   return { value: feedback.value || 0, hasValue: feedback.hasValue };

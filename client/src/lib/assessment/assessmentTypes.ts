@@ -53,7 +53,7 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   encountersEstimated: false,
   confidenceBaseline: 0.55,
   utilization: 0,
-  timeSavedPerEncounter: 0,
+  timeSavedPerEncounter: 2,
   editTimePerEncounter: 0,
   docCompleteness: 0,
   wrvuLift: 0,
