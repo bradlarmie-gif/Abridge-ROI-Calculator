@@ -1,0 +1,1483 @@
+⏺ I need to do this in separate edits per level. Let me do them one at a time:
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/domainCalculations.ts)
+  ⎿  Added 35 lines, removed 9 lines
+      555    providerRate: number,
+      556  ): DomainFeedback {
+      557    if (level === 1) {
+      558 -    const afterHoursReduction = inputs.afterHoursReduction as number | undefined;                                                                                                            
+      559 -    const defaultHrs = 2.0;                                                                                                                                                                  
+      560 -    const effectiveHrs = (afterHoursReduction && afterHoursReduction > 0) ? afterHoursReduction : defaultHrs;                                                                                
+      561 -    const totalHoursReturned = Math.round(effectiveHrs * providers * CLINICAL_WEEKS);                                                                                                        
+      558 +    const minutesSaved = inputs.editTimeSaved as number | undefined;                                                                                                                         
+      559 +    const surveyType = inputs.surveyType as string | undefined;                                                                                                                              
+      560 +    const surveyFindingsStr = inputs.surveyFindings as string | undefined;                                                                                                                   
+      561 +    const checkedFindings = surveyFindingsStr ? surveyFindingsStr.split(',').map(Number) : [];                                                                                               
+      562 +    const checkedCount = checkedFindings.length;                                                                                                                                             
+      563 +    const checkedLabels = checkedFindings.map(i => SURVEY_FINDING_LABELS[i]).filter(Boolean);                                                                                                
+      564 +                                                                                                                                                                                             
+      565 +    if (!minutesSaved || minutesSaved <= 0) {                                                                                                                                                
+      566 +      const lowHrs = Math.round(providers * 10 * CLINICAL_DAYS / 60);                                                                                                                        
+      567 +      const highHrs = Math.round(providers * 20 * CLINICAL_DAYS / 60);                                                                                                                       
+      568 +      return {                                                                                                                                                                               
+      569 +        label: 'Estimated Impact',                                                                                                                                                           
+      570 +        value: null,                                                                                                                                                                         
+      571 +        hasValue: false,                                                                                                                                                                     
+      572 +        headlineMetric: 'Enter in-clinic time savings to calculate.',                                                                                                                        
+      573 +        context: `Published benchmark: 10–20 minutes per provider per day of in-clinic burden reduction (MGMA Physician Productivity data). At ${providers.toLocaleString()} providers, that 
+          +is ${lowHrs.toLocaleString()}–${highHrs.toLocaleString()} hours annually.`,                                                                                                                  
+      574 +        formula: '',                                                                                                                                                                         
+      575 +        footnote: '',                                                                                                                                                                        
+      576 +        nextLevelTeaser: 'Level 2 captures observable behavioral changes — after-hours patterns, time at home, note completion.',                                                            
+      577 +      };                                                                                                                                                                                     
+      578 +    }                                                                                                                                                                                        
+      579 +                                                                                                                                                                                             
+      580 +    const clinicSavedHours = Math.round(minutesSaved * providers * CLINICAL_DAYS / 60);                                                                                                      
+      581 +    const hasSurveyData = surveyType === 'structured' && checkedCount > 0;                                                                                                                   
+      582 +    const surveyNarrative = hasSurveyData                                                                                                                                                    
+      583 +      ? `\n\nYour clinician survey validates ${checkedCount} area(s) of provider-reported improvement:\n${checkedLabels.map(l => `• ${l}`).join('\n')}`                                      
+      584 +      : surveyType === 'not_yet' || surveyType === 'informal' || !surveyType                                                                                                                 
+      585 +        ? '\n\nProvider survey not yet conducted or informal only.'                                                                                                                          
+      586 +        : '';                                                                                                                                                                                
+      587 +                                                                                                                                                                                             
+      588      return {
+      589        label: 'Estimated Impact',
+      590        value: null,
+      591        hasValue: false,
+      566 -      headlineMetric: `${totalHoursReturned.toLocaleString()} after-hours hours returned annually`,                                                                                          
+      567 -      context: `${providers.toLocaleString()} providers × ${effectiveHrs} hrs/week × ${CLINICAL_WEEKS} clinical weeks = ${totalHoursReturned.toLocaleString()} hours of after-hours documenta
+          -tion time returned annually.\n\nResearch consistently identifies documentation burden as a leading contributor to physician burnout and intent to leave (Shanafelt et al., 2022; Melnick et a
+          -l., 2020).`,                                                                                                                                                                                 
+      568 -      formula: `[burdenHours] = ${effectiveHrs} × ${providers} × ${CLINICAL_WEEKS} = ${totalHoursReturned.toLocaleString()}`,                                                                
+      569 -      footnote: `Annualized using ${CLINICAL_WEEKS} clinical weeks (${CLINICAL_DAYS} working days). After-hours time is self-reported and may vary by specialty and EHR workflow.`,          
+      570 -      nextLevelTeaser: 'Level 2 adds in-clinic time savings and provider survey data.',                                                                                                      
+      592 +      headlineMetric: `${clinicSavedHours.toLocaleString()} in-clinic hours recovered annually across ${providers} providers.`,                                                              
+      593 +      context: `In-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × ${CLINICAL_DAYS} clin
+          +ical days).${surveyNarrative}`,                                                                                                                                                              
+      594 +      formula: `[clinicHours] = ${minutesSaved} min × ${providers} × ${CLINICAL_DAYS} / 60 = ${clinicSavedHours.toLocaleString()}`,                                                          
+      595 +      footnote: `${CLINICAL_DAYS} clinical working days. Dollar value connects at Level 3 when turnover data is entered.`,                                                                   
+      596 +      nextLevelTeaser: 'Level 2 captures observable behavioral changes — after-hours patterns, time at home, note completion.',                                                              
+      597      };
+      598    }
+      599  
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/domainCalculations.ts)
+  ⎿  Added 37 lines, removed 36 lines
+      598    }
+      599  
+      600    if (level === 2) {
+      601 -    const minutesSaved = inputs.editTimeSaved as number | undefined;                                                                                                                         
+      602 -    const confirmedAfterHours = (inputs.confirmedAfterHoursReduction as number | undefined) || (inputs.afterHoursReduction as number | undefined);                                           
+      603 -    const surveyType = inputs.surveyType as string | undefined;                                                                                                                              
+      604 -    const surveyFindingsStr = inputs.surveyFindings as string | undefined;                                                                                                                   
+      605 -    const checkedFindings = surveyFindingsStr ? surveyFindingsStr.split(',').map(Number) : [];                                                                                               
+      606 -    const checkedCount = checkedFindings.length;                                                                                                                                             
+      607 -    const checkedLabels = checkedFindings.map(i => SURVEY_FINDING_LABELS[i]).filter(Boolean);                                                                                                
+      601 +    const BEHAVIORAL_CHANGE_LABELS = [                                                                                                                                                       
+      602 +      'After-hours documentation time reduced',                                                                                                                                              
+      603 +      'Leaving clinic on time more consistently',                                                                                                                                            
+      604 +      'Taking lunch breaks resumed',                                                                                                                                                         
+      605 +      'Work-outside-of-work documentation eliminated or reduced',                                                                                                                            
+      606 +      'Weekend catch-up work reduced',                                                                                                                                                       
+      607 +      'Notes completed before leaving the clinic',                                                                                                                                           
+      608 +      'More present at home / personal time reclaimed',                                                                                                                                      
+      609 +    ];                                                                                                                                                                                       
+      610  
+      609 -    if (!minutesSaved || minutesSaved <= 0) {                                                                                                                                                
+      610 -      const lowHrs = Math.round(providers * 10 * CLINICAL_DAYS / 60);                                                                                                                        
+      611 -      const highHrs = Math.round(providers * 20 * CLINICAL_DAYS / 60);                                                                                                                       
+      611 +    const behaviorsCsv = inputs.observedBehaviors as string | undefined;                                                                                                                     
+      612 +    const behaviorSet = new Set((behaviorsCsv || '').split(',').filter(Boolean));                                                                                                            
+      613 +    const behaviorCount = behaviorSet.size;                                                                                                                                                  
+      614 +    const checkedBehaviorLabels = BEHAVIORAL_CHANGE_LABELS.filter((_, i) => behaviorSet.has(String(i)));                                                                                     
+      615 +    const afterHoursReduction = inputs.afterHoursReduction as number | undefined;                                                                                                            
+      616 +    const afterHoursHours = (afterHoursReduction && afterHoursReduction > 0)                                                                                                                 
+      617 +      ? Math.round(afterHoursReduction * providers * CLINICAL_WEEKS)                                                                                                                         
+      618 +      : 0;                                                                                                                                                                                   
+      619 +                                                                                                                                                                                             
+      620 +    if (behaviorCount === 0 && !afterHoursReduction) {                                                                                                                                       
+      621        return {
+      622          label: 'Estimated Impact',
+      623          value: null,
+      624          hasValue: false,
+      616 -        headlineMetric: 'Enter in-clinic time savings to calculate.',                                                                                                                        
+      617 -        context: `Benchmark: 10–20 minutes per provider per day of in-clinic burden reduction. At ${providers.toLocaleString()} providers, that is ${lowHrs.toLocaleString()}–${highHrs.toLoc
+          -aleString()} hours annually.`,                                                                                                                                                               
+      625 +        headlineMetric: 'Select observable behavioral changes to document impact.',                                                                                                          
+      626 +        context: 'At this level, the story is behavioral, not just time. Providers leaving on time, taking lunch, not documenting on weekends — these are the signals that retention impact i
+          +s building.',                                                                                                                                                                                
+      627          formula: '',
+      628          footnote: '',
+      620 -        nextLevelTeaser: 'Level 3 models turnover costs with documentation burden as a factor.',                                                                                             
+      629 +        nextLevelTeaser: 'Level 3 connects behavioral change to measured turnover rate improvement.',                                                                                        
+      630        };
+      631      }
+      632  
+      624 -    const clinicSavedHours = Math.round(minutesSaved * providers * CLINICAL_DAYS / 60);                                                                                                      
+      633 +    const headlineParts: string[] = [];                                                                                                                                                      
+      634 +    if (behaviorCount > 0) headlineParts.push(`${behaviorCount} behavioral change${behaviorCount !== 1 ? 's' : ''} documented`);                                                             
+      635 +    if (afterHoursHours > 0) headlineParts.push(`${afterHoursHours.toLocaleString()} after-hours hours returned annually`);                                                                  
+      636  
+      626 -    const afterHoursHours = confirmedAfterHours && confirmedAfterHours > 0                                                                                                                   
+      627 -      ? Math.round(confirmedAfterHours * providers * CLINICAL_WEEKS)                                                                                                                         
+      628 -      : 0;                                                                                                                                                                                   
+      637 +    let contextText = '';                                                                                                                                                                    
+      638 +    if (checkedBehaviorLabels.length > 0) {                                                                                                                                                  
+      639 +      contextText += `Observable behavioral changes documented across your provider population:\n${checkedBehaviorLabels.map(l => `• ${l}`).join('\n')}`;                                    
+      640 +    }                                                                                                                                                                                        
+      641 +    if (afterHoursHours > 0) {                                                                                                                                                               
+      642 +      contextText += `\n\nAfter-hours reduction: ${afterHoursReduction} hrs/week × ${providers} providers × ${CLINICAL_WEEKS} clinical weeks = ${afterHoursHours.toLocaleString()} hours retu
+          +rned annually.`;                                                                                                                                                                             
+      643 +    }                                                                                                                                                                                        
+      644  
+      630 -    const hasSurveyData = surveyType === 'structured' && checkedCount > 0;                                                                                                                   
+      631 -    const surveyNarrative = hasSurveyData                                                                                                                                                    
+      632 -      ? `\n\nYour clinician survey validates ${checkedCount} area(s) of provider-reported improvement:\n${checkedLabels.map(l => `• ${l}`).join('\n')}`                                      
+      633 -      : surveyType === 'not_yet' || surveyType === 'informal' || !surveyType                                                                                                                 
+      634 -        ? '\n\nProvider survey not yet conducted or informal only.'                                                                                                                          
+      635 -        : '';                                                                                                                                                                                
+      636 -                                                                                                                                                                                             
+      637 -    const totalHours = clinicSavedHours + afterHoursHours;                                                                                                                                   
+      638 -    const fteEquiv = Math.round(totalHours / ANNUAL_HOURS * 10) / 10;                                                                                                                        
+      639 -                                                                                                                                                                                             
+      640 -    const headlineMetric = afterHoursHours > 0                                                                                                                                               
+      641 -      ? `${clinicSavedHours.toLocaleString()} in-clinic hours + ${afterHoursHours.toLocaleString()} after-hours hours recovered annually — ${fteEquiv} FTE equivalent of provider time.`     
+      642 -      : `${clinicSavedHours.toLocaleString()} in-clinic hours recovered annually across ${providers} providers.`;                                                                            
+      643 -                                                                                                                                                                                             
+      645      return {
+      646        label: 'Estimated Impact',
+      647        value: null,
+      648        hasValue: false,
+      648 -      headlineMetric,                                                                                                                                                                        
+      649 -      context: `In-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × 230 clinical days).${
+          -confirmedAfterHours && confirmedAfterHours > 0 ? `\n\nAfter-hours time returned: ${afterHoursHours.toLocaleString()} hours annually.` : ''}${surveyNarrative}`,                              
+      650 -      formula: `[clinicHours] = ${minutesSaved} min × ${providers} × ${CLINICAL_DAYS} / 60 = ${clinicSavedHours.toLocaleString()}${afterHoursHours > 0 ? `\n[afterHoursHours] = ${confirmedAf
+          -terHours} × ${providers} × ${CLINICAL_WEEKS} = ${afterHoursHours.toLocaleString()}` : ''}`,                                                                                                  
+      651 -      footnote: '230 clinical working days. Dollar value appears at Level 3 when turnover data is entered.',                                                                                 
+      652 -      nextLevelTeaser: 'Level 3 models turnover costs with documentation burden as a factor.',                                                                                               
+      649 +      headlineMetric: headlineParts.join('\n'),                                                                                                                                              
+      650 +      context: contextText,                                                                                                                                                                  
+      651 +      formula: afterHoursHours > 0 ? `[afterHoursHours] = ${afterHoursReduction} × ${providers} × ${CLINICAL_WEEKS} = ${afterHoursHours.toLocaleString()}` : '',                             
+      652 +      footnote: 'Behavioral changes are qualitative indicators. Financial value connects at Level 3 when turnover data is entered.',                                                         
+      653 +      nextLevelTeaser: 'Level 3 connects behavioral change to measured turnover rate improvement.',                                                                                          
+      654      };
+      655    }
+      656  
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/domainCalculations.ts)
+  ⎿  Added 34 lines, removed 23 lines
+      655    }
+      656  
+      657    if (level === 3) {
+      658 -    const turnoverRate = inputs.turnoverRate as number | undefined;                                                                                                                          
+      658 +    const turnoverRateBefore = inputs.turnoverRateBefore as number | undefined;                                                                                                              
+      659 +    const turnoverRateAfter = inputs.turnoverRateAfter as number | undefined;                                                                                                                
+      660      const replacementCostRaw = inputs.replacementCost as number | undefined;
+      661      const replacementCost = (replacementCostRaw && replacementCostRaw > 0) ? replacementCostRaw : 350000;
+      661 -    const rawDocBurdenShare = (inputs.docBurdenShare as number) || 0;                                                                                                                        
+      662 -    const docBurdenShare = Math.min(rawDocBurdenShare, 40);                                                                                                                                  
+      663 -    if (!turnoverRate || turnoverRate <= 0) {                                                                                                                                                
+      662 +    const isDefaultReplacementCost = !replacementCostRaw || replacementCostRaw === 350000;                                                                                                   
+      663 +                                                                                                                                                                                             
+      664 +    if (!turnoverRateBefore || turnoverRateBefore <= 0) {                                                                                                                                    
+      665        return {
+      666          label: 'Estimated Impact',
+      667          value: null,
+      668          hasValue: false,
+      668 -        headlineMetric: 'Enter turnover data to calculate exposure.',                                                                                                                        
+      669 -        context: `Enter your turnover rate and replacement cost to see estimated retention exposure.`,                                                                                       
+      669 +        headlineMetric: 'Enter before and after turnover rates to calculate retention value.',                                                                                               
+      670 +        context: `Enter your turnover rate before and after Abridge deployment to calculate the financial value of improved retention. Use the AMGA benchmark replacement cost ($350K) or you
+          +r organization's actual figure.`,                                                                                                                                                            
+      671          formula: '',
+      672          footnote: '',
+      673          nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
+      674        };
+      675      }
+      675 -    const totalTurnover = providers * (turnoverRate / 100);                                                                                                                                  
+      676 -    const totalCost = Math.round(totalTurnover * replacementCost);                                                                                                                           
+      677 -    const docDrivenCost = docBurdenShare > 0 ? Math.round(totalCost * (docBurdenShare / 100)) : 0;                                                                                           
+      676  
+      679 -    const hasDocShare = docBurdenShare > 0 && docDrivenCost > 0;                                                                                                                             
+      680 -    const replacementLabel = replacementCost === 350000                                                                                                                                      
+      681 -      ? `Using AMGA benchmark midpoint: ${formatDollar(replacementCost)}`                                                                                                                    
+      682 -      : `Based on your input: ${formatDollar(replacementCost)}`;                                                                                                                             
+      677 +    const effectiveAfterRate = (turnoverRateAfter !== undefined && turnoverRateAfter >= 0) ? turnoverRateAfter : turnoverRateBefore;                                                         
+      678 +    const rateDelta = turnoverRateBefore - effectiveAfterRate;                                                                                                                               
+      679  
+      684 -    const headlineMetric = hasDocShare                                                                                                                                                       
+      685 -      ? `${formatDollar(docDrivenCost)} in documentation-attributable turnover exposure.`                                                                                                    
+      686 -      : `${totalTurnover.toFixed(1)} projected departure${totalTurnover !== 1 ? 's' : ''} per year. Enter documentation burden share to see attributable exposure.`;                         
+      680 +    if (rateDelta <= 0) {                                                                                                                                                                    
+      681 +      return {                                                                                                                                                                               
+      682 +        label: 'Estimated Impact',                                                                                                                                                           
+      683 +        value: null,                                                                                                                                                                         
+      684 +        hasValue: false,                                                                                                                                                                     
+      685 +        headlineMetric: 'After rate should be lower than before rate to show retention value.',                                                                                              
+      686 +        context: `Current inputs show turnover moved from ${turnoverRateBefore}% to ${effectiveAfterRate}%. Enter an after rate lower than the before rate to calculate the financial value o
+          +f retention improvement.`,                                                                                                                                                                   
+      687 +        formula: '',                                                                                                                                                                         
+      688 +        footnote: '',                                                                                                                                                                        
+      689 +        nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',                                                   
+      690 +      };                                                                                                                                                                                     
+      691 +    }                                                                                                                                                                                        
+      692  
+      693 +    const departuresAvoided = providers * (rateDelta / 100);                                                                                                                                 
+      694 +    const retentionValue = Math.round(departuresAvoided * replacementCost);                                                                                                                  
+      695 +    const replacementLabel = isDefaultReplacementCost                                                                                                                                        
+      696 +      ? `AMGA benchmark: ${formatDollar(replacementCost)}/physician`                                                                                                                         
+      697 +      : `Your input: ${formatDollar(replacementCost)}/physician`;                                                                                                                            
+      698 +                                                                                                                                                                                             
+      699      return {
+      689 -      label: 'Estimated Impact',                                                                                                                                                             
+      690 -      value: hasDocShare ? docDrivenCost : null,                                                                                                                                             
+      691 -      hasValue: hasDocShare,                                                                                                                                                                 
+      692 -      headlineMetric,                                                                                                                                                                        
+      693 -      context: `At ${turnoverRate}% annual turnover across ${providers} providers, your organization sees approximately ${totalTurnover.toFixed(1)} departure${totalTurnover !== 1 ? 's' : ''
+          -} per year.\n\nReplacement cost: ${replacementLabel}. Total turnover cost is ${formatDollar(totalCost)} annually.\n\n${hasDocShare ? `Of that, your estimate of ${docBurdenShare}% attributab
+          -le to documentation burden represents ${formatDollar(docDrivenCost)} — the portion potentially attributable to documentation burden reduction.` : 'Enter the share of turnover you attribute 
+          -to documentation burden to see the portion potentially attributable to documentation burden reduction.'}`,                                                                                   
+      694 -      formula: `[annualDepartures] = ${providers} × ${turnoverRate}% = ${totalTurnover.toFixed(1)}\n[totalCost] = ${totalTurnover.toFixed(1)} × ${formatDollar(replacementCost)} = ${formatDo
+          -llar(totalCost)}${hasDocShare ? `\n[docDriven] = ${formatDollar(totalCost)} × ${docBurdenShare}% = ${formatDollar(docDrivenCost)}` : ''}`,                                                   
+      695 -      footnote: 'All inputs are your organization\'s data. No external correlation estimates applied.',                                                                                      
+      700 +      label: 'Confirmed Impact',                                                                                                                                                             
+      701 +      value: retentionValue,                                                                                                                                                                 
+      702 +      hasValue: true,                                                                                                                                                                        
+      703 +      headlineMetric: `${formatDollar(retentionValue)} in retention value from ${rateDelta.toFixed(1)} pp improvement in physician turnover.`,                                               
+      704 +      context: `Turnover rate moved from ${turnoverRateBefore}% to ${effectiveAfterRate}% — a ${rateDelta.toFixed(1)} percentage point improvement across ${providers} providers.\n\nDepartur
+          +es avoided: ${providers} × ${rateDelta.toFixed(1)}% = ${departuresAvoided.toFixed(1)} physicians.\nReplacement cost: ${replacementLabel}.\nRetention value: ${departuresAvoided.toFixed(1)} ×
+          + ${formatDollar(replacementCost)} = ${formatDollar(retentionValue)}.`,                                                                                                                       
+      705 +      formula: `[departuresAvoided] = ${providers} × (${turnoverRateBefore}% − ${effectiveAfterRate}%) = ${departuresAvoided.toFixed(1)}\n[retentionValue] = ${departuresAvoided.toFixed(1)} 
+          +× ${formatDollar(replacementCost)} = ${formatDollar(retentionValue)}`,                                                                                                                       
+      706 +      footnote: isDefaultReplacementCost ? 'Replacement cost uses AMGA benchmark midpoint ($350K). Update if your organization tracks actual replacement cost.' : 'Replacement cost based on 
+          +your input.',                                                                                                                                                                                
+      707        nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
+      708      };
+      709    }
+
+⏺ Now update Screen4Domains.tsx — DOMAIN_CONFIGS workforce section:
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/Screen4Domains.tsx)
+  ⎿  Added 9 lines, removed 9 lines
+      103    workforce: {
+      104      label: 'WORKFORCE',
+      105      headline: 'WORKFORCE',
+      106 -    subheadline: 'Has reduced burden been connected to what turnover costs?',                                                                                                                
+      106 +    subheadline: 'Has reduced documentation burden changed how providers live and work?',                                                                                                    
+      107      reframe: '',
+      108      cards: [
+      109 -      { level: 1, label: 'Time Is Returning', description: 'Providers report less after-hours documentation time.' },                                                                        
+      110 -      { level: 2, label: 'Burden Measured', description: 'In-clinic time savings and provider sentiment are tracked.' },                                                                     
+      111 -      { level: 3, label: 'Retention Modeled', description: 'Turnover costs are modeled with documentation burden as a factor.' },                                                            
+      112 -      { level: 4, label: 'Workforce Strategically Managed', description: 'Documentation burden reduction is a variable in workforce strategy — recruitment, retention programs, and staffing 
+          -decisions.' },                                                                                                                                                                               
+      109 +      { level: 1, label: 'Provider Sentiment Measured', description: 'In-clinic time savings are tracked. Providers have been surveyed on burden, satisfaction, and intent to stay.' },      
+      110 +      { level: 2, label: 'Behavioral Change Visible', description: 'Observable changes in provider behavior — after-hours patterns, time at home, note completion — are visible and documente
+          +d.' },                                                                                                                                                                                       
+      111 +      { level: 3, label: 'Retention Confirmed', description: 'Turnover rate has measurably changed. The financial value of improved retention is calculated.' },                             
+      112 +      { level: 4, label: 'Workforce Strategically Managed', description: 'Documentation burden data informs recruitment, retention program design, staffing models, and workforce planning at
+          + the organizational level.' },                                                                                                                                                               
+      113      ],
+      114      framingQuestions: {
+      115        1: undefined,
+      116        2: undefined,
+      117        3: undefined,
+      118 -      4: 'Where is documentation burden data informing workforce strategy?',                                                                                                                 
+      118 +      4: undefined,                                                                                                                                                                          
+      119      },
+      120      unlockTeasers: {
+      121 -      2: 'Measure in-clinic time savings and survey providers.',                                                                                                                             
+      122 -      3: 'Model turnover costs with documentation burden as a variable.',                                                                                                                    
+      123 -      4: 'Connect burden reduction to workforce strategy decisions.',                                                                                                                        
+      121 +      2: 'Observe and document behavioral changes in provider patterns outside the clinic.',                                                                                                 
+      122 +      3: 'Connect burden reduction to before/after turnover rate changes.',                                                                                                                  
+      123 +      4: 'Integrate documentation burden data into organizational workforce strategy.',                                                                                                      
+      124      },
+      125    },
+      126    risk: {
+
+⏺ Now update renderWorkforceInputs — L1 (replace after-hours block with survey + in-clinic):
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/Screen4Domains.tsx)
+  ⎿  Removed 22 lines
+      831      const level = currentState.activationLevel;
+      832      if (!level) return null;
+      833  
+      834 -    if (level === 1) {                                                                                                                                                                       
+      835 -      return (                                                                                                                                                                               
+      836 -        <div>                                                                                                                                                                                
+      837 -          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">                                                                                                                
+      838 -            After-hours time returned                                                                                                                                                        
+      839 -          </label>                                                                                                                                                                           
+      840 -          <div className="flex items-center gap-2">                                                                                                                                          
+      841 -            <FormattedNumberInput                                                                                                                                                            
+      842 -              value={(currentState.inputs.afterHoursReduction as number) || 2.0}                                                                                                             
+      843 -              onChange={(v) => setDomainInput('afterHoursReduction', Math.max(0, v))}                                                                                                        
+      844 -              placeholder=""                                                                                                                                                                 
+      845 -              className="w-full h-12 bg-white border-[#E5E7EB]"                                                                                                                              
+      846 -              data-testid="input-after-hours"                                                                                                                                                
+      847 -            />                                                                                                                                                                               
+      848 -            <span className="text-sm text-[#888888] whitespace-nowrap">hrs/wk</span>                                                                                                         
+      849 -          </div>                                                                                                                                                                             
+      850 -          <p className="text-xs text-[#888888] mt-1.5">Pre-filled from deployment benchmarks (2 hrs/week). Adjust to match your organization's data.</p>                                     
+      851 -          <BenchmarkContext text="Abridge benchmark: 1–3 hrs/week" />                                                                                                                        
+      852 -        </div>                                                                                                                                                                               
+      853 -      );                                                                                                                                                                                     
+      854 -    }                                                                                                                                                                                        
+      855 -                                                                                                                                                                                             
+      834      const SURVEY_OPTIONS = [
+      835        { id: 'not_yet', label: 'Not yet' },
+      836        { id: 'informal', label: 'Informal pulse survey' },
+
+⏺ Now I need to insert a new L1 block (survey + in-clinic) before the existing L2 block. Let me read the current state of that section:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Now I have a clear picture of the structure. Let me make the main replacements. First, replace the current L2 block (survey + in-clinic, currently at level 2) to become L1, and add a new L2 behavioral
+  block, then replace L3:
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/Screen4Domains.tsx)
+  ⎿  Added 111 lines, removed 67 lines
+      845        'More time with patients reported',
+      846      ];
+      847  
+      848 -    if (level === 2) {                                                                                                                                                                       
+      848 +    if (level === 1) {                                                                                                                                                                       
+      849        const surveyType = (currentState.inputs.surveyType as string) || '';
+      850        return (
+      851          <div className="flex flex-col gap-5">
+     ...
+      863                />
+      864                <span className="text-sm text-[#888888] whitespace-nowrap">min/day</span>
+      865              </div>
+      866 -            <BenchmarkContext text="Abridge benchmark: 10–20 min/day" />                                                                                                                     
+      866 +            <BenchmarkContext text="Published benchmark: 10–20 min/day (MGMA Physician Productivity data)" />                                                                                
+      867            </div>
+      868  
+      869 -                                                                                                                                                                                             
+      869            <div>
+      870              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+      871                Have providers been surveyed?
+     ...
+       908  
+       909            {surveyType === 'informal' && (
+       910              <p className="text-xs text-[#888888] italic leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+       912 -              Informal feedback is a start. Consider a structured survey measuring documentation burden, satisfaction, and likelihood to stay — this data becomes critical at Level 3.      
+       911 +              Informal feedback is a start. Consider a structured survey measuring documentation burden, satisfaction, and likelihood to stay — this data becomes critical at Level 2.      
+       912              </p>
+       913            )}
+       914  
+       915            {surveyType === 'structured' && (
+       917 -            <>                                                                                                                                                                              
+       918 -              <div>                                                                                                                                                                         
+       919 -                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">                                                                                                         
+       920 -                  What did your survey show?                                                                                                                                                
+       921 -                </label>                                                                                                                                                                    
+       922 -                <div className="flex flex-col gap-2">                                                                                                                                       
+       923 -                  {SURVEY_FINDINGS.map((finding, i) => {                                                                                                                                    
+       924 -                    const checked = isChecked('surveyFindings', i);                                                                                                                         
+       925 -                    return (                                                                                                                                                                
+       926 -                      <label                                                                                                                                                                
+       927 -                        key={i}                                                                                                                                                             
+       928 -                        className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${                                             
+       929 -                          checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'                                                                    
+       930 -                        }`}                                                                                                                                                                 
+       931 -                        data-testid={`checkbox-survey-finding-${i}`}                                                                                                                        
+       932 -                      >                                                                                                                                                                     
+       933 -                        <Checkbox                                                                                                                                                           
+       934 -                          checked={checked}                                                                                                                                                 
+       935 -                          onCheckedChange={() => toggleCheckboxItem('surveyFindings', i)}                                                                                                   
+       936 -                        />                                                                                                                                                                  
+       937 -                        <span className="text-sm text-black">{finding}</span>                                                                                                               
+       938 -                      </label>                                                                                                                                                              
+       939 -                    );                                                                                                                                                                      
+       940 -                  })}                                                                                                                                                                       
+       941 -                </div>                                                                                                                                                                      
+       916 +            <div>                                                                                                                                                                           
+       917 +              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">                                                                                                           
+       918 +                What did your survey show?                                                                                                                                                  
+       919 +              </label>                                                                                                                                                                      
+       920 +              <div className="flex flex-col gap-2">                                                                                                                                         
+       921 +                {SURVEY_FINDINGS.map((finding, i) => {                                                                                                                                      
+       922 +                  const checked = isChecked('surveyFindings', i);                                                                                                                           
+       923 +                  return (                                                                                                                                                                  
+       924 +                    <label                                                                                                                                                                  
+       925 +                      key={i}                                                                                                                                                               
+       926 +                      className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${                                               
+       927 +                        checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'                                                                      
+       928 +                      }`}                                                                                                                                                                   
+       929 +                      data-testid={`checkbox-survey-finding-${i}`}                                                                                                                          
+       930 +                    >                                                                                                                                                                       
+       931 +                      <Checkbox                                                                                                                                                             
+       932 +                        checked={checked}                                                                                                                                                   
+       933 +                        onCheckedChange={() => toggleCheckboxItem('surveyFindings', i)}                                                                                                     
+       934 +                      />                                                                                                                                                                    
+       935 +                      <span className="text-sm text-black">{finding}</span>                                                                                                                 
+       936 +                    </label>                                                                                                                                                                
+       937 +                  );                                                                                                                                                                        
+       938 +                })}                                                                                                                                                                         
+       939                </div>
+       943 -                                                                                                                                                                                            
+       944 -            </>                                                                                                                                                                             
+       940 +            </div>                                                                                                                                                                          
+       941            )}
+       942          </div>
+       943        );
+       944      }
+       945  
+       946 +    const BEHAVIORAL_CHANGES = [                                                                                                                                                            
+       947 +      'After-hours documentation time reduced',                                                                                                                                             
+       948 +      'Leaving clinic on time more consistently',                                                                                                                                           
+       949 +      'Taking lunch breaks resumed',                                                                                                                                                        
+       950 +      'Work-outside-of-work documentation eliminated or reduced',                                                                                                                           
+       951 +      'Weekend catch-up work reduced',                                                                                                                                                      
+       952 +      'Notes completed before leaving the clinic',                                                                                                                                          
+       953 +      'More present at home / personal time reclaimed',                                                                                                                                     
+       954 +    ];                                                                                                                                                                                      
+       955 +                                                                                                                                                                                            
+       956 +    if (level === 2) {                                                                                                                                                                      
+       957 +      return (                                                                                                                                                                              
+       958 +        <div className="flex flex-col gap-5">                                                                                                                                               
+       959 +          <div>                                                                                                                                                                             
+       960 +            <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">                                                                                                             
+       961 +              Which behavioral changes have been observed?                                                                                                                                  
+       962 +            </label>                                                                                                                                                                        
+       963 +            <div className="flex flex-col gap-2">                                                                                                                                           
+       964 +              {BEHAVIORAL_CHANGES.map((change, i) => {                                                                                                                                      
+       965 +                const checked = isChecked('observedBehaviors', i);                                                                                                                          
+       966 +                return (                                                                                                                                                                    
+       967 +                  <label                                                                                                                                                                    
+       968 +                    key={i}                                                                                                                                                                 
+       969 +                    className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${                                                 
+       970 +                      checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'                                                                        
+       971 +                    }`}                                                                                                                                                                     
+       972 +                    data-testid={`checkbox-behavior-${i}`}                                                                                                                                  
+       973 +                  >                                                                                                                                                                         
+       974 +                    <Checkbox                                                                                                                                                               
+       975 +                      checked={checked}                                                                                                                                                     
+       976 +                      onCheckedChange={() => toggleCheckboxItem('observedBehaviors', i)}                                                                                                    
+       977 +                    />                                                                                                                                                                      
+       978 +                    <span className="text-sm text-black">{change}</span>                                                                                                                    
+       979 +                  </label>                                                                                                                                                                  
+       980 +                );                                                                                                                                                                          
+       981 +              })}                                                                                                                                                                           
+       982 +            </div>                                                                                                                                                                          
+       983 +          </div>                                                                                                                                                                            
+       984 +                                                                                                                                                                                            
+       985 +          <div>                                                                                                                                                                             
+       986 +            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">                                                                                                             
+       987 +              After-hours time returned (if quantified)                                                                                                                                     
+       988 +            </label>                                                                                                                                                                        
+       989 +            <div className="flex items-center gap-2">                                                                                                                                       
+       990 +              <FormattedNumberInput                                                                                                                                                         
+       991 +                value={(currentState.inputs.afterHoursReduction as number) || 0}                                                                                                            
+       992 +                onChange={(v) => setDomainInput('afterHoursReduction', Math.max(0, v))}                                                                                                     
+       993 +                placeholder=""                                                                                                                                                              
+       994 +                className="w-full h-12 bg-white border-[#E5E7EB]"                                                                                                                           
+       995 +                data-testid="input-after-hours"                                                                                                                                             
+       996 +              />                                                                                                                                                                            
+       997 +              <span className="text-sm text-[#888888] whitespace-nowrap">hrs/wk</span>                                                                                                      
+       998 +            </div>                                                                                                                                                                          
+       999 +            <BenchmarkContext text="Published range: 1–3 hrs/week of after-hours documentation time" />                                                                                     
+      1000 +          </div>                                                                                                                                                                            
+      1001 +        </div>                                                                                                                                                                              
+      1002 +      );                                                                                                                                                                                    
+      1003 +    }                                                                                                                                                                                       
+      1004 +                                                                                                                                                                                            
+      1005      if (level === 3) {
+       951 -      const docBurdenOptions = [                                                                                                                                                            
+       952 -        { value: 10, label: '~10%' },                                                                                                                                                       
+       953 -        { value: 20, label: '~20%' },                                                                                                                                                       
+       954 -        { value: 30, label: '~30%' },                                                                                                                                                       
+       955 -        { value: 40, label: '~40%' },                                                                                                                                                       
+       956 -        { value: 60, label: '~60%' },                                                                                                                                                       
+       957 -      ];                                                                                                                                                                                    
+      1006 +      const isDefaultReplacementCost = !currentState.inputs.replacementCost || (currentState.inputs.replacementCost as number) === 350000;                                                  
+      1007        return (
+      1008          <div className="flex flex-col gap-5">
+      1009            <div>
+      1010              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+       962 -              Annual physician turnover rate                                                                                                                                                
+      1011 +              Annual turnover rate before Abridge                                                                                                                                           
+      1012              </label>
+      1013              <div className="flex items-center gap-2">
+      1014                <FormattedNumberInput
+       966 -                value={(currentState.inputs.turnoverRate as number) || 0}                                                                                                                   
+       967 -                onChange={(v) => setDomainInput('turnoverRate', v)}                                                                                                                         
+      1015 +                value={(currentState.inputs.turnoverRateBefore as number) || 0}                                                                                                             
+      1016 +                onChange={(v) => setDomainInput('turnoverRateBefore', v)}                                                                                                                   
+      1017                  placeholder=""
+      1018                  className="w-full h-12 bg-white border-[#E5E7EB]"
+       970 -                data-testid="input-turnover-rate"                                                                                                                                           
+      1019 +                data-testid="input-turnover-before"                                                                                                                                         
+      1020                />
+      1021                <span className="text-sm text-[#888888]">%</span>
+      1022              </div>
+       974 -            <BenchmarkContext text="National average: 6–8% annually (AAMC)" />                                                                                                              
+      1023 +            <BenchmarkContext text="National average: 6–8% annually (AAMC Physician Workforce data)" />                                                                                     
+      1024            </div>
+      1025            <div>
+      1026              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+      1027 +              Annual turnover rate with Abridge                                                                                                                                             
+      1028 +            </label>                                                                                                                                                                        
+      1029 +            <div className="flex items-center gap-2">                                                                                                                                       
+      1030 +              <FormattedNumberInput                                                                                                                                                         
+      1031 +                value={(currentState.inputs.turnoverRateAfter as number) || 0}                                                                                                              
+      1032 +                onChange={(v) => setDomainInput('turnoverRateAfter', v)}                                                                                                                    
+      1033 +                placeholder=""                                                                                                                                                              
+      1034 +                className="w-full h-12 bg-white border-[#E5E7EB]"                                                                                                                           
+      1035 +                data-testid="input-turnover-after"                                                                                                                                          
+      1036 +              />                                                                                                                                                                            
+      1037 +              <span className="text-sm text-[#888888]">%</span>                                                                                                                             
+      1038 +            </div>                                                                                                                                                                          
+      1039 +          </div>                                                                                                                                                                            
+      1040 +          <div>                                                                                                                                                                             
+      1041 +            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">                                                                                                             
+      1042                Replacement cost per physician
+      1043              </label>
+      1044              <div className="flex items-center gap-2">
+     ...
+      1051                  data-testid="input-replacement-cost"
+      1052                />
+      1053              </div>
+       990 -            <BenchmarkContext text="AMGA benchmark midpoint: $350K. Industry range: $250K–$500K." />                                                                                        
+      1054 +            {isDefaultReplacementCost && (                                                                                                                                                  
+      1055 +              <p className="text-xs text-[#888888] mt-1.5 italic">Using AMGA benchmark of $350K per physician — update if your organization tracks this.</p>                                
+      1056 +            )}                                                                                                                                                                              
+      1057 +            <BenchmarkContext text="AMGA Physician Retention Survey range: $250K–$500K per physician" />                                                                                    
+      1058            </div>
+       992 -          <div>                                                                                                                                                                             
+       993 -            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">                                                                                                             
+       994 -              How much of turnover is burden-related?                                                                                                                                       
+       995 -            </label>                                                                                                                                                                        
+       996 -            <div className="flex flex-col gap-2">                                                                                                                                           
+       997 -              {docBurdenOptions.map((opt) => (                                                                                                                                              
+       998 -                <button                                                                                                                                                                     
+       999 -                  key={opt.value}                                                                                                                                                           
+      1000 -                  type="button"                                                                                                                                                             
+      1001 -                  onClick={() => setDomainInput('docBurdenShare', opt.value)}                                                                                                               
+      1002 -                  className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${                                                                         
+      1003 -                    (currentState.inputs.docBurdenShare as number) === opt.value                                                                                                            
+      1004 -                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'                                                                                                   
+      1005 -                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'                                                                                         
+      1006 -                  }`}                                                                                                                                                                       
+      1007 -                  data-testid={`radio-burden-share-${opt.value}`}                                                                                                                           
+      1008 -                >                                                                                                                                                                           
+      1009 -                  {opt.label}                                                                                                                                                               
+      1010 -                </button>                                                                                                                                                                   
+      1011 -              ))}                                                                                                                                                                           
+      1012 -            </div>                                                                                                                                                                          
+      1013 -            <p className="text-xs text-[#888888] mt-2">Shanafelt et al.: documentation burden is a top-3 driver of voluntary turnover.</p>                                                  
+      1014 -          </div>                                                                                                                                                                            
+      1059          </div>
+      1060        );
+      1061      }
+
+⏺ Now verify the changes look correct:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Good. Now let me also verify the FUTURE_DESCRIPTIONS update for workforce (these are the unlock teaser texts on unselected cards):
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/Screen4Domains.tsx)
+  ⎿  Added 3 lines, removed 2 lines
+      158      4: 'Documentation intelligence drives revenue strategy, payer positioning, and financial planning.',
+      159    },
+      160    workforce: {
+      161 -    3: 'Model turnover costs with documentation burden as a contributing factor.',                                                                                                           
+      162 -    4: 'Documentation burden reduction informs recruitment, retention programs, and staffing decisions.',                                                                                    
+      161 +    2: 'Document observable behavioral changes — after-hours patterns, note completion, time at home.',                                                                                      
+      162 +    3: 'Connect before/after turnover rate change to the financial value of improved retention.',                                                                                            
+      163 +    4: 'Documentation burden data informs recruitment, retention programs, staffing models, and workforce planning.',                                                                        
+      164    },
+      165    risk: {
+      166      3: 'Connect documentation quality improvements to downstream programs — CDI, coding, quality measures.',
+
+⏺ Now let me do a quick check to make sure there are no TypeScript issues — no references to the old turnoverRate/docBurdenShare keys in Screen4Domains:
+
+⏺ Searched for 2 patterns (ctrl+o to expand)
+
+⏺ There are old references to turnoverRate/docBurdenShare in Screen4Domains.tsx at lines ~1698 and ~2007. Let me check those:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Let me also check the domainCalculations.ts reference at line 66:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ I need to fix these remaining references. Let me do all three:
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/domainCalculations.ts)
+  ⎿  Added 5 lines, removed 2 lines
+      63    const base = SCORE_MAP[level] || 0;
+      64    if (domain === 'workforce' && (level === 3 || level === 4)) {
+      65      if (level === 3) {
+      66 -      const turnoverRate = inputs.turnoverRate as number | undefined;                                                                                                                         
+      66 +      const turnoverRateBefore = inputs.turnoverRateBefore as number | undefined;                                                                                                             
+      67 +      const turnoverRateAfter = inputs.turnoverRateAfter as number | undefined;                                                                                                               
+      68        const replacementCost = inputs.replacementCost as number | undefined;
+      68 -      if (!turnoverRate || turnoverRate <= 0 || !replacementCost || replacementCost <= 0) {                                                                                                   
+      69 +      const hasDelta = turnoverRateBefore && turnoverRateBefore > 0 &&                                                                                                                        
+      70 +        turnoverRateAfter !== undefined && turnoverRateAfter < turnoverRateBefore;                                                                                                            
+      71 +      if (!hasDelta && (!replacementCost || replacementCost <= 0)) {                                                                                                                          
+      72          return 12;
+      73        }
+      74      }
+
+⏺ Now fix the card summary badge for L3 workforce (lines ~1697-1710):
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/Screen4Domains.tsx)
+  ⎿  Added 9 lines, removed 10 lines
+      1695                        }
+      1696                      }
+      1697                      if (card.level === 3) {
+      1698 -                      const dbs = (inp.docBurdenShare as number) || 0;                                                                                                                      
+      1699 -                      const tr = (inp.turnoverRate as number) || 0;                                                                                                                         
+      1700 -                      const rc = (inp.replacementCost as number) || 0;                                                                                                                      
+      1701 -                      if (dbs > 0 && tr > 0 && rc > 0) {                                                                                                                                    
+      1702 -                        const totalCost = Math.round(providers * (tr / 100) * rc);                                                                                                          
+      1703 -                        const docDriven = Math.round(totalCost * (dbs / 100));                                                                                                              
+      1704 -                        return formatDollar(docDriven);                                                                                                                                     
+      1698 +                      const trBefore = (inp.turnoverRateBefore as number) || 0;                                                                                                             
+      1699 +                      const trAfter = (inp.turnoverRateAfter as number) || 0;                                                                                                               
+      1700 +                      const rc = (inp.replacementCost as number) || 350000;                                                                                                                 
+      1701 +                      if (trBefore > 0 && trAfter < trBefore) {                                                                                                                             
+      1702 +                        const delta = trBefore - trAfter;                                                                                                                                   
+      1703 +                        const retentionValue = Math.round(providers * (delta / 100) * rc);                                                                                                  
+      1704 +                        return formatDollar(retentionValue);                                                                                                                                
+      1705                        }
+      1706 -                      if (tr > 0 && rc > 0) {                                                                                                                                               
+      1707 -                        const departures = (providers * (tr / 100)).toFixed(1);                                                                                                             
+      1708 -                        return `${departures} departures/yr`;                                                                                                                               
+      1706 +                      if (trBefore > 0) {                                                                                                                                                   
+      1707 +                        return `${trBefore}% → enter after rate`;                                                                                                                           
+      1708                        }
+      1709                      }
+      1710                    }
+
+⏺ Now fix the mini-summary panel at lines ~2000-2022:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Now let me update the workforce mini-summary panel to use the new before/after turnover and behavioral data:
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/Screen4Domains.tsx)
+  ⎿  Added 21 lines, removed 17 lines
+      1997  
+      1998              {activeDomain === 'workforce' && currentState.activationLevel && (() => {
+      1999                const inp = currentState.inputs;
+      2000 -              const ahr = (inp.afterHoursReduction as number) || 2.0;                                                                                                                       
+      2001 -              const afterHoursHrs = Math.round(ahr * providers * CLINICAL_WEEKS);                                                                                                           
+      2000  
+      2003 -              const mins = currentState.activationLevel >= 2 ? ((inp.editTimeSaved as number) || 0) : 0;                                                                                    
+      2001 +              const mins = currentState.activationLevel >= 1 ? ((inp.editTimeSaved as number) || 0) : 0;                                                                                    
+      2002                const clinicHrs = mins > 0 ? Math.round(mins * providers * 230 / 60) : 0;
+      2003  
+      2006 -              const tr = currentState.activationLevel >= 3 ? ((inp.turnoverRate as number) || 0) : 0;                                                                                       
+      2004 +              const behaviorsCsv = currentState.activationLevel >= 2 ? ((inp.observedBehaviors as string) || '') : '';                                                                      
+      2005 +              const behaviorCount = behaviorsCsv.split(',').filter(Boolean).length;                                                                                                         
+      2006 +                                                                                                                                                                                            
+      2007 +              const ahr = currentState.activationLevel >= 2 ? ((inp.afterHoursReduction as number) || 0) : 0;                                                                               
+      2008 +              const afterHoursHrs = ahr > 0 ? Math.round(ahr * providers * CLINICAL_WEEKS) : 0;                                                                                             
+      2009 +                                                                                                                                                                                            
+      2010 +              const trBefore = currentState.activationLevel >= 3 ? ((inp.turnoverRateBefore as number) || 0) : 0;                                                                           
+      2011 +              const trAfter = currentState.activationLevel >= 3 ? ((inp.turnoverRateAfter as number) || 0) : 0;                                                                             
+      2012                const rcRaw = (inp.replacementCost as number) || 0;
+      2013                const rc = rcRaw > 0 ? rcRaw : 350000;
+      2009 -              const dbs = currentState.activationLevel >= 3 ? ((inp.docBurdenShare as number) || 0) : 0;                                                                                    
+      2010 -              const retentionExposure = (currentState.activationLevel >= 3 && tr > 0 && dbs > 0)                                                                                            
+      2011 -                ? Math.round(providers * (tr / 100) * rc * (dbs / 100))                                                                                                                     
+      2014 +              const retentionValue = (currentState.activationLevel >= 3 && trBefore > 0 && trAfter < trBefore)                                                                              
+      2015 +                ? Math.round(providers * ((trBefore - trAfter) / 100) * rc)                                                                                                                 
+      2016                  : null;
+      2017  
+      2018                const strategyCsv = (inp.workforceStrategies as string) || '';
+     ...
+      2021                const ar = currentState.activationLevel >= 4 ? ((inp.agencyReduction as number) || 0) : 0;
+      2022                const agencyAnnual = ar > 0 ? Math.round(ar * 12) : null;
+      2023  
+      2020 -              const totalDollar = (retentionExposure || 0) + (agencyAnnual || 0);                                                                                                           
+      2021 -              const hasDollarValue = retentionExposure !== null || agencyAnnual !== null;                                                                                                   
+      2024 +              const totalDollar = (retentionValue || 0) + (agencyAnnual || 0);                                                                                                              
+      2025 +              const hasDollarValue = retentionValue !== null || agencyAnnual !== null;                                                                                                      
+      2026  
+      2027                return (
+      2028                  <>
+     ...
+      2032                    </p>
+      2033                    <div className="space-y-2 text-sm">
+      2034                      <div className="flex items-center justify-between">
+      2031 -                      <span className="text-white/60">After-Hours Returned</span>                                                                                                           
+      2032 -                      <span className="text-white font-medium" data-testid="text-workforce-summary-afterhours">                                                                             
+      2033 -                        {afterHoursHrs > 0 ? `${afterHoursHrs.toLocaleString()} hrs/yr` : '—'}                                                                                              
+      2035 +                      <span className="text-white/60">In-Clinic Time Returned</span>                                                                                                        
+      2036 +                      <span className="text-white font-medium" data-testid="text-workforce-summary-clinic">                                                                                 
+      2037 +                        {clinicHrs > 0 ? `${clinicHrs.toLocaleString()} hrs/yr` : '—'}                                                                                                      
+      2038                        </span>
+      2039                      </div>
+      2040                      <div className="flex items-center justify-between">
+      2037 -                      <span className="text-white/60">In-Clinic Returned</span>                                                                                                             
+      2038 -                      <span className="text-white font-medium" data-testid="text-workforce-summary-clinic">                                                                                 
+      2039 -                        {currentState.activationLevel >= 2 && clinicHrs > 0 ? `${clinicHrs.toLocaleString()} hrs/yr` : '—'}                                                                 
+      2041 +                      <span className="text-white/60">Behavioral Changes</span>                                                                                                             
+      2042 +                      <span className="text-white font-medium" data-testid="text-workforce-summary-behaviors">                                                                              
+      2043 +                        {currentState.activationLevel >= 2 && behaviorCount > 0 ? `${behaviorCount} documented` : '—'}                                                                      
+      2044                        </span>
+      2045                      </div>
+      2046                      <div className="flex items-center justify-between">
+      2043 -                      <span className="text-white/60">Retention Exposure</span>                                                                                                             
+      2047 +                      <span className="text-white/60">Retention Value</span>                                                                                                                
+      2048                        <span className="text-white font-medium" data-testid="text-workforce-summary-retention">
+      2045 -                        {retentionExposure !== null ? formatDollar(retentionExposure) : '—'}                                                                                                
+      2049 +                        {retentionValue !== null ? formatDollar(retentionValue) : '—'}                                                                                                      
+      2050                        </span>
+      2051                      </div>
+      2052                      <div className="flex items-center justify-between">
+
+⏺ Also need to fix the L1/L2 badge in the card summary (lines ~1680-1696) — L1 now shows in-clinic time, L2 shows behavioral count:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Update(The-ROI-Calculator/client/src/pages/switch/ambient/Screen4Domains.tsx)
+  ⎿  Added 6 lines, removed 9 lines
+      1680                    }
+      1681                    if (activeDomain === 'workforce') {
+      1682                      if (card.level === 1) {
+      1683 -                      const ahr = (inp.afterHoursReduction as number) || 2.0;                                                                                                               
+      1684 -                      const hrs = Math.round(ahr * providers * CLINICAL_WEEKS);                                                                                                             
+      1685 -                      return `${hrs.toLocaleString()} hrs/yr`;                                                                                                                              
+      1686 -                    }                                                                                                                                                                       
+      1687 -                    if (card.level === 2) {                                                                                                                                                 
+      1683                        const mins = (inp.editTimeSaved as number) || 0;
+      1684                        if (mins > 0) {
+      1685                          const clinicHrs = Math.round(mins * providers * 230 / 60);
+      1691 -                        const cAfterHours = (inp.confirmedAfterHoursReduction as number) || (inp.afterHoursReduction as number) || 0;                                                       
+      1692 -                        const ahHrs = cAfterHours > 0 ? Math.round(cAfterHours * providers * CLINICAL_WEEKS) : 0;                                                                           
+      1693 -                        const totalHrs = clinicHrs + ahHrs;                                                                                                                                 
+      1694 -                        return `${totalHrs.toLocaleString()} hrs/yr`;                                                                                                                       
+      1686 +                        return `${clinicHrs.toLocaleString()} hrs/yr`;                                                                                                                      
+      1687                        }
+      1688                      }
+      1689 +                    if (card.level === 2) {                                                                                                                                                 
+      1690 +                      const behaviorsCsv = (inp.observedBehaviors as string) || '';                                                                                                         
+      1691 +                      const behaviorCount = behaviorsCsv.split(',').filter(Boolean).length;                                                                                                 
+      1692 +                      if (behaviorCount > 0) return `${behaviorCount} change${behaviorCount !== 1 ? 's' : ''} observed`;                                                                    
+      1693 +                    }                                                                                                                                                                       
+      1694                      if (card.level === 3) {
+      1695                        const trBefore = (inp.turnoverRateBefore as number) || 0;
+      1696                        const trAfter = (inp.turnoverRateAfter as number) || 0;
+
+⏺ Now let me do a final check for any remaining stale references:
+
+⏺ Searched for 2 patterns (ctrl+o to expand)
+
+⏺ All turnoverRateAfter — that's the correct new key. No stale references. Let me also check in domainCalculations.ts for any other references to the old docBurdenShare key outside the already-updated
+  function:
+
+⏺ Searched for 1 pattern (ctrl+o to expand)
+
+⏺ All clean. Now let me also check if the PDF file references these old workforce keys, since the plan mentions ambient-assessment-pdf.tsx:
+
+⏺ Searched for 2 patterns (ctrl+o to expand)
+
+⏺ Good — the PDF reads from the computed feedback outputs (workforceHeadlineMetric, workforceContext, workforceGap) not from raw inputs, so no changes needed there.
+
+  Let me do one final check on the Capacity domain — the ACTIVATION_LABELS still show 'Access Decision Made' for L2, but earlier in the session the plan mentions changing it to 'Time Actively Used'. Let me
+  verify current state:
+
+⏺ Searched for 1 pattern (ctrl+o to expand)
+
+⏺ The Workforce domain restructure is complete. Here's a summary of what changed:
+
+  domainCalculations.ts:
+  - Activation labels: Time Is Returning → Provider Sentiment Measured, Burden Measured → Behavioral Change Visible, Retention Modeled → Retention Confirmed
+  - L1 now computes from in-clinic time saved (min/day × providers × 230 days) + survey data — no more hours-times-rate math
+  - L2 now computes from observable behavioral checkboxes (7 options) + optional after-hours quantity
+  - L3 now computes from before/after turnover rate delta: (trBefore - trAfter)% × providers × $350K → confirmed retention value with hasValue: true
+
+  Screen4Domains.tsx:
+  - L1 UI: In-clinic time input + survey type radio + survey findings checkboxes (was L2)
+  - L2 UI: New behavioral changes checklist (leaving on time, lunch, work-from-home notes eliminated, weekend catch-up reduced, etc.) + optional after-hours quantity
+  - L3 UI: Two turnover rate fields (before/after) + replacement cost with AMGA benchmark helper text
+  - L4: framingQuestions[4]: undefined — fixes the duplicate question bug
+  - Card badges and mini-summary panel updated to use new keys
+  - Card descriptions and FUTURE_DESCRIPTIONS updated throughout
+
+✻ Cooked for 10m 10s · 1 background task still running (↓ to manage)
+
+❯ give me the replit prompt for this patch 
+
+⏺ Here's the Replit prompt:
+
+  ---
+  Workforce Domain Restructure — Full Patch
+
+  Apply the following changes to two files: client/src/pages/switch/ambient/domainCalculations.ts and client/src/pages/switch/ambient/Screen4Domains.tsx.
+
+  ---
+  FILE 1: domainCalculations.ts
+
+  Change 1 — ACTIVATION_LABELS workforce
+
+  Find:
+    workforce: {
+      1: 'Time Is Returning',
+      2: 'Burden Measured',
+      3: 'Retention Modeled',
+      4: 'Workforce Strategically Managed',
+    },
+  Replace with:
+    workforce: {
+      1: 'Provider Sentiment Measured',
+      2: 'Behavioral Change Visible',
+      3: 'Retention Confirmed',
+      4: 'Workforce Strategically Managed',
+    },
+
+  ---
+  Change 2 — computeDomainScore workforce L3 guard
+
+  Find:
+      if (level === 3) {
+        const turnoverRate = inputs.turnoverRate as number | undefined;
+        const replacementCost = inputs.replacementCost as number | undefined;
+        if (!turnoverRate || turnoverRate <= 0 || !replacementCost || replacementCost <= 0) {
+          return 12;
+        }
+      }
+  Replace with:
+      if (level === 3) {
+        const turnoverRateBefore = inputs.turnoverRateBefore as number | undefined;
+        const turnoverRateAfter = inputs.turnoverRateAfter as number | undefined;
+        const replacementCost = inputs.replacementCost as number | undefined;
+        const hasDelta = turnoverRateBefore && turnoverRateBefore > 0 &&
+          turnoverRateAfter !== undefined && turnoverRateAfter < turnoverRateBefore;
+        if (!hasDelta && (!replacementCost || replacementCost <= 0)) {
+          return 12;
+        }
+      }
+
+  ---
+  Change 3 — computeWorkforceFeedback L1 (entire block)
+
+  Find the entire if (level === 1) block inside computeWorkforceFeedback (the one that starts with const afterHoursReduction = inputs.afterHoursReduction) and replace it with:
+
+    if (level === 1) {
+      const minutesSaved = inputs.editTimeSaved as number | undefined;
+      const surveyType = inputs.surveyType as string | undefined;
+      const surveyFindingsStr = inputs.surveyFindings as string | undefined;
+      const checkedFindings = surveyFindingsStr ? surveyFindingsStr.split(',').map(Number) : [];
+      const checkedCount = checkedFindings.length;
+      const checkedLabels = checkedFindings.map(i => SURVEY_FINDING_LABELS[i]).filter(Boolean);
+
+      if (!minutesSaved || minutesSaved <= 0) {
+        const lowHrs = Math.round(providers * 10 * CLINICAL_DAYS / 60);
+        const highHrs = Math.round(providers * 20 * CLINICAL_DAYS / 60);
+        return {
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          headlineMetric: 'Enter in-clinic time savings to calculate.',
+          context: `Published benchmark: 10–20 minutes per provider per day of in-clinic burden reduction (MGMA Physician Productivity data). At ${providers.toLocaleString()} providers, that is
+  ${lowHrs.toLocaleString()}–${highHrs.toLocaleString()} hours annually.`,
+          formula: '',
+          footnote: '',
+          nextLevelTeaser: 'Level 2 captures observable behavioral changes — after-hours patterns, time at home, note completion.',
+        };
+      }
+
+      const clinicSavedHours = Math.round(minutesSaved * providers * CLINICAL_DAYS / 60);
+      const hasSurveyData = surveyType === 'structured' && checkedCount > 0;
+      const surveyNarrative = hasSurveyData
+        ? `\n\nYour clinician survey validates ${checkedCount} area(s) of provider-reported improvement:\n${checkedLabels.map(l => `• ${l}`).join('\n')}`
+        : surveyType === 'not_yet' || surveyType === 'informal' || !surveyType
+          ? '\n\nProvider survey not yet conducted or informal only.'
+          : '';
+
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: `${clinicSavedHours.toLocaleString()} in-clinic hours recovered annually across ${providers} providers.`,
+        context: `In-clinic documentation time returned: ${clinicSavedHours.toLocaleString()} hours annually (${minutesSaved} min/provider/day × ${providers} providers × ${CLINICAL_DAYS} clinical
+  days).${surveyNarrative}`,
+        formula: `[clinicHours] = ${minutesSaved} min × ${providers} × ${CLINICAL_DAYS} / 60 = ${clinicSavedHours.toLocaleString()}`,
+        footnote: `${CLINICAL_DAYS} clinical working days. Dollar value connects at Level 3 when turnover data is entered.`,
+        nextLevelTeaser: 'Level 2 captures observable behavioral changes — after-hours patterns, time at home, note completion.',
+      };
+    }
+
+  ---
+  Change 4 — computeWorkforceFeedback L2 (entire block)
+
+  Replace the entire existing if (level === 2) block inside computeWorkforceFeedback with:
+
+    if (level === 2) {
+      const BEHAVIORAL_CHANGE_LABELS = [
+        'After-hours documentation time reduced',
+        'Leaving clinic on time more consistently',
+        'Taking lunch breaks resumed',
+        'Work-outside-of-work documentation eliminated or reduced',
+        'Weekend catch-up work reduced',
+        'Notes completed before leaving the clinic',
+        'More present at home / personal time reclaimed',
+      ];
+
+      const behaviorsCsv = inputs.observedBehaviors as string | undefined;
+      const behaviorSet = new Set((behaviorsCsv || '').split(',').filter(Boolean));
+      const behaviorCount = behaviorSet.size;
+      const checkedBehaviorLabels = BEHAVIORAL_CHANGE_LABELS.filter((_, i) => behaviorSet.has(String(i)));
+      const afterHoursReduction = inputs.afterHoursReduction as number | undefined;
+      const afterHoursHours = (afterHoursReduction && afterHoursReduction > 0)
+        ? Math.round(afterHoursReduction * providers * CLINICAL_WEEKS)
+        : 0;
+
+      if (behaviorCount === 0 && !afterHoursReduction) {
+        return {
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          headlineMetric: 'Select observable behavioral changes to document impact.',
+          context: 'At this level, the story is behavioral, not just time. Providers leaving on time, taking lunch, not documenting on weekends — these are the signals that retention impact is building.',
+          formula: '',
+          footnote: '',
+          nextLevelTeaser: 'Level 3 connects behavioral change to measured turnover rate improvement.',
+        };
+      }
+
+      const headlineParts: string[] = [];
+      if (behaviorCount > 0) headlineParts.push(`${behaviorCount} behavioral change${behaviorCount !== 1 ? 's' : ''} documented`);
+      if (afterHoursHours > 0) headlineParts.push(`${afterHoursHours.toLocaleString()} after-hours hours returned annually`);
+
+      let contextText = '';
+      if (checkedBehaviorLabels.length > 0) {
+        contextText += `Observable behavioral changes documented across your provider population:\n${checkedBehaviorLabels.map(l => `• ${l}`).join('\n')}`;
+      }
+      if (afterHoursHours > 0) {
+        contextText += `\n\nAfter-hours reduction: ${afterHoursReduction} hrs/week × ${providers} providers × ${CLINICAL_WEEKS} clinical weeks = ${afterHoursHours.toLocaleString()} hours returned annually.`;
+      }
+
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: headlineParts.join('\n'),
+        context: contextText,
+        formula: afterHoursHours > 0 ? `[afterHoursHours] = ${afterHoursReduction} × ${providers} × ${CLINICAL_WEEKS} = ${afterHoursHours.toLocaleString()}` : '',
+        footnote: 'Behavioral changes are qualitative indicators. Financial value connects at Level 3 when turnover data is entered.',
+        nextLevelTeaser: 'Level 3 connects behavioral change to measured turnover rate improvement.',
+      };
+    }
+
+  ---
+  Change 5 — computeWorkforceFeedback L3 (entire block)
+
+  Replace the entire existing if (level === 3) block inside computeWorkforceFeedback (the one using turnoverRate and docBurdenShare) with:
+
+    if (level === 3) {
+      const turnoverRateBefore = inputs.turnoverRateBefore as number | undefined;
+      const turnoverRateAfter = inputs.turnoverRateAfter as number | undefined;
+      const replacementCostRaw = inputs.replacementCost as number | undefined;
+      const replacementCost = (replacementCostRaw && replacementCostRaw > 0) ? replacementCostRaw : 350000;
+      const isDefaultReplacementCost = !replacementCostRaw || replacementCostRaw === 350000;
+
+      if (!turnoverRateBefore || turnoverRateBefore <= 0) {
+        return {
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          headlineMetric: 'Enter before and after turnover rates to calculate retention value.',
+          context: `Enter your turnover rate before and after Abridge deployment to calculate the financial value of improved retention. Use the AMGA benchmark replacement cost ($350K) or your organization's
+   actual figure.`,
+          formula: '',
+          footnote: '',
+          nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
+        };
+      }
+
+      const effectiveAfterRate = (turnoverRateAfter !== undefined && turnoverRateAfter >= 0) ? turnoverRateAfter : turnoverRateBefore;
+      const rateDelta = turnoverRateBefore - effectiveAfterRate;
+
+      if (rateDelta <= 0) {
+        return {
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          headlineMetric: 'After rate should be lower than before rate to show retention value.',
+          context: `Current inputs show turnover moved from ${turnoverRateBefore}% to ${effectiveAfterRate}%. Enter an after rate lower than the before rate to calculate the financial value of retention
+  improvement.`,
+          formula: '',
+          footnote: '',
+          nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
+        };
+      }
+
+      const departuresAvoided = providers * (rateDelta / 100);
+      const retentionValue = Math.round(departuresAvoided * replacementCost);
+      const replacementLabel = isDefaultReplacementCost
+        ? `AMGA benchmark: ${formatDollar(replacementCost)}/physician`
+        : `Your input: ${formatDollar(replacementCost)}/physician`;
+
+      return {
+        label: 'Confirmed Impact',
+        value: retentionValue,
+        hasValue: true,
+        headlineMetric: `${formatDollar(retentionValue)} in retention value from ${rateDelta.toFixed(1)} pp improvement in physician turnover.`,
+        context: `Turnover rate moved from ${turnoverRateBefore}% to ${effectiveAfterRate}% — a ${rateDelta.toFixed(1)} percentage point improvement across ${providers} providers.\n\nDepartures avoided:
+  ${providers} × ${rateDelta.toFixed(1)}% = ${departuresAvoided.toFixed(1)} physicians.\nReplacement cost: ${replacementLabel}.\nRetention value: ${departuresAvoided.toFixed(1)} ×
+  ${formatDollar(replacementCost)} = ${formatDollar(retentionValue)}.`,
+        formula: `[departuresAvoided] = ${providers} × (${turnoverRateBefore}% − ${effectiveAfterRate}%) = ${departuresAvoided.toFixed(1)}\n[retentionValue] = ${departuresAvoided.toFixed(1)} ×
+  ${formatDollar(replacementCost)} = ${formatDollar(retentionValue)}`,
+        footnote: isDefaultReplacementCost ? 'Replacement cost uses AMGA benchmark midpoint ($350K). Update if your organization tracks actual replacement cost.' : 'Replacement cost based on your input.',
+        nextLevelTeaser: 'Level 4 connects burden reduction to workforce strategy — recruitment, retention programs, staffing decisions.',
+      };
+    }
+
+  ---
+  FILE 2: Screen4Domains.tsx
+
+  Change 6 — DOMAIN_CONFIGS workforce
+
+  Find the entire workforce: entry in DOMAIN_CONFIGS and replace it with:
+
+    workforce: {
+      label: 'WORKFORCE',
+      headline: 'WORKFORCE',
+      subheadline: 'Has reduced documentation burden changed how providers live and work?',
+      reframe: '',
+      cards: [
+        { level: 1, label: 'Provider Sentiment Measured', description: 'In-clinic time savings are tracked. Providers have been surveyed on burden, satisfaction, and intent to stay.' },
+        { level: 2, label: 'Behavioral Change Visible', description: 'Observable changes in provider behavior — after-hours patterns, time at home, note completion — are visible and documented.' },
+        { level: 3, label: 'Retention Confirmed', description: 'Turnover rate has measurably changed. The financial value of improved retention is calculated.' },
+        { level: 4, label: 'Workforce Strategically Managed', description: 'Documentation burden data informs recruitment, retention program design, staffing models, and workforce planning at the
+  organizational level.' },
+      ],
+      framingQuestions: {
+        1: undefined,
+        2: undefined,
+        3: undefined,
+        4: undefined,
+      },
+      unlockTeasers: {
+        2: 'Observe and document behavioral changes in provider patterns outside the clinic.',
+        3: 'Connect burden reduction to before/after turnover rate changes.',
+        4: 'Integrate documentation burden data into organizational workforce strategy.',
+      },
+    },
+
+  ---
+  Change 7 — FUTURE_DESCRIPTIONS workforce
+
+  Find:
+    workforce: {
+      3: 'Model turnover costs with documentation burden as a contributing factor.',
+      4: 'Documentation burden reduction informs recruitment, retention programs, and staffing decisions.',
+    },
+  Replace with:
+    workforce: {
+      2: 'Document observable behavioral changes — after-hours patterns, note completion, time at home.',
+      3: 'Connect before/after turnover rate change to the financial value of improved retention.',
+      4: 'Documentation burden data informs recruitment, retention programs, staffing models, and workforce planning.',
+    },
+
+  ---
+  Change 8 — renderWorkforceInputs (entire function body)
+
+  Replace the entire body of renderWorkforceInputs (everything between const level = currentState.activationLevel; and the closing } of the function, just before the L4 strategies block) with the following.
+  Keep the existing L4 strategies/outcomes/agency block (starting with const WORKFORCE_STRATEGIES = [) exactly as it is — only replace L1, L2, and L3:
+
+  Delete the existing if (level === 1) block (the one with afterHoursReduction / 2.0 default / "Abridge benchmark: 1–3 hrs/week").
+
+  Delete the existing if (level === 2) block (the one with editTimeSaved / surveyType / surveyFindings).
+
+  Delete the existing if (level === 3) block (the one with docBurdenOptions / turnoverRate / docBurdenShare).
+
+  Replace with these three new blocks (insert them before the existing L4 strategies code):
+
+      const SURVEY_OPTIONS = [
+        { id: 'not_yet', label: 'Not yet' },
+        { id: 'informal', label: 'Informal pulse survey' },
+        { id: 'structured', label: 'Structured survey' },
+      ];
+
+      const SURVEY_FINDINGS = [
+        'Reduced documentation burden reported',
+        'Improved work-life balance reported',
+        'Improved satisfaction with documentation workflow',
+        'Increased likelihood to stay / reduced intent to leave',
+        'More time with patients reported',
+      ];
+
+      if (level === 1) {
+        const surveyType = (currentState.inputs.surveyType as string) || '';
+        return (
+          <div className="flex flex-col gap-5">
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                In-clinic time returned per provider per day
+              </label>
+              <div className="flex items-center gap-2">
+                <FormattedNumberInput
+                  value={(currentState.inputs.editTimeSaved as number) || 0}
+                  onChange={(v) => setDomainInput('editTimeSaved', Math.max(0, v))}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-edit-time"
+                />
+                <span className="text-sm text-[#888888] whitespace-nowrap">min/day</span>
+              </div>
+              <BenchmarkContext text="Published benchmark: 10–20 min/day (MGMA Physician Productivity data)" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                Have providers been surveyed?
+              </label>
+              <div className="flex flex-col gap-2">
+                {SURVEY_OPTIONS.map((opt) => (
+                  <label
+                    key={opt.id}
+                    className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                      surveyType === opt.id
+                        ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                        : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                    }`}
+                    data-testid={`radio-survey-${opt.id}`}
+                  >
+                    <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      surveyType === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                    }`}>
+                      {surveyType === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                    </div>
+                    <span className="text-sm text-black">{opt.label}</span>
+                    <input
+                      type="radio"
+                      name="surveyType"
+                      value={opt.id}
+                      checked={surveyType === opt.id}
+                      onChange={() => setDomainInput('surveyType', opt.id)}
+                      className="sr-only"
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {surveyType === 'not_yet' && (
+              <p className="text-xs text-[#888888] italic leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+                A clinician survey is the fastest way to validate what your operational data is showing. Without provider voice, burden reduction is an assumption.
+              </p>
+            )}
+
+            {surveyType === 'informal' && (
+              <p className="text-xs text-[#888888] italic leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+                Informal feedback is a start. Consider a structured survey measuring documentation burden, satisfaction, and likelihood to stay — this data becomes critical at Level 2.
+              </p>
+            )}
+
+            {surveyType === 'structured' && (
+              <div>
+                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                  What did your survey show?
+                </label>
+                <div className="flex flex-col gap-2">
+                  {SURVEY_FINDINGS.map((finding, i) => {
+                    const checked = isChecked('surveyFindings', i);
+                    return (
+                      <label
+                        key={i}
+                        className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                          checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                        }`}
+                        data-testid={`checkbox-survey-finding-${i}`}
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={() => toggleCheckboxItem('surveyFindings', i)}
+                        />
+                        <span className="text-sm text-black">{finding}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      const BEHAVIORAL_CHANGES = [
+        'After-hours documentation time reduced',
+        'Leaving clinic on time more consistently',
+        'Taking lunch breaks resumed',
+        'Work-outside-of-work documentation eliminated or reduced',
+        'Weekend catch-up work reduced',
+        'Notes completed before leaving the clinic',
+        'More present at home / personal time reclaimed',
+      ];
+
+      if (level === 2) {
+        return (
+          <div className="flex flex-col gap-5">
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                Which behavioral changes have been observed?
+              </label>
+              <div className="flex flex-col gap-2">
+                {BEHAVIORAL_CHANGES.map((change, i) => {
+                  const checked = isChecked('observedBehaviors', i);
+                  return (
+                    <label
+                      key={i}
+                      className={`flex items-center gap-3 p-3.5 sm:p-3 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                        checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                      }`}
+                      data-testid={`checkbox-behavior-${i}`}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => toggleCheckboxItem('observedBehaviors', i)}
+                      />
+                      <span className="text-sm text-black">{change}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                After-hours time returned (if quantified)
+              </label>
+              <div className="flex items-center gap-2">
+                <FormattedNumberInput
+                  value={(currentState.inputs.afterHoursReduction as number) || 0}
+                  onChange={(v) => setDomainInput('afterHoursReduction', Math.max(0, v))}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-after-hours"
+                />
+                <span className="text-sm text-[#888888] whitespace-nowrap">hrs/wk</span>
+              </div>
+              <BenchmarkContext text="Published range: 1–3 hrs/week of after-hours documentation time" />
+            </div>
+          </div>
+        );
+      }
+
+      if (level === 3) {
+        const isDefaultReplacementCost = !currentState.inputs.replacementCost || (currentState.inputs.replacementCost as number) === 350000;
+        return (
+          <div className="flex flex-col gap-5">
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                Annual turnover rate before Abridge
+              </label>
+              <div className="flex items-center gap-2">
+                <FormattedNumberInput
+                  value={(currentState.inputs.turnoverRateBefore as number) || 0}
+                  onChange={(v) => setDomainInput('turnoverRateBefore', v)}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-turnover-before"
+                />
+                <span className="text-sm text-[#888888]">%</span>
+              </div>
+              <BenchmarkContext text="National average: 6–8% annually (AAMC Physician Workforce data)" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                Annual turnover rate with Abridge
+              </label>
+              <div className="flex items-center gap-2">
+                <FormattedNumberInput
+                  value={(currentState.inputs.turnoverRateAfter as number) || 0}
+                  onChange={(v) => setDomainInput('turnoverRateAfter', v)}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-turnover-after"
+                />
+                <span className="text-sm text-[#888888]">%</span>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                Replacement cost per physician
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[#888888]">$</span>
+                <FormattedNumberInput
+                  value={(currentState.inputs.replacementCost as number) || 350000}
+                  onChange={(v) => setDomainInput('replacementCost', v)}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-replacement-cost"
+                />
+              </div>
+              {isDefaultReplacementCost && (
+                <p className="text-xs text-[#888888] mt-1.5 italic">Using AMGA benchmark of $350K per physician — update if your organization tracks this.</p>
+              )}
+              <BenchmarkContext text="AMGA Physician Retention Survey range: $250K–$500K per physician" />
+            </div>
+          </div>
+        );
+      }
+
+  ---
+  Change 9 — Card summary badge for workforce L1 and L2
+
+  Find the workforce card summary block that starts with if (activeDomain === 'workforce') inside the card rendering (there's a section that returns badge text per level). Find these two level checks:
+
+                      if (card.level === 1) {
+                        const ahr = (inp.afterHoursReduction as number) || 2.0;
+                        const hrs = Math.round(ahr * providers * CLINICAL_WEEKS);
+                        return `${hrs.toLocaleString()} hrs/yr`;
+                      }
+                      if (card.level === 2) {
+                        const mins = (inp.editTimeSaved as number) || 0;
+                        if (mins > 0) {
+                          const clinicHrs = Math.round(mins * providers * 230 / 60);
+                          const cAfterHours = (inp.confirmedAfterHoursReduction as number) || (inp.afterHoursReduction as number) || 0;
+                          const ahHrs = cAfterHours > 0 ? Math.round(cAfterHours * providers * CLINICAL_WEEKS) : 0;
+                          const totalHrs = clinicHrs + ahHrs;
+                          return `${totalHrs.toLocaleString()} hrs/yr`;
+                        }
+                      }
+
+  Replace with:
+
+                      if (card.level === 1) {
+                        const mins = (inp.editTimeSaved as number) || 0;
+                        if (mins > 0) {
+                          const clinicHrs = Math.round(mins * providers * 230 / 60);
+                          return `${clinicHrs.toLocaleString()} hrs/yr`;
+                        }
+                      }
+                      if (card.level === 2) {
+                        const behaviorsCsv = (inp.observedBehaviors as string) || '';
+                        const behaviorCount = behaviorsCsv.split(',').filter(Boolean).length;
+                        if (behaviorCount > 0) return `${behaviorCount} change${behaviorCount !== 1 ? 's' : ''} observed`;
+                      }
+
+  Also find the L3 workforce badge block:
+
+                      if (card.level === 3) {
+                        const dbs = (inp.docBurdenShare as number) || 0;
+                        const tr = (inp.turnoverRate as number) || 0;
+                        const rc = (inp.replacementCost as number) || 0;
+                        if (dbs > 0 && tr > 0 && rc > 0) {
+                          const totalCost = Math.round(providers * (tr / 100) * rc);
+                          const docDriven = Math.round(totalCost * (dbs / 100));
+                          return formatDollar(docDriven);
+                        }
+                        if (tr > 0 && rc > 0) {
+                          const departures = (providers * (tr / 100)).toFixed(1);
+                          return `${departures} departures/yr`;
+                        }
+                      }
+
+  Replace with:
+
+                      if (card.level === 3) {
+                        const trBefore = (inp.turnoverRateBefore as number) || 0;
+                        const trAfter = (inp.turnoverRateAfter as number) || 0;
+                        const rc = (inp.replacementCost as number) || 350000;
+                        if (trBefore > 0 && trAfter < trBefore) {
+                          const delta = trBefore - trAfter;
+                          const retentionValue = Math.round(providers * (delta / 100) * rc);
+                          return formatDollar(retentionValue);
+                        }
+                        if (trBefore > 0) {
+                          return `${trBefore}% → enter after rate`;
+                        }
+                      }
+
+  ---
+  Change 10 — Workforce mini-summary panel
+
+  Find the workforce mini-summary IIFE that starts with {activeDomain === 'workforce' && currentState.activationLevel && (() => {. Replace the entire variable declaration block (everything from const inp =
+  currentState.inputs; through const hasDollarValue = ...) and the summary rows with:
+
+              {activeDomain === 'workforce' && currentState.activationLevel && (() => {
+                const inp = currentState.inputs;
+
+                const mins = currentState.activationLevel >= 1 ? ((inp.editTimeSaved as number) || 0) : 0;
+                const clinicHrs = mins > 0 ? Math.round(mins * providers * 230 / 60) : 0;
+
+                const behaviorsCsv = currentState.activationLevel >= 2 ? ((inp.observedBehaviors as string) || '') : '';
+                const behaviorCount = behaviorsCsv.split(',').filter(Boolean).length;
+
+                const ahr = currentState.activationLevel >= 2 ? ((inp.afterHoursReduction as number) || 0) : 0;
+                const afterHoursHrs = ahr > 0 ? Math.round(ahr * providers * CLINICAL_WEEKS) : 0;
+
+                const trBefore = currentState.activationLevel >= 3 ? ((inp.turnoverRateBefore as number) || 0) : 0;
+                const trAfter = currentState.activationLevel >= 3 ? ((inp.turnoverRateAfter as number) || 0) : 0;
+                const rcRaw = (inp.replacementCost as number) || 0;
+                const rc = rcRaw > 0 ? rcRaw : 350000;
+                const retentionValue = (currentState.activationLevel >= 3 && trBefore > 0 && trAfter < trBefore)
+                  ? Math.round(providers * ((trBefore - trAfter) / 100) * rc)
+                  : null;
+
+                const strategyCsv = (inp.workforceStrategies as string) || '';
+                const strategyCount = currentState.activationLevel >= 4 ? strategyCsv.split(',').filter(Boolean).length : 0;
+
+                const ar = currentState.activationLevel >= 4 ? ((inp.agencyReduction as number) || 0) : 0;
+                const agencyAnnual = ar > 0 ? Math.round(ar * 12) : null;
+
+                const totalDollar = (retentionValue || 0) + (agencyAnnual || 0);
+                const hasDollarValue = retentionValue !== null || agencyAnnual !== null;
+
+                return (
+                  <>
+                    <div className="h-px bg-white/10 my-5" />
+                    <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3" data-testid="text-workforce-summary-label">
+                      Workforce Summary
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/60">In-Clinic Time Returned</span>
+                        <span className="text-white font-medium" data-testid="text-workforce-summary-clinic">
+                          {clinicHrs > 0 ? `${clinicHrs.toLocaleString()} hrs/yr` : '—'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/60">Behavioral Changes</span>
+                        <span className="text-white font-medium" data-testid="text-workforce-summary-behaviors">
+                          {currentState.activationLevel >= 2 && behaviorCount > 0 ? `${behaviorCount} documented` : '—'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/60">Retention Value</span>
+                        <span className="text-white font-medium" data-testid="text-workforce-summary-retention">
+                          {retentionValue !== null ? formatDollar(retentionValue) : '—'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/60">Strategic Integrations</span>
+                        <span className="text-white font-medium" data-testid="text-workforce-summary-strategies">
+                          {currentState.activationLevel >= 4 ? `${strategyCount} of 6` : '—'}
+                        </span>
+                      </div>
+                      {hasDollarValue && (
+                        <>
+                          <div className="h-px bg-white/10 my-2" />
+                          <div className="flex items-center justify-between">
+                            <span className="text-white font-semibold">Total Workforce Value</span>
+                            <span className="text-[#EA2C00] font-bold" data-testid="text-workforce-summary-total">
+                              {formatDollar(totalDollar)}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
+
+  ---
+  That's the complete patch. Do not change anything else — no color changes, no layout changes, no other domains. Only the Workforce domain logic, labels, and UI as specified above.
+                                              
