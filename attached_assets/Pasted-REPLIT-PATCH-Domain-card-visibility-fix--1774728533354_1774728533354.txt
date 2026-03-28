@@ -1,0 +1,37 @@
+REPLIT PATCH — Domain card visibility fix                                                                                                                                                                    
+                                                                                       
+  In client/src/pages/switch/ambient/Screen4Domains.tsx, find the unselected/future activation level cards (the ones that are not selected and not yet claimed). There are three changes:                      
+                                              
+  Change 1 — Card container class:                                                                                                                                                                             
+  // Find:                                                                                                
+  className="bg-[#FAF8F6] border border-dashed border-[#D9D3CB] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 hover:bg-white transition-all duration-200"                                           
+                                                                                                                                                                                                               
+  // Replace with:                                                                                                                                                                                             
+  className="bg-white border border-[#D9D3CB] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/50 hover:shadow-sm transition-all duration-200"                                                            
+                                                                                                                                                   
+  Change 2 — Number circle and label text (inside that same card):                                                                                                                                             
+  // Find:                                    
+  <div className="w-8 h-8 rounded-full bg-[#EAE5DF] flex items-center justify-center flex-shrink-0">                                                                                                           
+    <span className="text-sm text-[#AAAAAA]">{card.level}</span>                                                                                                                                               
+  </div>                                                                                                                                                                                                       
+  <div className="flex-1">                                                                                                                                                                                     
+    <p className="text-sm font-medium text-[#AAAAAA]">{card.label}</p>                                                                                                                                         
+    {isFuture && futureDesc && (                                                                                                                                                                               
+      <p className="text-xs text-[#999999] mt-0.5 leading-relaxed">{futureDesc}</p>                                                                                                                            
+    )}                                                                                                                                                                                                         
+  </div>                                                                                                                                                                                                       
+  <span className="text-sm text-[#CCCCCC] ml-auto">→</span>                                               
+                                                           
+  // Replace with:                                                                                                                                                                                             
+  <div className="w-8 h-8 rounded-full bg-[#F0ECE6] flex items-center justify-center flex-shrink-0">
+    <span className="text-sm font-medium text-[#666666]">{card.level}</span>                                                                                                                                   
+  </div>                                                                                                  
+  <div className="flex-1">                                                                                                                                                                                     
+    <p className="text-sm font-medium text-[#444444]">{card.label}</p>
+    {isFuture && futureDesc && (                                                                                                                                                                               
+      <p className="text-xs text-[#777777] mt-0.5 leading-relaxed">{futureDesc}</p>                                                                                                                            
+    )}                                                                             
+  </div>                                                                                                                                                                                                       
+  <span className="text-sm text-[#AAAAAA] ml-auto">→</span>                                               
+                                                           
+  That's it. Two find-and-replace operations, no logic changes.       

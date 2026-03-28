@@ -1740,22 +1740,22 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25, delay: cardIdx * 0.05, ease: "easeOut" }}
-                    className="bg-[#FAF8F6] border border-dashed border-[#D9D3CB] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/40 hover:bg-white transition-all duration-200"
+                    className="bg-white border border-[#D9D3CB] rounded-xl mb-3 cursor-pointer hover:border-[#EA2C00]/50 hover:shadow-sm transition-all duration-200"
                     onClick={() => setActivation(card.level)}
                     data-testid={`activation-card-${activeDomain}-${card.level}`}
                     data-domain-level={`${activeDomain}-${card.level}`}
                   >
                     <div className="flex items-center gap-4 px-5 py-4">
-                      <div className="w-8 h-8 rounded-full bg-[#EAE5DF] flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm text-[#AAAAAA]">{card.level}</span>
+                      <div className="w-8 h-8 rounded-full bg-[#F0ECE6] flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-medium text-[#666666]">{card.level}</span>
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-[#AAAAAA]">{card.label}</p>
+                        <p className="text-sm font-medium text-[#444444]">{card.label}</p>
                         {isFuture && futureDesc && (
-                          <p className="text-xs text-[#999999] mt-0.5 leading-relaxed">{futureDesc}</p>
+                          <p className="text-xs text-[#777777] mt-0.5 leading-relaxed">{futureDesc}</p>
                         )}
                       </div>
-                      <span className="text-sm text-[#CCCCCC] ml-auto">→</span>
+                      <span className="text-sm text-[#AAAAAA] ml-auto">→</span>
                     </div>
                   </motion.div>
                 );
