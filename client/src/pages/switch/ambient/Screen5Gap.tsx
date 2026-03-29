@@ -175,10 +175,10 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             const codingGain = domainInputs.codingGain || 0;
             lowEstimate = Math.round(codingGain * 0.85);
             highEstimate = Math.round(codingGain * 1.15);
-            narrative = `Revenue impact is confirmed and validated. The next level integrates CDI workflows and denial management into a unified reimbursement optimization program.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} in additional reimbursement from integrated CDI and denial management.`;
+            narrative = `Revenue impact is validated and tracked. The next level integrates CDI workflows and denial management into a unified reimbursement optimization program.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} in additional reimbursement from integrated CDI and denial management.`;
             formula = `Validated coding gain: $${codingGain.toLocaleString()} (±15% range)`;
           } else {
-            narrative = 'Your revenue domain is at full maturity. Documentation-driven coding, CDI, and denial management are integrated and generating confirmed value.';
+            narrative = 'Your revenue domain is at full maturity. Documentation-driven coding, CDI, and denial management are integrated and generating measurable value.';
           }
         } else if (domain === 'workforce') {
           if (level === 1) {
@@ -199,10 +199,10 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             const retentionValue = domainInputs.retentionValue || 0;
             lowEstimate = Math.round(retentionValue * 0.9);
             highEstimate = Math.round(retentionValue * 1.1);
-            narrative = `Workforce ROI is confirmed and tracked. The next level integrates workforce planning — using the data to inform hiring, scheduling, and load balancing decisions.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} from workforce planning optimization on top of confirmed retention value.`;
+            narrative = `Workforce ROI is validated and tracked. The next level integrates workforce planning — using the data to inform hiring, scheduling, and load balancing decisions.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} from workforce planning optimization on top of validated retention value.`;
             formula = `Validated retention value: $${retentionValue.toLocaleString()} (±10% range)`;
           } else {
-            narrative = 'Your workforce domain is at full maturity. Provider satisfaction, retention, and workforce planning are integrated and generating confirmed value.';
+            narrative = 'Your workforce domain is at full maturity. Provider satisfaction, retention, and workforce planning are integrated and generating measurable value.';
           }
         } else if (domain === 'risk') {
           if (level === 1) {
@@ -216,7 +216,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             const calculated = Math.round(annualEncounters * complianceRisk * 500);
             lowEstimate = Math.round(calculated * 0.8);
             highEstimate = calculated;
-            narrative = `Quality monitoring is in place. The next step is connecting that monitoring to payer contracts and compliance programs.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in confirmed quality and compliance value once connected to payer programs.`;
+            narrative = `Quality monitoring is in place. The next step is connecting that monitoring to payer contracts and compliance programs.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in quality and compliance value once connected to payer programs.`;
             formula = `${annualEncounters.toLocaleString()} encounters × ${Math.round(complianceRisk * 100)}% risk rate × $500 avg impact = ${formatDollarFull(calculated)}`;
           } else if (level === 3) {
             const qualityValue = domainInputs.qualityValue || 0;
@@ -225,7 +225,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             narrative = `Quality infrastructure is built and connected to payer programs. The next level integrates population health management and value-based care metrics.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} from value-based care program integration.`;
             formula = `Validated quality value: $${qualityValue.toLocaleString()} (range ±10–20%)`;
           } else {
-            narrative = 'Your quality domain is at full maturity. Documentation quality, compliance programs, and value-based care metrics are integrated and generating confirmed value.';
+            narrative = 'Your quality domain is at full maturity. Documentation quality, compliance programs, and value-based care metrics are integrated and generating measurable value.';
           }
         }
 
@@ -363,16 +363,16 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
     const uStr = join(uNames);
 
     if (!tenure || tenure === '0-6' || tenure === '6-12') {
-      return `${mStr} ${mVerb} generating confirmed, calculable value. ${uStr} ${uVerb} been formally measured yet. The ranges below reflect what organizations your size typically find when they first analyze those domains — not projections, but what gets found when you look.`;
+      return `${mStr} ${mVerb} generating measurable, calculable value. ${uStr} ${uVerb} been formally measured yet. The ranges below reflect what organizations your size typically find when they first analyze those domains — not projections, but what gets found when you look.`;
     }
     if (tenure === '12-24') {
-      return `${mStr} ${mVerb} generating confirmed, calculable value. ${uStr} ${uVerb} been formally measured yet — and at 1–2 years in deployment, the question isn't whether that value exists. It's how long it's been there.`;
+      return `${mStr} ${mVerb} generating measurable, calculable value. ${uStr} ${uVerb} been formally measured yet — and at 1–2 years in deployment, the question isn't whether that value exists. It's how long it's been there.`;
     }
     if (tenure === '24+') {
-      return `${mStr} ${mVerb} generating confirmed value. ${uStr} ${uVerb} been measured — and at 2+ years, that value has been accumulating without formal measurement. The ranges below are benchmarks. At your tenure, the more useful question is: what has the value of acting now become?`;
+      return `${mStr} ${mVerb} generating measurable value. ${uStr} ${uVerb} been measured — and at 2+ years, that value has been accumulating without formal measurement. The ranges below are benchmarks. At your tenure, the more useful question is: what has the value of acting now become?`;
     }
 
-    return `Your score reflects what your organization has chosen to analyze. ${mStr} ${mVerb} generating confirmed, calculable value. ${uStr} ${uVerb} been formally measured yet. The range sitting in those domains — based on what organizations your size typically find — is significant.`;
+    return `Your score reflects what your organization has chosen to analyze. ${mStr} ${mVerb} generating measurable, calculable value. ${uStr} ${uVerb} been formally measured yet. The range sitting in those domains — based on what organizations your size typically find — is significant.`;
   }, [measuredDomainsList, unmeasuredDomainsList, inputs.deploymentTenure, providers]);
 
   const topDomain = useMemo(() => {
@@ -429,47 +429,26 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         : low ? `$${low.toLocaleString()} est.` : null;
 
       if (d === 'capacity') {
-        if (level >= 2 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        if (level >= 2 && hasValue) result[d] = { text: `${formatDollar(gap)} modeled · per year`, isConfirmed: true, isSignal: false };
         else if (level === 2) result[d] = { text: 'Time savings measured · access revenue not yet modeled', isConfirmed: false, isSignal: false };
         else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
       } else if (d === 'revenue') {
-        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
-        else if (level === 2 && hasValue) result[d] = { text: `${formatDollar(gap)}/yr signal · not yet confirmed in billing`, isConfirmed: false, isSignal: true };
-        else if (level === 2) result[d] = { text: 'Coding signals observed · not yet confirmed in billing', isConfirmed: false, isSignal: true };
+        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} modeled · per year`, isConfirmed: true, isSignal: false };
+        else if (level === 2 && hasValue) result[d] = { text: `${formatDollar(gap)}/yr signal · not yet validated in billing`, isConfirmed: false, isSignal: true };
+        else if (level === 2) result[d] = { text: 'Coding signals observed · not yet validated in billing', isConfirmed: false, isSignal: true };
         else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
       } else if (d === 'workforce') {
-        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} modeled · per year`, isConfirmed: true, isSignal: false };
         else if (level === 2) result[d] = { text: 'Satisfaction data present · retention value not yet modeled', isConfirmed: false, isSignal: false };
         else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
       } else {
-        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} confirmed · per year`, isConfirmed: true, isSignal: false };
+        if (level >= 3 && hasValue) result[d] = { text: `${formatDollar(gap)} modeled · per year`, isConfirmed: true, isSignal: false };
         else if (level === 2) result[d] = { text: qualityAttrCount > 0 ? `${qualityAttrCount} of 5 quality dimensions tracked · financial connection not yet built` : 'Quality monitoring active · financial connection not yet built', isConfirmed: false, isSignal: false };
         else result[d] = { text: range ? `Not yet in the picture · ${range}` : 'Not yet measured', isConfirmed: false, isSignal: false };
       }
     }
     return result;
   }, [domainLevels, domainHasValue, domainGaps, nextLevelContents, qualityAttrCount]);
-
-  const bradsRead = useMemo(() => {
-    const tenure = inputs.deploymentTenure || '';
-    const measuredCount = measuredDomainsList.length;
-    const unmeasuredCount = unmeasuredDomainsList.length;
-
-    if (unmeasuredCount === 0) {
-      return "You're measuring across all four domains. The next chapter is about deepening each one — not finding new ones. The organizations that move fastest from here are the ones that embed measurement into the regular operating rhythm.";
-    }
-    if (measuredCount === 0) {
-      if (tenure === '24+') {
-        return `Two or more years live, and none of the four domains have been formally measured. The value has been there. The question — the one worth asking in this room — is how much longer it waits.`;
-      }
-      return `The deployment is live. The measurement program hasn't started yet. That's the most common profile at this stage — and it's exactly where the strategic opportunity sits. The organizations that define this internally are the ones that own the story.`;
-    }
-    if (tenure === '24+' && unmeasuredCount > 0) {
-      const uNames = unmeasuredDomainsList.map(d => DOMAIN_LABELS[d]).join(' and ');
-      return `At 2+ years, ${uNames} ${unmeasuredCount === 1 ? 'has' : 'have'} been generating value without being counted. The question is whether your organization is going to own that story — or whether it stays in the background.`;
-    }
-    return `The measurement foundation is in place. ${unmeasuredDomainsList.map(d => DOMAIN_LABELS[d]).join(' and ')} ${unmeasuredDomainsList.length === 1 ? 'is' : 'are'} the next chapter. The question isn't whether the value is there — it's whether this quarter is when the organization decides to measure it.`;
-  }, [measuredDomainsList, unmeasuredDomainsList, inputs.deploymentTenure]);
 
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
@@ -506,17 +485,42 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             <div className="bg-[#1A1A1A] rounded-xl p-6 sm:p-8">
               {totalMeasured > 0 ? (
                 <>
-                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annual Value</p>
+                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Modeled Annual Value</p>
                   <p className="font-bold text-[56px] sm:text-[72px] leading-none text-[#EA2C00] tracking-tight mb-2" data-testid="value-measured">
                     <CountUpNumber target={totalMeasured} />
                   </p>
                   <p className="text-sm text-white/40 mb-4">
-                    Confirmed across {DOMAIN_ORDER.filter(d => domainHasValue[d] && !(d === 'revenue' && domainLevels[d] === 2)).length} of 4 domains · per year
+                    Modeled across {DOMAIN_ORDER.filter(d => domainHasValue[d] && !(d === 'revenue' && domainLevels[d] === 2)).length} of 4 domains · per year
                   </p>
+
+                  {(() => {
+                    const breakdown = [
+                      { label: 'Capacity', value: domainHasValue.capacity ? domainGaps.capacity : 0 },
+                      { label: 'Revenue', value: (domainHasValue.revenue && domainLevels.revenue !== 2) ? domainGaps.revenue : 0 },
+                      { label: 'Workforce', value: domainHasValue.workforce ? domainGaps.workforce : 0 },
+                      { label: 'Quality', value: domainHasValue.risk ? domainGaps.risk : 0 },
+                    ].filter(d => d.value > 0);
+                    return breakdown.length > 0 ? (
+                      <div className="mt-4 pt-4 border-t border-white/10 space-y-1.5">
+                        {breakdown.map(({ label, value }) => (
+                          <div key={label} className="flex items-center justify-between">
+                            <span className="text-[13px] text-white/50 uppercase tracking-wide">{label}</span>
+                            <span className="text-[13px] text-white/70 font-medium">{formatDollar(value)}</span>
+                          </div>
+                        ))}
+                        {breakdown.length > 1 && (
+                          <div className="flex items-center justify-between pt-1.5 border-t border-white/10">
+                            <span className="text-[13px] text-white/50 uppercase tracking-wide">Total</span>
+                            <span className="text-[13px] text-white font-semibold">{formatDollar(totalMeasured)}</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : null;
+                  })()}
                 </>
               ) : (
                 <>
-                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Confirmed Annual Value</p>
+                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Modeled Annual Value</p>
                   <p className="font-bold text-[56px] leading-none text-white/15 tracking-tight mb-2" data-testid="value-measured">—</p>
                   <p className="text-sm text-white/30 mb-4">No domains formally measured yet</p>
                 </>
@@ -538,7 +542,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                 <div className="mt-4 pt-4 border-t border-white/[0.08] flex items-start justify-between gap-4">
                   <div>
                     <p className="text-[10px] font-semibold text-[#F59E0B]/70 uppercase tracking-[1.5px]">Revenue Signal</p>
-                    <p className="text-xs text-white/30 mt-0.5">Signals observed · not yet confirmed in billing data · Next: retrospective coding audit</p>
+                    <p className="text-xs text-white/30 mt-0.5">Signals observed · not yet validated in billing data · Next: retrospective coding audit</p>
                   </div>
                   <span className="text-sm font-bold text-[#F59E0B]/80 flex-shrink-0">~{formatDollar(revL2Value)}/yr</span>
                 </div>
@@ -616,16 +620,6 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                             </p>
                           </div>
                         )}
-                        {content.formula && (
-                          <div className="bg-white/50 rounded-md p-3 mt-3">
-                            <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-2">
-                              {domainLevels[domain] === 1 ? 'Benchmark Range Formula' : 'How We Got Here'}
-                            </p>
-                            <pre className="text-xs text-[#888888] font-mono whitespace-pre-wrap leading-relaxed" data-testid={`formula-${domain}`}>
-                              {content.formula}
-                            </pre>
-                          </div>
-                        )}
                         {domain === 'capacity' && domainLevels.capacity >= 3 && capacityConfidence === 'aspirational' && (
                           <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60 flex gap-2">
                             <span className="text-[#888888] text-xs flex-shrink-0">⚠</span>
@@ -657,7 +651,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                   {formatDollar(gap36mo)} in value at stake over 36 months.
                 </p>
                 <p className="text-xs text-[#888888] mb-5">
-                  What closing the measurement gap is worth at your scale.
+                  Your modeled {formatDollar(totalMeasured > 0 ? totalMeasured : strategicAnnual)}/year, compounding as measurement matures over 36 months.
                 </p>
                 <div className="h-[240px] sm:h-[300px] md:h-[360px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -702,22 +696,6 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             </motion.div>
           )}
 
-          <motion.div
-            className="mb-10"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-          >
-            <div className="border-l-4 border-[#EA2C00] pl-5 py-1" data-testid="brads-read">
-              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[2px] mb-3">
-                Brad's Read
-              </p>
-              <p className="text-sm text-[#1A1A1A] leading-relaxed font-medium">
-                {bradsRead}
-              </p>
-            </div>
-          </motion.div>
-
           <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
             <p className="text-xs text-[#AAAAAA] leading-relaxed">
               Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Capacity: based on MGMA Physician Compensation data and published literature on time-to-access in ambulatory care. Revenue: based on published studies reporting 2–7% revenue improvement from documentation specificity; AMA and MGMA coding benchmarks. Workforce: based on AMGA Physician Retention Survey; replacement cost literature range $250K–$500K per physician. Quality: based on CMS quality penalty exposure data and CDI program ROI literature. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
@@ -759,7 +737,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
 
             <div className="h-px bg-white/[0.08] mb-6" />
 
-            <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-3">Confirmed Today</p>
+            <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[2px] mb-3">Modeled Value</p>
             {totalMeasured > 0 ? (
               <p className="font-bold text-[52px] leading-none text-[#EA2C00] tracking-tight mb-1" data-testid="panel-confirmed-value">
                 {formatDollar(totalMeasured)}
@@ -791,7 +769,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                 <div className="h-px bg-white/[0.08] mb-5" />
                 <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-2">Full Picture</p>
                 <p className="font-bold text-lg text-white/35 leading-none tracking-tight mb-1">{formatDollar(strategicAnnual)}</p>
-                <p className="text-[11px] text-white/20 mb-5">confirmed + benchmark low</p>
+                <p className="text-[11px] text-white/20 mb-5">modeled + benchmark low</p>
               </>
             )}
 
@@ -805,7 +783,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
 
             <div className="h-px bg-white/[0.08] mt-6 mb-5" />
             <p className="text-[11px] text-white/25 leading-relaxed italic">
-              The gap between confirmed and potential is the conversation ahead.
+              The gap between modeled and potential is the conversation ahead.
             </p>
 
           </div>
