@@ -1,0 +1,38 @@
+Addendum Prompt 3 — Outpatient                                                                                                                                                                               
+                                                                                                                                                                                                               
+  In client/src/pages/methodology/MethodologyOutpatient.tsx, find the callout box that replaced the HCC Capture mechanism card (the one saying "HCC / Risk Adjustment — Why We Don't Model It Here"). Replace  
+  that callout with a full mechanism card so it's treated consistently with the other drivers — because HCC IS calculated in the Explore model.                                                              
+                                                                                                                                                                                                               
+  Replace the HCC callout with a mechanism card titled "HCC / Risk Adjustment"
+                                                                                                                                                                                                               
+  Inside the card:                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Mechanism paragraph:                                                                                                                                                                                       
+  In Medicare Advantage, documentation specificity directly affects the Hierarchical Condition Category codes assigned to patients. HCC codes determine the Risk Adjustment Factor (RAF) score, which          
+  determines the capitated payment rate. When ambient documentation captures chronic conditions, comorbidities, and clinical complexity with greater specificity, RAF scores more accurately reflect the actual
+   burden of care — and payments follow.  
+
+  Formula block:                                                                                                                                                                                               
+  MA patients × HCC gap rate × recapture improvement % × RAF point value × per-member-per-year payment = HCC value
+                                                                                                                                                                                                               
+  Key assumptions list:                                                                                                                                                                                      
+  - HCC gap rate: 20–30% — industry research shows 25–40% of chronic conditions go under-documented in a typical practice
+  - Recapture improvement: 10–20% of existing gaps — conservative; depends on provider adoption and coding workflows     
+  - RAF point value: varies by CMS payment model; typically $800–$1,500 per HCC point per member per year           
+  - Per-member-per-year payment: your MA contract rate — this number lives in your payer contracts, not in any benchmark                                                                                       
+                                                                                                                                                                                                               
+  "Why this requires your data" callout (orange left border):                                                                                                                                                  
+  HCC value is real but it requires three numbers from your organization: your MA patient panel size, your current RAF score, and your payer's per-member-per-year rate. Without those, any estimate is a      
+  benchmark range, not a calculation. If you have those numbers, this is often the largest single value driver in the outpatient model.                                                                        
+                                                                                                                                                                                                               
+  Add a note at the bottom:                                                                                                                                                                                    
+  If your practice has less than 20% Medicare Advantage patients, this driver is likely immaterial. If MA represents 30%+ of your panel, it warrants a dedicated conversation with your revenue cycle team     
+  before the next contract negotiation.                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Update the "What Goes Into the Number" table                                                                                                                                                               
+                                                                                                                                                                                                               
+  Change the HCC row from:                                                                                                                                                                                     
+  HCC / risk adjustment | Signal only — not calculated | Requires MA population + RAF data                                                                                                                     
+                                                                                                                                                                                                               
+  To:                                                                                                                                                                                                        
+  HCC / risk adjustment | ✅ Yes (if MA data provided) | MA patients × gap rate × recapture % × RAF point value

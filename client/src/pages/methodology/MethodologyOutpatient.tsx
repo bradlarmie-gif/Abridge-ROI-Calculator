@@ -353,16 +353,49 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                   </div>
                 </MechanismCard>
 
-                <div className="bg-[#FFF8F0] border border-[#F59E0B]/30 rounded-lg p-5 mb-4">
-                  <h4 className="font-semibold text-black text-sm uppercase tracking-wide mb-2">HCC / Risk Adjustment — Why We Don't Model It Here</h4>
-                  <p className="text-sm text-[#666666] leading-relaxed">
-                    HCC recapture and RAF improvement are real value drivers for practices with significant Medicare 
-                    Advantage populations. We don't include them in the calculator because the formula requires MA patient 
-                    counts, baseline gap rates, and RAF point values that vary substantially by payer and market. Bring your 
-                    revenue cycle team to the table with that data — when you have it, it often produces the largest 
-                    single number in the model.
-                  </p>
-                </div>
+                <MechanismCard title="HCC / Risk Adjustment">
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <p className="text-[#888888] mb-1">The mechanism:</p>
+                      <p className="text-black">
+                        In Medicare Advantage, documentation specificity directly affects the Hierarchical Condition Category 
+                        codes assigned to patients. HCC codes determine the Risk Adjustment Factor (RAF) score, which 
+                        determines the capitated payment rate. When ambient documentation captures chronic conditions, 
+                        comorbidities, and clinical complexity with greater specificity, RAF scores more accurately reflect 
+                        the actual burden of care — and payments follow.
+                      </p>
+                    </div>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4">
+                      <p className="text-[#888888] mb-1">The calculation:</p>
+                      <p className="font-mono text-black text-sm">
+                        MA patients × HCC gap rate × recapture improvement % × RAF point value × per-member-per-year payment = HCC value
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[#888888] mb-1">The key assumptions:</p>
+                      <ul className="text-[#666666] space-y-1 ml-4 list-disc">
+                        <li>HCC gap rate: 20–30% — industry research shows 25–40% of chronic conditions go under-documented in a typical practice</li>
+                        <li>Recapture improvement: 10–20% of existing gaps — conservative; depends on provider adoption and coding workflows</li>
+                        <li>RAF point value: varies by CMS payment model; typically $800–$1,500 per HCC point per member per year</li>
+                        <li>Per-member-per-year payment: your MA contract rate — this number lives in your payer contracts, not in any benchmark</li>
+                      </ul>
+                    </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this requires your data:</p>
+                      <p className="text-[#666666]">
+                        HCC value is real but it requires three numbers from your organization: your MA patient panel size, 
+                        your current RAF score, and your payer's per-member-per-year rate. Without those, any estimate is a 
+                        benchmark range, not a calculation. If you have those numbers, this is often the largest single value 
+                        driver in the outpatient model.
+                      </p>
+                    </div>
+                    <p className="text-[#666666] italic">
+                      If your practice has less than 20% Medicare Advantage patients, this driver is likely immaterial. If MA 
+                      represents 30%+ of your panel, it warrants a dedicated conversation with your revenue cycle team 
+                      before the next contract negotiation.
+                    </p>
+                  </div>
+                </MechanismCard>
 
                 <MechanismCard title="Denial Prevention">
                   <div className="space-y-4 text-sm">
@@ -432,8 +465,8 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                     </tr>
                     <tr className="border-b border-[#E5E5E5]">
                       <td className="py-3">HCC / risk adjustment</td>
-                      <td className="py-3 text-[#F59E0B] font-medium">Signal only — not calculated</td>
-                      <td className="py-3">Requires MA population + RAF data</td>
+                      <td className="py-3">✅ Yes (if MA data provided)</td>
+                      <td className="py-3">MA patients × gap rate × recapture % × RAF point value</td>
                     </tr>
                     <tr className="border-b border-[#E5E5E5]">
                       <td className="py-3">Physician retention</td>
