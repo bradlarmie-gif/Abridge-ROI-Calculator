@@ -64,7 +64,6 @@ export interface DomainFeedback {
   costOfWaiting?: string;
   nextLevelTeaser?: string;
   warningBanner?: string;
-  estimateRange?: { low: number; high: number } | null;
 }
 
 export const SCORE_MAP: Record<ActivationLevel, number> = { 1: 4, 2: 12, 3: 19, 4: 25 };
@@ -305,21 +304,12 @@ export function computeRevenueFeedback(
     const { checked } = parseCheckedItems(inputs.observedMovement as string, REVENUE_SIGNALS);
     const count = checked.length;
     const checkedLabels = checked.map(shortLabel).join(', ');
-    const directionalEstimate = (inputs.directionalEstimate as string) || '';
-
-    const ESTIMATE_RANGES: Record<string, { low: number; high: number }> = {
-      under_1: { low: 0.002, high: 0.01 },
-      '1_3':   { low: 0.01,  high: 0.03 },
-      '3_5':   { low: 0.03,  high: 0.05 },
-      '5_plus':{ low: 0.05,  high: 0.07 },
-    };
 
     if (count === 0) {
       return {
         label: 'Revenue Signals Observed',
         value: null,
         hasValue: false,
-        estimateRange: null,
         headlineMetric: 'Select the revenue signals your organization has observed.',
         context: 'Check the areas where your team has seen movement since ambient documentation deployment.',
         formula: '',
@@ -328,23 +318,12 @@ export function computeRevenueFeedback(
       };
     }
 
-    const annualEncounterRevenue = documentedEncounters * revenuePerVisit;
-    const rangePct = ESTIMATE_RANGES[directionalEstimate];
-    const estimateRange = rangePct
-      ? { low: Math.round(annualEncounterRevenue * rangePct.low), high: Math.round(annualEncounterRevenue * rangePct.high) }
-      : null;
-
-    const rangeText = estimateRange
-      ? `\n\nDirectional estimate: $${estimateRange.low.toLocaleString()}–$${estimateRange.high.toLocaleString()} est.\nApplied to ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} avg revenue.`
-      : '';
-
     return {
       label: 'Revenue Signals Observed',
       value: null,
       hasValue: false,
-      estimateRange,
-      headlineMetric: `${count} area${count !== 1 ? 's' : ''} showing movement`,
-      context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nMovement is visible. A before/after billing analysis (Level 3) would quantify it.${rangeText}`,
+      headlineMetric: `${count} of 6 revenue signals observed`,
+      context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nThese are leading indicators — a retrospective coding audit is the typical next step to produce a confirmed number.`,
       formula: '',
       footnote: '',
       nextLevelTeaser: 'Level 3: Run a retrospective coding audit. Organizations that do this typically confirm 2–7% revenue improvement from documentation specificity.',

@@ -504,7 +504,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
   const REVENUE_METRIC_BENCHMARKS: Record<string, string> = {
     wrvu: 'Abridge benchmark: 0.05\u20130.15 wRVU per encounter. Based on aggregated deployment experience.',
     collections: 'Organizations at this level have reported $3\u2013$10 increase per encounter. Based on aggregated deployment experience.',
-    revenue_pct: 'Organizations at this level have reported 2\u20137% improvement. Based on aggregated deployment experience.',
     denial_rate: 'Organizations at this level have reported 5\u201315% reduction in documentation-related denials. Based on aggregated deployment experience.',
   };
 
@@ -559,7 +558,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         'CDI query volume decreasing',
         'Coder productivity improving',
       ];
-      const directionalEstimate = currentState.inputs.directionalEstimate as string || '';
       return (
         <div className="flex flex-col gap-5">
           <div>
@@ -593,40 +591,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              Estimated improvement in documentation specificity and coding accuracy:
-            </label>
-            <div className="flex flex-col gap-2">
-              {[
-                { id: 'under_1', label: 'Under 1% of encounter revenue' },
-                { id: '1_3', label: '1–3% of encounter revenue' },
-                { id: '3_5', label: '3–5% of encounter revenue' },
-                { id: '5_plus', label: '5%+ of encounter revenue' },
-                { id: 'not_sure', label: 'Not sure — we see movement but haven\'t estimated' },
-              ].map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setDomainInput('directionalEstimate', opt.id)}
-                  className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                    directionalEstimate === opt.id
-                      ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                      : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                  }`}
-                  data-testid={`radio-directional-estimate-${opt.id}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${directionalEstimate === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'}`} />
-                    <span>{opt.label}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-[#888888] italic mt-2 leading-relaxed">
-              Applied to your documented encounters as a directional benchmark range. Requires billing validation to confirm.
-            </p>
-          </div>
         </div>
       );
     }
@@ -1664,21 +1628,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
   };
 
   const renderImpactValue = (fb: DomainFeedback) => {
-    if (fb.estimateRange && activeDomain === 'revenue') {
-      return (
-        <div className="mb-4" data-testid="text-feedback-value">
-          <p className="font-bold text-xl sm:text-2xl text-[#EA2C00] leading-[1.1]">
-            {fb.headlineMetric}
-          </p>
-          <p className="font-bold text-lg sm:text-xl text-[#EA2C00] leading-[1.2] mt-2">
-            ${fb.estimateRange.low.toLocaleString()}–${fb.estimateRange.high.toLocaleString()} est.
-          </p>
-          <p className="text-xs text-white/40 italic mt-1.5 leading-relaxed">
-            Directional signal — not yet validated against billing data
-          </p>
-        </div>
-      );
-    }
     if (fb.headlineMetric) {
       return (
         <p className="font-bold text-xl sm:text-2xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
@@ -1777,11 +1726,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
           <span className="text-[12px] font-medium text-white/50 uppercase tracking-wider">{DOMAIN_LABELS[activeDomain]}</span>
           <div className="w-px h-4 bg-white/10" />
           <span className="text-sm font-bold text-white">
-            {feedback ? (
-              feedback.estimateRange && activeDomain === 'revenue'
-                ? `$${feedback.estimateRange.low.toLocaleString()}–$${feedback.estimateRange.high.toLocaleString()}`
-                : feedback.hasValue && feedback.value ? formatDollar(feedback.value) : '—'
-            ) : '—'}
+            {feedback ? (feedback.hasValue && feedback.value ? formatDollar(feedback.value) : '—') : '—'}
           </span>
         </div>
         <span className="text-[12px] text-white/40 uppercase tracking-wider">
@@ -2243,21 +2188,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               const observedCsv = (inp.observedMovement as string) || '';
               const observedCount = observedCsv.split(',').filter(Boolean).length;
 
-              const directionalEst = inp.directionalEstimate as string | undefined;
-              const ESTIMATE_RANGES: Record<string, { lowPct: number; highPct: number }> = {
-                'under_1': { lowPct: 0.005, highPct: 0.01 },
-                '1_3': { lowPct: 0.01, highPct: 0.03 },
-                '3_5': { lowPct: 0.03, highPct: 0.05 },
-                '5_plus': { lowPct: 0.05, highPct: 0.07 },
-              };
-              let directionalRange: string | null = null;
-              if (directionalEst && directionalEst !== 'not_sure' && ESTIMATE_RANGES[directionalEst]) {
-                const r = ESTIMATE_RANGES[directionalEst];
-                const low = Math.round(documentedEncounters * revenuePerVisit * r.lowPct);
-                const high = Math.round(documentedEncounters * revenuePerVisit * r.highPct);
-                directionalRange = `${formatDollar(low)}–${formatDollar(high)}`;
-              }
-
               const metricType = inp.revenueMetricType as string | undefined;
               let measuredImpact: number | null = null;
               if (metricType === 'wrvu') {
@@ -2266,14 +2196,11 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               } else if (metricType === 'collections') {
                 const d = (inp.measuredCollectionsDelta as number) || 0;
                 if (d > 0) measuredImpact = Math.round(d * documentedEncounters);
-              } else if (metricType === 'revenue_pct') {
-                const d = (inp.measuredRevenuePct as number) || 0;
-                if (d > 0) measuredImpact = Math.round(documentedEncounters * revenuePerVisit * (d / 100));
               }
 
               const attributedRevenue = (inp.recognizedRevenue as number) || 0;
 
-              const totalDollar = attributedRevenue > 0 ? attributedRevenue : measuredImpact !== null ? measuredImpact : (directionalRange ? Math.round(documentedEncounters * revenuePerVisit * (ESTIMATE_RANGES[directionalEst!]?.highPct || 0)) : null);
+              const totalDollar = attributedRevenue > 0 ? attributedRevenue : measuredImpact !== null ? measuredImpact : null;
 
               return (
                 <>
@@ -2285,13 +2212,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                     <div className="flex items-center justify-between">
                       <span className="text-white/60">Revenue Signals</span>
                       <span className="text-white font-medium" data-testid="text-revenue-summary-signals">
-                        {observedCount > 0 ? `${observedCount} area${observedCount !== 1 ? 's' : ''}` : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Directional Estimate</span>
-                      <span className="text-white font-medium" data-testid="text-revenue-summary-directional">
-                        {directionalRange || '—'}
+                        {observedCount > 0 ? `${observedCount} signal${observedCount !== 1 ? 's' : ''} observed` : '—'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

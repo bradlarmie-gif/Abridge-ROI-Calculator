@@ -115,16 +115,11 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
     if (level === 2) {
       const areas = resolveChecklist(raw.observedMovement as string, OBSERVATION_AREAS_LABELS);
       if (areas.length) out['Areas showing movement'] = areas.join(', ');
-      if (raw.directionalEstimate) {
-        const estLabels: Record<string, string> = { under_1: 'Under 1%', '1_3': '1–3%', '3_5': '3–5%', '5_plus': '5%+', not_sure: 'Not sure' };
-        out['Directional estimate'] = estLabels[raw.directionalEstimate as string] || String(raw.directionalEstimate);
-      }
     }
     if (level === 3) {
       if (raw.revenueMetricType) out['Metric measured'] = String(raw.revenueMetricType);
       if (raw.measuredWrvuDelta) out['Measured wRVU delta'] = `+${raw.measuredWrvuDelta}`;
       if (raw.measuredCollectionsDelta) out['Collections delta'] = fmtDollar(Number(raw.measuredCollectionsDelta));
-      if (raw.measuredRevenuePct) out['Revenue improvement'] = `${raw.measuredRevenuePct}%`;
       if (raw.measuredDenialReduction) out['Denial rate reduction'] = `${raw.measuredDenialReduction}%`;
     }
     if (level === 4) {
