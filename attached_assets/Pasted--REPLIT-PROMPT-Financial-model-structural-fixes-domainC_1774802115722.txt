@@ -1,0 +1,78 @@
+ REPLIT PROMPT — Financial model structural fixes (domainCalculations.ts + Screen4Domains.tsx)                                                                                                                
+                                                                                                          
+  ---                                     
+  Fix 1 — Capacity + Revenue double-count warning
+                                                                                                                                                                                                               
+  In Screen4Domains.tsx, find the staircase summary section where Capacity and Revenue domain values are both displayed. Add this conditional:
+                                                                                                                                                                                                               
+  {capacityHasValue && capacityLevel >= 3 && revenueHasValue && revenueLevel >= 3 && (                                                                                                                         
+    <div className="flex gap-2 bg-[#FFFBEB] border border-[#F59E0B]/30 rounded-lg p-3 mt-2 mb-3">
+      <span className="text-[#92400E] text-sm flex-shrink-0">⚠</span>                                                                                                                                          
+      <p className="text-xs text-[#92400E] leading-relaxed">                                              
+        Capacity value reflects additional visits from recovered time. Revenue value reflects improved documentation on existing encounters. Confirm with finance that these use separate patient pools.       
+      </p>                                                                                                                                                                                                     
+    </div>                                                                                                                                                                                                     
+  )}                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Use whatever variable names actually exist for the domain level and hasValue states.                                                                                                                         
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Fix 2 — Surface the $33 wRVU conversion factor default                                                                                                                                                       
+                                                        
+  In Screen4Domains.tsx, find the Revenue L3 wRVU path. Below the measuredWrvuDelta input, add:                                                                                                                
+                                                                                                          
+  <p className="text-xs text-[#888888] mt-1 italic">
+    Using CMS conversion factor of $33/wRVU.{' '}
+    {inputs.conversionFactor && inputs.conversionFactor !== 33                                                                                                                                                 
+      ? `Updated to $${inputs.conversionFactor}.`
+      : 'Update in baseline settings if your contracts differ.'}                                                                                                                                               
+  </p>                                                                                                    
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Fix 3 — Surface the 11-month assumption                                                                                                                                                                      
+                                                                                                          
+  In Screen4Domains.tsx, find the Capacity L3 section near the additionalPatientsPerMonth input. Add below the formula display or calculation summary:                                                         
+                                                                                                          
+  <p className="text-xs text-[#888888] italic mt-1">                                                                                                                                                           
+    Annual value calculated over 11 clinical months (230 working days).
+  </p>                                                                                                                                                                                                         
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Fix 4 — Quality L4: require a basis for the entered value                                                                                                                                                    
+                                                                                                                                                                                                               
+  In Screen4Domains.tsx, find the Quality/Risk L4 section where strategicValue is entered. Add a required qualifier before the dollar input — a small radio group:                                             
+                                                                                                          
+  <p className="text-xs font-semibold text-[#525252] mb-2">                                                                                                                                                    
+    What is this value primarily based on?
+  </p>                                                                                                                                                                                                         
+  {[                                                                                                      
+    { id: 'quality_penalties', label: 'Quality penalty avoidance (CMS, payer)' },                                                                                                                              
+    { id: 'vbc_performance', label: 'Value-based care contract performance' },                                                                                                                                 
+    { id: 'cdi_savings', label: 'CDI program cost savings' },
+    { id: 'compliance', label: 'Compliance / audit risk reduction' },                                                                                                                                          
+    { id: 'other', label: 'Other (describe in finance review)' },                                                                                                                                              
+  ].map(opt => (                                                                                                                                                                                               
+    <RadioOption                                                                                                                                                                                               
+      key={opt.id}                                                                                                                                                                                             
+      selected={inputs.strategicValueBasis === opt.id}                                                                                                                                                         
+      onSelect={() => setDomainInput('strategicValueBasis', opt.id)}                                      
+      label={opt.label}                                                                                                                                                                                        
+    />                                                                                                    
+  ))}                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  The strategicValue dollar input should only appear once a strategicValueBasis is selected. Add a warning if strategicValueBasis === 'vbc_performance' AND Revenue L4 also has a recognized revenue value:
+                                                                                                                                                                                                               
+  {inputs.strategicValueBasis === 'vbc_performance' && revenueLevel >= 4 && revenueHasValue && (          
+    <p className="text-xs text-[#92400E] italic mt-1">                                                                                                                                                         
+      ⚠ VBC performance may overlap with your Revenue domain value. Confirm these are separate with your finance team.
+    </p>                                                                                                                                                                                                       
+  )}                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification:                                                                                                                                                                                                
+  - When both Capacity L3+ and Revenue L3+ have confirmed values, a yellow callout appears in the summary                                                                                                      
+  - Revenue L3 wRVU path shows the $33 conversion factor label                                            
+  - Capacity L3 shows "11 clinical months" in the calculation display
+  - Quality L4 requires a basis selection before the dollar input appears
+  - VBC basis at Quality L4 triggers an overlap warning if Revenue L4 is also populated
+  - No existing formulas changed         

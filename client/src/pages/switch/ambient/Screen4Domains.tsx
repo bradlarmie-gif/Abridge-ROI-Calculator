@@ -643,6 +643,12 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                   step={0.01}
                 />
                 <BenchmarkContext text="Abridge benchmark: 0.05–0.15 wRVU per encounter" />
+                <p className="text-xs text-[#888888] mt-1 italic">
+                  Using CMS conversion factor of ${(inputs.conversionFactor as number) || 33}/wRVU.{' '}
+                  {inputs.conversionFactor && inputs.conversionFactor !== 33
+                    ? `Updated to $${inputs.conversionFactor}.`
+                    : 'Update in baseline settings if your contracts differ.'}
+                </p>
                 <div className="mt-3">
                   <label className="block text-xs font-medium text-[#1A1A1A] mb-2">Direction</label>
                   <div className="flex gap-2">
@@ -1583,36 +1589,75 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-            Annual strategic value attributed to documentation quality programs (optional)
-          </label>
-          <p className="text-xs text-[#888888] mb-2">
-            This is hard to quantify precisely. If your organization can estimate the combined strategic value of documentation-driven quality, compliance, VBC, and AI initiatives — enter it here. If not, leave blank.
+          <p className="text-xs font-semibold text-[#525252] mb-2">
+            What is this value primarily based on?
           </p>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[#888888]">$</span>
-            <FormattedNumberInput
-              value={(currentState.inputs.strategicValue as number) || 0}
-              onChange={(v) => setDomainInput('strategicValue', Math.max(0, v))}
-              placeholder=""
-              className="w-full h-12 bg-white border-[#E5E7EB]"
-              data-testid="input-strategic-value"
-              disabled={currentState.inputs.noConfirmedStrategicValue === 'true'}
-            />
+          <div className="flex flex-col gap-2 mb-4">
+            {[
+              { id: 'quality_penalties', label: 'Quality penalty avoidance (CMS, payer)' },
+              { id: 'vbc_performance', label: 'Value-based care contract performance' },
+              { id: 'cdi_savings', label: 'CDI program cost savings' },
+              { id: 'compliance', label: 'Compliance / audit risk reduction' },
+              { id: 'other', label: 'Other (describe in finance review)' },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setDomainInput('strategicValueBasis', opt.id)}
+                className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                  (currentState.inputs.strategicValueBasis as string) === opt.id
+                    ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                    : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                }`}
+                data-testid={`radio-strategic-basis-${opt.id}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${
+                    (currentState.inputs.strategicValueBasis as string) === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'
+                  }`} />
+                  <span>{opt.label}</span>
+                </div>
+              </button>
+            ))}
           </div>
-          <div className="flex items-center gap-2.5 mt-3">
-            <Checkbox
-              id="no-confirmed-strategic-value"
-              checked={currentState.inputs.noConfirmedStrategicValue === 'true'}
-              onCheckedChange={(checked) => {
-                setDomainInput('noConfirmedStrategicValue', checked ? 'true' : 'false');
-              }}
-              data-testid="checkbox-no-confirmed-strategic-value"
-            />
-            <label htmlFor="no-confirmed-strategic-value" className="text-sm text-[#525252] cursor-pointer select-none">
-              Don't have a confirmed number yet
-            </label>
-          </div>
+
+          {currentState.inputs.strategicValueBasis && (
+            <>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                Annual strategic value attributed to documentation quality programs
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[#888888]">$</span>
+                <FormattedNumberInput
+                  value={(currentState.inputs.strategicValue as number) || 0}
+                  onChange={(v) => setDomainInput('strategicValue', Math.max(0, v))}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-strategic-value"
+                  disabled={currentState.inputs.noConfirmedStrategicValue === 'true'}
+                />
+              </div>
+              {(currentState.inputs.strategicValueBasis as string) === 'vbc_performance' &&
+                domainStates.revenue.activationLevel !== null && domainStates.revenue.activationLevel >= 4 && (
+                <p className="text-xs text-[#92400E] italic mt-1">
+                  ⚠ VBC performance may overlap with your Revenue domain value. Confirm these are separate with your finance team.
+                </p>
+              )}
+              <div className="flex items-center gap-2.5 mt-3">
+                <Checkbox
+                  id="no-confirmed-strategic-value"
+                  checked={currentState.inputs.noConfirmedStrategicValue === 'true'}
+                  onCheckedChange={(checked) => {
+                    setDomainInput('noConfirmedStrategicValue', checked ? 'true' : 'false');
+                  }}
+                  data-testid="checkbox-no-confirmed-strategic-value"
+                />
+                <label htmlFor="no-confirmed-strategic-value" className="text-sm text-[#525252] cursor-pointer select-none">
+                  Don't have a confirmed number yet
+                </label>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
@@ -2106,6 +2151,32 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                 );
               })}
             </div>
+
+            {(() => {
+              const capState = domainStates.capacity;
+              const revState = domainStates.revenue;
+              const capLevel = capState.activationLevel || 0;
+              const revLevel = revState.activationLevel || 0;
+              const capPts = capLevel >= 3 ? ((capState.inputs.additionalPatientsPerMonth as number) || 0) : 0;
+              const revMetric = revLevel >= 3 ? (revState.inputs.revenueMetricType as string) : null;
+              const capHasValue = capPts > 0;
+              const revHasValue = revMetric !== null && (
+                (revMetric === 'wrvu' && ((revState.inputs.measuredWrvuDelta as number) || 0) > 0) ||
+                (revMetric === 'collections' && ((revState.inputs.measuredCollectionsDelta as number) || 0) > 0) ||
+                (revMetric === 'denial_rate' && ((revState.inputs.measuredDenialReduction as number) || 0) > 0)
+              );
+              if (capHasValue && revHasValue) {
+                return (
+                  <div className="flex gap-2 bg-[#FFFBEB] border border-[#F59E0B]/30 rounded-lg p-3 mt-2 mb-3">
+                    <span className="text-[#92400E] text-sm flex-shrink-0">⚠</span>
+                    <p className="text-xs text-[#92400E] leading-relaxed">
+                      Capacity value reflects additional visits from recovered time. Revenue value reflects improved documentation on existing encounters. Confirm with finance that these use separate patient pools.
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
             {activeDomain === 'workforce' && currentState.activationLevel && (() => {
               const inp = currentState.inputs;
