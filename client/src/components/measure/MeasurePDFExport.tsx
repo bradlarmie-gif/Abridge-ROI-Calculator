@@ -583,8 +583,8 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
       <Page size="LETTER" style={s.page} wrap={false}>
         <View style={s.wrap}>
           <Conf org={orgName} />
-          <Text style={s.eyebrow}>Your Partnership</Text>
-          <Text style={s.headline}>Abridge at {orgName}</Text>
+          <Text style={s.eyebrow}>Your Deployment</Text>
+          <Text style={s.headline}>{orgName} {"\u2014"} {months} Months In</Text>
           <Text style={s.subline}>{settingLabel} \u00B7 {months} months since go-live \u00B7 Generated {today}</Text>
 
           <View style={s.statRow}>
@@ -607,19 +607,18 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
           </View>
 
           <View style={s.callout}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>A note on methodology</Text>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>How to read the numbers in this report</Text>
             <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.55 }}>
               All financial estimates in this report use an attribution range of {fin.attrRange} and a realization rate of {DEFAULT_ASMP.realization}%.
-              These reflect the portion of observed improvement we attribute to Abridge and the share of theoretical value typically captured in practice.
+              Every financial estimate in this report shows a range, not a single number. The range reflects two honest questions: how much of the improvement is attributable to documentation change specifically, and how much of that improvement typically makes it through to realized revenue or cost. We show the math so you can stress-test it.
               Where before/after data exists, we use the observed delta. Where only directional signals exist (e.g., burnout scores), we apply published benchmark ranges.
             </Text>
           </View>
 
           <Text style={s.narrative}>
             {orgName} has deployed Abridge across {providers} providers in {settingLabel.toLowerCase()},
-            achieving {utilRate}% utilization over {months} months. This review summarizes
-            {hasMetrics ? ` ${activeMetrics.length} tracked metric${activeMetrics.length > 1 ? "s" : ""}` : " the deployment"}{" "}
-            and{hasFinancials ? " quantifies the financial impact of observed improvements." : " outlines the path to measurable financial impact."}
+            achieving {utilRate}% utilization over {months} months.
+            {" "}This report walks through what {orgName}{"\u2019"}s own data shows {"\u2014"} before and after Abridge {"\u2014"} across {activeDomains} measurement domain{activeDomains !== 1 ? "s" : ""}. The goal is to help your team build a shared picture of what{"\u2019"}s changed and where the next opportunity sits.
           </Text>
 
           <Footer n={P()} total={TOTAL} org={orgName} />
@@ -630,8 +629,8 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
       <Page size="LETTER" style={s.page} wrap={false}>
         <View style={s.wrap}>
           <Conf org={orgName} />
-          <Text style={s.eyebrow}>Measurement</Text>
-          <Text style={s.headline}>What Your Data Shows</Text>
+          <Text style={s.eyebrow}>Your Data</Text>
+          <Text style={s.headline}>Before &amp; After {"\u2014"} What Changed</Text>
           <Text style={s.subline}>{activeMetrics.length} metric{activeMetrics.length !== 1 ? "s" : ""} tracked across {activeDomains} domain{activeDomains !== 1 ? "s" : ""}</Text>
 
           <View style={s.metricRowHeader}>
@@ -669,12 +668,12 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
         <Page size="LETTER" style={s.page} wrap={false}>
           <View style={s.wrap}>
             <Conf org={orgName} />
-            <Text style={s.eyebrow}>Financial Impact</Text>
-            <Text style={s.headline}>Estimated Annual Value</Text>
+            <Text style={s.eyebrow}>Translating Data to Dollars</Text>
+            <Text style={s.headline}>What the Numbers Add Up To</Text>
 
             <View style={[s.card, { alignItems: "center", paddingVertical: 20, marginBottom: 4 }]}>
               <Text style={{ fontSize: 28, fontWeight: "bold", color: C.orange }}>{fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))}</Text>
-              <Text style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>{CONFIDENCE_LABELS[maturityLabels[maturityIdx].toLowerCase()] || 'Estimate'} (attribution: {fin.attrRange})</Text>
+              <Text style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>modeled annual value {"\u00B7"} attribution range {fin.attrRange} {"\u00B7"} realization {DEFAULT_ASMP.realization}%</Text>
             </View>
             <Text style={{ fontSize: 8, color: C.muted, textAlign: "center", marginBottom: 14 }}>
               Based on {fin.enabledStreams.length} of {fin.enabledStreams.length + fin.excludedStreams.length} value streams
@@ -687,7 +686,7 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
               return (
                 <>
                   <View style={[s.cardOutline, { paddingVertical: 14, marginBottom: 10 }]}>
-                    <Text style={{ fontSize: 8, fontWeight: "bold", color: C.muted, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>ROI Summary</Text>
+                    <Text style={{ fontSize: 8, fontWeight: "bold", color: C.muted, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>What This Investment Is Returning</Text>
                     <View style={s.rule} />
                     <View style={[s.finRow, { marginBottom: 4 }]}>
                       <Text style={{ fontSize: 10, color: C.mid }}>Annual investment</Text>
@@ -708,7 +707,7 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
                   </View>
 
                   <View style={[s.cardOutline, { paddingVertical: 12, marginBottom: 14 }]}>
-                    <Text style={{ fontSize: 8, fontWeight: "bold", color: C.muted, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>Value Horizon</Text>
+                    <Text style={{ fontSize: 8, fontWeight: "bold", color: C.muted, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>When This Value Shows Up</Text>
                     <View style={s.rule} />
                     <View style={[s.finRow, { marginBottom: 6 }]}>
                       <View style={{ flex: 2 }}>
@@ -726,7 +725,7 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
                     </View>
                     <View style={s.rule} />
                     <Text style={{ fontSize: 8, color: C.muted, lineHeight: 1.5, fontStyle: "italic" }}>
-                      Near-term value is realizable within the current contract year. Building value compounds as retention risk decreases and capacity is absorbed.
+                      Near-term value is already visible in billing and throughput data. Building value grows as documentation discipline reduces turnover risk and frees capacity {"\u2014"} it compounds, but it takes time to show up in a budget line.
                     </Text>
                   </View>
                 </>
@@ -770,7 +769,7 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
               <View style={{ marginBottom: 14 }}>
                 <Text style={s.finCat}>Billing Capture</Text>
                 <View style={s.finRow}>
-                  <Text style={s.finLabel}>Total billing capture</Text>
+                  <Text style={s.finLabel}>What billing data shows</Text>
                   <Text style={s.finValue}>{fmtRange(Math.round(fin.billLo), Math.round(fin.billHi))} / yr</Text>
                 </View>
                 {fin.billDetails.map((d, i) => (
@@ -786,7 +785,7 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
               <View style={{ marginBottom: 14 }}>
                 <Text style={s.finCat}>Revenue Recovery</Text>
                 <View style={s.finRow}>
-                  <Text style={s.finLabel}>Total revenue recovery</Text>
+                  <Text style={s.finLabel}>What throughput data shows</Text>
                   <Text style={s.finValue}>{fmtRange(Math.round(fin.recLo), Math.round(fin.recHi))} / yr</Text>
                 </View>
                 {fin.recDetails.map((d, i) => (
@@ -802,7 +801,7 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
               <View style={{ marginBottom: 14 }}>
                 <Text style={s.finCat}>Patient Flow</Text>
                 <View style={s.finRow}>
-                  <Text style={s.finLabel}>ALOS bed day savings</Text>
+                  <Text style={s.finLabel}>What length-of-stay data shows</Text>
                   <Text style={s.finValue}>{fmtRange(Math.round(fin.pfLo), Math.round(fin.pfHi))} / yr</Text>
                 </View>
                 {fin.pfDetails.map((d, i) => (
@@ -818,7 +817,7 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
               <View style={{ marginBottom: 14 }}>
                 <Text style={s.finCat}>Capacity Revenue</Text>
                 <View style={s.finRow}>
-                  <Text style={s.finLabel}>Outpatient capacity revenue</Text>
+                  <Text style={s.finLabel}>What capacity data shows</Text>
                   <Text style={s.finValue}>{fmtRange(Math.round(fin.capLo), Math.round(fin.capHi))} / yr</Text>
                 </View>
               </View>
@@ -828,7 +827,7 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
               <View style={{ marginBottom: 14 }}>
                 <Text style={s.finCat}>Actual Cost Reduction</Text>
                 <View style={s.finRow}>
-                  <Text style={s.finLabel}>Total cost reduction</Text>
+                  <Text style={s.finLabel}>What workforce data shows</Text>
                   <Text style={s.finValue}>{fmtRange(Math.round(fin.costLo), Math.round(fin.costHi))} / yr</Text>
                 </View>
                 {fin.costDetails.map((d, i) => (
@@ -850,9 +849,9 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
         <Page size="LETTER" style={s.page} wrap={false}>
           <View style={s.wrap}>
             <Conf org={orgName} />
-            <Text style={s.eyebrow}>Beyond the Numbers</Text>
-            <Text style={s.headline}>Signals Worth Watching</Text>
-            <Text style={s.subline}>These metrics don't directly feed a financial formula, but they tell the story of how Abridge is changing care delivery.</Text>
+            <Text style={s.eyebrow}>The Qualitative Picture</Text>
+            <Text style={s.headline}>What the Data Doesn{"\u2019"}t Fully Capture Yet</Text>
+            <Text style={s.subline}>These are real changes in how your providers work. They don{"\u2019"}t map cleanly to a dollar amount yet {"\u2014"} but they often predict what shows up in the financial data 6{"\u2013"}12 months from now.</Text>
 
             {signalMetrics.map((sm, i) => {
               const def = METRIC_MAP.get(sm.metricId);
@@ -882,8 +881,8 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
       <Page size="LETTER" style={s.page} wrap={false}>
         <View style={s.wrap}>
           <Conf org={orgName} />
-          <Text style={s.eyebrow}>Maturity</Text>
-          <Text style={s.headline}>Where You Are &amp; What{"\u2019"}s Next</Text>
+          <Text style={s.eyebrow}>Where You Are</Text>
+          <Text style={s.headline}>The Measurement Journey</Text>
 
           <View style={s.card}>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 6 }}>Measurement Maturity</Text>
@@ -897,26 +896,20 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
           </View>
 
           <View style={s.rule} />
-          <Text style={{ fontSize: 11, fontWeight: "bold", color: C.dark, marginBottom: 8 }}>Recommended Next Moves</Text>
+          <Text style={{ fontSize: 11, fontWeight: "bold", color: C.dark, marginBottom: 8 }}>What Tends to Move Organizations Forward</Text>
 
           {[
             {
-              text: maturityIdx < 2
-                ? `Increase utilization from ${utilRate}% toward 60%+ to unlock validated measurement across more domains.`
-                : `Sustain ${utilRate}% utilization and extend measurement to remaining domains.`,
+              text: `Organizations that reach 60%+ utilization typically unlock 2\u20133x more measurable domains. ${orgName} is at ${utilRate}% \u2014 the next milestone changes what\u2019s countable.`,
             },
             {
-              text: hasFinancials
-                ? "Socialize this financial impact report with finance and operational leaders to build board-level awareness."
-                : "Focus on capturing before/after data in revenue and quality domains to enable financial quantification.",
+              text: "The most durable EBR outcomes happen when the finance team sees this data directly. A one-page summary from this report tends to open that conversation.",
             },
             {
-              text: activeCareSettings.length < 3
-                ? `Expand Abridge to additional care settings beyond ${settingLabel.toLowerCase()} to capture organization-wide value.`
-                : "Deepen measurement in each care setting by adding setting-specific metrics (CMI for inpatient, LWBS for ED).",
+              text: "Each care setting has its own value story. Adding a second setting doesn\u2019t just add volume \u2014 it adds a new measurement category that often surfaces value the first setting can\u2019t see.",
             },
             {
-              text: "Schedule a follow-up EBR in 90 days to track trend lines and refine financial attribution as more data accumulates.",
+              text: "The organizations that move fastest from Signaling to Validated are the ones that name one metric, one target, and one owner before they leave the room.",
             },
           ].map((item, i) => (
             <View key={i} style={s.bulletRow}>
@@ -933,20 +926,18 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
       <Page size="LETTER" style={s.page} wrap={false}>
         <View style={s.wrap}>
           <Conf org={orgName} />
-          <Text style={s.eyebrow}>Methodology</Text>
-          <Text style={s.headline}>How We Calculate Value</Text>
-          <Text style={s.subline}>Transparency is core to the Abridge measurement philosophy.</Text>
+          <Text style={s.eyebrow}>How the Math Works</Text>
+          <Text style={s.headline}>A Plain-English Guide to the Numbers</Text>
+          <Text style={s.subline}>If something in this report doesn{"\u2019"}t add up, this page is where to look.</Text>
 
           <View style={s.card}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 8 }}>Attribution Model</Text>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 8 }}>Why we show ranges, not single numbers</Text>
             <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.55 }}>
-              We apply a conservative attribution range ({fin.attrRange}) to all financial calculations.
-              This reflects our assessment that Abridge is one contributor among many to observed improvements.
-              The range accounts for secular trends, concurrent initiatives, and natural variance.
+              No single initiative fully explains a change in wRVU, CMI, or retention. Other things are happening in your organization at the same time. The attribution range ({fin.attrRange}) is our attempt to be honest about that {"\u2014"} it represents the share of observed improvement that documentation change plausibly explains, based on published literature and the structure of your deployment.
             </Text>
           </View>
 
-          <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark, marginTop: 10, marginBottom: 6 }}>Assumptions</Text>
+          <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark, marginTop: 10, marginBottom: 6 }}>The inputs behind every estimate</Text>
           {[
             { k: "Attribution range", v: fin.attrRange },
             { k: "Realization rate", v: `${DEFAULT_ASMP.realization}%` },
@@ -969,6 +960,7 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
               Provider satisfaction and intent to stay, recruitment advantage ("{"\u201C"}physicians ask about Abridge{"\u201D"}),
               reduced administrative backlog and prior auth delays, and audit readiness / documentation defensibility.
               These are real but difficult to isolate financially. We mention them but do not include them in any dollar estimate.
+              If any of these become measurable in your organization, they belong in the next EBR.
             </Text>
           </View>
 
