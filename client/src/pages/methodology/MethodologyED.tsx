@@ -269,6 +269,49 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     </div>
                   </div>
                 </MechanismCard>
+
+                <MechanismCard title="Admission Capture">
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <p className="text-[#888888] mb-1">The mechanism:</p>
+                      <p className="text-black">
+                        Of the patients recovered from LWBS, some will require inpatient admission. When those patients 
+                        are retained rather than leaving, the ED visit converts to inpatient admission revenue — DRG-based 
+                        payment on top of the ED facility and professional fees. This driver only activates when LWBS 
+                        Recovery is calculated first; the recovered patient population is the base.
+                      </p>
+                    </div>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4">
+                      <p className="text-[#888888] mb-1">The calculation:</p>
+                      <p className="font-mono text-black text-sm">
+                        Recovered LWBS patients × admission rate % × avg admission revenue × realization rate = admission capture value
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[#888888] mb-1">The key assumptions:</p>
+                      <ul className="text-[#666666] space-y-1 ml-4 list-disc">
+                        <li>Admission rate from recovered LWBS patients: 15–25% (patients who left without being seen and required inpatient care)</li>
+                        <li>Average admission revenue: $8,000–$12,000 (DRG-based; varies by payer mix and case mix)</li>
+                        <li>Realization rate: 70–80% — accounts for payer mix, bed availability, and coding factors</li>
+                      </ul>
+                    </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
+                      <p className="text-[#666666]">
+                        ED admission rates are tracked in your operational data. The recovered patient population comes 
+                        directly from the LWBS calculation — it's not a new assumption, it's an extension of the same 
+                        patient cohort. The admission revenue figure uses your actual DRG base rate, not a benchmark.
+                      </p>
+                    </div>
+                    <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-4">
+                      <p className="text-[#666666]">
+                        <strong className="text-black">Important:</strong> This calculation depends on LWBS Recovery. If you 
+                        don't have LWBS data, don't estimate admission capture — the compounding of two estimates produces 
+                        a number that won't survive scrutiny. Run LWBS first, get the data, then layer in admission capture.
+                      </p>
+                    </div>
+                  </div>
+                </MechanismCard>
               </div>
 
               {/* Documentation Quality */}
@@ -421,6 +464,11 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                       <td className="py-3">CDI / DRG impact on admitted patients</td>
                       <td className="py-3 text-[#F59E0B] font-medium">Not here — see Inpatient</td>
                       <td className="py-3">Captured in CMI delta calculation</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Admission capture from LWBS recovery</td>
+                      <td className="py-3">✅ Yes (if LWBS data provided)</td>
+                      <td className="py-3">Recovered patients × admission rate × avg DRG revenue</td>
                     </tr>
                     <tr className="border-b border-[#E5E5E5]">
                       <td className="py-3">ED physician retention</td>
