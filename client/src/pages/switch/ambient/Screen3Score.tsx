@@ -697,7 +697,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.7, duration: 0.5 }}
           >
-            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See What This Means in Dollars →" />
+            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See What This Means in Dollars →" showBack={false} />
           </motion.div>
 
           <motion.div

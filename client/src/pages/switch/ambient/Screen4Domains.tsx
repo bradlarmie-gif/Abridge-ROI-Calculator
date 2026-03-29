@@ -1898,6 +1898,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
             onNext={handleAdvance}
             nextLabel={DOMAIN_CTA[activeDomain]}
             nextDisabled={!currentState.activationLevel}
+            showBack={false}
           />
           <div className={STEP_FOOTER_SPACER_CLASS} />
         </div>

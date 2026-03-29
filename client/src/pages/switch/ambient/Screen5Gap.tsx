@@ -724,7 +724,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           </div>
 
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
-            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary →" />
+            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary →" showBack={false} />
           </motion.div>
 
           <div className={STEP_FOOTER_SPACER_CLASS} />
