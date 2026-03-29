@@ -1,0 +1,71 @@
+ In client/src/components/measure/MeasurePDFExport.tsx, update the copy throughout the document. Do not change any calculations, layout, or structure — only text strings.                                    
+                                                                                                          
+  Page 1 — Partnership overview               
+                                          
+  - Eyebrow: "Your Partnership" → "Your Deployment"                                                                                                                                                            
+  - Headline: "Abridge at {orgName}" → "{orgName} — {months} Months In"                                                                                                                                        
+  - Methodology callout title: "A note on methodology" → "How to read the numbers in this report"                                                                                                              
+  - Methodology callout body: Replace "These reflect the portion of observed improvement we attribute to Abridge and the share of theoretical value typically captured in practice." with: "Every financial    
+  estimate in this report shows a range, not a single number. The range reflects two honest questions: how much of the improvement is attributable to documentation change specifically, and how much of that 
+  improvement typically makes it through to realized revenue or cost. We show the math so you can stress-test it."                                                                                             
+  - Narrative paragraph: Replace "This review summarizes X tracked metrics and quantifies the financial impact of observed improvements." with: "This report walks through what {orgName}'s own data shows —   
+  before and after Abridge — across {activeDomains} measurement domains. The goal is to help your team build a shared picture of what's changed and where the next opportunity sits."                          
+                                                                                                                                                                                                               
+  Page 2 — Data page                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  - Eyebrow: "Measurement" → "Your Data"
+  - Headline: "What Your Data Shows" → "Before & After — What Changed"                                                                                                                                         
+  - Subline: keep as-is                                                                                   
+                                              
+  Page 3 — Financial page                 
+                                                                                                                                                                                                               
+  - Eyebrow: "Financial Impact" → "Translating Data to Dollars"                                                                                                                                                
+  - Headline: "Estimated Annual Value" → "What the Numbers Add Up To"                                                                                                                                          
+  - Below the hero number, change "estimated annual financial impact (attribution: X–Y%)" to "modeled annual value · attribution range {X}–{Y}% · realization {rate}%"                                         
+  - Each stream category label ("Billing Capture", "Revenue Recovery", etc.) stays as-is — those are clear                                                                                                     
+  - Change "Total billing capture" → "What billing data shows"
+  - Change "Total revenue recovery" → "What throughput data shows"                                                                                                                                             
+  - Change "ALOS bed day savings" → "What length-of-stay data shows"                                                                                                                                           
+  - Change "Outpatient capacity revenue" → "What capacity data shows"                                                                                                                                          
+  - Change "Total cost reduction" → "What workforce data shows"                                                                                                                                                
+                                                                                                                                                                                                               
+  ROI callout title (from the previous prompt): "ROI SUMMARY" → "What This Investment Is Returning"                                                                                                            
+                                                                                                                                                                                                               
+  Value horizon section title: "VALUE HORIZON" → "When This Value Shows Up"                                                                                                                                    
+  Value horizon note: Replace with: "Near-term value is already visible in billing and throughput data. Building value grows as documentation discipline reduces turnover risk and frees capacity — it         
+  compounds, but it takes time to show up in a budget line."                                                                                                                                                   
+                                                                                                                                                                                                               
+  Page 4 — Signals page                                                                                   
+                                                                                                                                                                                                               
+  - Eyebrow: "Beyond the Numbers" → "The Qualitative Picture"                                             
+  - Headline: "Signals Worth Watching" → "What the Data Doesn't Fully Capture Yet"                                                                                                                             
+  - Subline: Replace "These metrics don't directly feed a financial formula, but they tell the story of how Abridge is changing care delivery." with: "These are real changes in how your providers work. They 
+  don't map cleanly to a dollar amount yet — but they often predict what shows up in the financial data 6–12 months from now."                                                                                 
+                                          
+  Page 5 — Maturity & next steps                                                                                                                                                                               
+                                                                                                                                                                                                               
+  - Eyebrow: "Maturity" → "Where You Are"
+  - Headline: "Where You Are & What's Next" → "The Measurement Journey"                                                                                                                                        
+  - Section title "Recommended Next Moves" → "What Tends to Move Organizations Forward"                   
+  - Change the 4 bullet points from directive ("Increase utilization...", "Socialize this financial impact report...") to educational framing:                                                                 
+    - Utilization bullet: "Organizations that reach 60%+ utilization typically unlock 2–3x more measurable domains. {orgName} is at {utilRate}% — the next milestone changes what's countable."
+    - Financial sharing bullet: "The most durable EBR outcomes happen when the finance team sees this data directly. A one-page summary from this report tends to open that conversation."                     
+    - Settings expansion bullet: "Each care setting has its own value story. Adding a second setting doesn't just add volume — it adds a new measurement category that often surfaces value the first setting  
+  can't see."                                                                                                                                                                                                  
+    - 90-day bullet: "The organizations that move fastest from Signaling to Validated are the ones that name one metric, one target, and one owner before they leave the room."                                
+                                                                                                                                                                                                               
+  Page 6 — Methodology                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  - Eyebrow: "Methodology" → "How the Math Works"                                                                                                                                                              
+  - Headline: "How We Calculate Value" → "A Plain-English Guide to the Numbers"                                                                                                                                
+  - Subline: "Transparency is core to the Abridge measurement philosophy." → "If something in this report doesn't add up, this page is where to look."                                                         
+  - Attribution card title: "Attribution Model" → "Why we show ranges, not single numbers"                                                                                                                     
+  - Attribution card body: Replace with: "No single initiative fully explains a change in wRVU, CMI, or retention. Other things are happening in your organization at the same time. The attribution range 
+  ({attrRange}) is our attempt to be honest about that — it represents the share of observed improvement that documentation change plausibly explains, based on published literature and the structure of your 
+  deployment."                                                                                                                                                                                                 
+  - Assumptions section title: "Assumptions" → "The inputs behind every estimate"                                                                                                                              
+  - "What we don't count" callout title: keep as-is — it's already good                                                                                                                                        
+  - "What we don't count" body: Add one sentence at the end: "If any of these become measurable in your organization, they belong in the next EBR."                                                            
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  The goal is that someone reads this and thinks: "I learned something about my organization." Not "Abridge told me what they did for us."   
