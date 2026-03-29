@@ -205,7 +205,7 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">3. Clinician Sustainability</h4>
                     <p className="text-sm text-[#666666] leading-relaxed">
                       ED burnout is a workforce crisis, not a trend. Documentation burden is a significant 
-                      contributor. At $400k-$700k per physician replacement, retention isn't a soft metric — 
+                      contributor. At $250K-$500K per physician replacement, retention isn't a soft metric — 
                       it's an existential budget line item for many EDs.
                     </p>
                   </div>
@@ -249,24 +249,14 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Annual visits × LWBS rate × Recovery % × Avg ED visit revenue
+                        (LWBS rate before − LWBS rate after, in percentage points) × annual ED visits × $480/visit × attribution %
                       </p>
-                    </div>
-                    <div>
-                      <p className="text-[#888888] mb-1">Key assumptions:</p>
-                      <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>National LWBS rate: 2-4% (urban high-volume EDs often higher)</li>
-                        <li>Documentation-attributable recovery: 5-15% of LWBS patients</li>
-                        <li>Average ED visit revenue: $300-$500 (blended facility + professional, based on published ED benchmarks)</li>
-                      </ul>
                     </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
                       <p className="text-[#888888] mb-1">Why this is defensible:</p>
                       <p className="text-[#666666]">
-                        LWBS rates are tracked by every ED. Door-to-doc times are in your EMR. The before/after 
-                        comparison is clean. The challenge is attribution — documentation speed is one factor 
-                        among many. That's why we use conservative recovery rates (5-15%) instead of claiming 
-                        we solve the whole problem.
+                        This uses your observed before/after LWBS rate — not an assumed recovery percentage. 
+                        The delta is what your data shows. Annual visits = monthly ED volume × 12.
                       </p>
                     </div>
                     <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-4">
@@ -302,23 +292,14 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Encounters × Baseline wRVU × Lift % × Conversion factor × Realization rate
+                        (wRVU per encounter after) − (wRVU per encounter before) × adopted encounters × $33/wRVU × attribution % × realization %
                       </p>
                     </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
                       <p className="text-[#888888] mb-1">Why this is defensible:</p>
                       <p className="text-[#666666]">
-                        E/M distributions are in your claims data. Compare shift-by-shift: do high-volume 
-                        shifts show lower E/M levels than quieter shifts for similar patient populations? 
-                        That gap is documentation-driven, not clinical. It's measurable and auditable.
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[#888888] mb-1">ED-specific calibration:</p>
-                      <p className="text-[#666666]">
-                        ED wRVU lift is typically lower than outpatient (2-4% vs 3-7%) because 
-                        ED workflows are already more templated. We account for this — we don't 
-                        apply outpatient assumptions to the ED.
+                        ED wRVU lift is typically lower than outpatient (2–4% vs 3–7%) because ED workflows 
+                        are already more structured. We use your actual observed delta, not an assumed percentage.
                       </p>
                     </div>
                   </div>
@@ -338,55 +319,19 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Claims × Denial rate × Doc-related % × Prevention rate × Avg claim value
+                        (denial rate before − denial rate after, in percentage points) × annual encounters × avg denial cost per encounter × attribution %
                       </p>
                     </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
                       <p className="text-[#888888] mb-1">Why this is defensible:</p>
                       <p className="text-[#666666]">
-                        Your RCM team can categorize denials by root cause. Documentation-related denials 
-                        are identifiable. Track them before and after — the signal is usually clear within 
-                        6 months, and most organizations are surprised by the magnitude.
+                        ED default: $500 per encounter (higher than outpatient due to higher acuity claims). 
+                        Attribution range accounts for the documentation-related share.
                       </p>
                     </div>
                   </div>
                 </MechanismCard>
 
-                <MechanismCard title="CDI & Inpatient Connection">
-                  <div className="space-y-4 text-sm">
-                    <div>
-                      <p className="text-[#888888] mb-1">The mechanism:</p>
-                      <p className="text-black">
-                        For admitted patients, the ED note is where the inpatient stay begins. A complete 
-                        ED note captures presenting conditions, comorbidities, and clinical reasoning that 
-                        CDI teams need for accurate DRG assignment. When ED notes are thin, CDI teams 
-                        spend time querying — and some opportunities are missed entirely.
-                      </p>
-                    </div>
-                    <div className="bg-[#F5F0EB] rounded-lg p-4">
-                      <p className="text-[#888888] mb-1">The calculation:</p>
-                      <p className="font-mono text-black text-sm">
-                        ED admissions × DRG improvement rate × Avg DRG value increase × Realization rate
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[#888888] mb-1">Key assumption:</p>
-                      <p className="text-[#666666]">
-                        Typical ED admission rate: 15-25% of visits. The DRG impact only applies 
-                        to admitted patients, but at average DRG values of $6,000-$8,000, even small 
-                        improvements in documentation accuracy matter.
-                      </p>
-                    </div>
-                    <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-4">
-                      <p className="text-[#666666]">
-                        <strong className="text-black">Honest limit:</strong> The CDI connection is real but 
-                        indirect. ED documentation influences inpatient DRG, but the inpatient team's 
-                        documentation matters too. We quantify this in the Inpatient methodology to 
-                        avoid double-counting.
-                      </p>
-                    </div>
-                  </div>
-                </MechanismCard>
               </div>
 
               {/* Clinician Wellbeing */}
@@ -416,7 +361,7 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     <div>
                       <p className="text-[#888888] mb-1">ED-specific defaults:</p>
                       <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>Replacement cost: $400,000-$700,000 (higher than most specialties)</li>
+                        <li>Replacement cost: $250,000-$500,000 (AMGA Physician Retention Survey benchmark)</li>
                         <li>Turnover: Often 8-15%, above the physician average</li>
                         <li>Locum coverage: $250-$400/hour during vacancy period</li>
                       </ul>
@@ -431,11 +376,64 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                       </p>
                     </div>
                     <p className="text-[#666666] italic">
-                      This takes 12-18 months to measure — but in a setting with $500K+ replacement costs, 
-                      retaining even one additional physician can justify the investment.
+                      This takes 12-18 months to measure — but in a setting with $250K-$500K replacement costs, 
+                      retaining even one additional physician can justify the investment. We apply the conservative 
+                      end of the AMGA range. Locum coverage costs during vacancy are tracked separately as agency spend.
                     </p>
                   </div>
                 </MechanismCard>
+              </div>
+            </CollapsibleSection>
+
+            {/* Section: What Goes Into the Number */}
+            <CollapsibleSection
+              sectionId="what-goes-in"
+              title="What Goes Into the Number"
+              subtitle="Exactly what the calculator uses — and what it doesn't"
+              defaultOpen={false}
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#D1D5DB]">
+                      <th className="text-left py-3 font-semibold text-black">Value Driver</th>
+                      <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
+                      <th className="text-left py-3 font-semibold text-black">Formula</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-[#666666]">
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">LWBS reduction</td>
+                      <td className="py-3">✅ Yes</td>
+                      <td className="py-3">LWBS pp delta × annual visits × $480/visit</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">wRVU / E/M lift</td>
+                      <td className="py-3">✅ Yes</td>
+                      <td className="py-3">wRVU delta × adopted encounters × $33/wRVU</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Denial rate reduction</td>
+                      <td className="py-3">✅ Yes</td>
+                      <td className="py-3">Denial pp delta × encounters × $500/encounter</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">CDI / DRG impact on admitted patients</td>
+                      <td className="py-3 text-[#F59E0B] font-medium">Not here — see Inpatient</td>
+                      <td className="py-3">Captured in CMI delta calculation</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">ED physician retention</td>
+                      <td className="py-3">✅ Yes (if survey data provided)</td>
+                      <td className="py-3">Turnovers avoided × $250K–$500K</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">After-hours time savings</td>
+                      <td className="py-3 text-[#F59E0B] font-medium">Signal only — not monetized</td>
+                      <td className="py-3">Tracked as hours (salaried providers)</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </CollapsibleSection>
 
@@ -520,8 +518,8 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                         <TooltipTrigger asChild>
                           <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
                             <td className="py-3">Avg ED visit revenue</td>
-                            <td className="py-3">$300-$500</td>
-                            <td className="py-3">$400</td>
+                            <td className="py-3">$400-$600</td>
+                            <td className="py-3">$480</td>
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
@@ -701,10 +699,11 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                     <h4 className="font-bold text-black mb-2 text-sm">ED → Inpatient (DRG impact)</h4>
                     <p className="text-sm text-[#666666] leading-relaxed">
-                      When ED documentation captures presenting conditions, comorbidities, and clinical 
-                      reasoning completely, the inpatient stay begins with a stronger clinical picture. 
-                      This directly affects CDI capture and DRG accuracy. We quantify this separately 
-                      in the Inpatient methodology to avoid double-counting.
+                      Better ED documentation is the foundation of DRG accuracy for admitted patients — when 
+                      presenting conditions, comorbidities, and clinical reasoning are captured at the point 
+                      of care, the inpatient stay begins with a stronger clinical picture. We quantify this 
+                      in the Inpatient methodology, not here, to prevent double-counting. If you're modeling 
+                      both settings, do not include DRG value in the ED calculation.
                     </p>
                   </div>
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
