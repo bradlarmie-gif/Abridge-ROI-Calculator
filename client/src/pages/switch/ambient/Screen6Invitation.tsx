@@ -216,11 +216,11 @@ function buildUserInputsSummary(domain: Domain, level: number, raw: Record<strin
 }
 
 function getScoreBandLabel(score: number): string {
-  if (score <= 16) return "Quantifying";
-  if (score <= 38) return "Measuring";
-  if (score <= 60) return "Acting";
-  if (score <= 79) return "Managing";
-  return "Full Capture";
+  if (score <= 16) return "Pre-Measurement";
+  if (score <= 38) return "Signal";
+  if (score <= 60) return "Confirmed";
+  if (score <= 79) return "Managed ROI";
+  return "Strategic Asset";
 }
 
 function getArchetypeName(domainLevelsMap: Record<Domain, number>): string {

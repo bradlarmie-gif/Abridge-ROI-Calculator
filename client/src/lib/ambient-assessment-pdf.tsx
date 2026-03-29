@@ -104,11 +104,11 @@ const domainDisplayName: Record<string, string> = {
 };
 
 function scoreBand(score: number): string {
-  if (score <= 16) return "Quantifying";
-  if (score <= 38) return "Measuring";
-  if (score <= 60) return "Acting";
-  if (score <= 79) return "Managing";
-  return "Full Capture";
+  if (score <= 16) return "Pre-Measurement";
+  if (score <= 38) return "Signal";
+  if (score <= 60) return "Confirmed";
+  if (score <= 79) return "Managed ROI";
+  return "Strategic Asset";
 }
 
 function tenureLabel(tenure: string): string {
@@ -858,11 +858,11 @@ sustainability.`;
 
       <View style={[s.beigeBox, { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 14 }]}>
         {[
-          { label: "Quantifying", range: "\u226416" },
-          { label: "Measuring", range: "17\u201338" },
-          { label: "Acting", range: "39\u201360" },
-          { label: "Managing", range: "61\u201379" },
-          { label: "Full Capture", range: "80\u2013100" },
+          { label: "Pre-Measurement", range: "\u226416" },
+          { label: "Signal", range: "17\u201338" },
+          { label: "Confirmed", range: "39\u201360" },
+          { label: "Managed ROI", range: "61\u201379" },
+          { label: "Strategic Asset", range: "80\u2013100" },
         ].map((b, i) => {
           const isCurrent = scoreBand(data.documentationScore) === b.label;
           return (
@@ -1517,9 +1517,9 @@ function ConversationAheadPage({ data }: { data: AmbientAssessmentPDFData }) {
             {
               label: "THE PATTERN AT YOUR SCORE",
               title: band,
-              body: band === "Quantifying" || band === "Measuring"
+              body: band === "Pre-Measurement" || band === "Signal"
                 ? "This is the most common starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because at this stage, the gap is visible and the next move is defined."
-                : band === "Acting"
+                : band === "Confirmed"
                 ? "Some domains are generating confirmed value. The ones that haven\u2019t been measured yet are the highest-return opportunities \u2014 because the infrastructure to measure them already exists."
                 : "You\u2019re in the top tier of ambient maturity. The work at this stage is governance \u2014 making sure the measurement capability is institutional, not dependent on champions.",
               accent: false,

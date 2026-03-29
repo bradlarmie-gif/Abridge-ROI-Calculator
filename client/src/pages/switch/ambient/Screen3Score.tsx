@@ -27,11 +27,11 @@ function csvCount(csv: unknown): number {
 }
 
 const SCORE_BANDS = [
-  { label: 'Quantifying', max: 16 },
-  { label: 'Measuring', max: 38 },
-  { label: 'Acting', max: 60 },
-  { label: 'Managing', max: 79 },
-  { label: 'Full Capture', max: 100 },
+  { label: 'Pre-Measurement', max: 16 },
+  { label: 'Signal', max: 38 },
+  { label: 'Confirmed', max: 60 },
+  { label: 'Managed ROI', max: 79 },
+  { label: 'Strategic Asset', max: 100 },
 ] as const;
 
 function getScoreBandLabel(score: number): string {
@@ -608,7 +608,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
                   <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1">Band</p>
                   <p className="font-bold text-sm text-[#EA2C00]">{scoreBandLabel}</p>
                   {(() => {
-                    const bands = ['Quantifying', 'Measuring', 'Acting', 'Managing', 'Full Capture'];
+                    const bands = ['Pre-Measurement', 'Signal', 'Confirmed', 'Managed ROI', 'Strategic Asset'];
                     const activeBand = totalScore <= 16 ? 0 : totalScore <= 38 ? 1 : totalScore <= 60 ? 2 : totalScore <= 79 ? 3 : 4;
                     return (
                       <div className="flex items-center gap-2 mt-2 justify-end">

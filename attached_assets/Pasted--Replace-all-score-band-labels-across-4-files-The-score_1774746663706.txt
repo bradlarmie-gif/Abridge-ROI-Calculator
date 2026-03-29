@@ -1,0 +1,122 @@
+ Replace all score band labels across 4 files. The score cutoffs do NOT change — only the display labels.
+
+  New labels:
+  - 0–16: Pre-Measurement (was Quantifying)
+  - 17–38: Signal (was Measuring)
+  - 39–60: Confirmed (was Acting)
+  - 61–79: Managed ROI (was Managing)
+  - 80–100: Strategic Asset (was Full Capture)
+
+  ---
+  FILE 1: client/src/pages/switch/ambient/Screen3Score.tsx
+
+  Find and replace the SCORE_BANDS array:
+  // OLD:
+  const SCORE_BANDS = [
+    { label: 'Quantifying', max: 16 },
+    { label: 'Measuring', max: 38 },
+    { label: 'Acting', max: 60 },
+    { label: 'Managing', max: 79 },
+    { label: 'Full Capture', max: 100 },
+  ] as const;
+
+  // NEW:
+  const SCORE_BANDS = [
+    { label: 'Pre-Measurement', max: 16 },
+    { label: 'Signal', max: 38 },
+    { label: 'Confirmed', max: 60 },
+    { label: 'Managed ROI', max: 79 },
+    { label: 'Strategic Asset', max: 100 },
+  ] as const;
+
+  Find and replace the inline bands array in the dot-progression renderer:
+  // OLD:
+  const bands = ['Quantifying', 'Measuring', 'Acting', 'Managing', 'Full Capture'];
+
+  // NEW:
+  const bands = ['Pre-Measurement', 'Signal', 'Confirmed', 'Managed ROI', 'Strategic Asset'];
+
+  ---
+  FILE 2: client/src/pages/switch/ambient/Screen5Gap.tsx
+
+  Find and replace the inline ternary in the sidebar score section:
+  // OLD:
+  const band = totalScore <= 16 ? 'Quantifying' : totalScore <= 38 ? 'Measuring' : totalScore <= 60 ? 'Acting' : totalScore <= 79 ? 'Managing' : 'Full Capture';
+
+  // NEW:
+  const band = totalScore <= 16 ? 'Pre-Measurement' : totalScore <= 38 ? 'Signal' : totalScore <= 60 ? 'Confirmed' : totalScore <= 79 ? 'Managed ROI' : 'Strategic Asset';
+
+  ---
+  FILE 3: client/src/pages/switch/ambient/Screen6Invitation.tsx
+
+  Find and replace the getScoreBandLabel function:
+  // OLD:
+  function getScoreBandLabel(score: number): string {
+    if (score <= 16) return "Quantifying";
+    if (score <= 38) return "Measuring";
+    if (score <= 60) return "Acting";
+    if (score <= 79) return "Managing";
+    return "Full Capture";
+  }
+
+  // NEW:
+  function getScoreBandLabel(score: number): string {
+    if (score <= 16) return "Pre-Measurement";
+    if (score <= 38) return "Signal";
+    if (score <= 60) return "Confirmed";
+    if (score <= 79) return "Managed ROI";
+    return "Strategic Asset";
+  }
+
+  ---
+  FILE 4: client/src/lib/ambient-assessment-pdf.tsx
+
+  Three spots.
+
+  Spot 1 — the getScoreBand or similar function around line 108:
+  // OLD:
+  if (score <= 16) return "Quantifying";
+  // ...
+  if (score <= 60) return "Acting";
+  // ...
+  return "Full Capture";
+
+  // NEW:
+  if (score <= 16) return "Pre-Measurement";
+  // ...
+  if (score <= 60) return "Confirmed";
+  // ...
+  return "Strategic Asset";
+
+  Spot 2 — the band progression array around line 847:
+  // OLD:
+  { label: "Quantifying", range: "≤16" },
+  // ... Measuring ...
+  { label: "Acting", range: "39–60" },
+  // ... Managing ...
+  { label: "Full Capture", range: "80–100" },
+
+  // NEW:
+  { label: "Pre-Measurement", range: "≤16" },
+  // ... Signal ...
+  { label: "Confirmed", range: "39–60" },
+  // ... Managed ROI ...
+  { label: "Strategic Asset", range: "80–100" },
+
+  Spot 3 — the conditional copy block around line 1483:
+  // OLD:
+  body: band === "Quantifying" || band === "Measuring"
+    ? "..."
+    : band === "Acting"
+    ? "..."
+    : "..."
+
+  // NEW:
+  body: band === "Pre-Measurement" || band === "Signal"
+    ? "..."
+    : band === "Confirmed"
+    ? "..."
+    : "..."
+
+  ---
+  That's all 4 files. No score cutoffs change. No layout changes. Only the 5 label strings.

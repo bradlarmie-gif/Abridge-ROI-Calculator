@@ -744,7 +744,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                 const scoreMap: Record<number, number> = { 1: 4, 2: 12, 3: 19, 4: 25 };
                 return sum + (scoreMap[lvl] ?? 0);
               }, 0);
-              const band = totalScore <= 16 ? 'Quantifying' : totalScore <= 38 ? 'Measuring' : totalScore <= 60 ? 'Acting' : totalScore <= 79 ? 'Managing' : 'Full Capture';
+              const band = totalScore <= 16 ? 'Pre-Measurement' : totalScore <= 38 ? 'Signal' : totalScore <= 60 ? 'Confirmed' : totalScore <= 79 ? 'Managed ROI' : 'Strategic Asset';
               return (
                 <div className="flex items-center justify-between mb-6">
                   <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px]">Maturity Score</p>
