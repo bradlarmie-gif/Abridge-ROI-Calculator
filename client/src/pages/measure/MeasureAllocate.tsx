@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
   type MeasureState,
+  type MeasureCareSetting,
   formatCurrency,
   formatNumber,
   getMonthsFromGoLive,
@@ -111,6 +112,26 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   const activeMetrics = getActiveMetrics(state);
   const multiSetting = activeSettings.length > 1;
 
+  const providerSettings = activeSettings.filter(s => s !== 'nursing');
+  const providerSettingCount = Math.max(1, providerSettings.length);
+
+  const resolveSettingCounts = (s: string) => {
+    const sData = (state.settingData as Record<string, Record<string, number>>)?.[s] || {};
+    const splitCount = s === 'nursing' ? 1 : providerSettingCount;
+    const sProviders = sData.deploy_providers
+      ?? (multiSetting ? Math.round(providers / splitCount) : providers);
+    const sEncounters = sData.deploy_totalEncounters
+      ?? (multiSetting ? Math.round(totalEncounters / splitCount) : totalEncounters);
+    const sAdopted = Math.round(sEncounters * (utilizationRate / 100));
+    return { sProviders, sEncounters, sAdopted };
+  };
+
+  const settingTotals: Record<string, { providers: number; encounters: number; low: number; high: number }> = {};
+  for (const s of activeSettings) {
+    const { sProviders, sEncounters } = resolveSettingCounts(s);
+    settingTotals[s] = { providers: sProviders, encounters: sEncounters, low: 0, high: 0 };
+  }
+
   const afterHoursMetric = activeMetrics.find(m =>
     ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift', 'afterHoursWork', 'workOutsideHours', 'wowTime'].includes(m.metricId)
   );
@@ -125,9 +146,7 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
 
   for (const s of activeSettings) {
     const sSettingData = state.settingData?.[s] || {};
-    const sAdoptedEncounters = Math.round(
-      (sSettingData.deploy_totalEncounters || totalEncounters) * (utilizationRate / 100)
-    );
+    const { sProviders: _sP, sEncounters: _sE, sAdopted: sAdoptedEncounters } = resolveSettingCounts(s);
     const effectiveAdopted = sAdoptedEncounters > 0 ? sAdoptedEncounters : adoptedEncounters;
     const emEligibleEncounters = Math.round(effectiveAdopted * emEligibilityPct);
 
@@ -154,8 +173,11 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
 
     if (wrvuD > 0 && emEligibleEncounters > 0) {
       const base = wrvuD * emEligibleEncounters * assumptions.conversionFactor;
-      billingCaptureLow += base * attrLow * realLow;
-      billingCaptureHigh += base * attrHigh * realHigh;
+      const lo = base * attrLow * realLow;
+      const hi = base * attrHigh * realHigh;
+      billingCaptureLow += lo;
+      billingCaptureHigh += hi;
+      if (settingTotals[s]) { settingTotals[s].low += lo; settingTotals[s].high += hi; }
       const sourceNote = wrvuSource === 'implied from E/M levels'
         ? ` (implied from E/M ${emB.toFixed(0)}→${emA.toFixed(0)})`
         : '';
@@ -172,10 +194,13 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
       const cmiA = cmiMetric?.after ?? (sSettingData.cmi_after ?? 0);
       const cmiD = Math.max(0, cmiA - cmiB);
       if (cmiD > 0) {
-        const discharges = sSettingData.deploy_totalEncounters || totalEncounters;
+        const discharges = sSettingData.deploy_totalEncounters || _sE;
         const base = cmiD * discharges * assumptions.drgBaseRate;
-        billingCaptureLow += base * attrLow * realLow;
-        billingCaptureHigh += base * attrHigh * realHigh;
+        const lo = base * attrLow * realLow;
+        const hi = base * attrHigh * realHigh;
+        billingCaptureLow += lo;
+        billingCaptureHigh += hi;
+        if (settingTotals[s]) { settingTotals[s].low += lo; settingTotals[s].high += hi; }
         billingDetails.push({
           label: `CMI improvement: +${cmiD.toFixed(3)}${multiSetting ? ' (Inpatient)' : ''}`,
           detail: `${formatNumber(discharges)} annual discharges × $${formatNumber(assumptions.drgBaseRate)} DRG base rate`,
@@ -193,7 +218,7 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
 
   if (activeSettings.includes('ed')) {
     const edSettingData = state.settingData?.ed || {};
-    const edTotalEncounters = edSettingData.deploy_totalEncounters || totalEncounters;
+    const edTotalEncounters = edSettingData.deploy_totalEncounters || resolveSettingCounts('ed').sEncounters;
 
     const lwbsMetric = activeMetrics.find(m => m.metricId === 'lwbsRate');
     const lwbsB = lwbsMetric?.before ?? (edSettingData.lwbsRate_before ?? 0);
@@ -203,8 +228,11 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     if (lwbsD > 0 && edTotalEncounters > 0) {
       const annualVisits = edTotalEncounters * 12;
       const recovered = (lwbsD / 100) * annualVisits;
-      revenueRecoveryLow += recovered * assumptions.edRevenuePerVisit * attrLow;
-      revenueRecoveryHigh += recovered * assumptions.edRevenuePerVisit * attrHigh;
+      const lo = recovered * assumptions.edRevenuePerVisit * attrLow;
+      const hi = recovered * assumptions.edRevenuePerVisit * attrHigh;
+      revenueRecoveryLow += lo;
+      revenueRecoveryHigh += hi;
+      if (settingTotals.ed) { settingTotals.ed.low += lo; settingTotals.ed.high += hi; }
       recoveryDetails.push({
         label: `LWBS reduction: ${lwbsB.toFixed(1)}% → ${lwbsA.toFixed(1)}% (−${lwbsD.toFixed(1)} pts)`,
         detail: `Monthly ED visits: ${formatNumber(edTotalEncounters)} · Revenue per visit: $${assumptions.edRevenuePerVisit}`,
@@ -214,7 +242,8 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
 
   for (const s of activeSettings) {
     const sData = state.settingData?.[s] || {};
-    const effectiveEncounters = sData.deploy_totalEncounters || totalEncounters;
+    const { sEncounters: resolvedEncounters } = resolveSettingCounts(s);
+    const effectiveEncounters = sData.deploy_totalEncounters || resolvedEncounters;
 
     const denialMetric = activeMetrics.find(m =>
       ['initialDenialRate', 'initial_denial_rate', 'medicalNecessityDenialRate', 'denialRate', 'claimDenialRate'].includes(m.metricId)
@@ -229,8 +258,11 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     if (denialDelta > 0 && effectiveEncounters > 0) {
       const avgDenialCost = s === 'inpatient' ? 3_500 : s === 'ed' ? 500 : 350;
       const base = (denialDelta / 100) * effectiveEncounters * avgDenialCost;
-      revenueRecoveryLow += base * attrLow;
-      revenueRecoveryHigh += base * attrHigh;
+      const lo = base * attrLow;
+      const hi = base * attrHigh;
+      revenueRecoveryLow += lo;
+      revenueRecoveryHigh += hi;
+      if (settingTotals[s]) { settingTotals[s].low += lo; settingTotals[s].high += hi; }
       recoveryDetails.push({
         label: `Denial rate reduction: −${denialDelta.toFixed(1)} pts${activeSettings.length > 1 ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
         detail: `${formatNumber(effectiveEncounters)} encounters · avg denial cost: $${avgDenialCost.toLocaleString()}/case`,
@@ -240,7 +272,8 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
 
   for (const s of activeSettings) {
     const sData2 = state.settingData?.[s] || {};
-    const effectiveEnc2 = sData2.deploy_totalEncounters || totalEncounters;
+    const { sEncounters: resolvedEnc2 } = resolveSettingCounts(s);
+    const effectiveEnc2 = sData2.deploy_totalEncounters || resolvedEnc2;
 
     const netCollMetric = activeMetrics.find(m =>
       ['netCollectionRate', 'net_collection_rate'].includes(m.metricId) && (!m.setting || m.setting === s)
@@ -252,8 +285,11 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     if (netCollDelta > 0 && effectiveEnc2 > 0) {
       const annualBillableRevenue = effectiveEnc2 * assumptions.revenuePerVisit;
       const base = (netCollDelta / 100) * annualBillableRevenue;
-      revenueRecoveryLow += base * attrLow;
-      revenueRecoveryHigh += base * attrHigh;
+      const lo = base * attrLow;
+      const hi = base * attrHigh;
+      revenueRecoveryLow += lo;
+      revenueRecoveryHigh += hi;
+      if (settingTotals[s]) { settingTotals[s].low += lo; settingTotals[s].high += hi; }
       recoveryDetails.push({
         label: `Net collection rate improvement: +${netCollDelta.toFixed(1)} pts${activeSettings.length > 1 ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
         detail: `${formatNumber(effectiveEnc2)} encounters × $${assumptions.revenuePerVisit}/visit billable revenue`,
@@ -277,8 +313,8 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     const hccB = hccMetric?.before ?? (sData3.hccCaptureRate_before ?? 0);
     const hccA = hccMetric?.after ?? (sData3.hccCaptureRate_after ?? 0);
     const hccDelta = Math.max(0, hccA - hccB);
-    const maEncounterPct = (state as any).maEncounterPct ?? 0;
-    const sAdopted3 = Math.round((sData3.deploy_totalEncounters || totalEncounters) * (utilizationRate / 100));
+    const maEncounterPct = state.maEncounterPct ?? 0;
+    const { sAdopted: sAdopted3 } = resolveSettingCounts(s);
     const effectiveAdopted3 = sAdopted3 > 0 ? sAdopted3 : adoptedEncounters;
     const maEncounters = Math.round(effectiveAdopted3 * (maEncounterPct / 100));
     const avgHccPointValue = 1200;
@@ -286,8 +322,11 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     if (hccDelta > 0 && maEncounters > 0) {
       hasHccCapture = true;
       const base = (hccDelta / 100) * maEncounters * avgHccPointValue;
-      hccCaptureLow += Math.round(base * attrLow * realLow);
-      hccCaptureHigh += Math.round(base * attrHigh * realHigh);
+      const lo = Math.round(base * attrLow * realLow);
+      const hi = Math.round(base * attrHigh * realHigh);
+      hccCaptureLow += lo;
+      hccCaptureHigh += hi;
+      if (settingTotals[s]) { settingTotals[s].low += lo; settingTotals[s].high += hi; }
       hccDetails.push({
         label: `HCC capture rate: +${hccDelta.toFixed(1)} pts${activeSettings.length > 1 ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
         detail: `${formatNumber(maEncounters)} MA encounters (${maEncounterPct}% of adopted) · $${formatNumber(avgHccPointValue)}/HCC point`,
@@ -308,12 +347,15 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     const alosAfter = alosMetric?.after ?? (ipData.lengthOfStay_after ?? 0);
     const alosDelta = Math.max(0, alosBefore - alosAfter);
 
-    const ipEncounters = ipData.deploy_totalEncounters || (activeSettings.length === 1 ? totalEncounters : 0);
+    const ipEncounters = ipData.deploy_totalEncounters || resolveSettingCounts('inpatient').sEncounters;
 
     if (alosDelta > 0 && ipEncounters > 0) {
       const costBase = alosDelta * ipEncounters * assumptions.costPerBedDay;
-      patientFlowLow += costBase * attrLow;
-      patientFlowHigh += costBase * attrHigh;
+      const costLo = costBase * attrLow;
+      const costHi = costBase * attrHigh;
+      patientFlowLow += costLo;
+      patientFlowHigh += costHi;
+      if (settingTotals.inpatient) { settingTotals.inpatient.low += costLo; settingTotals.inpatient.high += costHi; }
       patientFlowDetails.push({
         label: `ALOS cost avoidance: ${alosBefore.toFixed(1)} → ${alosAfter.toFixed(1)} days (−${alosDelta.toFixed(1)} days/admission)`,
         detail: `${formatNumber(ipEncounters)} annual admissions · cost per bed day: $${assumptions.costPerBedDay.toLocaleString()}`,
@@ -322,8 +364,11 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
 
       if (assumptions.censusConstrained) {
         const revBase = alosDelta * ipEncounters * assumptions.revenuePerNewAdmission * 0.3;
-        patientFlowLow += revBase * attrLow;
-        patientFlowHigh += revBase * attrHigh;
+        const revLo = revBase * attrLow;
+        const revHi = revBase * attrHigh;
+        patientFlowLow += revLo;
+        patientFlowHigh += revHi;
+        if (settingTotals.inpatient) { settingTotals.inpatient.low += revLo; settingTotals.inpatient.high += revHi; }
         patientFlowDetails.push({
           label: `ALOS throughput revenue: freed beds → new admissions (census-constrained)`,
           detail: `30% bed refill rate × $${assumptions.revenuePerNewAdmission.toLocaleString()} per new admission`,
@@ -342,8 +387,11 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
 
     if (readmitDelta > 0 && ipEncounters > 0) {
       const base = (readmitDelta / 100) * ipEncounters * avgReadmissionCost;
-      patientFlowLow += base * attrLow;
-      patientFlowHigh += base * attrHigh;
+      const rLo = base * attrLow;
+      const rHi = base * attrHigh;
+      patientFlowLow += rLo;
+      patientFlowHigh += rHi;
+      if (settingTotals.inpatient) { settingTotals.inpatient.low += rLo; settingTotals.inpatient.high += rHi; }
       patientFlowDetails.push({
         label: `Readmission reduction: −${readmitDelta.toFixed(1)} pts`,
         detail: `${formatNumber(ipEncounters)} annual discharges · CMS HRRP benchmark: $${formatNumber(avgReadmissionCost)}/readmission`,
@@ -364,12 +412,14 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     );
     if (patientsMetric && patientsMetric.before != null && patientsMetric.after != null) {
       const patientDelta = patientsMetric.after - patientsMetric.before;
-      if (patientDelta > 0 && providers > 0) {
+      const opProviders = resolveSettingCounts('outpatient').sProviders;
+      if (patientDelta > 0 && opProviders > 0) {
         hasCapacityRevenue = true;
-        const annualAdditionalVisits = patientDelta * providers * 12;
+        const annualAdditionalVisits = patientDelta * opProviders * 12;
         const base = annualAdditionalVisits * assumptions.revenuePerVisit;
         capacityRevenueLow = base * attrLow * realLow;
         capacityRevenueHigh = base * attrHigh * realHigh;
+        if (settingTotals.outpatient) { settingTotals.outpatient.low += capacityRevenueLow; settingTotals.outpatient.high += capacityRevenueHigh; }
       }
     }
   }
@@ -492,6 +542,18 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   const totalHigh = billingCaptureHigh + revenueRecoveryHigh + hccCaptureHigh + patientFlowHigh + capacityRevenueHigh + costReductionHigh;
   const hasAnyFinancial = totalLow > 0;
 
+  const settingBreakdown = activeSettings.map(s => {
+    const st = settingTotals[s] || { providers: 0, encounters: 0, low: 0, high: 0 };
+    return {
+      setting: s,
+      label: s === 'ed' ? 'Emergency Dept' : s === 'inpatient' ? 'Inpatient' : s === 'nursing' ? 'Nursing' : 'Outpatient',
+      providers: st.providers,
+      encounters: st.encounters,
+      totalLow: st.low,
+      totalHigh: st.high,
+    };
+  });
+
   return {
     setting,
     isED,
@@ -501,6 +563,7 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     totalEncounters,
     utilizationRate,
     activeSettings,
+    settingBreakdown,
     hasBillingCapture,
     billingCaptureLow,
     billingCaptureHigh,
@@ -709,6 +772,42 @@ export default function MeasureAllocate({
               Add wRVU, E/M, CMI, LWBS, or after-hours data on the previous page to see estimated financial impact.
             </p>
           </motion.div>
+        )}
+
+        {fin.activeSettings.length > 1 && toggledTotal.low > 0 && fin.settingBreakdown && (
+          <div className="mt-6 mb-8 rounded-xl border border-[#E5E5E5] overflow-hidden" data-testid="table-setting-breakdown">
+            <p className="text-[10px] text-[#AAAAAA] px-3 pt-2">
+              All value streams included (toggle streams below to adjust)
+            </p>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-[#F5F0EB]">
+                  <th className="text-left p-3 text-[11px] font-semibold text-[#666666] uppercase tracking-wide">Setting</th>
+                  <th className="text-right p-3 text-[11px] font-semibold text-[#666666] uppercase tracking-wide">Providers</th>
+                  <th className="text-right p-3 text-[11px] font-semibold text-[#666666] uppercase tracking-wide">Encounters</th>
+                  <th className="text-right p-3 text-[11px] font-semibold text-[#666666] uppercase tracking-wide">Value Range</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fin.settingBreakdown.map(row => (
+                  <tr key={row.setting} className="border-t border-[#E5E5E5]">
+                    <td className="p-3 font-medium text-black">{row.label}</td>
+                    <td className="p-3 text-right text-[#525252]">{row.providers.toLocaleString()}</td>
+                    <td className="p-3 text-right text-[#525252]">{row.encounters.toLocaleString()}</td>
+                    <td className="p-3 text-right font-semibold text-black">
+                      {fmt(row.totalLow)}–{fmt(row.totalHigh)}
+                    </td>
+                  </tr>
+                ))}
+                <tr className="border-t-2 border-[#1A1A1A] bg-[#F5F0EB]">
+                  <td className="p-3 font-bold text-black" colSpan={3}>Total</td>
+                  <td className="p-3 text-right font-bold text-black">
+                    {fmt(fin.totalLow)}–{fmt(fin.totalHigh)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         )}
 
         <div className="space-y-4 mb-8">

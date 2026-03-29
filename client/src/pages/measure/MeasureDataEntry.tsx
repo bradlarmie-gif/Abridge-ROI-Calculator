@@ -131,6 +131,31 @@ export default function MeasureDataEntry({
     };
   }, [state.settingData]);
 
+  const updateSettingData = useCallback((setting: MeasureCareSetting, field: string, value: number) => {
+    const current = state.settingData?.[setting] || {};
+    updateState({
+      settingData: {
+        ...state.settingData,
+        [setting]: { ...current, [field]: value },
+      },
+    });
+  }, [state.settingData, updateState]);
+
+  const providerSettingsList = useMemo(() =>
+    activeSettings.filter(s => s !== 'nursing'), [activeSettings]);
+
+  const missingSplitData = useMemo(() => {
+    if (providerSettingsList.length <= 1) return false;
+    return providerSettingsList.some(s => {
+      const sd = state.settingData?.[s];
+      return !sd?.deploy_totalEncounters;
+    });
+  }, [providerSettingsList, state.settingData]);
+
+  const settingLabelMap = useCallback((s: MeasureCareSetting) => {
+    return s === 'ed' ? 'Emergency Dept' : s === 'inpatient' ? 'Inpatient' : s === 'outpatient' ? 'Outpatient' : 'Nursing';
+  }, []);
+
   const providerLabel = useMemo(() => {
     if (hasProviderSettings && !hasNursing) return 'Providers';
     if (!hasProviderSettings && hasNursing) return 'Nurses';
@@ -445,6 +470,58 @@ export default function MeasureDataEntry({
                       {state.deployment.encounterCoverageRate}% covered
                     </span>
                   </div>
+                </div>
+              )}
+
+              {providerSettingsList.length > 1 && (
+                <div className="mt-4">
+                  <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-wide mb-3">
+                    Enter counts per care setting to prevent double-counting
+                  </p>
+                  {providerSettingsList.map(setting => (
+                    <div key={setting} className="mb-4 p-4 bg-[#F5F0EB] rounded-lg" data-testid={`setting-split-${setting}`}>
+                      <p className="text-xs font-semibold text-[#525252] uppercase tracking-wide mb-3">
+                        {settingLabelMap(setting)}
+                      </p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">
+                            Providers
+                          </label>
+                          <FormattedNumberInput
+                            value={state.settingData?.[setting]?.deploy_providers ?? ''}
+                            onChange={v => updateSettingData(setting, 'deploy_providers', v)}
+                            placeholder="e.g. 30"
+                            className="h-10 bg-white border-[#E5E5E5] text-right"
+                            data-testid={`input-providers-${setting}`}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">
+                            Annual Encounters
+                          </label>
+                          <FormattedNumberInput
+                            value={state.settingData?.[setting]?.deploy_totalEncounters ?? ''}
+                            onChange={v => updateSettingData(setting, 'deploy_totalEncounters', v)}
+                            placeholder="e.g. 60,000"
+                            className="h-10 bg-white border-[#E5E5E5] text-right"
+                            data-testid={`input-encounters-${setting}`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-[10px] text-[#AAAAAA] italic mt-2">
+                    If providers work across both settings, count them in their primary setting only.
+                  </p>
+                  {missingSplitData && (
+                    <div className="flex gap-2 bg-[#FFFBEB] border border-[#F59E0B]/30 rounded-lg p-3 mt-3" data-testid="warning-missing-split">
+                      <span className="text-[#92400E] text-sm shrink-0">⚠</span>
+                      <p className="text-xs text-[#92400E]">
+                        Using global encounter count for all settings. Enter per-setting counts above for accurate calculations.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </motion.div>

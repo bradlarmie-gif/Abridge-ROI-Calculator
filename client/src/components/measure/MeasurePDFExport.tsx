@@ -153,15 +153,34 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
   const attrHi = Math.min(0.75, attrMid + 0.12);
   const realLo = Math.max(0.40, DEFAULT_ASMP.realization / 100 - 0.10);
   const realHi = Math.min(0.99, DEFAULT_ASMP.realization / 100 + 0.10);
+  const multiSetting = activeSettings.length > 1;
+
+  const providerSettings = activeSettings.filter(s => s !== 'nursing');
+  const providerSettingCount = Math.max(1, providerSettings.length);
+
+  const resolveSettingCounts = (s: MeasureCareSetting | string) => {
+    const sData = state.settingData?.[s as MeasureCareSetting] || {};
+    const splitCount = s === 'nursing' ? 1 : providerSettingCount;
+    const sProviders = sData.deploy_providers
+      ?? (multiSetting ? Math.round(providers / splitCount) : providers);
+    const sEncounters = sData.deploy_totalEncounters
+      ?? (multiSetting ? Math.round(totalEncounters / splitCount) : totalEncounters);
+    const sAdopted = Math.round(sEncounters * (utilRate / 100));
+    return { sProviders, sEncounters, sAdopted };
+  };
+
+  const pdfSettingTotals: Record<string, { providers: number; encounters: number; low: number; high: number }> = {};
+  for (const s of activeSettings) {
+    const { sProviders, sEncounters } = resolveSettingCounts(s);
+    pdfSettingTotals[s] = { providers: sProviders, encounters: sEncounters, low: 0, high: 0 };
+  }
 
   let billLo = 0, billHi = 0;
   const billDetails: { label: string; formula: string }[] = [];
 
   for (const cs of activeSettings) {
     const sd = state.settingData?.[cs] || {};
-    const sAdopted = sd.deploy_totalEncounters
-      ? Math.round(sd.deploy_totalEncounters * (utilRate / 100))
-      : adopted;
+    const { sAdopted } = resolveSettingCounts(cs);
 
     const wrvuMetric = activeMetrics.find(m =>
       ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === cs)
@@ -186,8 +205,11 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
 
     if (wrvuD > 0 && sAdopted > 0) {
       const base = wrvuD * sAdopted * cf;
-      billLo += base * attrLo * realLo;
-      billHi += base * attrHi * realHi;
+      const lo = base * attrLo * realLo;
+      const hi = base * attrHi * realHi;
+      billLo += lo;
+      billHi += hi;
+      if (pdfSettingTotals[cs]) { pdfSettingTotals[cs].low += lo; pdfSettingTotals[cs].high += hi; }
       const sourceNote = wrvuSource === 'implied from E/M levels'
         ? ` (implied from E/M ${emB.toFixed(0)}\u2192${emA.toFixed(0)})`
         : '';
@@ -201,11 +223,14 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
       const cmiB = sd.cmi_before ?? 0;
       const cmiA = sd.cmi_after ?? 0;
       const cmiD = Math.max(0, cmiA - cmiB);
-      const discharges = sd.deploy_totalEncounters || totalEncounters;
+      const discharges = sd.deploy_totalEncounters || resolveSettingCounts(cs).sEncounters;
       if (cmiD > 0 && discharges > 0) {
         const base = cmiD * discharges * DEFAULT_ASMP.drgBaseRate;
-        billLo += base * attrLo * realLo;
-        billHi += base * attrHi * realHi;
+        const cLo = base * attrLo * realLo;
+        const cHi = base * attrHi * realHi;
+        billLo += cLo;
+        billHi += cHi;
+        if (pdfSettingTotals[cs]) { pdfSettingTotals[cs].low += cLo; pdfSettingTotals[cs].high += cHi; }
         billDetails.push({
           label: `CMI improvement: +${cmiD.toFixed(3)}`,
           formula: `+${cmiD.toFixed(3)} CMI \u00D7 ${fmtN(discharges)} discharges \u00D7 $${fmtN(DEFAULT_ASMP.drgBaseRate)} DRG base rate`,
@@ -219,13 +244,16 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
 
   if (isED) {
     const edSD = state.settingData?.ed || {};
-    const edEnc = edSD.deploy_totalEncounters || totalEncounters;
+    const edEnc = edSD.deploy_totalEncounters || resolveSettingCounts('ed').sEncounters;
     const lwbsD = (edSD.lwbsRate_before ?? 0) - (edSD.lwbsRate_after ?? 0);
     if (lwbsD > 0 && edEnc > 0) {
       const annualVisits = edEnc * 12;
       const recovered = (lwbsD / 100) * annualVisits;
-      recLo += recovered * DEFAULT_ASMP.edRevenuePerVisit * attrLo;
-      recHi += recovered * DEFAULT_ASMP.edRevenuePerVisit * attrHi;
+      const lwLo = recovered * DEFAULT_ASMP.edRevenuePerVisit * attrLo;
+      const lwHi = recovered * DEFAULT_ASMP.edRevenuePerVisit * attrHi;
+      recLo += lwLo;
+      recHi += lwHi;
+      if (pdfSettingTotals.ed) { pdfSettingTotals.ed.low += lwLo; pdfSettingTotals.ed.high += lwHi; }
       recDetails.push({
         label: `LWBS reduction: \u2212${lwbsD.toFixed(1)} percentage points`,
         formula: `${lwbsD.toFixed(1)}pp \u00D7 ${fmtN(annualVisits)} annual visits \u00D7 $${DEFAULT_ASMP.edRevenuePerVisit}/visit`,
@@ -235,7 +263,7 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
 
   for (const cs of activeSettings) {
     const sd = state.settingData?.[cs] || {};
-    const effectiveEnc = sd.deploy_totalEncounters || totalEncounters;
+    const effectiveEnc = sd.deploy_totalEncounters || resolveSettingCounts(cs).sEncounters;
 
     const denialMetric = activeMetrics.find(m =>
       ['initialDenialRate', 'initial_denial_rate', 'medicalNecessityDenialRate', 'denialRate', 'claimDenialRate'].includes(m.metricId)
@@ -249,8 +277,11 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
     if (denialD > 0 && effectiveEnc > 0) {
       const avgCost = cs === 'inpatient' ? 3_500 : cs === 'ed' ? 500 : 350;
       const base = (denialD / 100) * effectiveEnc * avgCost;
-      recLo += base * attrLo;
-      recHi += base * attrHi;
+      const dLo = base * attrLo;
+      const dHi = base * attrHi;
+      recLo += dLo;
+      recHi += dHi;
+      if (pdfSettingTotals[cs]) { pdfSettingTotals[cs].low += dLo; pdfSettingTotals[cs].high += dHi; }
       recDetails.push({
         label: `Denial rate reduction: \u2212${denialD.toFixed(1)} pts${activeSettings.length > 1 ? ` (${settingShort(cs)})` : ''}`,
         formula: `${denialD.toFixed(1)}pp \u00D7 ${fmtN(effectiveEnc)} encounters \u00D7 $${avgCost.toLocaleString()}/denial`,
@@ -268,11 +299,14 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
     const alosBefore = alosMetric?.before ?? (ipData.lengthOfStay_before ?? 0);
     const alosAfter = alosMetric?.after ?? (ipData.lengthOfStay_after ?? 0);
     const alosD = Math.max(0, alosBefore - alosAfter);
-    const ipEnc = ipData.deploy_totalEncounters || (activeSettings.length === 1 ? totalEncounters : 0);
+    const ipEnc = ipData.deploy_totalEncounters || resolveSettingCounts('inpatient').sEncounters;
     if (alosD > 0 && ipEnc > 0) {
       const costBase = alosD * ipEnc * DEFAULT_ASMP.costPerBedDay;
-      pfLo += costBase * attrLo;
-      pfHi += costBase * attrHi;
+      const acLo = costBase * attrLo;
+      const acHi = costBase * attrHi;
+      pfLo += acLo;
+      pfHi += acHi;
+      if (pdfSettingTotals.inpatient) { pdfSettingTotals.inpatient.low += acLo; pdfSettingTotals.inpatient.high += acHi; }
       pfDetails.push({
         label: `ALOS cost avoidance: ${alosBefore.toFixed(1)} \u2192 ${alosAfter.toFixed(1)} days`,
         formula: `${alosD.toFixed(1)} days \u00D7 ${fmtN(ipEnc)} admissions \u00D7 $${DEFAULT_ASMP.costPerBedDay.toLocaleString()}/bed day`,
@@ -282,8 +316,11 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
       if (censusConstrained) {
         const revPerAdmission = 8000;
         const revBase = alosD * ipEnc * revPerAdmission * 0.3;
-        pfLo += revBase * attrLo;
-        pfHi += revBase * attrHi;
+        const rvLo = revBase * attrLo;
+        const rvHi = revBase * attrHi;
+        pfLo += rvLo;
+        pfHi += rvHi;
+        if (pdfSettingTotals.inpatient) { pdfSettingTotals.inpatient.low += rvLo; pdfSettingTotals.inpatient.high += rvHi; }
         pfDetails.push({
           label: `ALOS throughput revenue (census-constrained)`,
           formula: `${alosD.toFixed(1)} days \u00D7 ${fmtN(ipEnc)} \u00D7 $${revPerAdmission.toLocaleString()} \u00D7 30% refill`,
@@ -299,11 +336,13 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
     );
     if (patientsMetric && patientsMetric.before != null && patientsMetric.after != null) {
       const patientD = patientsMetric.after - patientsMetric.before;
-      if (patientD > 0 && providers > 0) {
-        const annualVisits = patientD * providers * 12;
+      const opProv = resolveSettingCounts('outpatient').sProviders;
+      if (patientD > 0 && opProv > 0) {
+        const annualVisits = patientD * opProv * 12;
         const base = annualVisits * DEFAULT_ASMP.revenuePerVisit;
         capLo = base * attrLo * realLo;
         capHi = base * attrHi * realHi;
+        if (pdfSettingTotals.outpatient) { pdfSettingTotals.outpatient.low += capLo; pdfSettingTotals.outpatient.high += capHi; }
       }
     }
   }
@@ -437,6 +476,18 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
     }
   }
 
+  const settingBreakdown = multiSetting ? activeSettings.map(s => {
+    const st = pdfSettingTotals[s] || { providers: 0, encounters: 0, low: 0, high: 0 };
+    return {
+      setting: s,
+      label: s === 'ed' ? 'Emergency Dept' : s === 'inpatient' ? 'Inpatient' : s === 'nursing' ? 'Nursing' : 'Outpatient',
+      providers: st.providers,
+      encounters: st.encounters,
+      totalLow: st.low,
+      totalHigh: st.high,
+    };
+  }) : [];
+
   return {
     hasBill: billLo > 0, billLo, billHi, billDetails,
     hasRec: recLo > 0, recLo, recHi, recDetails,
@@ -447,6 +498,7 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
     attrRange: `${Math.round(attrLo * 100)}\u2013${Math.round(attrHi * 100)}%`,
     enabledStreams,
     excludedStreams,
+    settingBreakdown,
   };
 }
 
@@ -668,6 +720,29 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
                   <Text style={{ fontSize: 7, color: C.muted }}>{fin.enabledStreams.join(" \u00B7 ")}</Text>
                 )}
                 <Text style={{ fontSize: 7, color: C.muted, marginTop: 2 }}>Excluded by reviewer: {fin.excludedStreams.join(", ")}</Text>
+              </View>
+            )}
+
+            {fin.settingBreakdown.length > 1 && (
+              <View style={{ marginBottom: 14, borderWidth: 1, borderColor: "#E5E5E5", borderRadius: 6, overflow: "hidden" }}>
+                <View style={{ flexDirection: "row", backgroundColor: "#F5F0EB", paddingVertical: 6, paddingHorizontal: 8 }}>
+                  <Text style={{ flex: 2, fontSize: 7, fontWeight: "bold", color: C.muted, textTransform: "uppercase" }}>Setting</Text>
+                  <Text style={{ flex: 1, fontSize: 7, fontWeight: "bold", color: C.muted, textAlign: "right", textTransform: "uppercase" }}>Providers</Text>
+                  <Text style={{ flex: 1, fontSize: 7, fontWeight: "bold", color: C.muted, textAlign: "right", textTransform: "uppercase" }}>Encounters</Text>
+                  <Text style={{ flex: 2, fontSize: 7, fontWeight: "bold", color: C.muted, textAlign: "right", textTransform: "uppercase" }}>Value Range</Text>
+                </View>
+                {fin.settingBreakdown.map((row: { setting: string; label: string; providers: number; encounters: number; totalLow: number; totalHigh: number }) => (
+                  <View key={row.setting} style={{ flexDirection: "row", borderTopWidth: 1, borderTopColor: "#E5E5E5", paddingVertical: 5, paddingHorizontal: 8 }}>
+                    <Text style={{ flex: 2, fontSize: 8, fontWeight: "600", color: C.dark }}>{row.label}</Text>
+                    <Text style={{ flex: 1, fontSize: 8, color: C.muted, textAlign: "right" }}>{row.providers.toLocaleString()}</Text>
+                    <Text style={{ flex: 1, fontSize: 8, color: C.muted, textAlign: "right" }}>{row.encounters.toLocaleString()}</Text>
+                    <Text style={{ flex: 2, fontSize: 8, fontWeight: "600", color: C.dark, textAlign: "right" }}>{fmtRange(Math.round(row.totalLow), Math.round(row.totalHigh))}</Text>
+                  </View>
+                ))}
+                <View style={{ flexDirection: "row", borderTopWidth: 2, borderTopColor: C.dark, backgroundColor: "#F5F0EB", paddingVertical: 5, paddingHorizontal: 8 }}>
+                  <Text style={{ flex: 4, fontSize: 8, fontWeight: "bold", color: C.dark }}>Total</Text>
+                  <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: C.dark, textAlign: "right" }}>{fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))}</Text>
+                </View>
               </View>
             )}
 

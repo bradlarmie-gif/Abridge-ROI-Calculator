@@ -1,0 +1,78 @@
+ Prompt:                                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  In client/src/components/measure/MeasurePDFExport.tsx, make the following changes:                                                                                                                           
+                                              
+  ---                                                                                                                                                                                                          
+  1. Remove physician OT monetization                                                                     
+                                                                                                                                                                                                               
+  Find the after-hours block inside computeFinancials — it starts with if (ahDelta > 0 && providers > 0) and calculates annual = hrsPerWeek * providers * DEFAULT_ASMP.otPremiumRate * 52. Remove the lines
+  that add to costLo / costHi. Keep the costDetails.push(...) call but change it to:                                                                                                                           
+  costDetails.push({                                                                                                                                                                                           
+    label: `After-hours documentation eliminated: −${ahDelta.toFixed(1)} ${metricUnit || 'hrs/day'}/provider`,
+    formula: `Tracked as capacity recovered and wellbeing signal — not monetized for salaried providers`,                                                                                                      
+  });                                                                                                     
+  Do not add anything to costLo or costHi for this metric.                                                                                                                                                     
+                                                                                                          
+  Also remove "OT premium rate" from the assumptions table on the methodology page (Page 6).                                                                                                                   
+                                              
+  ---                                                                                                                                                                                                          
+  2. Fix physician replacement cost benchmarks                                                                                                                                                                 
+                                                                                                                                                                                                               
+  Find the retention block: retentionLo = 1 * 50_000 * attrLo and retentionHi = 3 * 150_000 * attrHi. Change to:                                                                                               
+  retentionLo = 1 * 250_000 * attrLo;                                                                                                                                                                          
+  retentionHi = 3 * 500_000 * attrHi;                                                                     
+  Update the formula string to: "1–3 avoided departures × $250K–$500K replacement cost (AMGA benchmark)".
+                                                                                                                                                                                                               
+  ---                                         
+  3. Make the PDF respect stream toggles                                                                                                                                                                       
+                                                                                                          
+  The generateMeasurePDF(state) function receives state: MeasureState. If state.streamStates exists (an object like { billingCapture: true, revenueRecovery: false, ... }), use it to gate which streams are   
+  included in computeFinancials and rendered on the financial page.                                       
+                                                                                                                                                                                                               
+  In computeFinancials, add a parameter streamStates?: Record<string, boolean>. Wrap each stream's calculation in a guard:
+  - Billing capture: if (!streamStates || streamStates.billingCapture !== false)                                                                                                                               
+  - Revenue recovery: if (!streamStates || streamStates.revenueRecovery !== false)                        
+  - Patient flow: if (!streamStates || streamStates.patientFlow !== false)                                                                                                                                     
+  - Capacity revenue: if (!streamStates || streamStates.capacityRevenue !== false)                        
+  - Cost reduction (after-hours, retention, agency): if (!streamStates || streamStates.costReduction !== false)                                                                                                
+                                                                                                          
+  Pass state.streamStates when calling computeFinancials(state).                                                                                                                                               
+                                          
+  Below the hero number on the financial page, add a small line:                                                                                                                                               
+  Based on [count of enabled streams with data] of [total streams with data] value streams                                                                                                                     
+  If any streams were excluded, add: · [stream names] excluded by reviewer                                                                                                                                     
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  4. Add ROI multiple + value horizon tiers to the financial page                                                                                                                                              
+                                                                                                                                                                                                               
+  This only renders if state.deployment.annualContractValue exists and is greater than 0.                                                                                                                      
+                                                                                                                                                                                                               
+  After the hero number card on Page 3, add two new sections:                                                                                                                                                  
+                                                                                                          
+  Section A — ROI callout (use cardOutline style):                                                                                                                                                             
+  ROI SUMMARY                                                                                                                                                                                                  
+  ──────────────────────────────────────                                                                                                                                                                       
+  Annual investment:      $[annualContractValue]                                                                                                                                                               
+  Modeled annual value:   $[midpoint of totalLo/totalHi]                                                  
+  Return on investment:   [midpoint / annualContractValue, 1 decimal]×                                                                                                                                         
+  ──────────────────────────────────────                                                                  
+  "For every $1 invested in Abridge, [orgName] is generating $[ratio] in measured value."
+                                                                                                                                                                                                               
+  Section B — Value horizon tiers (use a two-row table with finRow style):                                                                                                                                     
+                                                                                                                                                                                                               
+  Classify streams into two tiers:                                                                                                                                                                             
+  - Near-term (0–12 months): billing capture, revenue recovery, patient flow (ALOS), LWBS                                                                                                                      
+  - Building value (12–36 months): capacity revenue, retention signal                                                                                                                                          
+                                                                                                                                                                                                               
+  Show:                                                                                                                                                                                                        
+  VALUE HORIZON                                                                                                                                                                                                
+  ─────────────────────────────────────────────────────
+  Near-term (0–12 mo)    Billing, recovery, throughput    $[nearLow]–$[nearHigh] /yr                                                                                                                           
+  Building value (1–3 yr) Retention, capacity              $[buildLow]–$[buildHigh] /yr                                                                                                                        
+  ─────────────────────────────────────────────────────                                
+                                                                                                                                                                                                               
+  Add a small note: "Near-term value is realizable within the current contract year. Building value compounds as retention risk decreases and capacity is absorbed."
+                                                                                                                                                                                                               
+  ---                                     
+  After these changes, the PDF will: match what was shown live (toggle-aware), use defensible math (no physician OT, correct AMGA replacement costs), and give the CFO two actionable numbers — the ROI        
+  multiple for the board conversation and the horizon split for the finance conversation. 
