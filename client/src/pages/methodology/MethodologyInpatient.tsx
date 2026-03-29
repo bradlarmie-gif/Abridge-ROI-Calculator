@@ -253,65 +253,33 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Admissions at risk × Protection rate × DRG weight increase × Base payment × Realization
+                        CMI (after) − CMI (before) × annual discharges × $6,800 base rate × attribution %
                       </p>
-                    </div>
-                    <div>
-                      <p className="text-[#888888] mb-1">Key assumptions:</p>
-                      <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>Admissions with documentation opportunities: 20-30% (your CDI team can tell you your number)</li>
-                        <li>DRG weight improvement when captured: 0.3-0.5 (based on CMS CC/MCC differentials)</li>
-                        <li>Base DRG payment: $6,000-$8,000 (varies by hospital and region)</li>
-                        <li>Realization rate: 50% — conservative because not every opportunity converts</li>
-                      </ul>
                     </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
                       <p className="text-[#888888] mb-1">Why this is defensible:</p>
                       <p className="text-[#666666]">
-                        Your CDI department already tracks documentation gaps — they know the query rate, 
-                        the response rate, and the revenue impact. This isn't hypothetical; it's data your 
-                        organization already has. Claims data shows DRG distributions before and after. 
-                        CMI trends are tracked quarterly. The measurement infrastructure exists.
+                        This uses your observed before/after Case Mix Index — not an estimated protection rate 
+                        or assumed DRG weight improvement. CMI is the aggregate signal of documentation quality 
+                        across all your discharges. A 0.05 CMI improvement across 10,000 discharges at a $6,800 
+                        base rate is $3.4M in gross revenue before attribution. The attribution range (50–75%) 
+                        accounts for concurrent CDI initiatives, coder changes, and patient mix shifts.
                       </p>
                     </div>
                   </div>
                 </MechanismCard>
 
-                <MechanismCard title="CDI Query Reduction">
-                  <div className="space-y-4 text-sm">
-                    <div>
-                      <p className="text-[#888888] mb-1">The mechanism:</p>
-                      <p className="text-black">
-                        Each CDI query typically represents a documentation gap — something that should have been 
-                        in the note but wasn't. Each query costs $40-$60 in CDI labor (creation, tracking, 
-                        follow-up) plus physician time to respond. When documentation captures clinical 
-                        detail at the point of care, fewer queries are needed.
-                      </p>
-                    </div>
-                    <div className="bg-[#F5F0EB] rounded-lg p-4">
-                      <p className="text-[#888888] mb-1">The calculation:</p>
-                      <p className="font-mono text-black text-sm">
-                        Admissions × Query rate × Reduction % × Cost per query
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[#888888] mb-1">Key assumptions:</p>
-                      <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>Baseline query rate: 25-35% of admissions (ACDIS benchmarks)</li>
-                        <li>Query reduction: 15-35% (depends on current documentation quality)</li>
-                        <li>Cost per query: $40-$60 (CDI specialist time + physician response)</li>
-                      </ul>
-                    </div>
-                    <div className="border-l-2 border-[#EA2C00] pl-4">
-                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
-                      <p className="text-[#666666]">
-                        CDI departments track query volume meticulously — it's their core operational metric. 
-                        Before/after comparison is straightforward. The cost per query is well-established 
-                        in ACDIS benchmarks. This is one of the cleanest metrics to measure.
-                      </p>
-                    </div>
-                  </div>
-                </MechanismCard>
+                <div className="bg-[#FFF8F0] border border-[#F59E0B]/30 rounded-lg p-5 mb-4">
+                  <h4 className="font-semibold text-black text-sm uppercase tracking-wide mb-2">CDI Query Reduction — A Signal, Not a Standalone Line</h4>
+                  <p className="text-sm text-[#666666] leading-relaxed">
+                    When documentation is more complete at the point of care, CDI teams issue fewer clarification 
+                    queries. This is real and measurable — but we don't include it as a separate financial line 
+                    because the dollar value it produces flows downstream into CMI improvement and denial rate 
+                    reduction, which are already in the calculator. Counting it separately would double-count the 
+                    same revenue. Track query volume as a leading indicator: if queries go down and CMI goes up, 
+                    you're seeing the mechanism work.
+                  </p>
+                </div>
 
                 <MechanismCard title="Denial Prevention">
                   <div className="space-y-4 text-sm">
@@ -406,8 +374,11 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                       <p className="text-[#888888] mb-1">Why this matters even without dollar attribution:</p>
                       <p className="text-[#666666]">
                         If 20 hospitalists each save 30 minutes per admission across 15 admissions/month, 
-                        that's 150 hours of physician time returned to clinical care monthly. That's real 
-                        capacity — even if we can't put a precise dollar figure on it.
+                        that's 150 hours of physician time returned to clinical care monthly. We show this 
+                        as hours — not revenue — because hospitalist time savings don't convert to additional 
+                        encounters the way outpatient does. The value is real: more time per patient, better 
+                        discharge planning, reduced after-hours burden. Your operational team is better 
+                        positioned than any formula to assess what those hours are worth in your context.
                       </p>
                     </div>
                   </div>
@@ -445,7 +416,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                       <ul className="text-[#666666] space-y-1 ml-4 list-disc">
                         <li>Turnover rate: 8-12% annually (often higher than other specialties)</li>
                         <li>Burnout-related: 40-50% of departures</li>
-                        <li>Replacement cost: $350,000-$500,000 (recruiting, onboarding, lost productivity)</li>
+                        <li>Replacement cost: $250,000-$500,000 (AMGA Physician Retention Survey)</li>
                       </ul>
                     </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
@@ -458,6 +429,58 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                     </div>
                   </div>
                 </MechanismCard>
+              </div>
+            </CollapsibleSection>
+
+            {/* Section: What Goes Into the Number */}
+            <CollapsibleSection
+              sectionId="what-goes-in"
+              title="What Goes Into the Number"
+              subtitle="Exactly what the calculator uses — and what it doesn't"
+              defaultOpen={false}
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#D1D5DB]">
+                      <th className="text-left py-3 font-semibold text-black">Value Driver</th>
+                      <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
+                      <th className="text-left py-3 font-semibold text-black">Formula</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-[#666666]">
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">CMI / DRG accuracy</td>
+                      <td className="py-3">✅ Yes</td>
+                      <td className="py-3">CMI delta × discharges × $6,800</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">ALOS reduction</td>
+                      <td className="py-3">✅ Yes</td>
+                      <td className="py-3">Days saved × admissions × $2,500/bed day</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Denial rate reduction</td>
+                      <td className="py-3">✅ Yes</td>
+                      <td className="py-3">Denial pp delta × encounters × $3,500/case</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">CDI query reduction</td>
+                      <td className="py-3 text-[#F59E0B] font-medium">Signal only — not standalone</td>
+                      <td className="py-3">Value flows through CMI and denial rate</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Rounding efficiency</td>
+                      <td className="py-3 text-[#F59E0B] font-medium">Hours only — not monetized</td>
+                      <td className="py-3">Physician time is salaried</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Hospitalist retention</td>
+                      <td className="py-3">✅ Yes (if survey data provided)</td>
+                      <td className="py-3">Turnovers avoided × $250K–$500K</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </CollapsibleSection>
 
@@ -493,49 +516,13 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
-                            <td className="py-3">Admissions with documentation opportunity</td>
-                            <td className="py-3">20-30%</td>
-                            <td className="py-3">25%</td>
+                            <td className="py-3">DRG base rate</td>
+                            <td className="py-3">$6,000–$8,000</td>
+                            <td className="py-3">$6,800</td>
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">Percentage of admissions where better documentation could protect or improve DRG assignment. Based on CDI opportunity assessments.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
-                            <td className="py-3">DRG protection rate (Typical)</td>
-                            <td className="py-3">15-25%</td>
-                            <td className="py-3">20%</td>
-                          </tr>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">Percentage of at-risk admissions where documentation successfully protects appropriate DRG assignment.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
-                            <td className="py-3">DRG weight improvement</td>
-                            <td className="py-3">0.3-0.5</td>
-                            <td className="py-3">0.4</td>
-                          </tr>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">Average DRG weight increase when documentation captures CC/MCC appropriately. Based on CMS DRG weight differentials.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
-                            <td className="py-3">Base DRG payment</td>
-                            <td className="py-3">$5,500-$7,500</td>
-                            <td className="py-3">$6,000</td>
-                          </tr>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">CMS base rate varies by hospital. Actual payment = base rate × DRG weight × wage index adjustments.</p>
+                          <p className="text-xs">CMS IPPS base rate; varies by hospital wage index and DSH adjustment.</p>
                         </TooltipContent>
                       </Tooltip>
                       <Tooltip>
@@ -547,7 +534,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">ACDIS benchmark for percentage of admissions requiring CDI queries. Real-time documentation reduces need for retrospective queries.</p>
+                          <p className="text-xs">ACDIS benchmark. Shown here as context for the signal — query reduction is not included as a direct financial line in the calculator.</p>
                         </TooltipContent>
                       </Tooltip>
                       <Tooltip>
