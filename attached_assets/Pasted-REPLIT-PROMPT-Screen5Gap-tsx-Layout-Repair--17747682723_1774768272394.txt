@@ -1,0 +1,71 @@
+REPLIT PROMPT — Screen5Gap.tsx: Layout Repair                                                                                                                                                                
+                                                                                                                                                                                                               
+  The current Screen5 has four structural problems to fix. Do not change any calculations, domain logic, chart data, or sidebar values. Only change the rendering/layout structure.                            
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Problem 1 — Remove the large full-width hero card                                                                                                                                                            
+                                                                                                                                                                                                               
+  There is a large bg-[#1A1A1A] or bg-black full-width card near the top of the page showing $1.25M, the maturity score, and "NOT YET MEASURED". This is a duplicate of the sidebar and is causing the
+  "duplicate" feeling. Delete this entire card block entirely. The sidebar already shows this information. The main content area should start with the reframe text paragraph, then the 2-tile summary.        
+                                                                                                                                                                                                               
+  Keep the 2-tile summary (bg-[#FFF0ED] / bg-[#F5F0EB] tiles showing "What the Math Shows" and "What Hasn't Been Measured"). Those tiles are fine — they're the compact summary version.
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Problem 2 — Wrap domain cards in a beige container                                                                                                                                                           
+                                                                                                          
+  The section titled "WHERE YOU ARE — AND WHAT'S AHEAD" (or similar) with the 4 domain cards is currently floating on a white background with no container. This makes the cards look detached.                
+                                                                                                          
+  Wrap that entire section — the label, the 4 domain cards grid, and any sub-sections — in:
+  <div className="bg-[#F5F0EB] rounded-xl p-6 md:p-8 mb-8">
+    {/* domain cards go here */}                                                                                                                                                                               
+  </div>                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  The domain cards themselves should be bg-white rounded-lg p-5 so they sit as white cards on the beige background. This is the standard card-on-beige pattern used elsewhere in the app.                      
+                                                                                                                                                                                                               
+  ---                                     
+  Problem 3 — Show all 4 domains, not 2                                                                                                                                                                        
+                                                                                                                                                                                                               
+  The "WHAT THE DATA SHOWS" section is currently only rendering 2 domains (the unmeasured ones). The domain section should always show all 4 domains. Each domain card should display:
+                                                                                                                                                                                                               
+  - Domain name (e.g., "CAPACITY") + level badge (e.g., "Level 2 of 4") — top row                                                                                                                              
+  - "AT FULL CAPTURE" sub-label in small gray text
+  - The full-capture narrative (1–2 sentences describing what the domain looks like at maturity)                                                                                                               
+  - If the domain is currently measured (level 2+): show a text-[#EA2C00] line with the current value (e.g., $1.05M confirmed · per year)                                                                      
+  - If not yet measured (level 1): show a gray range estimate (e.g., $200K–$600K est.)                                                                                                                         
+                                                                                                                                                                                                               
+  Use a grid grid-cols-1 sm:grid-cols-2 gap-4 layout for the 4 domain cards inside the beige wrapper.                                                                                                          
+                                                                                                                                                                                                               
+  Do NOT create a separate "WHAT THE DATA SHOWS" section. Remove it. All 4 domains belong in the one beige domain card grid.                                                                                   
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Problem 4 — Remove the second black box                                                                                                                                                                      
+                                                                                                          
+  There is a second large bg-[#1A1A1A] or dark card lower on the page (separate from the sidebar) containing text like "The organizations that move from Acting to Level 3+ across multiple domains in under 12
+   months don't do it alone." Delete this entire block. It's visually identical to the sidebar and creates a confusing duplicate.
+                                          
+  ---
+  Problem 5 — Fix sidebar label                                                                                                                                                                                
+                                              
+  In the dark sidebar (data-testid="panel-gap-summary"), find the label "Confirmed Today" and change it to "Modeled Value". Change its sub-label from "from your inputs" to "per year · from your inputs" if it
+   doesn't already say that.                                                                              
+                                                                                                                                                                                                               
+  ---
+  What stays the same (do not touch):                                                                                                                                                                          
+  - All calculation logic (totalMeasured, unmeasuredLow, unmeasuredHigh, strategicAnnual, chart data)     
+  - The chart card (beige wrapper, line chart, footnote)                                                                                                                                                       
+  - The sidebar structure and all values in it (just the label change above)                              
+  - The reframe text paragraph                                                                                                                                                                                 
+  - The disclaimer text at the bottom         
+  - Routing / StepFooter                                                                                                                                                                                       
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Expected result:                                                                                        
+  - White page background                                                                                                                                                                                      
+  - Reframe text paragraph at top                                                                                                                                                                              
+  - 2-tile summary row (What Math Shows / Not Yet Measured)
+  - Beige card containing all 4 domain cards in a 2×2 grid                                                                                                                                                     
+  - Beige chart card below                                                                                
+  - Dark sidebar anchored to the right with score + modeled value + unmeasured range
+  - No duplicate black hero card                                                                                                                                                                               
+  - No orphaned "WHAT THE DATA SHOWS" section 
+  - No second dark box anywhere in the main content   

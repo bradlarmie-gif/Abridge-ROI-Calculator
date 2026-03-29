@@ -477,162 +477,140 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         <div className="flex-1 min-w-0">
 
           <motion.div
-            className="mb-10"
+            className="mb-8"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
           >
-            <div className="bg-[#1A1A1A] rounded-xl p-6 sm:p-8">
-              {totalMeasured > 0 ? (
-                <>
-                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Modeled Annual Value</p>
-                  <p className="font-bold text-[56px] sm:text-[72px] leading-none text-[#EA2C00] tracking-tight mb-2" data-testid="value-measured">
-                    <CountUpNumber target={totalMeasured} />
-                  </p>
-                  <p className="text-sm text-white/40 mb-4">
-                    Modeled across {DOMAIN_ORDER.filter(d => domainHasValue[d] && !(d === 'revenue' && domainLevels[d] === 2)).length} of 4 domains · per year
-                  </p>
-
-                  {(() => {
-                    const breakdown = [
-                      { label: 'Capacity', value: domainHasValue.capacity ? domainGaps.capacity : 0 },
-                      { label: 'Revenue', value: (domainHasValue.revenue && domainLevels.revenue !== 2) ? domainGaps.revenue : 0 },
-                      { label: 'Workforce', value: domainHasValue.workforce ? domainGaps.workforce : 0 },
-                      { label: 'Quality', value: domainHasValue.risk ? domainGaps.risk : 0 },
-                    ].filter(d => d.value > 0);
-                    return breakdown.length > 0 ? (
-                      <div className="mt-4 pt-4 border-t border-white/10 space-y-1.5">
-                        {breakdown.map(({ label, value }) => (
-                          <div key={label} className="flex items-center justify-between">
-                            <span className="text-[13px] text-white/50 uppercase tracking-wide">{label}</span>
-                            <span className="text-[13px] text-white/70 font-medium">{formatDollar(value)}</span>
-                          </div>
-                        ))}
-                        {breakdown.length > 1 && (
-                          <div className="flex items-center justify-between pt-1.5 border-t border-white/10">
-                            <span className="text-[13px] text-white/50 uppercase tracking-wide">Total</span>
-                            <span className="text-[13px] text-white font-semibold">{formatDollar(totalMeasured)}</span>
-                          </div>
-                        )}
-                      </div>
-                    ) : null;
-                  })()}
-                </>
-              ) : (
-                <>
-                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Modeled Annual Value</p>
-                  <p className="font-bold text-[56px] leading-none text-white/15 tracking-tight mb-2" data-testid="value-measured">—</p>
-                  <p className="text-sm text-white/30 mb-4">No domains formally measured yet</p>
-                </>
-              )}
-
-              {unmeasuredLow > 0 && (
-                <div className="pt-4 border-t border-white/[0.08]">
-                  <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[2px] mb-1">Not yet in the picture</p>
-                  <p className="text-xl font-bold text-white/40" data-testid="value-unmeasured">
-                    + {unmeasuredHigh > unmeasuredLow
-                      ? `$${unmeasuredLow.toLocaleString()}–$${unmeasuredHigh.toLocaleString()}`
-                      : `$${unmeasuredLow.toLocaleString()}`} est.
-                  </p>
-                  <p className="text-[11px] text-white/20 mt-1">benchmark range · based on your scale</p>
-                </div>
-              )}
-
-              {revL2Value > 0 && (
-                <div className="mt-4 pt-4 border-t border-white/[0.08] flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] font-semibold text-[#F59E0B]/70 uppercase tracking-[1.5px]">Revenue Signal</p>
-                    <p className="text-xs text-white/30 mt-0.5">Signals observed · not yet validated in billing data · Next: retrospective coding audit</p>
-                  </div>
-                  <span className="text-sm font-bold text-[#F59E0B]/80 flex-shrink-0">~{formatDollar(revL2Value)}/yr</span>
-                </div>
-              )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-[#FFF0ED] rounded-xl p-5" data-testid="tile-math-shows">
+                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[2px] mb-2">What the Math Shows</p>
+                {totalMeasured > 0 ? (
+                  <>
+                    <p className="text-2xl font-bold text-[#EA2C00] tracking-tight mb-1" data-testid="value-measured">
+                      <CountUpNumber target={totalMeasured} />
+                    </p>
+                    <p className="text-xs text-[#1A1A1A]/60">
+                      modeled across {DOMAIN_ORDER.filter(d => domainHasValue[d] && !(d === 'revenue' && domainLevels[d] === 2)).length} of 4 domains · per year
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-2xl font-bold text-[#1A1A1A]/20 tracking-tight mb-1" data-testid="value-measured">—</p>
+                    <p className="text-xs text-[#1A1A1A]/40">no domains formally measured yet</p>
+                  </>
+                )}
+                {revL2Value > 0 && (
+                  <p className="text-xs text-[#92400E] mt-2">+ ~{formatDollar(revL2Value)}/yr revenue signal</p>
+                )}
+              </div>
+              <div className="bg-[#F5F0EB] rounded-xl p-5" data-testid="tile-not-measured">
+                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-2">Not Yet in the Picture</p>
+                {unmeasuredLow > 0 ? (
+                  <>
+                    <p className="text-2xl font-bold text-[#1A1A1A]/50 tracking-tight mb-1" data-testid="value-unmeasured">
+                      {unmeasuredHigh > unmeasuredLow
+                        ? `$${unmeasuredLow.toLocaleString()}–$${unmeasuredHigh.toLocaleString()}`
+                        : `$${unmeasuredLow.toLocaleString()}`}
+                    </p>
+                    <p className="text-xs text-[#888888]">benchmark range · based on your scale</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-2xl font-bold text-[#1A1A1A]/20 tracking-tight mb-1">—</p>
+                    <p className="text-xs text-[#888888]">all domains have measurement in place</p>
+                  </>
+                )}
+              </div>
             </div>
           </motion.div>
 
           <motion.div
-            className="mb-10"
+            className="mb-8"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-3" data-testid="domain-band">
-              {DOMAIN_ORDER.map((domain) => {
-                const Icon = DOMAIN_ICONS[domain];
-                const level = domainLevels[domain];
-                const status = domainStatusLine[domain];
-                const content = nextLevelContents[domain];
-                const isExpanded = expandedDomains[domain];
+            <div className="bg-[#F5F0EB] rounded-xl p-6 md:p-8">
+              <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-4">Where You Are — And What's Ahead</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" data-testid="domain-band">
+                {DOMAIN_ORDER.map((domain) => {
+                  const Icon = DOMAIN_ICONS[domain];
+                  const level = domainLevels[domain];
+                  const status = domainStatusLine[domain];
+                  const content = nextLevelContents[domain];
+                  const isExpanded = expandedDomains[domain];
 
-                return (
-                  <div
-                    key={domain}
-                    className="bg-[#F5F0EB] rounded-xl overflow-hidden"
-                    data-testid={`domain-card-${domain}`}
-                  >
-                    <button
-                      type="button"
-                      className="w-full text-left p-4 sm:p-5 bg-transparent border-none cursor-pointer hover:bg-black/[0.02] transition-colors"
-                      onClick={() => toggleDomain(domain)}
-                      data-testid={`toggle-domain-${domain}`}
+                  return (
+                    <div
+                      key={domain}
+                      className="bg-white rounded-lg overflow-hidden"
+                      data-testid={`domain-card-${domain}`}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0 mt-0.5" style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
-                            <Icon className={`w-4 h-4 ${status.isConfirmed ? 'text-[#EA2C00]' : status.isSignal ? 'text-[#F59E0B]' : 'text-[#AAAAAA]'}`} />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 mb-1 flex-wrap">
-                              <p className="text-xs font-bold uppercase tracking-[1px] text-[#1A1A1A]">
-                                {DOMAIN_LABELS[domain]}
-                              </p>
-                              <span className={`text-[9px] font-semibold uppercase tracking-[1px] px-1.5 py-0.5 rounded ${
-                                level >= 3 ? 'bg-[#EA2C00]/10 text-[#EA2C00]' :
-                                level === 2 ? 'bg-[#1A1A1A]/[0.08] text-[#666666]' :
-                                'bg-[#1A1A1A]/[0.05] text-[#AAAAAA]'
-                              }`}>
-                                L{level}
-                              </span>
+                      <button
+                        type="button"
+                        className="w-full text-left p-5 bg-transparent border-none cursor-pointer hover:bg-black/[0.02] transition-colors"
+                        onClick={() => toggleDomain(domain)}
+                        data-testid={`toggle-domain-${domain}`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-full bg-[#F5F0EB] flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <Icon className={`w-4 h-4 ${status.isConfirmed ? 'text-[#EA2C00]' : status.isSignal ? 'text-[#F59E0B]' : 'text-[#AAAAAA]'}`} />
                             </div>
-                            <p className={`text-[11px] leading-snug ${
-                              status.isConfirmed ? 'text-[#EA2C00] font-medium' :
-                              status.isSignal ? 'text-[#92400E]' :
-                              'text-[#888888]'
-                            }`}>
-                              {status.text}
-                            </p>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <p className="text-xs font-bold uppercase tracking-[1px] text-[#1A1A1A]">
+                                  {DOMAIN_LABELS[domain]}
+                                </p>
+                                <span className={`text-[9px] font-semibold uppercase tracking-[1px] px-1.5 py-0.5 rounded ${
+                                  level >= 3 ? 'bg-[#EA2C00]/10 text-[#EA2C00]' :
+                                  level === 2 ? 'bg-[#1A1A1A]/[0.08] text-[#666666]' :
+                                  'bg-[#1A1A1A]/[0.05] text-[#AAAAAA]'
+                                }`}>
+                                  Level {level} of 4
+                                </span>
+                              </div>
+                              <p className={`text-[11px] leading-snug ${
+                                status.isConfirmed ? 'text-[#EA2C00] font-medium' :
+                                status.isSignal ? 'text-[#92400E]' :
+                                'text-[#888888]'
+                              }`}>
+                                {status.text}
+                              </p>
+                            </div>
                           </div>
+                          <span className="text-[#AAAAAA] text-base flex-shrink-0 mt-1 transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
                         </div>
-                        <span className="text-[#AAAAAA] text-base flex-shrink-0 mt-1 transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
-                      </div>
-                    </button>
+                      </button>
 
-                    {isExpanded && (
-                      <div className="px-4 sm:px-5 pb-4 border-t border-[#E5E5E5]/60">
-                        <p className="text-xs text-[#888888] leading-relaxed mt-3" data-testid={`narrative-${domain}`}>
-                          {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
-                        </p>
-                        {content.narrative.includes('OPPORTUNITY AHEAD:') && (
-                          <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60">
-                            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">The next level unlocks</p>
-                            <p className="text-xs text-[#888888] leading-relaxed">
-                              {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
-                            </p>
-                          </div>
-                        )}
-                        {domain === 'capacity' && domainLevels.capacity >= 3 && capacityConfidence === 'aspirational' && (
-                          <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60 flex gap-2">
-                            <span className="text-[#888888] text-xs flex-shrink-0">⚠</span>
-                            <p className="text-[11px] text-[#888888] italic leading-relaxed">
-                              Access data marked as a planning target — validate with scheduling records before using in a formal business case.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                      {isExpanded && (
+                        <div className="px-5 pb-4 border-t border-[#E5E5E5]/60">
+                          <p className="text-xs text-[#888888] leading-relaxed mt-3" data-testid={`narrative-${domain}`}>
+                            {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
+                          </p>
+                          {content.narrative.includes('OPPORTUNITY AHEAD:') && (
+                            <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60">
+                              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">The next level unlocks</p>
+                              <p className="text-xs text-[#888888] leading-relaxed">
+                                {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
+                              </p>
+                            </div>
+                          )}
+                          {domain === 'capacity' && domainLevels.capacity >= 3 && capacityConfidence === 'aspirational' && (
+                            <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60 flex gap-2">
+                              <span className="text-[#888888] text-xs flex-shrink-0">⚠</span>
+                              <p className="text-[11px] text-[#888888] italic leading-relaxed">
+                                Access data marked as a planning target — validate with scheduling records before using in a formal business case.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </motion.div>
 
