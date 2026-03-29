@@ -1,0 +1,70 @@
+ Prompt 3 — Inpatient Methodology        
+                                                                                                                                                                                                               
+  In client/src/pages/methodology/MethodologyInpatient.tsx, make the following changes to content only.                                                                                                        
+                                              
+  1. Replace CDI Query Reduction mechanism card with a signal callout                                                                                                                                          
+                                                                                                          
+  Find the mechanism card titled "CDI Query Reduction" (the one with the formula Admissions × Query rate × Reduction % × Cost per query). Remove it entirely. In its place, add a styled callout box           
+  (amber/orange border style) with this content:                                                                                                                                                               
+                                                                                                                                                                                                               
+  CDI Query Reduction — A Signal, Not a Standalone Line                                                                                                                                                        
+  When documentation is more complete at the point of care, CDI teams issue fewer clarification queries. This is real and measurable — but we don't include it as a separate financial line because the dollar 
+  value it produces flows downstream into CMI improvement and denial rate reduction, which are already in the calculator. Counting it separately would double-count the same revenue. Track query volume as a  
+  leading indicator: if queries go down and CMI goes up, you're seeing the mechanism work.                                                                                                                     
+                                          
+  2. Replace the DRG Accuracy formula                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Find the mechanism card titled "DRG Accuracy & CC/MCC Capture". Replace the formula with:
+  CMI (after) − CMI (before) × annual discharges × $6,800 base rate × attribution %                                                                                                                            
+  Replace the explanatory assumptions list beneath it with:                                               
+                                                           
+  "This uses your observed before/after Case Mix Index — not an estimated protection rate or assumed DRG weight improvement. CMI is the aggregate signal of documentation quality across all your discharges. A
+   0.05 CMI improvement across 10,000 discharges at a $6,800 base rate is $3.4M in gross revenue before attribution. The attribution range (50–75%) accounts for concurrent CDI initiatives, coder changes, and
+   patient mix shifts."                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  Update the assumptions table row for DRG base rate to: range $6,000–$8,000, default $6,800, source "CMS IPPS base rate; varies by hospital wage index and DSH adjustment." Remove the "Admissions with       
+  documentation opportunity" and "DRG protection rate" rows — those belong to the old formula, not the CMI-delta approach.                                                                                     
+                                                                                                                                                                                                               
+  3. Keep "Rounding Efficiency" as qualitative — update the copy                                          
+                                                                                                                                                                                                               
+  Find the rounding efficiency section. Keep it qualitative (hours, not dollars). Update the example text to:
+                                                                                                                                                                                                               
+  "If 20 hospitalists each save 30 minutes per admission across 15 admissions/month, that's 150 hours of physician time returned to clinical care monthly. We show this as hours — not revenue — because       
+  hospitalist time savings don't convert to additional encounters the way outpatient does. The value is real: more time per patient, better discharge planning, reduced after-hours burden. Your operational   
+  team is better positioned than any formula to assess what those hours are worth in your context."                                                                                                            
+                                                                                                                                                                                                               
+  4. Add "What Goes Into the Number" table                                                                
+                                                                                                                                                                                                               
+  After the Value Mechanisms section and before the Assumptions section, add a new CollapsibleSection with:
+  - title="What Goes Into the Number"
+  - subtitle="Exactly what the calculator uses — and what it doesn't"
+  - defaultOpen={false}                   
+
+  Table rows:                                                                                                                                                                                                  
+   
+  ┌───────────────────────┬──────────────────────────────────┬────────────────────────────────────────────┐                                                                                                    
+  │     Value Driver      │        In the Calculator?        │                  Formula                   │
+  ├───────────────────────┼──────────────────────────────────┼────────────────────────────────────────────┤
+  │ CMI / DRG accuracy    │ ✅ Yes                           │ CMI delta × discharges × $6,800            │
+  ├───────────────────────┼──────────────────────────────────┼────────────────────────────────────────────┤
+  │ ALOS reduction        │ ✅ Yes                           │ Days saved × admissions × $2,500/bed day   │
+  ├───────────────────────┼──────────────────────────────────┼────────────────────────────────────────────┤
+  │ Denial rate reduction │ ✅ Yes                           │ Denial pp delta × encounters × $3,500/case │
+  ├───────────────────────┼──────────────────────────────────┼────────────────────────────────────────────┤                                                                                                    
+  │ CDI query reduction   │ Signal only — not standalone     │ Value flows through CMI and denial rate    │                                                                                                    
+  ├───────────────────────┼──────────────────────────────────┼────────────────────────────────────────────┤                                                                                                    
+  │ Rounding efficiency   │ Hours only — not monetized       │ Physician time is salaried                 │                                                                                                    
+  ├───────────────────────┼──────────────────────────────────┼────────────────────────────────────────────┤
+  │ Hospitalist retention │ ✅ Yes (if survey data provided) │ Turnovers avoided × $250K–$500K            │                                                                                                    
+  └───────────────────────┴──────────────────────────────────┴────────────────────────────────────────────┘
+                                                                                                                                                                                                               
+  5. Update hospitalist replacement cost in assumptions table                                             
+                                                                                                                                                                                                               
+  Find the retention section assumptions. Change:                                                         
+  - Range: $350,000–$500,000 → $250K–$500K                                                                                                                                                                     
+  - Source: update to "AMGA Physician Retention Survey"                                                   
+                                                                                                                                                                                                               
+  6. Update CDI query rate row                
+                                                                                                                                                                                                               
+  In the assumptions table, update the "CDI query rate" row source note to: "ACDIS benchmark. Shown here as context for the signal — query reduction is not included as a direct financial line in the 
+  calculator."                

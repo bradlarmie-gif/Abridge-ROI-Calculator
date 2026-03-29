@@ -1,0 +1,64 @@
+ Prompt 2 — Emergency Department Methodology                                                                                                                                                                  
+                                                                                                                                                                                                               
+  In client/src/pages/methodology/MethodologyED.tsx, make the following changes to content only.
+                                                                                                                                                                                                               
+  1. Remove the "CDI & Inpatient Connection" mechanism card                                               
+
+  Find the mechanism card titled "CDI & Inpatient Connection" (the one with the formula ED admissions × DRG improvement rate × Avg DRG value increase × Realization rate). Remove it entirely. In the          
+  "Connected Value" section at the bottom, find the ED → Inpatient paragraph and expand it with:
+                                                                                                                                                                                                               
+  "Better ED documentation is the foundation of DRG accuracy for admitted patients — when presenting conditions, comorbidities, and clinical reasoning are captured at the point of care, the inpatient stay   
+  begins with a stronger clinical picture. We quantify this in the Inpatient methodology, not here, to prevent double-counting. If you're modeling both settings, do not include DRG value in the ED 
+  calculation."                                                                                                                                                                                                
+                                                                                                                                                                                                               
+  2. Update the LWBS Recovery formula
+                                                                                                                                                                                                               
+  Find the mechanism card titled "LWBS Recovery". Replace the formula with:                               
+  (LWBS rate before − LWBS rate after, in percentage points) × annual ED visits × $480/visit × attribution %
+  Update the explanatory text to: "This uses your observed before/after LWBS rate — not an assumed recovery percentage. The delta is what your data shows. Annual visits = monthly ED volume × 12."
+                                                                                                                                                                                                   
+  Update the "Avg ED visit revenue" assumption in the assumptions table from $400 to $480.
+                                                                                                                                                                                                               
+  3. Update the E&M Level Accuracy formula    
+                                                                                                                                                                                                               
+  Find the mechanism card titled "E&M Level Accuracy". Replace the formula with:                                                                                                                               
+  (wRVU per encounter after) − (wRVU per encounter before) × adopted encounters × $33/wRVU × attribution % × realization %                                                                                     
+  Add a note: "ED wRVU lift is typically lower than outpatient (2–4% vs 3–7%) because ED workflows are already more structured. We use your actual observed delta, not an assumed percentage."                 
+                                                                                                                                                                                                               
+  4. Update the Medical Necessity & Denials formula                                                       
+                                              
+  Find the mechanism card titled "Medical Necessity & Denials". Replace the formula with:                                                                                                                      
+  (denial rate before − denial rate after, in percentage points) × annual encounters × avg denial cost per encounter × attribution %                                                                           
+  Add: "ED default: $500 per encounter (higher than outpatient due to higher acuity claims). Attribution range accounts for the documentation-related share."                                                  
+                                                                                                                                                                                                               
+  5. Add "What Goes Into the Number" table                                                                                                                                                                     
+                                                                                                          
+  After the Value Mechanisms section and before the Assumptions section, add a new CollapsibleSection with:
+  - title="What Goes Into the Number"                                                                                                                                                                          
+  - subtitle="Exactly what the calculator uses — and what it doesn't"
+  - defaultOpen={false}                                                                                                                                                                                        
+                                                                                                          
+  Table rows:                             
+
+  ┌───────────────────────────────────────┬──────────────────────────────────┬───────────────────────────────────────────────┐                                                                                 
+  │             Value Driver              │        In the Calculator?        │                    Formula                    │
+  ├───────────────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────────────┤                                                                                 
+  │ LWBS reduction                        │ ✅ Yes                           │ LWBS pp delta × annual visits × $480/visit    │
+  ├───────────────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────────────┤
+  │ wRVU / E/M lift                       │ ✅ Yes                           │ wRVU delta × adopted encounters × $33/wRVU    │
+  ├───────────────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────────────┤
+  │ Denial rate reduction                 │ ✅ Yes                           │ Denial pp delta × encounters × $500/encounter │
+  ├───────────────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────────────┤                                                                                 
+  │ CDI / DRG impact on admitted patients │ Not here — see Inpatient         │ Captured in CMI delta calculation             │                                                                                 
+  ├───────────────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────────────┤                                                                                 
+  │ ED physician retention                │ ✅ Yes (if survey data provided) │ Turnovers avoided × $250K–$500K               │                                                                                 
+  ├───────────────────────────────────────┼──────────────────────────────────┼───────────────────────────────────────────────┤
+  │ After-hours time savings              │ Signal only — not monetized      │ Tracked as hours (salaried providers)         │                                                                                 
+  └───────────────────────────────────────┴──────────────────────────────────┴───────────────────────────────────────────────┘
+                                                                                                                                                                                                               
+  6. Update physician replacement cost in assumptions table                                               
+                                                                                                                                                                                                               
+  Find the row for ED physician replacement cost. Change:                                                 
+  - Range: $400,000–$700,000 → $250K–$500K                                                                                                                                                                     
+  - Source: update to "AMGA Physician Retention Survey benchmark"
+  - Add note in the tooltip: "We apply the conservative end of the AMGA range. Locum coverage costs during vacancy are tracked separately as agency spend."  

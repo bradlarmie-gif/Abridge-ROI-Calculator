@@ -1,0 +1,63 @@
+Prompt 4 — Nursing Methodology                                                                          
+                                                                                                                                                                                                               
+  In client/src/pages/methodology/MethodologyNursing.tsx, make the following changes to content only.     
+
+  1. Add an "OT applies here — not in physician settings" callout to the Overtime Reduction card
+                                          
+  Find the mechanism card titled "Overtime Reduction". Inside it, after the formula block and before the "Why this is defensible" section, add a callout box (use the amber/orange border style):
+                                                                                                                                                                                                               
+  Why overtime works for nursing but not physicians
+  Nurses are hourly workers — overtime is a real, identifiable budget line that shows up in payroll. This calculation is valid here. In outpatient, ED, and inpatient settings, physicians are salaried — we do
+   not apply an hourly rate to their time savings, because that cost doesn't exist in the budget. If someone challenges this number, the answer is: pull your payroll system. The hours and the premium rate 
+  are both measurable.                                                                                                                                                                                         
+                                                                                                          
+  2. Update replacement cost in the Retention Savings card                                                                                                                                                     
+                                                                                                                                                                                                               
+  Find the mechanism card titled "Retention Savings". In the assumptions list, change:
+  - "Replacement cost: $40,000-$65,000 per nurse" → "Replacement cost: $50,000–$100,000 per nurse"                                                                                                             
+  - Add source note: "NSI 2023 National Healthcare Retention Report. Lower end reflects standard RN; upper end reflects specialty/ICU nurses with longer training ramp."
+                                          
+  3. Update the Assumptions table                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Find the "Replacement cost" row in the assumptions table. Change:                                                                                                                                            
+  - Range: $40k-$65k → $50K–$100K                                                                                                                                                                              
+  - Default: $52,000 → $65,000                                                                            
+  - Source: "NSI benchmark" → "NSI 2023 Nursing Retention Report — varies by unit type and specialty"                                                                                                          
+                                                                                                          
+  Update the tooltip text to: "NSI 2023 Report range: $46K–$52K for standard bedside RN. Specialty and ICU nurses carry higher replacement costs due to training and orientation time. We use $65K as a        
+  conservative midpoint."                     
+                                                                                                                                                                                                               
+  4. Add "What Goes Into the Number" table                                                                                                                                                                     
+                                                                                                                                                                                                               
+  After the Value Mechanisms section and before the Assumptions section, add a new CollapsibleSection with:                                                                                                    
+  - title="What Goes Into the Number"                                                                                                                                                                          
+  - subtitle="Exactly what the calculator uses — and what it doesn't"                                     
+  - defaultOpen={false}                                                                                                                                                                                        
+   
+  Table rows:                                                                                                                                                                                                  
+                                                                                                          
+  ┌──────────────────────────────┬────────────────────────────────────┬──────────────────────────────────────────────────────────────┐
+  │         Value Driver         │         In the Calculator?         │                           Formula                            │
+  ├──────────────────────────────┼────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+  │ Overtime reduction           │ ✅ Yes (nursing only)              │ Hours saved × OT conversion rate × OT hourly rate × 52 weeks │                                                                         
+  ├──────────────────────────────┼────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+  │ Nurse retention              │ ✅ Yes (if survey data provided)   │ Turnovers avoided × $50K–$100K replacement cost              │                                                                         
+  ├──────────────────────────────┼────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+  │ Agency / locum spend         │ ✅ Yes (if data provided)          │ Observed agency spend reduction × attribution %              │
+  ├──────────────────────────────┼────────────────────────────────────┼──────────────────────────────────────────────────────────────┤                                                                         
+  │ Falls / HAPI prevention      │ Potential value — shown separately │ Current events × 5% doc-preventable rate × cost/event        │                                                                         
+  ├──────────────────────────────┼────────────────────────────────────┼──────────────────────────────────────────────────────────────┤                                                                         
+  │ HCAHPS improvement           │ Signal only — not calculated       │ Too many confounding variables to attribute                  │                                                                         
+  ├──────────────────────────────┼────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+  │ CC/MCC support for inpatient │ Not here — see Inpatient           │ Captured in CMI delta calculation                            │                                                                         
+  └──────────────────────────────┴────────────────────────────────────┴──────────────────────────────────────────────────────────────┘
+                                                                                                                                                                                                               
+  5. Add a clarifying note to the "Direct & Measurable" section in Honest Limits                          
+                                                                                                                                                                                                               
+  Find the green dot "Direct & Measurable" section. Add one bullet:                                       
+  - "Overtime hours: payroll data, before/after by unit. This is a hard dollar line — verifiable from your payroll system within 90 days."                                                                     
+                                                                                                          
+  And add a note beneath the three categories:                                                                                                                                                                 
+                                                                                                          
+  "Nursing is the only care setting in this methodology where we monetize time savings directly through overtime. In physician settings (outpatient, ED, inpatient), physicians are salaried — time savings are
+   modeled as capacity or retention signal, not as a payroll line."

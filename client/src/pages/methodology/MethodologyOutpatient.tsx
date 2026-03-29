@@ -233,32 +233,15 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
 
-                <MechanismCard title="Potential Value">
-                  <div className="space-y-4 text-sm">
-                    <div>
-                      <p className="text-[#888888] mb-1">The mechanism:</p>
-                      <p className="text-black">
-                        Physicians spend 1-2 hours per day on documentation outside of patient care — 
-                        the "pajama time" that drives overtime, locum dependency, and the slow erosion 
-                        of why people went into medicine. Reducing this burden has direct financial impact.
-                      </p>
-                    </div>
-                    <div className="bg-[#F5F0EB] rounded-lg p-4">
-                      <p className="text-[#888888] mb-1">The calculation:</p>
-                      <p className="font-mono text-black text-sm">
-                        Providers × Encounters × Time saved × Hourly rate × Realization rate
-                      </p>
-                    </div>
-                    <div className="border-l-2 border-[#EA2C00] pl-4">
-                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
-                      <p className="text-[#666666]">
-                        Payroll systems track overtime. Locum invoices are in the budget. EHR timestamps 
-                        show when documentation happens. This is one of the most verifiable ROI components 
-                        in healthcare — you can measure it before deployment and after.
-                      </p>
-                    </div>
-                  </div>
-                </MechanismCard>
+                <div className="bg-white border border-[#E5E5E5] rounded-lg p-6 mb-4">
+                  <p className="text-[15px] text-black leading-relaxed">
+                    Time saved in outpatient goes to one of three places: additional patients seen with recovered 
+                    appointment capacity, same patients with better documentation quality, or provider wellbeing. 
+                    We model the first two financially. The third is tracked as a leading indicator for retention — 
+                    not as a dollar line — because physicians are salaried and hourly rate calculations don't 
+                    reflect how their time is actually compensated.
+                  </p>
+                </div>
 
                 <MechanismCard title="Patient Capacity">
                   <div className="space-y-4 text-sm">
@@ -314,7 +297,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                     <div>
                       <p className="text-[#888888] mb-1">Key assumptions:</p>
                       <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>Physician replacement cost: $500,000-$1,000,000 (Merritt Hawkins)</li>
+                        <li>Physician replacement cost: $250,000-$500,000 (AMGA Physician Retention Survey)</li>
                         <li>Burnout-related turnover: 30-50% of all physician turnover</li>
                         <li>Abridge impact on burnout-related turnover: 10-20%</li>
                       </ul>
@@ -356,61 +339,30 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Encounters × Current wRVU × Lift % × Conversion factor × Realization rate
+                        (wRVU per encounter after) − (wRVU per encounter before) × adopted encounters × $33/wRVU × attribution % × realization %
                       </p>
                     </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
                       <p className="text-[#888888] mb-1">Why this is defensible:</p>
                       <p className="text-[#666666]">
-                        Claims data shows E/M distributions before and after. If your providers are 
-                        coding 80% at level 4 and peers at similar complexity code 60/40 level 4/5, 
-                        there's a documentation gap — not a clinical one. This is measurable and auditable.
+                        This uses your observed before/after wRVU per encounter — not an assumed lift percentage. 
+                        The delta is what your data shows. The attribution range (50–75%) accounts for other 
+                        factors that may have contributed to the change.
                       </p>
-                    </div>
-                    <div>
-                      <p className="text-[#888888] mb-1">Typical range:</p>
-                      <p className="text-[#666666]">2-7% wRVU lift, with 75% realization rate. We default conservative 
-                        because not every coding opportunity converts — compliance review, payer mix, and 
-                        specialty norms all affect realization.</p>
                     </div>
                   </div>
                 </MechanismCard>
 
-                <MechanismCard title="HCC Capture">
-                  <div className="space-y-4 text-sm">
-                    <div>
-                      <p className="text-[#888888] mb-1">The mechanism:</p>
-                      <p className="text-black">
-                        In Medicare Advantage populations, chronic conditions need to be documented annually 
-                        to maintain risk adjustment scores. When a physician discusses diabetes management 
-                        but the note doesn't capture the HCC-qualifying language, that's lost RAF value — 
-                        often $3,000-$10,000 per patient per year.
-                      </p>
-                    </div>
-                    <div className="bg-[#F5F0EB] rounded-lg p-4">
-                      <p className="text-[#888888] mb-1">The calculation:</p>
-                      <p className="font-mono text-black text-sm">
-                        MA patients × Gap rate × Recapture improvement × RAF impact × Annual payment
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[#888888] mb-1">Key assumptions:</p>
-                      <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>Typical HCC gap rate: 25-35% of conditions not recaptured annually</li>
-                        <li>RAF impact per HCC: 0.10-0.15 weight increase</li>
-                        <li>Annual payment per RAF point: $10,000-$12,000</li>
-                      </ul>
-                    </div>
-                    <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-4">
-                      <p className="text-[#666666]">
-                        <strong className="text-black">Honest limit:</strong> HCC value depends heavily on your 
-                        MA population percentage and existing retrospective review processes. If you already 
-                        have a strong HCC program, the incremental gain from documentation is smaller. 
-                        We show this separately so you can calibrate to your reality.
-                      </p>
-                    </div>
-                  </div>
-                </MechanismCard>
+                <div className="bg-[#FFF8F0] border border-[#F59E0B]/30 rounded-lg p-5 mb-4">
+                  <h4 className="font-semibold text-black text-sm uppercase tracking-wide mb-2">HCC / Risk Adjustment — Why We Don't Model It Here</h4>
+                  <p className="text-sm text-[#666666] leading-relaxed">
+                    HCC recapture and RAF improvement are real value drivers for practices with significant Medicare 
+                    Advantage populations. We don't include them in the calculator because the formula requires MA patient 
+                    counts, baseline gap rates, and RAF point values that vary substantially by payer and market. Bring your 
+                    revenue cycle team to the table with that data — when you have it, it often produces the largest 
+                    single number in the model.
+                  </p>
+                </div>
 
                 <MechanismCard title="Denial Prevention">
                   <div className="space-y-4 text-sm">
@@ -426,20 +378,75 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Claims × Denial rate × Doc-related % × Prevention rate × Avg claim value
+                        (denial rate before − denial rate after, in percentage points) × annual encounters × avg denial cost per encounter × attribution %
                       </p>
                     </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
                       <p className="text-[#888888] mb-1">Why this is defensible:</p>
                       <p className="text-[#666666]">
-                        Denial reason codes identify documentation-related denials specifically. RCM teams 
-                        can categorize and track these. The before/after comparison is clean — and most 
-                        organizations are surprised by how much revenue they're losing to documentation gaps 
-                        they didn't know existed.
+                        Outpatient default: $350 per encounter. Attribution range applied — the doc-related share 
+                        of denials is captured in the attribution factor, not as a separate multiplier.
                       </p>
                     </div>
                   </div>
                 </MechanismCard>
+              </div>
+            </CollapsibleSection>
+
+            {/* Section: What Goes Into the Number */}
+            <CollapsibleSection
+              sectionId="what-goes-in"
+              title="What Goes Into the Number"
+              subtitle="Exactly what the calculator uses — and what it doesn't"
+              defaultOpen={false}
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#D1D5DB]">
+                      <th className="text-left py-3 font-semibold text-black">Value Driver</th>
+                      <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
+                      <th className="text-left py-3 font-semibold text-black">Formula</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-[#666666]">
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">wRVU lift</td>
+                      <td className="py-3">✅ Yes</td>
+                      <td className="py-3">wRVU delta × adopted encounters × $33/wRVU</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">E/M level improvement</td>
+                      <td className="py-3">✅ Yes</td>
+                      <td className="py-3">E/M level delta × adopted encounters × ~$45/level</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Denial rate reduction</td>
+                      <td className="py-3">✅ Yes</td>
+                      <td className="py-3">Denial pp delta × encounters × $350/encounter</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Patient capacity revenue</td>
+                      <td className="py-3">✅ Yes (if data provided)</td>
+                      <td className="py-3">Additional patients/mo × providers × 12 × $200/visit</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">HCC / risk adjustment</td>
+                      <td className="py-3 text-[#F59E0B] font-medium">Signal only — not calculated</td>
+                      <td className="py-3">Requires MA population + RAF data</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Physician retention</td>
+                      <td className="py-3">✅ Yes (if survey data provided)</td>
+                      <td className="py-3">Turnovers avoided × $250K–$500K replacement cost</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">After-hours time savings</td>
+                      <td className="py-3 text-[#F59E0B] font-medium">Signal only — not monetized</td>
+                      <td className="py-3">Tracked as hours, not dollars (salaried providers)</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </CollapsibleSection>
 
@@ -540,12 +547,12 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                         <TooltipTrigger asChild>
                           <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
                             <td className="py-3">Physician replacement cost</td>
-                            <td className="py-3">$500k-$1M</td>
-                            <td className="py-3">$750,000</td>
+                            <td className="py-3">$250K–$500K</td>
+                            <td className="py-3">$350,000</td>
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">AMGA/MGMA studies show total replacement cost including recruiting, onboarding, and lost productivity. Varies by specialty.</p>
+                          <p className="text-xs">AMGA Physician Retention Survey; range reflects recruiting, onboarding, and lost productivity. Excludes lost revenue during vacancy.</p>
                         </TooltipContent>
                       </Tooltip>
                     </tbody>

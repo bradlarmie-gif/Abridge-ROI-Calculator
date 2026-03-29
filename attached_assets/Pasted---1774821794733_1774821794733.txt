@@ -1,0 +1,71 @@
+                                                                                                                                                                                                             
+  In client/src/pages/methodology/MethodologyOutpatient.tsx, make the following changes to content only. Do not change layout, structure, or component architecture.                                           
+                                                                                                                                                                                                               
+  1. Replace the "Potential Value" mechanism card                                                                                                                                                              
+                                          
+  Find the mechanism card titled "Potential Value" (the one with the formula Providers × Encounters × Time saved × Hourly rate × Realization rate). Replace the entire card with a plain text framing block    
+  (not a collapsible card — just a paragraph styled like the existing explanatory text):                                                                                                                       
+                                                                                                                                                                                                               
+  "Time saved in outpatient goes to one of three places: additional patients seen with recovered appointment capacity, same patients with better documentation quality, or provider wellbeing. We model the    
+  first two financially. The third is tracked as a leading indicator for retention — not as a dollar line — because physicians are salaried and hourly rate calculations don't reflect how their time is 
+  actually compensated."                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  2. Update the wRVU Accuracy formula
+                                                                                                                                                                                                               
+  Find the mechanism card titled "wRVU Accuracy". Replace the formula string with:                        
+  (wRVU per encounter after) − (wRVU per encounter before) × adopted encounters × $33/wRVU × attribution % × realization %
+  Update the explanatory text beneath it to: "This uses your observed before/after wRVU per encounter — not an assumed lift percentage. The delta is what your data shows. The attribution range (50–75%) 
+  accounts for other factors that may have contributed to the change."                                                                                                                                    
+                                                                                                                                                                                                               
+  3. Update the Denial Prevention formula 
+                                                                                                                                                                                                               
+  Find the mechanism card titled "Denial Prevention". Replace the formula with:                                                                                                                                
+  (denial rate before − denial rate after, in percentage points) × annual encounters × avg denial cost per encounter × attribution %                                                                           
+  Change the avg denial cost note to: "Outpatient default: $350 per encounter. Attribution range applied — the doc-related share of denials is captured in the attribution factor, not as a separate           
+  multiplier."                                                                                            
+                                                                                                                                                                                                               
+  4. Demote HCC Capture from a mechanism card to a callout                                                
+                                                                                                                                                                                                               
+  Find the mechanism card titled "HCC Capture". Remove it entirely. In its place, add a styled callout box (use the existing amber/orange border callout style used elsewhere on the page) with this content:  
+                                                                                                                                                                                                               
+  HCC / Risk Adjustment — Why We Don't Model It Here                                                                                                                                                           
+  HCC recapture and RAF improvement are real value drivers for practices with significant Medicare Advantage populations. We don't include them in the calculator because the formula requires MA patient      
+  counts, baseline gap rates, and RAF point values that vary substantially by payer and market. Bring your revenue cycle team to the table with that data — when you have it, it often produces the largest 
+  single number in the model.                                                                                                                                                                                  
+                                                                                                          
+  5. Add "What Goes Into the Number" table                                                                                                                                                                     
+                                                                                                                                                                                                               
+  After the Value Mechanisms section and before the Assumptions section, add a new CollapsibleSection with:
+  - title="What Goes Into the Number"                                                                                                                                                                          
+  - subtitle="Exactly what the calculator uses — and what it doesn't"                                     
+  - defaultOpen={false}                                              
+                                                                                                                                                                                                               
+  Inside it, render a table with these rows:                                                                                                                                                                   
+                                                                                                                                                                                                               
+  ┌──────────────────────────┬──────────────────────────────────┬──────────────────────────────────────────────────────┐                                                                                       
+  │       Value Driver       │        In the Calculator?        │                       Formula                        │
+  ├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────────────────────────┤                                                                                       
+  │ wRVU lift                │ ✅ Yes                           │ wRVU delta × adopted encounters × $33/wRVU           │
+  ├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────────────────────────┤                                                                                       
+  │ E/M level improvement    │ ✅ Yes                           │ E/M level delta × adopted encounters × ~$45/level    │
+  ├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────────────────────────┤
+  │ Denial rate reduction    │ ✅ Yes                           │ Denial pp delta × encounters × $350/encounter        │
+  ├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────────────────────────┤                                                                                       
+  │ Patient capacity revenue │ ✅ Yes (if data provided)        │ Additional patients/mo × providers × 12 × $200/visit │                                                                                       
+  ├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────────────────────────┤                                                                                       
+  │ HCC / risk adjustment    │ Signal only — not calculated     │ Requires MA population + RAF data                    │                                                                                       
+  ├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────────────────────────┤
+  │ Physician retention      │ ✅ Yes (if survey data provided) │ Turnovers avoided × $250K–$500K replacement cost     │                                                                                       
+  ├──────────────────────────┼──────────────────────────────────┼──────────────────────────────────────────────────────┤
+  │ After-hours time savings │ Signal only — not monetized      │ Tracked as hours, not dollars (salaried providers)   │                                                                                       
+  └──────────────────────────┴──────────────────────────────────┴──────────────────────────────────────────────────────┘
+                                                                                                                                                                                                               
+  Use the same table styling as the Assumptions section table.                                            
+                                                                                                                                                                                                               
+  6. Update physician replacement cost in the Assumptions table                                           
+                                                                                                                                                                                                               
+  Find the row for "Physician replacement cost". Change:                                                  
+  - Range: $500k-$1M → $250K–$500K                                                                                                                                                                             
+  - Default: $750,000 → $350,000                                                                          
+  - Source: "AMGA/MGMA studies on total replacement cost including recruiting, onboarding, lost productivity" → "AMGA Physician Retention Survey; range reflects recruiting, onboarding, and lost productivity.
+   Excludes lost revenue during vacancy."   
