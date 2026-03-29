@@ -272,11 +272,13 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                 <div className="bg-[#FFF8F0] border border-[#F59E0B]/30 rounded-lg p-5 mb-4">
                   <h4 className="font-semibold text-black text-sm uppercase tracking-wide mb-2">CDI Query Reduction — A Signal, Not a Standalone Line</h4>
                   <p className="text-sm text-[#666666] leading-relaxed">
-                    When documentation is more complete at the point of care, CDI teams issue fewer clarification 
-                    queries. This is real and measurable — but we don't include it as a separate financial line 
-                    because the dollar value it produces flows downstream into CMI improvement and denial rate 
-                    reduction, which are already in the calculator. Counting it separately would double-count the 
-                    same revenue. Track query volume as a leading indicator: if queries go down and CMI goes up, 
+                    CDI query reduction is a leading indicator of documentation quality improvement. In the Explore 
+                    model (for organizations evaluating Abridge), we calculate query reduction directly using 
+                    admissions × query rate × reduction % × cost per query — because it's a useful planning metric. 
+                    In the Measure model (for organizations already on Abridge), we don't include it as a standalone 
+                    financial line because its value flows downstream into CMI improvement and denial rate reduction, 
+                    which are already in the calculator. Counting it separately in the Measure path would double-count 
+                    the same revenue. Track query volume as a leading indicator: if queries go down and CMI goes up, 
                     you're seeing the mechanism work.
                   </p>
                 </div>
@@ -303,39 +305,41 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                   </div>
                 </MechanismCard>
 
-                <MechanismCard title="OBS/IP Status Defense">
+                <MechanismCard title="Obs/IP Status Defense">
                   <div className="space-y-4 text-sm">
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        Medical necessity denials often trace back to a single document: the H&P written at 
-                        admission. Payers reviewing observation vs. inpatient status decisions look for the 
-                        attending's clinical reasoning captured in real time. When that reasoning is discussed 
-                        verbally but not documented, the hospital loses the argument retrospectively. Ambient 
-                        AI captures the clinical justification for inpatient level of care at the moment it's 
-                        articulated — the strongest possible defense against retrospective denial.
+                        When a patient is admitted as inpatient but documentation doesn't adequately support medical 
+                        necessity, payers can retroactively downgrade the claim to observation status — or deny it 
+                        entirely. The revenue difference between an inpatient DRG and an observation stay can be 
+                        $5,000–$10,000 per case. Complete, specific documentation at the point of care is the primary 
+                        defense against medical necessity denials.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Admissions at risk × Denial rate × Average denied claim value × Documentation-attributable %
+                        Admissions at risk × denial rate % × avg contested claim value × documentation-attributable % × attribution % = defense value
                       </p>
                     </div>
                     <div>
-                      <p className="text-[#888888] mb-1">Key assumptions:</p>
+                      <p className="text-[#888888] mb-1">The key assumptions:</p>
                       <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>Average obs/IP contested claim: $8,000–$15,000</li>
-                        <li>Denial rate for medical necessity: 3–7% of inpatient admissions</li>
-                        <li>Documentation attributed as contributing factor: ~40% (based on denial root cause data)</li>
+                        <li>Medical necessity denial rate: 3–7% of inpatient admissions (varies by payer mix and hospital)</li>
+                        <li>Average contested claim value (IP vs. OBS difference): $8,000–$15,000</li>
+                        <li>Documentation-attributable share of denials: ~40% — based on denial root cause categorization; the remainder are clinical criteria issues, not documentation issues</li>
+                        <li>Attribution range: 50–75% applied on top</li>
                       </ul>
                     </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
                       <p className="text-[#888888] mb-1">Why this is defensible:</p>
                       <p className="text-[#666666]">
-                        Revenue cycle teams already categorize denial root causes. If your denial management 
-                        team tracks "medical necessity — documentation insufficient" as a category, this is 
-                        measurable before and after deployment.
+                        Medical necessity denial rates by root cause are tracked by your revenue cycle team today. 
+                        Documentation-attributed denials are an identifiable subset — your RC team can pull them. 
+                        The before/after comparison is clean once you have 6+ months of post-implementation data. 
+                        This is one of the few value drivers where the counterfactual (what the payer would have paid 
+                        without better documentation) is actually recorded in your denial management system.
                       </p>
                     </div>
                   </div>
@@ -465,9 +469,14 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                       <td className="py-3">Denial pp delta × encounters × $3,500/case</td>
                     </tr>
                     <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Obs/IP status defense</td>
+                      <td className="py-3">✅ Yes (if denial data provided)</td>
+                      <td className="py-3">Admissions at risk × denial rate × avg claim delta × doc-attributable %</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
                       <td className="py-3">CDI query reduction</td>
-                      <td className="py-3 text-[#F59E0B] font-medium">Signal only — not standalone</td>
-                      <td className="py-3">Value flows through CMI and denial rate</td>
+                      <td className="py-3 text-[#F59E0B] font-medium">Explore model: ✅ calculated · Measure model: signal only</td>
+                      <td className="py-3">Admissions × query rate × reduction % × $50/query</td>
                     </tr>
                     <tr className="border-b border-[#E5E5E5]">
                       <td className="py-3">Rounding efficiency</td>
