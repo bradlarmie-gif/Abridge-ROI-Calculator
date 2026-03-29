@@ -360,28 +360,10 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
   if (ahDelta > 0 && providers > 0) {
     const metricDef = ahMetric ? METRIC_MAP.get(ahMetric.metricId) : undefined;
     const metricUnit = metricDef?.unit || '';
-    let hrsPerWeek: number;
-    if (metricUnit === 'min' || metricUnit === 'min/day') {
-      hrsPerWeek = (ahDelta / 60) * 5;
-    } else if (metricUnit === 'hrs/wk' || metricUnit === 'min/wk') {
-      hrsPerWeek = metricUnit === 'min/wk' ? ahDelta / 60 : ahDelta;
-    } else {
-      hrsPerWeek = ahDelta * 5;
-    }
-    if (isHourlyWorkforce) {
-      const annual = hrsPerWeek * providers * DEFAULT_ASMP.otPremiumRate * 52;
-      costLo += annual * attrLo;
-      costHi += annual * attrHi;
-      costDetails.push({
-        label: `After-hours OT premium reduction: \u2212${ahDelta.toFixed(1)} ${metricUnit || 'hrs/day'}/provider`,
-        formula: `${hrsPerWeek.toFixed(1)} hrs/wk \u00D7 ${providers} providers \u00D7 $${DEFAULT_ASMP.otPremiumRate}/hr OT \u00D7 52 wks`,
-      });
-    } else {
-      costDetails.push({
-        label: `After-hours documentation reduced: \u2212${ahDelta.toFixed(1)} ${metricUnit || 'hrs/day'}/provider`,
-        formula: `${hrsPerWeek.toFixed(1)} hrs/wk recovered \u2192 tracked as wellbeing signal (physicians are salaried)`,
-      });
-    }
+    costDetails.push({
+      label: `After-hours documentation eliminated: \u2212${ahDelta.toFixed(1)} ${metricUnit || 'hrs/day'}/provider`,
+      formula: `Tracked as capacity recovered and wellbeing signal \u2014 not monetized for salaried providers`,
+    });
   }
 
   const agencyMetric = activeMetrics.find(m =>
@@ -413,7 +395,7 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
     ed:         { low: 350_000, high: 500_000 },
     inpatient:  { low: 300_000, high: 500_000 },
     nursing:    { low: 50_000,  high: 100_000 },
-  } as Record<string, { low: number; high: number }>)[setting] ?? { low: 250_000, high: 400_000 };
+  } as Record<string, { low: number; high: number }>)[setting] ?? { low: 250_000, high: 500_000 };
 
   if (burnoutD > 0 || stayD > 0) {
     retentionLo = 1 * replacementRange.low * attrLo;
@@ -425,7 +407,7 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
       : `Likelihood to stay improved ${stayD.toFixed(0)} pts`;
     costDetails.push({
       label: "Physician retention signal",
-      formula: `${signal} \u2192 1\u20133 avoided departures \u00D7 ${fmtC(replacementRange.low)}\u2013${fmtC(replacementRange.high)} replacement cost`,
+      formula: `${signal} \u2192 1\u20133 avoided departures \u00D7 $250K\u2013$500K replacement cost (AMGA benchmark)`,
     });
   }
 
@@ -462,18 +444,17 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
 
   const enabledStreams: string[] = [];
   const excludedStreams: string[] = [];
-  const streamLabels: Record<string, string> = {
-    billingCapture: 'Billing Capture',
-    revenueRecovery: 'Revenue Recovery',
-    patientFlow: 'Patient Flow',
-    capacityRevenue: 'Capacity Revenue',
-    costReduction: 'Cost Reduction',
-  };
-  if (streamStates) {
-    for (const [k, label] of Object.entries(streamLabels)) {
-      if (streamStates[k] === false) excludedStreams.push(label);
-      else enabledStreams.push(label);
-    }
+  const streamDataMap: { key: string; label: string; has: boolean }[] = [
+    { key: 'billingCapture', label: 'Billing Capture', has: billLo > 0 },
+    { key: 'revenueRecovery', label: 'Revenue Recovery', has: recLo > 0 },
+    { key: 'patientFlow', label: 'Patient Flow', has: pfLo > 0 },
+    { key: 'capacityRevenue', label: 'Capacity Revenue', has: capLo > 0 },
+    { key: 'costReduction', label: 'Cost Reduction', has: costLo > 0 },
+  ];
+  for (const sd of streamDataMap) {
+    if (!sd.has && !(streamStates && streamStates[sd.key] === false)) continue;
+    if (streamStates && streamStates[sd.key] === false) excludedStreams.push(sd.label);
+    else enabledStreams.push(sd.label);
   }
 
   const settingBreakdown = multiSetting ? activeSettings.map(s => {
@@ -691,27 +672,66 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
             <Text style={s.eyebrow}>Financial Impact</Text>
             <Text style={s.headline}>Estimated Annual Value</Text>
 
-            <View style={[s.card, { alignItems: "center", paddingVertical: 20, marginBottom: 16 }]}>
+            <View style={[s.card, { alignItems: "center", paddingVertical: 20, marginBottom: 4 }]}>
               <Text style={{ fontSize: 28, fontWeight: "bold", color: C.orange }}>{fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))}</Text>
               <Text style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>{CONFIDENCE_LABELS[maturityLabels[maturityIdx].toLowerCase()] || 'Estimate'} (attribution: {fin.attrRange})</Text>
             </View>
+            <Text style={{ fontSize: 8, color: C.muted, textAlign: "center", marginBottom: 14 }}>
+              Based on {fin.enabledStreams.length} of {fin.enabledStreams.length + fin.excludedStreams.length} value streams
+              {fin.excludedStreams.length > 0 ? ` \u00B7 ${fin.excludedStreams.join(", ")} excluded by reviewer` : ""}
+            </Text>
 
-            {(state.deployment.annualContractValue ?? 0) > 0 && fin.totalMid > 0 && (
-              <View style={[s.card, { flexDirection: "row", justifyContent: "space-around", paddingVertical: 14, marginBottom: 14, backgroundColor: "#1A1A1A" }]}>
-                <View style={{ alignItems: "center" }}>
-                  <Text style={{ fontSize: 18, fontWeight: "bold", color: C.orange }}>{(fin.totalMid / (state.deployment.annualContractValue || 1)).toFixed(1)}\u00D7</Text>
-                  <Text style={{ fontSize: 8, color: "#FFFFFF80", marginTop: 2 }}>ROI ratio</Text>
-                </View>
-                <View style={{ alignItems: "center" }}>
-                  <Text style={{ fontSize: 18, fontWeight: "bold", color: "#FFFFFF" }}>{Math.round((state.deployment.annualContractValue || 0) / (fin.totalMid / 12))}mo</Text>
-                  <Text style={{ fontSize: 8, color: "#FFFFFF80", marginTop: 2 }}>Payback period</Text>
-                </View>
-                <View style={{ alignItems: "center" }}>
-                  <Text style={{ fontSize: 18, fontWeight: "bold", color: "#FFFFFF" }}>{fmtC(fin.totalMid - (state.deployment.annualContractValue || 0))}</Text>
-                  <Text style={{ fontSize: 8, color: "#FFFFFF80", marginTop: 2 }}>Net value</Text>
-                </View>
-              </View>
-            )}
+            {(state.deployment.annualContractValue ?? 0) > 0 && fin.totalMid > 0 && (() => {
+              const acv = state.deployment.annualContractValue || 0;
+              const ratio = (fin.totalMid / acv).toFixed(1);
+              return (
+                <>
+                  <View style={[s.cardOutline, { paddingVertical: 14, marginBottom: 10 }]}>
+                    <Text style={{ fontSize: 8, fontWeight: "bold", color: C.muted, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>ROI Summary</Text>
+                    <View style={s.rule} />
+                    <View style={[s.finRow, { marginBottom: 4 }]}>
+                      <Text style={{ fontSize: 10, color: C.mid }}>Annual investment</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>{fmtC(acv)}</Text>
+                    </View>
+                    <View style={[s.finRow, { marginBottom: 4 }]}>
+                      <Text style={{ fontSize: 10, color: C.mid }}>Modeled annual value</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>{fmtC(fin.totalMid)}</Text>
+                    </View>
+                    <View style={[s.finRow, { marginBottom: 6 }]}>
+                      <Text style={{ fontSize: 10, color: C.mid }}>Return on investment</Text>
+                      <Text style={{ fontSize: 14, fontWeight: "bold", color: C.orange }}>{ratio}{"\u00D7"}</Text>
+                    </View>
+                    <View style={s.rule} />
+                    <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.5, fontStyle: "italic" }}>
+                      For every $1 invested in Abridge, {orgName} is generating ${ratio} in measured value.
+                    </Text>
+                  </View>
+
+                  <View style={[s.cardOutline, { paddingVertical: 12, marginBottom: 14 }]}>
+                    <Text style={{ fontSize: 8, fontWeight: "bold", color: C.muted, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>Value Horizon</Text>
+                    <View style={s.rule} />
+                    <View style={[s.finRow, { marginBottom: 6 }]}>
+                      <View style={{ flex: 2 }}>
+                        <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>Near-term (0{"\u2013"}12 mo)</Text>
+                        <Text style={{ fontSize: 8, color: C.muted }}>Billing, recovery, throughput</Text>
+                      </View>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>{fmtRange(Math.round(fin.billLo + fin.recLo + fin.pfLo), Math.round(fin.billHi + fin.recHi + fin.pfHi))} /yr</Text>
+                    </View>
+                    <View style={[s.finRow, { marginBottom: 6 }]}>
+                      <View style={{ flex: 2 }}>
+                        <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>Building value (1{"\u2013"}3 yr)</Text>
+                        <Text style={{ fontSize: 8, color: C.muted }}>Retention, capacity</Text>
+                      </View>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>{fmtRange(Math.round(fin.capLo + fin.costLo), Math.round(fin.capHi + fin.costHi))} /yr</Text>
+                    </View>
+                    <View style={s.rule} />
+                    <Text style={{ fontSize: 8, color: C.muted, lineHeight: 1.5, fontStyle: "italic" }}>
+                      Near-term value is realizable within the current contract year. Building value compounds as retention risk decreases and capacity is absorbed.
+                    </Text>
+                  </View>
+                </>
+              );
+            })()}
 
             {fin.excludedStreams.length > 0 && (
               <View style={{ marginBottom: 14, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: "#FAF8F5", borderRadius: 6 }}>
@@ -931,7 +951,6 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
             { k: "Attribution range", v: fin.attrRange },
             { k: "Realization rate", v: `${DEFAULT_ASMP.realization}%` },
             { k: "Conversion factor ($/wRVU)", v: `$${DEFAULT_ASMP.conversionFactor}` },
-            { k: "OT premium rate", v: `$${DEFAULT_ASMP.otPremiumRate}/hr` },
             { k: "ED revenue per visit", v: `$${DEFAULT_ASMP.edRevenuePerVisit}` },
             { k: "DRG base rate", v: `$${fmtN(DEFAULT_ASMP.drgBaseRate)}` },
             { k: "Cost per bed day", v: `$${fmtN(DEFAULT_ASMP.costPerBedDay)}` },
