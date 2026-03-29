@@ -1,0 +1,36 @@
+Addendum Prompt 2 — Emergency Department                                                                                                                                                                   
+                                                                                                                                                                                                               
+  In client/src/pages/methodology/MethodologyED.tsx, inside the "Value Mechanisms" CollapsibleSection, after the existing "LWBS Recovery" mechanism card, add one new mechanism card. Then update the "What
+  Goes Into the Number" table.                                                                                                                                                                                 
+                                                                                                                                                                                                             
+  New mechanism card — Admission Capture                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Title: "Admission Capture"                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  Inside the card:                                                                                                                                                                                           
+
+  Mechanism paragraph:
+  Of the patients recovered from LWBS, some will require inpatient admission. When those patients are retained rather than leaving, the ED visit converts to inpatient admission revenue — DRG-based payment on
+   top of the ED facility and professional fees. This driver only activates when LWBS Recovery is calculated first; the recovered patient population is the base.
+                                          
+  Formula block (use existing style):
+  Recovered LWBS patients × admission rate % × avg admission revenue × realization rate = admission capture value                                                                                              
+     
+  Key assumptions list:                                                                                                                                                                                        
+  - Admission rate from recovered LWBS patients: 15–25% (patients who left without being seen and required inpatient care)                                                                                   
+  - Average admission revenue: $8,000–$12,000 (DRG-based; varies by payer mix and case mix)                               
+  - Realization rate: 70–80% — accounts for payer mix, bed availability, and coding factors
+                                                                                                                                                                                                               
+  "Why this is defensible" callout (orange left border):                                                                                                                                                       
+  ED admission rates are tracked in your operational data. The recovered patient population comes directly from the LWBS calculation — it's not a new assumption, it's an extension of the same patient cohort.
+   The admission revenue figure uses your actual DRG base rate, not a benchmark.                                                                                                                               
+                                                                                                                                                                                                               
+  Add an important dependency note:                                                                                                                                                                            
+  This calculation depends on LWBS Recovery. If you don't have LWBS data, don't estimate admission capture — the compounding of two estimates produces a number that won't survive scrutiny. Run LWBS first,   
+  get the data, then layer in admission capture.                                                                                                                                                               
+                                                                                                                                                                                                               
+  Update the "What Goes Into the Number" table                                                                                                                                                               
+                                                                                                                                                                                                               
+  Add one row:                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  | Admission capture from LWBS recovery | ✅ Yes (if LWBS data provided) | Recovered patients × admission rate × avg DRG revenue | 

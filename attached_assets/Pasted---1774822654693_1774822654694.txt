@@ -1,0 +1,68 @@
+                                                                                                                                                                                                             
+  In client/src/pages/methodology/MethodologyNursing.tsx, inside the "Value Mechanisms" CollapsibleSection, after the existing "HAPI & Falls Prevention" mechanism card, add the following two new mechanism   
+  cards. Then update the existing "What Goes Into the Number" table and the "Honest Limits" section.
+                                                                                                                                                                                                               
+  New mechanism card 1 — Bundle Protocol Compliance                                                                                                                                                          
+                                                                                                                                                                                                               
+  Title: "Bundle Protocol Compliance (CAUTI, CLABSI, SEP-1)"
+                                                                                                                                                                                                               
+  Inside the card:                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Mechanism paragraph:
+  Bundle protocols require complete, timely documentation of every step — catheter care, line access, assessment timing. When documentation happens retrospectively during end-of-shift charting, protocol gaps
+   are invisible until the event has already occurred. Real-time ambient documentation captures bundle steps at the point of care, making gaps visible while there's still time to intervene.                  
+                                                                                                                                                                                             
+  Formula block (use the existing bg-[#F5F0EB] rounded-lg p-4 style):
+  Current HAI events × documentation-preventable rate × cost per event = potential value                                                                                                                       
+  CMS penalty exposure × compliance improvement rate = penalty avoidance
+                                                                                                                                                                                                               
+  Key assumptions list:                                                                                                                                                                                      
+  - CAUTI cost per event: $13,000–$30,000 (CMS/AHRQ benchmark)                                                                                                                                                 
+  - CLABSI cost per event: $46,000–$68,000 (CDC benchmark)    
+  - SEP-1 non-compliance: VBC contract-dependent; penalty exposure varies by payer                                                                                                                             
+  - Documentation-preventable rate: 5–12% — conservative; represents cases where real-time documentation would have surfaced a protocol gap in time to intervene                                             
+                                                                                                                                                                                                               
+  Add a note paragraph:                                                                                                                                                                                      
+  Bundle compliance has two distinct financial levers — avoided cost of the event itself, and avoided CMS quality penalties. If your organization participates in value-based care contracts with quality      
+  performance components, SEP-1 and bundle compliance rates directly affect contract performance. These numbers already exist in your quality reports.                                                         
+                                                                                                                                                      
+  "Why this is defensible" callout (orange left border):                                                                                                                                                       
+  HAI rates, bundle compliance rates, and CMS penalty exposure are tracked in your quality department today. The before/after comparison is clean. Documentation is the visibility infrastructure — clinical   
+  team response is the intervention mechanism. We don't claim the outcome; we claim the foundation it runs on.                                                                                                 
+                                                                                                                                                                                                               
+  New mechanism card 2 — Fall Risk Real-Time Assessment                                                                                                                                                      
+                                                                                                                                                                                                               
+  Title: "Fall Risk — Real-Time Assessment"                                                                                                                                                                    
+                                                                                                                                                                                                               
+  Inside the card:                                                                                                                                                                                             
+                                                                                                                                                                                                             
+  Mechanism paragraph:
+  Fall risk assessments are typically documented at shift start and updated retrospectively. With ambient documentation, fall risk factors — patient confusion, medication changes, mobility status — are 
+  captured as the clinical picture evolves in real time, not hours later. This timeliness changes whether a fall risk flag reaches the team while the patient is still at risk.
+                                          
+  Formula block:
+  Current fall events × documentation-preventable rate × cost per event = potential value                                                                                                                      
+     
+  Key assumptions list:                                                                                                                                                                                        
+  - Average cost per inpatient fall: $14,000–$30,000 (CMS Never Event / litigation exposure)                                                                                                                 
+  - Documentation-preventable rate: 5% — conservative; captures cases where a real-time assessment update would have triggered a precaution change before the event
+
+  Add a note paragraph distinguishing this from HAPI:                                                                                                                                                          
+  This is modeled separately from HAPI/pressure injury because the documentation timing mechanism is different. Fall risk is dynamic throughout a shift and changes with patient status. Pressure injury risk 
+  is assessed less frequently. Real-time capture matters more for fall risk because the window to intervene is shorter.                                                                                        
+                                                                                                                                                                                                               
+  Update the "What Goes Into the Number" table
+                                                                                                                                                                                                               
+  Add two rows to the existing table:                                                                                                                                                                        
+                                                                                                                                                                                                               
+  | Bundle compliance (CAUTI, CLABSI, SEP-1) | Potential value — shown separately | HAI events × doc-preventable rate × cost per event |                                                                     
+  | Fall risk — real-time assessment | Potential value — shown separately | Fall events × 5% doc-preventable rate × $14K–$30K/event |
+                                                                                                                                                                                                               
+  Update the "Honest Limits" section                                                                                                                                                                           
+                                                                                                                                                                                                               
+  In the red dot "Indirect & Harder to Attribute" list, replace:                                                                                                                                               
+  Falls/HAPI prevention: Multiple factors; documentation is one enabler                                                                                                                                        
+                                              
+  With:                                                                                                                                                                                                        
+  Falls, HAPI, CAUTI, CLABSI, SEP-1: Documentation is the visibility infrastructure — clinical team response determines the outcome. These are real events with measurable costs. We show potential value    
+  separately and label it clearly. The attribution question is how much of prevention specifically traces to documentation timing. 
