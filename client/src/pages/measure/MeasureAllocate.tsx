@@ -34,6 +34,7 @@ interface Assumptions {
   drgBaseRate: number;
   costPerBedDay: number;
   revenuePerVisit: number;
+  emUndercaptureRate: number;
 }
 
 const DEFAULT_ASSUMPTIONS: Assumptions = {
@@ -45,6 +46,7 @@ const DEFAULT_ASSUMPTIONS: Assumptions = {
   drgBaseRate: 6800,
   costPerBedDay: 2500,
   revenuePerVisit: 200,
+  emUndercaptureRate: 35,
 };
 
 function computeFinancials(state: MeasureState, assumptions: Assumptions) {
@@ -56,8 +58,11 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
       billingCaptureLow: 0, billingCaptureHigh: 0, billingDetails: [],
       hasRevenueRecovery: false, revenueRecoveryLow: 0, revenueRecoveryHigh: 0,
       recoveryDetails: [], hasCostReduction: false, costReductionLow: 0,
-      costReductionHigh: 0, hasAfterHours: false, afterHoursDelta: 0,
-      afterHoursAnnual: 0, hasRetentionSignal: false, burnoutDelta: 0,
+      costReductionHigh: 0, hasAfterHours: false, hasAfterHoursSignalOnly: false,
+      afterHoursDelta: 0,
+      afterHoursAnnual: 0, retentionBenchmarkLabel: 'AMGA physician replacement benchmark',
+      effectiveReplacementCost: { low: 250_000, high: 400_000 },
+      hasRetentionSignal: false, burnoutDelta: 0,
       likelihoodDelta: 0, retentionLow: 0, retentionHigh: 0,
       hasPhysicianRetentionOverride: false, retentionOverrideProviders: 0,
       retentionOverrideDelta: 0, hasPatientFlow: false, patientFlowLow: 0,
@@ -134,13 +139,14 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
 
     if (emD > 0 && effectiveAdopted > 0) {
       const avgEmValue = 45;
-      const base = emD * effectiveAdopted * avgEmValue;
+      const undercaptureRate = assumptions.emUndercaptureRate / 100;
+      const base = emD * effectiveAdopted * undercaptureRate * avgEmValue;
       billingCaptureLow += base * attrLow * realLow;
       billingCaptureHigh += base * attrHigh * realHigh;
       billingDetails.push({
         label: `E/M level improvement: +${emD.toFixed(1)} levels${multiSetting ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
-        detail: `${formatNumber(effectiveAdopted)} adopted encounters`,
-        formula: `+${emD.toFixed(1)} E/M × ${formatNumber(effectiveAdopted)} × ~$${avgEmValue}/level = ${fmt(base)}`,
+        detail: `${formatNumber(effectiveAdopted)} adopted encounters · ${assumptions.emUndercaptureRate}% undercapture rate`,
+        formula: `+${emD.toFixed(1)} E/M × ${formatNumber(effectiveAdopted)} × ${assumptions.emUndercaptureRate}% undercapture × ~$${avgEmValue}/level = ${fmt(base)}`,
       });
     }
 
@@ -271,15 +277,17 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   let costReductionHigh = 0;
 
   const afterHoursDelta = Math.max(0, afterHoursWithout - afterHoursWith);
+  const isHourlyWorkforce = activeSettings.includes('nursing');
 
   let hasAfterHours = false;
   let afterHoursAnnual = 0;
-  if (afterHoursDelta > 0 && providers > 0) {
+  if (afterHoursDelta > 0 && providers > 0 && isHourlyWorkforce) {
     hasAfterHours = true;
     afterHoursAnnual = afterHoursDelta * 5 * providers * assumptions.otPremiumRate * 52;
     costReductionLow += afterHoursAnnual * attrLow;
     costReductionHigh += afterHoursAnnual * attrHigh;
   }
+  const hasAfterHoursSignalOnly = afterHoursDelta > 0 && !isHourlyWorkforce;
 
   let hasRetentionSignal = false;
   let burnoutDelta = 0;
@@ -317,12 +325,20 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     }
   }
 
+  const replacementCostRange: Record<string, { low: number; high: number }> = {
+    outpatient: { low: 300_000, high: 500_000 },
+    ed:         { low: 350_000, high: 500_000 },
+    inpatient:  { low: 300_000, high: 500_000 },
+    nursing:    { low: 50_000,  high: 100_000 },
+  };
+  const effectiveReplacementCost = replacementCostRange[primarySetting] ?? { low: 250_000, high: 400_000 };
+  const isNursingSetting = activeSettings.includes('nursing') && !activeSettings.some(s => ['outpatient', 'ed', 'inpatient'].includes(s));
+  const retentionBenchmarkLabel = isNursingSetting ? 'NSI Nursing Solutions turnover cost benchmark' : 'AMGA physician replacement benchmark';
+
   if (burnoutDelta > 0 || likelihoodDelta > 0) {
     hasRetentionSignal = true;
-    const mdReplacementLow = 50_000;
-    const mdReplacementHigh = 150_000;
-    retentionLow = 1 * mdReplacementLow * attrLow;
-    retentionHigh = 3 * mdReplacementHigh * attrHigh;
+    retentionLow = 1 * effectiveReplacementCost.low * attrLow;
+    retentionHigh = 3 * effectiveReplacementCost.high * attrHigh;
     costReductionLow += retentionLow;
     costReductionHigh += retentionHigh;
   }
@@ -340,10 +356,8 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     if (retentionDelta > 0 && providers > 0) {
       hasRetentionSignal = true;
       const turnoversAvoided = (retentionDelta / 100) * providers;
-      const replacementCostLow = 300_000;
-      const replacementCostHigh = 750_000;
-      const newRetentionLow = turnoversAvoided * replacementCostLow * attrLow;
-      const newRetentionHigh = turnoversAvoided * replacementCostHigh * attrHigh;
+      const newRetentionLow = turnoversAvoided * effectiveReplacementCost.low * attrLow;
+      const newRetentionHigh = turnoversAvoided * effectiveReplacementCost.high * attrHigh;
       if (newRetentionLow > retentionLow) {
         hasPhysicianRetentionOverride = true;
         retentionOverrideProviders = providers;
@@ -371,7 +385,7 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     }
   }
 
-  const hasCostReduction = hasAfterHours || hasRetentionSignal || hasAgencySavings;
+  const hasCostReduction = hasAfterHours || hasAfterHoursSignalOnly || hasRetentionSignal || hasAgencySavings;
 
   const totalLow = billingCaptureLow + revenueRecoveryLow + patientFlowLow + capacityRevenueLow + costReductionLow;
   const totalHigh = billingCaptureHigh + revenueRecoveryHigh + patientFlowHigh + capacityRevenueHigh + costReductionHigh;
@@ -398,8 +412,11 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     costReductionLow,
     costReductionHigh,
     hasAfterHours,
+    hasAfterHoursSignalOnly,
     afterHoursDelta,
     afterHoursAnnual,
+    retentionBenchmarkLabel,
+    effectiveReplacementCost,
     hasRetentionSignal,
     burnoutDelta,
     likelihoodDelta,
@@ -692,12 +709,12 @@ export default function MeasureAllocate({
 
               {fin.hasAfterHours && (
                 <div className="mb-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-[#888888] mb-2">After-hours payroll</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#888888] mb-2">After-hours payroll (nursing OT)</p>
                   <p className="text-sm text-[#1A1A1A]">
                     After-hours eliminated: {fin.afterHoursDelta.toFixed(1)} hrs/day per provider
                   </p>
                   <p className="text-xs text-[#999999]">
-                    OT premium rate: ${assumptions.otPremiumRate}/hr · Providers on Abridge: {fin.providers}
+                    OT premium rate: ${assumptions.otPremiumRate}/hr · Staff on Abridge: {fin.providers}
                   </p>
                   <p className="text-sm font-bold text-[#1A1A1A] mt-2">
                     Annual OT cost avoided: <span className="text-[#EA2C00]">{fmtRange(
@@ -706,7 +723,19 @@ export default function MeasureAllocate({
                     )} / year</span>
                   </p>
                   <p className="text-[10px] text-[#999999] mt-1 font-mono">
-                    {fin.afterHoursDelta.toFixed(1)} hrs/day × 5 days × {fin.providers} providers × ${assumptions.otPremiumRate}/hr × 52 weeks
+                    {fin.afterHoursDelta.toFixed(1)} hrs/day × 5 days × {fin.providers} staff × ${assumptions.otPremiumRate}/hr × 52 weeks
+                  </p>
+                </div>
+              )}
+
+              {fin.hasAfterHoursSignalOnly && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#888888] mb-2">After-hours reduction</p>
+                  <p className="text-sm text-[#1A1A1A]">
+                    After-hours reduced: {fin.afterHoursDelta.toFixed(1)} hrs/day per provider
+                  </p>
+                  <p className="text-xs text-[#92400E] italic mt-1">
+                    After-hours reduction tracked as provider wellbeing signal — financial impact reflected in retention value.
                   </p>
                 </div>
               )}
@@ -747,20 +776,23 @@ export default function MeasureAllocate({
                     </p>
                   )}
                   <p className="text-sm font-bold text-[#1A1A1A]">
-                    Estimated retention value{fin.hasPhysicianRetentionOverride ? '' : ' (MGMA benchmarks)'}: <span className="text-[#EA2C00]">{fmtRange(Math.round(fin.retentionLow), Math.round(fin.retentionHigh))} / year</span>
+                    Estimated retention value: <span className="text-[#EA2C00]">{fmtRange(Math.round(fin.retentionLow), Math.round(fin.retentionHigh))} / year</span>
+                  </p>
+                  <p className="text-[10px] text-[#999999] mt-0.5">
+                    Source: {fin.retentionBenchmarkLabel}
                   </p>
                   {fin.hasPhysicianRetentionOverride ? (
                     <p className="text-[10px] text-[#999999] mt-1 leading-relaxed">
-                      ({(fin.retentionOverrideDelta / 100 * fin.retentionOverrideProviders).toFixed(1)}) turnovers avoided × $300K–$750K replacement cost × attribution
+                      ({(fin.retentionOverrideDelta / 100 * fin.retentionOverrideProviders).toFixed(1)}) turnovers avoided × {fmt(fin.effectiveReplacementCost.low)}–{fmt(fin.effectiveReplacementCost.high)} replacement cost × attribution
                     </p>
                   ) : (
                     <>
                       <p className="text-[10px] text-[#999999] mt-1 leading-relaxed">
-                        Low = 1 turnover avoided × $50K/MD replacement cost × 50% attribution<br />
-                        High = 3 turnovers avoided × $150K/MD replacement cost × 75% attribution
+                        Low = 1 turnover avoided × {fmt(fin.effectiveReplacementCost.low)} replacement cost × {Math.round(fin.attrLow * 100)}% attribution<br />
+                        High = 3 turnovers avoided × {fmt(fin.effectiveReplacementCost.high)} replacement cost × {Math.round(fin.attrHigh * 100)}% attribution
                       </p>
                       <p className="text-[10px] text-[#AAAAAA] mt-1.5 italic">
-                        Not a direct calculation — a signal-based range using published MGMA benchmarks ($50K–$150K per physician)
+                        Signal-based range using {fin.retentionBenchmarkLabel}
                       </p>
                     </>
                   )}
@@ -853,6 +885,27 @@ export default function MeasureAllocate({
                       className="h-9 bg-white border-[#E5E5E5] text-sm"
                       data-testid="input-conversion-factor"
                     />
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-[#525252] mb-1">
+                      E/M undercapture rate (% encounters coded below appropriate level before Abridge)
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <Slider
+                        value={[assumptions.emUndercaptureRate]}
+                        onValueChange={([v]) => updateAssumption('emUndercaptureRate', v)}
+                        min={10}
+                        max={80}
+                        step={5}
+                        className="flex-1"
+                        data-testid="slider-em-undercapture"
+                      />
+                      <span className="text-sm font-bold text-[#1A1A1A] w-10 text-right">{assumptions.emUndercaptureRate}%</span>
+                    </div>
+                    <p className="text-[10px] text-[#AAAAAA] italic mt-1">
+                      Default 35% — from coding audit literature. Adjust based on your pre-Abridge coding quality.
+                    </p>
                   </div>
 
                   <div>

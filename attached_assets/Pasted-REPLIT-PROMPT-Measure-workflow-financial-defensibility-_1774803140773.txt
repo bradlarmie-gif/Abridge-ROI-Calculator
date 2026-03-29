@@ -1,0 +1,100 @@
+REPLIT PROMPT — Measure workflow financial defensibility fixes (measureCalculator.ts + MeasureAllocate.tsx)                                                                                                  
+                                                                                                                                                                                                               
+  Four targeted changes. Do not modify the attribution/realization mechanism, wRVU formula, CMI formula, LWBS formula, denial rate formula, agency savings formula, or capacity revenue formula — those are
+  correct.                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ---                                         
+  Fix 1 — Remove after-hours OT savings for physicians/APPs                                                                                                                                                    
+                                                                                                          
+  In measureCalculator.ts, find the after-hours cost reduction calculation:                                                                                                                                    
+  costReductionLow = afterHoursDelta × 5 × providers × otPremiumRate × 52 × attributionLow                
+  costReductionHigh = afterHoursDelta × 5 × providers × otPremiumRate × 52 × attributionHigh                                                                                                                   
+                                                                                                          
+  Replace with a conditional: only apply this formula for the nursing care setting where staff are hourly employees. For outpatient, ED, and inpatient, remove the dollar calculation entirely. Physicians and 
+  APPs are salaried — there is no overtime cost line.
+                                                                                                                                                                                                               
+  const isHourlyWorkforce = careSetting === 'nursing';                                                    
+  if (isHourlyWorkforce && afterHoursDelta > 0) {                                                                                                                                                              
+    // Nursing staff: overtime is a real cost                                                             
+    costReductionLow += afterHoursDelta * nurseFTEs * otPremiumRate * 52 * attributionLow;                                                                                                                     
+    costReductionHigh += afterHoursDelta * nurseFTEs * otPremiumRate * 52 * attributionHigh;                                                                                                                   
+  }                                                                                                                                                                                                            
+  // For physician settings: after-hours reduction is a wellbeing signal only                                                                                                                                  
+  // Its financial value is captured in the retention calculation, not as a direct cost                                                                                                                        
+                                                                                                                                                                                                               
+  In MeasureAllocate.tsx, if there is an "After-Hours Savings" line item displayed in the cost reduction section, hide it for non-nursing settings. Add a note for physician settings: "After-hours reduction  
+  tracked as provider wellbeing signal — financial impact reflected in retention value."                                                                                                                       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 2 — Remove "Hard Savings" time × hourly rate allocation                                                                                                                                                  
+                                                                                                                                                                                                               
+  In measureCalculator.ts, find calculateMeasureResults() or similar. Find:                               
+  hardSavingsValue = hardSavingsHours × otHourlyRate
+  Delete this calculation. Set hardSavingsValue = 0.
+
+  Reframe the allocation model from three buckets to two:                                                                                                                                                      
+  - capacityPercent (default 40%) → feeds capacityValue via capacityHours / (minutesPerVisit / 60) × revenuePerVisit
+  - wellbeingPercent (default 60%) → feeds a qualitative signal only, no dollar value                                                                                                                          
+                                                                                                                                                                                                               
+  If the allocation UI shows three sliders in MeasureAllocate.tsx, collapse to two: Capacity and Wellbeing/Retention. The wellbeing slider controls what % of time recovery is attributed to quality-of-life
+  improvement (which feeds the retention narrative, not a direct dollar line).                                                                                                                                 
+                                                                                                          
+  Remove hardSavingsPercent from DEFAULT_MEASURE_STATE.allocation. Update the default capacityPercent from 20% to 40%.                                                                                         
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 3 — Care-setting-specific replacement costs                                                                                                                                                              
+                                                                                                          
+  In measureCalculator.ts, find the retention/turnover cost calculation. Replace all fixed or two-path replacement cost constants with a care-setting lookup:                                                  
+                                                                                                          
+  const replacementCostRange = {                                                                                                                                                                               
+    outpatient: { low: 300000, high: 500000 },   // AMGA physician benchmark
+    ed:         { low: 350000, high: 500000 },   // ED physician                                                                                                                                               
+    inpatient:  { low: 300000, high: 500000 },   // Hospitalist                                           
+    nursing:    { low: 50000,  high: 100000 },   // NSI nursing benchmark                                                                                                                                      
+  }[careSetting] ?? { low: 250000, high: 400000 }; // fallback                                                                                                                                                 
+                                                                                                                                                                                                               
+  Replace both mdReplacementCostLow/mdReplacementCostHigh ($50K/$150K) and replacementCostLow/replacementCostHigh ($300K/$750K) with replacementCostRange.low and replacementCostRange.high.                   
+                                                                                                                                                                                                               
+  In MeasureAllocate.tsx, display the source next to the retention value:                                                                                                                                      
+  - Physicians: "AMGA physician replacement benchmark"                                                                                                                                                         
+  - Nursing: "NSI Nursing Solutions turnover cost benchmark"                                                                                                                                                   
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Fix 4 — E/M level improvement: add undercapture rate                                                                                                                                                         
+                                                                                                          
+  In measureCalculator.ts, find:                                                                                                                                                                               
+  billingCaptureLow += emDelta × adoptedEncounters × avgEmValue × attributionLow × realizationLow         
+                                                                                                                                                                                                               
+  Add an undercaptureRate multiplier:                                                                     
+  const undercaptureRate = inputs.emUndercaptureRate ?? 0.35; // default 35%                                                                                                                                   
+  billingCaptureLow += emDelta * adoptedEncounters * undercaptureRate * avgEmValue * attributionLow * realizationLow;
+  billingCaptureHigh += emDelta * adoptedEncounters * undercaptureRate * avgEmValue * attributionHigh * realizationHigh;                                                                                       
+                                                                                                                        
+  In MeasureAllocate.tsx, add a small input below the E/M section (or in the assumptions panel alongside attribution/realization):                                                                             
+                                                                                                                                                                                                               
+  <p className="text-xs text-[#525252] mb-1">                                                                                                                                                                  
+    Estimated % of encounters coded below appropriate level before Abridge:                                                                                                                                    
+  </p>                                                                                                                                                                                                         
+  <div className="flex items-center gap-2">                                                               
+    <input                                                                                                                                                                                                     
+      type="range" min={10} max={80} step={5}                                                                                                                                                                  
+      value={inputs.emUndercaptureRate * 100 ?? 35}                                                                                                                                                            
+      onChange={e => updateInput('emUndercaptureRate', Number(e.target.value) / 100)}                                                                                                                          
+      className="flex-1"                                                                                  
+    />                                                                                                                                                                                                         
+    <span className="text-sm font-semibold w-10 text-right">
+      {Math.round((inputs.emUndercaptureRate ?? 0.35) * 100)}%                                                                                                                                                 
+    </span>                                                                                               
+  </div>                                                                                                                                                                                                       
+  <p className="text-[10px] text-[#AAAAAA] italic mt-1">                                                                                                                                                       
+    Default 35% — from coding audit literature. Adjust based on your pre-Abridge coding quality.                                                                                                               
+  </p>                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification:                                                                                                                                                                                                
+  - After-hours OT savings formula only runs for nursing care setting                                                                                                                                          
+  - hardSavingsValue is 0 everywhere; capacity allocation default is 40%                                                                                                                                       
+  - Retention replacement costs are care-setting-specific (physician vs. nursing ranges)                  
+  - E/M level billing calculation includes an undercapture rate (default 35%, user-adjustable)
+  - Attribution/realization sliders unchanged                                                 
+  - wRVU, CMI, LWBS, denial rate, agency, capacity revenue formulas unchanged

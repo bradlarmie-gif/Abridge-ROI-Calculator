@@ -1,0 +1,81 @@
+ REPLIT PROMPT — Add E/M eligibility rate to Measure wRVU calculation (measureCalculator.ts + MeasureAllocate.tsx)                                                                                            
+                                                                                                                   
+  One targeted addition. Do not change any other formulas.                                                                                                                                                     
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Change 1 — Add emEligibilityRate to the wRVU billing capture calculation
+                                                                                                                                                                                                               
+  In measureCalculator.ts, find the wRVU billing capture formula:                                         
+  billingCaptureLow += wrvuDelta * adoptedEncounters * conversionFactor * attributionLow * realizationLow;                                                                                                     
+  billingCaptureHigh += wrvuDelta * adoptedEncounters * conversionFactor * attributionHigh * realizationHigh;                                                                                                  
+                                                                                                             
+  Add emEligibilityRate as a multiplier:                                                                                                                                                                       
+  const emEligibilityRate = inputs.emEligibilityRate ?? 0.80; // default 80%                              
+  const emEligibleEncounters = Math.round(adoptedEncounters * emEligibilityRate);                                                                                                                              
+                                                                                                          
+  billingCaptureLow += wrvuDelta * emEligibleEncounters * conversionFactor * attributionLow * realizationLow;                                                                                                  
+  billingCaptureHigh += wrvuDelta * emEligibleEncounters * conversionFactor * attributionHigh * realizationHigh;
+                                                                                                                                                                                                               
+  Apply the same emEligibilityRate to the E/M level improvement calculation:                                                                                                                                   
+  billingCaptureLow += emDelta * emEligibleEncounters * undercaptureRate * avgEmValue * attributionLow * realizationLow;                                                                                       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Change 2 — Surface the E/M eligibility rate in MeasureAllocate.tsx                                                                                                                                           
+                                                                    
+  In the assumptions/calibration panel (where attribution %, realization %, and conversion factor are shown), add:                                                                                             
+                                                                                                          
+  <div>                                                                                                                                                                                                        
+    <div className="flex items-center justify-between mb-1">                                              
+      <span className="text-xs text-[#525252] font-medium">E/M Eligible Encounters</span>                                                                                                                      
+      <span className="text-xs font-bold text-black">                                                     
+        {Math.round((assumptions.emEligibilityRate ?? 0.80) * 100)}%                                                                                                                                           
+      </span>                                                                                             
+    </div>                                                                                                                                                                                                     
+    <input                                                                                                
+      type="range" min={40} max={100} step={5}                                                                                                                                                                 
+      value={Math.round((assumptions.emEligibilityRate ?? 0.80) * 100)}                                   
+      onChange={e => updateAssumption('emEligibilityRate', Number(e.target.value) / 100)}                                                                                                                      
+      className="w-full accent-[#EA2C00]"                                                                 
+    />                                        
+    <div className="flex justify-between mt-1">                                                                                                                                                                
+      <span className="text-[10px] text-[#AAAAAA]">40% (surgical mix)</span>
+      <span className="text-[10px] text-[#AAAAAA]">100% (ED / primary care)</span>                                                                                                                             
+    </div>                                                                                                
+    <p className="text-[10px] text-[#AAAAAA] italic mt-1">                                                                                                                                                     
+      % of Abridge encounters that resulted in an E/M bill. From your billing system.                                                                                                                          
+      Default 80% — adjust to match your specialty mix.                                                                                                                                                        
+    </p>                                                                                                                                                                                                       
+  </div>                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Show the derived encounter count below the wRVU section:                                                                                                                                                     
+  <p className="text-xs text-[#888888] mt-1">                                                                                                                                                                  
+    Applied to {emEligibleEncounters.toLocaleString()} E/M encounters                                                                                                                                          
+    ({Math.round(emEligibilityRate * 100)}% of {adoptedEncounters.toLocaleString()} total)                                                                                                                     
+  </p>                                        
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Change 3 — Add care-setting-aware default for emEligibilityRate                                                                                                                                              
+                                                                                                                                                                                                               
+  In measureCalculator.ts, set the default based on care setting rather than a flat 80%:                                                                                                                       
+                                                                                                                                                                                                               
+  const emEligibilityDefaults: Record<string, number> = {                                                                                                                                                      
+    outpatient: 0.82,   // Most visits are E/M; some procedures/injections are not
+    ed:         0.95,   // Nearly all ED visits are E/M                                                                                                                                                        
+    inpatient:  0.90,   // Hospital admission/subsequent care are E/M; procedures are not                 
+    nursing:    0.00,   // Nursing documentation does not drive E/M billing                                                                                                                                    
+  };                                                                                                                                                                                                           
+                                          
+  const emEligibilityRate = inputs.emEligibilityRate                                                                                                                                                           
+    ?? emEligibilityDefaults[careSetting]                                                                                                                                                                      
+    ?? 0.80;                                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  For nursing care setting, exclude the E/M billing capture calculation entirely — nursing documentation does not drive wRVU.
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Verification:                                                                                                                                                                                                
+  - wRVU billing capture calculation uses adoptedEncounters × emEligibilityRate as its base
+  - E/M level improvement calculation uses the same emEligibleEncounters base                                                                                                                                  
+  - The assumptions panel shows E/M eligibility rate as a slider with a data-source note                  
+  - Care-setting-aware defaults (ED higher, nursing excluded)                           
+  - The derived encounter count is visible so the CFO can see exactly what pool was used
+  - All other formulas unchanged            

@@ -103,7 +103,8 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
     const emDelta = (emMetric?.after ?? (s === primarySetting ? (state.documentationQuality.emLevelWith ?? 0) : 0)) -
       (emMetric?.before ?? (s === primarySetting ? (state.documentationQuality.emLevelWithout ?? 0) : 0));
     if (emDelta > 0 && effectiveAdopted > 0) {
-      const base = emDelta * effectiveAdopted * 45;
+      const undercaptureRate = 0.35;
+      const base = emDelta * effectiveAdopted * undercaptureRate * 45;
       totalLow += base * attrLow * realLow;
       totalHigh += base * attrHigh * realHigh;
     }
@@ -141,7 +142,8 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
     (afterHoursMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0) -
     (afterHoursMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0)
   );
-  if (afterHoursDelta > 0 && providers > 0) {
+  const isHourlyWorkforce = activeSettings.includes('nursing');
+  if (afterHoursDelta > 0 && providers > 0 && isHourlyWorkforce) {
     const annual = afterHoursDelta * 5 * providers * 75 * 52;
     totalLow += annual * attrLow;
     totalHigh += annual * attrHigh;
@@ -161,8 +163,15 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
     }
   }
   if (hasBurnout) {
-    totalLow += 1 * 50000 * attrLow;
-    totalHigh += 3 * 150000 * attrHigh;
+    const replacementCostRange: Record<string, { low: number; high: number }> = {
+      outpatient: { low: 300_000, high: 500_000 },
+      ed:         { low: 350_000, high: 500_000 },
+      inpatient:  { low: 300_000, high: 500_000 },
+      nursing:    { low: 50_000,  high: 100_000 },
+    };
+    const rc = replacementCostRange[primarySetting] ?? { low: 250_000, high: 400_000 };
+    totalLow += 1 * rc.low * attrLow;
+    totalHigh += 3 * rc.high * attrHigh;
   }
 
   return { low: totalLow, high: totalHigh };
