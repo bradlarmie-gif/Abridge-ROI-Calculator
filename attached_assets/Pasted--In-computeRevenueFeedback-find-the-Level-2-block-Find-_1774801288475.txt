@@ -1,0 +1,78 @@
+ In computeRevenueFeedback(), find the Level 2 block. Find where displayValue, midpoint, or a single number is calculated from lowEstimate and highEstimate. Change so that:
+                                                                                                                                                                                                               
+  - The function returns both lowEstimate and highEstimate as separate values (they likely already exist as separate variables)
+  - The value / dollarValue returned for L2 should be null or 0 — NOT the midpoint
+  - Add a new field estimateRange: { low: number, high: number } | null to the return object for L2                                                                                                            
+  - In Screen4Domains.tsx, find wherever the L2 revenue value is displayed as a dollar figure and replace it with $${low.toLocaleString()}–$${high.toLocaleString()} est.                                      
+  - Add below the range: a gray label "Directional signal — not yet validated against billing data"                                                                                                            
+                                                                                                                                                                                                               
+  The key rule: Revenue L2 must never show a single dollar figure. Always a range with a caveat.                                                                                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 2 — Revenue L2: Label the % selector clearly                                                                                                                                                             
+                                                                                                                                                                                                               
+  In Screen4Domains.tsx, find the Revenue L2 section where the user selects directionalEstimate (the radio/select with options like "under 1%", "1–3%", "3–5%", "5%+").                                        
+                                                                                                          
+  Add a label above the selector:                                                                                                                                                                              
+  "Estimated improvement in documentation specificity and coding accuracy:"
+                                                                                                                                                                                                               
+  And add below the selector in gray italic:                                                              
+  "Applied to your documented encounters as a directional benchmark range. Requires billing validation to confirm."                                                                                            
+                                                                                                                   
+  This scopes the % as a coding accuracy estimate, not a blanket revenue claim.                                                                                                                                
+                                              
+  ---                                                                                                                                                                                                          
+  Fix 3 — Quality L3: Add denial-prevention formula                                                                                                                                                            
+                                                                                                                                                                                                               
+  In computeRiskFeedback(), find the Level 3 block. Currently it uses a user-entered downstreamValue directly. Replace with a calculated path:                                                                 
+                                                                                                                                                                                                               
+  Add these inputs to the Quality L3 section (alongside the existing connectedWorkflows and qualityMeasurementDepth inputs — do not remove those):                                                             
+                                          
+  // New inputs in Screen4Domains.tsx Quality L3 section:                                                                                                                                                      
+  annualDenialVolume: number      // "Annual documentation-related denials (estimated)"                                                                                                                        
+  denialReductionRate: number     // "What % reduction have you seen or estimated?" (0–100)                                                                                                                    
+  avgDenialValue: number          // "Average value per denial ($)" — default 250                                                                                                                              
+                                                                                                                                                                                                               
+  In domainCalculations.ts Quality L3, add this calculation:                                                                                                                                                   
+  const denialsPrevented = Math.round((annualDenialVolume || 0) * ((denialReductionRate || 0) / 100));                                                                                                         
+  const denialRecovery = Math.round(denialsPrevented * (avgDenialValue || 250));                                                                                                                               
+  const downstreamValue = denialRecovery > 0 ? denialRecovery : (existingDownstreamValue || 0);                                                                                                                
+                                                                                                                                                                                                               
+  Show the formula in the feedback: "${denialsPrevented} denials prevented × $${avgDenialValue} avg value = ${formatDollar(denialRecovery)}/year"                                                              
+                                                                                                                                                                                                               
+  Keep the existing free-form downstreamValue input as a fallback labeled: "Or enter a measured value directly (from CDI program, audit, or finance team)." But make the formula path the primary/recommended  
+  path.                                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 4 — Revenue L3: Add attribution confidence                                                                                                                                                               
+                                                                                                                                                                                                               
+  In computeRevenueFeedback() Level 3 block, find where revenueImpact is calculated (wRVU path, collections path, revenue % path). After calculating the raw revenueImpact, apply an attribution multiplier:
+                                              
+  const attributionMultiplier =           
+    attributionConfidence === 'high' ? 0.90 :
+    attributionConfidence === 'medium' ? 0.70 :                                                                                                                                                                
+    attributionConfidence === 'low' ? 0.50 : 0.70; // default medium
+                                                                                                                                                                                                               
+  const adjustedImpact = Math.round(revenueImpact * attributionMultiplier);                                                                                                                                    
+                                          
+  In Screen4Domains.tsx, add a radio group to the Revenue L3 section below the measurement inputs:                                                                                                             
+                                                                                                                                                                                                               
+  <p className="text-xs font-semibold ...">How much of this improvement is attributable to ambient documentation?</p>                                                                                          
+  // Three options:                                                                                                                                                                                            
+  // "Primarily — we compared pre/post with ambient as the main change"  → high                           
+  // "Partially — other factors also contributed"  → medium                                                                                                                                                    
+  // "Uncertain — we measured the outcome but haven't isolated the cause"  → low                                                                                                                               
+                                                                                                                                                                                                               
+  Show the applied multiplier in the summary: "${Math.round(attributionMultiplier * 100)}% attribution applied · ${formatDollar(adjustedImpact)}/year"                                                         
+                                                                                                                                                                                                               
+  This turns the biggest CFO objection ("how do you know ambient caused it?") into a proactive disclosure.                                                                                                     
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification:                                                                                                                                                                                                
+  - Revenue L2 never shows a single dollar figure — always $X–$Y est.                                     
+  - Revenue L2 has a label scoping the % as coding/documentation accuracy                                                                                                                                      
+  - Quality L3 has a denial formula with three inputs                                                     
+  - Revenue L3 shows an attribution multiplier applied to the measured value
+  - All existing L4 user-input paths remain unchanged                       
+  - Workforce L3 formula unchanged                                                                                                                                                                             
+  - Capacity L3 formula unchanged                     

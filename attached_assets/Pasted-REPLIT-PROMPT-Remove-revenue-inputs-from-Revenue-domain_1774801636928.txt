@@ -1,0 +1,59 @@
+REPLIT PROMPT — Remove % revenue inputs from Revenue domain (Screen4Domains.tsx + domainCalculations.ts)
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Change 1 — Remove the directional estimate % selector from Revenue L2                                                                                                                                        
+                                                                                                                                                                                                               
+  In Screen4Domains.tsx, find the Revenue L2 section. There is a question: "What's your directional estimate of the revenue impact?" with radio options like "Under 1% of encounter revenue", "1–3% of 
+  encounter revenue", etc. (the directionalEstimate input, options like under_1, 1_3, 3_5, 5_plus).                                                                                                            
+                                                                                                                                                                                                               
+  Delete this entire question and its radio buttons.
+                                                                                                                                                                                                               
+  Revenue L2 is a signal level — it tracks whether revenue is moving, not how much. The L2 section should contain only the observedMovement checkboxes (the 6 signal areas like wRVU trends, coding
+  specificity, denial rates, etc.). No dollar estimate at L2.                                                                                                                                                  
+                                                                                                          
+  In the L2 summary/staircase display, remove any reference to the directional estimate dollar range. L2 summary should show only: "X of 6 revenue signals observed" — no dollar figure.                       
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Change 2 — Remove revenue_pct from Revenue L3 measurement type options                                                                                                                                       
+                                                                        
+  In Screen4Domains.tsx, find the Revenue L3 section. There is a metric type selector with 4 options:                                                                                                          
+  - wrvu — wRVU per encounter                                                                             
+  - collections — Collections per encounter                                                                                                                                                                    
+  - revenue_pct — Overall revenue change (or similar label about % revenue attributed to documentation)
+  - denial_rate — Denial rate reduction                                                                                                                                                                        
+                                                                                                          
+  Remove the revenue_pct option entirely. The remaining three (wrvu, collections, denial_rate) are all traceable to real data systems. "Overall revenue change %" is not a number anyone can attribute to      
+  documentation specifically.                                                                             
+                                                                                                                                                                                                               
+  Also remove the corresponding input field for measuredRevenuePct (the % input that appears when revenue_pct is selected).                                                                                    
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Change 3 — Clean up domainCalculations.ts                                                                                                                                                                    
+                                                                                                          
+  In computeRevenueFeedback():                                                                                                                                                                                 
+                                                                                                          
+  1. Remove the Level 2 directional estimate calculation — the block that uses ESTIMATE_RANGES to convert directionalEstimate into lowEstimate/highEstimate/displayValue. Level 2 should return value: null and
+   only a signal count.                   
+  2. Remove the revenue_pct branch from the Level 3 calculation — the block that does:                                                                                                                         
+  revenueImpact = documentedEncounters × revenuePerVisit × (revenuePct / 100)                                                                                                                                  
+  3. Remove ESTIMATE_RANGES constant entirely if it's only used for the directional estimate calculation.                                                                                                      
+  4. Level 2 feedback text should now read something like:                                                                                                                                                     
+  "${signalCount} of 6 revenue signals observed. These are leading indicators — a retrospective coding audit is the typical next step to produce a confirmed number."                                          
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Change 4 — Update the revenue summary/staircase display                                                                                                                                                      
+                                                                                                                                                                                                               
+  In Screen4Domains.tsx revenue summary section (the staircase display), update so:                                                                                                                            
+  - L2 row shows: "X signals observed" — no dollar figure                                                                                                                                                      
+  - L3 row shows the measured value from whichever metric was used (wRVU, collections, or denial rate)    
+  - L4 row shows the recognized revenue if entered                                                    
+                                                                                                                                                                                                               
+  Remove the ESTIMATE_RANGES mapping from the summary calculation block. Remove the "Directional Estimate" row from the staircase if it was showing a dollar value.                                            
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification:                                                                                                                                                                                                
+  - Revenue L2 has no dollar value anywhere — only a signal count                                                                                                                                              
+  - Revenue L3 has 3 options: wRVU, Collections delta, Denial rate — no revenue_pct option                                                                                                                     
+  - No % input appears in the revenue domain asking about revenue attributed to documentation                                                                                                                  
+  - The word "directional" still appears as a label for L2 if needed (it's an accurate description of the level) but no dollar range accompanies it
+  - domainCalculations.ts Revenue L3 has 3 formula paths, not 4  

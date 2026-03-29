@@ -595,7 +595,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
 
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-              What's your directional estimate of the revenue impact?
+              Estimated improvement in documentation specificity and coding accuracy:
             </label>
             <div className="flex flex-col gap-2">
               {[
@@ -623,6 +623,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                 </button>
               ))}
             </div>
+            <p className="text-xs text-[#888888] italic mt-2 leading-relaxed">
+              Applied to your documented encounters as a directional benchmark range. Requires billing validation to confirm.
+            </p>
           </div>
         </div>
       );
@@ -798,6 +801,43 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               </motion.div>
             )}
           </AnimatePresence>
+
+          {metricType && (
+            <div className="mt-4">
+              <p className="text-xs font-semibold text-[#1A1A1A] mb-2">
+                How much of this improvement is attributable to ambient documentation?
+              </p>
+              <div className="flex flex-col gap-2">
+                {[
+                  { id: 'high', label: 'Primarily — we compared pre/post with ambient as the main change' },
+                  { id: 'medium', label: 'Partially — other factors also contributed' },
+                  { id: 'low', label: 'Uncertain — we measured the outcome but haven\'t isolated the cause' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setDomainInput('attributionConfidence', opt.id)}
+                    className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
+                      (currentState.inputs.attributionConfidence as string || 'medium') === opt.id
+                        ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
+                        : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
+                    }`}
+                    data-testid={`radio-attribution-${opt.id}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${
+                        (currentState.inputs.attributionConfidence as string || 'medium') === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'
+                      }`} />
+                      <span>{opt.label}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-[#888888] italic mt-1.5">
+                Applied as a multiplier to the measured value: High = 90%, Partial = 70%, Uncertain = 50%.
+              </p>
+            </div>
+          )}
         </div>
       );
     }
@@ -1403,21 +1443,68 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
+                className="flex flex-col gap-4"
               >
-                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                  Denial rate reduction (%)
-                </label>
-                <div className="flex items-center gap-2">
+                <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider">Recommended: Calculate from denial data</p>
+                <div>
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                    Annual documentation-related denials (estimated)
+                  </label>
                   <FormattedNumberInput
-                    value={(currentState.inputs.denialReductionPct as number) || 0}
-                    onChange={(v) => setDomainInput('denialReductionPct', Math.min(100, Math.max(0, v)))}
+                    value={(currentState.inputs.annualDenialVolume as number) || 0}
+                    onChange={(v) => setDomainInput('annualDenialVolume', Math.max(0, v))}
                     placeholder=""
                     className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-denial-reduction-pct"
+                    data-testid="input-annual-denial-volume"
                   />
-                  <span className="text-sm text-[#888888]">%</span>
                 </div>
-                <BenchmarkContext text="Documentation-related denial reduction since deployment. Organizations have reported 5–15% reduction." />
+                <div>
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                    What % reduction have you seen or estimated?
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <FormattedNumberInput
+                      value={(currentState.inputs.denialReductionRate as number) || 0}
+                      onChange={(v) => setDomainInput('denialReductionRate', Math.min(100, Math.max(0, v)))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-denial-reduction-rate"
+                    />
+                    <span className="text-sm text-[#888888]">%</span>
+                  </div>
+                  <BenchmarkContext text="Organizations have reported 5–15% reduction in documentation-related denials." />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                    Average value per denial ($)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput
+                      value={(currentState.inputs.avgDenialValue as number) || 250}
+                      onChange={(v) => setDomainInput('avgDenialValue', Math.max(0, v))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-avg-denial-value"
+                    />
+                  </div>
+                  <p className="text-xs text-[#888888] mt-1">Default: $250. Include claim value and rework cost.</p>
+                </div>
+
+                <div className="border-t border-[#E5E7EB] pt-4 mt-1">
+                  <p className="text-xs text-[#888888] italic mb-2">Or enter a measured value directly (from CDI program, audit, or finance team):</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput
+                      value={(currentState.inputs.downstreamValue as number) || 0}
+                      onChange={(v) => setDomainInput('downstreamValue', Math.max(0, v))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-downstream-value"
+                    />
+                    <span className="text-xs text-[#888888]">/year</span>
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -1577,6 +1664,21 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
   };
 
   const renderImpactValue = (fb: DomainFeedback) => {
+    if (fb.estimateRange && activeDomain === 'revenue') {
+      return (
+        <div className="mb-4" data-testid="text-feedback-value">
+          <p className="font-bold text-xl sm:text-2xl text-[#EA2C00] leading-[1.1]">
+            {fb.headlineMetric}
+          </p>
+          <p className="font-bold text-lg sm:text-xl text-[#EA2C00] leading-[1.2] mt-2">
+            ${fb.estimateRange.low.toLocaleString()}–${fb.estimateRange.high.toLocaleString()} est.
+          </p>
+          <p className="text-xs text-white/40 italic mt-1.5 leading-relaxed">
+            Directional signal — not yet validated against billing data
+          </p>
+        </div>
+      );
+    }
     if (fb.headlineMetric) {
       return (
         <p className="font-bold text-xl sm:text-2xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
@@ -1675,7 +1777,11 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
           <span className="text-[12px] font-medium text-white/50 uppercase tracking-wider">{DOMAIN_LABELS[activeDomain]}</span>
           <div className="w-px h-4 bg-white/10" />
           <span className="text-sm font-bold text-white">
-            {feedback ? (feedback.hasValue && feedback.value ? formatDollar(feedback.value) : '—') : '—'}
+            {feedback ? (
+              feedback.estimateRange && activeDomain === 'revenue'
+                ? `$${feedback.estimateRange.low.toLocaleString()}–$${feedback.estimateRange.high.toLocaleString()}`
+                : feedback.hasValue && feedback.value ? formatDollar(feedback.value) : '—'
+            ) : '—'}
           </span>
         </div>
         <span className="text-[12px] text-white/40 uppercase tracking-wider">

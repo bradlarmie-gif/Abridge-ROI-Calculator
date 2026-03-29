@@ -64,6 +64,7 @@ export interface DomainFeedback {
   costOfWaiting?: string;
   nextLevelTeaser?: string;
   warningBanner?: string;
+  estimateRange?: { low: number; high: number } | null;
 }
 
 export const SCORE_MAP: Record<ActivationLevel, number> = { 1: 4, 2: 12, 3: 19, 4: 25 };
@@ -304,12 +305,21 @@ export function computeRevenueFeedback(
     const { checked } = parseCheckedItems(inputs.observedMovement as string, REVENUE_SIGNALS);
     const count = checked.length;
     const checkedLabels = checked.map(shortLabel).join(', ');
+    const directionalEstimate = (inputs.directionalEstimate as string) || '';
+
+    const ESTIMATE_RANGES: Record<string, { low: number; high: number }> = {
+      under_1: { low: 0.002, high: 0.01 },
+      '1_3':   { low: 0.01,  high: 0.03 },
+      '3_5':   { low: 0.03,  high: 0.05 },
+      '5_plus':{ low: 0.05,  high: 0.07 },
+    };
 
     if (count === 0) {
       return {
         label: 'Revenue Signals Observed',
         value: null,
         hasValue: false,
+        estimateRange: null,
         headlineMetric: 'Select the revenue signals your organization has observed.',
         context: 'Check the areas where your team has seen movement since ambient documentation deployment.',
         formula: '',
@@ -318,12 +328,23 @@ export function computeRevenueFeedback(
       };
     }
 
+    const annualEncounterRevenue = documentedEncounters * revenuePerVisit;
+    const rangePct = ESTIMATE_RANGES[directionalEstimate];
+    const estimateRange = rangePct
+      ? { low: Math.round(annualEncounterRevenue * rangePct.low), high: Math.round(annualEncounterRevenue * rangePct.high) }
+      : null;
+
+    const rangeText = estimateRange
+      ? `\n\nDirectional estimate: $${estimateRange.low.toLocaleString()}–$${estimateRange.high.toLocaleString()} est.\nApplied to ${documentedEncounters.toLocaleString()} encounters × ${formatDollar(revenuePerVisit)} avg revenue.`
+      : '';
+
     return {
       label: 'Revenue Signals Observed',
       value: null,
       hasValue: false,
+      estimateRange,
       headlineMetric: `${count} area${count !== 1 ? 's' : ''} showing movement`,
-      context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nMovement is visible. A before/after billing analysis (Level 3) would quantify it.`,
+      context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nMovement is visible. A before/after billing analysis (Level 3) would quantify it.${rangeText}`,
       formula: '',
       footnote: '',
       nextLevelTeaser: 'Level 3: Run a retrospective coding audit. Organizations that do this typically confirm 2–7% revenue improvement from documentation specificity.',
@@ -334,6 +355,11 @@ export function computeRevenueFeedback(
     const metricType = inputs.revenueMetricType as string | undefined;
     const direction = (inputs.revenueMetricDirection as string) || 'increase';
     const isDecrease = direction === 'decrease';
+    const attributionConfidence = (inputs.attributionConfidence as string) || 'medium';
+    const attributionMultiplier =
+      attributionConfidence === 'high' ? 0.90 :
+      attributionConfidence === 'low' ? 0.50 : 0.70;
+    const attributionPct = Math.round(attributionMultiplier * 100);
 
     if (!metricType) {
       return {
@@ -368,14 +394,15 @@ export function computeRevenueFeedback(
           nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
-      const revenueImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);
+      const rawImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);
+      const revenueImpact = Math.round(rawImpact * attributionMultiplier);
       return {
         label: 'Impact Measured',
         value: revenueImpact, hasValue: true,
         headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,
-        context: `wRVU per encounter increased ${wrvuDelta} × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.`,
-        formula: `[revenueImpact] = ${wrvuDelta} × ${documentedEncounters.toLocaleString()} × $${conversionFactor} = ${formatDollar(revenueImpact)}`,
-        footnote: `CMS conversion factor from your baseline inputs. Individual results vary.`,
+        context: `wRVU per encounter increased ${wrvuDelta} × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(rawImpact)}\n\n${attributionPct}% attribution applied · ${formatDollar(revenueImpact)}/year\n\nBased on your organization's measured data.`,
+        formula: `[rawImpact] = ${wrvuDelta} × ${documentedEncounters.toLocaleString()} × $${conversionFactor} = ${formatDollar(rawImpact)}\n[revenueImpact] = ${formatDollar(rawImpact)} × ${attributionPct}% = ${formatDollar(revenueImpact)}`,
+        footnote: `CMS conversion factor from your baseline inputs. ${attributionPct}% attribution confidence applied. Individual results vary.`,
         nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
@@ -402,14 +429,15 @@ export function computeRevenueFeedback(
           nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
-      const revenueImpact = Math.round(collectionsDelta * documentedEncounters);
+      const rawImpact = Math.round(collectionsDelta * documentedEncounters);
+      const revenueImpact = Math.round(rawImpact * attributionMultiplier);
       return {
         label: 'Impact Measured',
         value: revenueImpact, hasValue: true,
         headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,
-        context: `${formatDollar(collectionsDelta)} increase per encounter × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(revenueImpact)}\n\nBased on your organization's measured data.`,
-        formula: `[revenueImpact] = ${formatDollar(collectionsDelta)} × ${documentedEncounters.toLocaleString()} = ${formatDollar(revenueImpact)}`,
-        footnote: 'Individual results vary.',
+        context: `${formatDollar(collectionsDelta)} increase per encounter × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(rawImpact)}\n\n${attributionPct}% attribution applied · ${formatDollar(revenueImpact)}/year\n\nBased on your organization's measured data.`,
+        formula: `[rawImpact] = ${formatDollar(collectionsDelta)} × ${documentedEncounters.toLocaleString()} = ${formatDollar(rawImpact)}\n[revenueImpact] = ${formatDollar(rawImpact)} × ${attributionPct}% = ${formatDollar(revenueImpact)}`,
+        footnote: `${attributionPct}% attribution confidence applied. Individual results vary.`,
         nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
@@ -431,14 +459,15 @@ export function computeRevenueFeedback(
 
       if (isDecrease) {
         if (monthlyBilled && monthlyBilled > 0) {
-          const annualRecovery = Math.round((denialPct / 100) * monthlyBilled * 12);
+          const rawRecovery = Math.round((denialPct / 100) * monthlyBilled * 12);
+          const annualRecovery = Math.round(rawRecovery * attributionMultiplier);
           return {
             label: 'Impact Measured',
             value: annualRecovery, hasValue: true,
             headlineMetric: `${formatDollar(annualRecovery)} in recovered annual revenue`,
-            context: `Denial rate decreased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}.\n\n${denialPct}% × ${formatDollar(monthlyBilled)} monthly billed × 12 months = ${formatDollar(annualRecovery)} annually.\n\nBased on your organization's measured data.`,
-            formula: `[annualRecovery] = ${denialPct}% × ${formatDollar(monthlyBilled)} × 12 = ${formatDollar(annualRecovery)}`,
-            footnote: 'Based on total billed charges. Actual recovery depends on denial resolution rate. Individual results vary.',
+            context: `Denial rate decreased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}.\n\n${denialPct}% × ${formatDollar(monthlyBilled)} monthly billed × 12 months = ${formatDollar(rawRecovery)} annually.\n\n${attributionPct}% attribution applied · ${formatDollar(annualRecovery)}/year\n\nBased on your organization's measured data.`,
+            formula: `[rawRecovery] = ${denialPct}% × ${formatDollar(monthlyBilled)} × 12 = ${formatDollar(rawRecovery)}\n[annualRecovery] = ${formatDollar(rawRecovery)} × ${attributionPct}% = ${formatDollar(annualRecovery)}`,
+            footnote: `Based on total billed charges. ${attributionPct}% attribution confidence applied. Actual recovery depends on denial resolution rate. Individual results vary.`,
             nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
           };
         }
@@ -953,26 +982,32 @@ export function computeRiskFeedback(
     }
 
     if (financialPathway === 'denials') {
-      const denialReduction = (inputs.denialReductionPct as number) || 0;
-      const AVG_CLAIM_VALUE = 250;
-      const DENIAL_REWORK_COST = 35;
-      const denialVolume = Math.round(documentedEncounters * 0.08);
-      const preventedDenials = denialReduction > 0 ? Math.round(denialVolume * denialReduction / 100) : 0;
-      const recoveredRevenue = preventedDenials * AVG_CLAIM_VALUE;
-      const savedReworkCost = preventedDenials * DENIAL_REWORK_COST;
-      const totalDenialValue = recoveredRevenue + savedReworkCost;
-      const hasVal = totalDenialValue > 0;
-      const denialContext = hasVal
-        ? `Documentation-related denial rate reduced by ${denialReduction}%. Of the estimated ${denialVolume.toLocaleString()} documentation-related denials annually, ${preventedDenials.toLocaleString()} are now prevented — recovering ${formatDollar(recoveredRevenue)} in claims and saving ${formatDollar(savedReworkCost)} in rework costs.`
-        : 'Denial reduction is the selected pathway. Enter your denial rate improvement to quantify the connection.';
+      const annualDenialVolume = (inputs.annualDenialVolume as number) || 0;
+      const denialReductionRate = (inputs.denialReductionRate as number) || 0;
+      const avgDenialValue = (inputs.avgDenialValue as number) || 250;
+      const existingDownstreamValue = (inputs.downstreamValue as number) || 0;
+
+      const denialsPrevented = Math.round(annualDenialVolume * (denialReductionRate / 100));
+      const denialRecovery = Math.round(denialsPrevented * avgDenialValue);
+      const downstreamValue = denialRecovery > 0 ? denialRecovery : existingDownstreamValue;
+      const hasVal = downstreamValue > 0;
+      const usedFormula = denialRecovery > 0;
+
+      const denialContext = usedFormula
+        ? `${denialsPrevented.toLocaleString()} denials prevented × ${formatDollar(avgDenialValue)} avg value = ${formatDollar(denialRecovery)}/year\n\nFrom ${annualDenialVolume.toLocaleString()} annual documentation-related denials with a ${denialReductionRate}% reduction rate.`
+        : hasVal
+          ? `Measured denial prevention value: ${formatDollar(existingDownstreamValue)}/year (entered directly from CDI program, audit, or finance team).`
+          : 'Enter your denial volume, reduction rate, and average value to calculate the prevention impact. Or enter a measured value directly.';
       return {
         label: 'Estimated Impact',
-        value: hasVal ? totalDenialValue : null,
+        value: hasVal ? downstreamValue : null,
         hasValue: hasVal,
-        headlineMetric: hasVal ? `${formatDollar(totalDenialValue)} denial prevention value` : 'Denial reduction pathway selected',
+        headlineMetric: hasVal ? `${formatDollar(downstreamValue)} denial prevention value` : 'Denial reduction pathway selected',
         context: `${denialContext}\n\nDocumentation-driven denial prevention is one of the fastest financial returns from ambient documentation — it reduces rework, accelerates payment, and improves payer relationships.`,
-        formula: hasVal ? `[denialVolume] = ${documentedEncounters.toLocaleString()} encounters × 8% denial rate = ${denialVolume.toLocaleString()}\n[prevented] = ${denialVolume.toLocaleString()} × ${denialReduction}% = ${preventedDenials.toLocaleString()}\n[recoveredRevenue] = ${preventedDenials.toLocaleString()} × ${formatDollar(AVG_CLAIM_VALUE)} = ${formatDollar(recoveredRevenue)}\n[reworkSaved] = ${preventedDenials.toLocaleString()} × ${formatDollar(DENIAL_REWORK_COST)} = ${formatDollar(savedReworkCost)}\n[total] = ${formatDollar(recoveredRevenue)} + ${formatDollar(savedReworkCost)} = ${formatDollar(totalDenialValue)}` : '',
-        footnote: 'Estimates based on your inputs. Assumes 8% baseline documentation-related denial rate and $250 average claim value.',
+        formula: usedFormula ? `[denialsPrevented] = ${annualDenialVolume.toLocaleString()} × ${denialReductionRate}% = ${denialsPrevented.toLocaleString()}\n[denialRecovery] = ${denialsPrevented.toLocaleString()} × ${formatDollar(avgDenialValue)} = ${formatDollar(denialRecovery)}` : '',
+        footnote: usedFormula
+          ? `Based on your inputs. Average denial value: ${formatDollar(avgDenialValue)}.`
+          : hasVal ? 'Based on your directly entered measured value.' : 'Estimates based on your inputs.',
         nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
       };
     }
