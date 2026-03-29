@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Component, type ReactNode, type ErrorInfo } from "react";
 import { 
   type MeasureState,
   type MeasureCareSetting,
@@ -11,6 +11,40 @@ import MeasureMetricSelection from "./MeasureMetricSelection";
 import MeasureJourney from "./MeasureJourney";
 import MeasureAllocate from "./MeasureAllocate";
 import MeasureOpportunity from "./MeasureOpportunity";
+
+class MeasureErrorBoundary extends Component<
+  { children: ReactNode; onBack: () => void },
+  { error: Error | null }
+> {
+  state = { error: null as Error | null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('[MeasureErrorBoundary]', error.message, error.stack, info.componentStack);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-8">
+          <div className="max-w-lg text-center">
+            <h2 className="text-xl font-bold text-[#1A1A1A] mb-4">Something went wrong</h2>
+            <pre className="text-xs text-left bg-[#F5F0EB] p-4 rounded-lg overflow-auto max-h-60 mb-4 whitespace-pre-wrap">
+              {this.state.error.message}
+              {'\n\n'}
+              {this.state.error.stack}
+            </pre>
+            <button
+              onClick={() => { this.setState({ error: null }); this.props.onBack(); }}
+              className="px-6 py-2 bg-[#EA2C00] text-white rounded-lg"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 type MeasurePhase = 'data' | 'metrics' | 'journey' | 'financial' | 'next';
 
@@ -132,13 +166,15 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
 
     case 'financial':
       return (
-        <MeasureAllocate
-          state={state}
-          updateState={updateState}
-          onNext={() => navigate('next')}
-          onBack={() => navigate('journey')}
-          onHome={goHome}
-        />
+        <MeasureErrorBoundary onBack={() => navigate('journey')}>
+          <MeasureAllocate
+            state={state}
+            updateState={updateState}
+            onNext={() => navigate('next')}
+            onBack={() => navigate('journey')}
+            onHome={goHome}
+          />
+        </MeasureErrorBoundary>
       );
 
     case 'next':

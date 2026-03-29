@@ -48,6 +48,25 @@ const DEFAULT_ASSUMPTIONS: Assumptions = {
 };
 
 function computeFinancials(state: MeasureState, assumptions: Assumptions) {
+  if (!state) {
+    return {
+      setting: 'outpatient', isED: false, isInpatient: false, providers: 0,
+      adoptedEncounters: 0, totalEncounters: 0, utilizationRate: 0,
+      activeSettings: ['outpatient'], hasBillingCapture: false,
+      billingCaptureLow: 0, billingCaptureHigh: 0, billingDetails: [],
+      hasRevenueRecovery: false, revenueRecoveryLow: 0, revenueRecoveryHigh: 0,
+      recoveryDetails: [], hasCostReduction: false, costReductionLow: 0,
+      costReductionHigh: 0, hasAfterHours: false, afterHoursDelta: 0,
+      afterHoursAnnual: 0, hasRetentionSignal: false, burnoutDelta: 0,
+      likelihoodDelta: 0, retentionLow: 0, retentionHigh: 0,
+      hasPhysicianRetentionOverride: false, retentionOverrideProviders: 0,
+      retentionOverrideDelta: 0, hasPatientFlow: false, patientFlowLow: 0,
+      patientFlowHigh: 0, patientFlowDetails: [], hasCapacityRevenue: false,
+      capacityRevenueLow: 0, capacityRevenueHigh: 0, hasAgencySavings: false,
+      agencySavingsAmount: 0, totalLow: 0, totalHigh: 0, hasAnyFinancial: false,
+      attrLow: 0.30, attrHigh: 0.75,
+    };
+  }
   const activeSettings = state.activeCareSettings?.length > 0
     ? state.activeCareSettings
     : [state.careSetting || 'outpatient'];
@@ -55,9 +74,10 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   const isED = activeSettings.includes('ed');
   const isInpatient = activeSettings.includes('inpatient');
   const setting = primarySetting;
-  const providers = state.deployment.providers || state.deployment.mruProviders || 0;
-  const totalEncounters = state.deployment.totalEncounters || 0;
-  const utilizationRate = state.deployment.utilizationRate || 0;
+  const dep = state.deployment || {};
+  const providers = dep.providers || dep.mruProviders || 0;
+  const totalEncounters = dep.totalEncounters || 0;
+  const utilizationRate = dep.utilizationRate || 0;
   const adoptedEncounters = Math.round(totalEncounters * (utilizationRate / 100));
 
   const attrPct = assumptions.attribution / 100;
@@ -73,8 +93,8 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   const afterHoursMetric = activeMetrics.find(m =>
     ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift', 'afterHoursWork', 'workOutsideHours', 'wowTime'].includes(m.metricId)
   );
-  const afterHoursWithout = afterHoursMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0;
-  const afterHoursWith = afterHoursMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0;
+  const afterHoursWithout = afterHoursMetric?.before ?? state.timeEfficiency?.workOutsideWithout ?? 0;
+  const afterHoursWith = afterHoursMetric?.after ?? state.timeEfficiency?.workOutsideWith ?? 0;
 
   let billingCaptureLow = 0;
   let billingCaptureHigh = 0;
@@ -90,8 +110,8 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     const wrvuMetric = activeMetrics.find(m =>
       ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === s)
     );
-    const wrvuB = wrvuMetric?.before ?? (s === primarySetting ? (state.documentationQuality.wrvuWithout ?? 0) : 0);
-    const wrvuA = wrvuMetric?.after ?? (s === primarySetting ? (state.documentationQuality.wrvuWith ?? 0) : 0);
+    const wrvuB = wrvuMetric?.before ?? (s === primarySetting ? (state.documentationQuality?.wrvuWithout ?? 0) : 0);
+    const wrvuA = wrvuMetric?.after ?? (s === primarySetting ? (state.documentationQuality?.wrvuWith ?? 0) : 0);
     const wrvuD = wrvuA - wrvuB;
 
     if (wrvuD > 0 && effectiveAdopted > 0) {
@@ -108,8 +128,8 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     const emMetric = activeMetrics.find(m =>
       ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === s)
     );
-    const emB = emMetric?.before ?? (s === primarySetting ? (state.documentationQuality.emLevelWithout ?? 0) : 0);
-    const emA = emMetric?.after ?? (s === primarySetting ? (state.documentationQuality.emLevelWith ?? 0) : 0);
+    const emB = emMetric?.before ?? (s === primarySetting ? (state.documentationQuality?.emLevelWithout ?? 0) : 0);
+    const emA = emMetric?.after ?? (s === primarySetting ? (state.documentationQuality?.emLevelWith ?? 0) : 0);
     const emD = emA - emB;
 
     if (emD > 0 && effectiveAdopted > 0) {
@@ -421,15 +441,15 @@ export default function MeasureAllocate({
 }: MeasureAllocateProps) {
   const [assumptions, setAssumptions] = useState<Assumptions>({
     ...DEFAULT_ASSUMPTIONS,
-    conversionFactor: state.calibration.conversionFactor || 33,
-    otPremiumRate: state.calibration.otHourlyRate || 75,
+    conversionFactor: state?.calibration?.conversionFactor || 33,
+    otPremiumRate: state?.calibration?.otHourlyRate || 75,
   });
   const [sensitivityOpen, setSensitivityOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const fin = useMemo(() => computeFinancials(state, assumptions), [state, assumptions]);
-  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
-  const orgName = state.deployment.organizationName || "Your Organization";
+  const months = getMonthsFromGoLive(state?.goLiveDate ?? null, state?.deployment?.monthsOnAbridge ?? 0);
+  const orgName = state?.deployment?.organizationName || "Your Organization";
   const activeSettingsList = fin.activeSettings || [fin.setting];
   const settingLabel = activeSettingsList.map((s: string) =>
     s === 'ed' ? 'ED' : s === 'inpatient' ? 'Inpatient' : s === 'nursing' ? 'Nursing' : 'Outpatient'
