@@ -1,0 +1,74 @@
+ Prompt:                                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Fix four issues in the Explore path pro forma. All changes are in /client/src/pages/explore/.                                                                                                                
+                                              
+  ---                                                                                                                                                                                                          
+  Fix 1 — ED revenue per visit: align default to $480                                                     
+                                                                                                                                                                                                               
+  In ExploreFlow.tsx, find the initial state where edRevenuePerVisit is set and change the value to 480. It currently says 450.
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 2 — Remove CDI & Inpatient Connection from ED doc drivers
+                                                                                                                                                                                                               
+  In ExploreDocDrivers.tsx, find ED_DOC_DRIVER_CONFIGS. It currently has three drivers: wRVU, Medical Necessity, and CDI & Inpatient Connection. Remove the third driver entirely (the one with id: 'denials',
+  label: 'CDI & Inpatient Connection'). Update the comment above the array to say // ED uses: Level of Service (wRVU), Medical Necessity and add a note: // Note: CDI & Inpatient Connection removed — that    
+  value belongs in the Inpatient model to avoid double-counting.                                                                                                                                               
+   
+  ---                                                                                                                                                                                                          
+  Fix 3 — Add Concurrent Review to docValue calculation                                                   
+                                                                                                                                                                                                               
+  In ExploreFlow.tsx, find the docValue useMemo. It handles several inpatient drivers (DRG Accuracy, CDI Query Reduction, Obs/IP Status Defense) but is missing Concurrent Review. After the Obs/IP Status
+  Defense block, add:                         
+                                          
+  // Inpatient: Concurrent Review Defense
+  if (state.careSetting === 'inpatient' && docQualityInputs.ipConcurrentReviewEnabled) {                                                                                                                       
+    const casesReviewed = eligibleEncounters * (docQualityInputs.ipConcurrentReviewRate / 100);
+    const casesDenied = casesReviewed * (docQualityInputs.ipConcurrentDenialRate / 100);                                                                                                                       
+    const docSensitiveCases = casesDenied * (docQualityInputs.ipConcurrentDocSensitive / 100);                                                                                                                 
+    const gross = docSensitiveCases * docQualityInputs.ipConcurrentAvgDays * docQualityInputs.ipConcurrentDailyRate;                                                                                           
+    total += gross * (docQualityInputs.ipConcurrentRealization / 100);                                                                                                                                         
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  In ExploreModel.tsx:                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  a) After the ipObsDefenseValue useMemo, add a new useMemo:                                                                                                                                                   
+                                                                                                                                                                                                               
+  const ipConcurrentValue = useMemo(() => {
+    if (!isInpatient || !docQualityInputs.ipConcurrentReviewEnabled) return 0;                                                                                                                                 
+    const casesReviewed = eligibleEncounters * (docQualityInputs.ipConcurrentReviewRate / 100);           
+    const casesDenied = casesReviewed * (docQualityInputs.ipConcurrentDenialRate / 100);
+    const docSensitiveCases = casesDenied * (docQualityInputs.ipConcurrentDocSensitive / 100);                                                                                                                 
+    const gross = docSensitiveCases * docQualityInputs.ipConcurrentAvgDays * docQualityInputs.ipConcurrentDailyRate;
+    return Math.round(gross * (docQualityInputs.ipConcurrentRealization / 100));                                                                                                                               
+  }, [isInpatient, eligibleEncounters, docQualityInputs]);                                                
+                                                                                                                                                                                                               
+  b) In handleAddToProforma, after the line that pushes ipObsDefenseValue to drivers, add:                                                                                                                     
+  if (ipConcurrentValue > 0) drivers.push({ id: "ipConcurrent", name: "Concurrent Review Defense", value: ipConcurrentValue, category: "documentation", onset: "immediate" as const });                        
+                                                                                                                                                                                                               
+  c) In the inpatient results breakdown card (the section showing • Obs/IP Status Defense), after that row add:                                                                                                
+  <div className="flex justify-between">                                                                                                                                                                       
+    <span className="text-[#666666]">• Concurrent Review Defense</span>                                                                                                                                        
+    <span className="font-semibold text-black">{docQualityInputs.ipConcurrentReviewEnabled ? formatCurrency(ipConcurrentValue) : '—'}</span>                                                                   
+  </div>                                                                                                                                                                                                       
+  {docQualityInputs.ipConcurrentReviewEnabled && (                                                                                                                                                             
+    <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipConcurrentRealization}% realization)</p>                                                                                                   
+  )}                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  d) Find the line const ipPrimaryTotal = ipRetValOnly + ipCostRedOnly + ipDrgValue + ipCdiValue; and change it to:                                                                                            
+  const ipPrimaryTotal = ipRetValOnly + ipCostRedOnly + ipDrgValue + ipCdiValue + ipObsDefenseValue + ipConcurrentValue;                                                                                       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 4 — Fix nursing retention bug in proforma snapshot                                                                                                                                                       
+                                                                                                                                                                                                               
+  In ExploreModel.tsx, find the handleAddToProforma function. Find these two lines near the bottom of the snapshot object:                                                                                     
+                                                                                                                                                                                                               
+  retentionRate: retentionValue > 0 ? 0 : 0.5,                                                                                                                                                                 
+  replacementCost: 400000,                    
+                                                                                                                                                                                                               
+  Replace with:                                                                                           
+                                                                                                                                                                                                               
+  retentionRate: retentionValue > 0 ? 0 : (isNursing ? 0 : 0.5),                                          
+  replacementCost: isNursing ? (state.timeDriverInputs.nursingReplacementCost || 56300) : (state.timeDriverInputs.replacementCost || 400000),                                                                  
+                                                                                                          
+  Why: When nursing retention isn't modeled, the old code applied a 0.5% rate with $400K physician replacement cost — applied to beds as the unit. That produced inflated phantom retention in the proforma.
+  Nursing now gets retentionRate: 0 (no phantom assumption) and the correct nursing replacement cost when it is modeled.     
