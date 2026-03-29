@@ -1,0 +1,70 @@
+ REPLIT PROMPT — Remove overtime from workforce calculations (ambientCalculator.ts + domainCalculations.ts)                                                                                                   
+                                                                                                            
+  Physicians are salaried professionals. The workforce value from ambient documentation is a retention/turnover story, not an overtime cost story. The current calculation in ambientCalculator.ts monetizes   
+  after-hours documentation time using providers × weeks × hourlyRate, which is clinically incorrect and inflates numbers.
+                                                                                                                                                                                                               
+  ---
+  Fix 1 — ambientCalculator.ts: Replace overtime-based workforce value                                                                                                                                         
+                                                                                                          
+  Find this block:                                                                                                                                                                                             
+  const afterHoursExposure = Math.round(                                                                  
+    providers * 52 * Math.max(0, timeSavings < 3.0 ? (3.0 - timeSavings) * 0.4 : 0) * VALUE_ASSUMPTIONS.hourlyRate,                                                                                            
+  );
+  const workforceValue = Math.round(afterHoursExposure * 0.20);                                                                                                                                                
+                                                                                                          
+  Replace with:                                                                                                                                                                                                
+  // Workforce: retention risk model (physicians are salaried — no overtime cost)                                                                                                                              
+  // Documentation burden is a proxy for burnout risk, which drives turnover     
+  // Conservative: 2% marginal turnover improvement per unit of burden reduction                                                                                                                               
+  const burnoutBurdenFactor = Math.max(0, Math.min(1, (3.0 - timeSavings) / 3.0));                        
+  const marginalRetentionImprovement = burnoutBurdenFactor * 0.02; // 0–2% of workforce retained
+  const workforceValue = Math.round(providers * marginalRetentionImprovement * 250000 * 0.30);                                                                                                                 
+  // $250K conservative replacement benchmark (AMGA low end), 30% confidence for top-level assessment                                                                                                          
+                                                                                                                                                                                                               
+  Also find and remove or keep (but do NOT use in dollar calculation):                                                                                                                                         
+  const afterHoursEstimate = Math.round(                                                                                                                                                                       
+    providers * 52 * Math.max(0, timeSavings < 3.0 ? (3.0 - timeSavings) * 0.4 : 0),                                                                                                                           
+  );                                                                                                                                                                                                           
+  Keep the afterHoursEstimate variable if it's used elsewhere in the return object, but make sure it is NOT used to calculate any dollar value.                                                                
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 2 — domainCalculations.ts: Ensure L2 workforce has no dollar value                                                                                                                                       
+                                                                        
+  Find the computeWorkforceFeedback function. At Level 2, locate where afterHoursHours is calculated:                                                                                                          
+  const afterHoursHours = afterHoursReduction * providers * CLINICAL_WEEKS;                               
+                                                                                                                                                                                                               
+  Confirm that afterHoursHours is used ONLY for the hours narrative (e.g., "X hours of after-hours time returned"), and that it is not multiplied by any hourly rate or wage value anywhere in the Level 2
+  block to produce a dollar figure.                                                                                                                                                                            
+                                          
+  If there is any line in the Level 2 block that does afterHoursHours × hourlyRate or afterHoursHours × VALUE_ASSUMPTIONS.hourlyRate or similar — remove that calculation. Level 2 should show zero dollars.   
+  The dollar value for workforce only exists at Level 3 (retention) and Level 4 (agency/locum reduction).                                                                                                      
+  
+  The Level 2 narrative should reference the hours returned as a behavioral signal, not a financial metric. Update the Level 2 feedback text if needed to say something like:                                  
+  "${afterHoursHoursFormatted} hours of after-hours documentation time returned annually across ${providers} providers. This is a retention signal — see Level 3 to quantify the financial impact."
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 3 — Screen5Gap.tsx: Workforce L2 estimate should not use turnoverCost × hours
+                                                                                                                                                                                                               
+  In Screen5Gap.tsx, inside the nextLevelContents useMemo, find the workforce level === 2 block. If it calculates a lowEstimate or highEstimate by multiplying any hour-based value by a cost/rate, replace it
+  with a purely retention-framed estimate:                                                                                                                                                                     
+                                                                                                          
+  } else if (level === 2) {                                                                                                                                                                                    
+    // Behavioral signal — no confirmed dollar value yet                                                                                                                                                       
+    // Estimate based on retention probability, not hours × rate                                                                                                                                               
+    const estimatedRetained = Math.round(providers * 0.02); // ~2% marginal retention at L2                                                                                                                    
+    const replacementCost = 250000;                                                                                                                                                                            
+    lowEstimate = Math.round(estimatedRetained * replacementCost * 0.5);
+    highEstimate = Math.round(estimatedRetained * replacementCost);                                                                                                                                            
+    narrative = `Behavioral change is documented. The next step is connecting it to retention outcomes — specifically, whether the after-hours reduction is reflected in turnover data.\n\nOPPORTUNITY AHEAD:  
+  ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} in retention value estimated based on marginal retention improvement from documented burden reduction. Confirm at Level 3 with your       
+  turnover data.`;                                                                                                                                                                                             
+    formula = null; // No formula at L2 — this is a behavioral signal, not a confirmed calculation        
+  }                                                                                                                                                                                                            
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Verification:                                                                                                                                                                                                
+  - Workforce value at the top-level score (ambientCalculator.ts) should now be a fraction of what it was — based on 0–2% retention improvement × $250K, not weekly hours × physician rate
+  - Level 2 workforce in Screen4 shows zero dollar value in the summary                                                                                                                                        
+  - Level 3 workforce still calculates correctly: departuresAvoided × replacementCost                     
+  - Level 4 workforce still calculates correctly: agencyReduction × 12               
+  - No variable named afterHoursExposure or afterHoursHours is multiplied by an hourly rate anywhere
