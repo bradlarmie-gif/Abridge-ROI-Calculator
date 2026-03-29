@@ -1,0 +1,146 @@
+ REPLIT PROMPT — End-to-end financial model completion: missing formulas + toggle system (measureCalculator.ts + MeasureAllocate.tsx)                                                                         
+                                                                                                          
+  ---                                     
+  Change 1 — Add HCC Capture Rate financial calculation
+                                                                                                                                                                                                               
+  In measureCalculator.ts, add a new value stream calculation after the existing billing capture block:
+                                                                                                                                                                                                               
+  // HCC Capture Rate — Medicare Advantage populations only                                                                                                                                                    
+  const hccBefore = inputs.settingData?.[careSetting]?.hccCaptureRate_before ?? 0;
+  const hccAfter = inputs.settingData?.[careSetting]?.hccCaptureRate_after ?? 0;                                                                                                                               
+  const hccDelta = Math.max(0, hccAfter - hccBefore); // percentage points                                
+  const maEncounters = Math.round(adoptedEncounters * (inputs.maEncounterPct ?? 0));                                                                                                                           
+  const avgHccPointValue = inputs.vm_avgHccPointValue ?? 1200;                                                                                                                                                 
+                                                                                                                                                                                                               
+  let hccCaptureLow = 0;                                                                                                                                                                                       
+  let hccCaptureHigh = 0;                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  if (hccDelta > 0 && maEncounters > 0) {                                                                                                                                                                      
+    const base = (hccDelta / 100) * maEncounters * avgHccPointValue;                                                                                                                                           
+    hccCaptureLow = Math.round(base * attributionLow * realizationLow);                                                                                                                                        
+    hccCaptureHigh = Math.round(base * attributionHigh * realizationHigh);
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  In MeasureAllocate.tsx, add HCC as a separate value stream card. Show it only when:                                                                                                                          
+  - The HCC Capture Rate metric has before/after values entered                                                                                                                                                
+  - AND the user has specified a non-zero MA encounter percentage                                                                                                                                              
+                                                                                                                                                                                                               
+  Add an input field for maEncounterPct ("% of encounters that are Medicare Advantage patients") near the HCC metric section in MeasureMetricSelection.tsx, shown only when HCC Capture Rate is enabled.
+  Default: ask the user, no default assumption.                                                                                                                                                                
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Change 2 — Add Net Collection Rate financial calculation                                                                                                                                                     
+                                                                                                                                                                                                               
+  In measureCalculator.ts:                                                                                                                                                                                     
+                                                                                                          
+  const netCollBefore = inputs.settingData?.[careSetting]?.netCollectionRate_before ?? 0;
+  const netCollAfter = inputs.settingData?.[careSetting]?.netCollectionRate_after ?? 0;
+  const netCollDelta = Math.max(0, netCollAfter - netCollBefore);                                                                                                                                              
+  const annualBillableRevenue = adoptedEncounters * (inputs.revenuePerVisit ?? 200);
+                                                                                                                                                                                                               
+  let netCollectionLow = 0;                                                                                                                                                                                    
+  let netCollectionHigh = 0;
+                                                                                                                                                                                                               
+  if (netCollDelta > 0) {                                                                                 
+    const base = (netCollDelta / 100) * annualBillableRevenue;                                                                                                                                                 
+    netCollectionLow = Math.round(base * attributionLow);                                                 
+    netCollectionHigh = Math.round(base * attributionHigh);
+  }
+                                                                                                                                                                                                               
+  Add to the revenue recovery value stream (alongside denial rate reduction, not as a separate top-level stream).
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Change 3 — Add Readmission Rate financial calculation (inpatient only)                                                                                                                                       
+                                                                                                                                                                                                               
+  In measureCalculator.ts, inside the inpatient care setting block:                                                                                                                                            
+                                                                                                          
+  const readmitBefore = inputs.settingData?.inpatient?.readmissionRate_before ?? 0;                                                                                                                            
+  const readmitAfter = inputs.settingData?.inpatient?.readmissionRate_after ?? 0;
+  const readmitDelta = Math.max(0, readmitBefore - readmitAfter); // lower is better                                                                                                                           
+  const avgReadmissionCost = inputs.vm_avgReadmissionCost ?? 15000; // CMS HRRP benchmark                 
+  const annualDischarges = inputs.settingData?.inpatient?.deploy_totalEncounters ?? adoptedEncounters;                                                                                                         
+                                                                                                                                                                                                               
+  let readmissionLow = 0;                                                                                                                                                                                      
+  let readmissionHigh = 0;                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  if (readmitDelta > 0) {                                                                                 
+    const base = (readmitDelta / 100) * annualDischarges * avgReadmissionCost;                                                                                                                                 
+    readmissionLow = Math.round(base * attributionLow);                                                                                                                                                        
+    readmissionHigh = Math.round(base * attributionHigh);
+  }                                                                                                                                                                                                            
+                                                                                                          
+  Add "Readmission Reduction" as a sub-item under the Patient Flow value stream in MeasureAllocate.tsx.                                                                                                        
+                                          
+  ---                                                                                                                                                                                                          
+  Change 4 — Remove CDI query dollar value                                                                                                                                                                     
+                                              
+  In measureCalculator.ts, search for any calculation that monetizes CDI query reduction (e.g., cdiQueries × queryValue or cdiDelta × queryCost). If found, delete the dollar calculation entirely. Keep CDI   
+  query reduction as a displayed metric in MeasureJourney.tsx under the Quality domain — show the % change and the absolute reduction — but do not include it in any financial total.
+                                                                                                                                                                                                               
+  If there is a CDI line item showing in MeasureAllocate.tsx, remove it. Add a note next to the CDI metric in MeasureJourney.tsx: "Documentation quality signal — financial impact reflected in CMI and denial 
+  rate."                                                                                                                                                                                                       
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Change 5 — Value stream toggle system                                                                   
+                                                                                                                                                                                                               
+  In MeasureAllocate.tsx, add a toggle to each value stream card. Each stream card should have a header row:
+                                              
+  <div className="flex items-center justify-between mb-3">
+    <div className="flex items-center gap-2"> 
+      <button                                                                                                                                                                                                  
+        type="button"
+        onClick={() => toggleStream(streamId)}                                                                                                                                                                 
+        className={`w-9 h-5 rounded-full transition-colors relative ${                                    
+          streamEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'                                                                                                                                                      
+        }`}                                                                                               
+        aria-label={streamEnabled ? 'Exclude from total' : 'Include in total'}                                                                                                                                 
+      >
+        <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${                                                                                                        
+          streamEnabled ? 'translate-x-4' : 'translate-x-0.5'                                             
+        }`} />                                                                                                                                                                                                 
+      </button>                                                                                           
+      <span className={`text-sm font-semibold ${streamEnabled ? 'text-black' : 'text-[#AAAAAA] line-through'}`}>                                                                                               
+        {streamLabel}                         
+      </span>                                                                                                                                                                                                  
+    </div>                                                                                                
+    {streamEnabled && (                                                                                                                                                                                        
+      <span className="text-sm font-bold text-black">
+        {formatDollar(streamLow)}–{formatDollar(streamHigh)}                                                                                                                                                   
+      </span>                                                                                             
+    )}                                    
+  </div>                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Define default stream states:                                                                                                                                                                                
+  const DEFAULT_STREAM_STATES: Record<string, boolean> = {                                                                                                                                                     
+    billingCapture: true,                                                                                 
+    revenueRecovery: true,                                                                                                                                                                                     
+    netCollection: true,                      
+    hccCapture: true,       // shown only if MA encounters > 0                                                                                                                                                 
+    patientFlow: true,                                                                                    
+    capacityRevenue: true,                                                                                                                                                                                     
+    readmissionReduction: true,           
+    physicianRetention: false,  // OFF by default — HR data, more contested                                                                                                                                    
+    agencySavings: true,        // ON only if agencyReduction data entered                                                                                                                                     
+    nursingOvertime: true,      // ON only for nursing setting            
+    qualityBonus: false,        // OFF by default — contract-specific                                                                                                                                          
+  };                                                                                                      
+                                                                                                                                                                                                               
+  The total at the bottom updates dynamically:                                                                                                                                                                 
+  <p className="text-xs text-[#888888] mt-2">                                                                                                                                                                  
+    Based on {enabledStreamCount} of {totalStreamCount} value streams.                                                                                                                                         
+    Toggle streams above to include or exclude.                                                                                                                                                                
+  </p>                                                                                                                                                                                                         
+                                          
+  Store streamStates in component state. Include in PDF export as a visible assumptions section.                                                                                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification:                                                                                                                                                                                                
+  - HCC Capture financial calculation only appears when MA encounter % is provided and HCC metric has before/after values                                                                                      
+  - Net Collection Rate is included in revenue recovery total                                                            
+  - Readmission Reduction is included in Patient Flow (inpatient only)                                                                                                                                         
+  - CDI query reduction shows % change in MeasureJourney but produces no dollar in MeasureAllocate        
+  - Each value stream has an on/off toggle                                                        
+  - Physician Retention defaults to OFF, all billing/revenue streams default to ON                                                                                                                             
+  - Total shown reflects only enabled streams, with count displayed                                                                                                                                            
+  - Toggled-off streams show label with strikethrough but remain visible                                                                                                                                       
+  - PDF export reflects enabled/disabled state        

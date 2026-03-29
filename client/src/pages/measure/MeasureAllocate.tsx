@@ -76,7 +76,9 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
       hasPhysicianRetentionOverride: false, retentionOverrideProviders: 0,
       retentionOverrideDelta: 0, hasPatientFlow: false, patientFlowLow: 0,
       patientFlowHigh: 0, patientFlowDetails: [], hasCapacityRevenue: false,
-      capacityRevenueLow: 0, capacityRevenueHigh: 0, hasAgencySavings: false,
+      capacityRevenueLow: 0, capacityRevenueHigh: 0,
+      hasHccCapture: false, hccCaptureLow: 0, hccCaptureHigh: 0, hccDetails: [],
+      hasAgencySavings: false,
       agencySavingsAmount: 0, totalLow: 0, totalHigh: 0, hasAnyFinancial: false,
       attrLow: 0.30, attrHigh: 0.75,
     };
@@ -238,7 +240,62 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     }
   }
 
+  for (const s of activeSettings) {
+    const sData2 = state.settingData?.[s] || {};
+    const effectiveEnc2 = sData2.deploy_totalEncounters || totalEncounters;
+
+    const netCollMetric = activeMetrics.find(m =>
+      ['netCollectionRate', 'net_collection_rate'].includes(m.metricId) && (!m.setting || m.setting === s)
+    );
+    const netCollB = netCollMetric?.before ?? (sData2.netCollectionRate_before ?? 0);
+    const netCollA = netCollMetric?.after ?? (sData2.netCollectionRate_after ?? 0);
+    const netCollDelta = Math.max(0, netCollA - netCollB);
+
+    if (netCollDelta > 0 && effectiveEnc2 > 0) {
+      const annualBillableRevenue = effectiveEnc2 * assumptions.revenuePerVisit;
+      const base = (netCollDelta / 100) * annualBillableRevenue;
+      revenueRecoveryLow += base * attrLow;
+      revenueRecoveryHigh += base * attrHigh;
+      recoveryDetails.push({
+        label: `Net collection rate improvement: +${netCollDelta.toFixed(1)} pts${activeSettings.length > 1 ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
+        detail: `${formatNumber(effectiveEnc2)} encounters × $${assumptions.revenuePerVisit}/visit billable revenue`,
+      });
+    }
+  }
+
   const hasRevenueRecovery = revenueRecoveryLow > 0;
+
+  let hccCaptureLow = 0;
+  let hccCaptureHigh = 0;
+  let hasHccCapture = false;
+  const hccDetails: { label: string; detail: string }[] = [];
+
+  for (const s of activeSettings) {
+    if (s === 'nursing') continue;
+    const sData3 = state.settingData?.[s] || {};
+    const hccMetric = activeMetrics.find(m =>
+      ['hccCaptureRate', 'hcc_capture_rate'].includes(m.metricId) && (!m.setting || m.setting === s)
+    );
+    const hccB = hccMetric?.before ?? (sData3.hccCaptureRate_before ?? 0);
+    const hccA = hccMetric?.after ?? (sData3.hccCaptureRate_after ?? 0);
+    const hccDelta = Math.max(0, hccA - hccB);
+    const maEncounterPct = (state as any).maEncounterPct ?? 0;
+    const sAdopted3 = Math.round((sData3.deploy_totalEncounters || totalEncounters) * (utilizationRate / 100));
+    const effectiveAdopted3 = sAdopted3 > 0 ? sAdopted3 : adoptedEncounters;
+    const maEncounters = Math.round(effectiveAdopted3 * (maEncounterPct / 100));
+    const avgHccPointValue = 1200;
+
+    if (hccDelta > 0 && maEncounters > 0) {
+      hasHccCapture = true;
+      const base = (hccDelta / 100) * maEncounters * avgHccPointValue;
+      hccCaptureLow += Math.round(base * attrLow * realLow);
+      hccCaptureHigh += Math.round(base * attrHigh * realHigh);
+      hccDetails.push({
+        label: `HCC capture rate: +${hccDelta.toFixed(1)} pts${activeSettings.length > 1 ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
+        detail: `${formatNumber(maEncounters)} MA encounters (${maEncounterPct}% of adopted) · $${formatNumber(avgHccPointValue)}/HCC point`,
+      });
+    }
+  }
 
   let patientFlowLow = 0;
   let patientFlowHigh = 0;
@@ -263,6 +320,25 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
         label: `ALOS reduction: ${alosBefore.toFixed(1)} → ${alosAfter.toFixed(1)} days (−${alosDelta.toFixed(1)} days/admission)`,
         detail: `${formatNumber(ipEncounters)} annual admissions · cost per bed day: $${assumptions.costPerBedDay.toLocaleString()}`,
         formula: `${alosDelta.toFixed(1)} days × ${formatNumber(ipEncounters)} admissions × $${assumptions.costPerBedDay.toLocaleString()} = ${fmt(base)}`,
+      });
+    }
+
+    const readmitMetric = activeMetrics.find(m =>
+      ['readmissionRate', 'readmission_rate', '30dayReadmission'].includes(m.metricId)
+    );
+    const readmitB = readmitMetric?.before ?? (ipData.readmissionRate_before ?? 0);
+    const readmitA = readmitMetric?.after ?? (ipData.readmissionRate_after ?? 0);
+    const readmitDelta = Math.max(0, readmitB - readmitA);
+    const avgReadmissionCost = 15_000;
+
+    if (readmitDelta > 0 && ipEncounters > 0) {
+      const base = (readmitDelta / 100) * ipEncounters * avgReadmissionCost;
+      patientFlowLow += base * attrLow;
+      patientFlowHigh += base * attrHigh;
+      patientFlowDetails.push({
+        label: `Readmission reduction: −${readmitDelta.toFixed(1)} pts`,
+        detail: `${formatNumber(ipEncounters)} annual discharges · CMS HRRP benchmark: $${formatNumber(avgReadmissionCost)}/readmission`,
+        formula: `${readmitDelta.toFixed(1)}% × ${formatNumber(ipEncounters)} discharges × $${formatNumber(avgReadmissionCost)} = ${fmt(base)}`,
       });
     }
   }
@@ -403,8 +479,8 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
 
   const hasCostReduction = hasAfterHours || hasAfterHoursSignalOnly || hasRetentionSignal || hasAgencySavings;
 
-  const totalLow = billingCaptureLow + revenueRecoveryLow + patientFlowLow + capacityRevenueLow + costReductionLow;
-  const totalHigh = billingCaptureHigh + revenueRecoveryHigh + patientFlowHigh + capacityRevenueHigh + costReductionHigh;
+  const totalLow = billingCaptureLow + revenueRecoveryLow + hccCaptureLow + patientFlowLow + capacityRevenueLow + costReductionLow;
+  const totalHigh = billingCaptureHigh + revenueRecoveryHigh + hccCaptureHigh + patientFlowHigh + capacityRevenueHigh + costReductionHigh;
   const hasAnyFinancial = totalLow > 0;
 
   return {
@@ -448,6 +524,10 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     hasCapacityRevenue,
     capacityRevenueLow,
     capacityRevenueHigh,
+    hasHccCapture,
+    hccCaptureLow,
+    hccCaptureHigh,
+    hccDetails,
     hasAgencySavings,
     agencySavingsAmount,
     totalLow,
@@ -481,6 +561,19 @@ export default function MeasureAllocate({
   });
   const [sensitivityOpen, setSensitivityOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [streamStates, setStreamStates] = useState<Record<string, boolean>>({
+    billingCapture: true,
+    revenueRecovery: true,
+    hccCapture: true,
+    patientFlow: true,
+    capacityRevenue: true,
+    costReduction: true,
+    physicianRetention: false,
+  });
+
+  const toggleStream = (id: string) => {
+    setStreamStates(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const fin = useMemo(() => computeFinancials(state, assumptions), [state, assumptions]);
   const months = getMonthsFromGoLive(state?.goLiveDate ?? null, state?.deployment?.monthsOnAbridge ?? 0);
@@ -490,8 +583,36 @@ export default function MeasureAllocate({
     s === 'ed' ? 'ED' : s === 'inpatient' ? 'Inpatient' : s === 'nursing' ? 'Nursing' : 'Outpatient'
   ).join(' · ');
 
-  const heroLow = useCountUp(Math.round(fin.totalLow), 1200, 300);
-  const heroHigh = useCountUp(Math.round(fin.totalHigh), 1200, 500);
+  const toggledTotal = useMemo(() => {
+    let low = 0;
+    let high = 0;
+    let enabledCount = 0;
+    let totalCount = 0;
+
+    const streams = [
+      { id: 'billingCapture', has: fin.hasBillingCapture, low: fin.billingCaptureLow, high: fin.billingCaptureHigh },
+      { id: 'revenueRecovery', has: fin.hasRevenueRecovery, low: fin.revenueRecoveryLow, high: fin.revenueRecoveryHigh },
+      { id: 'hccCapture', has: fin.hasHccCapture, low: fin.hccCaptureLow, high: fin.hccCaptureHigh },
+      { id: 'patientFlow', has: fin.hasPatientFlow, low: fin.patientFlowLow, high: fin.patientFlowHigh },
+      { id: 'capacityRevenue', has: fin.hasCapacityRevenue, low: fin.capacityRevenueLow, high: fin.capacityRevenueHigh },
+      { id: 'costReduction', has: fin.hasCostReduction, low: fin.costReductionLow, high: fin.costReductionHigh },
+    ];
+
+    for (const s of streams) {
+      if (s.has) {
+        totalCount++;
+        if (streamStates[s.id] !== false) {
+          enabledCount++;
+          low += s.low;
+          high += s.high;
+        }
+      }
+    }
+    return { low, high, enabledCount, totalCount };
+  }, [fin, streamStates]);
+
+  const heroLow = useCountUp(Math.round(toggledTotal.low), 1200, 300);
+  const heroHigh = useCountUp(Math.round(toggledTotal.high), 1200, 500);
 
   const toggleRow = (key: string) => {
     setExpandedRows(prev => {
@@ -554,6 +675,10 @@ export default function MeasureAllocate({
             <p className="text-xs text-[#999999]">
               {formatNumber(fin.providers)} providers · attribution: {assumptions.attribution}%
             </p>
+            <p className="text-xs text-[#888888] mt-2">
+              Based on {toggledTotal.enabledCount} of {toggledTotal.totalCount} value streams.
+              Toggle streams below to include or exclude.
+            </p>
           </motion.div>
         ) : (
           <motion.div
@@ -573,15 +698,28 @@ export default function MeasureAllocate({
         <div className="space-y-4 mb-8">
           {fin.hasBillingCapture && (
             <motion.div
-              className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
+              className={`bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6 ${streamStates.billingCapture === false ? 'opacity-50' : ''}`}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
               data-testid="row-billing-capture"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Billing Capture</h3>
-                <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Revenue</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleStream('billingCapture')}
+                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.billingCapture !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    aria-label={streamStates.billingCapture !== false ? 'Exclude from total' : 'Include in total'}
+                    data-testid="toggle-billing-capture"
+                  >
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${streamStates.billingCapture !== false ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                  <h3 className={`text-xs font-bold uppercase tracking-widest ${streamStates.billingCapture !== false ? 'text-[#666666]' : 'text-[#AAAAAA] line-through'}`}>Billing Capture</h3>
+                </div>
+                {streamStates.billingCapture !== false && (
+                  <span className="text-sm font-bold text-black">{fmtRange(Math.round(fin.billingCaptureLow), Math.round(fin.billingCaptureHigh))}</span>
+                )}
               </div>
 
               {fin.billingDetails.map((d, i) => (
@@ -637,15 +775,28 @@ export default function MeasureAllocate({
 
           {fin.hasRevenueRecovery && (
             <motion.div
-              className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
+              className={`bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6 ${streamStates.revenueRecovery === false ? 'opacity-50' : ''}`}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               data-testid="row-revenue-recovery"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Revenue Recovery</h3>
-                <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Throughput</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleStream('revenueRecovery')}
+                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.revenueRecovery !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    aria-label={streamStates.revenueRecovery !== false ? 'Exclude from total' : 'Include in total'}
+                    data-testid="toggle-revenue-recovery"
+                  >
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${streamStates.revenueRecovery !== false ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                  <h3 className={`text-xs font-bold uppercase tracking-widest ${streamStates.revenueRecovery !== false ? 'text-[#666666]' : 'text-[#AAAAAA] line-through'}`}>Revenue Recovery</h3>
+                </div>
+                {streamStates.revenueRecovery !== false && (
+                  <span className="text-sm font-bold text-black">{fmtRange(Math.round(fin.revenueRecoveryLow), Math.round(fin.revenueRecoveryHigh))}</span>
+                )}
               </div>
 
               {fin.recoveryDetails.map((d, i) => (
@@ -664,17 +815,70 @@ export default function MeasureAllocate({
             </motion.div>
           )}
 
+          {fin.hasHccCapture && (
+            <motion.div
+              className={`bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6 ${streamStates.hccCapture === false ? 'opacity-50' : ''}`}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.21 }}
+              data-testid="row-hcc-capture"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleStream('hccCapture')}
+                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.hccCapture !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    aria-label={streamStates.hccCapture !== false ? 'Exclude from total' : 'Include in total'}
+                    data-testid="toggle-hcc-capture"
+                  >
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${streamStates.hccCapture !== false ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                  <h3 className={`text-xs font-bold uppercase tracking-widest ${streamStates.hccCapture !== false ? 'text-[#666666]' : 'text-[#AAAAAA] line-through'}`}>HCC Capture</h3>
+                </div>
+                {streamStates.hccCapture !== false && (
+                  <span className="text-sm font-bold text-black">{fmtRange(Math.round(fin.hccCaptureLow), Math.round(fin.hccCaptureHigh))}</span>
+                )}
+              </div>
+              {fin.hccDetails.map((d: { label: string; detail: string }, i: number) => (
+                <div key={i} className="mb-3">
+                  <p className="text-sm font-medium text-[#1A1A1A]">{d.label}</p>
+                  <p className="text-xs text-[#999999]">{d.detail}</p>
+                </div>
+              ))}
+              <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
+                <p className="text-sm text-[#666666]">Estimated impact:</p>
+                <p className="text-xl font-bold text-[#EA2C00]" data-testid="text-hcc-value">
+                  {fmtRange(Math.round(fin.hccCaptureLow), Math.round(fin.hccCaptureHigh))} / year
+                </p>
+              </div>
+            </motion.div>
+          )}
+
           {fin.hasPatientFlow && (
             <motion.div
-              className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
+              className={`bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6 ${streamStates.patientFlow === false ? 'opacity-50' : ''}`}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.22 }}
               data-testid="row-patient-flow"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Patient Flow</h3>
-                <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Inpatient</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleStream('patientFlow')}
+                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.patientFlow !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    aria-label={streamStates.patientFlow !== false ? 'Exclude from total' : 'Include in total'}
+                    data-testid="toggle-patient-flow"
+                  >
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${streamStates.patientFlow !== false ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                  <h3 className={`text-xs font-bold uppercase tracking-widest ${streamStates.patientFlow !== false ? 'text-[#666666]' : 'text-[#AAAAAA] line-through'}`}>Patient Flow</h3>
+                </div>
+                {streamStates.patientFlow !== false && (
+                  <span className="text-sm font-bold text-black">{fmtRange(Math.round(fin.patientFlowLow), Math.round(fin.patientFlowHigh))}</span>
+                )}
               </div>
               {fin.patientFlowDetails.map((d, i) => (
                 <div key={i} className="mb-3">
@@ -691,15 +895,28 @@ export default function MeasureAllocate({
 
           {fin.hasCapacityRevenue && (
             <motion.div
-              className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
+              className={`bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6 ${streamStates.capacityRevenue === false ? 'opacity-50' : ''}`}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.23 }}
               data-testid="row-capacity-revenue"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Capacity Revenue</h3>
-                <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Outpatient</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleStream('capacityRevenue')}
+                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.capacityRevenue !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    aria-label={streamStates.capacityRevenue !== false ? 'Exclude from total' : 'Include in total'}
+                    data-testid="toggle-capacity-revenue"
+                  >
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${streamStates.capacityRevenue !== false ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                  <h3 className={`text-xs font-bold uppercase tracking-widest ${streamStates.capacityRevenue !== false ? 'text-[#666666]' : 'text-[#AAAAAA] line-through'}`}>Capacity Revenue</h3>
+                </div>
+                {streamStates.capacityRevenue !== false && (
+                  <span className="text-sm font-bold text-black">{fmtRange(Math.round(fin.capacityRevenueLow), Math.round(fin.capacityRevenueHigh))}</span>
+                )}
               </div>
               <div className="mb-3">
                 <p className="text-sm font-medium text-[#1A1A1A]">Additional patient capacity converted to revenue</p>
@@ -714,15 +931,28 @@ export default function MeasureAllocate({
 
           {fin.hasCostReduction && (
             <motion.div
-              className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6"
+              className={`bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-6 ${streamStates.costReduction === false ? 'opacity-50' : ''}`}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
               data-testid="row-cost-reduction"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666]">Actual Cost Reduction</h3>
-                <span className="text-[10px] font-medium bg-[#EA2C00]/10 text-[#EA2C00] px-2.5 py-1 rounded-full">Workforce</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleStream('costReduction')}
+                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.costReduction !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    aria-label={streamStates.costReduction !== false ? 'Exclude from total' : 'Include in total'}
+                    data-testid="toggle-cost-reduction"
+                  >
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${streamStates.costReduction !== false ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                  <h3 className={`text-xs font-bold uppercase tracking-widest ${streamStates.costReduction !== false ? 'text-[#666666]' : 'text-[#AAAAAA] line-through'}`}>Actual Cost Reduction</h3>
+                </div>
+                {streamStates.costReduction !== false && (
+                  <span className="text-sm font-bold text-black">{fmtRange(Math.round(fin.costReductionLow), Math.round(fin.costReductionHigh))}</span>
+                )}
               </div>
 
               {fin.hasAfterHours && (
