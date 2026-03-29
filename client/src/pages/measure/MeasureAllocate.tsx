@@ -35,7 +35,15 @@ interface Assumptions {
   costPerBedDay: number;
   revenuePerVisit: number;
   emUndercaptureRate: number;
+  emEligibilityRate: number;
 }
+
+const EM_ELIGIBILITY_DEFAULTS: Record<string, number> = {
+  outpatient: 82,
+  ed: 95,
+  inpatient: 90,
+  nursing: 0,
+};
 
 const DEFAULT_ASSUMPTIONS: Assumptions = {
   attribution: 62,
@@ -47,6 +55,7 @@ const DEFAULT_ASSUMPTIONS: Assumptions = {
   costPerBedDay: 2500,
   revenuePerVisit: 200,
   emUndercaptureRate: 35,
+  emEligibilityRate: 80,
 };
 
 function computeFinancials(state: MeasureState, assumptions: Assumptions) {
@@ -105,12 +114,19 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
   let billingCaptureHigh = 0;
   const billingDetails: { label: string; detail: string; formula: string }[] = [];
 
+  const emEligibilityPct = assumptions.emEligibilityRate / 100;
+
   for (const s of activeSettings) {
     const sSettingData = state.settingData?.[s] || {};
     const sAdoptedEncounters = Math.round(
       (sSettingData.deploy_totalEncounters || totalEncounters) * (utilizationRate / 100)
     );
     const effectiveAdopted = sAdoptedEncounters > 0 ? sAdoptedEncounters : adoptedEncounters;
+    const emEligibleEncounters = Math.round(effectiveAdopted * emEligibilityPct);
+
+    if (s === 'nursing') {
+      continue;
+    }
 
     const wrvuMetric = activeMetrics.find(m =>
       ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === s)
@@ -119,14 +135,14 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     const wrvuA = wrvuMetric?.after ?? (s === primarySetting ? (state.documentationQuality?.wrvuWith ?? 0) : 0);
     const wrvuD = wrvuA - wrvuB;
 
-    if (wrvuD > 0 && effectiveAdopted > 0) {
-      const base = wrvuD * effectiveAdopted * assumptions.conversionFactor;
+    if (wrvuD > 0 && emEligibleEncounters > 0) {
+      const base = wrvuD * emEligibleEncounters * assumptions.conversionFactor;
       billingCaptureLow += base * attrLow * realLow;
       billingCaptureHigh += base * attrHigh * realHigh;
       billingDetails.push({
         label: `wRVU lift: +${wrvuD.toFixed(2)} per encounter${multiSetting ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
-        detail: `Adopted encounters: ${formatNumber(effectiveAdopted)}/yr`,
-        formula: `+${wrvuD.toFixed(2)} wRVU × ${formatNumber(effectiveAdopted)} × $${assumptions.conversionFactor} × ${Math.round(assumptions.realization)}% = ${fmt(base * (assumptions.realization / 100))}`,
+        detail: `E/M encounters: ${formatNumber(emEligibleEncounters)}/yr (${assumptions.emEligibilityRate}% of ${formatNumber(effectiveAdopted)} adopted)`,
+        formula: `+${wrvuD.toFixed(2)} wRVU × ${formatNumber(emEligibleEncounters)} E/M encounters × $${assumptions.conversionFactor} × ${Math.round(assumptions.realization)}% = ${fmt(base * (assumptions.realization / 100))}`,
       });
     }
 
@@ -137,16 +153,16 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     const emA = emMetric?.after ?? (s === primarySetting ? (state.documentationQuality?.emLevelWith ?? 0) : 0);
     const emD = emA - emB;
 
-    if (emD > 0 && effectiveAdopted > 0) {
+    if (emD > 0 && emEligibleEncounters > 0) {
       const avgEmValue = 45;
       const undercaptureRate = assumptions.emUndercaptureRate / 100;
-      const base = emD * effectiveAdopted * undercaptureRate * avgEmValue;
+      const base = emD * emEligibleEncounters * undercaptureRate * avgEmValue;
       billingCaptureLow += base * attrLow * realLow;
       billingCaptureHigh += base * attrHigh * realHigh;
       billingDetails.push({
         label: `E/M level improvement: +${emD.toFixed(1)} levels${multiSetting ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
-        detail: `${formatNumber(effectiveAdopted)} adopted encounters · ${assumptions.emUndercaptureRate}% undercapture rate`,
-        formula: `+${emD.toFixed(1)} E/M × ${formatNumber(effectiveAdopted)} × ${assumptions.emUndercaptureRate}% undercapture × ~$${avgEmValue}/level = ${fmt(base)}`,
+        detail: `${formatNumber(emEligibleEncounters)} E/M encounters · ${assumptions.emUndercaptureRate}% undercapture rate`,
+        formula: `+${emD.toFixed(1)} E/M × ${formatNumber(emEligibleEncounters)} × ${assumptions.emUndercaptureRate}% undercapture × ~$${avgEmValue}/level = ${fmt(base)}`,
       });
     }
 
@@ -456,10 +472,12 @@ export default function MeasureAllocate({
   onBack,
   onHome,
 }: MeasureAllocateProps) {
+  const primaryCareSetting = (state?.activeCareSettings?.length > 0 ? state.activeCareSettings[0] : state?.careSetting) || 'outpatient';
   const [assumptions, setAssumptions] = useState<Assumptions>({
     ...DEFAULT_ASSUMPTIONS,
     conversionFactor: state?.calibration?.conversionFactor || 33,
     otPremiumRate: state?.calibration?.otHourlyRate || 75,
+    emEligibilityRate: EM_ELIGIBILITY_DEFAULTS[primaryCareSetting] ?? 80,
   });
   const [sensitivityOpen, setSensitivityOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -905,6 +923,32 @@ export default function MeasureAllocate({
                     </div>
                     <p className="text-[10px] text-[#AAAAAA] italic mt-1">
                       Default 35% — from coding audit literature. Adjust based on your pre-Abridge coding quality.
+                    </p>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-[#525252] font-medium">E/M eligible encounters</span>
+                      <span className="text-xs font-bold text-[#1A1A1A]">{assumptions.emEligibilityRate}%</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Slider
+                        value={[assumptions.emEligibilityRate]}
+                        onValueChange={([v]) => updateAssumption('emEligibilityRate', v)}
+                        min={40}
+                        max={100}
+                        step={5}
+                        className="flex-1"
+                        data-testid="slider-em-eligibility"
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-[10px] text-[#AAAAAA]">40% (surgical mix)</span>
+                      <span className="text-[10px] text-[#AAAAAA]">100% (ED / primary care)</span>
+                    </div>
+                    <p className="text-[10px] text-[#AAAAAA] italic mt-1">
+                      % of Abridge encounters that resulted in an E/M bill. From your billing system.
+                      Default {EM_ELIGIBILITY_DEFAULTS[primaryCareSetting] ?? 80}% for {primaryCareSetting === 'ed' ? 'ED' : primaryCareSetting.charAt(0).toUpperCase() + primaryCareSetting.slice(1)} — adjust to match your specialty mix.
                     </p>
                   </div>
 

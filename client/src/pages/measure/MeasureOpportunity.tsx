@@ -79,20 +79,30 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
 
   const activeMetrics = getActiveMetrics(state);
 
+  const emEligibilityDefaults: Record<string, number> = {
+    outpatient: 0.82, ed: 0.95, inpatient: 0.90, nursing: 0.00,
+  };
+  const emEligibilityRate = emEligibilityDefaults[primarySetting] ?? 0.80;
+
   for (const s of activeSettings) {
     const sSettingData = state.settingData?.[s] || {};
     const sAdoptedEncounters = Math.round(
       (sSettingData.deploy_totalEncounters || totalEncounters) * (utilizationRate / 100)
     );
     const effectiveAdopted = sAdoptedEncounters > 0 ? sAdoptedEncounters : adoptedEncounters;
+    const emEligibleEncounters = Math.round(effectiveAdopted * emEligibilityRate);
+
+    if (s === 'nursing') {
+      continue;
+    }
 
     const wrvuMetric = activeMetrics.find(m =>
       ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === s)
     );
     const wrvuDelta = (wrvuMetric?.after ?? (s === primarySetting ? (state.documentationQuality.wrvuWith ?? 0) : 0)) -
       (wrvuMetric?.before ?? (s === primarySetting ? (state.documentationQuality.wrvuWithout ?? 0) : 0));
-    if (wrvuDelta > 0 && effectiveAdopted > 0) {
-      const base = wrvuDelta * effectiveAdopted * cf;
+    if (wrvuDelta > 0 && emEligibleEncounters > 0) {
+      const base = wrvuDelta * emEligibleEncounters * cf;
       totalLow += base * attrLow * realLow;
       totalHigh += base * attrHigh * realHigh;
     }
@@ -102,9 +112,9 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
     );
     const emDelta = (emMetric?.after ?? (s === primarySetting ? (state.documentationQuality.emLevelWith ?? 0) : 0)) -
       (emMetric?.before ?? (s === primarySetting ? (state.documentationQuality.emLevelWithout ?? 0) : 0));
-    if (emDelta > 0 && effectiveAdopted > 0) {
+    if (emDelta > 0 && emEligibleEncounters > 0) {
       const undercaptureRate = 0.35;
-      const base = emDelta * effectiveAdopted * undercaptureRate * 45;
+      const base = emDelta * emEligibleEncounters * undercaptureRate * 45;
       totalLow += base * attrLow * realLow;
       totalHigh += base * attrHigh * realHigh;
     }
