@@ -1,0 +1,79 @@
+REPLIT PROMPT — Responsive/Mobile Fix Pass (Ambient Assessment)                                                                                                                                              
+                                                                                                                                                                                                               
+  Apply the following targeted responsive fixes across the ambient assessment screens. Do not change any logic, copy, or visual design — these are layout/sizing adjustments only.
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  1. All screens with sidebar layout — fix sticky at tablet (md) breakpoint
+                                                                                                                                                                                                               
+  In each of these files:                                                                                 
+  - Screen2Baseline.tsx                                                                                                                                                                                        
+  - Screen3Score.tsx                                                                                                                                                                                           
+  - Screen5Gap.tsx  
+  - Screen6Invitation.tsx                                                                                                                                                                                      
+                                                                                                          
+  Find the main layout container (the one with flex flex-col lg:flex-row) and change:                                                                                                                          
+  flex flex-col lg:flex-row                                                                               
+  →                                       
+  flex flex-col md:flex-row                   
+                                                                                                                                                                                                               
+  Find the sidebar div with w-full lg:w-[...] and lg:sticky lg:top-24 and change both:
+  w-full lg:w-[300px]     →     w-full md:w-[300px]                                                                                                                                                            
+  lg:sticky lg:top-24     →     md:sticky md:top-20                                                       
+                                                                                                                                                                                                               
+  Also change flex-1 max-w-[700px] on the left column to flex-1 min-w-0 so it doesn't overflow on tablet.                                                                                                      
+                                              
+  ---                                                                                                                                                                                                          
+  2. Screen5Gap.tsx — responsive chart height                                                             
+                                                                                                                                                                                                               
+  Find <ResponsiveContainer width="100%" height={...}> (the AreaChart wrapper) and change to:             
+  <div className="h-[240px] sm:h-[300px] md:h-[360px]">                                                                                                                                                        
+    <ResponsiveContainer width="100%" height="100%">                                                      
+  Close the wrapper div after </ResponsiveContainer>.
+                                                                                                                                                                                                               
+  Inside the <XAxis> component, add tick={{ fontSize: 11 }} and wrap the <XAxis> in a conditional:
+  <XAxis                                                                                                                                                                                                       
+    dataKey="month"                                                                                       
+    tickFormatter={(v) => `${v}mo`}                                                                                                                                                                            
+    tick={{ fontSize: 11 }}                                                                                                                                                                                    
+    interval="preserveStartEnd"                                                                                                                                                                                
+    ...existing props...                                                                                                                                                                                       
+  />                                                                                                      
+  The interval="preserveStartEnd" ensures only first/last labels show on narrow screens.
+
+  ---                                                                                                                                                                                                          
+  3. Screen6Invitation.tsx — hero number font size
+                                                                                                                                                                                                               
+  Find the large score display (currently text-[72px] sm:text-[88px] md:text-[104px]) and change to:                                                                                                           
+  text-[44px] sm:text-[72px] md:text-[104px]  
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  4. Screen4Domains.tsx — radio fill dot size                                                                                                                                                                  
+                                             
+  Find w-2.5 h-2.5 (the inner fill circle inside the radio button) and change to w-3 h-3. There may be multiple instances — update all of them.                                                                
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  5. Screen2Baseline.tsx — payer mix input rows                                                           
+                                                                                                                                                                                                               
+  Find the payer mix input section where each row is flex items-center gap-3 with a w-24 flex-shrink-0 label. Change the row layout to:
+  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">                                                                                                                                   
+    <span className="w-full sm:w-24 flex-shrink-0 text-sm text-[#666666]">{label}</span>                  
+    {/* existing input */}                                                              
+  </div>                                                                                                                                                                                                       
+  This stacks label above input on mobile, inline on sm+.
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  6. Screen3Score.tsx — decision mirror grid breakpoint                                                                                                                                                        
+                                                                                                                                                                                                               
+  Find min-[560px]:grid-cols-2 and change to sm:grid-cols-2. This normalizes it to a standard Tailwind breakpoint.                                                                                             
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Verification checklist:                                                                                 
+  - At 375px: sidebar content appears below main content (stacked), not cut off                                                                                                                                
+  - At 768px (iPad): sidebar appears on the right alongside main content, sticky                          
+  - At 1024px+: no change to existing desktop layout                                                                                                                                                           
+  - Screen5 chart is visible and not full-viewport on mobile                                              
+  - Screen6 hero number readable on iPhone SE               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  That's the full picture. The sidebar-at-tablet fix is the most important one — if you're ever walking an exec through this on their iPad or sharing your screen on a call, the score and confirmed value     
+  being buried at the bottom of the page is a real problem.     

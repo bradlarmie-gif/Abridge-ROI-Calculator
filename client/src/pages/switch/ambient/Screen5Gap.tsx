@@ -494,8 +494,8 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         </p>
       </motion.div>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
-        <div className="flex-1 max-w-[700px]">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-10">
+        <div className="flex-1 min-w-0">
 
           <motion.div
             className="mb-10"
@@ -659,7 +659,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                 <p className="text-xs text-[#888888] mb-5">
                   What closing the measurement gap is worth at your scale.
                 </p>
-                <div className="h-[200px] sm:h-[240px]">
+                <div className="h-[240px] sm:h-[300px] md:h-[360px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                       <defs>
@@ -674,6 +674,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
                         ticks={[0, 12, 24, 36]}
                         tickFormatter={(v: number) => v === 0 ? 'Now' : `Mo ${v}`}
                         tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                        interval="preserveStartEnd"
                       />
                       <YAxis
                         tickFormatter={(v) => formatDollar(v)}
@@ -731,12 +732,12 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
         </div>
 
         <motion.div
-          className="w-full lg:w-[280px] flex-shrink-0"
+          className="w-full md:w-[280px] flex-shrink-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-gap-summary">
+          <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-20" data-testid="panel-gap-summary">
 
             {(() => {
               const totalScore = DOMAIN_ORDER.reduce((sum, d) => {

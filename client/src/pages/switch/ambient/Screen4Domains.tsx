@@ -933,7 +933,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                   <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                     surveyType === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                   }`}>
-                    {surveyType === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                    {surveyType === opt.id && <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />}
                   </div>
                   <span className="text-sm text-black">{opt.label}</span>
                   <input
@@ -1274,7 +1274,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                   <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                     approach === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                   }`}>
-                    {approach === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                    {approach === opt.id && <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />}
                   </div>
                   <span className="text-sm text-[#525252]">{opt.label}</span>
                   <input
@@ -1360,7 +1360,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                   <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                     financialPathway === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                   }`}>
-                    {financialPathway === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                    {financialPathway === opt.id && <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />}
                   </div>
                   <span className="text-sm text-[#525252]">{opt.label}</span>
                   <input
@@ -1478,7 +1478,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                 <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                   executiveOwner === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                 }`}>
-                  {executiveOwner === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                  {executiveOwner === opt.id && <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />}
                 </div>
                 <span className="text-sm text-black">{opt.label}</span>
                 <input
@@ -1515,7 +1515,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                 <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                   boardPresented === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                 }`}>
-                  {boardPresented === opt.id && <div className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-[#EA2C00]" />}
+                  {boardPresented === opt.id && <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />}
                 </div>
                 <span className="text-sm text-black">{opt.label}</span>
                 <input
@@ -1683,8 +1683,8 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         </span>
       </motion.div>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
-        <div className="flex-1 max-w-[700px]">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-10">
+        <div className="flex-1 min-w-0">
           <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-6 md:p-10 mb-8">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4" data-testid="text-domain-label">
               Where is your organization today?
@@ -1904,13 +1904,13 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         </div>
 
         <motion.div
-          className="w-full lg:w-[320px] flex-shrink-0"
+          className="w-full md:w-[320px] flex-shrink-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
           key={`sidebar-${activeDomain}`}
         >
-          <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="card-domain-feedback">
+          <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-20" data-testid="card-domain-feedback">
             <p className="text-xs font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
               Estimated Impact
             </p>

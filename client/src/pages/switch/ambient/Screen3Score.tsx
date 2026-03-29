@@ -580,8 +580,8 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
         </p>
       </motion.div>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
-        <div className="flex-1 max-w-[700px]">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-10">
+        <div className="flex-1 min-w-0">
 
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -677,7 +677,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
               <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">
                 What you told us — by domain
               </p>
-              <div className="grid grid-cols-1 min-[560px]:grid-cols-2 gap-3" data-testid="grid-decision-mirror">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="grid-decision-mirror">
                 {DOMAIN_ORDER.map((domain) => (
                   <DomainDecisionCard
                     key={domain}
@@ -714,12 +714,12 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
         </div>
 
         <motion.div
-          className="w-full lg:w-[300px] flex-shrink-0"
+          className="w-full md:w-[300px] flex-shrink-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 2.0, duration: 0.6, ease: "easeOut" }}
         >
-          <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-score-hero">
+          <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-20" data-testid="panel-score-hero">
 
             <div className="mb-5">
               <p className="text-3xl font-bold text-[#EA2C00]" data-testid="sidebar-score">

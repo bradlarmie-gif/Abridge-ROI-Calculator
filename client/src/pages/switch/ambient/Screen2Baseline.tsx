@@ -69,9 +69,9 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
   }, [utilSet, utilization]);
 
   return (
-    <div className={`flex flex-col lg:flex-row gap-6 lg:gap-8 ${STEP_FOOTER_SPACER_CLASS}`}>
+    <div className={`flex flex-col md:flex-row gap-6 md:gap-8 ${STEP_FOOTER_SPACER_CLASS}`}>
       <motion.div
-        className="flex-1 max-w-[700px]"
+        className="flex-1 min-w-0"
         variants={staggerContainer}
         initial="initial"
         animate="animate"
@@ -359,38 +359,44 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                         </label>
                         <p className="text-xs text-[#888888] mb-3">Rough percentages — doesn't need to total exactly 100%.</p>
                         <div className="flex flex-col gap-3">
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm text-[#888888] w-24 flex-shrink-0">Medicare</span>
-                            <FormattedNumberInput
-                              value={inputs.payerMixMedicare || 0}
-                              onChange={(v) => updateInput("payerMixMedicare", Math.min(100, Math.max(0, v || 0)))}
-                              placeholder="40"
-                              className="flex-1 h-10 bg-white border-[#E5E7EB]"
-                              data-testid="input-payer-medicare"
-                            />
-                            <span className="text-sm text-[#888888]">%</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                            <span className="w-full sm:w-24 flex-shrink-0 text-sm text-[#888888]">Medicare</span>
+                            <div className="flex items-center gap-3 flex-1">
+                              <FormattedNumberInput
+                                value={inputs.payerMixMedicare || 0}
+                                onChange={(v) => updateInput("payerMixMedicare", Math.min(100, Math.max(0, v || 0)))}
+                                placeholder="40"
+                                className="flex-1 h-10 bg-white border-[#E5E7EB]"
+                                data-testid="input-payer-medicare"
+                              />
+                              <span className="text-sm text-[#888888]">%</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm text-[#888888] w-24 flex-shrink-0">Medicaid</span>
-                            <FormattedNumberInput
-                              value={inputs.payerMixMedicaid || 0}
-                              onChange={(v) => updateInput("payerMixMedicaid", Math.min(100, Math.max(0, v || 0)))}
-                              placeholder="15"
-                              className="flex-1 h-10 bg-white border-[#E5E7EB]"
-                              data-testid="input-payer-medicaid"
-                            />
-                            <span className="text-sm text-[#888888]">%</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                            <span className="w-full sm:w-24 flex-shrink-0 text-sm text-[#888888]">Medicaid</span>
+                            <div className="flex items-center gap-3 flex-1">
+                              <FormattedNumberInput
+                                value={inputs.payerMixMedicaid || 0}
+                                onChange={(v) => updateInput("payerMixMedicaid", Math.min(100, Math.max(0, v || 0)))}
+                                placeholder="15"
+                                className="flex-1 h-10 bg-white border-[#E5E7EB]"
+                                data-testid="input-payer-medicaid"
+                              />
+                              <span className="text-sm text-[#888888]">%</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm text-[#888888] w-24 flex-shrink-0">Commercial</span>
-                            <FormattedNumberInput
-                              value={inputs.payerMixCommercial || 0}
-                              onChange={(v) => updateInput("payerMixCommercial", Math.min(100, Math.max(0, v || 0)))}
-                              placeholder="45"
-                              className="flex-1 h-10 bg-white border-[#E5E7EB]"
-                              data-testid="input-payer-commercial"
-                            />
-                            <span className="text-sm text-[#888888]">%</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                            <span className="w-full sm:w-24 flex-shrink-0 text-sm text-[#888888]">Commercial</span>
+                            <div className="flex items-center gap-3 flex-1">
+                              <FormattedNumberInput
+                                value={inputs.payerMixCommercial || 0}
+                                onChange={(v) => updateInput("payerMixCommercial", Math.min(100, Math.max(0, v || 0)))}
+                                placeholder="45"
+                                className="flex-1 h-10 bg-white border-[#E5E7EB]"
+                                data-testid="input-payer-commercial"
+                              />
+                              <span className="text-sm text-[#888888]">%</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -407,12 +413,12 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
       {hasFirstInput && (
         <motion.div
-          className="w-full lg:w-[320px] flex-shrink-0"
+          className="w-full md:w-[320px] flex-shrink-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1], duration: 0.4 }}
         >
-          <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
+          <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-20">
             <p className="text-xs font-medium text-white/70 uppercase tracking-[1.5px] mb-2">
               Emerging Picture
             </p>

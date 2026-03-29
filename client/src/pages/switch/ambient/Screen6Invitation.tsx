@@ -728,7 +728,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
                   <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[2.5px] mb-4">
                     Confirmed Annually
                   </p>
-                  <p className="text-[72px] sm:text-[88px] md:text-[104px] font-bold text-[#EA2C00] leading-none tracking-tight" data-testid="hero-total-value">
+                  <p className="text-[44px] sm:text-[72px] md:text-[104px] font-bold text-[#EA2C00] leading-none tracking-tight" data-testid="hero-total-value">
                     {formatDollar(displayedTotal)}
                   </p>
                   <p className="text-base text-white/25 mt-3">per year · from your inputs</p>
@@ -778,8 +778,8 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
         </div>
       </motion.div>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
-        <div className="flex-1 max-w-[700px]">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-10">
+        <div className="flex-1 min-w-0">
 
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -909,12 +909,12 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
         </div>
 
         <motion.div
-          className="w-full lg:w-[320px] flex-shrink-0"
+          className="w-full md:w-[320px] flex-shrink-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
         >
-          <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24" data-testid="panel-summary">
+          <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-20" data-testid="panel-summary">
 
             <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-6">
               Your Assessment
