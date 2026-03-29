@@ -11,6 +11,7 @@ import {
   formatNumber,
   getMonthsFromGoLive,
   getActiveMetrics,
+  EM_TO_WRVU,
 } from "@/lib/measureCalculator";
 import { useCountUp } from "@/hooks/useCountUp";
 
@@ -36,6 +37,8 @@ interface Assumptions {
   revenuePerVisit: number;
   emUndercaptureRate: number;
   emEligibilityRate: number;
+  revenuePerNewAdmission: number;
+  censusConstrained: boolean;
 }
 
 const EM_ELIGIBILITY_DEFAULTS: Record<string, number> = {
@@ -56,6 +59,8 @@ const DEFAULT_ASSUMPTIONS: Assumptions = {
   revenuePerVisit: 200,
   emUndercaptureRate: 35,
   emEligibilityRate: 80,
+  revenuePerNewAdmission: 8000,
+  censusConstrained: false,
 };
 
 function computeFinancials(state: MeasureState, assumptions: Assumptions) {
@@ -135,36 +140,29 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     );
     const wrvuB = wrvuMetric?.before ?? (s === primarySetting ? (state.documentationQuality?.wrvuWithout ?? 0) : 0);
     const wrvuA = wrvuMetric?.after ?? (s === primarySetting ? (state.documentationQuality?.wrvuWith ?? 0) : 0);
-    const wrvuD = wrvuA - wrvuB;
-
-    if (wrvuD > 0 && emEligibleEncounters > 0) {
-      const base = wrvuD * emEligibleEncounters * assumptions.conversionFactor;
-      billingCaptureLow += base * attrLow * realLow;
-      billingCaptureHigh += base * attrHigh * realHigh;
-      billingDetails.push({
-        label: `wRVU lift: +${wrvuD.toFixed(2)} per encounter${multiSetting ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
-        detail: `E/M encounters: ${formatNumber(emEligibleEncounters)}/yr (${assumptions.emEligibilityRate}% of ${formatNumber(effectiveAdopted)} adopted)`,
-        formula: `+${wrvuD.toFixed(2)} wRVU × ${formatNumber(emEligibleEncounters)} E/M encounters × $${assumptions.conversionFactor} × ${Math.round(assumptions.realization)}% = ${fmt(base * (assumptions.realization / 100))}`,
-      });
-    }
+    const measuredWrvuD = wrvuA - wrvuB;
 
     const emMetric = activeMetrics.find(m =>
       ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === s)
     );
     const emB = emMetric?.before ?? (s === primarySetting ? (state.documentationQuality?.emLevelWithout ?? 0) : 0);
     const emA = emMetric?.after ?? (s === primarySetting ? (state.documentationQuality?.emLevelWith ?? 0) : 0);
-    const emD = emA - emB;
+    const impliedWrvuDelta = (EM_TO_WRVU[Math.round(emA)] ?? 0) - (EM_TO_WRVU[Math.round(emB)] ?? 0);
 
-    if (emD > 0 && emEligibleEncounters > 0) {
-      const avgEmValue = 45;
-      const undercaptureRate = assumptions.emUndercaptureRate / 100;
-      const base = emD * emEligibleEncounters * undercaptureRate * avgEmValue;
+    const wrvuD = measuredWrvuD > 0 ? measuredWrvuD : Math.max(0, impliedWrvuDelta);
+    const wrvuSource = measuredWrvuD > 0 ? 'measured' : (impliedWrvuDelta > 0 ? 'implied from E/M levels' : null);
+
+    if (wrvuD > 0 && emEligibleEncounters > 0) {
+      const base = wrvuD * emEligibleEncounters * assumptions.conversionFactor;
       billingCaptureLow += base * attrLow * realLow;
       billingCaptureHigh += base * attrHigh * realHigh;
+      const sourceNote = wrvuSource === 'implied from E/M levels'
+        ? ` (implied from E/M ${emB.toFixed(0)}→${emA.toFixed(0)})`
+        : '';
       billingDetails.push({
-        label: `E/M level improvement: +${emD.toFixed(1)} levels${multiSetting ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
-        detail: `${formatNumber(emEligibleEncounters)} E/M encounters · ${assumptions.emUndercaptureRate}% undercapture rate`,
-        formula: `+${emD.toFixed(1)} E/M × ${formatNumber(emEligibleEncounters)} × ${assumptions.emUndercaptureRate}% undercapture × ~$${avgEmValue}/level = ${fmt(base)}`,
+        label: `wRVU lift: +${wrvuD.toFixed(2)} per encounter${sourceNote}${multiSetting ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
+        detail: `E/M encounters: ${formatNumber(emEligibleEncounters)}/yr (${assumptions.emEligibilityRate}% of ${formatNumber(effectiveAdopted)} adopted)`,
+        formula: `+${wrvuD.toFixed(2)} wRVU × ${formatNumber(emEligibleEncounters)} E/M encounters × $${assumptions.conversionFactor} × ${Math.round(assumptions.realization)}% = ${fmt(base * (assumptions.realization / 100))}`,
       });
     }
 
@@ -313,14 +311,25 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
     const ipEncounters = ipData.deploy_totalEncounters || (activeSettings.length === 1 ? totalEncounters : 0);
 
     if (alosDelta > 0 && ipEncounters > 0) {
-      const base = alosDelta * ipEncounters * assumptions.costPerBedDay;
-      patientFlowLow += base * attrLow;
-      patientFlowHigh += base * attrHigh;
+      const costBase = alosDelta * ipEncounters * assumptions.costPerBedDay;
+      patientFlowLow += costBase * attrLow;
+      patientFlowHigh += costBase * attrHigh;
       patientFlowDetails.push({
-        label: `ALOS reduction: ${alosBefore.toFixed(1)} → ${alosAfter.toFixed(1)} days (−${alosDelta.toFixed(1)} days/admission)`,
+        label: `ALOS cost avoidance: ${alosBefore.toFixed(1)} → ${alosAfter.toFixed(1)} days (−${alosDelta.toFixed(1)} days/admission)`,
         detail: `${formatNumber(ipEncounters)} annual admissions · cost per bed day: $${assumptions.costPerBedDay.toLocaleString()}`,
-        formula: `${alosDelta.toFixed(1)} days × ${formatNumber(ipEncounters)} admissions × $${assumptions.costPerBedDay.toLocaleString()} = ${fmt(base)}`,
+        formula: `${alosDelta.toFixed(1)} days × ${formatNumber(ipEncounters)} admissions × $${assumptions.costPerBedDay.toLocaleString()} = ${fmt(costBase)}`,
       });
+
+      if (assumptions.censusConstrained) {
+        const revBase = alosDelta * ipEncounters * assumptions.revenuePerNewAdmission * 0.3;
+        patientFlowLow += revBase * attrLow;
+        patientFlowHigh += revBase * attrHigh;
+        patientFlowDetails.push({
+          label: `ALOS throughput revenue: freed beds → new admissions (census-constrained)`,
+          detail: `30% bed refill rate × $${assumptions.revenuePerNewAdmission.toLocaleString()} per new admission`,
+          formula: `${alosDelta.toFixed(1)} days × ${formatNumber(ipEncounters)} × $${assumptions.revenuePerNewAdmission.toLocaleString()} × 30% refill = ${fmt(revBase)}`,
+        });
+      }
     }
 
     const readmitMetric = activeMetrics.find(m =>
@@ -559,6 +568,7 @@ export default function MeasureAllocate({
     conversionFactor: state?.calibration?.conversionFactor || 33,
     otPremiumRate: state?.calibration?.otHourlyRate || 75,
     emEligibilityRate: EM_ELIGIBILITY_DEFAULTS[primaryCareSetting] ?? 80,
+    censusConstrained: state?.censusConstrained ?? false,
   });
   const [sensitivityOpen, setSensitivityOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -892,6 +902,20 @@ export default function MeasureAllocate({
                   <p className="text-xs text-[#999999]">{d.detail}</p>
                 </div>
               ))}
+              {fin.activeSettings?.includes('inpatient') && (
+                <label className="flex items-center gap-2 mt-3 mb-1 cursor-pointer" data-testid="toggle-census-constrained">
+                  <input
+                    type="checkbox"
+                    checked={assumptions.censusConstrained}
+                    onChange={(e) => {
+                      setAssumptions(prev => ({ ...prev, censusConstrained: e.target.checked }));
+                      if (updateState) updateState({ censusConstrained: e.target.checked });
+                    }}
+                    className="w-4 h-4 rounded border-[#D1D5DB] text-[#EA2C00] accent-[#EA2C00]"
+                  />
+                  <span className="text-xs text-[#666666]">This hospital is census-constrained — freed beds are typically refilled</span>
+                </label>
+              )}
               <div className="mt-4 pt-4 border-t border-[#E5E5E5] flex items-center justify-between">
                 <span className="text-xs text-[#666666]">Estimated impact</span>
                 <span className="text-lg font-bold text-[#EA2C00]">{fmtRange(Math.round(fin.patientFlowLow), Math.round(fin.patientFlowHigh))} / year</span>

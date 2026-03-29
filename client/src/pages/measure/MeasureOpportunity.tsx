@@ -12,6 +12,8 @@ import {
   computeDomainStatus,
   getMonthsFromGoLive,
   getActiveMetrics,
+  CONFIDENCE_LABELS,
+  EM_TO_WRVU,
 } from "@/lib/measureCalculator";
 
 const STAGES: { key: MaturityStage; label: string }[] = [
@@ -102,22 +104,19 @@ function computeConfirmedRange(state: MeasureState, streamStates?: Record<string
     const wrvuMetric = activeMetrics.find(m =>
       ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === s)
     );
-    const wrvuDelta = (wrvuMetric?.after ?? (s === primarySetting ? (state.documentationQuality.wrvuWith ?? 0) : 0)) -
+    const measuredWrvuD = (wrvuMetric?.after ?? (s === primarySetting ? (state.documentationQuality.wrvuWith ?? 0) : 0)) -
       (wrvuMetric?.before ?? (s === primarySetting ? (state.documentationQuality.wrvuWithout ?? 0) : 0));
-    if (wrvuDelta > 0 && emEligibleEncounters > 0) {
-      const base = wrvuDelta * emEligibleEncounters * cf;
-      billingLow += base * attrLow * realLow;
-      billingHigh += base * attrHigh * realHigh;
-    }
 
     const emMetric = activeMetrics.find(m =>
       ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === s)
     );
-    const emDelta = (emMetric?.after ?? (s === primarySetting ? (state.documentationQuality.emLevelWith ?? 0) : 0)) -
-      (emMetric?.before ?? (s === primarySetting ? (state.documentationQuality.emLevelWithout ?? 0) : 0));
-    if (emDelta > 0 && emEligibleEncounters > 0) {
-      const undercaptureRate = 0.35;
-      const base = emDelta * emEligibleEncounters * undercaptureRate * 45;
+    const emB = emMetric?.before ?? (s === primarySetting ? (state.documentationQuality.emLevelWithout ?? 0) : 0);
+    const emA = emMetric?.after ?? (s === primarySetting ? (state.documentationQuality.emLevelWith ?? 0) : 0);
+    const impliedWrvuDelta = (EM_TO_WRVU[Math.round(emA)] ?? 0) - (EM_TO_WRVU[Math.round(emB)] ?? 0);
+
+    const wrvuDelta = measuredWrvuD > 0 ? measuredWrvuD : Math.max(0, impliedWrvuDelta);
+    if (wrvuDelta > 0 && emEligibleEncounters > 0) {
+      const base = wrvuDelta * emEligibleEncounters * cf;
       billingLow += base * attrLow * realLow;
       billingHigh += base * attrHigh * realHigh;
     }
@@ -144,6 +143,43 @@ function computeConfirmedRange(state: MeasureState, streamStates?: Record<string
         const recovered = (lwbsDelta / 100) * edTotalEncounters * 12;
         recoveryLow += recovered * 480 * attrLow;
         recoveryHigh += recovered * 480 * attrHigh;
+      }
+    }
+
+    if (s === 'inpatient') {
+      const ipData = state.settingData?.inpatient || {};
+      const alosMetric = activeMetrics.find(m =>
+        ['lengthOfStay', 'alos', 'averageLengthOfStay'].includes(m.metricId)
+      );
+      const alosBefore = alosMetric?.before ?? (ipData.lengthOfStay_before ?? 0);
+      const alosAfter = alosMetric?.after ?? (ipData.lengthOfStay_after ?? 0);
+      const alosDelta = Math.max(0, alosBefore - alosAfter);
+      const ipEncounters = ipData.deploy_totalEncounters || (activeSettings.length === 1 ? totalEncounters : 0);
+
+      if (alosDelta > 0 && ipEncounters > 0) {
+        const costPerBedDay = 2500;
+        const costBase = alosDelta * ipEncounters * costPerBedDay;
+        pfLow += costBase * attrLow;
+        pfHigh += costBase * attrHigh;
+
+        const censusConstrained = state.censusConstrained ?? false;
+        if (censusConstrained) {
+          const revBase = alosDelta * ipEncounters * 8000 * 0.3;
+          pfLow += revBase * attrLow;
+          pfHigh += revBase * attrHigh;
+        }
+      }
+
+      const readmitMetric = activeMetrics.find(m =>
+        ['readmissionRate', 'readmission_rate', '30dayReadmission'].includes(m.metricId)
+      );
+      const readmitB = readmitMetric?.before ?? (ipData.readmissionRate_before ?? 0);
+      const readmitA = readmitMetric?.after ?? (ipData.readmissionRate_after ?? 0);
+      const readmitDelta = Math.max(0, readmitB - readmitA);
+      if (readmitDelta > 0 && ipEncounters > 0) {
+        const base = (readmitDelta / 100) * ipEncounters * 15000;
+        pfLow += base * attrLow;
+        pfHigh += base * attrHigh;
       }
     }
   }
@@ -228,6 +264,17 @@ export default function MeasureOpportunity({
   const confirmed = useMemo(() => computeConfirmedRange(state), [state]);
   const enabledConfirmed = useMemo(() => computeConfirmedRange(state, state.streamStates), [state]);
   const hasConfirmedValue = confirmed.low > 0;
+  const confirmedMid = Math.round((enabledConfirmed.low + enabledConfirmed.high) / 2);
+  const annualContractValue = state.deployment.annualContractValue || 0;
+  const confidenceLabel = CONFIDENCE_LABELS[ctx.maturityStage] || 'Estimate';
+
+  const roiMetrics = useMemo(() => {
+    if (annualContractValue <= 0 || confirmedMid <= 0) return null;
+    const roiMultiple = (confirmedMid / annualContractValue).toFixed(1);
+    const paybackMonths = Math.round(annualContractValue / (confirmedMid / 12));
+    const netValue = confirmedMid - annualContractValue;
+    return { roiMultiple, paybackMonths, netValue };
+  }, [annualContractValue, confirmedMid]);
 
   const providers = state.deployment.providers || state.deployment.mruProviders || 0;
   const totalProviders = state.deployment.totalProviders || providers;
@@ -462,6 +509,35 @@ export default function MeasureOpportunity({
             </div>
           )}
         </motion.div>
+
+        {roiMetrics && (
+          <motion.div
+            className="bg-[#1A1A1A] rounded-xl p-6 mb-6"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            data-testid="card-roi"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Return on Investment</p>
+              <span className="text-[10px] text-white/30 uppercase tracking-wide">{confidenceLabel}</span>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-roi-multiple">{roiMetrics.roiMultiple}×</p>
+                <p className="text-xs text-white/40 mt-1">ROI ratio</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white" data-testid="text-payback-months">{roiMetrics.paybackMonths}mo</p>
+                <p className="text-xs text-white/40 mt-1">Payback period</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white" data-testid="text-net-value">{fmt(roiMetrics.netValue)}</p>
+                <p className="text-xs text-white/40 mt-1">Net value</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}

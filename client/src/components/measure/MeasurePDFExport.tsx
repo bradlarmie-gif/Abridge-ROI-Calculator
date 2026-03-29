@@ -9,7 +9,7 @@ import {
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import type { MeasureState, MeasureCareSetting } from "@/lib/measureCalculator";
-import { getActiveMetrics, getMonthsFromGoLive } from "@/lib/measureCalculator";
+import { getActiveMetrics, getMonthsFromGoLive, EM_TO_WRVU, CONFIDENCE_LABELS } from "@/lib/measureCalculator";
 import {
   OUTPATIENT_METRICS,
   ED_METRICS,
@@ -166,34 +166,34 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
     const wrvuMetric = activeMetrics.find(m =>
       ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === cs)
     );
-    const wrvuD = wrvuMetric
+    const measuredWrvuD = wrvuMetric
       ? (wrvuMetric.after ?? 0) - (wrvuMetric.before ?? 0)
       : cs === setting ? (state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout) : 0;
+
+    const emMetric = activeMetrics.find(m =>
+      ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === cs)
+    );
+    const emB = emMetric
+      ? (emMetric.before ?? 0)
+      : cs === setting ? state.documentationQuality.emLevelWithout : 0;
+    const emA = emMetric
+      ? (emMetric.after ?? 0)
+      : cs === setting ? state.documentationQuality.emLevelWith : 0;
+    const impliedWrvuDelta = (EM_TO_WRVU[Math.round(emA)] ?? 0) - (EM_TO_WRVU[Math.round(emB)] ?? 0);
+
+    const wrvuD = measuredWrvuD > 0 ? measuredWrvuD : Math.max(0, impliedWrvuDelta);
+    const wrvuSource = measuredWrvuD > 0 ? 'measured' : (impliedWrvuDelta > 0 ? 'implied from E/M levels' : null);
 
     if (wrvuD > 0 && sAdopted > 0) {
       const base = wrvuD * sAdopted * cf;
       billLo += base * attrLo * realLo;
       billHi += base * attrHi * realHi;
+      const sourceNote = wrvuSource === 'implied from E/M levels'
+        ? ` (implied from E/M ${emB.toFixed(0)}\u2192${emA.toFixed(0)})`
+        : '';
       billDetails.push({
-        label: `wRVU lift: +${wrvuD.toFixed(2)} per encounter${activeSettings.length > 1 ? ` (${settingShort(cs)})` : ''}`,
+        label: `wRVU lift: +${wrvuD.toFixed(2)} per encounter${sourceNote}${activeSettings.length > 1 ? ` (${settingShort(cs)})` : ''}`,
         formula: `+${wrvuD.toFixed(2)} wRVU \u00D7 ${fmtN(sAdopted)} encounters \u00D7 $${cf}/wRVU \u00D7 ${DEFAULT_ASMP.realization}% realization`,
-      });
-    }
-
-    const emMetric = activeMetrics.find(m =>
-      ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === cs)
-    );
-    const emD = emMetric
-      ? (emMetric.after ?? 0) - (emMetric.before ?? 0)
-      : cs === setting ? (state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout) : 0;
-
-    if (emD > 0 && sAdopted > 0) {
-      const base = emD * sAdopted * 45;
-      billLo += base * attrLo * realLo;
-      billHi += base * attrHi * realHi;
-      billDetails.push({
-        label: `E/M level improvement: +${emD.toFixed(1)} levels${activeSettings.length > 1 ? ` (${settingShort(cs)})` : ''}`,
-        formula: `+${emD.toFixed(1)} E/M \u00D7 ${fmtN(sAdopted)} encounters \u00D7 ~$45/level`,
       });
     }
 
@@ -270,13 +270,25 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
     const alosD = Math.max(0, alosBefore - alosAfter);
     const ipEnc = ipData.deploy_totalEncounters || (activeSettings.length === 1 ? totalEncounters : 0);
     if (alosD > 0 && ipEnc > 0) {
-      const base = alosD * ipEnc * DEFAULT_ASMP.costPerBedDay;
-      pfLo += base * attrLo;
-      pfHi += base * attrHi;
+      const costBase = alosD * ipEnc * DEFAULT_ASMP.costPerBedDay;
+      pfLo += costBase * attrLo;
+      pfHi += costBase * attrHi;
       pfDetails.push({
-        label: `ALOS reduction: ${alosBefore.toFixed(1)} \u2192 ${alosAfter.toFixed(1)} days`,
+        label: `ALOS cost avoidance: ${alosBefore.toFixed(1)} \u2192 ${alosAfter.toFixed(1)} days`,
         formula: `${alosD.toFixed(1)} days \u00D7 ${fmtN(ipEnc)} admissions \u00D7 $${DEFAULT_ASMP.costPerBedDay.toLocaleString()}/bed day`,
       });
+
+      const censusConstrained = state.censusConstrained ?? false;
+      if (censusConstrained) {
+        const revPerAdmission = 8000;
+        const revBase = alosD * ipEnc * revPerAdmission * 0.3;
+        pfLo += revBase * attrLo;
+        pfHi += revBase * attrHi;
+        pfDetails.push({
+          label: `ALOS throughput revenue (census-constrained)`,
+          formula: `${alosD.toFixed(1)} days \u00D7 ${fmtN(ipEnc)} \u00D7 $${revPerAdmission.toLocaleString()} \u00D7 30% refill`,
+        });
+      }
     }
   }
 
@@ -431,7 +443,7 @@ function computeFinancials(state: MeasureState, streamStates?: Record<string, bo
     hasPF: pfLo > 0, pfLo, pfHi, pfDetails,
     hasCap: capLo > 0, capLo, capHi,
     hasCost: costLo > 0, costLo, costHi, costDetails,
-    totalLo, totalHi, hasAny: totalLo > 0,
+    totalLo, totalHi, totalMid: Math.round((totalLo + totalHi) / 2), hasAny: totalLo > 0,
     attrRange: `${Math.round(attrLo * 100)}\u2013${Math.round(attrHi * 100)}%`,
     enabledStreams,
     excludedStreams,
@@ -629,8 +641,25 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
 
             <View style={[s.card, { alignItems: "center", paddingVertical: 20, marginBottom: 16 }]}>
               <Text style={{ fontSize: 28, fontWeight: "bold", color: C.orange }}>{fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))}</Text>
-              <Text style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>estimated annual financial impact (attribution: {fin.attrRange})</Text>
+              <Text style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>{CONFIDENCE_LABELS[maturityLabels[maturityIdx].toLowerCase()] || 'Estimate'} (attribution: {fin.attrRange})</Text>
             </View>
+
+            {(state.deployment.annualContractValue ?? 0) > 0 && fin.totalMid > 0 && (
+              <View style={[s.card, { flexDirection: "row", justifyContent: "space-around", paddingVertical: 14, marginBottom: 14, backgroundColor: "#1A1A1A" }]}>
+                <View style={{ alignItems: "center" }}>
+                  <Text style={{ fontSize: 18, fontWeight: "bold", color: C.orange }}>{(fin.totalMid / (state.deployment.annualContractValue || 1)).toFixed(1)}\u00D7</Text>
+                  <Text style={{ fontSize: 8, color: "#FFFFFF80", marginTop: 2 }}>ROI ratio</Text>
+                </View>
+                <View style={{ alignItems: "center" }}>
+                  <Text style={{ fontSize: 18, fontWeight: "bold", color: "#FFFFFF" }}>{Math.round((state.deployment.annualContractValue || 0) / (fin.totalMid / 12))}mo</Text>
+                  <Text style={{ fontSize: 8, color: "#FFFFFF80", marginTop: 2 }}>Payback period</Text>
+                </View>
+                <View style={{ alignItems: "center" }}>
+                  <Text style={{ fontSize: 18, fontWeight: "bold", color: "#FFFFFF" }}>{fmtC(fin.totalMid - (state.deployment.annualContractValue || 0))}</Text>
+                  <Text style={{ fontSize: 8, color: "#FFFFFF80", marginTop: 2 }}>Net value</Text>
+                </View>
+              </View>
+            )}
 
             {fin.excludedStreams.length > 0 && (
               <View style={{ marginBottom: 14, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: "#FAF8F5", borderRadius: 6 }}>

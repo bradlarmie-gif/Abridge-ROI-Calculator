@@ -18,6 +18,7 @@ export interface MeasureDeployment {
   encounterCoverageRate: number;
   mruActivationRate: number;
   monthsOnAbridge: number;
+  annualContractValue?: number;
 }
 
 export interface DocumentationQuality {
@@ -168,7 +169,17 @@ export interface MeasureState {
   streamStates?: Record<string, boolean>;
   emEligibilityRate?: number;
   maEncounterPct?: number;
+  censusConstrained?: boolean;
 }
+
+export const CONFIDENCE_LABELS: Record<string, string> = {
+  unmeasured: 'Benchmark estimate',
+  signaling: 'Directional estimate',
+  validated: 'Based on measured outcomes',
+  strategic: 'Financially documented',
+};
+
+export const EM_TO_WRVU: Record<number, number> = { 1: 0.48, 2: 0.93, 3: 1.40, 4: 1.92, 5: 2.80 };
 
 export const DEFAULT_STREAM_STATES: Record<string, boolean> = {
   billingCapture: true,
@@ -197,6 +208,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     encounterCoverageRate: 0,
     mruActivationRate: 0,
     monthsOnAbridge: 0,
+    annualContractValue: 0,
   },
   documentationQuality: {
     wrvuWithout: 0,

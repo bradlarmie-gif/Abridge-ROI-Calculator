@@ -147,6 +147,9 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
             ? Math.round((parsed.deployment.mruProviders / parsed.deployment.liveProviders) * 100)
             : 0;
         }
+        if (parsed.deployment.annualContractValue === undefined) {
+          parsed.deployment.annualContractValue = 0;
+        }
       }
       return parsed as MeasureState;
     }

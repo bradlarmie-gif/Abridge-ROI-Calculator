@@ -1,0 +1,144 @@
+ REPLIT PROMPT — Multi-setting data integrity + breakdown display (MeasureDataEntry.tsx + MeasureAllocate.tsx + measureCalculator.ts)                                                                       
+                                              
+  ---                                     
+  Fix 1 — Require per-setting inputs when multiple settings are active
+                                                                                                                                                                                                               
+  In MeasureDataEntry.tsx, find the encounter and provider input section. When activeCareSettings.length > 1, replace the single global inputs with a per-setting breakdown:
+                                                                                                                                                                                                               
+  {activeCareSettings.length > 1 ? (                                                                                                                                                                         
+    <div className="mt-4">
+      <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-wide mb-3">                                                                                                                        
+        Enter counts per care setting to prevent double-counting
+      </p>                                                                                                                                                                                                     
+      {activeCareSettings.map(setting => (                                                                                                                                                                   
+        <div key={setting} className="mb-4 p-4 bg-[#F5F0EB] rounded-lg">                                                                                                                                       
+          <p className="text-xs font-semibold text-[#525252] uppercase tracking-wide mb-3">                                                                                                                    
+            {settingLabel(setting)}                                                                                                                                                                            
+          </p>                                                                                                                                                                                                 
+          <div className="grid grid-cols-2 gap-3">                                                                                                                                                             
+            <div>                                                                                                                                                                                              
+              <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">                                                                                                                
+                Providers                                                                                                                                                                                      
+              </label>                                                                                                                                                                                         
+              <FormattedNumberInput
+                value={state.settingData?.[setting]?.deploy_providers}                                                                                                                                         
+                onChange={v => updateSettingData(setting, 'deploy_providers', v)}                                                                                                                            
+                placeholder="e.g. 30"                                                                                                                                                                          
+              />                                                                                                                                                                                             
+            </div>                                                                                                                                                                                             
+            <div>                                                                                                                                                                                              
+              <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">                                                                                                                
+                Annual Encounters                                                                                                                                                                              
+              </label>                                                                                                                                                                                       
+              <FormattedNumberInput                                                                                                                                                                            
+                value={state.settingData?.[setting]?.deploy_totalEncounters}
+                onChange={v => updateSettingData(setting, 'deploy_totalEncounters', v)}                                                                                                                        
+                placeholder="e.g. 60,000"                                                                                                                                                                    
+              />
+            </div>                                                                                                                                                                                             
+          </div>                              
+        </div>                                                                                                                                                                                                 
+      ))}                                                                                                                                                                                                    
+      <p className="text-[10px] text-[#AAAAAA] italic mt-2">                                                                                                                                                   
+        If providers work across both settings, count them in their primary setting only.
+      </p>                                                                                                                                                                                                     
+    </div>                                                                                                                                                                                                   
+  ) : (                                                                                                                                                                                                        
+    // existing single-setting inputs unchanged                                                                                                                                                                
+  )}                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Show a validation warning at the bottom of the screen if multiple settings are active but any setting is missing its encounter count — don't block progress, but make it visible:                          
+  {activeCareSettings.length > 1 && missingSplitData && (                                                                                                                                                      
+    <div className="flex gap-2 bg-[#FFFBEB] border border-[#F59E0B]/30 rounded-lg p-3 mt-4">                                                                                                                 
+      <span className="text-[#92400E] text-sm">⚠</span>                                                                                                                                                        
+      <p className="text-xs text-[#92400E]">           
+        Using global encounter count for all settings. Enter per-setting counts above for accurate calculations.                                                                                               
+      </p>                                                                                                                                                                                                     
+    </div>                                                                                                                                                                                                     
+  )}                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 2 — Use setting-specific providers and encounters in calculations                                                                                                                                        
+                                                                                                                                                                                                             
+  In measureCalculator.ts and MeasureAllocate.tsx, inside the for (const s of activeSettings) loop, resolve providers and encounters per setting:
+                                              
+  for (const s of activeSettings) {                                                                                                                                                                            
+    const sSettingData = state.settingData?.[s] || {};
+                                                                                                                                                                                                               
+    // Use setting-specific counts if entered; otherwise divide global by setting count                                                                                                                      
+    const sProviders = sSettingData.deploy_providers                                                                                                                                                           
+      ?? Math.round(providers / activeSettings.length); // fallback: split evenly                                                                                                                              
+                                                                                                                                                                                                               
+    const sEncounters = sSettingData.deploy_totalEncounters                                                                                                                                                    
+      ?? Math.round(totalEncounters / activeSettings.length); // fallback: split evenly                                                                                                                        
+                                                                                                                                                                                                               
+    const sAdoptedEncounters = Math.round(sEncounters * (utilizationRate / 100));
+                                                                                                                                                                                                               
+    // Use sProviders and sAdoptedEncounters for all calculations in this setting                                                                                                                            
+    // NOT the global providers or adoptedEncounters                                                                                                                                                           
+  }                                           
+                                                                                                                                                                                                               
+  The even-split fallback (÷ activeSettings.length) is not ideal but it's better than double-counting the full pool. The warning in Fix 1 prompts the user to enter real splits.                             
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+  Fix 3 — Show per-setting breakdown in financial output                                                                                                                                                       
+                                                                                                                                                                                                             
+  In MeasureAllocate.tsx, change computeFinancials() to return a settingBreakdown array alongside the total:                                                                                                   
+                                                                                                                                                                                                             
+  // In computeFinancials return object, add:
+  settingBreakdown: activeSettings.map(s => ({
+    setting: s,                                                                                                                                                                                                
+    label: settingLabel(s),               
+    providers: sProvidersBySetting[s],                                                                                                                                                                         
+    encounters: sEncountersBySetting[s],                                                                                                                                                                       
+    billingLow: billingBySetting[s].low,
+    billingHigh: billingBySetting[s].high,                                                                                                                                                                     
+    totalLow: totalBySetting[s].low,                                                                                                                                                                         
+    totalHigh: totalBySetting[s].high,        
+  }))                                                                                                                                                                                                          
+   
+  In the UI, when activeSettings.length > 1, show a breakdown table below the hero total:                                                                                                                      
+                                                                                                                                                                                                             
+  {fin.activeSettings.length > 1 && (                                                                                                                                                                          
+    <div className="mt-6 rounded-xl border border-[#E5E5E5] overflow-hidden">                                                                                                                                  
+      <table className="w-full text-sm">      
+        <thead>                                                                                                                                                                                                
+          <tr className="bg-[#F5F0EB]">                                                                                                                                                                        
+            <th className="text-left p-3 text-[11px] font-semibold text-[#666666] uppercase tracking-wide">Setting</th>                                                                                        
+            <th className="text-right p-3 text-[11px] font-semibold text-[#666666] uppercase tracking-wide">Providers</th>                                                                                     
+            <th className="text-right p-3 text-[11px] font-semibold text-[#666666] uppercase tracking-wide">Encounters</th>                                                                                    
+            <th className="text-right p-3 text-[11px] font-semibold text-[#666666] uppercase tracking-wide">Value Range</th>                                                                                 
+          </tr>                                                                                                                                                                                                
+        </thead>                          
+        <tbody>                                                                                                                                                                                                
+          {fin.settingBreakdown.map(row => (                                                                                                                                                                   
+            <tr key={row.setting} className="border-t border-[#E5E5E5]">                                                                                                                                       
+              <td className="p-3 font-medium text-black">{row.label}</td>                                                                                                                                      
+              <td className="p-3 text-right text-[#525252]">{row.providers}</td>                                                                                                                             
+              <td className="p-3 text-right text-[#525252]">{row.encounters.toLocaleString()}</td>
+              <td className="p-3 text-right font-semibold text-black">                                                                                                                                         
+                {fmt(row.totalLow)}–{fmt(row.totalHigh)}                                                                                                                                                       
+              </td>                                                                                                                                                                                            
+            </tr>                                                                                                                                                                                              
+          ))}                                                                                                                                                                                                
+          <tr className="border-t-2 border-[#1A1A1A] bg-[#F5F0EB]">                                                                                                                                            
+            <td className="p-3 font-bold text-black" colSpan={3}>Total</td>                                                                                                                                  
+            <td className="p-3 text-right font-bold text-black">                                                                                                                                               
+              {fmt(fin.totalLow)}–{fmt(fin.totalHigh)}                                                                                                                                                       
+            </td>                                                                                                                                                                                              
+          </tr>                                                                                                                                                                                                
+        </tbody>                                                                                                                                                                                               
+      </table>                                                                                                                                                                                                 
+    </div>                                                                                                                                                                                                     
+  )}                                                                                                                                                                                                         
+
+  Include the same breakdown table in MeasurePDFExport.tsx when multiple settings are active.
+                                          
+  ---
+  Verification:                                                                                                                                                                                                
+  - When 2+ settings are active, Partner Profile shows per-setting provider and encounter inputs
+  - If per-setting counts are missing, a yellow warning appears (non-blocking)                                                                                                                                 
+  - Calculations use setting-specific provider/encounter counts; fallback is even split of global total                                                                                                      
+  - Financial output shows a breakdown table by setting when 2+ settings active                        
+  - PDF includes the same per-setting breakdown table                          
+  - Single-setting flow unchanged          
