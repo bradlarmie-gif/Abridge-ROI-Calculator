@@ -239,6 +239,17 @@ export default function MeasureOpportunity({
   const showAddSetting = (state.activeCareSettings || [setting]).length <= 1;
   const allFullyDeployed = !showDeepenAdoption && !showExpandProviders && !showAddSetting;
 
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const minAdoptionTarget = Math.min(100, Math.max(Math.ceil(utilizationRate) + 5, 60));
+  const [targetAdoption, setTargetAdoption] = useState(() =>
+    Math.min(100, Math.max(minAdoptionTarget, 75))
+  );
+  const maxProviderTarget = Math.max(totalProviders, providers + 1);
+  const [targetProviderCount, setTargetProviderCount] = useState(() =>
+    totalProviders > providers ? totalProviders : providers + 1
+  );
+
   const deepenValue = useMemo(() => {
     if (!hasConfirmedValue || utilizationRate <= 0 || targetAdoption <= utilizationRate) return null;
     const scale = targetAdoption / utilizationRate;
@@ -294,17 +305,6 @@ export default function MeasureOpportunity({
 
     return moves.slice(0, 4);
   }, [utilizationRate, activeMetricCount, ctx.maturityStage, orgName]);
-
-  const [pdfLoading, setPdfLoading] = useState(false);
-
-    const minAdoptionTarget = Math.min(100, Math.max(Math.ceil(utilizationRate) + 5, 60));
-    const [targetAdoption, setTargetAdoption] = useState(() =>
-      Math.min(100, Math.max(minAdoptionTarget, 75))
-    );
-    const maxProviderTarget = Math.max(totalProviders, providers + 1);
-    const [targetProviderCount, setTargetProviderCount] = useState(() =>
-      totalProviders > providers ? totalProviders : providers + 1
-    );
 
   const handleExport = async () => {
     setPdfLoading(true);
