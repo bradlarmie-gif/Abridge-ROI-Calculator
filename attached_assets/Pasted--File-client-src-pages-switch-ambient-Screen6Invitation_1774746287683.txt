@@ -1,0 +1,142 @@
+ File: client/src/pages/switch/ambient/Screen6Invitation.tsx                                                                                                                                                  
+                                                                                                                                                                                                               
+  Five targeted changes. No layout changes. No new sections.                                                                                                                                                   
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  CHANGE 1 — Add getArchetypeName helper function                                                                                                                                                              
+                                                                                                                                                                                                               
+  Add this function after getScoreBandLabel (around line 222), before the BENCHMARK_CONTRAST constant:                                                                                                         
+                                                                                                          
+  function getArchetypeName(domainLevelsMap: Record<Domain, number>): string {                                                                                                                                 
+    const high = DOMAIN_ORDER.filter(d => domainLevelsMap[d] >= 3);
+    const unmeasured = DOMAIN_ORDER.filter(d => domainLevelsMap[d] === 1);                                                                                                                                     
+    const allL1 = unmeasured.length === 4;                                                                
+    const allHigh = DOMAIN_ORDER.every(d => domainLevelsMap[d] >= 3);                                                                                                                                          
+                                                                                                                                                                                                               
+    if (allL1) return 'Live. Not Yet Measured.';
+    if (allHigh) return 'Strategic Maturity.';                                                                                                                                                                 
+                                                                                                                                                                                                               
+    if (high.length === 0) {                  
+      const l2count = DOMAIN_ORDER.filter(d => domainLevelsMap[d] === 2).length;                                                                                                                               
+      if (l2count >= 3) return 'Early Measurement Across All Domains.';                                   
+      return 'Measuring the Basics. Opportunity Ahead.';                                                                                                                                                       
+    }                                     
+    if (high.length >= 3) return 'Measuring Across Most Domains.';                                                                                                                                             
+                                                                                                                                                                                                               
+    if (high.length === 1) {
+      const d = high[0];                                                                                                                                                                                       
+      const names: Record<Domain, string> = {                                                             
+        capacity: 'Time Captured. Financial Story Unwritten.',
+        revenue: 'Revenue Signal Measured. Ecosystem Unmeasured.',
+        workforce: 'Provider Experience Quantified. Broader Picture Unmeasured.',                                                                                                                              
+        risk: 'Quality Infrastructure Present. Value Chain Not Yet Built.',
+      };                                                                                                                                                                                                       
+      return names[d];                                                                                    
+    }                                                                                                                                                                                                          
+   
+    const pair = [...high].sort().join('+');                                                                                                                                                                   
+    const pairMap: Record<string, string> = {                                                             
+      'capacity+revenue': 'Operational and Financial Capture Underway.',
+      'capacity+workforce': 'Provider and Operational Value Captured.',
+      'capacity+risk': 'Operations and Quality Tracked. Revenue and Workforce Unmeasured.',
+      'revenue+workforce': 'Financial and Provider Value Both Measured.',
+      'revenue+risk': 'Financial and Clinical Intelligence Present.',                                                                                                                                          
+      'risk+workforce': 'Clinical Quality and Provider Experience Measured.',
+    };                                                                                                                                                                                                         
+    return pairMap[pair] || 'Multiple Domains Measured.';                                                                                                                                                      
+  }                                           
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  CHANGE 2 — Add archetypeName useMemo, remove heroNarrative                                                                                                                                                   
+                                                            
+  Inside the component, after the scoreBandLabel line and before invitationCopy:                                                                                                                               
+                                                                                                          
+  DELETE the entire heroNarrative useMemo block (it's computed but never rendered):
+  // DELETE THIS ENTIRE BLOCK:            
+  const heroNarrative = useMemo(() => {                                                                                                                                                                        
+    const domainLevels: Record<string, number> = {};                                                                                                                                                           
+    for (const d of DOMAIN_ORDER) {                                                                                                                                                                            
+      domainLevels[d] = domainData[d]?.activationLevel || 1;                                                                                                                                                   
+    }                                                                                                     
+    return getHeroNarrative(domainLevels);    
+  }, [domainData]);                                                                                                                                                                                            
+   
+  ADD this useMemo in its place:                                                                                                                                                                               
+  const archetypeName = useMemo(() => {                                                                   
+    const domainLevelsMap = {} as Record<Domain, number>;                                                                                                                                                      
+    for (const d of DOMAIN_ORDER) {                                                                       
+      domainLevelsMap[d] = domainData[d]?.activationLevel || 1;
+    }
+    return getArchetypeName(domainLevelsMap);                                                                                                                                                                  
+  }, [domainData]);                       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  CHANGE 3 — Rewrite invitationCopy
+                                                                                                                                                                                                               
+  Replace the entire invitationCopy useMemo with this:                                                    
+
+  const invitationCopy = useMemo(() => {                                                                                                                                                                       
+    const tenure = inputs.deploymentTenure || '';
+    const band = tenureScoreBand(totalScore);                                                                                                                                                                  
+                                                                                                          
+    const opening = `Based on your profile — ${archetypeName} — here's what the organizations that move fastest have in common.`;
+                                                                                                                                                                                                               
+    const bodies: Record<'low' | 'mid' | 'high', string> = {
+      low: `They have a measurement program — not just a deployment. A structured CDI and coding review process connected to their ambient data. A formal provider satisfaction measurement program that runs  
+  on a cadence. Executive ownership of the maturity roadmap, not just the technology. Your current profile is the most common starting point for organizations that reach Level 3+ within 12 months — not 
+  because the gap is small, but because the gap is now visible.`,                                                                                                                                              
+      mid: `They used the signal they'd already built to accelerate what hadn't been measured yet — not one domain at a time, but as a connected program. The measurement infrastructure you've started is the 
+  hardest part to build from scratch. You're not starting from scratch. The question is what gets prioritized in the next planning cycle.`,                                                                    
+      high: `They governed it — ensuring the measurement capability is institutional, not dependent on individual champions, and that it scales as the deployment grows. Your profile is closer to that 
+  frontier than most. The question is whether that's owned by the organization or by a few people inside it.`,                                                                                                 
+    };                                                                                                                                                                                                         
+   
+    const tenureAppends: Record<string, string> = {                                                                                                                                                            
+      '0-6': "At less than 6 months, you're in the window where measurement habits get set. The organizations that build them now don't have to rebuild them at 24 months.",
+      '6-12': "At 6–12 months, the deployment is stable. The question is whether measurement becomes a program this cycle — or stays informal into year two.",                                                 
+      '12-24': "At 1–2 years, the foundation is there. The question is whether measurement becomes a program this cycle — or gets pushed to the next one.",                                                    
+      '24+': "At 2+ years, the conversation is different. It's not about building measurement habits — it's about what's already on the table, and what it takes to count it this year.",
+    };                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    return {                                                                                                                                                                                                   
+      opening,                                                                                                                                                                                                 
+      body: bodies[band],                                                                                                                                                                                      
+      tenureAppend: tenure ? tenureAppends[tenure] || '' : '',                                                                                                                                                 
+    };                                                                                                    
+  }, [inputs.deploymentTenure, totalScore, archetypeName]);
+
+  Note: add archetypeName to the dependency array.                                                                                                                                                             
+                                          
+  ---                                                                                                                                                                                                          
+  CHANGE 4 — Update invitationCopy dependency array                                                                                                                                                            
+                                                   
+  The invitationCopy useMemo previously depended on scoreBandLabel. Replace scoreBandLabel with archetypeName in the dependency array (already shown above).                                                   
+                                                                                                          
+  Also delete the getHeroNarrative function (lines ~376–383) since it's now unused:
+  // DELETE THIS ENTIRE FUNCTION:         
+  function getHeroNarrative(domainLevels: Record<string, number>): string {                                                                                                                                    
+    ...                                                                                                                                                                                                        
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  CHANGE 5 — Sidebar label update                                                                                                                                                                              
+                                 
+  In the right sidebar panel, find the "Not Yet Measured" label and update it to match Screen5's language:                                                                                                     
+                                                                                                          
+  Find:                                   
+  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Not Yet Measured</p>
+                                                                                                                                                                                                               
+  Replace with:                               
+  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Not Yet in the Picture</p>                                                                                              
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Summary of what changed:                                                                                                                                                                                     
+  - heroNarrative — deleted (was computed, never rendered, dead code)                                                                                                                                          
+  - getHeroNarrative function — deleted (now unused)                                                                                                                                                           
+  - archetypeName — new useMemo, derives the exact same archetype name as Screen3 so the invitation copy echoes back the profile the exec just saw
+  - invitationCopy.opening — "don't do it alone" vendor line → "based on your profile" advisor line referencing archetype by name                                                                              
+  - invitationCopy.body — minor: low/mid bodies cleaned up, same substance                                                       
+  - invitationCopy.tenureAppend['12-24'] — "urgency is real / every month goes uncounted" → "the foundation is there / question is this cycle or next"                                                         
+  - Sidebar "Not Yet Measured" → "Not Yet in the Picture" — matches Screen5 language                                                                  
+                                                                                                                                                                                                               
+  No other changes. All math, export logic, benchmark cards, roadmap cards, and layout untouched.

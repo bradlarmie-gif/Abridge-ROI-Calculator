@@ -223,6 +223,45 @@ function getScoreBandLabel(score: number): string {
   return "Full Capture";
 }
 
+function getArchetypeName(domainLevelsMap: Record<Domain, number>): string {
+  const high = DOMAIN_ORDER.filter(d => domainLevelsMap[d] >= 3);
+  const unmeasured = DOMAIN_ORDER.filter(d => domainLevelsMap[d] === 1);
+  const allL1 = unmeasured.length === 4;
+  const allHigh = DOMAIN_ORDER.every(d => domainLevelsMap[d] >= 3);
+
+  if (allL1) return 'Live. Not Yet Measured.';
+  if (allHigh) return 'Strategic Maturity.';
+
+  if (high.length === 0) {
+    const l2count = DOMAIN_ORDER.filter(d => domainLevelsMap[d] === 2).length;
+    if (l2count >= 3) return 'Early Measurement Across All Domains.';
+    return 'Measuring the Basics. Opportunity Ahead.';
+  }
+  if (high.length >= 3) return 'Measuring Across Most Domains.';
+
+  if (high.length === 1) {
+    const d = high[0];
+    const names: Record<Domain, string> = {
+      capacity: 'Time Captured. Financial Story Unwritten.',
+      revenue: 'Revenue Signal Measured. Ecosystem Unmeasured.',
+      workforce: 'Provider Experience Quantified. Broader Picture Unmeasured.',
+      risk: 'Quality Infrastructure Present. Value Chain Not Yet Built.',
+    };
+    return names[d];
+  }
+
+  const pair = [...high].sort().join('+');
+  const pairMap: Record<string, string> = {
+    'capacity+revenue': 'Operational and Financial Capture Underway.',
+    'capacity+workforce': 'Provider and Operational Value Captured.',
+    'capacity+risk': 'Operations and Quality Tracked. Revenue and Workforce Unmeasured.',
+    'revenue+workforce': 'Financial and Provider Value Both Measured.',
+    'revenue+risk': 'Financial and Clinical Intelligence Present.',
+    'risk+workforce': 'Clinical Quality and Provider Experience Measured.',
+  };
+  return pairMap[pair] || 'Multiple Domains Measured.';
+}
+
 const BENCHMARK_CONTRAST: Record<Domain, Record<ActivationLevel, { currentState: string; benchmarkPicture: string }>> = {
   capacity: {
     1: {
@@ -375,15 +414,6 @@ const ROADMAP_CARDS: Record<Domain, Record<ActivationLevel, { currentStateLabel:
   },
 };
 
-function getHeroNarrative(domainLevels: Record<string, number>): string {
-  const { capacity, workforce, risk, revenue } = domainLevels;
-  const atCeiling = [capacity, workforce, risk, revenue].filter(l => l === 4).length;
-  if (atCeiling === 4) return "You're operating at full maturity across all four domains. The opportunity now is sustaining and deepening.";
-  if (atCeiling >= 2) return "You've reached leading maturity in several domains. The remaining gaps are where your next unlock lives.";
-  if (revenue === 4) return "Documentation intelligence is driving your revenue strategy. Capacity, Workforce, and Quality are where the next level of value gets built.";
-  return "Your deployment is established. What follows is the specific path to making it work at full strategic scale.";
-}
-
 export default function Screen6Invitation({ onBack, onNavigateToExplore }: Screen6Props) {
   const { state } = useAssessment();
   const { inputs } = state;
@@ -506,12 +536,12 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
 
   const scoreBandLabel = getScoreBandLabel(totalScore);
 
-  const heroNarrative = useMemo(() => {
-    const domainLevels: Record<string, number> = {};
+  const archetypeName = useMemo(() => {
+    const domainLevelsMap = {} as Record<Domain, number>;
     for (const d of DOMAIN_ORDER) {
-      domainLevels[d] = domainData[d]?.activationLevel || 1;
+      domainLevelsMap[d] = domainData[d]?.activationLevel || 1;
     }
-    return getHeroNarrative(domainLevels);
+    return getArchetypeName(domainLevelsMap);
   }, [domainData]);
 
   const assessmentNarrative = useMemo(() => {
@@ -603,21 +633,20 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
   const invitationCopy = useMemo(() => {
     const tenure = inputs.deploymentTenure || '';
     const band = tenureScoreBand(totalScore);
-    const archetypeName = scoreBandLabel;
 
-    const opening = `The organizations that move from ${archetypeName} to Level 3+ across multiple domains in under 12 months don't do it alone.`;
+    const opening = `Based on your profile — ${archetypeName} — here's what the organizations that move fastest have in common.`;
 
     const bodies: Record<'low' | 'mid' | 'high', string> = {
-      low: `What they have in common isn't a better deployment — it's a measurement program. A structured CDI and coding review process connected to their ambient data. A formal provider satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the deployment. Your current profile — ${archetypeName} — is the most common starting point for organizations that reach Level 3+ within 12 months. Not because the gap is small. Because the gap is visible.`,
-      mid: `What they have in common is that the domains they've measured have given them leverage. The signal you've built is real. The organizations that move quickly from here use that signal to accelerate the unmeasured domains — not one at a time, but as a connected program. The measurement infrastructure you've started is the hardest part to build from scratch. You're not starting from scratch.`,
-      high: `What they have in common is governance — ensuring the measurement capability is institutional, not dependent on champions, and that it scales as the deployment grows. Your profile suggests you're closer to that frontier than most. The question is whether it's owned by the organization or by a few people inside it.`,
+      low: `They have a measurement program — not just a deployment. A structured CDI and coding review process connected to their ambient data. A formal provider satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the technology. Your current profile is the most common starting point for organizations that reach Level 3+ within 12 months — not because the gap is small, but because the gap is now visible.`,
+      mid: `They used the signal they'd already built to accelerate what hadn't been measured yet — not one domain at a time, but as a connected program. The measurement infrastructure you've started is the hardest part to build from scratch. You're not starting from scratch. The question is what gets prioritized in the next planning cycle.`,
+      high: `They governed it — ensuring the measurement capability is institutional, not dependent on individual champions, and that it scales as the deployment grows. Your profile is closer to that frontier than most. The question is whether that's owned by the organization or by a few people inside it.`,
     };
 
     const tenureAppends: Record<string, string> = {
-      '0-6': "At less than 6 months, you're in the window where the measurement habits get set. The organizations that build them now don't have to rebuild them at 24 months.",
-      '6-12': "At 6–12 months, you're at the decision point. The deployment is stable. The question is whether measurement becomes a program or stays informal.",
-      '12-24': "At 1–2 years, the opportunity is sharpening. Every month the measurement infrastructure doesn't exist, value that's already there goes uncounted.",
-      '24+': "At 2+ years, the conversation is different. It's not about building measurement habits. It's about what's been sitting on the table — and what it takes to count it this year.",
+      '0-6': "At less than 6 months, you're in the window where measurement habits get set. The organizations that build them now don't have to rebuild them at 24 months.",
+      '6-12': "At 6–12 months, the deployment is stable. The question is whether measurement becomes a program this cycle — or stays informal into year two.",
+      '12-24': "At 1–2 years, the foundation is there. The question is whether measurement becomes a program this cycle — or gets pushed to the next one.",
+      '24+': "At 2+ years, the conversation is different. It's not about building measurement habits — it's about what's already on the table, and what it takes to count it this year.",
     };
 
     return {
@@ -625,7 +654,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
       body: bodies[band],
       tenureAppend: tenure ? tenureAppends[tenure] || '' : '',
     };
-  }, [inputs.deploymentTenure, totalScore, scoreBandLabel]);
+  }, [inputs.deploymentTenure, totalScore, archetypeName]);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -912,7 +941,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
 
             {unmeasuredLow > 0 && (
               <div className="mb-4">
-                <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Not Yet Measured</p>
+                <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">Not Yet in the Picture</p>
                 <p className="font-bold text-lg text-white/45 leading-none">
                   {formatDollar(unmeasuredLow)}–{formatDollar(unmeasuredHigh)}
                 </p>
