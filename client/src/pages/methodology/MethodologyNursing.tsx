@@ -238,6 +238,16 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                         We use a 15-40% conversion rate depending on how documentation-driven your current OT is.
                       </p>
                     </div>
+                    <div className="bg-[#FFF8F0] border border-[#F59E0B]/30 rounded-lg p-4">
+                      <p className="text-[#888888] mb-2 font-medium">Why overtime works for nursing but not physicians</p>
+                      <p className="text-[#666666]">
+                        Nurses are hourly workers — overtime is a real, identifiable budget line that shows up in payroll. 
+                        This calculation is valid here. In outpatient, ED, and inpatient settings, physicians are salaried — we do 
+                        not apply an hourly rate to their time savings, because that cost doesn't exist in the budget. If someone 
+                        challenges this number, the answer is: pull your payroll system. The hours and the premium rate 
+                        are both measurable.
+                      </p>
+                    </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
                       <p className="text-[#888888] mb-1">Why this is defensible:</p>
                       <p className="text-[#666666]">
@@ -269,8 +279,11 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                         <li>Industry turnover: 15-25% annually (NSI Nursing Solutions, ANA surveys)</li>
                         <li>Burnout-related turnover: 30-50% of all turnover</li>
                         <li>Abridge impact: 10-25% of burnout-related turnover</li>
-                        <li>Replacement cost: $40,000-$65,000 per nurse</li>
+                        <li>Replacement cost: $50,000–$100,000 per nurse</li>
                       </ul>
+                      <p className="text-[#666666] mt-2 text-xs italic">
+                        NSI 2023 National Healthcare Retention Report. Lower end reflects standard RN; upper end reflects specialty/ICU nurses with longer training ramp.
+                      </p>
                     </div>
                     <p className="text-[#666666]">
                       We use conservative defaults (15% Abridge impact) because documentation is one of many 
@@ -398,6 +411,58 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
               </div>
             </CollapsibleSection>
 
+            {/* Section: What Goes Into the Number */}
+            <CollapsibleSection
+              sectionId="what-goes-in"
+              title="What Goes Into the Number"
+              subtitle="Exactly what the calculator uses — and what it doesn't"
+              defaultOpen={false}
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#D1D5DB]">
+                      <th className="text-left py-3 font-semibold text-black">Value Driver</th>
+                      <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
+                      <th className="text-left py-3 font-semibold text-black">Formula</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-[#666666]">
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Overtime reduction</td>
+                      <td className="py-3">✅ Yes (nursing only)</td>
+                      <td className="py-3">Hours saved × OT conversion rate × OT hourly rate × 52 weeks</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Nurse retention</td>
+                      <td className="py-3">✅ Yes (if survey data provided)</td>
+                      <td className="py-3">Turnovers avoided × $50K–$100K replacement cost</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Agency / locum spend</td>
+                      <td className="py-3">✅ Yes (if data provided)</td>
+                      <td className="py-3">Observed agency spend reduction × attribution %</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">Falls / HAPI prevention</td>
+                      <td className="py-3 text-[#F59E0B] font-medium">Potential value — shown separately</td>
+                      <td className="py-3">Current events × 5% doc-preventable rate × cost/event</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">HCAHPS improvement</td>
+                      <td className="py-3 text-[#F59E0B] font-medium">Signal only — not calculated</td>
+                      <td className="py-3">Too many confounding variables to attribute</td>
+                    </tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">CC/MCC support for inpatient</td>
+                      <td className="py-3">Not here — see Inpatient</td>
+                      <td className="py-3">Captured in CMI delta calculation</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CollapsibleSection>
+
             {/* Section 3: The Assumptions */}
             <CollapsibleSection
               sectionId="assumptions"
@@ -489,13 +554,13 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                         <TooltipTrigger asChild>
                           <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
                             <td className="py-3">Replacement cost</td>
-                            <td className="py-3">$40k-$65k</td>
-                            <td className="py-3">$52,000</td>
-                            <td className="py-3">NSI benchmark</td>
+                            <td className="py-3">$50K–$100K</td>
+                            <td className="py-3">$65,000</td>
+                            <td className="py-3">NSI 2023 Nursing Retention Report — varies by unit type and specialty</td>
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">NSI 2023 Report: Average cost of turnover for bedside RN is $46,100-$51,700. Includes recruiting, training, and productivity loss.</p>
+                          <p className="text-xs">NSI 2023 Report range: $46K–$52K for standard bedside RN. Specialty and ICU nurses carry higher replacement costs due to training and orientation time. We use $65K as a conservative midpoint.</p>
                         </TooltipContent>
                       </Tooltip>
                       <Tooltip>
@@ -543,7 +608,7 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                       <h4 className="font-semibold text-black text-sm uppercase tracking-wide">Direct & Measurable</h4>
                     </div>
                     <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                      <li><strong>Overtime hours:</strong> Payroll data, before/after comparison</li>
+                      <li><strong>Overtime hours:</strong> payroll data, before/after by unit. This is a hard dollar line — verifiable from your payroll system within 90 days.</li>
                       <li><strong>Documentation time:</strong> EHR time stamps, time studies</li>
                       <li><strong>Agency spend:</strong> Invoices, budget line items</li>
                     </ul>
@@ -570,6 +635,10 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
                       <li><strong>HCAHPS improvement:</strong> Many variables; can track but not attribute</li>
                     </ul>
                   </div>
+                </div>
+
+                <div className="bg-[#F5F0EB] rounded-lg p-4 text-sm text-[#666666] leading-relaxed">
+                  Nursing is the only care setting in this methodology where we monetize time savings directly through overtime. In physician settings (outpatient, ED, inpatient), physicians are salaried — time savings are modeled as capacity or retention signal, not as a payroll line.
                 </div>
 
                 <div className="border-l-2 border-[#EA2C00] pl-4">
