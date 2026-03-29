@@ -134,7 +134,7 @@ const DEFAULT_ASMP = {
   revenuePerVisit: 200,
 };
 
-function computeFinancials(state: MeasureState) {
+function computeFinancials(state: MeasureState, streamStates?: Record<string, boolean>) {
   const activeSettings = state.activeCareSettings?.length
     ? state.activeCareSettings
     : [state.careSetting || "outpatient"];
@@ -149,8 +149,8 @@ function computeFinancials(state: MeasureState) {
   const activeMetrics = getActiveMetrics(state);
 
   const attrMid = DEFAULT_ASMP.attribution / 100;
-  const attrLo = Math.max(0.30, attrMid - 0.12);
-  const attrHi = Math.min(0.95, attrMid + 0.12);
+  const attrLo = Math.max(0.50, attrMid - 0.12);
+  const attrHi = Math.min(0.75, attrMid + 0.12);
   const realLo = Math.max(0.40, DEFAULT_ASMP.realization / 100 - 0.10);
   const realHi = Math.min(0.99, DEFAULT_ASMP.realization / 100 + 0.10);
 
@@ -305,6 +305,7 @@ function computeFinancials(state: MeasureState) {
   const ahWithout = ahMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0;
   const ahWith = ahMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0;
   const ahDelta = Math.max(0, ahWithout - ahWith);
+  const isHourlyWorkforce = activeSettings.includes('nursing');
   if (ahDelta > 0 && providers > 0) {
     const metricDef = ahMetric ? METRIC_MAP.get(ahMetric.metricId) : undefined;
     const metricUnit = metricDef?.unit || '';
@@ -316,13 +317,20 @@ function computeFinancials(state: MeasureState) {
     } else {
       hrsPerWeek = ahDelta * 5;
     }
-    const annual = hrsPerWeek * providers * DEFAULT_ASMP.otPremiumRate * 52;
-    costLo += annual * attrLo;
-    costHi += annual * attrHi;
-    costDetails.push({
-      label: `After-hours OT premium reduction: \u2212${ahDelta.toFixed(1)} ${metricUnit || 'hrs/day'}/provider`,
-      formula: `${hrsPerWeek.toFixed(1)} hrs/wk \u00D7 ${providers} providers \u00D7 $${DEFAULT_ASMP.otPremiumRate}/hr OT \u00D7 52 wks`,
-    });
+    if (isHourlyWorkforce) {
+      const annual = hrsPerWeek * providers * DEFAULT_ASMP.otPremiumRate * 52;
+      costLo += annual * attrLo;
+      costHi += annual * attrHi;
+      costDetails.push({
+        label: `After-hours OT premium reduction: \u2212${ahDelta.toFixed(1)} ${metricUnit || 'hrs/day'}/provider`,
+        formula: `${hrsPerWeek.toFixed(1)} hrs/wk \u00D7 ${providers} providers \u00D7 $${DEFAULT_ASMP.otPremiumRate}/hr OT \u00D7 52 wks`,
+      });
+    } else {
+      costDetails.push({
+        label: `After-hours documentation reduced: \u2212${ahDelta.toFixed(1)} ${metricUnit || 'hrs/day'}/provider`,
+        formula: `${hrsPerWeek.toFixed(1)} hrs/wk recovered \u2192 tracked as wellbeing signal (physicians are salaried)`,
+      });
+    }
   }
 
   const agencyMetric = activeMetrics.find(m =>
@@ -349,9 +357,16 @@ function computeFinancials(state: MeasureState) {
     if (k.startsWith("burnout") && e.before > e.after) burnoutD = Math.max(burnoutD, e.before - e.after);
     if (k.startsWith("likelihood") && e.after > e.before) stayD = Math.max(stayD, e.after - e.before);
   }
+  const replacementRange: { low: number; high: number } = ({
+    outpatient: { low: 300_000, high: 500_000 },
+    ed:         { low: 350_000, high: 500_000 },
+    inpatient:  { low: 300_000, high: 500_000 },
+    nursing:    { low: 50_000,  high: 100_000 },
+  } as Record<string, { low: number; high: number }>)[setting] ?? { low: 250_000, high: 400_000 };
+
   if (burnoutD > 0 || stayD > 0) {
-    retentionLo = 1 * 50_000 * attrLo;
-    retentionHi = 3 * 150_000 * attrHi;
+    retentionLo = 1 * replacementRange.low * attrLo;
+    retentionHi = 3 * replacementRange.high * attrHi;
     costLo += retentionLo;
     costHi += retentionHi;
     const signal = burnoutD > 0
@@ -359,7 +374,7 @@ function computeFinancials(state: MeasureState) {
       : `Likelihood to stay improved ${stayD.toFixed(0)} pts`;
     costDetails.push({
       label: "Physician retention signal",
-      formula: `${signal} \u2192 1\u20133 avoided departures \u00D7 $50K\u2013$150K replacement cost (MGMA benchmark)`,
+      formula: `${signal} \u2192 1\u20133 avoided departures \u00D7 ${fmtC(replacementRange.low)}\u2013${fmtC(replacementRange.high)} replacement cost`,
     });
   }
 
@@ -370,21 +385,46 @@ function computeFinancials(state: MeasureState) {
     const retD = physRetMetric.after - physRetMetric.before;
     if (retD > 0 && providers > 0) {
       const turnoversAvoided = (retD / 100) * providers;
-      const newLo = turnoversAvoided * 300_000 * attrLo;
-      const newHi = turnoversAvoided * 750_000 * attrHi;
+      const newLo = turnoversAvoided * replacementRange.low * attrLo;
+      const newHi = turnoversAvoided * replacementRange.high * attrHi;
       if (newLo > retentionLo) {
         costLo = costLo - retentionLo + newLo;
         costHi = costHi - retentionHi + newHi;
         costDetails.push({
           label: `Physician retention: +${retD} pts across ${providers} providers`,
-          formula: `${turnoversAvoided.toFixed(1)} turnovers avoided \u00D7 $300K\u2013$750K replacement cost`,
+          formula: `${turnoversAvoided.toFixed(1)} turnovers avoided \u00D7 ${fmtC(replacementRange.low)}\u2013${fmtC(replacementRange.high)} replacement cost`,
         });
       }
     }
   }
 
+  if (streamStates) {
+    if (streamStates.billingCapture === false) { billLo = 0; billHi = 0; }
+    if (streamStates.revenueRecovery === false) { recLo = 0; recHi = 0; }
+    if (streamStates.patientFlow === false) { pfLo = 0; pfHi = 0; }
+    if (streamStates.capacityRevenue === false) { capLo = 0; capHi = 0; }
+    if (streamStates.costReduction === false) { costLo = 0; costHi = 0; }
+  }
+
   const totalLo = billLo + recLo + pfLo + capLo + costLo;
   const totalHi = billHi + recHi + pfHi + capHi + costHi;
+
+  const enabledStreams: string[] = [];
+  const excludedStreams: string[] = [];
+  const streamLabels: Record<string, string> = {
+    billingCapture: 'Billing Capture',
+    revenueRecovery: 'Revenue Recovery',
+    patientFlow: 'Patient Flow',
+    capacityRevenue: 'Capacity Revenue',
+    costReduction: 'Cost Reduction',
+  };
+  if (streamStates) {
+    for (const [k, label] of Object.entries(streamLabels)) {
+      if (streamStates[k] === false) excludedStreams.push(label);
+      else enabledStreams.push(label);
+    }
+  }
+
   return {
     hasBill: billLo > 0, billLo, billHi, billDetails,
     hasRec: recLo > 0, recLo, recHi, recDetails,
@@ -393,6 +433,8 @@ function computeFinancials(state: MeasureState) {
     hasCost: costLo > 0, costLo, costHi, costDetails,
     totalLo, totalHi, hasAny: totalLo > 0,
     attrRange: `${Math.round(attrLo * 100)}\u2013${Math.round(attrHi * 100)}%`,
+    enabledStreams,
+    excludedStreams,
   };
 }
 
@@ -454,7 +496,7 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
 
   const activeMetrics = getActiveMetrics(state);
   const signalMetrics = activeMetrics.filter((m) => !FINANCIAL_IDS.has(m.metricId));
-  const fin = computeFinancials(state);
+  const fin = computeFinancials(state, state.streamStates);
 
   const hasMetrics = activeMetrics.length > 0;
   const hasFinancials = fin.hasAny;
@@ -589,6 +631,16 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
               <Text style={{ fontSize: 28, fontWeight: "bold", color: C.orange }}>{fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))}</Text>
               <Text style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>estimated annual financial impact (attribution: {fin.attrRange})</Text>
             </View>
+
+            {fin.excludedStreams.length > 0 && (
+              <View style={{ marginBottom: 14, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: "#FAF8F5", borderRadius: 6 }}>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>What&apos;s Included</Text>
+                {fin.enabledStreams.length > 0 && (
+                  <Text style={{ fontSize: 7, color: C.muted }}>{fin.enabledStreams.join(" \u00B7 ")}</Text>
+                )}
+                <Text style={{ fontSize: 7, color: C.muted, marginTop: 2 }}>Excluded by reviewer: {fin.excludedStreams.join(", ")}</Text>
+              </View>
+            )}
 
             {fin.hasBill && (
               <View style={{ marginBottom: 14 }}>

@@ -548,6 +548,7 @@ interface MeasureAllocateProps {
 
 export default function MeasureAllocate({
   state,
+  updateState,
   onNext,
   onBack,
   onHome,
@@ -561,7 +562,7 @@ export default function MeasureAllocate({
   });
   const [sensitivityOpen, setSensitivityOpen] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [streamStates, setStreamStates] = useState<Record<string, boolean>>({
+  const [streamStates, setStreamStates] = useState<Record<string, boolean>>(() => ({
     billingCapture: true,
     revenueRecovery: true,
     hccCapture: true,
@@ -569,10 +570,15 @@ export default function MeasureAllocate({
     capacityRevenue: true,
     costReduction: true,
     physicianRetention: false,
-  });
+    ...state?.streamStates,
+  }));
 
   const toggleStream = (id: string) => {
-    setStreamStates(prev => ({ ...prev, [id]: !prev[id] }));
+    setStreamStates(prev => {
+      const next = { ...prev, [id]: !prev[id] };
+      if (updateState) updateState({ streamStates: next });
+      return next;
+    });
   };
 
   const fin = useMemo(() => computeFinancials(state, assumptions), [state, assumptions]);

@@ -116,6 +116,15 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (!parsed.metricValues) {
         parsed.metricValues = {};
       }
+      if (parsed.streamStates === undefined) {
+        parsed.streamStates = undefined;
+      }
+      if (parsed.emEligibilityRate === undefined) {
+        parsed.emEligibilityRate = undefined;
+      }
+      if (parsed.maEncounterPct === undefined) {
+        parsed.maEncounterPct = undefined;
+      }
       if (parsed.deployment) {
         if (parsed.deployment.liveProviders === undefined) {
           parsed.deployment.liveProviders = parsed.deployment.providers || 0;

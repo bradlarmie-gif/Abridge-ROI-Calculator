@@ -165,7 +165,20 @@ export interface MeasureState {
     typicalCustom?: boolean;
     optimisticCustom?: boolean;
   };
+  streamStates?: Record<string, boolean>;
+  emEligibilityRate?: number;
+  maEncounterPct?: number;
 }
+
+export const DEFAULT_STREAM_STATES: Record<string, boolean> = {
+  billingCapture: true,
+  revenueRecovery: true,
+  hccCapture: true,
+  patientFlow: true,
+  capacityRevenue: true,
+  costReduction: true,
+  physicianRetention: false,
+};
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {
   careSetting: null,

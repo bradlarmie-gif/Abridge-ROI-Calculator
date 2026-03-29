@@ -1,0 +1,104 @@
+ Fix 1 — MeasurePDFExport.tsx: Physician OT removal + replacement cost + attribution alignment
+                                                                                                                                                                                                               
+  In MeasurePDFExport.tsx, find computeFinancials() or equivalent internal calculation function.                                                                                                             
+                                                                                                                                                                                                               
+  a) Remove physician OT from cost reduction:                                                                                                                                                                  
+  Find the after-hours cost calculation (formula: afterHoursDelta × 5 × providers × $75 × 52). Apply the same conditional as measureCalculator.ts — only run this for careSetting === 'nursing':
+  const isHourlyWorkforce = careSetting === 'nursing';                                                                                                                                                         
+  if (isHourlyWorkforce && afterHoursDelta > 0) {                                                                                                                                                              
+    costLo += afterHoursDelta * nurseFTEs * otRate * 52 * attrLo;                                                                                                                                              
+    costHi += afterHoursDelta * nurseFTEs * otRate * 52 * attrHi;                                                                                                                                              
+  }                                                                                                                                                                                                          
+  For physician settings, set this contribution to 0.                                                                                                                                                          
+                                                                                                                                                                                                               
+  b) Fix replacement cost range:                                                                                                                                                                               
+  Find the retention cost calculation using $50,000–$150,000. Replace with the same care-setting lookup used in measureCalculator.ts:                                                                          
+  const replacementRange = {                                                                                                                                                                                   
+    outpatient: { low: 300000, high: 500000 },                                                                                                                                                                 
+    ed:         { low: 350000, high: 500000 },                                                                                                                                                               
+    inpatient:  { low: 300000, high: 500000 },                                                                                                                                                                 
+    nursing:    { low: 50000,  high: 100000 },                                                                                                                                                               
+  }[careSetting] ?? { low: 250000, high: 400000 };                                                                                                                                                             
+                                                                                                                                                                                                               
+  c) Align attribution range with screen:     
+  Find where attribution low/high are set. Change to match the screen's default range:                                                                                                                         
+  const attrDefault = assumptions?.attribution ?? 0.62;                                                                                                                                                      
+  const attrLo = Math.max(0.50, attrDefault - 0.12);                                                                                                                                                           
+  const attrHi = Math.min(0.75, attrDefault + 0.12);                                                                                                                                                         
+  This matches the MeasureAllocate screen range exactly.                                                                                                                                                       
+                                                                                                                                                                                                             
+  d) Add toggle awareness to PDF:                                                                                                                                                                              
+  The PDF computeFinancials() should accept a streamStates parameter. If a stream is toggled off, set its low/high contribution to 0:                                                                        
+  if (!streamStates.physicianRetention) { retLo = 0; retHi = 0; }                                                                                                                                              
+  if (!streamStates.patientFlow)        { pfLo = 0; pfHi = 0; }                                                                                                                                                
+  if (!streamStates.capacityRevenue)    { capLo = 0; capHi = 0; }                                                                                                                                              
+  // etc. for each stream                                                                                                                                                                                      
+                                                                                                                                                                                                             
+  In the PDF output, add a small "What's included" section listing enabled streams and noting excluded ones as "Excluded by reviewer."                                                                         
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 2 — MeasureOpportunity.tsx: OT removal + replacement cost + use toggle-aware total                                                                                                                       
+                                                                                                                                                                                                               
+  In MeasureOpportunity.tsx, find computeConfirmedRange().                                                                                                                                                   
+                                                                                                                                                                                                               
+  a) Remove physician OT — same fix as PDF above. Only apply afterHours × otRate formula for nursing setting.                                                                                                  
+                                          
+  b) Fix replacement cost — same care-setting lookup as above.                                                                                                                                                 
+                                                                                                                                                                                                               
+  c) Use toggle-aware total for expansion economics:
+  The expansion scenarios ("Deepen Adoption" and "Expand Providers") scale a base confirmed value by a multiplier. Currently they scale the full all-streams total. Change to accept and use enabledTotal — the
+   sum of only the enabled streams:                                                                                                                                                                          
+                                                                                                                                                                                                               
+  // Instead of:                                                                                                                                                                                             
+  const deepenValue = confirmedMid * deepenScale;                                                                                                                                                              
+   
+  // Use:                                                                                                                                                                                                      
+  const enabledConfirmedMid = (enabledLow + enabledHigh) / 2;                                                                                                                                                
+  const deepenValue = enabledConfirmedMid * deepenScale;
+                                              
+  Pass streamStates into computeConfirmedRange() so it knows which streams to include.
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 3 — measureUrlState.ts: Add new fields to URL serialization                                                                                                                                              
+                                                                                                                                                                                                               
+  In measureUrlState.ts, find the encodeStateToUrl() and decodeStateFromUrl() functions. Add these new fields to the serialization schema:                                                                     
+                                                                                                                                                                                                             
+  // In the encode function, add to the serialized object:
+  streamStates: state.streamStates ?? DEFAULT_STREAM_STATES,
+  emEligibilityRate: state.emEligibilityRate ?? null,                                                                                                                                                          
+  maEncounterPct: state.maEncounterPct ?? null,
+                                                                                                                                                                                                               
+  // New metric fields:                                                                                                                                                                                        
+  'hccCaptureRate_before': state.settingData?.[setting]?.hccCaptureRate_before ?? null,                                                                                                                        
+  'hccCaptureRate_after':  state.settingData?.[setting]?.hccCaptureRate_after ?? null,                                                                                                                         
+  'netCollectionRate_before': state.settingData?.[setting]?.netCollectionRate_before ?? null,                                                                                                                
+  'netCollectionRate_after':  state.settingData?.[setting]?.netCollectionRate_after ?? null,                                                                                                                   
+  'readmissionRate_before': state.settingData?.inpatient?.readmissionRate_before ?? null,                                                                                                                      
+  'readmissionRate_after':  state.settingData?.inpatient?.readmissionRate_after ?? null,                                                                                                                       
+                                                                                                                                                                                                               
+  In decodeStateFromUrl(), add backward-compatible defaults for these new fields — if they're missing from the URL (old links), default to null/undefined gracefully without throwing errors.                  
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 4 — measureNarrative.ts: Remove any physician time = money framing                                                                                                                                       
+                                                                                                                                                                                                               
+  Search measureNarrative.ts for any narrative template strings that:                                                                                                                                          
+  - Reference "overtime", "hours saved × rate", "hard savings", or "cost of time"                                                                                                                            
+  - Frame physician hours recovered as a dollar value                                                                                                                                                          
+                                                     
+  For any found, change the framing to reference time as capacity or wellbeing, not cost:                                                                                                                      
+  - "$X saved in after-hours costs" → "X hours of after-hours documentation returned to providers"                                                                                                             
+  - "Hard savings from time recovery: $X" → "Time recovered is tracked as capacity and wellbeing signal"
+  - Any template that multiplies hours × rate → remove the dollar output, keep the hours output                                                                                                                
+                                                                                                                                                                                                               
+  If narratives reference hoursReclaimed as a dollar value anywhere, change those references to show hours only.                                                                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification:                                                                                                                                                                                                
+  - PDF computeFinancials() and screen computeFinancials() in measureCalculator produce the same total for the same inputs                                                                                     
+  - PDF attribution range (50%–75% ± 12%) matches screen                                                                                                                                                       
+  - Physician OT removed from both PDF and Opportunity calculations                                                                                                                                            
+  - Replacement cost ranges are identical across all three files                                                                                                                                               
+  - Expansion scenarios in Opportunity use toggle-aware total   
+  - Shared URL link preserves: stream toggle states, E/M eligibility rate, MA encounter %, new metric values                                                                                                   
+  - Old URL links still decode without errors (backward compatible defaults)                                                                                                                                   
+  - No narrative template outputs a dollar value for physician time

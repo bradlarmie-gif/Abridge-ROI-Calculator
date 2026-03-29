@@ -58,7 +58,7 @@ function fmtRange(low: number, high: number): string {
   return `${fmt(low)} — ${fmt(high)}`;
 }
 
-function computeConfirmedRange(state: MeasureState): { low: number; high: number } {
+function computeConfirmedRange(state: MeasureState, streamStates?: Record<string, boolean>): { low: number; high: number } {
   const activeSettings = state.activeCareSettings?.length > 0
     ? state.activeCareSettings
     : [state.careSetting || 'outpatient'];
@@ -74,8 +74,11 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
   const realHigh = 0.90;
   const cf = state.calibration.conversionFactor || 33;
 
-  let totalLow = 0;
-  let totalHigh = 0;
+  let billingLow = 0, billingHigh = 0;
+  let recoveryLow = 0, recoveryHigh = 0;
+  let pfLow = 0, pfHigh = 0;
+  let capLow = 0, capHigh = 0;
+  let costLow = 0, costHigh = 0;
 
   const activeMetrics = getActiveMetrics(state);
 
@@ -103,8 +106,8 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
       (wrvuMetric?.before ?? (s === primarySetting ? (state.documentationQuality.wrvuWithout ?? 0) : 0));
     if (wrvuDelta > 0 && emEligibleEncounters > 0) {
       const base = wrvuDelta * emEligibleEncounters * cf;
-      totalLow += base * attrLow * realLow;
-      totalHigh += base * attrHigh * realHigh;
+      billingLow += base * attrLow * realLow;
+      billingHigh += base * attrHigh * realHigh;
     }
 
     const emMetric = activeMetrics.find(m =>
@@ -115,8 +118,8 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
     if (emDelta > 0 && emEligibleEncounters > 0) {
       const undercaptureRate = 0.35;
       const base = emDelta * emEligibleEncounters * undercaptureRate * 45;
-      totalLow += base * attrLow * realLow;
-      totalHigh += base * attrHigh * realHigh;
+      billingLow += base * attrLow * realLow;
+      billingHigh += base * attrHigh * realHigh;
     }
 
     if (s === 'inpatient') {
@@ -127,8 +130,8 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
       if (cmiDelta > 0) {
         const discharges = sSettingData.deploy_totalEncounters || totalEncounters;
         const base = cmiDelta * discharges * 6800;
-        totalLow += base * attrLow * realLow;
-        totalHigh += base * attrHigh * realHigh;
+        billingLow += base * attrLow * realLow;
+        billingHigh += base * attrHigh * realHigh;
       }
     }
 
@@ -139,8 +142,8 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
       const lwbsDelta = (lwbsMetric?.before ?? edSettingData.lwbsRate_before ?? 0) - (lwbsMetric?.after ?? edSettingData.lwbsRate_after ?? 0);
       if (lwbsDelta > 0 && edTotalEncounters > 0) {
         const recovered = (lwbsDelta / 100) * edTotalEncounters * 12;
-        totalLow += recovered * 480 * attrLow;
-        totalHigh += recovered * 480 * attrHigh;
+        recoveryLow += recovered * 480 * attrLow;
+        recoveryHigh += recovered * 480 * attrHigh;
       }
     }
   }
@@ -155,8 +158,8 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
   const isHourlyWorkforce = activeSettings.includes('nursing');
   if (afterHoursDelta > 0 && providers > 0 && isHourlyWorkforce) {
     const annual = afterHoursDelta * 5 * providers * 75 * 52;
-    totalLow += annual * attrLow;
-    totalHigh += annual * attrHigh;
+    costLow += annual * attrLow;
+    costHigh += annual * attrHigh;
   }
 
   const mv = state.metricValues || {};
@@ -180,11 +183,22 @@ function computeConfirmedRange(state: MeasureState): { low: number; high: number
       nursing:    { low: 50_000,  high: 100_000 },
     };
     const rc = replacementCostRange[primarySetting] ?? { low: 250_000, high: 400_000 };
-    totalLow += 1 * rc.low * attrLow;
-    totalHigh += 3 * rc.high * attrHigh;
+    costLow += 1 * rc.low * attrLow;
+    costHigh += 3 * rc.high * attrHigh;
   }
 
-  return { low: totalLow, high: totalHigh };
+  if (streamStates) {
+    if (streamStates.billingCapture === false) { billingLow = 0; billingHigh = 0; }
+    if (streamStates.revenueRecovery === false) { recoveryLow = 0; recoveryHigh = 0; }
+    if (streamStates.patientFlow === false) { pfLow = 0; pfHigh = 0; }
+    if (streamStates.capacityRevenue === false) { capLow = 0; capHigh = 0; }
+    if (streamStates.costReduction === false) { costLow = 0; costHigh = 0; }
+  }
+
+  return {
+    low: billingLow + recoveryLow + pfLow + capLow + costLow,
+    high: billingHigh + recoveryHigh + pfHigh + capHigh + costHigh,
+  };
 }
 
 interface MeasureOpportunityProps {
@@ -212,6 +226,7 @@ export default function MeasureOpportunity({
   const setting = activeSettingsList[0];
 
   const confirmed = useMemo(() => computeConfirmedRange(state), [state]);
+  const enabledConfirmed = useMemo(() => computeConfirmedRange(state, state.streamStates), [state]);
   const hasConfirmedValue = confirmed.low > 0;
 
   const providers = state.deployment.providers || state.deployment.mruProviders || 0;
@@ -273,22 +288,22 @@ export default function MeasureOpportunity({
     if (!hasConfirmedValue || utilizationRate <= 0 || targetAdoption <= utilizationRate) return null;
     const scale = targetAdoption / utilizationRate;
     return {
-      additional: { low: Math.round(confirmed.low * (scale - 1)), high: Math.round(confirmed.high * (scale - 1)) },
-      total: { low: Math.round(confirmed.low * scale), high: Math.round(confirmed.high * scale) },
+      additional: { low: Math.round(enabledConfirmed.low * (scale - 1)), high: Math.round(enabledConfirmed.high * (scale - 1)) },
+      total: { low: Math.round(enabledConfirmed.low * scale), high: Math.round(enabledConfirmed.high * scale) },
     };
-  }, [hasConfirmedValue, confirmed, utilizationRate, targetAdoption]);
+  }, [hasConfirmedValue, enabledConfirmed, utilizationRate, targetAdoption]);
 
   const additionalProviders = targetProviderCount - providers;
   const expandValue = useMemo(() => {
     if (!showExpandProviders || !hasConfirmedValue || providers <= 0 || targetProviderCount <= providers) return null;
-    const perProviderLow = confirmed.low / providers;
-    const perProviderHigh = confirmed.high / providers;
+    const perProviderLow = enabledConfirmed.low / providers;
+    const perProviderHigh = enabledConfirmed.high / providers;
     return {
       additional: { low: Math.round(perProviderLow * additionalProviders), high: Math.round(perProviderHigh * additionalProviders) },
-      total: { low: Math.round(confirmed.low + perProviderLow * additionalProviders), high: Math.round(confirmed.high + perProviderHigh * additionalProviders) },
+      total: { low: Math.round(enabledConfirmed.low + perProviderLow * additionalProviders), high: Math.round(enabledConfirmed.high + perProviderHigh * additionalProviders) },
       addedCount: additionalProviders,
     };
-  }, [showExpandProviders, hasConfirmedValue, confirmed, providers, additionalProviders, targetProviderCount]);
+  }, [showExpandProviders, hasConfirmedValue, enabledConfirmed, providers, additionalProviders, targetProviderCount]);
 
   const additionalEncountersAtTarget = useMemo(() => {
     if (!showDeepenAdoption) return 0;

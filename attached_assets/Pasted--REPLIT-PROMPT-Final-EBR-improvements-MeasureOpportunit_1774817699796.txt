@@ -1,0 +1,105 @@
+ REPLIT PROMPT — Final EBR improvements (MeasureOpportunity.tsx + MeasureAllocate.tsx + MeasurePDFExport.tsx + measureCalculator.ts)                                                                        
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+  Fix 1 — Add contract value + ROI ratio + payback period
+                                                                                                                                                                                                               
+  In MeasureDataEntry.tsx (Partner Profile), add an optional field at the bottom:
+  <div className="mt-6 pt-6 border-t border-[#E5E5E5]">                                                                                                                                                        
+    <p className="text-xs font-semibold text-[#525252] uppercase tracking-wide mb-1">                                                                                                                          
+      Annual Contract Value <span className="text-[#AAAAAA] font-normal normal-case">(optional — for ROI calculation)</span>
+    </p>                                                                                                                                                                                                       
+    <FormattedNumberInput                                                                                                                                                                                    
+      value={deployment.annualContractValue}                                                                                                                                                                   
+      onChange={v => updateDeployment('annualContractValue', v)}                                                                                                                                               
+      prefix="$"                                                                                                                                                                                               
+      placeholder="e.g. 280,000"                                                                                                                                                                               
+    />                                                                                                                                                                                                         
+  </div>                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  In MeasureOpportunity.tsx, when annualContractValue > 0 and confirmedMid > 0, show a break-even card above the expansion scenarios:                                                                        
+                                                                                                                                                                                                               
+  <div className="bg-[#1A1A1A] rounded-xl p-6 mb-6">                                                                                                                                                         
+    <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest mb-4">Return on Investment</p>                                                                                             
+    <div className="grid grid-cols-3 gap-4">                                                                                                                                                                   
+      <div>                               
+        <p className="text-2xl font-bold text-[#EA2C00]">{roiMultiple}×</p>                                                                                                                                    
+        <p className="text-xs text-white/40 mt-1">ROI ratio</p>                                                                                                                                                
+      </div>                                                                                                                                                                                                   
+      <div>                                                                                                                                                                                                    
+        <p className="text-2xl font-bold text-white">{paybackMonths}mo</p>                                                                                                                                     
+        <p className="text-xs text-white/40 mt-1">Payback period</p>                                                                                                                                           
+      </div>                                                                                                                                                                                                   
+      <div>                                                                                                                                                                                                    
+        <p className="text-2xl font-bold text-white">{formatDollar(netValue)}</p>                                                                                                                              
+        <p className="text-xs text-white/40 mt-1">Net value</p>                                                                                                                                                
+      </div>                                                                                                                                                                                                   
+    </div>                                                                                                                                                                                                     
+  </div>                                                                                                                                                                                                       
+   
+  Where:                                                                                                                                                                                                       
+  const roiMultiple = (confirmedMid / annualContractValue).toFixed(1);                                                                                                                                       
+  const paybackMonths = Math.round(annualContractValue / (confirmedMid / 12));
+  const netValue = confirmedMid - annualContractValue;                                                                                                                                                         
+                                                      
+  Include the same ROI card in MeasurePDFExport.tsx when contract value is present.                                                                                                                            
+                                                                                                                                                                                                               
+  ---                                     
+  Fix 2 — Maturity-aware output labels                                                                                                                                                                         
+                                                                                                                                                                                                               
+  In measureCalculator.ts or wherever maturity stage is derived, export the stage alongside the financial output. In MeasureOpportunity.tsx and MeasurePDFExport.tsx, use the stage to set the confidence
+  label:                                                                                                                                                                                                       
+                                                                                                                                                                                                             
+  const confidenceLabel = {
+    'Unmeasured': 'Benchmark estimate',                                                                                                                                                                        
+    'Signaling':  'Directional estimate',
+    'Validated':  'Based on measured outcomes',                                                                                                                                                                
+    'Strategic':  'Financially documented',                                                                                                                                                                  
+  }[maturityStage];
+                                                                                                                                                                                                               
+  Replace any hardcoded "confirmed" or "estimated" labels with confidenceLabel. In the PDF, this label should appear next to the total value.
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+  Fix 3 — ALOS: split cost avoidance from revenue opportunity                                                                                                                                                  
+                                              
+  In measureCalculator.ts, split the ALOS calculation:                                                                                                                                                         
+                                                                                                                                                                                                             
+  const costPerBedDay = inputs.vm_costPerBedDay ?? 2500;                                                                                                                                                       
+  const revenuePerNewAdmission = inputs.vm_revenuePerNewAdmission ?? 8000;
+  const censusConstrained = inputs.vm_censusConstrained ?? false; // new toggle                                                                                                                                
+                                                                                                                                                                                                             
+  const alosCostLow = alosDelta * discharges * costPerBedDay * attributionLow;                                                                                                                                 
+  const alosCostHigh = alosDelta * discharges * costPerBedDay * attributionHigh;                                                                                                                               
+                                                                                                                                                                                                               
+  // Revenue opportunity only if census-constrained (toggled on)                                                                                                                                               
+  const alosRevLow = censusConstrained ? alosDelta * discharges * revenuePerNewAdmission * attributionLow * 0.3 : 0;                                                                                         
+  const alosRevHigh = censusConstrained ? alosDelta * discharges * revenuePerNewAdmission * attributionHigh * 0.3 : 0;                                                                                         
+                                                                                                                                                                                                               
+  patientFlowLow = alosCostLow + alosRevLow;                                                                                                                                                                   
+  patientFlowHigh = alosCostHigh + alosRevHigh;                                                                                                                                                                
+                                                                                                                                                                                                               
+  In MeasureAllocate.tsx, add a checkbox under the ALOS section: "This hospital is census-constrained — freed beds are typically refilled". Default unchecked. When checked, the revenue opportunity portion is
+   added.                                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 4 — Remove E/M level as a separate dollar calculation                                                                                                                                                    
+                                                                                                                                                                                                               
+  In measureCalculator.ts, find the emDelta × adoptedEncounters × $45 calculation. Remove it as a standalone calculation.                                                                                    
+                                              
+  The E/M level data is already captured via emLevelBefore/emLevelAfter. Convert these level values to approximate wRVU using:                                                                                 
+  const emToWrvu: Record<number, number> = { 1: 0.48, 2: 0.93, 3: 1.40, 4: 1.92, 5: 2.80 };
+  const impliedWrvuDelta = (emToWrvu[emLevelAfter] ?? 0) - (emToWrvu[emLevelBefore] ?? 0);                                                                                                                     
+                                                                                                                                                                                                               
+  If the user has both a measured wRVU delta and E/M level data, use the measured wRVU delta only (it's more specific). If they have only E/M level data, use impliedWrvuDelta as the wRVU input and run it    
+  through the existing wRVU formula. This eliminates the double-counting and uses the right unit throughout.                                                                                                   
+                                                                                                                                                                                                               
+  Remove avgEmValue = $45 entirely. Remove any line in the billing capture total that adds an E/M level dollar contribution separate from the wRVU calculation.                                                
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification:                                                                                                                                                                                                
+  - Partner Profile has optional contract value field                                                                                                                                                        
+  - When contract value is entered, ROI ratio, payback period, and net value appear in Opportunity screen and PDF                                                                                              
+  - Confidence label changes based on maturity stage (Directional → Measured → Documented)                                                                                                                   
+  - ALOS calculation shows cost avoidance only by default; revenue opportunity requires explicit census-constrained toggle                                                                                     
+  - E/M level data is converted to wRVU delta and runs through the wRVU formula — no separate $45/level line              
+  - $45 constant and emValue variable removed from all calculation files                                                                                                                                       
+  - All existing data entries still calculate (backward compatible)
