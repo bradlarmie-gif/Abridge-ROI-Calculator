@@ -326,7 +326,7 @@ export function computeRevenueFeedback(
       context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nThese are leading indicators — a retrospective coding audit is the typical next step to produce a confirmed number.`,
       formula: '',
       footnote: '',
-      nextLevelTeaser: 'Level 3: Run a retrospective coding audit. Organizations that do this typically confirm 2–7% revenue improvement from documentation specificity.',
+      nextLevelTeaser: 'Level 3: Run a retrospective coding audit. Most organizations find $2K–$6K per provider annually in coding and denial impact when they first run this analysis.',
     };
   }
 
@@ -509,7 +509,7 @@ export function computeRevenueFeedback(
   if (count > 0) {
     let context = `Documentation intelligence is driving revenue strategy across ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}`;
     if (noConfirmedRevenue) {
-      context += `\n\nNo confirmed revenue attribution yet. Organizations at ${documentedEncounters.toLocaleString()} documented encounters with active revenue cycle integration typically attribute $200K–$600K annually to documentation quality programs. This can serve as a planning estimate until formal attribution is available.`;
+      context += `\n\nNo confirmed revenue attribution yet. Planning estimate: ${providers} providers × $2K–$6K per provider/year in coding and denial impact = ${formatDollar(providers * 2000)}–${formatDollar(providers * 6000)} annually. Source: AMA/MGMA coding benchmarks and CDI program data. Enter a confirmed number when finance or revenue cycle has run the analysis.`;
     } else {
       context += `\n\nEnter your attributed annual revenue when available. Organizations at this level typically have a figure that revenue cycle and finance leadership reference in planning.`;
     }
@@ -529,7 +529,7 @@ export function computeRevenueFeedback(
     value: null,
     hasValue: false,
     headlineMetric: 'Select strategic integrations and enter attributed revenue.',
-    context: `Organizations at ${documentedEncounters.toLocaleString()} documented encounters with active revenue cycle integration typically attribute $200K–$600K annually to documentation quality programs. This can serve as a planning estimate until formal attribution is available.`,
+    context: `Planning estimate: ${providers} providers × $2K–$6K per provider/year in coding and denial impact = ${formatDollar(providers * 2000)}–${formatDollar(providers * 6000)} annually. Source: AMA/MGMA coding benchmarks and CDI program data. Select an integration above and enter attributed revenue to replace this estimate with your actual data.`,
     formula: '',
     footnote: '',
   };
@@ -972,7 +972,7 @@ export function computeRiskFeedback(
         value: hasVal ? downstreamValue : null,
         hasValue: hasVal,
         headlineMetric: hasVal ? `${formatDollar(downstreamValue)} denial prevention value` : 'Denial reduction pathway selected',
-        context: `${denialContext}\n\nDocumentation-driven denial prevention is one of the fastest financial returns from ambient documentation — it reduces rework, accelerates payment, and improves payer relationships.`,
+        context: `${denialContext}\n\nDenial prevention compounds over time: fewer recoded claims, faster payment cycles, and stronger payer relationships. Each prevented denial saves the denial value plus the $25–$50 rework cost your billing team avoids.`,
         formula: usedFormula ? `[denialsPrevented] = ${annualDenialVolume.toLocaleString()} × ${denialReductionRate}% = ${denialsPrevented.toLocaleString()}\n[denialRecovery] = ${denialsPrevented.toLocaleString()} × ${formatDollar(avgDenialValue)} = ${formatDollar(denialRecovery)}` : '',
         footnote: usedFormula
           ? `Based on your inputs. Average denial value: ${formatDollar(avgDenialValue)}.`

@@ -173,9 +173,9 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             lowEstimate = Math.round(providers * 4000);
             highEstimate = Math.round(providers * 12000);
             narrative = `Documentation quality has improved. Whether reimbursement followed is the question — and the answer is almost always yes. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in coding and denial impact when they first run this analysis.\n\nOPPORTUNITY AHEAD: A retrospective coding audit — comparing pre/post ambient documentation — typically takes 4–6 weeks and produces the data needed to confirm the benchmark range.`;
-            formula = `Benchmark range: ${providers} providers × $4,000–$12,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: AMA/MGMA coding benchmarks; published studies on documentation-driven revenue improvement (2–7%)`;
+            formula = `Benchmark range: ${providers} providers × $4,000–$12,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: AMA/MGMA coding benchmarks on E&M level distribution and denial rates by documentation quality`;
           } else if (level === 2) {
-            narrative = `Directional signals are visible. Your organization has observed trends suggesting documentation is affecting reimbursement, but the impact has not been formally validated.\n\nOPPORTUNITY AHEAD: A formal before/after analysis (Level 3) would quantify the signal. Organizations with validated measurement have reported 2–7% revenue improvement.`;
+            narrative = `Directional signals are visible. Your organization has observed trends suggesting documentation is affecting reimbursement, but the impact has not been formally validated.\n\nOPPORTUNITY AHEAD: A formal before/after coding audit (Level 3) typically takes 4–6 weeks and produces the data needed to confirm the dollar impact. Most organizations find $2K–$6K per provider annually when they first run this analysis.`;
             formula = null;
             lowEstimate = null;
             highEstimate = null;
@@ -677,7 +677,7 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
 
           <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
             <p className="text-xs text-[#AAAAAA] leading-relaxed">
-              Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Capacity: based on MGMA Physician Compensation data and published literature on time-to-access in ambulatory care. Revenue: based on published studies reporting 2–7% revenue improvement from documentation specificity; AMA and MGMA coding benchmarks. Workforce: based on AMGA Physician Retention Survey; replacement cost literature range $250K–$500K per physician. Quality: based on CMS quality penalty exposure data and CDI program ROI literature. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
+              Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Capacity: based on MGMA Physician Compensation data and published literature on time-to-access in ambulatory care. Revenue: based on AMA/MGMA coding benchmarks on E&M level distribution, denial rate data, and CDI program outcomes. Workforce: based on AMGA Physician Retention Survey; physician replacement cost literature ($250K–$500K per physician). Quality: based on CMS quality penalty exposure data and CDI program ROI literature. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
             </p>
           </div>
 

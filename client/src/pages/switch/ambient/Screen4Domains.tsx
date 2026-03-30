@@ -390,7 +390,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               className="w-full h-12 bg-white border-[#E5E7EB]"
               data-testid="input-additional-patients"
             />
-            <BenchmarkContext text="Structured access redesign: 3–8 patients/provider/month" />
+            <BenchmarkContext text="Benchmark: 1–3 additional patients/provider/month from scheduling efficiency and reduced LWBS (MGMA access benchmarks)" />
             <p className="text-xs text-[#888888] mt-1">
               Annualized over 11 clinical months (230 working days).
             </p>
@@ -678,7 +678,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                     data-testid="input-collections-delta"
                   />
                 </div>
-                <BenchmarkContext text="Organizations at this level have reported $3–$10 increase per encounter." />
+                <BenchmarkContext text="Benchmark: $3–$10/encounter improvement in net collections from E&M level uplift and denial reduction (AMA/MGMA coding data)" />
                 <div className="mt-3">
                   <label className="block text-xs font-medium text-[#1A1A1A] mb-2">Direction</label>
                   <div className="flex gap-2">
@@ -869,7 +869,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
           </div>
           {currentState.inputs.noConfirmedRevenue === 'true' && (
             <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
-              Abridge deployment benchmark at {documentedEncounters.toLocaleString()} encounters with revenue cycle integration: $200K–$600K annually. This can serve as a working estimate.
+              Planning estimate: {providers} providers × $2K–$6K per provider/year in coding and denial impact = {formatDollar(providers * 2000)}–{formatDollar(providers * 6000)} annually. Source: AMA/MGMA coding benchmarks and CDI program data.
             </p>
           )}
         </div>
@@ -1227,7 +1227,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               data-testid="input-agency-reduction"
             />
           </div>
-          <BenchmarkContext text="Organizations at this level have reported $5K–$30K/month in agency and locum spend reduction. Based on aggregated deployment experience." />
+          <BenchmarkContext text="Benchmark: $5K–$30K/month agency and locum reduction as permanent staff stabilize. Derive from your current spend × reduction rate." />
         </div>
       </div>
     );
