@@ -537,8 +537,8 @@ export default function ProformaView({
             </div>
           </div>
 
-          {/* Desktop: 5 cols */}
-          <div className="hidden min-[820px]:grid grid-cols-5 gap-6">
+          {/* Desktop: 4 cols */}
+          <div className="hidden min-[820px]:grid grid-cols-4 gap-6">
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
               <p className="text-3xl font-bold text-[#EA2C00]">{fmt(summary.runRateValue)}</p>
