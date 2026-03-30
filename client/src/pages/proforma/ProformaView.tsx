@@ -392,11 +392,11 @@ export default function ProformaView({
       cumRetention += row.retentionValue;
       cumInvestment += row.investment;
       const month = i + 1;
-      const quarter = Math.ceil(month / 3);
-      const year = Math.ceil(month / 12);
-      const qInYear = ((quarter - 1) % 4) + 1;
-      const yearStr = String(new Date().getFullYear() + year - 1).slice(2);
-      const label = month % 3 === 0 ? `Q${qInYear} '${yearStr}` : '';
+      const d = new Date(startDate.getFullYear(), startDate.getMonth() + month - 1, 1);
+      const calQ = Math.floor(d.getMonth() / 3) + 1;
+      const yearStr = String(d.getFullYear()).slice(2);
+      const isQuarterEnd = month % 3 === 0;
+      const label = isQuarterEnd ? `Q${calQ} '${yearStr}` : '';
       return {
         month,
         period: month,
@@ -414,7 +414,7 @@ export default function ProformaView({
         retentionValue: row.retentionValue,
       };
     });
-  }, [cashFlows, settings]);
+  }, [cashFlows, settings, startDate]);
 
   const totalProvidersByPeriod = useMemo(() => {
     return displayData.map(row => {
@@ -448,12 +448,12 @@ export default function ProformaView({
   const paybackLabel = useMemo(() => {
     if (!summary.paybackMonth || summary.paybackMonth <= 0) return null;
     const m = summary.paybackMonth;
-    const quarter = Math.ceil(m / 3);
-    const year = Math.ceil(m / 12);
-    const qInYear = ((quarter - 1) % 4) + 1;
-    const yearStr = String(new Date().getFullYear() + year - 1).slice(2);
-    return `Q${qInYear} '${yearStr}`;
-  }, [summary.paybackMonth]);
+    const nearestQuarterMonth = Math.ceil(m / 3) * 3;
+    const d = new Date(startDate.getFullYear(), startDate.getMonth() + nearestQuarterMonth - 1, 1);
+    const calQ = Math.floor(d.getMonth() / 3) + 1;
+    const yearStr = String(d.getFullYear()).slice(2);
+    return `Q${calQ} '${yearStr}`;
+  }, [summary.paybackMonth, startDate]);
 
   const goLiveLabels = useMemo(() => {
     const quarterData = groupByQuarter(cashFlows, startDate);
@@ -974,7 +974,7 @@ export default function ProformaView({
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip content={<CustomTooltip settings={settings} totalProvidersByPeriod={totalProvidersByPeriod} />} />
+                <Tooltip content={<CustomTooltip settings={settings} totalProvidersByPeriod={totalProvidersByPeriod} viewMode={config.viewMode} />} />
 
                 {config.viewMode === "quarterly" && !isMobile && goLiveLabels.length > 1 && goLiveLabels.map((gl, idx) => (
                   <ReferenceLine
@@ -2066,7 +2066,7 @@ export default function ProformaView({
   );
 }
 
-function CustomTooltip({ active, payload, label, settings, totalProvidersByPeriod }: any) {
+function CustomTooltip({ active, payload, label, settings, totalProvidersByPeriod, viewMode }: any) {
   if (!active || !payload) return null;
 
   const docItem = payload.find((p: any) => p.dataKey === "cumDocValue");
@@ -2076,8 +2076,10 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
 
   const total = (docItem?.value || 0) + (timeItem?.value || 0) + (retentionItem?.value || 0);
   const monthNum = payload[0]?.payload?.period || 1;
-  const quarterIdx = Math.ceil(monthNum / 3) - 1;
-  const providerCount = totalProvidersByPeriod?.[quarterIdx] || 0;
+  const periodIdx = viewMode === "yearly"
+    ? Math.ceil(monthNum / 12) - 1
+    : Math.ceil(monthNum / 3) - 1;
+  const providerCount = totalProvidersByPeriod?.[periodIdx] || 0;
   const displayMonth = `Month ${monthNum}`;
 
   return (
