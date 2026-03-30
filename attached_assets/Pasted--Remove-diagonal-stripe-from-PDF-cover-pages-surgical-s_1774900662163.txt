@@ -1,0 +1,43 @@
+ Remove diagonal stripe from PDF cover pages — surgical search                                                                                                                                                
+                                                                                                                                                                                                             
+  There is a decorative diagonal stripe in the bottom-right corner of PDF cover pages. Replit must find and delete it directly.                                                                                
+                                                                                                                                                                                                               
+  Step 1 — Find the file                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Open each of these files and search for the CoverPage component:                                                                                                                                           
+  - client/src/lib/ed-pdf-generator.tsx                                                                                                                                                                        
+  - client/src/lib/outpatient-pdf-generator.tsx                                                                                                                                                              
+  - client/src/lib/inpatient-pdf-generator.tsx                                                                                                                                                                 
+  - client/src/lib/nursing-pdf-generator.tsx                                                                                                                                                                   
+                                              
+  In each CoverPage component's return statement, look for ANY of these patterns:                                                                                                                              
+                                                                                                                                                                                                             
+  position: "absolute"                                                                                                                                                                                         
+  position: 'absolute'                                                                                                                                                                                         
+                                              
+  combined with any of:                                                                                                                                                                                        
+  rotate                                                                                                                                                                                                     
+  transform                                                                                                                                                                                                    
+  backgroundColor                                                                                                                                                                                            
+  opacity                                                                                                                                                                                                      
+                                                                                                                                                                                                             
+  The stripe element will be one of these shapes:                                                                                                                                                              
+  - A <View> with position: "absolute" and a light pink/salmon/coral background color                                                                                                                        
+  - A <View> with transform: [{ rotate: "..." }]                                     
+  - A <View> with a large width/height and a very light background color, positioned at the bottom or right
+                                                                                                           
+  Step 2 — Delete those elements                                                                                                                                                                               
+                                                                                                                                                                                                               
+  Delete any absolutely positioned <View> elements inside the CoverPage JSX that are purely decorative (they contain no <Text> children with real content like organization name, date, etc.). The stripe has  
+  no text — it is just a colored shape.                                                                                                                                                                        
+                                                                                                                                                                                                               
+  Step 3 — Also check for a shared CoverPage component                                                                                                                                                         
+                                                                                                                                                                                                               
+  Search the entire client/src/lib/ and client/src/lib/pdf/ directories for any file containing both CoverPage and either rotate or position.*absolute together. Whatever file that is — remove the absolutely 
+  positioned decorative View from it.                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Step 4 — Verify by reading back the CoverPage JSX
+                                                                                                                                                                                                               
+  After making changes, read back the CoverPage JSX in each modified file and confirm there are no remaining View elements with position: "absolute" inside the cover page that lack text content.           
+                                                                                                                                                                                                               
+  Do not change anything else — no colors, no layout, no text, no logo, no spacing.   
