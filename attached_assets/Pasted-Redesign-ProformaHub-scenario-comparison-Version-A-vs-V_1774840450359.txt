@@ -1,0 +1,400 @@
+Redesign ProformaHub scenario comparison — Version A vs Version B, premium UX
+
+  Replace the current Compare/Save Scenario system entirely with a clean two-version comparison. The goal: save a configuration, change something, save again, and immediately see a well-designed panel that
+  shows what changed and what it means — financially and non-financially.
+
+  ---
+  State changes in ProformaView.tsx
+
+  Remove:
+  - scenarioName, editingScenarioId, editingScenarioName, compareMode state
+  - handleSaveScenario, handleRenameScenario functions
+  - scenarioSummaries useMemo
+  - showSaveDialog state
+  - All JSX that renders scenario tabs, compare toggle, save dialog
+
+  Add:
+  const [versionA, setVersionA] = useState<ProformaScenario | null>(null);
+  const [versionB, setVersionB] = useState<ProformaScenario | null>(null);
+
+  function snapshotCurrent(label: "A" | "B") {
+    const scenario: ProformaScenario = {
+      id: `v${label}-${Date.now()}`,
+      name: `Version ${label}`,
+      settings: JSON.parse(JSON.stringify(settings)),
+      config: JSON.parse(JSON.stringify(config)),
+      createdAt: Date.now(),
+    };
+    if (label === "A") setVersionA(scenario);
+    else setVersionB(scenario);
+  }
+
+  ---
+  Header toolbar changes
+
+  Replace the current Compare/Save buttons with:
+
+  {/* Version save chips */}
+  <div className="flex items-center gap-2">
+    {versionA ? (
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="flex items-center gap-1.5 bg-white/15 rounded-full pl-2.5 pr-1.5 py-1"
+      >
+        <div className="w-2 h-2 rounded-full bg-white" />
+        <span className="text-xs text-white font-medium">A saved</span>
+        <button onClick={() => { setVersionA(null); setVersionB(null); }}
+          className="ml-0.5 text-white/40 hover:text-white transition-colors p-0.5"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      </motion.div>
+    ) : (
+      <button
+        onClick={() => snapshotCurrent("A")}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-all"
+      >
+        <Save className="w-3.5 h-3.5" />
+        <span className="hidden sm:inline">Save as A</span>
+      </button>
+    )}
+
+    {versionA && (
+      versionB ? (
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="flex items-center gap-1.5 bg-[#EA2C00]/30 rounded-full pl-2.5 pr-1.5 py-1"
+        >
+          <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+          <span className="text-xs text-white font-medium">B saved</span>
+          <button onClick={() => setVersionB(null)}
+            className="ml-0.5 text-white/40 hover:text-white transition-colors p-0.5"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </motion.div>
+      ) : (
+        <motion.button
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => snapshotCurrent("B")}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#EA2C00]/20 text-white hover:bg-[#EA2C00]/40 transition-all"
+        >
+          <Save className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Save as B</span>
+        </motion.button>
+      )
+    )}
+  </div>
+
+  ---
+  Comparison panel
+
+  Add this entire block right after the header dark section and before the main content (after line ~596 where compareMode panel currently ends). It only renders when versionA !== null.
+
+  <AnimatePresence>
+  {versionA && (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 16 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="bg-white border border-[#E8E2DA] rounded-2xl overflow-hidden mb-6 sm:mb-8 shadow-sm"
+    >
+      {/* Version header cards */}
+      <div className="grid grid-cols-2 divide-x divide-[#E8E2DA]">
+        {[
+          { label: "A", scenario: versionA, color: "#1A1A1A" },
+          { label: "B", scenario: versionB, color: "#EA2C00" },
+        ].map(({ label, scenario, color }) => {
+          const sc = scenario
+            ? calculateProformaSummary(
+                buildMonthlyCashFlows(scenario.settings, scenario.config),
+                scenario.config
+              )
+            : null;
+          return (
+            <div key={label} className="p-4 sm:p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                  style={{ backgroundColor: color }}
+                >
+                  {label}
+                </div>
+                <span className="text-sm font-semibold text-[#1A1A1A]">Version {label}</span>
+                {!scenario && (
+                  <span className="text-xs text-[#999999] italic">not saved yet</span>
+                )}
+              </div>
+              {sc ? (
+                <>
+                  <p className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] tabular-nums">{fmt(sc.runRateValue)}</p>
+                  <p className="text-xs text-[#999999] mt-0.5">annual value at scale</p>
+                  {label === "B" && versionA && (
+                    (() => {
+                      const scA = calculateProformaSummary(
+                        buildMonthlyCashFlows(versionA.settings, versionA.config),
+                        versionA.config
+                      );
+                      const delta = sc.runRateValue - scA.runRateValue;
+                      return delta !== 0 ? (
+                        <span className={`inline-flex items-center gap-1 mt-2 text-xs font-semibold px-2 py-0.5 rounded-full ${delta > 0 ? "bg-green-50 text-green-700" : "bg-[#F5F0EB] text-[#999999]"}`}>
+                          {delta > 0 ? "↑" : "↓"} {fmt(Math.abs(delta))}
+                        </span>
+                      ) : null;
+                    })()
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-[#CCCCCC]">—</p>
+              )}
+            </div>
+          );
+        })}
+      </div>                                  
+                                          
+      {/* What changed — only show when both versions exist */}
+      {versionA && versionB && (() => {                                                                                                                                                                        
+        const diffs = getScenarioDiffs(versionA, versionB);
+        if (diffs.length === 0) return null;                                                                                                                                                                   
+        return (                                                                                          
+          <div className="border-t border-[#E8E2DA] px-4 sm:px-6 py-4 bg-[#FAFAF8]">                                                                                                                           
+            <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-widest mb-3">What's different</p>
+            <div className="space-y-3">                                                                                                                                                                        
+              {["scope", "drivers", "pricing"].map(category => {                                          
+                const items = diffs.filter(d => d.category === category);                                                                                                                                      
+                if (items.length === 0) return null;                                                                                                                                                           
+                const catLabel = { scope: "Scope", drivers: "Value Drivers", pricing: "Pricing" }[category];                                                                                                   
+                return (                                                                                                                                                                                       
+                  <div key={category}>                                                                                                                                                                         
+                    <p className="text-[10px] font-semibold text-[#BBBBBB] uppercase tracking-wider mb-1.5">{catLabel}</p>                                                                                     
+                    <div className="space-y-1.5">                                                                                                                                                              
+                      {items.map((diff, i) => (                                                           
+                        <motion.div                                                                                                                                                                            
+                          key={diff.label}                                                                                                                                                                     
+                          initial={{ opacity: 0, x: -8 }}                                                                                                                                                      
+                          animate={{ opacity: 1, x: 0 }}                                                                                                                                                       
+                          transition={{ delay: i * 0.04 }}                                                                                                                                                     
+                          className="flex items-center gap-2 flex-wrap"                                                                                                                                        
+                        >                     
+                          <span className="text-xs font-medium text-[#555555] min-w-[120px]">{diff.label}</span>                                                                                               
+                          <span className="text-xs text-[#999999] bg-[#F0EDEA] px-2 py-0.5 rounded">{diff.valueA}</span>
+                          <span className="text-[10px] text-[#CCCCCC]">→</span>                                                                                                                                
+                          <span className="text-xs text-[#1A1A1A] font-medium bg-[#F5F0EB] border border-[#E8E2DA] px-2 py-0.5 rounded">{diff.valueB}</span>
+                        </motion.div>                                                                                                                                                                          
+                      ))}                                                                                                                                                                                      
+                    </div>                                                                                                                                                                                     
+                  </div>                                                                                                                                                                                       
+                );                                                                                                                                                                                             
+              })}                                                                                                                                                                                              
+            </div>                                                                                        
+          </div>
+        );
+      })()}                                   
+                                          
+      {/* Outcomes table — only when both exist */}
+      {versionA && versionB && (() => {                                                                                                                                                                        
+        const scA = calculateProformaSummary(buildMonthlyCashFlows(versionA.settings, versionA.config), versionA.config);
+        const scB = calculateProformaSummary(buildMonthlyCashFlows(versionB.settings, versionB.config), versionB.config);                                                                                      
+        const rows = [                                                                                    
+          { label: "Annual Value at Scale", a: fmt(scA.runRateValue), b: fmt(scB.runRateValue), delta: scB.runRateValue - scA.runRateValue, isMoney: true },
+          { label: `${config.contractTermMonths / 12}-Year Value`, a: fmt(scA.termValue), b: fmt(scB.termValue), delta: scB.termValue - scA.termValue, isMoney: true },                                        
+          { label: "Total Investment", a: fmt(scA.termInvestment), b: fmt(scB.termInvestment), delta: scB.termInvestment - scA.termInvestment, isMoney: true, invertColor: true },                             
+          { label: "Net Value", a: fmt(scA.termNet), b: fmt(scB.termNet), delta: scB.termNet - scA.termNet, isMoney: true, bold: true },                                                                       
+          { label: "Value-to-Cost", a: `${scA.valueToCost.toFixed(1)}x`, b: `${scB.valueToCost.toFixed(1)}x`, delta: scB.valueToCost - scA.valueToCost, isMoney: false },                                      
+          { label: "Hours Returned / Year", a: fmtNum(scA.totalHours), b: fmtNum(scB.totalHours), delta: scB.totalHours - scA.totalHours, isMoney: false },                                                    
+        ];                                                                                                                                                                                                     
+        return (                                                                                                                                                                                               
+          <div className="border-t border-[#E8E2DA] px-4 sm:px-6 py-4">                                                                                                                                        
+            <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-widest mb-3">Outcomes</p>                                                                                                
+            <div className="space-y-0 divide-y divide-[#F0EDEA]">                                                                                                                                              
+              {rows.map((row, i) => {                                                                                                                                                                          
+                const deltaLabel = row.isMoney ? fmt(Math.abs(row.delta)) : Math.abs(row.delta).toFixed(1) + (row.label.includes("x") || row.label.includes("Cost") ? "x" : "");
+                const isPositive = row.invertColor ? row.delta < 0 : row.delta > 0;                                                                                                                            
+                const isNeutral = Math.abs(row.delta) < 0.01;                                                                                                                                                  
+                return (                                                                                                                                                                                       
+                  <motion.div                                                                                                                                                                                  
+                    key={row.label}                                                                                                                                                                            
+                    initial={{ opacity: 0 }}                                                                                                                                                                   
+                    animate={{ opacity: 1 }}                                                                                                                                                                   
+                    transition={{ delay: 0.1 + i * 0.04 }}                                                
+                    className={`flex items-center py-2.5 gap-4 ${row.bold ? "font-semibold" : ""}`}                                                                                                            
+                  >                                                                                       
+                    <span className="text-xs text-[#666666] flex-1 min-w-[120px]">{row.label}</span>
+                    <span className="text-xs text-[#999999] w-16 sm:w-20 text-right tabular-nums">{row.a}</span>                                                                                               
+                    <span className="text-xs font-medium text-[#1A1A1A] w-16 sm:w-20 text-right tabular-nums">{row.b}</span>                                                                                   
+                    {!isNeutral ? (                                                                                                                                                                            
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full min-w-[56px] text-center tabular-nums ${                                                                            
+                        isPositive ? "bg-green-50 text-green-700" : "bg-[#F5F0EB] text-[#999999]"                                                                                                              
+                      }`}>                                                                                                                                                                                     
+                        {row.delta > 0 ? "+" : "−"}{deltaLabel}                                                                                                                                                
+                      </span>                                                                                                                                                                                  
+                    ) : (                                                                                                                                                                                      
+                      <span className="min-w-[56px]" />                                                                                                                                                        
+                    )}                                                                                                                                                                                         
+                  </motion.div>           
+                );                                                                                                                                                                                             
+              })}                                                                                                                                                                                              
+            </div>
+          </div>                                                                                                                                                                                               
+        );                                                                                                
+      })()}                                   
+                                          
+      {/* Trajectory chart — only when both exist */}
+      {versionA && versionB && (() => {                                                                                                                                                                        
+        // Build chart data for both versions
+        const flowsA = groupByQuarter(buildMonthlyCashFlows(versionA.settings, versionA.config));                                                                                                              
+        const flowsB = groupByQuarter(buildMonthlyCashFlows(versionB.settings, versionB.config));         
+        const chartDataA = flowsA.map(r => ({ label: r.label, value: r.cumulativeNet }));
+        const chartDataB = flowsB.map(r => ({ label: r.label, value: r.cumulativeNet }));                                                                                                                      
+        return (                                                                                                                                                                                               
+          <div className="border-t border-[#E8E2DA] px-4 sm:px-6 py-4">                                                                                                                                        
+            <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-widest mb-4">Value Trajectory</p>                                                                                        
+            <ResponsiveContainer width="100%" height={200}>                                                                                                                                                    
+              <ComposedChart margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>                                                                                                                               
+                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDEA" vertical={false} />                                                                                                                      
+                <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#BBBBBB" }} allowDuplicatedCategory={false} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={(v: number) => fmt(v)} tick={{ fontSize: 10, fill: "#BBBBBB" }} width={60} axisLine={false} tickLine={false} />                                                          
+                <Tooltip formatter={(v: number) => fmt(v)} contentStyle={{ fontSize: 12, borderColor: "#E8E2DA" }} />                                                                                          
+                <ReferenceLine y={0} stroke="#E8E2DA" strokeWidth={1} />                                                                                                                                       
+                <Line data={chartDataA} type="monotone" dataKey="value" stroke="#1A1A1A" strokeWidth={2} dot={false} name="Version A" />                                                                       
+                <Line data={chartDataB} type="monotone" dataKey="value" stroke="#EA2C00" strokeWidth={2} strokeDasharray="6 3" dot={false} name="Version B" />                                                 
+              </ComposedChart>                                                                                                                                                                                 
+            </ResponsiveContainer>                                                                                                                                                                             
+            <div className="flex items-center gap-4 mt-2 justify-center">                                                                                                                                      
+              <div className="flex items-center gap-1.5"><div className="w-6 h-0.5 bg-[#1A1A1A]" /><span className="text-[11px] text-[#999999]">Version A</span></div>                                         
+              <div className="flex items-center gap-1.5"><div className="w-6 h-0.5 bg-[#EA2C00]" style={{ backgroundImage: "repeating-linear-gradient(90deg,#EA2C00 0,#EA2C00 6px,transparent 6px,transparent  
+  9px)" }} /><span className="text-[11px] text-[#999999]">Version B</span></div>                                                                                                                               
+            </div>                                                                                                                                                                                             
+          </div>                                                                                                                                                                                               
+        );                                                                                                                                                                                                     
+      })()}                                                                                                                                                                                                    
+                                                                                                                                                                                                               
+      {/* Prompt when only A is saved */}                                                                 
+      {versionA && !versionB && (
+        <div className="border-t border-[#E8E2DA] px-6 py-4 bg-[#FAFAF8] text-center">                                                                                                                         
+          <p className="text-sm text-[#999999]">Now adjust your settings — pricing, drivers, care settings — then <span className="font-medium text-[#1A1A1A]">Save as B</span> to see the comparison.</p>
+        </div>                                                                                                                                                                                                 
+      )}                                                                                                                                                                                                       
+    </motion.div>                                                                                                                                                                                              
+  )}                                                                                                                                                                                                           
+  </AnimatePresence>                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  getScenarioDiffs() function
+                                                                                                                                                                                                               
+  Add this pure function above the component:
+                                                                                                                                                                                                               
+  interface DiffItem {                                                                                    
+    label: string;
+    valueA: string;                                                                                                                                                                                            
+    valueB: string;                           
+    category: "scope" | "drivers" | "pricing";                                                                                                                                                                 
+  }                                                                                                       
+                                                                                                                                                                                                               
+  function getScenarioDiffs(a: ProformaScenario, b: ProformaScenario): DiffItem[] {
+    const diffs: DiffItem[] = [];                                                                                                                                                                              
+                                                                                                          
+    // SCOPE — care settings                                                                                                                                                                                   
+    const settingsA = a.settings.map(s => s.careSetting);
+    const settingsB = b.settings.map(s => s.careSetting);                                                                                                                                                      
+    const allSettingTypes = Array.from(new Set([...settingsA, ...settingsB]));                                                                                                                                 
+    for (const st of allSettingTypes) {   
+      const inA = settingsA.includes(st);                                                                                                                                                                      
+      const inB = settingsB.includes(st);                                                                                                                                                                      
+      if (inA !== inB) {
+        diffs.push({ label: SETTING_LABELS[st] || st, valueA: inA ? "included" : "—", valueB: inB ? "included" : "—", category: "scope" });                                                                    
+      }                                                                                                   
+    }                                                                                                                                                                                                          
+                                                                                                          
+    // SCOPE — provider counts for matching settings                                                                                                                                                           
+    for (const sa of a.settings) {
+      const sb = b.settings.find(s => s.careSetting === sa.careSetting);                                                                                                                                       
+      if (!sb) continue;                                                                                  
+      if (sa.providerCount !== sb.providerCount) {
+        diffs.push({                                                                                                                                                                                           
+          label: `${SETTING_LABELS[sa.careSetting]} ${SETTING_UNIT_LABELS[sa.careSetting] || "providers"}`,
+          valueA: sa.providerCount.toLocaleString(),                                                                                                                                                           
+          valueB: sb.providerCount.toLocaleString(),                                                                                                                                                           
+          category: "scope",                  
+        });                                                                                                                                                                                                    
+      }                                                                                                   
+    }                                                                                                                                                                                                          
+                                                                                                          
+    // DRIVERS — compare for each matching setting                                                                                                                                                             
+    for (const sa of a.settings) {                                                                        
+      const sb = b.settings.find(s => s.careSetting === sa.careSetting);
+      if (!sb) continue;                  
+
+      // wRVU scenario                                                                                                                                                                                         
+      const wrvuA = sa.fullExploreState?.docQualityInputs?.wrvuScenario;
+      const wrvuB = sb.fullExploreState?.docQualityInputs?.wrvuScenario;                                                                                                                                       
+      if (wrvuA && wrvuB && wrvuA !== wrvuB) {                                                                                                                                                                 
+        const pct: Record<string, string> = { conservative: "5%", typical: "7%", aggressive: "10%" };
+        diffs.push({ label: "wRVU Capture", valueA: `${pct[wrvuA] || wrvuA} (${wrvuA})`, valueB: `${pct[wrvuB] || wrvuB} (${wrvuB})`, category: "drivers" });                                                  
+      }                                                                                                   
+                                                                                                                                                                                                               
+      // HCC                                                                                                                                                                                                   
+      const hccA = sa.fullExploreState?.docQualityInputs?.hccEnabled;                                                                                                                                          
+      const hccB = sb.fullExploreState?.docQualityInputs?.hccEnabled;                                                                                                                                          
+      if (hccA !== undefined && hccB !== undefined && hccA !== hccB) {                                                                                                                                         
+        diffs.push({ label: "HCC Capture", valueA: hccA ? "on" : "off", valueB: hccB ? "on" : "off", category: "drivers" });
+      }                                                                                                                                                                                                        
+                                          
+      // Retention                                                                                                                                                                                             
+      const retA = sa.fullExploreState?.timeDriverInputs?.calculateRetentionValue;                                                                                                                             
+      const retB = sb.fullExploreState?.timeDriverInputs?.calculateRetentionValue;
+      if (retA !== undefined && retB !== undefined && retA !== retB) {                                                                                                                                         
+        diffs.push({ label: "Retention Value", valueA: retA ? "modeled" : "off", valueB: retB ? "modeled" : "off", category: "drivers" });
+      }                                                                                                                                                                                                        
+                                                                                                          
+      // Patient Access                                                                                                                                                                                        
+      const paA = sa.fullExploreState?.timeDriverInputs?.patientAccessEnabled;                                                                                                                                 
+      const paB = sb.fullExploreState?.timeDriverInputs?.patientAccessEnabled;                                                                                                                                 
+      if (paA !== undefined && paB !== undefined && paA !== paB) {                                                                                                                                             
+        diffs.push({ label: "Patient Access", valueA: paA ? "on" : "off", valueB: paB ? "on" : "off", category: "drivers" });
+      }                                       
+                                                                                                                                                                                                               
+      // Denials / DRG
+      const denA = sa.fullExploreState?.docQualityInputs?.denialsEnabled;                                                                                                                                      
+      const denB = sb.fullExploreState?.docQualityInputs?.denialsEnabled;                                 
+      if (denA !== undefined && denB !== undefined && denA !== denB) {                                                                                                                                         
+        diffs.push({ label: "Denial Prevention", valueA: denA ? "on" : "off", valueB: denB ? "on" : "off", category: "drivers" });
+      }                                                                                                                                                                                                        
+                                          
+      // Utilization %                                                                                                                                                                                         
+      if (Math.abs(sa.utilizationPercent - sb.utilizationPercent) > 2) {                                                                                                                                       
+        diffs.push({ label: `${SETTING_LABELS[sa.careSetting]} Utilization`, valueA: `${sa.utilizationPercent}%`, valueB: `${sb.utilizationPercent}%`, category: "drivers" });                                 
+      }                                                                                                                                                                                                        
+    }                                                                                                     
+                                                                                                                                                                                                               
+    // PRICING                                                                                                                                                                                                 
+    const priceA = getPricingLabel(a.settings);                                                                                                                                                                
+    const priceB = getPricingLabel(b.settings);                                                                                                                                                                
+    if (priceA !== priceB) {                                                                              
+      diffs.push({ label: "Pricing", valueA: priceA, valueB: priceB, category: "pricing" });
+    }                                                                                                                                                                                                          
+                                          
+    return diffs;                                                                                                                                                                                              
+  }                                                                                                                                                                                                            
+   
+  ---                                                                                                                                                                                                          
+  Also remove payback from the main KPI header                                                            
+                                              
+  Find the existing payback KPI card in the header (it shows summary.paybackMonth) and replace it with Value-to-Cost:
+                                              
+  <div>                                                                                                                                                                                                        
+    <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Value-to-Cost</p>
+    <p className="text-xl sm:text-2xl font-bold text-white" data-testid="text-vtc">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>                                                          
+    <p className="text-[11px] text-white/40 mt-0.5">Abridge benchmark: 3–7x</p>                           
+  </div>                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Clean up                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  - Remove showSaveDialog state and the save dialog modal JSX entirely                                                                                                                                         
+  - Remove the scenarios prop usage, onSaveScenario, onDeleteScenario props (or leave as optional and just don't use them — don't break the interface)
+  - Remove the scenarioSummaries useMemo block                                                                                                                                                                 
+  - Remove GitCompare from the lucide imports if no longer used
