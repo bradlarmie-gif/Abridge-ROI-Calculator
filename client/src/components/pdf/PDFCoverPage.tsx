@@ -1,5 +1,6 @@
 import { Page, View, Text, StyleSheet, Image, Font } from "@react-pdf/renderer";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 import abridgeFont from "../../assets/fonts/abridge.otf";
 
 Font.register({
@@ -91,6 +92,14 @@ const styles = StyleSheet.create({
     color: colors.gray,
     marginBottom: 4,
   },
+  cornerMark: {
+    position: "absolute",
+    bottom: 80,
+    right: 0,
+    width: 200,
+    height: 200,
+    opacity: 0.06,
+  },
   disclaimer: {
     position: "absolute",
     bottom: 36,
@@ -152,6 +161,8 @@ export function PDFCoverPage({
           </View>
         ) : null}
       </View>
+
+      <Image src={abridgeSymbol} style={styles.cornerMark} />
 
       <View style={styles.disclaimer}>
         <Text style={styles.disclaimerText}>
