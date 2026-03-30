@@ -1,0 +1,291 @@
+Step 1 — Add notes to the metric entry type
+
+  In client/src/lib/dataRequestUrlState.ts, add notes to DataRequestMetricEntry:
+
+  export interface DataRequestMetricEntry {
+    metricId: string;
+    before: number | null;
+    after: number | null;
+    monthlyData?: number[];
+    isMonthlyMode: boolean;
+    notes?: string;
+  }
+
+  ---
+  Step 2 — Add notes textarea to MetricRow in client/src/pages/intake/MeasureDataRequest.tsx
+
+  In the MetricRow component, inside the expanded section (the {checked && (...)} block), add a notes textarea after the before/after inputs and after the monthly trend toggle section:
+
+  {/* Notes */}
+  <div className="mt-3">
+    <textarea
+      value={entry?.notes ?? ""}
+      onChange={(e) => onUpdate({ notes: e.target.value || undefined })}
+      placeholder="Add context — e.g. data from Q3 2025, excludes ED providers, partial deployment only"
+      rows={2}
+      className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 resize-none"
+      data-testid={`textarea-notes-${metric.id}`}
+    />
+  </div>
+
+  Also update the onUpdate call signature in the MetricRow props to accept the full DataRequestMetricEntry partial including notes. The existing onUpdate: (updates: Partial<DataRequestMetricEntry>) => void
+  already handles this — no change needed there.
+
+  ---
+  Step 3 — Create PDF generator: client/src/lib/data-request-pdf-generator.tsx
+
+  import React from "react";
+  import { Document, Page, Text, View, StyleSheet, Image, Font, pdf } from "@react-pdf/renderer";
+  import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
+  import ManropeRegular from "@assets/fonts/manrope-regular.ttf";
+  import ManropeBold from "@assets/fonts/manrope-bold.ttf";
+
+  Font.register({
+    family: "Manrope",
+    fonts: [
+      { src: ManropeRegular, fontWeight: 400 },
+      { src: ManropeBold, fontWeight: 700 },
+    ],
+  });
+
+  const SETTING_LABELS: Record<string, string> = {
+    outpatient: "Outpatient",
+    ed: "Emergency Department",
+    inpatient: "Inpatient / Hospital Medicine",
+    nursing: "Nursing / Care Teams",
+  };
+
+  const s = StyleSheet.create({
+    page: { fontFamily: "Manrope", backgroundColor: "#FFFFFF", paddingHorizontal: 48, paddingVertical: 48 },
+    header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 },
+    logo: { width: 96, height: 24, objectFit: "contain" },
+    headerRight: { alignItems: "flex-end" },
+    headerTitle: { fontSize: 18, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 },
+    headerMeta: { fontSize: 9, color: "#999999" },
+    settingBadge: { backgroundColor: "#F5F0EB", borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3, marginTop: 6 },
+    settingBadgeText: { fontSize: 9, fontWeight: 700, color: "#EA2C00", textTransform: "uppercase", letterSpacing: 1 },
+    divider: { borderBottomWidth: 1, borderBottomColor: "#E8E2DA", marginBottom: 24 },
+    metricCard: { marginBottom: 16, borderWidth: 1, borderColor: "#E8E2DA", borderRadius: 8, overflow: "hidden" },
+    metricHeader: { backgroundColor: "#FAFAF8", paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#F0EDEA" },
+    metricName: { fontSize: 11, fontWeight: 700, color: "#1A1A1A" },
+    metricUnit: { fontSize: 9, color: "#999999", marginTop: 1 },
+    metricBody: { paddingHorizontal: 16, paddingVertical: 12 },
+    valuesRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8 },
+    valueBox: { flex: 1 },
+    valueLabel: { fontSize: 8, color: "#999999", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 3 },
+    valueNumber: { fontSize: 20, fontWeight: 700, color: "#1A1A1A" },
+    arrow: { fontSize: 16, color: "#CCCCCC" },
+    deltaBox: { backgroundColor: "#F0FDF4", borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+    deltaText: { fontSize: 11, fontWeight: 700, color: "#16A34A" },
+    deltaBoxNeg: { backgroundColor: "#F5F0EB", borderRadius: 4, paddingHorizontal: 8, paddingVertical: 4 },
+    deltaTextNeg: { fontSize: 11, fontWeight: 700, color: "#999999" },
+    notesBox: { backgroundColor: "#F5F0EB", borderRadius: 4, paddingHorizontal: 12, paddingVertical: 8, marginTop: 4 },
+    notesLabel: { fontSize: 8, color: "#999999", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 3 },
+    notesText: { fontSize: 10, color: "#444444", lineHeight: 1.5 },
+    footer: { position: "absolute", bottom: 32, left: 48, right: 48, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    footerText: { fontSize: 8, color: "#CCCCCC" },
+    footerRed: { fontSize: 8, color: "#EA2C00", fontWeight: 700 },
+    noDataText: { fontSize: 10, color: "#CCCCCC", fontStyle: "italic" },
+  });
+
+  export interface DataRequestPDFMetric {
+    label: string;
+    unitLabel: string;
+    before: number | null;
+    after: number | null;
+    notes?: string;
+    lowerIsBetter?: boolean;
+  }
+
+  export interface DataRequestPDFData {
+    setting: string;
+    metrics: DataRequestPDFMetric[];
+    generatedAt: Date;
+  }
+
+  function formatVal(n: number | null): string {
+    if (n === null) return "—";
+    return n.toLocaleString();
+  }
+
+  function DataRequestDocument({ data }: { data: DataRequestPDFData }) {
+    const dateStr = data.generatedAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    const metricsWithData = data.metrics.filter(m => m.before !== null || m.after !== null);
+
+    return (
+      <Document>
+        <Page size="A4" style={s.page}>
+          {/* Header */}
+          <View style={s.header}>
+            <View>
+              <Image src={abridgeLogo} style={s.logo} />
+              <View style={s.settingBadge}>
+                <Text style={s.settingBadgeText}>{SETTING_LABELS[data.setting] || data.setting}</Text>
+              </View>
+            </View>
+            <View style={s.headerRight}>
+              <Text style={s.headerTitle}>Measurement Summary</Text>
+              <Text style={s.headerMeta}>{dateStr}</Text>
+            </View>
+          </View>
+          <View style={s.divider} />
+
+          {/* Metrics */}
+          {metricsWithData.length === 0 ? (
+            <Text style={s.noDataText}>No metric data entered.</Text>
+          ) : (
+            metricsWithData.map((metric, i) => {
+              const hasBefore = metric.before !== null;
+              const hasAfter = metric.after !== null;
+              const hasBoth = hasBefore && hasAfter;
+              let delta: number | null = null;
+              let deltaLabel = "";
+              let isPositive = false;
+
+              if (hasBoth && metric.before !== 0) {
+                delta = ((metric.after! - metric.before!) / Math.abs(metric.before!)) * 100;
+                const improved = metric.lowerIsBetter ? delta < 0 : delta > 0;
+                isPositive = improved;
+                deltaLabel = `${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`;
+              }
+
+              return (
+                <View key={i} style={s.metricCard}>
+                  <View style={s.metricHeader}>
+                    <Text style={s.metricName}>{metric.label}</Text>
+                    <Text style={s.metricUnit}>{metric.unitLabel}</Text>
+                  </View>
+                  <View style={s.metricBody}>
+                    <View style={s.valuesRow}>
+                      <View style={s.valueBox}>
+                        <Text style={s.valueLabel}>Before Abridge</Text>
+                        <Text style={s.valueNumber}>{formatVal(metric.before)}</Text>
+                      </View>
+                      <Text style={s.arrow}>→</Text>
+                      <View style={s.valueBox}>
+                        <Text style={s.valueLabel}>With Abridge</Text>
+                        <Text style={[s.valueNumber, { color: "#EA2C00" }]}>{formatVal(metric.after)}</Text>
+                      </View>
+                      {hasBoth && delta !== null && (
+                        <View style={isPositive ? s.deltaBox : s.deltaBoxNeg}>
+                          <Text style={isPositive ? s.deltaText : s.deltaTextNeg}>{deltaLabel}</Text>
+                        </View>
+                      )}
+                    </View>
+                    {metric.notes && (
+                      <View style={s.notesBox}>
+                        <Text style={s.notesLabel}>Context</Text>
+                        <Text style={s.notesText}>{metric.notes}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              );
+            })
+          )}
+
+          {/* Footer */}
+          <View style={s.footer}>
+            <Text style={s.footerText}>Prepared for your Abridge partner · Confidential</Text>
+            <Text style={s.footerRed}>Abridge</Text>
+          </View>
+        </Page>
+      </Document>
+    );
+  }                                           
+                                          
+  export async function generateDataRequestPDF(data: DataRequestPDFData): Promise<void> {
+    const blob = await pdf(<DataRequestDocument data={data} />).toBlob();                                                                                                                                      
+    const url = URL.createObjectURL(blob);    
+    const a = document.createElement("a");                                                                                                                                                                     
+    a.href = url;                                                                                         
+    a.download = `abridge-measurement-summary-${data.setting}-${new Date().toISOString().slice(0, 10)}.pdf`;                                                                                                   
+    a.click();                                
+    URL.revokeObjectURL(url);                                                                                                                                                                                  
+  }                                                                                                       
+                                                                                                                                                                                                               
+  ---
+  Step 4 — Wire up PDF download in client/src/pages/intake/MeasureDataRequest.tsx                                                                                                                              
+                                                                                                          
+  Add import at the top:                                                                                                                                                                                       
+  import { generateDataRequestPDF, type DataRequestPDFData } from "@/lib/data-request-pdf-generator";     
+                                                                                                                                                                                                               
+  Add state:                                  
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);                                                                                                                                               
+                                                                                                          
+  Add handler:                                                                                                                                                                                                 
+  async function handleDownloadPDF() {                                                                                                                                                                         
+    setIsGeneratingPDF(true);                                                                                                                                                                                  
+    const metricDefs: Record<string, { label: string; unitLabel: string; lowerIsBetter?: boolean }> = {};                                                                                                      
+    for (const m of allMetrics) {                                                                         
+      metricDefs[m.id] = { label: m.label, unitLabel: m.unitLabel, lowerIsBetter: m.lowerIsBetter };
+    }                                                                                                                                                                                                          
+                                              
+    const metrics = Array.from(checkedIds)                                                                                                                                                                     
+      .map(id => {                                                                                        
+        const entry = entries[id];                                                                                                                                                                             
+        const def = metricDefs[id];                                                                       
+        if (!def) return null;                                                                                                                                                                                 
+        return {                                                                                          
+          label: def.label,                                                                                                                                                                                    
+          unitLabel: def.unitLabel,                                                                                                                                                                            
+          lowerIsBetter: def.lowerIsBetter,
+          before: entry?.before ?? null,                                                                                                                                                                       
+          after: entry?.after ?? null,                                                                    
+          notes: entry?.notes,        
+        };                                                                                                                                                                                                     
+      })                                      
+      .filter((m): m is NonNullable<typeof m> => m !== null && (m.before !== null || m.after !== null));                                                                                                       
+                                                                                                          
+    const data: DataRequestPDFData = {                                                                                                                                                                         
+      setting,                                
+      metrics,                                                                                                                                                                                                 
+      generatedAt: new Date(),                                                                            
+    };                                                                                                                                                                                                         
+      
+    await generateDataRequestPDF(data);                                                                                                                                                                        
+    setIsGeneratingPDF(false);                                                                            
+  }                           
+   
+  Replace the existing single copy button section with two buttons side by side:
+  <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
+    <div className="flex flex-col sm:flex-row gap-3 justify-center">             
+      <button                                                       
+        onClick={handleDownloadPDF}                                                                                                                                                                            
+        disabled={!hasAnyData || isGeneratingPDF}
+        className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${                                                                                 
+          hasAnyData && !isGeneratingPDF                                                                                                                                                                       
+            ? "bg-[#EA2C00] hover:bg-[#c92500] text-white"                                                                                                                                                     
+            : "bg-gray-100 text-gray-400 cursor-not-allowed"                                                                                                                                                   
+        }`}                                                                                                                                                                                                    
+        data-testid="button-download-pdf"                                                                                                                                                                      
+      >                                                                                                                                                                                                        
+        {isGeneratingPDF ? (                                                                                                                                                                                   
+          <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>                                                                                                                                      
+        ) : (                                                                                                                                                                                                  
+          <><Download className="w-4 h-4" /> Download PDF</>                                                                                                                                                   
+        )}                                                                                                
+      </button>                                                                                                                                                                                                
+      <button                                                                                                                                                                                                  
+        onClick={handleCopy}                                                                                                                                                                                   
+        disabled={!hasAnyData}                                                                                                                                                                                 
+        className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all border ${
+          hasAnyData                                                                                                                 
+            ? copied                          
+              ? "bg-green-500 text-white border-green-500"                                                                                                                                                     
+              : "border-[#E8E2DA] text-[#666666] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+            : "border-gray-200 text-gray-400 cursor-not-allowed"                                                                                                                                               
+        }`}                                                                                               
+        data-testid="button-copy-data-request"                                                                                                                                                                 
+      >                                                                                                   
+        {copied ? <><ClipboardCheck className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy as Text</>}                                                                                        
+      </button>                                                                                                        
+    </div>                                                                                                                                                                                                     
+    {!hasAnyData && <p className="text-xs text-gray-400 mt-3 text-center">Enter at least one before or after value to export.</p>}                                                                             
+  </div>                                                                                                                          
+                                                                                                                                                                                                               
+  Add Download and Loader2 to the lucide-react import at the top of the file.                             
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Result: Each checked metric with data shows an optional notes textarea. Bottom of form has Download PDF (primary, red) and Copy as Text (secondary, outlined). The PDF is clean, Abridge-branded, shows
+  Before → After with delta and any context notes the partner added.

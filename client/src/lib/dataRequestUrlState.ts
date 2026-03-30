@@ -7,6 +7,7 @@ export interface DataRequestMetricEntry {
   after: number | null;
   monthlyData?: number[];
   isMonthlyMode: boolean;
+  notes?: string;
 }
 
 export interface DeploymentSnapshot {

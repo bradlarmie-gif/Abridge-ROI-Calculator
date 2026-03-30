@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, Trash2, Lock, Download } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Trash2, Lock, Download, Loader2, Copy, ClipboardCheck } from "lucide-react";
 import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot } from "@/lib/dataRequestUrlState";
 import { downloadDataRequestReceiptPDF } from "@/components/intake/DataRequestReceiptPDF";
+import { generateDataRequestPDF, type DataRequestPDFData } from "@/lib/data-request-pdf-generator";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 import type { MeasureCareSetting } from "@/lib/measureCalculator";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
@@ -114,6 +115,16 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
               </div>
             )}
           </div>
+          <div className="mt-3">
+            <textarea
+              value={entry?.notes ?? ""}
+              onChange={(e) => onUpdate({ notes: e.target.value || undefined })}
+              placeholder="Add context — e.g. data from Q3 2025, excludes ED providers, partial deployment only"
+              rows={2}
+              className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 resize-none"
+              data-testid={`textarea-notes-${metric.id}`}
+            />
+          </div>
         </div>
       )}
     </div>
@@ -136,6 +147,8 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>({});
   const [deployment, setDeployment] = useState<DeploymentSnapshot>(defaultDeployment);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [copied, setCopied] = useState(false);
   const isSettingLocked = settings.length > 0 && !!preseed;
 
   function toggleMetric(id: string) {
@@ -185,6 +198,63 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     } finally {
       setPdfLoading(false);
     }
+  }
+
+  async function handleDownloadMeasurementPDF() {
+    setIsGeneratingPDF(true);
+    const metricDefs: Record<string, { label: string; unitLabel: string; lowerIsBetter?: boolean }> = {};
+    for (const m of allMetrics) {
+      metricDefs[m.id] = { label: m.label, unitLabel: m.unitLabel, lowerIsBetter: m.lowerIsBetter };
+    }
+
+    const metrics = Array.from(checkedIds)
+      .map(id => {
+        const entry = entries[id];
+        const def = metricDefs[id];
+        if (!def) return null;
+        return {
+          label: def.label,
+          unitLabel: def.unitLabel,
+          lowerIsBetter: def.lowerIsBetter,
+          before: entry?.before ?? null,
+          after: entry?.after ?? null,
+          notes: entry?.notes,
+        };
+      })
+      .filter((m): m is NonNullable<typeof m> => m !== null && (m.before !== null || m.after !== null));
+
+    const data: DataRequestPDFData = {
+      setting: primarySetting,
+      metrics,
+      generatedAt: new Date(),
+    };
+
+    await generateDataRequestPDF(data);
+    setIsGeneratingPDF(false);
+  }
+
+  function handleCopy() {
+    const response = buildResponse();
+    const metricLabels: Record<string, string> = {};
+    for (const m of allMetrics) {
+      metricLabels[m.id] = m.label;
+    }
+    const lines: string[] = [`ABRIDGE — MEASUREMENT SUMMARY (${SETTING_LABELS[primarySetting]})`, ''];
+    if (deployment.organizationName) lines.push(`  Organization: ${deployment.organizationName}`);
+    if (deployment.monthsOnAbridge) lines.push(`  Months on Abridge: ${deployment.monthsOnAbridge}`);
+    if (deployment.totalProviders) lines.push(`  Total providers: ${deployment.totalProviders}`);
+    lines.push('');
+    for (const m of response.metrics) {
+      const label = metricLabels[m.metricId] || m.metricId;
+      const parts: string[] = [`  ${label}`];
+      if (m.before != null) parts.push(`    Before: ${m.before}`);
+      if (m.after != null) parts.push(`    After:  ${m.after}`);
+      if (m.notes) parts.push(`    Notes:  ${m.notes}`);
+      lines.push(parts.join('\n'));
+    }
+    navigator.clipboard.writeText(lines.join('\n').trim());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   const hasAnyData =
@@ -393,17 +463,39 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           );
         })}
         <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
-          <button onClick={handleDownloadPDF} disabled={!hasAnyData || pdfLoading}
-            className={`w-full inline-flex items-center justify-center gap-2 h-14 rounded-xl font-semibold text-sm transition-all ${
-              hasAnyData ? "bg-[#1A1A1A] hover:bg-[#333333] text-white" : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
-            }`}
-            data-testid="button-download-pdf-data-request"
-          >
-            <Download className="w-4 h-4" />
-            {pdfLoading ? "Generating…" : "Download PDF"}
-          </button>
-          <p className="text-xs text-gray-400 text-center mt-2">Save a copy for your records</p>
-          {!hasAnyData && <p className="text-xs text-gray-400 mt-3 text-center">Select at least one metric and enter a before or after value.</p>}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={handleDownloadMeasurementPDF}
+              disabled={!hasAnyData || isGeneratingPDF}
+              className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
+                hasAnyData && !isGeneratingPDF
+                  ? "bg-[#EA2C00] hover:bg-[#c92500] text-white"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              }`}
+              data-testid="button-download-pdf"
+            >
+              {isGeneratingPDF ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+              ) : (
+                <><Download className="w-4 h-4" /> Download PDF</>
+              )}
+            </button>
+            <button
+              onClick={handleCopy}
+              disabled={!hasAnyData}
+              className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all border ${
+                hasAnyData
+                  ? copied
+                    ? "bg-green-500 text-white border-green-500"
+                    : "border-[#E8E2DA] text-[#666666] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+                  : "border-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+              data-testid="button-copy-data-request"
+            >
+              {copied ? <><ClipboardCheck className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy as Text</>}
+            </button>
+          </div>
+          {!hasAnyData && <p className="text-xs text-gray-400 mt-3 text-center">Enter at least one before or after value to export.</p>}
         </div>
 
         {(checkedIds.size > 0 || Object.keys(entries).length > 0) && (
