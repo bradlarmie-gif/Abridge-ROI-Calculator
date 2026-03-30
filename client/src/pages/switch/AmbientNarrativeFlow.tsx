@@ -47,7 +47,17 @@ export default function AmbientNarrativeFlow({
     if (step < 1 || step > TOTAL_SCREENS) return;
     if (step > currentStep && currentStep === 1 && !canProceedFromBaseline) return;
     dispatch(assessmentActions.setStep(step));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    }, 50);
   };
 
   const handleNext = () => {
