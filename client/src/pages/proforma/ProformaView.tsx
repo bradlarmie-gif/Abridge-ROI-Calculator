@@ -342,6 +342,39 @@ export default function ProformaView({
     });
   }, [displayData, settings]);
 
+  const monthlyChartData = useMemo(() => {
+    let cumDoc = 0, cumTime = 0, cumRetention = 0, cumInvestment = 0;
+    const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+    cumInvestment += totalImplFees;
+    return cashFlows.map((row, i) => {
+      cumDoc += row.docValue;
+      cumTime += row.timeValue;
+      cumRetention += row.retentionValue;
+      cumInvestment += row.investment;
+      const month = i + 1;
+      const quarter = Math.ceil(month / 3);
+      const year = Math.ceil(month / 12);
+      const qInYear = ((quarter - 1) % 4) + 1;
+      const yearStr = String(new Date().getFullYear() + year - 1).slice(2);
+      const label = month % 3 === 0 ? `Q${qInYear} '${yearStr}` : '';
+      return {
+        month,
+        label: label || `_${month}`,
+        displayLabel: label,
+        cumDocValue: cumDoc,
+        cumTimeValue: cumTime,
+        cumRetentionValue: cumRetention,
+        cumulativeInvestment: cumInvestment,
+        cumulativeValue: cumDoc + cumTime + cumRetention,
+        cumulativeNet: row.cumulativeNet,
+        investment: row.investment,
+        docValue: row.docValue,
+        timeValue: row.timeValue,
+        retentionValue: row.retentionValue,
+      };
+    });
+  }, [cashFlows, settings]);
+
   const totalProvidersByPeriod = useMemo(() => {
     return displayData.map(row => {
       let total = 0;
@@ -362,28 +395,24 @@ export default function ProformaView({
   }, [cashFlows]);
 
   const lastChartPoint = useMemo(() => {
-    if (chartData.length === 0) return null;
-    const last = chartData[chartData.length - 1];
+    if (monthlyChartData.length === 0) return null;
+    const last = monthlyChartData[monthlyChartData.length - 1];
     return {
-      label: last.label as string,
-      totalValue: last.cumulativeValue as number,
-      investment: last.cumulativeInvestment as number,
+      label: last.label,
+      totalValue: last.cumulativeValue,
+      investment: last.cumulativeInvestment,
     };
-  }, [chartData]);
+  }, [monthlyChartData]);
 
   const paybackLabel = useMemo(() => {
-    if (!summary.paybackMonth) return null;
-    if (config.viewMode === "yearly") {
-      const yearIdx = Math.ceil(summary.paybackMonth / 12) - 1;
-      const d = new Date(startDate.getFullYear(), startDate.getMonth() + yearIdx * 12, 1);
-      return String(d.getFullYear());
-    }
-    const monthIdx = summary.paybackMonth - 1;
-    const d = new Date(startDate.getFullYear(), startDate.getMonth() + monthIdx, 1);
-    const q = Math.floor(d.getMonth() / 3) + 1;
-    const yr = String(d.getFullYear()).slice(-2);
-    return `Q${q} '${yr}`;
-  }, [summary.paybackMonth, startDate, config.viewMode]);
+    if (!summary.paybackMonth || summary.paybackMonth <= 0) return null;
+    const m = summary.paybackMonth;
+    const quarter = Math.ceil(m / 3);
+    const year = Math.ceil(m / 12);
+    const qInYear = ((quarter - 1) % 4) + 1;
+    const yearStr = String(new Date().getFullYear() + year - 1).slice(2);
+    return `Q${qInYear} '${yearStr}`;
+  }, [summary.paybackMonth]);
 
   const goLiveLabels = useMemo(() => {
     const quarterData = groupByQuarter(cashFlows, startDate);
@@ -869,7 +898,7 @@ export default function ProformaView({
           </p>
           <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="chart-ramp-up">
             <ResponsiveContainer width="100%" height={isMobile ? 300 : 420}>
-              <ComposedChart data={chartData} margin={isMobile ? { top: 20, right: 10, left: 0, bottom: 20 } : { top: 30, right: 60, left: 10, bottom: 10 }}>
+              <ComposedChart data={monthlyChartData} margin={isMobile ? { top: 20, right: 10, left: 0, bottom: 20 } : { top: 30, right: 60, left: 10, bottom: 10 }}>
                 <defs>
                   <linearGradient id="grad-doc" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={CHART_COLORS.doc} stopOpacity={0.3} />
@@ -892,10 +921,9 @@ export default function ProformaView({
                 <XAxis
                   dataKey="label"
                   tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
-                  interval={config.viewMode === "quarterly" ? (isMobile ? 2 : 1) : 0}
+                  tickFormatter={(val) => val.startsWith('_') ? '' : val}
+                  interval={2}
                   axisLine={{ stroke: "#D5D0CB" }}
-                  angle={0}
-                  textAnchor="middle"
                   height={30}
                 />
                 <YAxis
@@ -1110,7 +1138,7 @@ export default function ProformaView({
         <div className="mb-8" data-testid="panel-value-drivers">
           <h2 className="text-base font-semibold text-neutral-800 mb-1">Value Drivers</h2>
           <p className="text-sm text-neutral-500 mb-4">
-            Annual value per driver, per care setting. Pre-filled from your assessment — edit to explore scenarios.
+            Annual value per driver. Pre-filled from your assessment — edit to explore scenarios.
           </p>
           <div className="space-y-4">
             {settings.map(s => (
@@ -1118,31 +1146,58 @@ export default function ProformaView({
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
                   <span className="text-sm font-semibold text-neutral-800">{s.label}</span>
-                  <span className="text-xs text-neutral-400 ml-1">{s.providerCount} providers</span>
+                  <span className="text-xs text-neutral-400">{s.providerCount} providers</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {s.drivers.map(driver => (
-                    <div key={driver.id}>
-                      <label className="block text-xs text-neutral-500 mb-1">{driver.name} ($/year)</label>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-neutral-400">$</span>
-                        <input
-                          type="number"
-                          value={driver.value}
-                          onChange={(e) => {
-                            const newVal = parseFloat(e.target.value) || 0;
-                            const updatedDrivers = s.drivers.map(d =>
-                              d.id === driver.id ? { ...d, value: newVal } : d
-                            );
-                            onUpdateSetting(s.id, { drivers: updatedDrivers });
-                          }}
-                          className="w-full border border-neutral-200 rounded px-2 py-1.5 text-sm text-neutral-800 focus:outline-none focus:border-neutral-400"
-                          data-testid={`input-driver-${s.careSetting}-${driver.id}`}
-                        />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {s.drivers.map(driver => {
+                    const perProvider = s.providerCount > 0
+                      ? Math.round(driver.value / s.providerCount).toLocaleString()
+                      : '—';
+                    const perProviderMonth = s.providerCount > 0
+                      ? Math.round(driver.value / s.providerCount / 12).toLocaleString()
+                      : '—';
+
+                    const contextHints: Record<string, string> = {
+                      patientAccess: `≈ $${perProviderMonth}/provider/month · Benchmark: 1–3 additional patients/mo × ~$200/visit`,
+                      edLwbs: `≈ $${perProviderMonth}/provider/month · LWBS patients recovered × ED visit margin`,
+                      wrvu: `≈ $${perProvider}/provider/year · Benchmark: 0.05–0.15 wRVU/encounter × $33 CMS factor`,
+                      denials: `≈ $${perProvider}/provider/year · Denial volume × reduction rate × avg denial value`,
+                      hcc: `≈ $${perProvider}/provider/year · Additional HCC codes × ~$1,200 revenue/code`,
+                      ipDrg: `≈ $${perProvider}/provider/year · DRG accuracy improvement × case volume`,
+                      ipCdi: `≈ $${perProvider}/provider/year · CDI query reduction × $50/query`,
+                      retention: `≈ $${perProvider}/provider/year · Phased over 3 years (35% → 75% → 100%)`,
+                    };
+                    const hint = contextHints[driver.id] || `≈ $${perProvider}/provider/year`;
+
+                    return (
+                      <div key={driver.id}>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-xs font-medium text-neutral-700">{driver.name}</label>
+                          <span className="text-[10px] text-neutral-400 capitalize">{driver.onset} onset</span>
+                        </div>
+                        <div className="flex items-center gap-1 mb-1">
+                          <span className="text-xs text-neutral-400">$</span>
+                          <input
+                            type="text"
+                            value={driver.value > 0 ? Math.round(driver.value).toLocaleString() : ''}
+                            onChange={(e) => {
+                              const newVal = parseFloat(e.target.value.replace(/,/g, '')) || 0;
+                              const updatedDrivers = s.drivers.map(d =>
+                                d.id === driver.id ? { ...d, value: newVal } : d
+                              );
+                              onUpdateSetting(s.id, { drivers: updatedDrivers });
+                            }}
+                            onFocus={(e) => { e.target.value = driver.value > 0 ? String(Math.round(driver.value)) : ''; }}
+                            onBlur={(e) => { e.target.value = driver.value > 0 ? Math.round(driver.value).toLocaleString() : ''; }}
+                            className="w-full border border-neutral-200 rounded px-2 py-1.5 text-sm text-neutral-800 focus:outline-none focus:border-neutral-400"
+                            data-testid={`input-driver-${s.careSetting}-${driver.id}`}
+                          />
+                          <span className="text-[10px] text-neutral-400 whitespace-nowrap">/yr</span>
+                        </div>
+                        <p className="text-[10px] text-neutral-400 leading-relaxed">{hint}</p>
                       </div>
-                      <p className="text-[10px] text-neutral-400 mt-0.5 capitalize">{driver.onset} onset</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
