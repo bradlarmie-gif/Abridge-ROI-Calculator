@@ -142,21 +142,29 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: MGMA Physician Compensation data; published literature on access revenue from documentation efficiency`;
           } else if (level === 2) {
             const revenuePerVisit = inputs.revenuePerVisit || 200;
-            const benchmarkPatientsLow = 3;
-            const benchmarkPatientsHigh = 8;
+            const benchmarkPatientsLow = 1;
+            const benchmarkPatientsHigh = 3;
             const annualVisitsLow = Math.round(providers * benchmarkPatientsLow * 11);
             const annualVisitsHigh = Math.round(providers * benchmarkPatientsHigh * 11);
             lowEstimate = Math.round(annualVisitsLow * revenuePerVisit);
             highEstimate = Math.round(annualVisitsHigh * revenuePerVisit);
-            narrative = `Recovered time is actively being directed. The next step is measuring how many additional patients are being seen.\n\nOPPORTUNITY AHEAD: Organizations with structured access redesign report 3–8 additional patients/provider/month. At ${providers.toLocaleString()} providers × $${revenuePerVisit}/visit, that's ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually.`;
+            narrative = `Recovered time is actively being directed. The next step is measuring how many additional patients are being seen.\n\nOPPORTUNITY AHEAD: Organizations that restructure access report 1–3 additional patients/provider/month in the first year. At ${providers.toLocaleString()} providers × $${revenuePerVisit}/visit, that's ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually.`;
             formula = `${providers} providers × ${benchmarkPatientsLow}–${benchmarkPatientsHigh} patients/month × 11 months × $${revenuePerVisit}/visit = ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)}`;
           } else if (level === 3) {
-            const accessRevenue = domainInputs.accessRevenue || 0;
-            const revenuePerVisit = inputs.revenuePerVisit || 200;
-            lowEstimate = Math.round(accessRevenue * revenuePerVisit * 0.8);
-            highEstimate = Math.round(accessRevenue * revenuePerVisit);
-            narrative = `Access is expanding. The next level tracks the downstream impact on scheduling efficiency and care team capacity — not just appointment volume.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually from optimized scheduling and care team capacity.`;
-            formula = `${accessRevenue} additional visits × $${revenuePerVisit} revenue per visit = ${formatDollarFull(highEstimate)}`;
+            const additionalPatientsPerMonth = (domainInputs.additionalPatientsPerMonth as number) || 0;
+            const l4ProvidersVal = (domainInputs.l4Providers as number) || providers;
+            const revenuePerVisit = (inputs.revenuePerVisit as number) || 200;
+            if (additionalPatientsPerMonth > 0) {
+              const l3AnnualValue = Math.round(additionalPatientsPerMonth * l4ProvidersVal * 11 * revenuePerVisit);
+              lowEstimate = Math.round(l3AnnualValue * 0.10);
+              highEstimate = Math.round(l3AnnualValue * 0.15);
+              formula = `Level 4 scheduling optimization estimated at 10–15% incremental on validated access revenue of ${formatDollarFull(l3AnnualValue)}`;
+            } else {
+              lowEstimate = Math.round(providers * 400);
+              highEstimate = Math.round(providers * 1200);
+              formula = `Benchmark: ${providers} providers × $400–$1,200 = ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)}/year`;
+            }
+            narrative = `Access is expanding. The next level tracks the downstream impact on scheduling efficiency and care team capacity — not just appointment volume.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually from optimized scheduling and panel expansion.`;
           } else {
             narrative = 'Your capacity domain is at full maturity. Time recovery is tracked, converted to access, and integrated into scheduling and workforce planning.';
           }
@@ -172,11 +180,10 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             lowEstimate = null;
             highEstimate = null;
           } else if (level === 3) {
-            const codingGain = domainInputs.codingGain || 0;
-            lowEstimate = Math.round(codingGain * 0.85);
-            highEstimate = Math.round(codingGain * 1.15);
-            narrative = `Revenue impact is validated and tracked. The next level integrates CDI workflows and denial management into a unified reimbursement optimization program.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} in additional reimbursement from integrated CDI and denial management.`;
-            formula = `Validated coding gain: $${codingGain.toLocaleString()} (±15% range)`;
+            lowEstimate = Math.round(providers * 1000);
+            highEstimate = Math.round(providers * 3000);
+            narrative = `Revenue impact is validated and tracked. The next level integrates CDI workflows, payer strategy, and denial management into a unified reimbursement program.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} in incremental reimbursement from integrated CDI and denial management programs.`;
+            formula = `Benchmark: ${providers} providers × $1,000–$3,000 incremental from CDI/payer integration = ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)}/year`;
           } else {
             narrative = 'Your revenue domain is at full maturity. Documentation-driven coding, CDI, and denial management are integrated and generating measurable value.';
           }
@@ -209,19 +216,15 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             narrative = `Documentation quality has improved. The downstream value — in quality programs, compliance, and CDI — hasn't been connected to it yet. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in quality and compliance value when they first run this analysis.\n\nOPPORTUNITY AHEAD: Start with a documentation completeness audit. It typically generates the baseline data needed to build the quality program.`;
             formula = `Benchmark range: ${providers} providers × $1,000–$3,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: CMS quality penalty exposure data; CDI program ROI literature`;
           } else if (level === 2) {
-            const qualityScore = domainInputs.qualityScore || 70;
-            const complianceRisk = domainInputs.complianceRisk || 0.02;
-            const calculated = Math.round(annualEncounters * complianceRisk * 500);
-            lowEstimate = Math.round(calculated * 0.8);
-            highEstimate = calculated;
-            narrative = `Quality monitoring is in place. The next step is connecting that monitoring to payer contracts and compliance programs.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually in quality and compliance value once connected to payer programs.`;
-            formula = `${annualEncounters.toLocaleString()} encounters × ${Math.round(complianceRisk * 100)}% risk rate × $500 avg impact = ${formatDollarFull(calculated)}`;
+            lowEstimate = Math.round(providers * 500);
+            highEstimate = Math.round(providers * 1500);
+            narrative = `Quality monitoring is in place. The next step is connecting that monitoring to financial pathways — CDI, denial reduction, MIPS, or HCC capture.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} annually once documentation quality is connected to a financial pathway at your scale.`;
+            formula = `Benchmark: ${providers} providers × $500–$1,500 = ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)}/year`;
           } else if (level === 3) {
-            const qualityValue = domainInputs.qualityValue || 0;
-            lowEstimate = Math.round(qualityValue * 0.9);
-            highEstimate = Math.round(qualityValue * 1.2);
-            narrative = `Quality infrastructure is built and connected to payer programs. The next level integrates population health management and value-based care metrics.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} from value-based care program integration.`;
-            formula = `Validated quality value: $${qualityValue.toLocaleString()} (range ±10–20%)`;
+            lowEstimate = Math.round(providers * 800);
+            highEstimate = Math.round(providers * 2000);
+            narrative = `Quality infrastructure is built and connected to financial pathways. The next level embeds documentation quality into organizational strategy — VBC contracts, population health, compliance governance, and AI readiness.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} from value-based care program integration and strategic quality governance.`;
+            formula = `Benchmark: ${providers} providers × $800–$2,000 = ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)}/year from VBC, compliance, and strategic documentation programs`;
           } else {
             narrative = 'Your quality domain is at full maturity. Documentation quality, compliance programs, and value-based care metrics are integrated and generating measurable value.';
           }
