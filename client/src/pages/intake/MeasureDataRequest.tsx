@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, Trash2, Lock, Download, Loader2, Copy, ClipboardCheck } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Trash2, Download, Loader2, Copy, ClipboardCheck } from "lucide-react";
 import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot } from "@/lib/dataRequestUrlState";
-import { downloadDataRequestReceiptPDF } from "@/components/intake/DataRequestReceiptPDF";
 import { generateDataRequestPDF, type DataRequestPDFData } from "@/lib/data-request-pdf-generator";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 import type { MeasureCareSetting } from "@/lib/measureCalculator";
@@ -16,6 +15,17 @@ const DOMAIN_LABELS: Record<string, string> = {
   foundational: "Adoption & Utilization", quality: "Care Quality", workforce: "Workforce",
   capacity: "Capacity", revenue: "Revenue", throughput: "Throughput",
   patientFlow: "Patient Flow", staffing: "Staffing",
+};
+
+const DOMAIN_DESCRIPTIONS: Record<string, string> = {
+  foundational: "How widely and consistently Abridge is being used across your team.",
+  quality: "Whether documentation quality and completeness has improved.",
+  workforce: "Provider retention, burnout, and satisfaction trends.",
+  capacity: "Whether recovered time has translated into more patient access.",
+  revenue: "Impact on billing accuracy, wRVU capture, and denial rates.",
+  throughput: "How patient flow and wait times have changed in the ED.",
+  patientFlow: "How patients are moving through the care setting.",
+  staffing: "Nursing turnover, overtime, and agency spend trends.",
 };
 
 function getMetricsForSetting(setting: MeasureCareSetting): MetricDefinition[] {
@@ -45,13 +55,13 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
 }) {
   const isMonthlyMode = entry?.isMonthlyMode ?? false;
   return (
-    <div className={`border rounded-lg transition-all ${checked ? "border-[#E8E3DD] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]" : "border-[#EDE8E2] bg-[#FAF8F5]"}`}
+    <div className={`border rounded-lg transition-all ${checked ? "border-[#EA2C00] bg-[#FFF5F2]" : "border-[#EDE8E2] bg-[#F9F6F2]"}`}
       data-testid={`metric-row-${metric.id}`}
     >
-      <div className="flex items-start gap-3 p-4">
-        <button onClick={onToggle}
-          className={`mt-0.5 w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-colors ${
-            checked ? "bg-[#EA2C00] border-[#EA2C00]" : "border-gray-300 bg-white"
+      <div className="flex items-start gap-3 p-4 cursor-pointer" onClick={onToggle}>
+        <button
+          className={`mt-0.5 w-5 h-5 rounded-md flex-shrink-0 border-2 flex items-center justify-center transition-all ${
+            checked ? "bg-[#EA2C00] border-[#EA2C00] shadow-sm" : "border-[#CCCCCC] bg-white hover:border-[#EA2C00]/50"
           }`}
           data-testid={`toggle-metric-${metric.id}`}
         >
@@ -63,6 +73,9 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
             <span className="text-xs text-gray-500">({metric.unitLabel})</span>
           </div>
           {checked && metric.description && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{metric.description}</p>}
+          {!checked && (
+            <p className="text-[10px] text-[#BBBBBB] mt-1">Tap to include</p>
+          )}
         </div>
       </div>
       {checked && (
@@ -146,10 +159,9 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   const [checkedIds, setCheckedIds] = useState<Set<string>>(defaultCheckedIds);
   const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>({});
   const [deployment, setDeployment] = useState<DeploymentSnapshot>(defaultDeployment);
-  const [pdfLoading, setPdfLoading] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [copied, setCopied] = useState(false);
-  const isSettingLocked = settings.length > 0 && !!preseed;
+  const [fallbackText, setFallbackText] = useState<string | null>(null);
 
   function toggleMetric(id: string) {
     setCheckedIds((prev) => {
@@ -189,15 +201,6 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     const metrics = Array.from(checkedIds).map((id) => entries[id] ?? { metricId: id, before: null, after: null, isMonthlyMode: false })
       .filter((e) => e.before !== null || e.after !== null || e.isMonthlyMode);
     return { setting: primarySetting, deployment, metrics };
-  }
-
-  async function handleDownloadPDF() {
-    setPdfLoading(true);
-    try {
-      await downloadDataRequestReceiptPDF(buildResponse());
-    } finally {
-      setPdfLoading(false);
-    }
   }
 
   async function handleDownloadMeasurementPDF() {
@@ -252,41 +255,72 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
       if (m.notes) parts.push(`    Notes:  ${m.notes}`);
       lines.push(parts.join('\n'));
     }
-    navigator.clipboard.writeText(lines.join('\n').trim());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const text = lines.join('\n').trim();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setFallbackText(null);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {
+        setFallbackText(text);
+      });
+    } else {
+      setFallbackText(text);
+    }
   }
 
-  const hasAnyData =
-    deployment.organizationName.trim().length > 0 ||
-    deployment.totalProviders > 0 ||
-    Array.from(checkedIds).some((id) => { const e = entries[id]; return e && (e.before !== null || e.after !== null); });
+  const hasAnyMetricData = Array.from(checkedIds).some((id) => {
+    const e = entries[id];
+    return e && (e.before !== null || e.after !== null || e.isMonthlyMode);
+  });
+  const hasAnyData = hasAnyMetricData;
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4">
-      <div className="w-full max-w-2xl mb-8 text-center">
-        <div className="flex items-center justify-center mb-8">
-          <img src={abridgeLogo} alt="Abridge" className="h-7" />
+    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-12 px-4">
+      <div className="w-full max-w-2xl mb-8">
+        <div className="flex items-center justify-center mb-6">
+          <img src={abridgeLogo} alt="Abridge" className="h-6" />
         </div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FAF8F5] border border-[#E8E2DA] rounded-full text-xs text-[#888888] mb-4">
-          {isSettingLocked && <Lock className="w-3 h-3 text-[#EA2C00]" />}
-          {settings.map(s => SETTING_LABELS[s]).join(" · ")}
+
+        <div className="flex justify-center mb-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
+            {SETTING_LABELS[primarySetting]}
+          </div>
         </div>
-        {isSettingLocked && (
-          <p className="text-xs text-[#AAAAAA] mb-2 italic">Your Abridge contact has scoped this review to {settings.map(s => SETTING_LABELS[s]).join(" & ")}.</p>
-        )}
-        <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Pre-EBR Data Request</p>
-        <h1 className="text-3xl font-bold text-black mb-3 uppercase tracking-tight" data-testid="text-data-request-title">Help us tell your story</h1>
-        <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto">
-          Select the metrics you track and enter your numbers. Your Abridge partner will use this to prepare your business review.
+
+        <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2 text-center font-abridge uppercase tracking-tight" data-testid="text-data-request-title">
+          Help Us Tell Your Story
+        </h1>
+
+        <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto mb-6">
+          Check the metrics you track, enter your before and after numbers, add context if needed, then download the PDF to share with your Abridge partner.
         </p>
-        <p className="text-xs text-[#AAAAAA] text-center max-w-sm mx-auto mt-2 leading-relaxed">
-          Only fill in what you track. Anything left blank will be filled with industry benchmarks and refined with you during the review.
-        </p>
+
+        {(() => {
+          const totalChecked = checkedIds.size;
+          const totalFilled = Array.from(checkedIds).filter(id => {
+            const e = entries[id];
+            return e && (e.before !== null || e.after !== null);
+          }).length;
+          if (totalChecked === 0) return null;
+          return (
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex-1 max-w-xs bg-[#E8E2DA] rounded-full h-1.5">
+                <div
+                  className="bg-[#EA2C00] h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: totalChecked > 0 ? `${(totalFilled / totalChecked) * 100}%` : '0%' }}
+                />
+              </div>
+              <span className="text-xs text-[#999999] flex-shrink-0">
+                {totalFilled} of {totalChecked} filled
+              </span>
+            </div>
+          );
+        })()}
       </div>
 
       <div className="w-full max-w-2xl space-y-6">
-        <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
+        <div className="bg-white rounded-xl border border-[#E0D9D0] p-6 shadow-md">
           <h2 className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">Your Organization</h2>
           <div className="space-y-4">
             <div>
@@ -449,59 +483,104 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 </div>
               )}
               {Object.entries(byDomain).map(([domain, metrics]) => (
-                <div key={`${s}-${domain}`} className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm mb-6">
-                  <h2 className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">{DOMAIN_LABELS[domain] || domain}</h2>
+                <div key={`${s}-${domain}`} className="bg-white rounded-xl border border-[#E0D9D0] p-6 shadow-md mb-6">
+                  <div className="flex items-start gap-3 mb-5">
+                    <div className="w-1 rounded-full bg-[#EA2C00] flex-shrink-0 mt-1" style={{ height: '2.5rem' }} />
+                    <div>
+                      <h2 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-widest mb-0.5">
+                        {DOMAIN_LABELS[domain] || domain}
+                      </h2>
+                      <p className="text-xs text-[#999999] leading-snug">
+                        {DOMAIN_DESCRIPTIONS[domain] || ""}
+                      </p>
+                    </div>
+                  </div>
                   <div className="space-y-3">
                     {metrics.map((metric) => (
                       <MetricRow key={metric.id} metric={metric} checked={checkedIds.has(metric.id)} entry={entries[metric.id]}
                         onToggle={() => toggleMetric(metric.id)} onUpdate={(updates) => updateEntry(metric.id, updates)} />
                     ))}
                   </div>
+                  {(() => {
+                    const anyChecked = metrics.some(m => checkedIds.has(m.id));
+                    if (anyChecked) return null;
+                    return (
+                      <p className="text-xs text-[#BBBBBB] text-center py-2 italic">
+                        No metrics selected in this section — check any that apply to your deployment.
+                      </p>
+                    );
+                  })()}
                 </div>
               ))}
             </div>
           );
         })}
-        <div className="bg-[#FAF8F5] rounded-xl border border-[#E8E2DA] p-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={handleDownloadMeasurementPDF}
-              disabled={!hasAnyData || isGeneratingPDF}
-              className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
-                hasAnyData && !isGeneratingPDF
-                  ? "bg-[#EA2C00] hover:bg-[#c92500] text-white"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
-              data-testid="button-download-pdf"
-            >
-              {isGeneratingPDF ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
-              ) : (
-                <><Download className="w-4 h-4" /> Download PDF</>
+        <div className="bg-white rounded-xl border border-[#E0D9D0] p-6 shadow-md">
+          {!hasAnyData ? (
+            <div className="text-center">
+              <p className="text-sm text-[#BBBBBB]">Select at least one metric and enter a value to export your summary.</p>
+            </div>
+          ) : (
+            <div className="text-center">
+              <p className="text-sm font-medium text-[#1A1A1A] mb-1">Ready to share</p>
+              <p className="text-xs text-[#999999] mb-4">Download as a PDF or copy as text to send to your Abridge partner.</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={handleDownloadMeasurementPDF}
+                  disabled={!hasAnyData || isGeneratingPDF}
+                  className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
+                    hasAnyData && !isGeneratingPDF
+                      ? "bg-[#EA2C00] hover:bg-[#c92500] text-white"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
+                  data-testid="button-download-pdf"
+                >
+                  {isGeneratingPDF ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                  ) : (
+                    <><Download className="w-4 h-4" /> Download PDF</>
+                  )}
+                </button>
+                <button
+                  onClick={handleCopy}
+                  disabled={!hasAnyData}
+                  className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all border ${
+                    copied
+                      ? "bg-green-500 text-white border-green-500"
+                      : "border-[#E0D9D0] text-[#444444] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+                  }`}
+                  data-testid="button-copy-data-request"
+                >
+                  {copied ? <><ClipboardCheck className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy as Text</>}
+                </button>
+              </div>
+              {copied && (
+                <p className="text-xs text-green-600 mt-3">Send this to your Abridge partner — they'll use it to prep your business review.</p>
               )}
-            </button>
-            <button
-              onClick={handleCopy}
-              disabled={!hasAnyData}
-              className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all border ${
-                hasAnyData
-                  ? copied
-                    ? "bg-green-500 text-white border-green-500"
-                    : "border-[#E8E2DA] text-[#666666] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
-                  : "border-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
-              data-testid="button-copy-data-request"
-            >
-              {copied ? <><ClipboardCheck className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy as Text</>}
-            </button>
-          </div>
-          {!hasAnyData && <p className="text-xs text-gray-400 mt-3 text-center">Enter at least one before or after value to export.</p>}
+            </div>
+          )}
+
+          {fallbackText && (
+            <div className="mt-4 rounded-lg border border-[#E8E2DA] bg-[#F5F0EB] p-3 text-left">
+              <p className="text-xs text-[#666] mb-2">Auto-copy wasn't available. Select all and copy manually.</p>
+              <textarea
+                readOnly
+                value={fallbackText}
+                autoFocus
+                ref={(el) => { if (el) { el.focus(); el.select(); } }}
+                className="w-full h-48 text-xs font-mono bg-white rounded-lg p-3 border border-[#E0D9D0] resize-none focus:ring-2 focus:ring-[#EA2C00]/20"
+                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+                data-testid="textarea-fallback-data-request"
+              />
+            </div>
+          )}
         </div>
 
         {(checkedIds.size > 0 || Object.keys(entries).length > 0) && (
-          <div className="text-center">
-            <button onClick={handleClearAll}
-              className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-400 transition-colors"
+          <div className="text-center pb-4">
+            <button
+              onClick={handleClearAll}
+              className="inline-flex items-center gap-1.5 text-xs text-[#CCCCCC] hover:text-red-400 transition-colors"
               data-testid="button-clear-data-request"
             >
               <Trash2 className="w-3 h-3" /> Clear my answers
@@ -509,8 +588,8 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           </div>
         )}
 
-        <p className="text-center text-[11px] text-[#CCCCCC] pb-8 mt-4 max-w-sm mx-auto leading-relaxed">
-          No account required. Your answers are saved in this browser — nothing is stored on any server.
+        <p className="text-center text-xs text-[#BBBBBB] pb-8">
+          No account required. Your answers stay in this browser — nothing is stored on any server.
         </p>
       </div>
     </div>

@@ -1,0 +1,192 @@
+ Rewrite MetricRow in client/src/pages/intake/MeasureDataRequest.tsx — premium metric selection and notes UX
+
+  Replace the entire MetricRow function with the following. Add useState to the import if not already present. Also add { AnimatePresence, motion } from framer-motion if not already imported.
+
+  function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
+    metric: MetricDefinition; checked: boolean; entry: DataRequestMetricEntry | undefined;
+    onToggle: () => void; onUpdate: (updates: Partial<DataRequestMetricEntry>) => void;
+  }) {
+    const isMonthlyMode = entry?.isMonthlyMode ?? false;
+    const [showNotes, setShowNotes] = useState(!!(entry?.notes));
+    const [showTrend, setShowTrend] = useState(isMonthlyMode);
+
+    const before = entry?.before ?? null;
+    const after = entry?.after ?? null;
+    const hasBoth = before !== null && after !== null && before !== 0;
+    const deltaPct = hasBoth ? ((after! - before!) / Math.abs(before!)) * 100 : null;
+    const improved = deltaPct !== null
+      ? (metric.lowerIsBetter ? deltaPct < 0 : deltaPct > 0)
+      : null;
+
+    if (!checked) {
+      return (
+        <div
+          onClick={onToggle}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
+          className="group flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all hover:bg-[#FFF5F2]"
+          data-testid={`metric-row-${metric.id}`}
+        >
+          <div className="w-4 h-4 rounded-full border-2 border-[#CCCCCC] bg-white flex-shrink-0 transition-colors group-hover:border-[#EA2C00]/50" />
+          <div className="flex-1 min-w-0 flex items-baseline gap-2">
+            <span className="text-sm text-[#1A1A1A] font-medium">{metric.label}</span>
+            <span className="text-xs text-[#AAAAAA]">{metric.unitLabel}</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="rounded-lg bg-white overflow-hidden"
+        style={{ borderLeft: '3px solid #EA2C00', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+        data-testid={`metric-row-${metric.id}`}
+      >
+        {/* Header row */}
+        <div className="flex items-center gap-3 px-4 pt-3 pb-2">
+          <button
+            onClick={onToggle}
+            className="w-4 h-4 rounded-full bg-[#EA2C00] flex-shrink-0 flex items-center justify-center transition-all hover:bg-[#c92500]"
+            data-testid={`toggle-metric-${metric.id}`}
+          >
+            <Check className="w-2.5 h-2.5 text-white" />
+          </button>
+          <span className="text-sm font-semibold text-[#1A1A1A] flex-1">{metric.label}</span>
+          <span className="text-xs text-[#AAAAAA]">{metric.unitLabel}</span>
+        </div>
+
+        {/* Before / After inputs */}
+        <div className="px-4 pb-3">
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">Before</label>
+              <input
+                type="number" min={0} step="any"
+                value={entry?.before ?? ""}
+                placeholder="—"
+                onChange={(e) => onUpdate({ before: e.target.value === "" ? null : Number(e.target.value) })}
+                className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00]
+  transition-colors"
+                data-testid={`input-before-${metric.id}`}
+              />
+            </div>
+
+            <div className="flex flex-col items-center pb-1.5 gap-1">
+              <span className="text-[#CCCCCC] text-sm">→</span>
+              {deltaPct !== null && (
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                  improved ? 'bg-green-50 text-green-600' : 'bg-[#F5F0EB] text-[#999999]'
+                }`}>
+                  {deltaPct > 0 ? '+' : ''}{deltaPct.toFixed(0)}%
+                </span>
+              )}
+            </div>
+
+            <div className="flex-1">
+              <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">With Abridge</label>
+              <input
+                type="number" min={0} step="any"
+                value={entry?.after ?? ""}
+                placeholder="—"
+                onChange={(e) => onUpdate({ after: e.target.value === "" ? null : Number(e.target.value) })}
+                className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#EA2C00] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00]
+  transition-colors"
+                data-testid={`input-after-${metric.id}`}
+              />
+            </div>
+          </div>
+
+          {/* Notes field — expands on demand */}
+          <AnimatePresence>
+            {showNotes && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.15 }}
+                className="overflow-hidden"
+              >
+                <input
+                  type="text"
+                  value={entry?.notes ?? ""}
+                  onChange={(e) => onUpdate({ notes: e.target.value || undefined })}
+                  placeholder="Context — e.g. Q3 2025, outpatient only, excludes ED"
+                  autoFocus
+                  className="w-full mt-3 bg-transparent border-b border-[#E0D9D0] pb-1.5 text-xs text-[#555555] placeholder:text-[#CCCCCC] focus:outline-none focus:border-[#EA2C00] transition-colors"
+                  data-testid={`input-notes-${metric.id}`}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Monthly trend grid — expands on demand */}
+          <AnimatePresence>
+            {showTrend && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.15 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 overflow-x-auto pb-1">
+                  <div className="flex gap-2 min-w-max">
+                    {MONTH_LABELS.map((month, i) => (
+                      <div key={month} className="flex flex-col items-center gap-1">
+                        <span className="text-[9px] text-[#AAAAAA] uppercase">{month}</span>
+                        <input
+                          type="number" min={0} step="any"
+                          value={entry?.monthlyData?.[i] ?? ""}
+                          placeholder="—"
+                          onChange={(e) => {
+                            const newData = [...(entry?.monthlyData ?? new Array(12).fill(null))];
+                            newData[i] = e.target.value === "" ? null : Number(e.target.value);
+                            onUpdate({ monthlyData: newData });
+                          }}
+                          className="w-12 bg-transparent border-b border-[#E0D9D0] pb-1 text-xs text-center text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00]
+  transition-colors"
+                          data-testid={`input-monthly-${metric.id}-${i}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Micro actions row */}
+          <div className="flex items-center justify-end gap-3 mt-2.5">
+            {!showNotes && (
+              <button
+                onClick={() => setShowNotes(true)}
+                className="text-[11px] text-[#CCCCCC] hover:text-[#EA2C00] transition-colors"
+                data-testid={`button-show-notes-${metric.id}`}
+              >
+                + context
+              </button>
+            )}
+            <button
+              onClick={() => {
+                const next = !showTrend;
+                setShowTrend(next);
+                onUpdate({ isMonthlyMode: next, monthlyData: next ? new Array(12).fill(null) : undefined });
+              }}
+              className="text-[11px] text-[#CCCCCC] hover:text-[#EA2C00] transition-colors"
+              data-testid={`toggle-monthly-${metric.id}`}
+            >
+              {showTrend ? '− trend' : '+ trend'}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  Also update the DataRequestMetricEntry interface in client/src/lib/dataRequestUrlState.ts to add the notes field if not already done:
+  notes?: string;
+
+  Remove ChevronDown and ChevronUp from the lucide-react import if they're no longer used elsewhere in the file.
