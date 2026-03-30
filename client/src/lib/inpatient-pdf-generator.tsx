@@ -1291,18 +1291,101 @@ const HowToUsePage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; p
   );
 };
 
+const FramingPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pageNum: number; totalPages: number }) => {
+  return (
+    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerMeta}>The Value Model</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>How We Think About This</Text>
+        <Text style={styles.sectionTitle}>Inpatient: Where Value Lives</Text>
+        <Text style={styles.sectionIntro}>
+          Inpatient revenue is largely DRG-locked. You can't unbundle it or bill more for the same admission. The only lever is documentation completeness — whether the chart reflects the actual clinical complexity of the case. When documentation falls short, the DRG assigned doesn't match the care delivered. That's where margin leaks, silently, claim by claim.
+        </Text>
+
+        <View style={styles.frameworkContainer}>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>Revenue Integrity</Text>
+            <Text style={styles.frameworkDescription}>
+              DRG accuracy, CC/MCC capture, and denial prevention. When physicians document the full clinical picture in real time, coders have what they need. Accurate DRGs mean your case mix index reflects your actual patient population.
+            </Text>
+            <Text style={styles.frameworkTagline}>Direct, documentation-dependent.</Text>
+          </View>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>Operational Efficiency</Text>
+            <Text style={styles.frameworkDescription}>
+              Fewer CDI queries, faster query response, recovered physician time. CDI queries are expensive — each one interrupts a physician's day and delays billing. Reducing them is a win that shows up in both productivity and morale.
+            </Text>
+            <Text style={styles.frameworkTagline}>Indirect, workflow-dependent.</Text>
+          </View>
+        </View>
+
+        <Text style={[styles.sectionLabel, { marginTop: 8 }]}>What We Can and Can't Claim</Text>
+        <View style={[styles.frameworkContainer, { gap: 12 }]}>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>[+] What We Measure</Text>
+            <Text style={[styles.calibrationLabel, { marginBottom: 4 }]}>Direct attribution</Text>
+            <Text style={styles.calibrationText}>
+              - CDI query volume pre/post{"\n"}
+              - Physician documentation time{"\n"}
+              - Query response time{"\n"}
+              - Chart completion rates
+            </Text>
+          </View>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>[~] What We Influence</Text>
+            <Text style={[styles.calibrationLabel, { marginBottom: 4 }]}>Indirect attribution</Text>
+            <Text style={styles.calibrationText}>
+              - DRG assignment accuracy{"\n"}
+              - CC/MCC capture rate{"\n"}
+              - Case mix index{"\n"}
+              - Denial and appeal rates
+            </Text>
+          </View>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>[ ] What We Enable</Text>
+            <Text style={[styles.calibrationLabel, { marginBottom: 4 }]}>Supportive only</Text>
+            <Text style={styles.calibrationText}>
+              - Length of stay optimization{"\n"}
+              - Readmission prevention{"\n"}
+              - Clinical quality metrics{"\n"}
+              - Payer audit outcomes
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>The Assumption That Must Hold</Text>
+          <Text style={styles.insightText}>
+            We model documentation quality improvement based on Abridge customer benchmarks. Your current CDI query volume and baseline DRG accuracy determine how much of this value is available to capture. If your coding team already achieves high CC/MCC capture, the revenue integrity numbers will be smaller — but the efficiency story (fewer queries, faster turnaround) is likely just as strong.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
 // ============================================================================
 // DOCUMENT COMPONENT
 // ============================================================================
 
 const InpatientPDFDocument = ({ data }: { data: InpatientPDFData }) => {
-  // Cover + Thesis + Drivers + Investment + Transparency + HowToUse
-  const totalPages = 5 + data.drivers.length;
+  // Cover + Framing + Thesis + Drivers + Investment + Transparency + HowToUse
+  const totalPages = 6 + data.drivers.length;
   let pageNum = 1;
 
   return (
     <Document>
       <CoverPage data={data} />
+      <FramingPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <ThesisPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       {data.drivers.map((driver) => (
         <DriverPage

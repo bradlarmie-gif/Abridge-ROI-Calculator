@@ -1326,18 +1326,101 @@ const HowToUsePage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; 
   );
 };
 
+const FramingPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
+  return (
+    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerMeta}>The Value Model</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>How We Think About This</Text>
+        <Text style={styles.sectionTitle}>Outpatient: Where Value Lives</Text>
+        <Text style={styles.sectionIntro}>
+          Outpatient is where ambient documentation makes its most direct case. Physicians save time on documentation, and that time has a market rate. Better notes code more accurately — wRVUs get captured, HCC gaps get closed, denials go down. We track both streams. And we're honest about where each one requires your organization to follow through.
+        </Text>
+
+        <View style={styles.frameworkContainer}>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>Time & Capacity</Text>
+            <Text style={styles.frameworkDescription}>
+              Minutes saved per encounter × volume = hours returned per year. Those hours convert to additional visits, reduced overtime, or a more sustainable pace. The most directly measurable stream.
+            </Text>
+            <Text style={styles.frameworkTagline}>Direct, measurable — you deploy it.</Text>
+          </View>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>Revenue Integrity</Text>
+            <Text style={styles.frameworkDescription}>
+              Documentation completeness affects how encounters are coded. wRVU capture, HCC gap closure, and denial rates all depend on note quality. Better notes = more accurate representation of care delivered.
+            </Text>
+            <Text style={styles.frameworkTagline}>Indirect — documentation-dependent.</Text>
+          </View>
+        </View>
+
+        <Text style={[styles.sectionLabel, { marginTop: 8 }]}>What We Can and Can't Claim</Text>
+        <View style={[styles.frameworkContainer, { gap: 12 }]}>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>[+] What We Measure</Text>
+            <Text style={[styles.calibrationLabel, { marginBottom: 4 }]}>Direct attribution</Text>
+            <Text style={styles.calibrationText}>
+              - Minutes saved per encounter{"\n"}
+              - Encounters per provider per day{"\n"}
+              - Overtime hours{"\n"}
+              - Documentation completion rates
+            </Text>
+          </View>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>[~] What We Influence</Text>
+            <Text style={[styles.calibrationLabel, { marginBottom: 4 }]}>Indirect attribution</Text>
+            <Text style={styles.calibrationText}>
+              - wRVU capture rate{"\n"}
+              - HCC gap closure rate{"\n"}
+              - E&M code distribution{"\n"}
+              - Denial and appeal rates
+            </Text>
+          </View>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>[ ] What We Enable</Text>
+            <Text style={[styles.calibrationLabel, { marginBottom: 4 }]}>Supportive only</Text>
+            <Text style={styles.calibrationText}>
+              - Provider wellbeing{"\n"}
+              - Burnout reduction{"\n"}
+              - Patient satisfaction{"\n"}
+              - Retention outcomes
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>The Assumption That Must Hold</Text>
+          <Text style={styles.insightText}>
+            We assume {data.utilization}% of recovered documentation time converts to additional scheduled encounters or reduced overtime. If your organization doesn't adjust scheduling or staffing to absorb that capacity, the time savings become wellbeing value — real, but harder to put a dollar figure on. The model is only as good as the operational follow-through.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
 // ============================================================================
 // DOCUMENT COMPONENT
 // ============================================================================
 
 const OutpatientPDFDocument = ({ data }: { data: OutpatientPDFData }) => {
-  // Cover + Thesis + Drivers + Investment + Transparency + HowToUse
-  const totalPages = 5 + data.drivers.length;
+  // Cover + Framing + Thesis + Drivers + Investment + Transparency + HowToUse
+  const totalPages = 6 + data.drivers.length;
   let pageNum = 1;
 
   return (
     <Document>
       <CoverPage data={data} />
+      <FramingPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <ThesisPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       {data.drivers.map((driver) => (
         <DriverPage

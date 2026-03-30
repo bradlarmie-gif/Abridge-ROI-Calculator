@@ -1579,20 +1579,104 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
   );
 };
 
+const FramingPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
+  return (
+    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerTitle}>THE VALUE MODEL</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>How We Think About This</Text>
+        <Text style={styles.sectionTitle}>Emergency: Where Value Lives</Text>
+        <Text style={styles.sectionSubtitle}>
+          The ED is a volume and velocity environment. Every minute of documentation time recovered is a minute back at the bedside — which means more patients seen, fewer leaving without being seen, and more accurate coding under time pressure. Value here runs on throughput first, revenue integrity second. Both compound across every shift.
+        </Text>
+
+        <Text style={styles.sectionLabel}>Two Value Streams</Text>
+        <View style={styles.metricsRow}>
+          <View style={styles.metricBox}>
+            <Text style={styles.calcTitle}>Throughput & Access</Text>
+            <Text style={styles.narrativeText}>
+              Door-to-disposition time, LWBS rate, patient volume. When physicians chart faster, they're back at the bedside sooner. LWBS isn't just a quality metric — each patient who leaves represents a care failure and lost revenue.
+            </Text>
+            <Text style={styles.stepNote}>Direct, volume-dependent.</Text>
+          </View>
+          <View style={styles.metricBox}>
+            <Text style={styles.calcTitle}>Coding Accuracy</Text>
+            <Text style={styles.narrativeText}>
+              E&M level accuracy, admission documentation, denial prevention. ED notes written under time pressure miss complexity markers. Better documentation means codes that reflect the actual visit — and fewer denials.
+            </Text>
+            <Text style={styles.stepNote}>Indirect, documentation-dependent.</Text>
+          </View>
+        </View>
+
+        <Text style={styles.sectionLabel}>What We Can and Can't Claim</Text>
+        <View style={[styles.metricsRow, { gap: 12 }]}>
+          <View style={styles.metricBox}>
+            <Text style={styles.calcTitle}>[+] What We Measure</Text>
+            <Text style={styles.stepLabel}>Direct attribution</Text>
+            <Text style={styles.insightText}>
+              - Documentation time per encounter{"\n"}
+              - LWBS rate and volume{"\n"}
+              - Door-to-disposition time{"\n"}
+              - Chart completion timing
+            </Text>
+          </View>
+          <View style={styles.metricBox}>
+            <Text style={styles.calcTitle}>[~] What We Influence</Text>
+            <Text style={styles.stepLabel}>Indirect attribution</Text>
+            <Text style={styles.insightText}>
+              - E&M code level distribution{"\n"}
+              - Admission capture rates{"\n"}
+              - Denial and appeal rates{"\n"}
+              - Downstream inpatient coding
+            </Text>
+          </View>
+          <View style={styles.metricBox}>
+            <Text style={styles.calcTitle}>[ ] What We Enable</Text>
+            <Text style={styles.stepLabel}>Supportive only</Text>
+            <Text style={styles.insightText}>
+              - Patient satisfaction (HCAHPS){"\n"}
+              - Provider experience and retention{"\n"}
+              - Care quality indicators{"\n"}
+              - Sepsis and time-sensitive outcomes
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>The Assumption That Must Hold</Text>
+          <Text style={styles.insightText}>
+            LWBS recovery value assumes recovered patients have average ED revenue for your system. In practice, LWBS skews toward certain patient populations — the real number depends on your payer mix. We'd recommend validating against your LWBS cohort before presenting this number to a board.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ED Value Assessment"}</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
 // ============================================================================
 // DOCUMENT COMPONENT
 // ============================================================================
 
 const EDPDFDocument = ({ data }: { data: EDPDFData }) => {
-  // Pages: Stakes, Executive, Driver pages..., Projections, Path Forward, Methodology (Cover not counted)
-  const totalPages = 5 + data.drivers.length;
+  // Pages: Framing, Stakes, Executive, Driver pages..., Projections, Path Forward, Methodology (Cover not counted)
+  const totalPages = 6 + data.drivers.length;
   let pageNum = 0;
 
   return (
     <Document>
       {/* Cover - no page number, not counted */}
       <CoverPage data={data} />
-      {/* Stakes - Page 1 */}
+      <FramingPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      {/* Stakes */}
       <StakesPage pageNum={++pageNum} totalPages={totalPages} />
       <ExecutiveSummaryPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       {data.drivers.map((driver) => (
