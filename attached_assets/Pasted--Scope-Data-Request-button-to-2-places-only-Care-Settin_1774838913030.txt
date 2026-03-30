@@ -1,0 +1,154 @@
+ Scope Data Request button to 2 places only: Care Setting page header + Measure Partner Profile header. Remove from everywhere else.
+
+  ---
+  Step 1 — Update client/src/components/UnifiedHeader.tsx
+
+  Add rightAction?: React.ReactNode to the interface:
+  interface UnifiedHeaderProps {
+    pathType: PathType;
+    currentStep: number;
+    totalSteps: number;
+    stepName?: string;
+    onBack?: () => void;
+    showBack?: boolean;
+    onHome?: () => void;
+    onStepClick?: (step: number) => void;
+    stepLabels?: string[];
+    rightAction?: React.ReactNode;  // ADD THIS
+  }
+
+  Add it to the destructured props:
+  export function UnifiedHeader({
+    pathType, currentStep, totalSteps, stepName,
+    onBack, showBack = true, onHome, onStepClick, stepLabels,
+    rightAction,  // ADD THIS
+  }: UnifiedHeaderProps) {
+
+  In the right section, render it before the progress dots:
+  {/* Right: optional action + Progress indicator */}
+  <div className="flex items-center flex-shrink-0 gap-2 sm:gap-3">
+    {rightAction}
+    {/* Narrow phones (<480px): compact step counter only */}
+    <span className="text-xs text-slate-500 font-medium tabular-nums min-[480px]:hidden" data-testid="step-counter-compact">
+      {currentStep} / {totalSteps}
+    </span>
+    {/* Wider phones & up (≥480px): progress dots */}
+    <div className="hidden min-[480px]:flex">
+      <ProgressDots currentStep={currentStep} totalSteps={totalSteps} onStepClick={onStepClick} stepLabels={stepLabels} />
+    </div>
+  </div>
+
+  ---
+  Step 2 — Update client/src/pages/explore/ExploreCareSettings.tsx
+
+  Add imports at the top:
+  import { useState } from "react";  // already there, keep it
+  import { generateIntakeFormUrl } from "@/lib/intakeUrlState";
+  import DataRequestModal from "@/components/DataRequestModal";
+
+  Add state inside the component function (after the existing isLoading state):
+  const [dataRequestModalOpen, setDataRequestModalOpen] = useState(false);
+  const [dataRequestUrl, setDataRequestUrl] = useState("");
+
+  Create the button element to pass to the header:
+  const dataRequestButton = (
+    <button
+      onClick={() => {
+        const url = generateIntakeFormUrl(selectedSetting ? [selectedSetting] : undefined);
+        setDataRequestUrl(url);
+        setDataRequestModalOpen(true);
+      }}
+      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#1A1A1A] text-white hover:bg-[#333333] transition-all"
+      data-testid="button-data-request-header"
+    >
+      Data Request
+    </button>
+  );
+
+  Pass it to UnifiedHeader:
+  <UnifiedHeader
+    pathType="explore"
+    currentStep={1}
+    totalSteps={6}
+    stepName="Care Setting"
+    onBack={onBack}
+    onHome={onHome}
+    rightAction={dataRequestButton}
+  />
+
+  Add the modal before the final closing </div> of the return:
+  <DataRequestModal
+    open={dataRequestModalOpen}
+    onOpenChange={setDataRequestModalOpen}
+    url={dataRequestUrl}
+  />
+
+  ---
+  Step 3 — Update client/src/pages/measure/MeasureDataEntry.tsx
+
+  The Data Request button is currently inline in the page content. Move it to the header instead.
+
+  Keep the existing imports and state (dataRequestModalOpen, dataRequestUrl — already added).
+
+  Create the button element:
+  const dataRequestButton = (
+    <button
+      onClick={() => {
+        const setting = activeSettings[0] || 'outpatient';
+        const url = generateDataFormUrl({ setting });
+        setDataRequestUrl(url);
+        setDataRequestModalOpen(true);
+      }}
+      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#1A1A1A] text-white hover:bg-[#333333] transition-all"
+      data-testid="button-send-data-request"
+    >
+      Data Request
+    </button>
+  );
+
+  Pass to UnifiedHeader (find the existing <UnifiedHeader in MeasureDataEntry and add the prop):
+  <UnifiedHeader
+    pathType="measure"
+    currentStep={...}
+    totalSteps={...}
+    stepName="Partner Profile"
+    onBack={onBack}
+    onHome={onHome}
+    rightAction={dataRequestButton}
+  />
+
+  Remove the inline Data Request button from the page content (the <button> with data-testid="button-send-data-request" that's currently below the <p>Tell us about your Abridge deployment.</p>). Delete just
+  that button element.
+
+  Keep the <DataRequestModal> at the bottom of the return.
+
+  ---
+  Step 4 — Remove Data Request from 3 files
+
+  client/src/pages/explore/ExploreOpportunity.tsx — remove:
+  - intakeLinkCopied state
+  - dataRequestModalOpen + dataRequestUrl state
+  - handleCreateIntakeLink function
+  - The Data Request <button> element in the JSX
+  - The <DataRequestModal> at the bottom
+  - The import DataRequestModal line
+
+  client/src/pages/explore/ExploreModel.tsx — remove:
+  - intakeLinkCopied state
+  - dataRequestModalOpen + dataRequestUrl state
+  - handleGenerateIntakeLink function
+  - The Data Request <button> element (data-testid="button-create-intake")
+  - The <DataRequestModal> at the bottom
+  - The import DataRequestModal line
+  - The import { generateIntakeFormUrl } line (if no longer used elsewhere in that file)
+
+  client/src/pages/measure/MeasureMetricSelection.tsx — remove:
+  - dataRequestCopied state
+  - dataRequestModalOpen + dataRequestUrl state
+  - The Data Request <button> element (data-testid="button-send-data-request")
+  - The <DataRequestModal> at the bottom
+  - The import DataRequestModal line
+
+  ---
+  Result: Data Request button appears only in the header of the Care Setting selection page and the Measure Partner Profile page. Clicking either opens the "Share with Your Partner" modal with the URL + Copy
+   Link button.

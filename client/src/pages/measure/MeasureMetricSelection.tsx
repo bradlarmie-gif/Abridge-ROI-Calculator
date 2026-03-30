@@ -531,7 +531,6 @@ export default function MeasureMetricSelection({
         onBack={onBack}
         onHome={onHome}
         dataRequestGenerateUrl={generateMeasureDataRequestUrl}
-        dataRequestDirectCopy
       />
       <UnifiedHeaderSpacer />
 

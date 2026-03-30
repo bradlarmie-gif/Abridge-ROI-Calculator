@@ -209,7 +209,6 @@ export default function MeasureDataEntry({
         onBack={onBack}
         onHome={onHome}
         dataRequestGenerateUrl={generateMeasureDataRequestUrl}
-        dataRequestDirectCopy
       />
       <UnifiedHeaderSpacer />
 
