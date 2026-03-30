@@ -213,6 +213,14 @@ export default function ExploreModel({
     return Math.round(gross * (docQualityInputs.ipObsDefenseRealization / 100));
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
+  const ipConcurrentValue = useMemo(() => {
+    if (!isInpatient || !docQualityInputs.ipConcurrentReviewEnabled) return 0;
+    const casesReviewed = eligibleEncounters * (docQualityInputs.ipConcurrentReviewRate / 100);
+    const casesDenied = casesReviewed * (docQualityInputs.ipConcurrentDenialRate / 100);
+    const docSensitiveCases = casesDenied * (docQualityInputs.ipConcurrentDocSensitive / 100);
+    const gross = docSensitiveCases * docQualityInputs.ipConcurrentAvgDays * docQualityInputs.ipConcurrentDailyRate;
+    return Math.round(gross * (docQualityInputs.ipConcurrentRealization / 100));
+  }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (isOutpatientSetting 
@@ -333,6 +341,7 @@ export default function ExploreModel({
     if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", onset: "immediate" as const });
     if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", onset: "immediate" as const });
     if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", onset: "immediate" as const });
+    if (ipConcurrentValue > 0) drivers.push({ id: "ipConcurrent", name: "Concurrent Review Defense", value: ipConcurrentValue, category: "documentation", onset: "immediate" as const });
     if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", onset: "immediate" as const });
     if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk: Documentation Impact", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
     if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility Gap", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
@@ -417,8 +426,8 @@ export default function ExploreModel({
         year2: state.utilizationPercent,
         year3: state.utilizationPercent,
       },
-      retentionRate: retentionValue > 0 ? 0 : 0.5,
-      replacementCost: 400000,
+      retentionRate: retentionValue > 0 ? 0 : (isNursing ? 0 : 0.5),
+      replacementCost: isNursing ? (state.timeDriverInputs.nursingReplacementCost || 56300) : (state.timeDriverInputs.replacementCost || 400000),
     };
 
     onAddToProforma(snapshot);
@@ -899,7 +908,7 @@ export default function ExploreModel({
           const ipFullScaleMult = (ipFullScaleProvs / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
           const ipRetValOnly = clinicianRetentionValue;
           const ipCostRedOnly = costReductionValue;
-          const ipPrimaryTotal = ipRetValOnly + ipCostRedOnly + ipDrgValue + ipCdiValue;
+          const ipPrimaryTotal = ipRetValOnly + ipCostRedOnly + ipDrgValue + ipCdiValue + ipObsDefenseValue + ipConcurrentValue;
           const ipPrimaryNet = ipPrimaryTotal - annualInvestment;
           const ipFullScaleNetValue = Math.round(ipPrimaryNet * ipFullScaleMult);
           const ipFullScaleInv = Math.round(annualInvestment * (ipFullScaleProvs / state.numberOfProviders));
@@ -1776,6 +1785,13 @@ export default function ExploreModel({
                     </div>
                     {docQualityInputs.ipObsDefenseEnabled && (
                       <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipObsDefenseRealization}% realization)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• Concurrent Review Defense</span>
+                      <span className="font-semibold text-black">{docQualityInputs.ipConcurrentReviewEnabled ? formatCurrency(ipConcurrentValue) : '—'}</span>
+                    </div>
+                    {docQualityInputs.ipConcurrentReviewEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipConcurrentRealization}% realization)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.docDriver2}</span>

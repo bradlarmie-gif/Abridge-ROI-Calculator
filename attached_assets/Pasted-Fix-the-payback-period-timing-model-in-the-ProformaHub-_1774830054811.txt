@@ -1,0 +1,110 @@
+Fix the payback period timing model in the ProformaHub. Right now payback shows month 1-2 (too fast) or 14+ months (too slow). The root cause is a broken adoption ramp system with compounding bugs. Make
+  exactly these changes:                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ## FILE 1: client/src/pages/proforma/proformaTypes.ts                                                                                                                                                        
+                                          
+  ### Change 1 — Recalibrate ONSET_DELAY_MONTHS                                                                                                                                                                
+  Find:                                                                                                                                                                                                        
+  export const ONSET_DELAY_MONTHS: Record<DriverOnset, number> = {
+    immediate: 0,                                                                                                                                                                                              
+    delayed: 3,                                                                                           
+    phased: 6,                                                                                                                                                                                                 
+  };                                                                                                                                                                                                           
+  Replace with:                               
+  export const ONSET_DELAY_MONTHS: Record<DriverOnset, number> = {                                                                                                                                             
+    immediate: 2,                                                                                         
+    delayed: 5,                                                                                                                                                                                                
+    phased: 6, 
+  };                                                                                                                                                                                                           
+  Why: "immediate" was 0 — no billing cycle lag. Billing takes 60-90 days. "delayed" was 3 — capacity shifts don't happen in one quarter. 5 months is defensible.
+                                                                                                                                                                 
+  ### Change 2 — Retention phasing 20/65/100 → 35/75/100
+  In DEFAULT_PROFORMA_CONFIG, find:                                                                                                                                                                            
+    retentionPhasing: {                   
+      year1Pct: 20,                                                                                                                                                                                            
+      year2Pct: 65,                                                                                                                                                                                            
+  Replace with:                           
+    retentionPhasing: {                                                                                                                                                                                        
+      year1Pct: 35,                                                                                                                                                                                            
+      year2Pct: 75,                           
+  Why: 20% Y1 caused 14+ month payback for retention-heavy accounts. 35% is defensible — providers who've had 9+ months on the tool ARE making different retention decisions.                                  
+                                                                                                                                                                             
+  ---                                                                                                                                                                                                          
+                                              
+  ## FILE 2: client/src/lib/proformaCalculations.ts                                                                                                                                                            
+                                                                                                          
+  ### Change 3 — Fix getOnsetMultiplier: remove the 0.5 half-value special case for "immediate"                                                                                                                
+  Find this block at the bottom of the getOnsetMultiplier function:                            
+    if (onset === "delayed") {                                                                                                                                                                                 
+      if (monthsSinceGoLive < delayMonths) return 0;                                                      
+      return 1;                                                                                                                                                                                                
+    }                                                                                                     
+                                                                                                                                                                                                               
+    if (monthsSinceGoLive === 0) return 0.5;                                                                                                                                                                   
+    return 1;                                                                                                                                                                                                  
+  Replace with:                                                                                                                                                                                                
+    if (onset === "delayed") {                                                                            
+      if (monthsSinceGoLive < delayMonths) return 0;                                                                                                                                                           
+      return 1;                                                                                           
+    }                                     
+     
+    // "immediate" — same logic as "delayed", just shorter delay (billing cycle lag)                                                                                                                           
+    if (monthsSinceGoLive < delayMonths) return 0;
+    return 1;                                                                                                                                                                                                  
+  Why: "immediate" had a 0.5 multiplier on month 0 then jumped to 1.0 — inconsistent with how other onsets work. Now all non-phased drivers use the same pattern: 0 during delay period, 1 after.
+                                                                                                                                                                                                               
+  ### Change 4 — Fix adoption ramp to count from onset, not go-live
+  In buildMonthlyCashFlows, inside the driver loop, find:                                                                                                                                                      
+      const rampMonths = (onset === "immediate" || (onset !== "phased" && onset !== "delayed" && driver.category === "documentation")) ? 1 : implRampMonths;
+      const adoptionRamp = getAdoptionRamp(monthsSinceGoLive, rampMonths);                                                                                                                                     
+  Replace with:                                                                                                                                                                                                
+      const delayMonths = ONSET_DELAY_MONTHS[onset] || 0;                                                                                                                                                      
+      const monthsSinceOnset = monthsSinceGoLive - delayMonths;                                                                                                                                                
+      const rampMonths = onset === "phased" ? implRampMonths : 3;                                                                                                                                              
+      const adoptionRamp = getAdoptionRamp(monthsSinceOnset, rampMonths);                                                                                                                                      
+  Why: This was the core bug. With `rampMonths = 1` for "immediate", docs reached 100% value by month 2. And for "delayed", the ramp was consumed DURING the delay — so at month 3 the ramp(3, 3) = 100%,      
+  making it a step function. Now the 3-month sigmoid ramp starts AFTER the delay ends, for all non-phased drivers.                                                                                             
+                                                                                                                  
+  ---                                                                                                                                                                                                          
+                                                                                                          
+  ## FILE 3: client/src/pages/proforma/ProformaView.tsx                                                                                                                                                        
+                                                                                                          
+  ### Change 5 — Update benchmark range                                                                                                                                                                        
+  Find all instances of:                                                                                  
+  Abridge benchmark: 4–12 mo                                                                                                                                                                                   
+  Replace with:                                                                                           
+  Abridge benchmark: 6–12 mo                  
+                                          
+  ### Change 6 — Update table row label for doc quality                                                                                                                                                        
+  Find:                                                                                                                                                                                                        
+  Change 7 — Fix timeSavingsOnsetLabel to use config value not hardcoded 3                                                                                                                                     
+                                                                                                                                                                                                               
+  Find:                                                                                                   
+      const onsetMonth = firstGoLive + 3;                                                                                                                                                                      
+  Replace with:                                                                                                                                                                                                
+      const onsetMonth = firstGoLive + ONSET_DELAY_MONTHS.delayed;                                                                                                                                             
+                                                                                                                                                                                                               
+  Change 8 — Update the Driver Onset Timing methodology paragraph                                                                                                                                              
+                                                                                                          
+  Find the paragraph that starts with:                                                                                                                                                                         
+  <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds after the implementation ramp. <strong style={{ color: '#1A1A1A'
+  }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) begin immediately post-implementation.                                                                                              
+  Replace the entire paragraph with:                                                                      
+  <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong>           
+  improvements (wRVU, HCC, denials, DRG): notes improve from day one, but revenue shows up in billing ~60 days later — full run-rate by month {ONSET_DELAY_MONTHS.immediate + 3}. <strong
+  className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, OT reduction): requires providers to build workflow trust before capacity shifts — begins around month          
+  {ONSET_DELAY_MONTHS.delayed}, full run-rate by month {ONSET_DELAY_MONTHS.delayed + 3}. <strong style={{ color: '#B45309' }}>Retention</strong>: phases in over 3 years — {config.retentionPhasing.year1Pct}%
+  in Year 1 (providers with 9+ months on the tool), {config.retentionPhasing.year2Pct}% in Year 2, 100% in Year 3.</p>                                                                                         
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Expected result after these changes
+                                                                                                                                                                                                               
+  - Outpatient doc-heavy account (100 providers, wRVU + capacity): payback ~month 6-8                     
+  - Nursing retention-heavy account: payback ~month 10-14
+  - No more step functions (delayed drivers ramp smoothly starting at month 5)
+  - No more month-2 payback (doc value ramps over 3 months after 2-month billing lag)
+  - Methodology panel shows exact timing numbers dynamically                                                                                                                                                   
+                                                                                                                                                                                                               
+  Do not change any other logic, UI, or calculations. These are surgical fixes to the timing model only.   

@@ -183,7 +183,8 @@ const NURSING_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
   },
 ];
 
-// ED uses: Level of Service (wRVU), Medical Necessity, CDI & Inpatient Connection
+// ED uses: Level of Service (wRVU), Medical Necessity
+// Note: CDI & Inpatient Connection removed — that value belongs in the Inpatient model to avoid double-counting.
 const ED_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
   {
     id: 'wrvu',
@@ -217,23 +218,6 @@ const ED_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
       { label: 'Conservative', value: 25 },
       { label: 'Typical', value: 40 },
       { label: 'Aggressive', value: 55 },
-    ],
-  },
-  {
-    id: 'denials',
-    label: 'CDI & Inpatient Connection',
-    shortLabel: 'CDI',
-    description: 'Capture severity for admitted patients',
-    icon: AlertTriangle,
-    min: 2,
-    max: 5,
-    step: 1,
-    suffix: '%',
-    detail: 'ED documentation affects inpatient DRG assignment and CDI efficiency',
-    presets: [
-      { label: 'Conservative', value: 2 },
-      { label: 'Typical', value: 3 },
-      { label: 'Aggressive', value: 5 },
     ],
   },
 ];

@@ -362,7 +362,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edLwbsEnabled: false,
     edLwbsRate: 3, // 3% baseline LWBS rate
     edLwbsReduction: 10, // 10% reduction in LWBS (conservative default)
-    edRevenuePerVisit: 450, // Higher than outpatient
+    edRevenuePerVisit: 480, // Higher than outpatient
     edLwbsRealization: 75, // 75% realization (not all recovered patients complete visits)
     edThroughputEnabled: false,
     edAdmissionRate: 18, // 18% of recovered patients get admitted
@@ -838,6 +838,15 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     if (state.careSetting === 'inpatient' && docQualityInputs.ipObsDefenseEnabled) {
       const obsDefenseGross = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100);
       total += obsDefenseGross * (docQualityInputs.ipObsDefenseRealization / 100);
+    }
+
+    // Inpatient: Concurrent Review Defense
+    if (state.careSetting === 'inpatient' && docQualityInputs.ipConcurrentReviewEnabled) {
+      const casesReviewed = eligibleEncounters * (docQualityInputs.ipConcurrentReviewRate / 100);
+      const casesDenied = casesReviewed * (docQualityInputs.ipConcurrentDenialRate / 100);
+      const docSensitiveCases = casesDenied * (docQualityInputs.ipConcurrentDocSensitive / 100);
+      const gross = docSensitiveCases * docQualityInputs.ipConcurrentAvgDays * docQualityInputs.ipConcurrentDailyRate;
+      total += gross * (docQualityInputs.ipConcurrentRealization / 100);
     }
 
     return Math.round(total);
