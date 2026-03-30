@@ -168,8 +168,8 @@ export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
   yearlyUtilization: { ...DEFAULT_YEARLY_UTILIZATION },
   nursingYearlyUtilization: { ...NURSING_YEARLY_UTILIZATION },
   retentionPhasing: {
-    year1Pct: 20,
-    year2Pct: 65,
+    year1Pct: 35,
+    year2Pct: 75,
     year3Pct: 100,
     year4Pct: 100,
     year5Pct: 100,
@@ -208,8 +208,8 @@ export const SCENARIO_DASHES = ["", "8 4", "4 4", "8 2 2 2"];
 export const MAX_SCENARIOS = 4;
 
 export const ONSET_DELAY_MONTHS: Record<DriverOnset, number> = {
-  immediate: 0,
-  delayed: 3,
+  immediate: 2,
+  delayed: 5,
   phased: 6,
 };
 

@@ -348,7 +348,7 @@ export default function ProformaView({
   const hasDelayedDrivers = settings.some(s => s.drivers.some(d => d.onset === "delayed"));
   const timeSavingsOnsetLabel = useMemo(() => {
     const firstGoLive = Math.min(...settings.map(s => s.goLiveMonth));
-    const onsetMonth = firstGoLive + 3;
+    const onsetMonth = firstGoLive + ONSET_DELAY_MONTHS.delayed;
     const quarterData = groupByQuarter(cashFlows, startDate);
     const qIdx = Math.ceil(onsetMonth / 3) - 1;
     return quarterData[qIdx]?.label || `Q${qIdx + 1}`;
@@ -619,7 +619,7 @@ export default function ProformaView({
                 <p className="text-xl font-bold" data-testid="text-payback">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
                 {summary.paybackMonth && (
                   <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-payback-benchmark-mobile">
-                    Abridge benchmark: 4–12 mo
+                    Abridge benchmark: 6–12 mo
                   </p>
                 )}
               </div>
@@ -665,7 +665,7 @@ export default function ProformaView({
               <p className="text-2xl font-bold">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
               {summary.paybackMonth && (
                 <p className="text-[12px] text-white/40 mt-1" data-testid="text-payback-benchmark">
-                  Abridge benchmark: 4–12 mo
+                  Abridge benchmark: 6–12 mo
                 </p>
               )}
             </div>
@@ -1784,7 +1784,7 @@ export default function ProformaView({
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
               <p><strong className="text-neutral-900">Implementation Ramp:</strong> A {config.implementationRampMonths}-month gradual implementation ramp is applied as providers are onboarded. During this period, value scales gradually (e.g. ~33%/67%/100% for a 3-month ramp) while full subscription costs are incurred. This accounts for training, EHR integration, and workflow adjustment.</p>
               <p><strong className="text-neutral-900">Utilization Ramp:</strong> Utilization increases over the contract period: Year 1 target {config.yearlyUtilization.year1}%, Year 2 target {config.yearlyUtilization.year2}%, Year 3 target {config.yearlyUtilization.year3}%.{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` Nursing uses separate targets: ${config.nursingYearlyUtilization.year1}%/${config.nursingYearlyUtilization.year2}%/${config.nursingYearlyUtilization.year3}%.` : ""} These targets reflect realistic organizational adoption curves.</p>
-              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds after the implementation ramp. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) begin immediately post-implementation. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) take ~{ONSET_DELAY_MONTHS.delayed} additional months as organizations operationalize freed-up capacity. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing.</p>
+              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) have a {ONSET_DELAY_MONTHS.immediate}-month billing cycle lag before value appears, then ramp over 3 months. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) onset at month {ONSET_DELAY_MONTHS.delayed} as organizations operationalize freed-up capacity, then ramp over 3 months. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing ({config.retentionPhasing.year1Pct}% Y1 / {config.retentionPhasing.year2Pct}% Y2 / {config.retentionPhasing.year3Pct}% Y3).</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means for every $1 of Abridge investment, you generate ${summary.simpleROI.toFixed(2)} in net value above the cost.</p>
               <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive, accounting for the implementation ramp and subscription costs from day one.</p>

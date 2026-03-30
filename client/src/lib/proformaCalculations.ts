@@ -137,12 +137,7 @@ function getOnsetMultiplier(
     return (phasing.year6Pct ?? phasing.year3Pct) / 100;
   }
 
-  if (onset === "delayed") {
-    if (monthsSinceGoLive < delayMonths) return 0;
-    return 1;
-  }
-
-  if (monthsSinceGoLive === 0) return 0.5;
+  if (monthsSinceGoLive < delayMonths) return 0;
   return 1;
 }
 
@@ -378,8 +373,10 @@ export function buildMonthlyCashFlows(
 
       for (const driver of effectiveDrivers) {
         const onset = driver.onset || (driver.category === "documentation" ? "immediate" : "delayed");
-        const rampMonths = (onset === "immediate" || (onset !== "phased" && onset !== "delayed" && driver.category === "documentation")) ? 1 : implRampMonths;
-        const adoptionRamp = getAdoptionRamp(monthsSinceGoLive, rampMonths);
+        const delayMonths = ONSET_DELAY_MONTHS[onset] || 0;
+        const rampMonths = onset === "phased" ? implRampMonths : 3;
+        const monthsSinceOnset = monthsSinceGoLive - delayMonths;
+        const adoptionRamp = getAdoptionRamp(monthsSinceOnset, rampMonths);
         const retentionPhasingToUse = (onset === "phased" && setting.careSetting === "nursing" && config.nursingRetentionPhasing)
           ? config.nursingRetentionPhasing
           : config.retentionPhasing;
