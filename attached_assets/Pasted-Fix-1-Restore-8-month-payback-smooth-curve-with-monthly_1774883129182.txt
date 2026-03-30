@@ -1,0 +1,218 @@
+Fix 1 — Restore 8-month payback + smooth curve with monthly chart data
+
+  The previous prompt changed implementationRampMonths from 3 to 6, which pushed payback from 8 to 13 months. Revert that, and instead smooth the chart by plotting 36 monthly data points rather than 12
+  quarterly aggregates. More data points = smoother Recharts monotone interpolation. The math stays identical — only the chart rendering changes.
+
+  Step 1a — Revert ramp months in client/src/pages/proforma/proformaTypes.ts:
+
+  Find:
+  implementationRampMonths: 6,
+  Replace with:
+  implementationRampMonths: 3,
+
+  Step 1b — Add monthlyChartData in client/src/pages/proforma/ProformaView.tsx:
+
+  After the existing chartData useMemo, add a new memo that builds cumulative chart data directly from the raw monthly cashFlows array (already computed — no new calculations):
+
+  const monthlyChartData = useMemo(() => {
+    let cumDoc = 0, cumTime = 0, cumRetention = 0, cumInvestment = 0;
+    const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+    cumInvestment += totalImplFees;
+    return cashFlows.map((row, i) => {
+      cumDoc += row.docValue;
+      cumTime += row.timeValue;
+      cumRetention += row.retentionValue;
+      cumInvestment += row.investment;
+      const month = i + 1;
+      // Show quarter labels at month boundaries (3, 6, 9, 12...) for readability
+      const quarter = Math.ceil(month / 3);
+      const year = Math.ceil(month / 12);
+      const qInYear = ((quarter - 1) % 4) + 1;
+      const yearStr = String(new Date().getFullYear() + year - 1).slice(2);
+      const label = month % 3 === 0 ? `Q${qInYear} '${yearStr}` : '';
+      return {
+        month,
+        label: label || `_${month}`,
+        displayLabel: label,
+        cumDocValue: cumDoc,
+        cumTimeValue: cumTime,
+        cumRetentionValue: cumRetention,
+        cumulativeInvestment: cumInvestment,
+        cumulativeValue: cumDoc + cumTime + cumRetention,
+        cumulativeNet: row.cumulativeNet,
+        investment: row.investment,
+        docValue: row.docValue,
+        timeValue: row.timeValue,
+        retentionValue: row.retentionValue,
+      };
+    });
+  }, [cashFlows, settings]);
+
+  Step 1c — Update lastChartPoint to use monthlyChartData:
+
+  Find the lastChartPoint useMemo and change its source from chartData to monthlyChartData:
+  const lastChartPoint = useMemo(() => {
+    if (monthlyChartData.length === 0) return null;
+    const last = monthlyChartData[monthlyChartData.length - 1];
+    return {
+      label: last.label,
+      totalValue: last.cumulativeValue,
+      investment: last.cumulativeInvestment,
+    };
+  }, [monthlyChartData]);
+
+  Step 1d — Update the payback reference line label:
+
+  The payback label currently uses a quarterly label string. With monthly data, derive it directly from summary.paybackMonth. Find where paybackLabel is computed and replace with:
+
+  const paybackLabel = useMemo(() => {
+    if (!summary.paybackMonth || summary.paybackMonth <= 0) return null;
+    const m = summary.paybackMonth;
+    const quarter = Math.ceil(m / 3);
+    const year = Math.ceil(m / 12);
+    const qInYear = ((quarter - 1) % 4) + 1;
+    const yearStr = String(new Date().getFullYear() + year - 1).slice(2);
+    return `Q${qInYear} '${yearStr}`;
+  }, [summary.paybackMonth]);
+
+  Step 1e — Switch the stacked area chart to use monthlyChartData:
+
+  Find <ComposedChart data={chartData} and change to <ComposedChart data={monthlyChartData}.
+
+  Update the XAxis to only show labels where displayLabel is set (every quarter boundary):
+  <XAxis
+    dataKey="label"
+    tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
+    tickFormatter={(val) => val.startsWith('_') ? '' : val}
+    interval={2}
+    axisLine={{ stroke: "#D5D0CB" }}
+    height={30}
+  />
+
+  The Area dataKeys (cumDocValue, cumTimeValue, cumRetentionValue) and Line dataKey (cumulativeInvestment) stay exactly as they are — they already match monthlyChartData.
+
+  ---
+  Fix 2 — Format numbers with commas in Value Drivers inputs
+
+  In the Value Drivers section of the Assumptions tab, the driver value inputs currently show raw integers like 96000. Replace each <input type="number"> in the driver editing grid with a formatted version:
+
+  Find the driver input pattern inside the settings.map(s => ... s.drivers.map(driver => ... block:
+  <input
+    type="number"
+    value={driver.value}
+    onChange={(e) => {
+      const newVal = parseFloat(e.target.value) || 0;
+      const updatedDrivers = s.drivers.map(d =>
+        d.id === driver.id ? { ...d, value: newVal } : d
+      );
+      onUpdateSetting(s.id, { drivers: updatedDrivers });
+    }}
+    className="w-full border border-neutral-200 rounded px-2 py-1.5 text-sm text-neutral-800 focus:outline-none focus:border-neutral-400"
+  />
+
+  Replace with a formatted text input that displays with commas but parses as a number on change:
+  <input
+    type="text"
+    value={driver.value > 0 ? Math.round(driver.value).toLocaleString() : ''}
+    onChange={(e) => {
+      const newVal = parseFloat(e.target.value.replace(/,/g, '')) || 0;
+      const updatedDrivers = s.drivers.map(d =>
+        d.id === driver.id ? { ...d, value: newVal } : d
+      );
+      onUpdateSetting(s.id, { drivers: updatedDrivers });
+    }}
+    onFocus={(e) => {
+      e.target.value = driver.value > 0 ? String(Math.round(driver.value)) : '';
+    }}
+    onBlur={(e) => {
+      e.target.value = driver.value > 0 ? Math.round(driver.value).toLocaleString() : '';
+    }}
+    className="w-full border border-neutral-200 rounded px-2 py-1.5 text-sm text-neutral-800 focus:outline-none focus:border-neutral-400"
+  />
+
+  ---
+  Fix 3 — Replace raw dollar labels with meaningful assumption context
+
+  The current driver inputs show Patient Access ($/year): 96000 which is meaningless. Replace the label and add a derived context line below each input so users understand what the number represents and how
+  to reason about changing it.
+
+  Replace the entire Value Drivers section in the Assumptions tab with this version:
+
+  <div className="mb-8">
+    <h2 className="text-base font-semibold text-neutral-800 mb-1">Value Drivers</h2>
+    <p className="text-sm text-neutral-500 mb-4">
+      Annual value per driver. Pre-filled from your assessment — edit to explore scenarios.
+    </p>
+    <div className="space-y-4">
+      {settings.map(s => (
+        <div key={s.id} className="border border-neutral-200 rounded-lg p-4 bg-white">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+            <span className="text-sm font-semibold text-neutral-800">{s.label}</span>
+            <span className="text-xs text-neutral-400">{s.providerCount} providers</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {s.drivers.map(driver => {
+              const perProvider = s.providerCount > 0
+                ? Math.round(driver.value / s.providerCount).toLocaleString()
+                : '—';
+              const perProviderMonth = s.providerCount > 0
+                ? Math.round(driver.value / s.providerCount / 12).toLocaleString()
+                : '—';
+
+              const contextHints: Record<string, string> = {
+                patientAccess: `≈ $${perProviderMonth}/provider/month · Benchmark: 1–3 additional patients/mo × ~$200/visit`,
+                edLwbs: `≈ $${perProviderMonth}/provider/month · LWBS patients recovered × ED visit margin`,
+                wrvu: `≈ $${perProvider}/provider/year · Benchmark: 0.05–0.15 wRVU/encounter × $33 CMS factor`,
+                denials: `≈ $${perProvider}/provider/year · Denial volume × reduction rate × avg denial value`,
+                hcc: `≈ $${perProvider}/provider/year · Additional HCC codes × ~$1,200 revenue/code`,
+                ipDrg: `≈ $${perProvider}/provider/year · DRG accuracy improvement × case volume`,
+                ipCdi: `≈ $${perProvider}/provider/year · CDI query reduction × $50/query`,
+                retention: `≈ $${perProvider}/provider/year · Phased over 3 years (35% → 75% → 100%)`,
+              };
+              const hint = contextHints[driver.id] || `≈ $${perProvider}/provider/year`;
+
+              return (
+                <div key={driver.id}>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium text-neutral-700">{driver.name}</label>
+                    <span className="text-[10px] text-neutral-400 capitalize">{driver.onset} onset</span>
+                  </div>
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className="text-xs text-neutral-400">$</span>
+                    <input
+                      type="text"
+                      value={driver.value > 0 ? Math.round(driver.value).toLocaleString() : ''}
+                      onChange={(e) => {
+                        const newVal = parseFloat(e.target.value.replace(/,/g, '')) || 0;
+                        const updatedDrivers = s.drivers.map(d =>
+                          d.id === driver.id ? { ...d, value: newVal } : d
+                        );
+                        onUpdateSetting(s.id, { drivers: updatedDrivers });
+                      }}
+                      onFocus={(e) => { e.target.value = driver.value > 0 ? String(Math.round(driver.value)) : ''; }}
+                      onBlur={(e) => { e.target.value = driver.value > 0 ? Math.round(driver.value).toLocaleString() : ''; }}
+                      className="w-full border border-neutral-200 rounded px-2 py-1.5 text-sm text-neutral-800 focus:outline-none focus:border-neutral-400"
+                    />
+                    <span className="text-[10px] text-neutral-400 whitespace-nowrap">/yr</span>
+                  </div>
+                  <p className="text-[10px] text-neutral-400 leading-relaxed">{hint}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  ---
+  Verification after applying:
+  - Payback should return to Month 8 (or close to it) for a typical outpatient deployment
+  - Chart curve should be smooth with 36 data points — no cliff, monotone interpolation connects them
+  - X-axis shows quarter labels (Q1 '26, Q2 '26…) at every 3rd data point                            
+  - Value Drivers inputs show $96,000 not 96000                          
+  - Below each driver value, a context line shows per-provider/month or per-provider/year interpretation plus a benchmark note
+  - Editing a driver value immediately updates the chart and metrics in the Summary tab                                                                                                                        
+  - All other sections (3-year table, sensitivity analysis, retention config) unchanged                                                                                                                        
+                                                                                        
