@@ -25,7 +25,6 @@ interface ExploreModelProps {
   onAddToProforma?: (snapshot: ProformaSettingSnapshot) => void;
   onStepClick?: (step: number) => void;
   stepLabels?: string[];
-  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 export default function ExploreModel({
@@ -41,7 +40,6 @@ export default function ExploreModel({
   onAddToProforma,
   onStepClick,
   stepLabels,
-  dataRequestGenerateUrl,
 }: ExploreModelProps) {
   const [showMethodology, setShowMethodology] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -1261,7 +1259,7 @@ export default function ExploreModel({
         onHome={onHome}
         onStepClick={onStepClick}
         stepLabels={stepLabels}
-        dataRequestGenerateUrl={dataRequestGenerateUrl}
+
       />
       <UnifiedHeaderSpacer />
 

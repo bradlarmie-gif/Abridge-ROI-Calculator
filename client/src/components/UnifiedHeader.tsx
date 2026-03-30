@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
-import DataRequestModal from "@/components/DataRequestModal";
 
 interface ProgressDotsProps {
   currentStep: number;
@@ -59,7 +57,7 @@ interface UnifiedHeaderProps {
   onHome?: () => void;
   onStepClick?: (step: number) => void;
   stepLabels?: string[];
-  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
+  rightAction?: React.ReactNode;
 }
 
 const PATH_LABELS: Record<PathType, string> = {
@@ -79,11 +77,9 @@ export function UnifiedHeader({
   onHome,
   onStepClick,
   stepLabels,
-  dataRequestGenerateUrl,
+  rightAction,
 }: UnifiedHeaderProps) {
   const [, setLocation] = useLocation();
-  const [dataRequestModalOpen, setDataRequestModalOpen] = useState(false);
-  const [dataRequestUrl, setDataRequestUrl] = useState("");
   
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -151,32 +147,9 @@ export function UnifiedHeader({
           )}
         </div>
 
-        {/* Right: Data Request + Progress indicator */}
+        {/* Right: optional action + Progress indicator */}
         <div className="flex items-center flex-shrink-0 gap-2 sm:gap-3">
-          {dataRequestGenerateUrl && (
-            <>
-              <button
-                onClick={async () => {
-                  try {
-                    const url = await dataRequestGenerateUrl([]);
-                    setDataRequestUrl(url);
-                    setDataRequestModalOpen(true);
-                  } catch { /* ignore */ }
-                }}
-                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-[7px] rounded-lg text-[11px] sm:text-[12px] font-medium bg-[#FAF8F5] border border-[#E8E2DA] text-[#555555] hover:bg-[#F5F0EB] hover:border-[#D0C8BF] hover:text-[#1A1A1A] transition-all duration-150"
-                data-testid="button-header-data-request"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Data Request</span>
-              </button>
-              <DataRequestModal
-                open={dataRequestModalOpen}
-                onOpenChange={setDataRequestModalOpen}
-                url={dataRequestUrl}
-              />
-            </>
-          )}
-
+          {rightAction}
           {/* Narrow phones (<480px): compact step counter only */}
           <span className="text-xs text-slate-500 font-medium tabular-nums min-[480px]:hidden" data-testid="step-counter-compact">
             {currentStep} / {totalSteps}

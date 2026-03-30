@@ -12,7 +12,6 @@ interface ExploreOpportunityProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
-  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 interface BusynessPreset {
@@ -56,7 +55,7 @@ const FTE_ESTIMATES = [
   { label: "Mixed", multiplier: 2.0, description: "Blended unit types" },
 ];
 
-export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome, dataRequestGenerateUrl }: ExploreOpportunityProps) {
+export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
   const isNursing = state.careSetting === 'nursing';
@@ -175,7 +174,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
         stepName="Opportunity Size"
         onBack={onBack}
         onHome={onHome}
-        dataRequestGenerateUrl={dataRequestGenerateUrl}
+
       />
       <UnifiedHeaderSpacer />
 

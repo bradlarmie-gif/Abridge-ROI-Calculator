@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type ExploreCareSetting } from "./ExploreFlow";
+import DataRequestModal from "@/components/DataRequestModal";
 import abridgeShape from "@assets/abridge-shape-07_1770229105848.png";
 
 interface CareSettingOption {
@@ -52,11 +53,12 @@ interface ExploreCareSettingsProps {
   onBack: () => void;
   onHome: () => void;
   disabledSettings?: ExploreCareSetting[];
-  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
-export default function ExploreCareSettings({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [], dataRequestGenerateUrl }: ExploreCareSettingsProps) {
+export default function ExploreCareSettings({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [] }: ExploreCareSettingsProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [dataRequestModalOpen, setDataRequestModalOpen] = useState(false);
+  const [dataRequestUrl, setDataRequestUrl] = useState("");
   const [selectedForRequest, setSelectedForRequest] = useState<ExploreCareSetting[]>(
     selectedSetting && !disabledSettings.includes(selectedSetting) ? [selectedSetting] : []
   );
@@ -95,7 +97,20 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
         stepName="Care Setting"
         onBack={onBack}
         onHome={onHome}
-        dataRequestGenerateUrl={dataRequestGenerateUrl}
+        rightAction={
+          <button
+            onClick={async () => {
+              const { generateIntakeFormUrl } = await import("@/lib/intakeUrlState");
+              const url = await generateIntakeFormUrl(selectedForRequest.length > 0 ? selectedForRequest : undefined);
+              setDataRequestUrl(url);
+              setDataRequestModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#1A1A1A] text-white hover:bg-[#333333] transition-all"
+            data-testid="button-data-request-header"
+          >
+            Data Request
+          </button>
+        }
       />
       <UnifiedHeaderSpacer />
       
@@ -315,6 +330,11 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
 
         </motion.div>
       </div>
+      <DataRequestModal
+        open={dataRequestModalOpen}
+        onOpenChange={setDataRequestModalOpen}
+        url={dataRequestUrl}
+      />
     </div>
   );
 }

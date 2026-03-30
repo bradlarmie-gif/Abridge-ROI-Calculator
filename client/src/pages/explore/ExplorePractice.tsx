@@ -12,7 +12,6 @@ interface ExplorePracticeProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
-  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 type EncounterPreset = 'lighter' | 'typical' | 'busy' | 'custom' | null;
@@ -30,7 +29,6 @@ export default function ExplorePractice({
   onNext,
   onBack,
   onHome,
-  dataRequestGenerateUrl,
 }: ExplorePracticeProps) {
   const providers = state.numberOfProviders || 0;
   const perProvider = state.encountersPerProvider || 0;
@@ -104,7 +102,7 @@ export default function ExplorePractice({
         stepName="Your Practice"
         onBack={onBack}
         onHome={onHome}
-        dataRequestGenerateUrl={dataRequestGenerateUrl}
+
       />
       <UnifiedHeaderSpacer />
 

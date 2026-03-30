@@ -15,7 +15,6 @@ interface ExploreValueDriversProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
-  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 export default function ExploreValueDrivers({
@@ -25,7 +24,6 @@ export default function ExploreValueDrivers({
   onNext,
   onBack,
   onHome,
-  dataRequestGenerateUrl,
 }: ExploreValueDriversProps) {
   const { timeDriverInputs } = state;
   
@@ -344,7 +342,7 @@ export default function ExploreValueDrivers({
         stepName="Value Drivers"
         onBack={onBack}
         onHome={onHome}
-        dataRequestGenerateUrl={dataRequestGenerateUrl}
+
       />
       <UnifiedHeaderSpacer />
 

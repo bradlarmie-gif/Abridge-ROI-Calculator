@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { ArrowRight, Building2, Stethoscope, Siren, BedDouble, Heart } from "lucide-react";
+import DataRequestModal from "@/components/DataRequestModal";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,10 +39,8 @@ export default function MeasureDataEntry({
     ? state.activeCareSettings
     : ['outpatient' as MeasureCareSetting];
 
-  const generateMeasureDataRequestUrl = useCallback(async (_settings: string[]) => {
-    const { generateDataFormUrl } = await import('@/lib/dataRequestUrlState');
-    return generateDataFormUrl({ settings: activeSettings });
-  }, [activeSettings]);
+  const [dataRequestModalOpen, setDataRequestModalOpen] = useState(false);
+  const [dataRequestUrl, setDataRequestUrl] = useState("");
 
   const hasNursing = activeSettings.includes('nursing');
   const hasProviderSettings = activeSettings.some(s => s !== 'nursing');
@@ -208,7 +207,20 @@ export default function MeasureDataEntry({
         stepName="Partner Profile"
         onBack={onBack}
         onHome={onHome}
-        dataRequestGenerateUrl={generateMeasureDataRequestUrl}
+        rightAction={
+          <button
+            onClick={async () => {
+              const { generateDataFormUrl } = await import("@/lib/dataRequestUrlState");
+              const url = await generateDataFormUrl({ settings: activeSettings });
+              setDataRequestUrl(url);
+              setDataRequestModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#1A1A1A] text-white hover:bg-[#333333] transition-all"
+            data-testid="button-send-data-request"
+          >
+            Data Request
+          </button>
+        }
       />
       <UnifiedHeaderSpacer />
 
@@ -657,6 +669,11 @@ export default function MeasureDataEntry({
           </Button>
         </motion.div>
       </div>
+      <DataRequestModal
+        open={dataRequestModalOpen}
+        onOpenChange={setDataRequestModalOpen}
+        url={dataRequestUrl}
+      />
     </div>
   );
 }

@@ -451,15 +451,6 @@ export default function MeasureMetricSelection({
 
   const totalActive = useMemo(() => Object.values(domainActiveCounts).reduce((a, b) => a + b, 0), [domainActiveCounts]);
 
-  const generateMeasureDataRequestUrl = useCallback(async (_settings: string[]) => {
-    const { generateDataFormUrl } = await import('@/lib/dataRequestUrlState');
-    const activeMetricIds = Array.from(new Set(
-      domainGroups.flatMap(g => g.chapters.flatMap(ch => ch.metrics.filter(rm => isMetricActive(rm.metric.id, rm)).map(rm => rm.metric.id)))
-    ));
-    return generateDataFormUrl({ settings: activeSettings, preSelectedIds: activeMetricIds.length > 0 ? activeMetricIds : undefined });
-  }, [activeSettings, domainGroups, isMetricActive]);
-
-
   const scrollToDomain = (dk: string) => {
     const el = domainRefs.current[dk];
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -530,7 +521,6 @@ export default function MeasureMetricSelection({
         totalSteps={5}
         onBack={onBack}
         onHome={onHome}
-        dataRequestGenerateUrl={generateMeasureDataRequestUrl}
       />
       <UnifiedHeaderSpacer />
 

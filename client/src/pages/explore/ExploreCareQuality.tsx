@@ -17,7 +17,6 @@ interface ExploreCareQualityProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
-  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 export default function ExploreCareQuality({
@@ -30,7 +29,6 @@ export default function ExploreCareQuality({
   onNext,
   onBack,
   onHome,
-  dataRequestGenerateUrl,
 }: ExploreCareQualityProps) {
   const { docQualityInputs } = state;
 
@@ -155,7 +153,7 @@ export default function ExploreCareQuality({
         stepName="Care Quality"
         onBack={onBack}
         onHome={onHome}
-        dataRequestGenerateUrl={dataRequestGenerateUrl}
+
       />
       <UnifiedHeaderSpacer />
 

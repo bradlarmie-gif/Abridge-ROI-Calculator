@@ -13,7 +13,6 @@ interface ExploreDocQualityProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
-  dataRequestGenerateUrl?: (settings: string[]) => Promise<string>;
 }
 
 type ScenarioLevel = 'conservative' | 'typical' | 'aggressive';
@@ -306,7 +305,6 @@ export default function ExploreDocQuality({
   onNext,
   onBack,
   onHome,
-  dataRequestGenerateUrl,
 }: ExploreDocQualityProps) {
   const { docQualityInputs } = state;
   
@@ -482,7 +480,7 @@ export default function ExploreDocQuality({
         stepName="Documentation Quality"
         onBack={onBack}
         onHome={onHome}
-        dataRequestGenerateUrl={dataRequestGenerateUrl}
+
       />
       <UnifiedHeaderSpacer />
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
