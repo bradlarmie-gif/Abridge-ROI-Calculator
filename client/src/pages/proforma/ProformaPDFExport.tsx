@@ -17,7 +17,7 @@ import { savePdfBlob } from "@/lib/pdf-save";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
-import abridgeLogoRed from "@assets/abridge-logo-symbol_1774900660514.png";
+import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaDriver } from "./proformaTypes";
 import type { ProformaSummary } from "./proformaTypes";
 import { SETTING_LABELS, SETTING_UNIT_LABELS, ONSET_DELAY_MONTHS } from "./proformaTypes";
@@ -1474,7 +1474,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           </Svg>
         </View>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 72 }}>
-          <Image src={abridgeLogoRed} style={{ width: 40, height: 40, marginBottom: 24 }} />
+          <Image src={abridgeLogoRed} style={{ width: 140, marginBottom: 24 }} />
 
           <View style={{ borderTopWidth: 2, borderTopColor: colors.primary, width: 80, marginBottom: 24 }} />
 

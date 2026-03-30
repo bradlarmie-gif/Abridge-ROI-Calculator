@@ -9,7 +9,7 @@ import {
   Font,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
-import abridgeLogoPath from "@assets/abridge-logo-symbol_1774900660514.png";
+import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import ManropeRegular from "@/assets/fonts/manrope-regular.ttf";
 import ManropeBold from "@/assets/fonts/manrope-bold.ttf";
 import AbridgeFont from "@/assets/fonts/abridge.otf";
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   coverLogo: {
-    width: 20,
+    width: 100,
     height: 20,
   },
   coverDate: {
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   headerLogo: {
-    width: 16,
+    width: 80,
     height: 16,
   },
   headerTitle: {

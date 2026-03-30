@@ -9,7 +9,7 @@ import {
   Font,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
-import abridgeLogoPath from "@assets/abridge-logo-symbol_1774900660514.png";
+import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_(1)_1770226183506.png";
 import ManropeRegular from "@/assets/fonts/manrope-regular.ttf";
 import ManropeBold from "@/assets/fonts/manrope-bold.ttf";
 import AbridgeFont from "@/assets/fonts/abridge.otf";
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     borderBottomColor: brand.abridgeRed,
   },
   logo: {
-    width: 14,
+    width: 68,
     height: 14,
   },
   headerTitle: {

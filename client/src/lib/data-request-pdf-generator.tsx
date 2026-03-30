@@ -1,7 +1,7 @@
 import {
   Document, Page, Text, View, StyleSheet, Image, Font, pdf,
 } from "@react-pdf/renderer";
-import abridgeLogo from "@assets/abridge-logo-symbol_1774900660514.png";
+import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 import ManropeRegular from "../assets/fonts/manrope-regular.ttf";
 import ManropeBold from "../assets/fonts/manrope-bold.ttf";
 
@@ -23,7 +23,7 @@ const SETTING_LABELS: Record<string, string> = {
 const s = StyleSheet.create({
   page: { fontFamily: "Manrope", backgroundColor: "#FFFFFF", paddingHorizontal: 48, paddingVertical: 48 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 },
-  logo: { width: 24, height: 24, objectFit: "contain" },
+  logo: { width: 96, height: 24, objectFit: "contain" },
   headerRight: { alignItems: "flex-end" },
   headerTitle: { fontSize: 18, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 },
   headerMeta: { fontSize: 9, color: "#999999" },

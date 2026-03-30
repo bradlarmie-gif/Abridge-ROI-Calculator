@@ -1,0 +1,93 @@
+Remove diagonal stripe from PDF cover pages — surgical search                                                                                                                                                
+                                                                                                                                                                                                             
+  There is a decorative diagonal stripe in the bottom-right corner of PDF cover pages. Replit must find and delete it directly.                                                                                
+                                                                                                                                                                                                               
+  Step 1 — Find the file                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Open each of these files and search for the CoverPage component:                                                                                                                                           
+  - client/src/lib/ed-pdf-generator.tsx                                                                                                                                                                        
+  - client/src/lib/outpatient-pdf-generator.tsx                                                                                                                                                              
+  - client/src/lib/inpatient-pdf-generator.tsx                                                                                                                                                                 
+  - client/src/lib/nursing-pdf-generator.tsx                                                                                                                                                                   
+                                              
+  In each CoverPage component's return statement, look for ANY of these patterns:                                                                                                                              
+                                                                                                                                                                                                             
+  position: "absolute"                                                                                                                                                                                         
+  position: 'absolute'                                                                                                                                                                                         
+                                              
+  combined with any of:                                                                                                                                                                                        
+  rotate                                                                                                                                                                                                     
+  transform                                                                                                                                                                                                    
+  backgroundColor                                                                                                                                                                                            
+  opacity                                                                                                                                                                                                      
+                                                                                                                                                                                                             
+  The stripe element will be one of these shapes:                                                                                                                                                              
+  - A <View> with position: "absolute" and a light pink/salmon/coral background color                                                                                                                        
+  - A <View> with transform: [{ rotate: "..." }]                                     
+  - A <View> with a large width/height and a very light background color, positioned at the bottom or right
+                                                                                                           
+  Step 2 — Delete those elements                                                                                                                                                                               
+                                                                                                                                                                                                               
+  Delete any absolutely positioned <View> elements inside the CoverPage JSX that are purely decorative (they contain no <Text> children with real content like organization name, date, etc.). The stripe has  
+  no text — it is just a colored shape.                                                                                                                                                                        
+                                                                                                                                                                                                               
+  Step 3 — Also check for a shared CoverPage component                                                                                                                                                         
+                                                                                                                                                                                                               
+  Search the entire client/src/lib/ and client/src/lib/pdf/ directories for any file containing both CoverPage and either rotate or position.*absolute together. Whatever file that is — remove the absolutely 
+  positioned decorative View from it.                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Step 4 — Verify by reading back the CoverPage JSX
+                                                                                                                                                                                                               
+  After making changes, read back the CoverPage JSX in each modified file and confirm there are no remaining View elements with position: "absolute" inside the cover page that lack text content.           
+                                                                                                                                                                                                               
+  Do not change anything else — no colors, no layout, no text, no logo, no spacing.                                                                                                                          
+                                              
+✻ Brewed for 1m 3s · 1 background task still running (↓ to manage)                                                                                                                                             
+  
+❯ ffuckkkkkk.... dont make that vchange. keep the abridge word in the top left.  and only change the mark that was in the bottom right.. wtf is this..                                                         
+  ⎿  [Image #21]                                                                                                                                                                                               
+                                                                                                                                                                                                               
+⏺ Good news — the stripe is gone. Now just revert the logo back to the wordmark. Here's the exact prompt:                                                                                                      
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Revert PDF logo from A symbol back to ABRIDGE wordmark                                                                                                                                                       
+                                                                                                                                                                                                               
+  A recent change replaced the Abridge wordmark logo with the A symbol (abridge-logo-symbol.png) across all PDF generators. Revert ONLY the logo — the diagonal stripe removal should stay. Do not touch       
+  anything else.                                                                                                                                                                                               
+                                                                                                                                                                                                               
+  In each file below, change the import back to the original wordmark file AND restore the original dimensions:                                                                                              
+                                                                                                                                                                                                               
+  client/src/lib/outpatient-pdf-generator.tsx                                                                                                                                                                
+  // Change import back to:                                                                                                                                                                                    
+  import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";                                                                                                                         
+  // Restore coverLogo dimensions: width: 90, height: 18                                                                                                                                                       
+  // Restore headerLogo dimensions to original (whatever they were before the A symbol change)                                                                                                               
+                                                                                                                                                                                                               
+  client/src/lib/inpatient-pdf-generator.tsx                                                                                                                                                                   
+  import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";                                                                                                                           
+  // Restore coverLogo: width: 90, height: 18                                                                                                                                                                  
+  // Restore headerLogo to original dimensions                                                                                                                                                                 
+                                                                                                                                                                                                             
+  client/src/lib/ed-pdf-generator.tsx                                                                                                                                                                          
+  import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";                                                                                                                           
+  // Restore coverLogo and headerLogo to original dimensions                        
+                                                                                                                                                                                                               
+  client/src/lib/nursing-pdf-generator.tsx                                                                                                                                                                     
+  import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_(1)_1770226183506.png";
+  // Restore logo dimensions to original                                                                                                                                                                       
+                                                                                                                                                                                                               
+  client/src/lib/methodology-pdf-generator.tsx
+  import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";                                                                                                                           
+                                                                                                                                                                                                               
+  client/src/lib/expand-pdf-generator.tsx
+  import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";                                                                                                                           
+  // Restore inline dimensions: { width: 85, height: 17 } and { width: 70, height: 14 }                                                                                                                      
+                                                                                                                                                                                                               
+  client/src/lib/pdf-theme.tsx                                                                                                                                                                                 
+  import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_(1)_1770226183506.png";
+  // Restore logo dimensions to original                                                                                                                                                                       
+                                                                                                                                                                                                               
+  client/src/lib/data-request-pdf-generator.tsx
+  import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";                                                                                                                               
+                                                                                                                                                                                                               
+  Do not touch: the stripe removal, any cover page layout, any colors, any text, any other styling. Only the import path and logo dimensions.
