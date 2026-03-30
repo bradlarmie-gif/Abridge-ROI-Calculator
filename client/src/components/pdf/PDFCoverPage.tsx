@@ -1,5 +1,5 @@
 import { Page, View, Text, StyleSheet, Svg, Path, Image, Font } from "@react-pdf/renderer";
-import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import abridgeLogoRed from "@assets/abridge-logo-symbol_1774883518408.png";
 import abridgeFont from "../../assets/fonts/abridge.otf";
 
 Font.register({
@@ -48,7 +48,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   logo: {
-    width: 90,
+    width: 30,
+    height: 30,
     position: "absolute",
     top: 54,
     left: 54,
