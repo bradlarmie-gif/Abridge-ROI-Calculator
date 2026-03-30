@@ -1933,11 +1933,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                         </div>
                       </div>
                       <div className="px-5 pb-6 pt-5">
-                        {config.framingQuestions?.[card.level] && (
-                          <p className="text-sm font-semibold text-[#1A1A1A] mb-3 mt-1">
-                            {config.framingQuestions[card.level].replace('{encounterCount}', documentedEncounters.toLocaleString())}
-                          </p>
-                        )}
                         {feedback && feedback.headlineMetric && (
                           <p className="font-bold text-xl text-[#EA2C00] leading-none mb-4" data-testid="text-ladder-value">
                             {feedback.headlineMetric}
