@@ -1,0 +1,23 @@
+Fix premature hours calculation in client/src/pages/switch/ambient/Screen4Domains.tsx                                                                                                                        
+                                                                                       
+  The "Estimated Impact" panel shows a pre-calculated hours number before the user has selected any maturity level. This happens because timeSavedPerEncounter has a default value, making hoursRecovered > 0  
+  true on first load. Fix by showing neutral prompts until the user actually selects a level.                                                                                                                
+                                                                                                                                                                                                               
+  One change, one location.                   
+                                                                                                                                                                                                               
+  Find:                                                                                                                                                                                                      
+  capacity: hoursRecovered > 0                                                                                                                                                                                 
+    ? `Based on your inputs, approximately ${hoursRecovered.toLocaleString()} hours recovered annually. Select the level that best describes your organization's current state.`                             
+    : 'Select a maturity level to estimate recovered capacity.',                                                                                                                                               
+  revenue: `${documentedEncounters.toLocaleString()} documented encounters annually. Select the level that describes your revenue cycle's engagement with documentation changes.`,                           
+  workforce: hoursRecovered > 0                                                                                                                                                   
+    ? `${providers} providers, approximately ${hoursRecovered.toLocaleString()} hours of documentation time returned. Select the level that matches your organization.`
+    : `${providers} providers with reduced documentation burden. Select a level to estimate the workforce impact.`,                                                                                            
+   
+  Replace with:                                                                                                                                                                                                
+  capacity: 'Select the level that best describes your organization\'s current state.',                                                                                                                      
+  revenue: `${documentedEncounters.toLocaleString()} documented encounters annually. Select the level that describes your revenue cycle's engagement with documentation changes.`,                             
+  workforce: `${providers} providers with reduced documentation burden. Select a level to estimate the workforce impact.`,                                                                                     
+                                              
+  ---                                                                                                                                                                                                          
+  That's it. The hours calculation still fires correctly once the user selects a maturity level — it just no longer shows up before they've done anything.

@@ -2099,13 +2099,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               const timeSaved = (inputs.timeSavedPerEncounter as number) || 0;
               const hoursRecovered = Math.round(documentedEncounters * timeSaved / 60);
               const domainProvocations: Record<string, string> = {
-                capacity: hoursRecovered > 0
-                  ? `Based on your inputs, approximately ${hoursRecovered.toLocaleString()} hours recovered annually. Select the level that best describes your organization's current state.`
-                  : 'Select a maturity level to estimate recovered capacity.',
+                capacity: 'Select the level that best describes your organization\'s current state.',
                 revenue: `${documentedEncounters.toLocaleString()} documented encounters annually. Select the level that describes your revenue cycle's engagement with documentation changes.`,
-                workforce: hoursRecovered > 0
-                  ? `${providers} providers, approximately ${hoursRecovered.toLocaleString()} hours of documentation time returned. Select the level that matches your organization.`
-                  : `${providers} providers with reduced documentation burden. Select a level to estimate the workforce impact.`,
+                workforce: `${providers} providers with reduced documentation burden. Select a level to estimate the workforce impact.`,
                 risk: `${documentedEncounters.toLocaleString()} encounters with improved documentation. Select the level that best describes your organization today.`,
               };
               const provocation = domainProvocations[activeDomain] || "Select your organization's maturity level to see estimated impact.";
