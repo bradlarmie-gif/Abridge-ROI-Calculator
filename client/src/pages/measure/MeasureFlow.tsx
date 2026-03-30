@@ -68,12 +68,18 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   });
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
     requestAnimationFrame(() => {
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
     });
+    const t = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    }, 50);
+    return () => clearTimeout(t);
   }, [phase]);
 
   useEffect(() => {

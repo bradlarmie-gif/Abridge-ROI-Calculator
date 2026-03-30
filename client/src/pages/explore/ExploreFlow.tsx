@@ -607,14 +607,19 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     prevBaselineRef.current = { providers: state.numberOfProviders, beds: state.nursingStaffedBeds };
   }, [state.numberOfProviders, state.nursingStaffedBeds, state.careSetting]);
 
-  // Scroll to top on every phase change (mobile fix)
   useEffect(() => {
-    // Use requestAnimationFrame to ensure DOM has updated before scrolling
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     requestAnimationFrame(() => {
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     });
+    const t = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    }, 50);
+    return () => clearTimeout(t);
   }, [phase]);
 
   useEffect(() => {
