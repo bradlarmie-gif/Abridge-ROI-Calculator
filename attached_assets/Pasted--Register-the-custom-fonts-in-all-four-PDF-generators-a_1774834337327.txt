@@ -1,0 +1,99 @@
+ Register the custom fonts in all four PDF generators and update every font reference throughout each file. The font files already exist in the project at these paths:                                       
+                                                                                                                                                                                                               
+  - client/src/assets/fonts/manrope-regular.ttf                                                                                                                                                                
+  - client/src/assets/fonts/manrope-bold.ttf   
+  - client/src/assets/fonts/abridge.otf                                                                                                                                                                        
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ## Do this in all four files:                                                                                                                                                                                
+  - client/src/lib/outpatient-pdf-generator.tsx                                                           
+  - client/src/lib/inpatient-pdf-generator.tsx 
+  - client/src/lib/ed-pdf-generator.tsx       
+  - client/src/lib/nursing-pdf-generator.tsx                                                                                                                                                                   
+                                              
+  ---                                                                                                                                                                                                          
+                                                                                                          
+  ## Step 1 — Add font imports at the top of each file (after existing imports):                                                                                                                               
+                                                                                                          
+  ```typescript                                                                                                                                                                                                
+  import ManropeRegular from "@assets/fonts/manrope-regular.ttf";                                         
+  import ManropeBold from "@assets/fonts/manrope-bold.ttf";                                                                                                                                                    
+  import AbridgeFont from "@assets/fonts/abridge.otf";     
+                                                                                                                                                                                                               
+  Step 2 — Replace the existing Font registration line in each file                                       
+                                                                                                                                                                                                               
+  Find the line:                          
+  Font.registerHyphenationCallback((word) => [word]);                                                                                                                                                          
+                                                                                                                                                                                                               
+  Replace with:                               
+  Font.register({                                                                                                                                                                                              
+    family: "Manrope",                                                                                    
+    fonts: [                                                                                                                                                                                                   
+      { src: ManropeRegular, fontWeight: 400 },
+      { src: ManropeBold, fontWeight: 700 },                                                                                                                                                                   
+    ],                                                                                                    
+  });                                         
+                                          
+  Font.register({
+    family: "Abridge",                                                                                                                                                                                         
+    src: AbridgeFont, 
+    fontWeight: 400,                                                                                                                                                                                           
+  });                                                                                                     
+     
+  Font.registerHyphenationCallback((word) => [word]);
+                                                     
+  If the file has no existing Font.registerHyphenationCallback line, just add the three Font blocks at the top of the file after imports.
+                                              
+  ---                                                                                                                                                                                                          
+  Step 3 — Update every font reference in the StyleSheet
+                                                                                                                                                                                                               
+  Replace ALL occurrences of these Helvetica font family strings:                                         
+                                                                                                                                                                                                               
+  ┌─────────────────────────────────────┬─────────────────────────────────────────────────────────────┐                                                                                                        
+  │                Find                 │                        Replace with                         │
+  ├─────────────────────────────────────┼─────────────────────────────────────────────────────────────┤                                                                                                        
+  │ fontFamily: "Helvetica"             │ fontFamily: "Manrope"                                       │                                                                                                        
+  ├─────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ fontFamily: "Helvetica-Bold"        │ fontFamily: "Manrope", fontWeight: 700                      │                                                                                                        
+  ├─────────────────────────────────────┼─────────────────────────────────────────────────────────────┤   
+  │ fontFamily: "Helvetica-Oblique"     │ fontFamily: "Manrope", fontStyle: "italic"                  │
+  ├─────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ fontFamily: "Helvetica-BoldOblique" │ fontFamily: "Manrope", fontWeight: 700, fontStyle: "italic" │                                                                                                        
+  └─────────────────────────────────────┴─────────────────────────────────────────────────────────────┘
+                                                                                                                                                                                                               
+  For section titles and hero headings — anywhere a style sets both a large fontSize (14+) AND bold weight on a heading/title, also add:
+                                                                                                                                                                                                               
+  fontFamily: "Abridge",
+  fontWeight: 400,                                                                                                                                                                                             
+  letterSpacing: 0.5,                                                                                     
+                                                                                                                                                                                                               
+  Specifically, apply Abridge to these style definitions (look for these style names in each file's StyleSheet):
+  - coverTitle                            
+  - sectionTitle                                                                                                                                                                                               
+  - mainTitle                                                                                                                                                                                                  
+  - driverTitle                                                                                                                                                                                                
+  - stakesHeroTitle (ED only)                                                                                                                                                                                  
+  - actionTitle                                                                                           
+                                                                                                                                                                                                               
+  For all other text — body copy, labels, captions, table cells, footers — use fontFamily: "Manrope".
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Step 4 — Remove any inline fontFamily overrides in JSX that reference Helvetica
+                                                                                                                                                                                                               
+  Search every file for inline style objects like:                                                        
+  style={{ fontFamily: "Helvetica-Bold" }}                                                                                                                                                                     
+  style={{ fontFamily: "Helvetica" }}                                                                                                                                                                          
+  And replace with:
+  style={{ fontFamily: "Manrope", fontWeight: 700 }}                                                                                                                                                           
+  style={{ fontFamily: "Manrope" }}                                                                       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Important notes                         
+                                                                                                                                                                                                               
+  - In react-pdf, bold is set with fontWeight: 700 on a registered font family — NOT by switching to "Helvetica-Bold". After this change, bold text uses fontFamily: "Manrope" + fontWeight: 700.              
+  - Abridge is a display/heading font. Use it ONLY on large titles (fontSize 14+). Never on body text, labels, table cells, or captions.
+  - Do not change any colors, spacing, layout, or any non-font style property.                                                                                                                                 
+  - Do not add or remove any pages, components, or logic.                                                 
+  - The only thing changing is font family references throughout the StyleSheet and any inline styles.                                                                                                         
+                                                                                                       
