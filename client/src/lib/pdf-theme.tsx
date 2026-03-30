@@ -4,7 +4,7 @@ import {
   StyleSheet,
   Image,
 } from "@react-pdf/renderer";
-import abridgeLogoPath from "@assets/abridge-logo-symbol_1774883518408.png";
+import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_(1)_1770226183506.png";
 
 // ============================================================================
 // PREMIUM COLOR PALETTE - SHARED ACROSS ALL METHODOLOGY PDFS
@@ -82,7 +82,7 @@ export const sharedStyles = StyleSheet.create({
     borderBottomColor: brand.abridgeRed,
   },
   logo: {
-    width: 14,
+    width: 68,
     height: 14,
   },
   headerTitle: {

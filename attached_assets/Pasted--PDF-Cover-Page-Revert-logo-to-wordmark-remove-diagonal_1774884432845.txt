@@ -1,0 +1,39 @@
+ PDF Cover Page — Revert logo to wordmark + remove diagonal stripe                                                                                                                                            
+                                                                                                                                                                                                               
+  Two changes to client/src/lib/outpatient-pdf-generator.tsx (and any other PDF generator files that were modified):                                                                                           
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 1 — Revert the logo back to the wordmark                                                                                                                                                                 
+                                                                                                                                                                                                             
+  The logo import was recently changed to abridge-logo-symbol.png. Change it back to the original wordmark in every PDF generator file that was modified.                                                      
+                                                                                                                                                                                                             
+  In each of these files, find the import that references abridge-logo-symbol.png and change it back to the original:                                                                                          
+                                                                                                                                                                                                             
+  - outpatient-pdf-generator.tsx: import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+  - inpatient-pdf-generator.tsx: same                                                                                                                                                                          
+  - ed-pdf-generator.tsx: same                                                                                                                                                                                 
+  - methodology-pdf-generator.tsx: same                                                                                                                                                                        
+  - expand-pdf-generator.tsx: same                                                                                                                                                                             
+  - nursing-pdf-generator.tsx: import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_(1)_1770226183506.png";                                                                                        
+  - pdf-theme.tsx: same as nursing                                                                                                                                                                             
+  - data-request-pdf-generator.tsx: import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";                                                                                           
+                                                                                                                                                                                                               
+  Also revert any dimension changes made to coverLogo and headerLogo styles — restore width: 90, height: 18 for coverLogo and the original dimensions for headerLogo and any inline logo styles.               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 2 — Remove the diagonal stripe from the cover page                                                                                                                                                       
+                                                                                                                                                                                                               
+  On the cover page of the outpatient PDF (and any other PDF that has it), there is a decorative diagonal stripe element in the bottom-right corner — a light salmon/coral colored band running diagonally.    
+                                                                                                                                                                                                               
+  Search the cover page JSX in outpatient-pdf-generator.tsx (and in any other PDF generator file that has this stripe) for:                                                                                  
+  - Any View with position: "absolute" that has a light pink/salmon/coral background color (#FEF7F5, #FFE, #FDD, or similar light red/orange tint)
+  - Any View with a transform containing rotate                                                                                                   
+  - Any element described as a decoration, accent, stripe, or watermark on the cover page                                                                                                                      
+                                                                                                                                                                                                               
+  Delete those elements entirely. Do not change any other part of the cover page layout, colors, text, or structure.                                                                                           
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+  Verification:                                                                                                                                                                                                
+  - Generate an outpatient PDF — cover page should show the red "ABRIDGE" wordmark in the top-left, no diagonal stripe anywhere on the page                                                                    
+  - All other pages should have the wordmark in the page header as before                                                                                                                                      
+  - No other visual changes to any PDF                                                                                 

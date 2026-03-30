@@ -9,7 +9,7 @@ import {
   Font,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
-import abridgeLogoPath from "@assets/abridge-logo-symbol_1774883518408.png";
+import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     borderBottomColor: brand.midGray,
   },
   logo: {
-    width: 20,
+    width: 80,
     height: 20,
   },
   headerRight: {

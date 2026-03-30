@@ -11,7 +11,7 @@ import { savePdfBlob } from "@/lib/pdf-save";
 import type { RoiInputs, LeverId } from "@/lib/roi-types";
 import { leverLabels, leverDescriptions } from "@/lib/roi-types";
 import type { calculateRoi } from "@/lib/roi-calculator";
-import abridgeLogoPath from "@assets/abridge-logo-symbol_1774883518408.png";
+import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
 // ============================================================================
 // TYPES
@@ -679,7 +679,7 @@ const OutpatientPDFDocument = ({
       {/* ================================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 18, height: 18 }} />
+          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>{careSettingLabel} ROI Assessment</Text>
             <Text style={styles.headerDate}>{today}</Text>
@@ -795,7 +795,7 @@ const OutpatientPDFDocument = ({
       {/* ================================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 18, height: 18 }} />
+          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>{careSettingLabel} ROI Assessment</Text>
           </View>
@@ -851,7 +851,7 @@ const OutpatientPDFDocument = ({
       {/* ================================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 18, height: 18 }} />
+          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>{careSettingLabel} ROI Assessment</Text>
           </View>
@@ -995,7 +995,7 @@ const OutpatientPDFDocument = ({
       {/* ================================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 18, height: 18 }} />
+          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>{careSettingLabel} ROI Assessment</Text>
           </View>
