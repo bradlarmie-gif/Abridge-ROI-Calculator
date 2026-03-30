@@ -182,17 +182,17 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           }
         } else if (domain === 'workforce') {
           if (level === 1) {
-            lowEstimate = Math.round(providers * 1500);
-            highEstimate = Math.round(providers * 4000);
+            lowEstimate = Math.round(providers * 1000);
+            highEstimate = Math.round(providers * 2500);
             narrative = `Provider burden has decreased. The retention and workforce economics of that decrease haven't been formally counted yet. Organizations at your scale typically find $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in avoided turnover and burden costs when they first run this analysis.\n\nOPPORTUNITY AHEAD: A provider satisfaction survey benchmarked against pre-ambient baseline is typically the fastest path to confirming this range.`;
-            formula = `Benchmark range: ${providers} providers × $1,500–$4,000 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year\n\nSource: AMGA Physician Retention Survey; replacement cost literature range $250K–$500K per physician`;
+            formula = `Benchmark: $350K AMGA replacement cost × 6% turnover × 40% burnout-linked × 15–25% ambient impact = $1,000–$2,500/provider/year\n${providers} providers × $1,000–$2,500 = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
           } else if (level === 2) {
-            const estimatedRetained = Math.round(providers * 0.02);
-            const replacementCost = 250000;
-            lowEstimate = Math.round(estimatedRetained * replacementCost * 0.5);
-            highEstimate = Math.round(estimatedRetained * replacementCost);
+            const estimatedRetained = Math.max(1, Math.round(providers * 0.006));
+            const replacementCost = 350000;
+            lowEstimate = Math.round(estimatedRetained * replacementCost * 0.8);
+            highEstimate = Math.round(estimatedRetained * replacementCost * 1.2);
             narrative = `Behavioral change is documented. The next step is connecting it to retention outcomes — specifically, whether the after-hours reduction is reflected in turnover data.\n\nOPPORTUNITY AHEAD: ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} in retention value estimated based on marginal retention improvement from documented burden reduction. Confirm at Level 3 with your turnover data.`;
-            formula = null;
+            formula = `Methodology: 6% national turnover × 40% burnout-linked × 25% ambient impact = 0.6% of providers retained\n${providers} providers × 0.6% = ~${estimatedRetained} physicians × $350K AMGA replacement = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;
           } else if (level === 3) {
             const retentionValue = domainInputs.retentionValue || 0;
             lowEstimate = Math.round(retentionValue * 0.9);

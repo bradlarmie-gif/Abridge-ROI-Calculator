@@ -1,0 +1,45 @@
+ Replit prompt:                                                                                                                                                                                               
+                
+  In client/src/pages/switch/ambient/Screen5Gap.tsx, fix the workforce benchmark math for Level 1 and Level 2. The old numbers were overstated.                                                                
+                                                                                                          
+  Find the workforce domain block (around line 183) and replace:
+                                          
+  // LEVEL 1 — old:                                                                                                                                                                                            
+  lowEstimate = Math.round(providers * 1500);                                                                                                                                                                  
+  highEstimate = Math.round(providers * 4000);                                                                                                                                                                 
+  ...                                                                                                                                                                                                          
+  formula = `Benchmark range: ${providers} providers × $1,500–$4,000 = ...`                               
+                                                                                                                                                                                                               
+  // LEVEL 2 — old:                                                                                                                                                                                            
+  const estimatedRetained = Math.round(providers * 0.02);
+  const replacementCost = 250000;                                                                                                                                                                              
+  lowEstimate = Math.round(estimatedRetained * replacementCost * 0.5);                                    
+  highEstimate = Math.round(estimatedRetained * replacementCost);                                                                                                                                              
+  formula = null;                                                                                         
+
+  Replace with:                                                                                                                                                                                                
+   
+  // LEVEL 1 — new:                                                                                                                                                                                            
+  lowEstimate = Math.round(providers * 1000);                                                             
+  highEstimate = Math.round(providers * 2500);
+  narrative = `Provider burden has decreased. The retention and workforce economics of that decrease haven't been formally counted yet. Organizations at your scale typically find 
+  $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()} per year in avoided turnover and burden costs when they first run this analysis.\n\nOPPORTUNITY AHEAD: A provider satisfaction survey 
+  benchmarked against pre-ambient baseline is typically the fastest path to confirming this range.`;
+  formula = `Benchmark: $350K AMGA replacement cost × 6% turnover × 40% burnout-linked × 15–25% ambient impact = $1,000–$2,500/provider/year\n${providers} providers × $1,000–$2,500 =                         
+  $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;                                                                                                                                    
+                                                                                                                                                                                                               
+  // LEVEL 2 — new:                                                                                                                                                                                            
+  const estimatedRetained = Math.max(1, Math.round(providers * 0.006));                                                                                                                                        
+  const replacementCost = 350000;             
+  lowEstimate = Math.round(estimatedRetained * replacementCost * 0.8);                                                                                                                                         
+  highEstimate = Math.round(estimatedRetained * replacementCost * 1.2);                                   
+  narrative = `Behavioral change is documented. The next step is connecting it to retention outcomes — specifically, whether the after-hours reduction is reflected in turnover data.\n\nOPPORTUNITY AHEAD:    
+  ${formatDollarFull(lowEstimate)}–${formatDollarFull(highEstimate)} in retention value estimated based on marginal retention improvement from documented burden reduction. Confirm at Level 3 with your 
+  turnover data.`;                                                                                                                                                                                             
+  formula = `Methodology: 6% national turnover × 40% burnout-linked × 25% ambient impact = 0.6% of providers retained\n${providers} providers × 0.6% = ~${estimatedRetained} physicians × $350K AMGA 
+  replacement = $${lowEstimate.toLocaleString()}–$${highEstimate.toLocaleString()}/year`;                                                                                                                      
+                                          
+  What this produces for 500 providers:                                                                                                                                                                        
+  - Level 1: $500K–$1.25M (was $750K–$2M)                                                                                                                                                                      
+  - Level 2: $840K–$1.26M (was $1.25M–$2.5M)  
+  - Methodology is now fully transparent and defensible: 6% turnover × 40% burnout-linked × 25% ambient impact = 0.6% of providers retained per year × $350K AMGA replacement cost  
