@@ -1,0 +1,27 @@
+Fix encounter estimate and guardrail threshold in client/src/pages/switch/ambient/Screen2Baseline.tsx                                                                                                        
+                                                                                                       
+  Three one-line changes, all in the same file.                                                                                                                                                                
+                                                                                                                                                                                                             
+  Change 1 — Update the "Help me estimate" multiplier from 2,000 to 3,000 per provider:                                                                                                                        
+                                                                                                                                                                                                               
+  Find:                                                                                                                                                                                                        
+  const estimatedEncounters = useMemo(() => inputs.providers * 2000, [inputs.providers]);                                                                                                                      
+  Replace with:                                                                                                                                                                                                
+  const estimatedEncounters = useMemo(() => inputs.providers * 3000, [inputs.providers]);                                                                                                                      
+                                                                                                                                                                                                             
+  Change 2 — Update the display text in the estimator popup to match:                                                                                                                                          
+                                                                                                                                                                                                             
+  Find:                                   
+  <span className="font-bold">{inputs.providers.toLocaleString()}</span> providers &times; 2,000 typical = <span className="font-bold">{estimatedEncounters.toLocaleString()}</span>
+  Replace with:                                                                                                                                                                                                
+  <span className="font-bold">{inputs.providers.toLocaleString()}</span> providers &times; 3,000 typical = <span className="font-bold">{estimatedEncounters.toLocaleString()}</span>
+                                                                                                                                                                                                               
+  Change 3 — Raise the guardrail threshold from 3,500 to 5,750 per provider (25 patients/day × 230 days — top of the realistic range):                                                                       
+                                                                                                                                                                                                               
+  Find:                                   
+  const showGuardrail = inputs.providers > 0 && inputs.annualEncounters > 0 && (inputs.annualEncounters / inputs.providers) > 3500;                                                                            
+  Replace with:                                                                                                                                                                                                
+  const showGuardrail = inputs.providers > 0 && inputs.annualEncounters > 0 && (inputs.annualEncounters / inputs.providers) > 5750;
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  That's it. No other changes needed.

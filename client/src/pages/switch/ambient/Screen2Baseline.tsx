@@ -32,12 +32,12 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
   const revenuePerVisit = inputs.revenuePerVisit || 200;
   const conversionFactor = inputs.conversionFactor || 33;
 
-  const estimatedEncounters = useMemo(() => inputs.providers * 2000, [inputs.providers]);
+  const estimatedEncounters = useMemo(() => inputs.providers * 3000, [inputs.providers]);
   const encountersPerDay = useMemo(() => {
     if (!inputs.providers || !inputs.annualEncounters) return 0;
     return Math.round((inputs.annualEncounters / inputs.providers) / 230);
   }, [inputs.providers, inputs.annualEncounters]);
-  const showGuardrail = inputs.providers > 0 && inputs.annualEncounters > 0 && (inputs.annualEncounters / inputs.providers) > 3500;
+  const showGuardrail = inputs.providers > 0 && inputs.annualEncounters > 0 && (inputs.annualEncounters / inputs.providers) > 5750;
 
   const documentedEncounters = useMemo(() =>
     Math.round(inputs.annualEncounters * (utilization / 100)),
@@ -139,7 +139,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
                 {showEstimator && inputs.providers > 0 && (
                   <div className="mt-3 bg-white/80 rounded-lg p-5">
                     <p className="mb-3 text-sm text-black leading-relaxed">
-                      <span className="font-bold">{inputs.providers.toLocaleString()}</span> providers &times; 2,000 typical = <span className="font-bold">{estimatedEncounters.toLocaleString()}</span>
+                      <span className="font-bold">{inputs.providers.toLocaleString()}</span> providers &times; 3,000 typical = <span className="font-bold">{estimatedEncounters.toLocaleString()}</span>
                     </p>
                     <Button
                       onClick={() => { updateInput("annualEncounters", estimatedEncounters); updateInput("encountersEstimated", true); setShowEstimator(false); }}
