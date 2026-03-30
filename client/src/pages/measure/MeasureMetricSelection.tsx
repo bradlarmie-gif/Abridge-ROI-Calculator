@@ -170,8 +170,8 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
         data-testid={`metric-row-${metric.id}`}
       >
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-800">{metric.label}</p>
-          <p className="text-xs text-gray-400 mt-0.5 truncate">{metric.description}</p>
+          <p className="text-sm font-medium text-gray-900">{metric.label}</p>
+          <p className="text-xs text-gray-500 mt-0.5 truncate">{metric.description}</p>
         </div>
         <button
           className="flex-shrink-0 text-xs font-medium text-[#EA2C00] border border-[#EA2C00]/40 px-3 py-1.5 rounded-lg hover:bg-[#EA2C00]/5 hover:border-[#EA2C00] transition-all ml-3"
@@ -594,7 +594,7 @@ export default function MeasureMetricSelection({
                         {group.chapters.map((chapter, ci) => {
                           const isThirdChapter = chapter.phase === 3;
                           return (
-                            <div key={chapter.phase} className={`${ci > 0 ? 'mt-3' : 'mt-3'} ${isThirdChapter ? 'opacity-45' : ''}`}>
+                            <div key={chapter.phase} className="mt-3">
                               <div className="space-y-1">
                                 {chapter.metrics.map(rm => {
                                   const mActive = isMetricActive(rm.metric.id, rm);

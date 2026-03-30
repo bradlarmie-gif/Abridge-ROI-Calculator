@@ -1,0 +1,40 @@
+Fix washed-out opacity on metrics in Measure path and Data Request form                                                                                                                                      
+                                                                                                                                                                                                               
+  Two files, three changes. Everything should read at full, normal opacity — no dimmed or faded items.                                                                                                         
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  File 1: client/src/pages/measure/MeasureMetricSelection.tsx
+                                                                                                                                                                                                               
+  Change 1 — Remove opacity-45 from phase 3 metric chapters.                                              
+                                                                                                                                                                                                               
+  Find:                                                                                                                                                                                                        
+  <div key={chapter.phase} className={`${ci > 0 ? 'mt-3' : 'mt-3'} ${isThirdChapter ? 'opacity-45' : ''}`}>
+                                                                                                                                                                                                               
+  Replace with:                                                                                                                                                                                                
+  <div key={chapter.phase} className="mt-3">
+                                                                                                                                                                                                               
+  Change 2 — In the inactive (not yet measuring) metric row, darken the text.                                                                                                                                  
+                                              
+  Find:                                                                                                                                                                                                        
+  <p className="text-sm font-medium text-gray-800">{metric.label}</p>                                     
+  <p className="text-xs text-gray-400 mt-0.5 truncate">{metric.description}</p>                                                                                                                                
+   
+  Replace with:                                                                                                                                                                                                
+  <p className="text-sm font-medium text-gray-900">{metric.label}</p>                                     
+  <p className="text-xs text-gray-500 mt-0.5 truncate">{metric.description}</p>
+                                                                                                                                                                                                               
+  ---                                         
+  File 2: client/src/pages/intake/MeasureDataRequest.tsx                                                                                                                                                       
+                                                                                                          
+  Change 3 — In the MetricRow component, unchecked metrics currently render their label at text-gray-400 and unit at text-gray-300. Make them full opacity regardless of checked state.                        
+                                              
+  Find:                                                                                                                                                                                                        
+  <span className={`text-sm font-medium ${checked ? "text-gray-900" : "text-gray-400"}`}>{metric.label}</span>
+  <span className={`text-xs ${checked ? "text-gray-400" : "text-gray-300"}`}>({metric.unitLabel})</span>                                                                                                       
+                                              
+  Replace with:                                                                                                                                                                                                
+  <span className="text-sm font-medium text-gray-900">{metric.label}</span>                               
+  <span className="text-xs text-gray-500">({metric.unitLabel})</span>                                                                                                                                          
+                                              
+  ---                                                                                                                                                                                                          
+  That's it. No other changes needed.             

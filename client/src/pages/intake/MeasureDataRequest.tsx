@@ -58,8 +58,8 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2 flex-wrap">
-            <span className={`text-sm font-medium ${checked ? "text-gray-900" : "text-gray-400"}`}>{metric.label}</span>
-            <span className={`text-xs ${checked ? "text-gray-400" : "text-gray-300"}`}>({metric.unitLabel})</span>
+            <span className="text-sm font-medium text-gray-900">{metric.label}</span>
+            <span className="text-xs text-gray-500">({metric.unitLabel})</span>
           </div>
           {checked && metric.description && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{metric.description}</p>}
         </div>
