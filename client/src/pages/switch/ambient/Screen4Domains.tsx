@@ -346,9 +346,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
-              How is recovered time being used?
-            </label>
             <div className="flex flex-col gap-2.5">
               {CAPACITY_TIME_USAGE_LABELS.map((label, i) => {
                 const checked = isChecked('capacityTimeUsage', i);
@@ -451,9 +448,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     return (
       <div className="flex flex-col gap-5">
         <div>
-          <label className="block text-sm font-medium text-black mb-3">
-            Which downstream access outcomes are you tracking?
-          </label>
           <div className="flex flex-col gap-2.5">
             {ACCESS_OUTCOME_OPTIONS.map((item, i) => {
               const checked = isChecked('accessOutcomes', i);
@@ -561,9 +555,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
       return (
         <div className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-black mb-3">
-              What has your organization observed?
-            </label>
             <div className="flex flex-col gap-2.5">
               {OBSERVATION_AREAS.map((area, i) => {
                 const checked = isChecked('observedMovement', i);
