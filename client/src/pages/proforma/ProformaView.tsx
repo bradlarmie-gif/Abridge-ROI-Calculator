@@ -309,11 +309,17 @@ export default function ProformaView({
   const chartData = useMemo(() => {
     let cumValue = 0;
     let cumInvestment = 0;
+    let cumDoc = 0;
+    let cumTime = 0;
+    let cumRetention = 0;
     const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
     cumInvestment += totalImplFees;
     return displayData.map(row => {
       cumValue += row.totalValue;
       cumInvestment += row.investment;
+      cumDoc += row.docValue;
+      cumTime += row.timeValue;
+      cumRetention += row.retentionValue;
       const entry: Record<string, number | string> = {
         label: row.label,
         period: row.period,
@@ -325,6 +331,9 @@ export default function ProformaView({
         cumulativeNet: row.cumulativeNet,
         cumulativeValue: cumValue,
         cumulativeInvestment: cumInvestment,
+        cumDocValue: cumDoc,
+        cumTimeValue: cumTime,
+        cumRetentionValue: cumRetention,
       };
       settings.forEach(s => {
         entry[s.id] = Math.round(row.bySettings[s.id]?.value || 0);
@@ -357,8 +366,8 @@ export default function ProformaView({
     const last = chartData[chartData.length - 1];
     return {
       label: last.label as string,
-      totalValue: (last.docValue as number) + (last.timeValue as number) + (last.retentionValue as number),
-      investment: last.investment as number,
+      totalValue: last.cumulativeValue as number,
+      investment: last.cumulativeInvestment as number,
     };
   }, [chartData]);
 
@@ -855,8 +864,8 @@ export default function ProformaView({
             {config.viewMode === "yearly"
               ? "Annual value by driver type"
               : isMobile
-                ? "Quarterly value by driver type"
-                : `Quarterly value by driver type — Year 1 reflects partial retention and capacity effects. Years 2${Math.ceil(config.contractTermMonths / 12) > 2 ? `-${Math.ceil(config.contractTermMonths / 12)}` : ""} reflect maturing adoption across all value drivers.`}
+                ? "Cumulative value realized by driver type"
+                : `Cumulative value realized by driver — onset delays and adoption ramp visible in the early curve. Investment line shows total spend to date.`}
           </p>
           <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="chart-ramp-up">
             <ResponsiveContainer width="100%" height={isMobile ? 300 : 420}>
@@ -936,7 +945,7 @@ export default function ProformaView({
 
                 <Line
                   type="monotone"
-                  dataKey="investment"
+                  dataKey="cumulativeInvestment"
                   stroke={CHART_COLORS.investment}
                   strokeWidth={isMobile ? 1.5 : 2}
                   strokeDasharray="8 4"
@@ -947,7 +956,7 @@ export default function ProformaView({
                 {legendTotals.retention > 0 && (
                   <Area
                     type="monotone"
-                    dataKey="retentionValue"
+                    dataKey="cumRetentionValue"
                     stackId="value"
                     fill="url(#grad-retention)"
                     stroke={CHART_COLORS.retention}
@@ -958,7 +967,7 @@ export default function ProformaView({
                 {legendTotals.time > 0 && (
                   <Area
                     type="monotone"
-                    dataKey="timeValue"
+                    dataKey="cumTimeValue"
                     stackId="value"
                     fill="url(#grad-time)"
                     stroke={CHART_COLORS.time}
@@ -969,7 +978,7 @@ export default function ProformaView({
                 {legendTotals.doc > 0 && (
                   <Area
                     type="monotone"
-                    dataKey="docValue"
+                    dataKey="cumDocValue"
                     stackId="value"
                     fill="url(#grad-doc)"
                     stroke={CHART_COLORS.doc}
@@ -1978,10 +1987,10 @@ export default function ProformaView({
 function CustomTooltip({ active, payload, label, settings, totalProvidersByPeriod }: any) {
   if (!active || !payload) return null;
 
-  const docItem = payload.find((p: any) => p.dataKey === "docValue");
-  const timeItem = payload.find((p: any) => p.dataKey === "timeValue");
-  const retentionItem = payload.find((p: any) => p.dataKey === "retentionValue");
-  const investmentItem = payload.find((p: any) => p.dataKey === "investment");
+  const docItem = payload.find((p: any) => p.dataKey === "cumDocValue");
+  const timeItem = payload.find((p: any) => p.dataKey === "cumTimeValue");
+  const retentionItem = payload.find((p: any) => p.dataKey === "cumRetentionValue");
+  const investmentItem = payload.find((p: any) => p.dataKey === "cumulativeInvestment");
 
   const total = (docItem?.value || 0) + (timeItem?.value || 0) + (retentionItem?.value || 0);
   const periodIdx = payload[0]?.payload?.period ? payload[0].payload.period - 1 : 0;
@@ -2027,12 +2036,12 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
       )}
 
       <div className="border-t border-neutral-200 mt-2 pt-2 flex justify-between">
-        <span className="font-bold text-neutral-900">Total</span>
+        <span className="font-bold text-neutral-900">Cumulative Value</span>
         <span className="font-bold text-[#EA2C00]">{fmt(total)}</span>
       </div>
       {investmentItem && (
         <div className="flex justify-between mt-1">
-          <span className="text-neutral-500">Investment</span>
+          <span className="text-neutral-500">Total Invested</span>
           <span className="text-neutral-700">({fmt(investmentItem.value)})</span>
         </div>
       )}

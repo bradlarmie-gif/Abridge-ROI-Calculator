@@ -164,7 +164,7 @@ export const MAX_UTILIZATION = 85;
 export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
   contractTermMonths: 36,
   viewMode: "quarterly",
-  implementationRampMonths: 3,
+  implementationRampMonths: 6,
   yearlyUtilization: { ...DEFAULT_YEARLY_UTILIZATION },
   nursingYearlyUtilization: { ...NURSING_YEARLY_UTILIZATION },
   retentionPhasing: {
