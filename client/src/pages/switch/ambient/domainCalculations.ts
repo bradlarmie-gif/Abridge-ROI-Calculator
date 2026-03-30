@@ -160,7 +160,7 @@ export function computeCapacityFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${count} active use${count !== 1 ? 's' : ''} of recovered time`,
-      context: `Recovered time is actively being used in ${count} way${count !== 1 ? 's' : ''}:\n${checkedList}${hoursContext}${unchecked.length > 0 ? `\n\nNot yet active:\n${uncheckedList}` : ''}\n\n$0 deployed. The value at this level is understanding where time goes — not dollars.`,
+      context: `Recovered time is actively being used in ${count} way${count !== 1 ? 's' : ''}:\n${checkedList}${hoursContext}\n\n$0 deployed. The value at this level is understanding where time goes — not dollars.`,
       formula: recoveredHrs > 0 ? `[hours] = ${documentedEncounters.toLocaleString()} encounters × ${ts} min / 60 = ${recoveredHrs.toLocaleString()}\n[FTE] = ${recoveredHrs.toLocaleString()} ÷ ${ANNUAL_HOURS.toLocaleString()} = ${fte2}` : '',
       footnote: '',
       nextLevelTeaser: 'Level 3 measures how many additional patients are seen with recovered time.',
@@ -977,6 +977,54 @@ export function computeRiskFeedback(
         footnote: usedFormula
           ? `Based on your inputs. Average denial value: ${formatDollar(avgDenialValue)}.`
           : hasVal ? 'Based on your directly entered measured value.' : 'Estimates based on your inputs.',
+        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+      };
+    }
+
+    if (financialPathway === 'hcc') {
+      const additionalCodes = (inputs.hccAdditionalCodes as number) || 0;
+      const revenuePerCode = (inputs.hccRevenuePerCode as number) || 1200;
+      const measuredValue = (inputs.hccMeasuredValue as number) || 0;
+      const calculatedValue = Math.round(additionalCodes * revenuePerCode);
+      const hccValue = measuredValue > 0 ? measuredValue : calculatedValue;
+      const hasVal = hccValue > 0;
+      const usedFormula = calculatedValue > 0 && measuredValue === 0;
+      return {
+        label: 'Estimated Impact',
+        value: hasVal ? hccValue : null,
+        hasValue: hasVal,
+        headlineMetric: hasVal ? `${formatDollar(hccValue)} in HCC capture value` : 'HCC pathway selected',
+        context: hasVal
+          ? usedFormula
+            ? `${additionalCodes.toLocaleString()} additional HCC codes captured × ${formatDollar(revenuePerCode)}/code = ${formatDollar(hccValue)}/year.\n\nImproved documentation specificity directly increases RAF scores, translating to higher risk-adjusted payments from Medicare Advantage and value-based contracts.`
+            : `Measured HCC/risk adjustment value: ${formatDollar(hccValue)}/year (entered directly from risk adjustment or finance team).\n\nImproved documentation specificity directly increases RAF scores, translating to higher risk-adjusted payments from Medicare Advantage and value-based contracts.`
+          : 'Enter your HCC capture volume or a measured value to calculate risk adjustment impact.',
+        formula: usedFormula ? `[hccValue] = ${additionalCodes.toLocaleString()} codes × ${formatDollar(revenuePerCode)} = ${formatDollar(hccValue)}` : '',
+        footnote: 'Based on your inputs. Average revenue per HCC varies by category and payer mix. Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+      };
+    }
+
+    if (financialPathway === 'cdi') {
+      const queryReduction = (inputs.cdiQueryReduction as number) || 0;
+      const costPerQuery = (inputs.cdiCostPerQuery as number) || 50;
+      const measuredValue = (inputs.cdiMeasuredValue as number) || 0;
+      const calculatedValue = Math.round(queryReduction * costPerQuery);
+      const cdiValue = measuredValue > 0 ? measuredValue : calculatedValue;
+      const hasVal = cdiValue > 0;
+      const usedFormula = calculatedValue > 0 && measuredValue === 0;
+      return {
+        label: 'Estimated Impact',
+        value: hasVal ? cdiValue : null,
+        hasValue: hasVal,
+        headlineMetric: hasVal ? `${formatDollar(cdiValue)} in CDI program savings` : 'CDI pathway selected',
+        context: hasVal
+          ? usedFormula
+            ? `${queryReduction.toLocaleString()} fewer CDI queries × ${formatDollar(costPerQuery)}/query = ${formatDollar(cdiValue)}/year.\n\nWhen ambient documentation improves note specificity, CDI specialists spend less time querying physicians — reducing program cost and physician interruptions simultaneously.`
+            : `Measured CDI program savings: ${formatDollar(cdiValue)}/year (entered directly from CDI program or finance team).\n\nWhen ambient documentation improves note specificity, CDI specialists spend less time querying physicians — reducing program cost and physician interruptions simultaneously.`
+          : 'Enter your CDI query reduction or a measured value to calculate program savings.',
+        formula: usedFormula ? `[cdiValue] = ${queryReduction.toLocaleString()} queries × ${formatDollar(costPerQuery)} = ${formatDollar(cdiValue)}` : '',
+        footnote: 'Based on your inputs. Cost per CDI query includes specialist time and rework. Estimates based on your inputs. Individual results vary.',
         nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
       };
     }

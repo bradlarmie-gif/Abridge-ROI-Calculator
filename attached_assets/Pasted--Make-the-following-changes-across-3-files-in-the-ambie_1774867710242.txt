@@ -1,0 +1,328 @@
+ Make the following changes across 3 files in the ambient assessment path. All files are in client/src/pages/switch/ambient/.                                                                                 
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  1. Screen2Baseline.tsx — Fix encounter estimate
+                                                                                                                                                                                                               
+  a) Change the estimated encounters multiplier from 2000 to 3000:                                        
+  // CHANGE:                                                                                                                                                                                                   
+  const estimatedEncounters = useMemo(() => inputs.providers * 2000, [inputs.providers]);                                                                                                                      
+  // TO:                                                                                 
+  const estimatedEncounters = useMemo(() => inputs.providers * 3000, [inputs.providers]);                                                                                                                      
+                                                                                                          
+  b) Raise the guardrail threshold from 3500 to 5750:                                                                                                                                                          
+  // CHANGE:                                                                                                                                                                                                   
+  (inputs.annualEncounters / inputs.providers) > 3500                                                                                                                                                          
+  // TO:                                                                                                                                                                                                       
+  (inputs.annualEncounters / inputs.providers) > 5750                                                                                                                                                          
+                                              
+  c) Update the display text to match:                                                                                                                                                                         
+  // CHANGE: "providers × 2,000 typical ="                                                                
+  // TO: "providers × 3,000 typical ="                                                                                                                                                                         
+                                              
+  ---                                                                                                                                                                                                          
+  2. Screen4Domains.tsx — Four fixes                                                                      
+                                                                                                                                                                                                               
+  Fix A — Remove premature hours from provocation text
+                                                                                                                                                                                                               
+  In renderDomainInputs (or wherever the domain provocation text is built, around line 2098), remove the timeSaved/hoursRecovered calculation and replace the conditional provocation text with static text:   
+                                          
+  // REMOVE:                                                                                                                                                                                                   
+  const timeSaved = (inputs.timeSavedPerEncounter as number) || 0;                                                                                                                                             
+  const hoursRecovered = Math.round(documentedEncounters * timeSaved / 60);                                                                                                                                    
+  const domainProvocations: Record<string, string> = {                                                                                                                                                         
+    capacity: hoursRecovered > 0                                                                          
+      ? `Based on your inputs, approximately ${hoursRecovered.toLocaleString()} hours recovered annually. Select the level that best describes your organization's current state.`
+      : 'Select a maturity level to estimate recovered capacity.',                                                                                                                                             
+    ...                                                                                                                                                                                                        
+    workforce: hoursRecovered > 0                                                                                                                                                                              
+      ? `${providers} providers, approximately ${hoursRecovered.toLocaleString()} hours of documentation time returned. Select the level that matches your organization.`                                      
+      : `${providers} providers with reduced documentation burden. Select a level to estimate the workforce impact.`,                                                                                          
+    ...                                                                                                                                                                                                        
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  // REPLACE WITH:                                                                                                                                                                                             
+  const domainProvocations: Record<string, string> = {                                                                                                                                                         
+    capacity: 'Select the level that best describes your organization\'s current state.',                                                                                                                      
+    revenue: `${documentedEncounters.toLocaleString()} documented encounters annually. Select the level that describes your revenue cycle's engagement with documentation changes.`,
+    workforce: `${providers} providers with reduced documentation burden. Select a level to estimate the workforce impact.`,
+    risk: `${documentedEncounters.toLocaleString()} encounters with improved documentation. Select the level that best describes your organization today.`,
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Fix B — Remove duplicate framing question                                                                                                                                                                    
+                                                                                                                                                                                                               
+  In the selected card render block (the isSelected branch, inside <div className="px-5 pb-6 pt-5">), remove the 5-line framing question block so the card goes directly from the container div to the headline
+   metric:                                                                                                                                                                                                     
+                                                                                                          
+  // REMOVE these 5 lines entirely:                                                                                                                                                                            
+  {config.framingQuestions?.[card.level] && (                                                             
+    <p className="text-sm font-semibold text-[#1A1A1A] mb-3 mt-1">                                                                                                                                             
+      {config.framingQuestions[card.level].replace('{encounterCount}', documentedEncounters.toLocaleString())}
+    </p>                                      
+  )}                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Fix C — Quality Level 1: Add documentation review question                                                                                                                                                   
+                                                                                                                                                                                                               
+  In renderRiskInputs, replace the Level 1 display-only block with a real radio question. Find:                                                                                                                
+                                                                                                          
+  if (level === 1) {
+    return (                                                                                                                                                                                                   
+      <div className="flex flex-col gap-4">   
+        <p className="text-sm text-[#525252] leading-relaxed bg-[#F9FAFB] p-4 rounded-lg border border-[#E5E7EB]" data-testid="text-quality-l1-context">                                                       
+          Documentation quality is improving, but the downstream teams that benefit — coding, CDI, compliance — haven't been formally connected yet. At this level, the quality improvement is real but
+  untracked.                                                                                                                                                                                                   
+        </p>                              
+        <p className="text-xs text-[#888888] italic">                                                                                                                                                          
+          No inputs required. Select this level to capture the current state.                                                                                                                                  
+        </p>                                                                                                                                                                                                   
+      </div>                                                                                                                                                                                                   
+    );                                                                                                    
+  }                                                                                                                                                                                                            
+   
+  Replace with:                                                                                                                                                                                                
+                                                                                                          
+  if (level === 1) {
+    const reviewedReports = currentState.inputs.qualityReportsReviewed as string || '';
+    const REVIEW_OPTIONS = [                  
+      { id: 'not_yet', label: 'Not yet — no formal review of documentation quality data' },
+      { id: 'informally', label: 'Informally — spot-checked or discussed anecdotally' },
+      { id: 'yes', label: 'Yes — we have reviewed documentation quality reports' },                                                                                                                            
+    ];                                        
+    return (                                                                                                                                                                                                   
+      <div className="flex flex-col gap-4">                                                                                                                                                                    
+        <div>                                                                                                                                                                                                  
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-3">                                                                                                                                  
+            Have you reviewed documentation quality reports since deployment?                                                                                                                                  
+          </label>                                                                                        
+          <div className="flex flex-col gap-2.5">                                                                                                                                                              
+            {REVIEW_OPTIONS.map((opt) => (
+              <label                                                                                                                                                                                           
+                key={opt.id}                                                                              
+                className={`flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${                                                                               
+                  reviewedReports === opt.id                                                              
+                    ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                    : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                }`}                                                                                                                                                                                            
+                data-testid={`radio-quality-reviewed-${opt.id}`}                                                                                                                                               
+              >                                                                                                                                                                                                
+                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${                                                                                               
+                  reviewedReports === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'                                                                                                                         
+                }`}>                                                                                                                                                                                           
+                  {reviewedReports === opt.id && <div className="w-2.5 h-2.5 rounded-full bg-[#EA2C00]" />}
+                </div>                                                                                                                                                                                         
+                <span className="text-sm text-[#525252]">{opt.label}</span>                                                                                                                                    
+                <input type="radio" name="qualityReportsReviewed" value={opt.id} checked={reviewedReports === opt.id}                                                                                          
+                  onChange={() => setDomainInput('qualityReportsReviewed', opt.id)} className="sr-only" />                                                                                                     
+              </label>                                                                                    
+            ))}                                                                                                                                                                                                
+          </div>                                                                                                                                                                                               
+        </div>                                                                                                                                                                                                 
+        <p className="text-xs text-[#888888] italic">                                                                                                                                                          
+          The downstream teams that benefit — coding, CDI, compliance — aren't formally connected yet. That happens at Level 2 and above.                                                                      
+        </p>                                                                                              
+      </div>                              
+    );                                                                                                                                                                                                         
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  Fix D — Quality Level 3: Add HCC and CDI financial pathway options                                                                                                                                           
+                                                                                                          
+  In renderRiskInputs, Level 3 section, find the financial pathway radio options array:
+                                          
+  {[
+    { id: 'mips', label: 'MIPS / quality measure performance' },                                                                                                                                               
+    { id: 'denials', label: 'Denial rate reduction' },
+    { id: 'none_yet', label: 'No financial pathway connected yet' },                                                                                                                                           
+  ].map((opt) => (                                                                                                                                                                                             
+                                              
+  Replace with:                                                                                                                                                                                                
+                                                                                                          
+  {[                                                                                                                                                                                                           
+    { id: 'mips', label: 'MIPS / quality measure performance' },                                          
+    { id: 'denials', label: 'Denial rate reduction' },                                                                                                                                                         
+    { id: 'hcc', label: 'HCC / risk adjustment capture' },                                                
+    { id: 'cdi', label: 'CDI program savings' },
+    { id: 'none_yet', label: 'No financial pathway connected yet' },
+  ].map((opt) => (                                                                                                                                                                                             
+                                          
+  Then inside the <AnimatePresence> block after the financialPathway === 'denials' motion.div, add two new conditional blocks:                                                                                 
+                                                                                                                                                                                                               
+  {financialPathway === 'hcc' && (
+    <motion.div                                                                                                                                                                                                
+      initial={{ opacity: 0, height: 0 }}                                                                 
+      animate={{ opacity: 1, height: 'auto' }}                                                                                                                                                                 
+      exit={{ opacity: 0, height: 0 }}                                                                    
+      transition={{ duration: 0.2 }}      
+      className="flex flex-col gap-4"
+    >                                                                                                                                                                                                          
+      <div>
+        <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">                                                                                                                                    
+          Additional HCC codes captured per year                                                          
+        </label>
+        <FormattedNumberInput                                                                                                                                                                                  
+          value={(currentState.inputs.hccAdditionalCodes as number) || 0}
+          onChange={(v) => setDomainInput('hccAdditionalCodes', Math.max(0, v))}                                                                                                                               
+          placeholder=""                                                                                  
+          className="w-full h-12 bg-white border-[#E5E7EB]"                                                                                                                                                    
+          data-testid="input-hcc-additional-codes"
+        />                                                                                                                                                                                                     
+        <BenchmarkContext text="Abridge benchmark: 1–3 additional HCCs per provider per month with improved specificity." />
+      </div>                                                                                                                                                                                                   
+      <div>                                                                                               
+        <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">                                                                                                                                    
+          Average annual revenue per HCC captured ($)                                                                                                                                                          
+        </label>                          
+        <div className="flex items-center gap-2">                                                                                                                                                              
+          <span className="text-sm text-[#888888]">$</span>                                                                                                                                                    
+          <FormattedNumberInput           
+            value={(currentState.inputs.hccRevenuePerCode as number) || 1200}                                                                                                                                  
+            onChange={(v) => setDomainInput('hccRevenuePerCode', Math.max(0, v))}                                                                                                                              
+            placeholder=""                    
+            className="w-full h-12 bg-white border-[#E5E7EB]"                                                                                                                                                  
+            data-testid="input-hcc-revenue-per-code"                                                      
+          />                                                                                                                                                                                                   
+        </div>                                                                                            
+        <p className="text-xs text-[#888888] mt-1">Default: $1,200. Range: $800–$2,000 depending on HCC category and payer mix.</p>                                                                            
+      </div>                                                                                              
+      <div className="border-t border-[#E5E7EB] pt-4 mt-1">
+        <p className="text-xs text-[#888888] italic mb-2">Or enter a measured annual value directly (from risk adjustment or finance team):</p>
+        <div className="flex items-center gap-2">                                                                                                                                                              
+          <span className="text-sm text-[#888888]">$</span>
+          <FormattedNumberInput                                                                                                                                                                                
+            value={(currentState.inputs.hccMeasuredValue as number) || 0}                                                                                                                                      
+            onChange={(v) => setDomainInput('hccMeasuredValue', Math.max(0, v))}                                                                                                                               
+            placeholder=""                                                                                                                                                                                     
+            className="w-full h-12 bg-white border-[#E5E7EB]"                                             
+            data-testid="input-hcc-measured-value"                                                                                                                                                             
+          />                                                                                                                                                                                                   
+          <span className="text-xs text-[#888888]">/year</span>
+        </div>                                                                                                                                                                                                 
+      </div>                                                                                              
+    </motion.div>                                                                                                                                                                                              
+  )}
+  {financialPathway === 'cdi' && (                                                                                                                                                                             
+    <motion.div                                                                                           
+      initial={{ opacity: 0, height: 0 }} 
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}                                                                                                                                                                         
+      transition={{ duration: 0.2 }}          
+      className="flex flex-col gap-4"                                                                                                                                                                          
+    >                                                                                                     
+      <div>                                                                                                                                                                                                    
+        <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+          Reduction in CDI query volume per year                                                                                                                                                               
+        </label>                                                                                          
+        <FormattedNumberInput             
+          value={(currentState.inputs.cdiQueryReduction as number) || 0}
+          onChange={(v) => setDomainInput('cdiQueryReduction', Math.max(0, v))}                                                                                                                                
+          placeholder=""                  
+          className="w-full h-12 bg-white border-[#E5E7EB]"                                                                                                                                                    
+          data-testid="input-cdi-query-reduction"                                                                                                                                                              
+        />                                    
+        <BenchmarkContext text="CDI query volume typically decreases 20–40% when ambient documentation improves note specificity." />                                                                          
+      </div>                                                                                              
+      <div>                                                                                                                                                                                                    
+        <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+          Average cost per CDI query ($)                                                                                                                                                                       
+        </label>                                                                                          
+        <div className="flex items-center gap-2">                                                                                                                                                              
+          <span className="text-sm text-[#888888]">$</span>                                                                                                                                                    
+          <FormattedNumberInput               
+            value={(currentState.inputs.cdiCostPerQuery as number) || 50}                                                                                                                                      
+            onChange={(v) => setDomainInput('cdiCostPerQuery', Math.max(0, v))}                           
+            placeholder=""                                                                                                                                                                                     
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-cdi-cost-per-query"                                                                                                                                                             
+          />                                                                                                                                                                                                   
+        </div>
+        <p className="text-xs text-[#888888] mt-1">Default: $50. Include CDI specialist time and rework cost per query.</p>                                                                                    
+      </div>                                                                                              
+      <div className="border-t border-[#E5E7EB] pt-4 mt-1">
+        <p className="text-xs text-[#888888] italic mb-2">Or enter a measured annual CDI savings directly (from CDI program or finance team):</p>
+        <div className="flex items-center gap-2">                                                                                                                                                              
+          <span className="text-sm text-[#888888]">$</span>
+          <FormattedNumberInput                                                                                                                                                                                
+            value={(currentState.inputs.cdiMeasuredValue as number) || 0}                                                                                                                                      
+            onChange={(v) => setDomainInput('cdiMeasuredValue', Math.max(0, v))}                                                                                                                               
+            placeholder=""                                                                                                                                                                                     
+            className="w-full h-12 bg-white border-[#E5E7EB]"                                             
+            data-testid="input-cdi-measured-value"                                                                                                                                                             
+          />                                                                                              
+          <span className="text-xs text-[#888888]">/year</span>                                                                                                                                                
+        </div>                                
+      </div>                                                                                                                                                                                                   
+    </motion.div>                                                                                         
+  )}                                                                                                                                                                                                           
+   
+  ---                                                                                                                                                                                                          
+  3. domainCalculations.ts — Three fixes                                                                  
+                                        
+  Fix A — Remove all "Not yet" sections from context strings
+                                              
+  Search for and remove every instance of these patterns from all context strings in the file (there are ~10 occurrences):
+  - ${uncheckedLabels.length > 0 ? \\n\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}`
+  - if (unchecked.length > 0) { context += \\n\nNot yet integrated:\n${uncheckedLabels}` }`                                                                                                                    
+  - if (uncheckedStrategies.length > 0) { contextParts += \\n\nNot yet integrated:\n...` }`                                                                                                                    
+  - ${unchecked.length > 0 ? \\n\nNot yet tracked:\n${untrackedList}` : ''}`                                                                                                                                   
+  - ${unchecked.length > 0 ? \\n\nNot yet connected:\n${uncheckedList}` : ''}`                                                                                                                                 
+  - ${uncheckedLabels.length > 0 ? \\n\nNot yet active:\n${uncheckedList}` : ''}`                         
+                                                                                                                                                                                                               
+  After removing, search the file for "Not yet tracked", "Not yet integrated", "Not yet connected", and "Not yet active" — all should return zero results.                                                     
+                                                                                                                                                                                                               
+  Fix B — Add HCC calculation handler                                                                                                                                                                          
+                                                                                                                                                                                                               
+  In computeQualityFeedback (the level 3 section), before the final fallback return at the end of the level 3 block, add:                                                                                      
+                                                                                                                                                                                                               
+  if (financialPathway === 'hcc') {                                                                                                                                                                            
+    const additionalCodes = (inputs.hccAdditionalCodes as number) || 0;                                                                                                                                        
+    const revenuePerCode = (inputs.hccRevenuePerCode as number) || 1200;
+    const measuredValue = (inputs.hccMeasuredValue as number) || 0;                                                                                                                                            
+    const calculatedValue = Math.round(additionalCodes * revenuePerCode);                                 
+    const hccValue = measuredValue > 0 ? measuredValue : calculatedValue;                                                                                                                                      
+    const hasVal = hccValue > 0;              
+    const usedFormula = calculatedValue > 0 && measuredValue === 0;                                                                                                                                            
+    return {                                                                                              
+      label: 'Estimated Impact',                                                                                                                                                                               
+      value: hasVal ? hccValue : null,                                                                    
+      hasValue: hasVal,                                                                                                                                                                                        
+      headlineMetric: hasVal ? `${formatDollar(hccValue)} in HCC capture value` : 'HCC pathway selected', 
+      context: hasVal                         
+        ? usedFormula                                                                                                                                                                                          
+          ? `${additionalCodes.toLocaleString()} additional HCC codes captured × ${formatDollar(revenuePerCode)}/code = ${formatDollar(hccValue)}/year.\n\nImproved documentation specificity directly 
+  increases RAF scores, translating to higher risk-adjusted payments from Medicare Advantage and value-based contracts.`                                                                                       
+          : `Measured HCC/risk adjustment value: ${formatDollar(hccValue)}/year (entered directly from risk adjustment or finance team).\n\nImproved documentation specificity directly increases RAF scores, 
+  translating to higher risk-adjusted payments from Medicare Advantage and value-based contracts.`                                                                                                             
+        : 'Enter your HCC capture volume or a measured value to calculate risk adjustment impact.',                                                                                                            
+      formula: usedFormula ? `[hccValue] = ${additionalCodes.toLocaleString()} codes × ${formatDollar(revenuePerCode)} = ${formatDollar(hccValue)}` : '',
+      footnote: 'Based on your inputs. Average revenue per HCC varies by category and payer mix. Estimates based on your inputs. Individual results vary.',                                                    
+      nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+    };                                                                                                                                                                                                         
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  Fix C — Add CDI calculation handler                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Immediately after the HCC block above, add:                                                             
+                                                                                                                                                                                                               
+  if (financialPathway === 'cdi') {
+    const queryReduction = (inputs.cdiQueryReduction as number) || 0;                                                                                                                                          
+    const costPerQuery = (inputs.cdiCostPerQuery as number) || 50;                                        
+    const measuredValue = (inputs.cdiMeasuredValue as number) || 0;
+    const calculatedValue = Math.round(queryReduction * costPerQuery);
+    const cdiValue = measuredValue > 0 ? measuredValue : calculatedValue;                                                                                                                                      
+    const hasVal = cdiValue > 0;
+    const usedFormula = calculatedValue > 0 && measuredValue === 0;                                                                                                                                            
+    return {                                                                                              
+      label: 'Estimated Impact',                                                                                                                                                                               
+      value: hasVal ? cdiValue : null,                                                                    
+      hasValue: hasVal,                                                                                                                                                                                        
+      headlineMetric: hasVal ? `${formatDollar(cdiValue)} in CDI program savings` : 'CDI pathway selected',
+      context: hasVal                                                                                                                                                                                          
+        ? usedFormula                                                                                     
+          ? `${queryReduction.toLocaleString()} fewer CDI queries × ${formatDollar(costPerQuery)}/query = ${formatDollar(cdiValue)}/year.\n\nWhen ambient documentation improves note specificity, CDI 
+  specialists spend less time querying physicians — reducing program cost and physician interruptions simultaneously.`                                                                                         
+          : `Measured CDI program savings: ${formatDollar(cdiValue)}/year (entered directly from CDI program or finance team).\n\nWhen ambient documentation improves note specificity, CDI specialists spend 
+  less time querying physicians — reducing program cost and physician interruptions simultaneously.`                                                                                                           
+        : 'Enter your CDI query reduction or a measured value to calculate program savings.',                                                                                                                  
+      formula: usedFormula ? `[cdiValue] = ${queryReduction.toLocaleString()} queries × ${formatDollar(costPerQuery)} = ${formatDollar(cdiValue)}` : '',
+      footnote: 'Based on your inputs. Cost per CDI query includes specialist time and rework. Estimates based on your inputs. Individual results vary.',                                                      
+      nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+    };                                                                                                                                                                                                         
+  }                                

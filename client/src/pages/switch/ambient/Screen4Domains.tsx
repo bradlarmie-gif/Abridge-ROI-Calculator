@@ -1244,13 +1244,43 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     if (!level) return null;
 
     if (level === 1) {
+      const reviewedReports = currentState.inputs.qualityReportsReviewed as string || '';
+      const REVIEW_OPTIONS = [
+        { id: 'not_yet', label: 'Not yet — no formal review of documentation quality data' },
+        { id: 'informally', label: 'Informally — spot-checked or discussed anecdotally' },
+        { id: 'yes', label: 'Yes — we have reviewed documentation quality reports' },
+      ];
       return (
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-[#525252] leading-relaxed bg-[#F9FAFB] p-4 rounded-lg border border-[#E5E7EB]" data-testid="text-quality-l1-context">
-            Documentation quality is improving, but the downstream teams that benefit — coding, CDI, compliance — haven't been formally connected yet. At this level, the quality improvement is real but untracked.
-          </p>
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-3">
+              Have you reviewed documentation quality reports since deployment?
+            </label>
+            <div className="flex flex-col gap-2.5">
+              {REVIEW_OPTIONS.map((opt) => (
+                <label
+                  key={opt.id}
+                  className={`flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                    reviewedReports === opt.id
+                      ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                      : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                  }`}
+                  data-testid={`radio-quality-reviewed-${opt.id}`}
+                >
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    reviewedReports === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                  }`}>
+                    {reviewedReports === opt.id && <div className="w-2.5 h-2.5 rounded-full bg-[#EA2C00]" />}
+                  </div>
+                  <span className="text-sm text-[#525252]">{opt.label}</span>
+                  <input type="radio" name="qualityReportsReviewed" value={opt.id} checked={reviewedReports === opt.id}
+                    onChange={() => setDomainInput('qualityReportsReviewed', opt.id)} className="sr-only" />
+                </label>
+              ))}
+            </div>
+          </div>
           <p className="text-xs text-[#888888] italic">
-            No inputs required. Select this level to capture the current state.
+            The downstream teams that benefit — coding, CDI, compliance — aren't formally connected yet. That happens at Level 2 and above.
           </p>
         </div>
       );
@@ -1347,6 +1377,8 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               {[
                 { id: 'mips', label: 'MIPS / quality measure performance' },
                 { id: 'denials', label: 'Denial rate reduction' },
+                { id: 'hcc', label: 'HCC / risk adjustment capture' },
+                { id: 'cdi', label: 'CDI program savings' },
                 { id: 'none_yet', label: 'No financial pathway connected yet' },
               ].map((opt) => (
                 <label
@@ -1462,6 +1494,112 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                       placeholder=""
                       className="w-full h-12 bg-white border-[#E5E7EB]"
                       data-testid="input-downstream-value"
+                    />
+                    <span className="text-xs text-[#888888]">/year</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            {financialPathway === 'hcc' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col gap-4"
+              >
+                <div>
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                    Additional HCC codes captured per year
+                  </label>
+                  <FormattedNumberInput
+                    value={(currentState.inputs.hccAdditionalCodes as number) || 0}
+                    onChange={(v) => setDomainInput('hccAdditionalCodes', Math.max(0, v))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-hcc-additional-codes"
+                  />
+                  <BenchmarkContext text="Abridge benchmark: 1–3 additional HCCs per provider per month with improved specificity." />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                    Average annual revenue per HCC captured ($)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput
+                      value={(currentState.inputs.hccRevenuePerCode as number) || 1200}
+                      onChange={(v) => setDomainInput('hccRevenuePerCode', Math.max(0, v))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-hcc-revenue-per-code"
+                    />
+                  </div>
+                  <p className="text-xs text-[#888888] mt-1">Default: $1,200. Range: $800–$2,000 depending on HCC category and payer mix.</p>
+                </div>
+                <div className="border-t border-[#E5E7EB] pt-4 mt-1">
+                  <p className="text-xs text-[#888888] italic mb-2">Or enter a measured annual value directly (from risk adjustment or finance team):</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput
+                      value={(currentState.inputs.hccMeasuredValue as number) || 0}
+                      onChange={(v) => setDomainInput('hccMeasuredValue', Math.max(0, v))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-hcc-measured-value"
+                    />
+                    <span className="text-xs text-[#888888]">/year</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            {financialPathway === 'cdi' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col gap-4"
+              >
+                <div>
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                    Reduction in CDI query volume per year
+                  </label>
+                  <FormattedNumberInput
+                    value={(currentState.inputs.cdiQueryReduction as number) || 0}
+                    onChange={(v) => setDomainInput('cdiQueryReduction', Math.max(0, v))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-cdi-query-reduction"
+                  />
+                  <BenchmarkContext text="CDI query volume typically decreases 20–40% when ambient documentation improves note specificity." />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                    Average cost per CDI query ($)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput
+                      value={(currentState.inputs.cdiCostPerQuery as number) || 50}
+                      onChange={(v) => setDomainInput('cdiCostPerQuery', Math.max(0, v))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-cdi-cost-per-query"
+                    />
+                  </div>
+                  <p className="text-xs text-[#888888] mt-1">Default: $50. Include CDI specialist time and rework cost per query.</p>
+                </div>
+                <div className="border-t border-[#E5E7EB] pt-4 mt-1">
+                  <p className="text-xs text-[#888888] italic mb-2">Or enter a measured annual CDI savings directly (from CDI program or finance team):</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput
+                      value={(currentState.inputs.cdiMeasuredValue as number) || 0}
+                      onChange={(v) => setDomainInput('cdiMeasuredValue', Math.max(0, v))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-cdi-measured-value"
                     />
                     <span className="text-xs text-[#888888]">/year</span>
                   </div>
@@ -2091,8 +2229,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                 </p>
               </>
             ) : (() => {
-              const timeSaved = (inputs.timeSavedPerEncounter as number) || 0;
-              const hoursRecovered = Math.round(documentedEncounters * timeSaved / 60);
               const domainProvocations: Record<string, string> = {
                 capacity: 'Select the level that best describes your organization\'s current state.',
                 revenue: `${documentedEncounters.toLocaleString()} documented encounters annually. Select the level that describes your revenue cycle's engagement with documentation changes.`,
@@ -2359,7 +2495,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               const monitoringLabel = monitoringApproach === 'realtime' ? 'Real-time' : monitoringApproach === 'systematic' ? 'Structured' : monitoringApproach === 'spot_checks' ? 'Informal' : '';
 
               const financialPathway = currentState.activationLevel >= 3 ? (inp.financialPathway as string || '') : '';
-              const pathwayLabel = financialPathway === 'mips' ? 'MIPS' : financialPathway === 'denials' ? 'Denials' : financialPathway === 'none_yet' ? 'None yet' : '—';
+              const pathwayLabel = financialPathway === 'mips' ? 'MIPS' : financialPathway === 'denials' ? 'Denials' : financialPathway === 'hcc' ? 'HCC' : financialPathway === 'cdi' ? 'CDI' : financialPathway === 'none_yet' ? 'None yet' : '—';
 
               const siCsv = (inp.strategicIntegrations as string) || '';
               const siCount = currentState.activationLevel >= 4 ? siCsv.split(',').filter(Boolean).length : 0;
