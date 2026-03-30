@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Check, ChevronDown, ChevronUp, Trash2, Download, Loader2, Copy, ClipboardCheck } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, Trash2, Download, Loader2, Copy, ClipboardCheck } from "lucide-react";
 import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot } from "@/lib/dataRequestUrlState";
 import { generateDataRequestPDF, type DataRequestPDFData } from "@/lib/data-request-pdf-generator";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
@@ -54,93 +55,174 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
   onToggle: () => void; onUpdate: (updates: Partial<DataRequestMetricEntry>) => void;
 }) {
   const isMonthlyMode = entry?.isMonthlyMode ?? false;
-  return (
-    <div className={`border rounded-lg transition-all ${checked ? "border-[#EA2C00] bg-[#FFF5F2]" : "border-[#EDE8E2] bg-[#F9F6F2]"}`}
-      data-testid={`metric-row-${metric.id}`}
-    >
-      <div className="flex items-start gap-3 p-4 cursor-pointer" onClick={onToggle}>
-        <button
-          className={`mt-0.5 w-5 h-5 rounded-md flex-shrink-0 border-2 flex items-center justify-center transition-all ${
-            checked ? "bg-[#EA2C00] border-[#EA2C00] shadow-sm" : "border-[#CCCCCC] bg-white hover:border-[#EA2C00]/50"
-          }`}
-          data-testid={`toggle-metric-${metric.id}`}
-        >
-          {checked && <Check className="w-3 h-3 text-white" />}
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="text-sm font-medium text-gray-900">{metric.label}</span>
-            <span className="text-xs text-gray-500">({metric.unitLabel})</span>
-          </div>
-          {checked && metric.description && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{metric.description}</p>}
-          {!checked && (
-            <p className="text-[10px] text-[#BBBBBB] mt-1">Tap to include</p>
-          )}
+  const [showNotes, setShowNotes] = useState(!!(entry?.notes));
+  const [showTrend, setShowTrend] = useState(isMonthlyMode);
+
+  const before = entry?.before ?? null;
+  const after = entry?.after ?? null;
+  const hasBoth = before !== null && after !== null && before !== 0;
+  const deltaPct = hasBoth ? ((after! - before!) / Math.abs(before!)) * 100 : null;
+  const improved = deltaPct !== null
+    ? (metric.lowerIsBetter ? deltaPct < 0 : deltaPct > 0)
+    : null;
+
+  if (!checked) {
+    return (
+      <div
+        onClick={onToggle}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
+        className="group flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all hover:bg-[#FFF5F2]"
+        data-testid={`metric-row-${metric.id}`}
+      >
+        <div className="w-4 h-4 rounded-full border-2 border-[#CCCCCC] bg-white flex-shrink-0 transition-colors group-hover:border-[#EA2C00]/50" />
+        <div className="flex-1 min-w-0 flex items-baseline gap-2">
+          <span className="text-sm text-[#1A1A1A] font-medium">{metric.label}</span>
+          <span className="text-xs text-[#AAAAAA]">{metric.unitLabel}</span>
         </div>
       </div>
-      {checked && (
-        <div className="px-4 pb-4 border-t border-[#EDE8E2] pt-3">
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">Before Abridge</label>
-              <input type="number" min={0} step="any" inputMode="decimal" value={entry?.before ?? ""} placeholder="—"
-                onChange={(e) => onUpdate({ before: e.target.value === "" ? null : Number(e.target.value) })}
-                className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
-                data-testid={`input-before-${metric.id}`}
-              />
-            </div>
-            <div className="text-gray-300 mt-4">&rarr;</div>
-            <div className="flex-1">
-              <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">With Abridge</label>
-              <input type="number" min={0} step="any" inputMode="decimal" value={entry?.after ?? ""} placeholder="—"
-                onChange={(e) => onUpdate({ after: e.target.value === "" ? null : Number(e.target.value) })}
-                className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
-                data-testid={`input-after-${metric.id}`}
-              />
-            </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="rounded-lg bg-white overflow-hidden"
+      style={{ borderLeft: '3px solid #EA2C00', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+      data-testid={`metric-row-${metric.id}`}
+    >
+      <div className="flex items-center gap-3 px-4 pt-3 pb-2">
+        <button
+          onClick={onToggle}
+          className="w-4 h-4 rounded-full bg-[#EA2C00] flex-shrink-0 flex items-center justify-center transition-all hover:bg-[#c92500]"
+          data-testid={`toggle-metric-${metric.id}`}
+        >
+          <Check className="w-2.5 h-2.5 text-white" />
+        </button>
+        <span className="text-sm font-semibold text-[#1A1A1A] flex-1">{metric.label}</span>
+        <span className="text-xs text-[#AAAAAA]">{metric.unitLabel}</span>
+      </div>
+
+      <div className="px-4 pb-3">
+        <div className="flex items-end gap-3">
+          <div className="flex-1">
+            <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">Before</label>
+            <input
+              type="number" min={0} step="any"
+              value={entry?.before ?? ""}
+              placeholder="—"
+              onChange={(e) => onUpdate({ before: e.target.value === "" ? null : Number(e.target.value) })}
+              className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors"
+              data-testid={`input-before-${metric.id}`}
+            />
           </div>
-          <div className="mt-3">
-            <button onClick={() => onUpdate({ isMonthlyMode: !isMonthlyMode, monthlyData: !isMonthlyMode ? new Array(12).fill(null) : undefined })}
-              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors"
-              data-testid={`toggle-monthly-${metric.id}`}
+
+          <div className="flex flex-col items-center pb-1.5 gap-1">
+            <span className="text-[#CCCCCC] text-sm">→</span>
+            {deltaPct !== null && (
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                improved ? 'bg-green-50 text-green-600' : 'bg-[#F5F0EB] text-[#999999]'
+              }`}>
+                {deltaPct > 0 ? '+' : ''}{deltaPct.toFixed(0)}%
+              </span>
+            )}
+          </div>
+
+          <div className="flex-1">
+            <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">With Abridge</label>
+            <input
+              type="number" min={0} step="any"
+              value={entry?.after ?? ""}
+              placeholder="—"
+              onChange={(e) => onUpdate({ after: e.target.value === "" ? null : Number(e.target.value) })}
+              className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#EA2C00] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors"
+              data-testid={`input-after-${metric.id}`}
+            />
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {showNotes && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.15 }}
+              className="overflow-hidden"
             >
-              {isMonthlyMode ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              {isMonthlyMode ? "Hide monthly trend" : "Add monthly trend data (optional)"}
-            </button>
-            {isMonthlyMode && (
-              <div className="mt-3 overflow-x-auto">
+              <input
+                type="text"
+                value={entry?.notes ?? ""}
+                onChange={(e) => onUpdate({ notes: e.target.value || undefined })}
+                placeholder="Context — e.g. Q3 2025, outpatient only, excludes ED"
+                autoFocus
+                className="w-full mt-3 bg-transparent border-b border-[#E0D9D0] pb-1.5 text-xs text-[#555555] placeholder:text-[#CCCCCC] focus:outline-none focus:border-[#EA2C00] transition-colors"
+                data-testid={`input-notes-${metric.id}`}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showTrend && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.15 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-3 overflow-x-auto pb-1">
                 <div className="flex gap-2 min-w-max">
                   {MONTH_LABELS.map((month, i) => (
                     <div key={month} className="flex flex-col items-center gap-1">
-                      <span className="text-xs text-gray-400">{month}</span>
-                      <input type="number" min={0} step="any" inputMode="decimal" value={entry?.monthlyData?.[i] ?? ""} placeholder="—"
+                      <span className="text-[9px] text-[#AAAAAA] uppercase">{month}</span>
+                      <input
+                        type="number" min={0} step="any"
+                        value={entry?.monthlyData?.[i] ?? ""}
+                        placeholder="—"
                         onChange={(e) => {
                           const newData = [...(entry?.monthlyData ?? new Array(12).fill(null))];
                           newData[i] = e.target.value === "" ? null : Number(e.target.value);
                           onUpdate({ monthlyData: newData });
                         }}
-                        className="w-14 bg-[#FAF8F5] border border-[#E5E5E5] rounded px-1 py-2.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
+                        className="w-12 bg-transparent border-b border-[#E0D9D0] pb-1 text-xs text-center text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors"
                         data-testid={`input-monthly-${metric.id}-${i}`}
                       />
                     </div>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
-          <div className="mt-3">
-            <textarea
-              value={entry?.notes ?? ""}
-              onChange={(e) => onUpdate({ notes: e.target.value || undefined })}
-              placeholder="Add context — e.g. data from Q3 2025, excludes ED providers, partial deployment only"
-              rows={2}
-              className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 resize-none"
-              data-testid={`textarea-notes-${metric.id}`}
-            />
-          </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex items-center justify-end gap-3 mt-2.5">
+          {!showNotes && (
+            <button
+              onClick={() => setShowNotes(true)}
+              className="text-[11px] text-[#CCCCCC] hover:text-[#EA2C00] transition-colors"
+              data-testid={`button-show-notes-${metric.id}`}
+            >
+              + context
+            </button>
+          )}
+          <button
+            onClick={() => {
+              const next = !showTrend;
+              setShowTrend(next);
+              onUpdate({ isMonthlyMode: next, monthlyData: next ? new Array(12).fill(null) : undefined });
+            }}
+            className="text-[11px] text-[#CCCCCC] hover:text-[#EA2C00] transition-colors"
+            data-testid={`toggle-monthly-${metric.id}`}
+          >
+            {showTrend ? '− trend' : '+ trend'}
+          </button>
         </div>
-      )}
-    </div>
+      </div>
+    </motion.div>
   );
 }
 
