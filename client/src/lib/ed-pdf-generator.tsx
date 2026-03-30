@@ -1450,40 +1450,59 @@ const PathForwardPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
     <Page size="A4" style={styles.contentPage} wrap={false}>
       <View style={styles.pageHeader}>
         <Image src={abridgeLogoPath} style={styles.headerLogo} />
-        <Text style={styles.headerTitle}>Emergency Department Value Assessment</Text>
+        <Text style={styles.headerTitle}>EMERGENCY DEPARTMENT VALUE ASSESSMENT</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionLabel}>Recommendations</Text>
-        <Text style={styles.sectionTitle}>{narrativeContent.recommendations.headline}</Text>
+        <Text style={styles.sectionLabel}>For Your Team</Text>
+        <Text style={styles.sectionTitle}>Selling This Internally</Text>
         <Text style={styles.sectionSubtitle}>
-          A phased approach to capturing {formatCurrency(data.netGain)} in annual value.
+          The ED CFO will ask three questions. Here's how to answer them.
         </Text>
 
-        {narrativeContent.recommendations.phases.map((phase, i) => (
-          <View key={i} style={styles.phaseSection}>
-            <View style={styles.phaseHeader}>
-              <View style={styles.phaseNumber}>
-                <Text style={styles.phaseNumberText}>{i + 1}</Text>
-              </View>
-              <Text style={styles.phaseName}>{phase.name}</Text>
-              <Text style={styles.phaseDuration}>{phase.duration}</Text>
+        <View style={styles.phaseSection}>
+          <View style={styles.phaseHeader}>
+            <View style={styles.phaseNumber}>
+              <Text style={styles.phaseNumberText}>1</Text>
             </View>
-            <View style={styles.phaseActions}>
-              {phase.actions.map((action, j) => (
-                <Text key={j} style={styles.phaseAction}>• {action}</Text>
-              ))}
-            </View>
+            <Text style={styles.phaseName}>"How do we know these numbers are real?"</Text>
           </View>
-        ))}
+          <View style={styles.phaseActions}>
+            <Text style={styles.phaseAction}>Every input on page 2 came from your organization — your ED physician count, your annual visit volume, your utilization assumption. The realization rates are conservative benchmarks built specifically for emergency department constraints: patient arrival unpredictability, shift variability, high-acuity documentation pressure. The model doesn't assume a perfect ED. It assumes yours.</Text>
+          </View>
+        </View>
+
+        <View style={styles.phaseSection}>
+          <View style={styles.phaseHeader}>
+            <View style={styles.phaseNumber}>
+              <Text style={styles.phaseNumberText}>2</Text>
+            </View>
+            <Text style={styles.phaseName}>"What if adoption is slower than projected?"</Text>
+          </View>
+          <View style={styles.phaseActions}>
+            <Text style={styles.phaseAction}>The timeline page shows what happens at each milestone. A 60-day pilot with 3–5 high-volume ED physicians gives you real throughput and documentation data before full commitment. LWBS rate, door-to-disposition time, and physician satisfaction are all measurable within 60 days. The risk is bounded. The data comes fast.</Text>
+          </View>
+        </View>
+
+        <View style={styles.phaseSection}>
+          <View style={styles.phaseHeader}>
+            <View style={styles.phaseNumber}>
+              <Text style={styles.phaseNumberText}>3</Text>
+            </View>
+            <Text style={styles.phaseName}>"What do we measure after go-live?"</Text>
+          </View>
+          <View style={styles.phaseActions}>
+            <Text style={styles.phaseAction}>Three metrics that directly trace to this model:{"\n"}• Documentation time per encounter — target: -{data.timeSavedPerEncounter} min within 60 days{"\n"}• LWBS rate — establish baseline now, measure at 90 days{"\n"}• One coding metric: E&M level distribution or denial rate on ED claims</Text>
+          </View>
+        </View>
 
         <View style={styles.pullQuoteBox}>
-          <Text style={styles.pullQuoteText}>{narrativeContent.recommendations.closing}</Text>
+          <Text style={styles.pullQuoteText}>The page 2 summary is designed to be forwarded. One page. Headline numbers. Named assumptions. That's what a finance team needs to schedule the next conversation.</Text>
         </View>
 
         <View style={styles.costOfInactionBox}>
           <Text style={styles.costOfInactionLabel}>The Cost of Waiting</Text>
-          <Text style={styles.costOfInactionText}>{narrativeContent.recommendations.costOfInaction}</Text>
+          <Text style={styles.costOfInactionText}>Every month before go-live is a month of documentation burden your physicians are carrying — and a month of value your organization isn't capturing.</Text>
         </View>
       </View>
 
@@ -1579,6 +1598,214 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
   );
 };
 
+const OverviewPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
+  const multipleROI = ((data.threeYearNet / data.threeYearCost) + 1).toFixed(1);
+  const activeDrivers = data.drivers.filter(d => d.value > 0);
+
+  return (
+    <Page size="A4" style={styles.contentPage} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerTitle}>EMERGENCY DEPARTMENT VALUE ASSESSMENT</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Executive Summary</Text>
+        <Text style={styles.sectionTitle}>
+          {data.organizationName || data.clientName || "Your Organization"}: Three-Year Value Case
+        </Text>
+        <Text style={styles.sectionSubtitle}>
+          Built from the inputs we walked through together. Every number below is traceable to an assumption you can challenge — and change.
+        </Text>
+
+        <View style={[styles.metricsRow, { marginBottom: 24 }]}>
+          <View style={[styles.metricBox, { backgroundColor: brand.black, padding: 16, paddingRight: 16 }]}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: brand.coral, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>3-Year Value</Text>
+            <Text style={{ fontSize: 20, fontWeight: "bold", color: brand.white, marginBottom: 4 }}>{formatCurrency(data.threeYearValue)}</Text>
+            <Text style={{ fontSize: 9, color: brand.textSecondary }}>Total value generated</Text>
+          </View>
+          <View style={[styles.metricBox, { backgroundColor: brand.black, padding: 16, paddingRight: 16 }]}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: brand.coral, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>Investment</Text>
+            <Text style={{ fontSize: 20, fontWeight: "bold", color: brand.white, marginBottom: 4 }}>{formatCurrency(data.threeYearCost)}</Text>
+            <Text style={{ fontSize: 9, color: brand.textSecondary }}>3-year total cost</Text>
+          </View>
+          <View style={[styles.metricBox, { backgroundColor: brand.black, padding: 16, paddingRight: 16 }]}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: brand.coral, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>Net Gain</Text>
+            <Text style={{ fontSize: 20, fontWeight: "bold", color: brand.white, marginBottom: 4 }}>{formatCurrency(data.threeYearNet)}</Text>
+            <Text style={{ fontSize: 9, color: brand.textSecondary }}>Value above investment</Text>
+          </View>
+          <View style={[styles.metricBox, { backgroundColor: brand.black, padding: 16, paddingRight: 16 }]}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: brand.coral, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>Return</Text>
+            <Text style={{ fontSize: 20, fontWeight: "bold", color: brand.white, marginBottom: 4 }}>{multipleROI}x</Text>
+            <Text style={{ fontSize: 9, color: brand.textSecondary }}>Per dollar invested</Text>
+          </View>
+        </View>
+
+        <View style={styles.valueSection}>
+          <Text style={styles.valueSectionTitle}>What Drove These Numbers</Text>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>{data.unitNamePlural}</Text>
+            <Text style={styles.valueAmount}>{data.providers}</Text>
+          </View>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>Annual Encounters</Text>
+            <Text style={styles.valueAmount}>{formatNumber(data.encounters)}</Text>
+          </View>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>Utilization</Text>
+            <Text style={styles.valueAmount}>{data.utilization}%</Text>
+          </View>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>Time Saved / Encounter</Text>
+            <Text style={styles.valueAmount}>{data.timeSavedPerEncounter} min</Text>
+          </View>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>Annual Investment</Text>
+            <Text style={styles.valueAmount}>{formatCurrency(data.investment)}</Text>
+          </View>
+          <View style={[styles.valueRow, styles.valueRowLast]}>
+            <Text style={styles.valueLabel}>Per {data.unitName} / Month</Text>
+            <Text style={styles.valueAmount}>{formatCurrency(data.costPerProvider)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.valueSection}>
+          <Text style={styles.valueSectionTitle}>Value by Driver</Text>
+          {activeDrivers.map((driver, i) => (
+            <View key={driver.id} style={[styles.valueRow, i === activeDrivers.length - 1 ? styles.valueRowLast : {}]}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <View style={{ width: 3, height: 14, backgroundColor: driver.category === "labor" ? brand.coral : "#1A6B4A", borderRadius: 1 }} />
+                <Text style={styles.valueLabel}>{driver.name}</Text>
+              </View>
+              <Text style={styles.valueAmount}>{formatCurrency(driver.value)}/yr</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>Honest Context</Text>
+          <Text style={styles.insightText}>
+            These projections use conservative realization rates — scheduling friction, payer variability, and implementation ramp are already discounted. Value doesn't start on day one: documentation quality begins around month 3, capacity gains around month 6. Organizations that execute operationally consistently outperform these numbers.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ED Value Assessment"}</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
+const TimelinePage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
+  const hasRetention = data.drivers.some(d => d.id === "retention" && d.value > 0);
+  const monthLabels = ["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12"];
+
+  const TimelineBar = ({ delayMonths, rampMonths, label, note }: { delayMonths: number; rampMonths: number; label: string; note: string }) => {
+    const rampEnd = delayMonths + rampMonths;
+    return (
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 8, fontWeight: "bold", color: brand.black, marginBottom: 5 }}>{label}</Text>
+        <View style={{ flexDirection: "row", height: 22, gap: 1 }}>
+          {monthLabels.map((_, i) => {
+            const month = i + 1;
+            const isDelay = month <= delayMonths;
+            const isRamp = month > delayMonths && month <= rampEnd;
+            const isFull = month > rampEnd;
+            const rampProgress = isRamp ? (month - delayMonths) / rampMonths : 0;
+            const bgColor = isDelay
+              ? brand.warmGray
+              : isRamp
+                ? `rgba(240, 123, 95, ${0.25 + rampProgress * 0.75})`
+                : brand.coral;
+            return (
+              <View key={i} style={{ flex: 1, backgroundColor: bgColor, borderRadius: 1, justifyContent: "center", alignItems: "center" }}>
+                {isFull && month === rampEnd + 1 && (
+                  <Text style={{ fontSize: 5, color: brand.white }}>▶</Text>
+                )}
+              </View>
+            );
+          })}
+        </View>
+        <Text style={{ fontSize: 7, color: brand.textSecondary, marginTop: 3, lineHeight: 1.4 }}>{note}</Text>
+      </View>
+    );
+  };
+
+  return (
+    <Page size="A4" style={styles.contentPage} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerTitle}>EMERGENCY DEPARTMENT VALUE ASSESSMENT</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>What to Expect</Text>
+        <Text style={styles.sectionTitle}>Value Doesn't Arrive on Day One</Text>
+        <Text style={styles.sectionSubtitle}>
+          Each value stream has its own onset based on how documentation improvement actually flows through to financial impact. This is the first 12 months after go-live.
+        </Text>
+
+        <View style={{ flexDirection: "row", marginBottom: 6, gap: 1 }}>
+          {monthLabels.map((m, i) => (
+            <View key={i} style={{ flex: 1, alignItems: "center" }}>
+              <Text style={{ fontSize: 7, color: brand.textSecondary }}>{m}</Text>
+            </View>
+          ))}
+        </View>
+
+        <TimelineBar
+          delayMonths={2}
+          rampMonths={3}
+          label="Documentation Quality  ·  E&M accuracy, medical necessity, denials"
+          note="Notes improve from day one. Revenue shows up ~60 days later through billing. Full run-rate by month 5."
+        />
+        <TimelineBar
+          delayMonths={5}
+          rampMonths={3}
+          label="Throughput & Access  ·  LWBS recovery, door-to-disposition, capacity"
+          note="Requires providers to build workflow trust before capacity shifts. Begins around month 5, full run-rate by month 8."
+        />
+        {hasRetention && (
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: brand.black, marginBottom: 5 }}>Retention  ·  Clinician turnover, recruitment costs</Text>
+            <View style={{ flexDirection: "row", height: 22, gap: 1 }}>
+              {Array.from({ length: 12 }).map((_, i) => (
+                <View key={i} style={{ flex: 1, backgroundColor: `rgba(240, 123, 95, ${i < 6 ? 0.35 : i < 9 ? 0.75 : 1.0})`, borderRadius: 1 }} />
+              ))}
+            </View>
+            <Text style={{ fontSize: 7, color: brand.textSecondary, marginTop: 3, lineHeight: 1.4 }}>
+              35% of retention value in Year 1 (providers with 9+ months on tool). 75% in Year 2. Full value in Year 3.
+            </Text>
+          </View>
+        )}
+
+        <View style={[styles.narrativeBox, { marginBottom: 12 }]}>
+          <Text style={styles.narrativeLabel}>Payback Window</Text>
+          <Text style={styles.narrativeText}>
+            For documentation-heavy models: expect payback between months 6–8. For retention-heavy models: months 10–14. Investment is constant from day one — value ramps up to meet it. The gap between them is the implementation window.
+          </Text>
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>What Has to Be True</Text>
+          <Text style={styles.insightText}>
+            1. Your scheduling absorbs the recovered time — capacity gains require leadership to convert freed hours into additional visits or reduced overtime.{"\n"}
+            2. Providers reach {data.utilization}% utilization and stay there — adoption isn't just launch, it's sustained use.{"\n"}
+            3. Your coding and denial management workflows capture the documentation improvement — E&M upgrades only convert if the billing cycle processes them.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ED Value Assessment"}</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
 const FramingPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
   return (
     <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
@@ -1667,16 +1894,14 @@ const FramingPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: 
 // ============================================================================
 
 const EDPDFDocument = ({ data }: { data: EDPDFData }) => {
-  // Pages: Framing, Stakes, Executive, Driver pages..., Projections, Path Forward, Methodology (Cover not counted)
-  const totalPages = 6 + data.drivers.length;
+  const totalPages = 8 + data.drivers.length;
   let pageNum = 0;
 
   return (
     <Document>
-      {/* Cover - no page number, not counted */}
       <CoverPage data={data} />
+      <OverviewPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <FramingPage data={data} pageNum={++pageNum} totalPages={totalPages} />
-      {/* Stakes */}
       <StakesPage pageNum={++pageNum} totalPages={totalPages} />
       <ExecutiveSummaryPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       {data.drivers.map((driver) => (
@@ -1689,6 +1914,7 @@ const EDPDFDocument = ({ data }: { data: EDPDFData }) => {
         />
       ))}
       <ProjectionPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <TimelinePage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <PathForwardPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <MethodologyPage data={data} pageNum={++pageNum} totalPages={totalPages} />
     </Document>

@@ -1239,46 +1239,258 @@ const HowToUsePage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; p
     <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
       <View style={styles.pageHeader}>
         <Image src={abridgeLogoPath} style={styles.headerLogo} />
-        <Text style={styles.headerMeta}>Next Steps</Text>
+        <Text style={styles.headerMeta}>For Your Team</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionLabel}>Next Steps</Text>
-        <Text style={styles.sectionTitle}>How to Use This Document</Text>
+        <Text style={styles.sectionLabel}>For Your Team</Text>
+        <Text style={styles.sectionTitle}>Selling This Internally</Text>
         <Text style={styles.sectionIntro}>
-          This isn't a sales document. It's a decision-support tool. Here's how to get the most from it:
+          The CFO will ask three questions. Here's how to answer them.
         </Text>
 
         <View style={styles.actionSection}>
           <Text style={styles.actionNumber}>1.</Text>
-          <Text style={styles.actionTitle}>Stress Test the Inputs</Text>
+          <Text style={styles.actionTitle}>"How do we know these numbers are real?"</Text>
           <Text style={styles.actionText}>
-            What if utilization is lower than projected? What if time savings are more modest? Run scenarios. The value of this model is in its flexibility, not its point estimate.
+            Every input on page 2 came from your organization — your provider count, your encounter volume, your utilization assumption. The realization rates are conservative benchmarks already discounted for scheduling friction and payer mix. The model doesn't assume perfection. It assumes average execution.
           </Text>
         </View>
 
         <View style={styles.actionSection}>
           <Text style={styles.actionNumber}>2.</Text>
-          <Text style={styles.actionTitle}>Scenario Plan</Text>
+          <Text style={styles.actionTitle}>"What if it doesn't work?"</Text>
           <Text style={styles.actionText}>
-            Map the pilots and rollouts. Which service lines first? Which hospitalist groups are most likely to adopt? Build the sequencing logic before the implementation plan.
+            The model shows a range. The timeline page shows when value materializes and what has to be true for it to happen. A 60-day pilot with 5–10 providers gives you real data on time savings and documentation quality before full commitment. The risk is bounded. The pilot is measurable.
           </Text>
         </View>
 
         <View style={styles.actionSection}>
           <Text style={styles.actionNumber}>3.</Text>
-          <Text style={styles.actionTitle}>Track Outcomes</Text>
+          <Text style={styles.actionTitle}>"What do we measure after go-live?"</Text>
           <Text style={styles.actionText}>
-            Pick 3 metrics to track post-implementation:{"\n"}
-            • Documentation time per encounter (target: -50%){"\n"}
-            • Hospitalist satisfaction score (target: +15 pts){"\n"}
-            • One operational metric aligned to your value drivers
+            Three metrics that directly trace to this model:{"\n"}
+            • Documentation time per hospitalist note — target: -{data.timeSavedPerEncounter} min within 60 days{"\n"}
+            • CDI query volume — target: measurable reduction by month 3{"\n"}
+            • One revenue metric tied to your primary value driver: {data.drivers.filter(d => d.value > 0)[0]?.name || "your top driver"}
           </Text>
         </View>
 
         <View style={styles.closingBox}>
           <Text style={styles.closingText}>
-            The goal isn't to predict the future with precision. It's to give you a framework for making decisions with confidence—and adjusting as reality unfolds.
+            The page 2 summary is designed to be forwarded to your CFO or CMO. One page, headline numbers, named assumptions. That's what a finance team needs to move to the next conversation.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
+const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pageNum: number; totalPages: number }) => {
+  const multipleROI = ((data.threeYearNet / data.threeYearCost) + 1).toFixed(1);
+  const activeDrivers = data.drivers.filter(d => d.value > 0);
+
+  return (
+    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerMeta}>Executive Summary</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Executive Summary</Text>
+        <Text style={styles.sectionTitle}>
+          {data.organizationName || data.clientName || "Your Organization"}: Three-Year Value Case
+        </Text>
+        <Text style={styles.sectionIntro}>
+          Built from the inputs you provided. Every number below is traceable to an assumption you can change.
+        </Text>
+
+        <View style={[styles.scaleContainer, { gap: 8, marginBottom: 20 }]}>
+          <View style={[styles.scaleCard, { flex: 1 }]}>
+            <Text style={styles.scaleLabel}>3-Year Value</Text>
+            <Text style={[styles.scaleValue, { fontSize: 20 }]}>{formatCurrency(data.threeYearValue)}</Text>
+            <Text style={styles.scaleMeta}>Total value generated</Text>
+          </View>
+          <View style={[styles.scaleCard, { flex: 1 }]}>
+            <Text style={styles.scaleLabel}>Investment</Text>
+            <Text style={[styles.scaleValue, { fontSize: 20 }]}>{formatCurrency(data.threeYearCost)}</Text>
+            <Text style={styles.scaleMeta}>3-year total cost</Text>
+          </View>
+          <View style={[styles.scaleCard, { flex: 1 }]}>
+            <Text style={styles.scaleLabel}>Net Gain</Text>
+            <Text style={[styles.scaleValue, { fontSize: 20 }]}>{formatCurrency(data.threeYearNet)}</Text>
+            <Text style={styles.scaleMeta}>Value above investment</Text>
+          </View>
+          <View style={[styles.scaleCard, { flex: 1 }]}>
+            <Text style={styles.scaleLabel}>Return</Text>
+            <Text style={[styles.scaleValue, { fontSize: 20 }]}>{multipleROI}x</Text>
+            <Text style={styles.scaleMeta}>Per dollar invested</Text>
+          </View>
+        </View>
+
+        <View style={styles.inputsSection}>
+          <Text style={styles.inputsSectionLabel}>What Drove These Numbers</Text>
+          <View style={styles.inputsGrid}>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>{data.unitNamePlural}</Text>
+              <Text style={styles.inputValue}>{data.providers}</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Annual Encounters</Text>
+              <Text style={styles.inputValue}>{formatNumber(data.encounters)}</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Utilization</Text>
+              <Text style={styles.inputValue}>{data.utilization}%</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Time Saved / Encounter</Text>
+              <Text style={styles.inputValue}>{data.timeSavedPerEncounter} min</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Annual Investment</Text>
+              <Text style={styles.inputValue}>{formatCurrency(data.investment)}</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Per {data.unitName} / Month</Text>
+              <Text style={styles.inputValue}>{formatCurrency(data.costPerProvider)}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.inputsSection}>
+          <Text style={styles.inputsSectionLabel}>Value by Driver</Text>
+          <View style={styles.projectionTable}>
+            {activeDrivers.map((driver, i) => (
+              <View key={driver.id} style={[styles.projectionRow, i === activeDrivers.length - 1 ? styles.projectionRowLast : {}]}>
+                <View style={{ flexDirection: "row", alignItems: "center", flex: 3, gap: 6 }}>
+                  <View style={{ width: 3, height: 14, backgroundColor: driver.category === "labor" ? brand.coral : "#1A6B4A", borderRadius: 1 }} />
+                  <Text style={[styles.projectionCell, { textAlign: "left" }]}>{driver.name}</Text>
+                </View>
+                <Text style={[styles.projectionCellCoral, { flex: 1 }]}>{formatCurrency(driver.value)}/yr</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>Honest Context</Text>
+          <Text style={styles.insightText}>
+            These projections use conservative realization rates — scheduling friction, payer variability, and implementation ramp are already discounted. Value doesn't start on day one: documentation quality begins around month 3, capacity gains around month 6. Organizations that execute operationally consistently outperform these numbers.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
+const TimelinePage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pageNum: number; totalPages: number }) => {
+  const hasRetention = data.drivers.some(d => d.id === "retention" && d.value > 0);
+  const monthLabels = ["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12"];
+
+  const TimelineBar = ({ delayMonths, rampMonths, label, note }: { delayMonths: number; rampMonths: number; label: string; note: string }) => {
+    const rampEnd = delayMonths + rampMonths;
+    return (
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 8, fontWeight: 600, color: brand.textPrimary, marginBottom: 5 }}>{label}</Text>
+        <View style={{ flexDirection: "row", height: 22, gap: 1 }}>
+          {monthLabels.map((_, i) => {
+            const month = i + 1;
+            const isDelay = month <= delayMonths;
+            const isRamp = month > delayMonths && month <= rampEnd;
+            const isFull = month > rampEnd;
+            const rampProgress = isRamp ? (month - delayMonths) / rampMonths : 0;
+            const bgColor = isDelay
+              ? brand.lightGray
+              : isRamp
+                ? `rgba(232, 90, 79, ${0.25 + rampProgress * 0.75})`
+                : brand.coral;
+            return (
+              <View key={i} style={{ flex: 1, backgroundColor: bgColor, borderRadius: 1, justifyContent: "center", alignItems: "center" }}>
+                {isFull && month === rampEnd + 1 && (
+                  <Text style={{ fontSize: 5, color: brand.white }}>▶</Text>
+                )}
+              </View>
+            );
+          })}
+        </View>
+        <Text style={{ fontSize: 7, color: brand.textTertiary, marginTop: 3, lineHeight: 1.4 }}>{note}</Text>
+      </View>
+    );
+  };
+
+  return (
+    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerMeta}>What to Expect</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>What to Expect</Text>
+        <Text style={styles.sectionTitle}>Value Doesn't Arrive on Day One</Text>
+        <Text style={styles.sectionIntro}>
+          Each value stream has its own onset based on how documentation improvement actually flows through to financial impact. This is the first 12 months after go-live.
+        </Text>
+
+        <View style={{ flexDirection: "row", marginBottom: 6, gap: 1 }}>
+          {monthLabels.map((m, i) => (
+            <View key={i} style={{ flex: 1, alignItems: "center" }}>
+              <Text style={{ fontSize: 7, color: brand.textTertiary }}>{m}</Text>
+            </View>
+          ))}
+        </View>
+
+        <TimelineBar
+          delayMonths={2}
+          rampMonths={3}
+          label="Documentation Quality  ·  wRVU, HCC, denials, DRG"
+          note="Notes improve from day one. Revenue shows up ~60 days later through billing. Full run-rate by month 5."
+        />
+        <TimelineBar
+          delayMonths={5}
+          rampMonths={3}
+          label="Capacity & Efficiency  ·  CDI queries, throughput, length of stay"
+          note="Requires providers to build workflow trust before capacity shifts. Begins around month 5, full run-rate by month 8."
+        />
+        {hasRetention && (
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 8, fontWeight: 600, color: brand.textPrimary, marginBottom: 5 }}>Retention  ·  Clinician turnover, recruitment costs</Text>
+            <View style={{ flexDirection: "row", height: 22, gap: 1 }}>
+              {Array.from({ length: 12 }).map((_, i) => (
+                <View key={i} style={{ flex: 1, backgroundColor: `rgba(232, 90, 79, ${i < 6 ? 0.35 : i < 9 ? 0.75 : 1.0})`, borderRadius: 1 }} />
+              ))}
+            </View>
+            <Text style={{ fontSize: 7, color: brand.textTertiary, marginTop: 3, lineHeight: 1.4 }}>
+              35% of retention value in Year 1 (providers with 9+ months on tool). 75% in Year 2. Full value in Year 3.
+            </Text>
+          </View>
+        )}
+
+        <View style={[styles.calibrationNote, { marginBottom: 12 }]}>
+          <Text style={styles.calibrationLabel}>Payback Window</Text>
+          <Text style={styles.calibrationText}>
+            For documentation-heavy models: expect payback between months 6–8. For retention-heavy models: months 10–14. Investment is constant from day one — value ramps up to meet it. The gap between them is the implementation window.
+          </Text>
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>What Has to Be True</Text>
+          <Text style={styles.insightText}>
+            1. Your scheduling absorbs the recovered time — capacity gains require leadership to convert freed hours into additional visits or reduced overtime.{"\n"}
+            2. Providers reach {data.utilization}% utilization and stay there — adoption isn't just launch, it's sustained use.{"\n"}
+            3. Your billing and coding workflows capture the documentation improvement — the notes get better, but revenue only follows if the pipeline processes them correctly.
           </Text>
         </View>
       </View>
@@ -1378,13 +1590,13 @@ const FramingPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pa
 // ============================================================================
 
 const InpatientPDFDocument = ({ data }: { data: InpatientPDFData }) => {
-  // Cover + Framing + Thesis + Drivers + Investment + Transparency + HowToUse
-  const totalPages = 6 + data.drivers.length;
+  const totalPages = 8 + data.drivers.length;
   let pageNum = 1;
 
   return (
     <Document>
       <CoverPage data={data} />
+      <ExecutiveSummaryPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <FramingPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <ThesisPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       {data.drivers.map((driver) => (
@@ -1397,6 +1609,7 @@ const InpatientPDFDocument = ({ data }: { data: InpatientPDFData }) => {
         />
       ))}
       <InvestmentPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <TimelinePage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <TransparencyPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <HowToUsePage data={data} pageNum={++pageNum} totalPages={totalPages} />
     </Document>
