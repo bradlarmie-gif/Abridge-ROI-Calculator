@@ -1,0 +1,35 @@
+In client/src/lib/proformaCalculations.ts, there is a bug where retention value is being double-counted. The retention annual value is calculated at full scale (e.g., 200 providers), and then the expansion
+   multiplier — which already scales up from the base provider count — is applied on top of it. This causes Y3 retention to be inflated by 4–7x.
+                                                                                                                                                                                                               
+  The fix — one line change:                  
+                                                                                                                                                                                                               
+  Find this block (around line 357–362):                                                                  
+  const retentionRate = setting.retentionRate ?? 0;                                                                                                                                                            
+  const replacementCost = setting.replacementCost ?? 400000;                                              
+  const hasExploreRetention = setting.drivers.some(d => d.id === "retention");                                                                                                                                 
+  const proformaRetentionAnnual = !hasExploreRetention && retentionRate > 0                               
+    ? fullScale * (retentionRate / 100) * replacementCost                                                                                                                                                      
+    : 0;                                                                                                  
+                                                                                                                                                                                                               
+  Change only the proformaRetentionAnnual line — replace fullScale with setting.providerCount:                                                                                                                 
+                                                                                                                                                                                                               
+  const retentionRate = setting.retentionRate ?? 0;                                                                                                                                                            
+  const replacementCost = setting.replacementCost ?? 400000;                                              
+  const hasExploreRetention = setting.drivers.some(d => d.id === "retention");                                                                                                                                 
+  const proformaRetentionAnnual = !hasExploreRetention && retentionRate > 0
+    ? setting.providerCount * (retentionRate / 100) * replacementCost                                                                                                                                          
+    : 0;                                                                                                  
+                                                                                                                                                                                                               
+  Why this is correct: setting.providerCount is the base provider count at go-live (e.g., 50). The monthly driver loop then applies expansionMultiplier (which grows from 1x to ~4x as the deployment scales   
+  from 50 to 200 providers). Using fullScale was pre-applying the endpoint provider count and then multiplying by the expansion ratio again — effectively counting 800–1,000 providers' worth of retention
+  instead of 200.                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  No other changes needed. Do not modify the expansion multiplier logic, the phasing config, or any other driver calculations.
+                                                                                                                                                                                                               
+  Verification after applying:                                                                            
+  - Open the Financial Proforma with an outpatient setting: 50 → 200 providers, 0.5% retention rate, $400K replacement cost                                                                                    
+  - Y3 retention value should be approximately $400K (200 providers × 0.5% × $400K), not $2–3M                             
+  - Value-to-cost should drop from ~10x to ~6–8x                                                                                                                                                               
+  - Simple ROI should drop from ~900% to ~500–600%                                                        
+  - Payback month should remain in the 7–10 month range                                                                                                                                                        
+  - Doc Quality and Capacity & Efficiency rows in the 3-year table should be unchanged 

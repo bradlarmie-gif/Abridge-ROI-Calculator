@@ -358,7 +358,7 @@ export function buildMonthlyCashFlows(
       const replacementCost = setting.replacementCost ?? 400000;
       const hasExploreRetention = setting.drivers.some(d => d.id === "retention");
       const proformaRetentionAnnual = !hasExploreRetention && retentionRate > 0
-        ? fullScale * (retentionRate / 100) * replacementCost
+        ? setting.providerCount * (retentionRate / 100) * replacementCost
         : 0;
 
       const effectiveDrivers = [...setting.drivers];
