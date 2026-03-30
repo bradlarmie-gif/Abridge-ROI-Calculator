@@ -1,0 +1,229 @@
+Four targeted fixes across the PDF generators. No new pages, no structural changes — surgical edits only.
+
+  ---
+
+  ## FIX 1 — Brand color: outpatient + inpatient use wrong red
+
+  In BOTH files:
+  - client/src/lib/outpatient-pdf-generator.tsx
+  - client/src/lib/inpatient-pdf-generator.tsx
+
+  Find the brand object and change:
+  coral: "#E85A4F",
+  to:
+  coral: "#EA2C00",
+
+  Then search both files for any hardcoded `"#E85A4F"` string and replace with `"#EA2C00"`. That's it — all `brand.coral` references update automatically.
+
+  ---
+
+  ## FIX 2 — Nursing PDF ignores financial data (bug fix + headline)
+
+  **File:** `client/src/lib/nursing-pdf-generator.tsx`
+
+  Right now `NursingMethodologyDocument` accepts no props, so the data passed to `generateNursingROIPDF(data)` is completely thrown away. Fix this and add a ROI headline.
+
+  ### Step 1 — Add formatCurrency helper at the top of the file (after the brand object, before any component definitions):
+
+  ```typescript
+  const formatCurrency = (value: number): string => {
+    if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+    if (Math.abs(value) >= 1000) return `$${Math.round(value / 1000).toLocaleString()}K`;
+    return `$${value.toLocaleString()}`;
+  };
+
+  Step 2 — Change NursingMethodologyDocument to accept optional data:
+
+  Find:
+  function NursingMethodologyDocument() {
+    return (
+      <Document>
+        <Page1 />
+        <Page2 />
+        <Page3 />
+      </Document>
+    );
+  }
+
+  Replace with:
+  function NursingMethodologyDocument({ data }: { data?: NursingPDFData }) {
+    return (
+      <Document>
+        <Page1 data={data} />
+        <Page2 />
+        <Page3 />
+      </Document>
+    );
+  }
+
+  Step 3 — Update Page1 to accept and display data:
+
+  Find the Page1 function signature:
+  function Page1() {
+
+  Replace with:
+  function Page1({ data }: { data?: NursingPDFData }) {
+
+  Then inside Page1, find the title block:
+  <Text style={styles.mainTitle}>NURSING: HOW WE THINK ABOUT VALUE</Text>
+  <Text style={styles.subtitle}>A transparent methodology for calculating return on investment</Text>
+
+  Replace with:
+  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+    <View style={{ flex: 1 }}>
+      <Text style={styles.mainTitle}>NURSING: HOW WE THINK ABOUT VALUE</Text>
+      <Text style={styles.subtitle}>A transparent methodology for calculating return on investment</Text>
+    </View>
+    {data && data.netGain > 0 && (
+      <View style={{ alignItems: "flex-end", paddingLeft: 12 }}>
+        <Text style={{ fontSize: 22, fontFamily: "Manrope", fontWeight: 700, color: brand.abridgeRed, lineHeight: 1 }}>
+          {formatCurrency(data.netGain)}
+        </Text>
+        <Text style={{ fontSize: 7, color: brand.mediumGray, marginTop: 2 }}>
+          {data.organizationName || data.clientName ? `Est. net annual value · ${data.organizationName || data.clientName}` : "Est. net annual value"}
+        </Text>
+      </View>
+    )}
+  </View>
+
+  Step 4 — Fix the generate functions to actually pass data:
+
+  Find:
+  export async function generateNursingROIPDF(data: NursingPDFData): Promise<void> {
+    const blob = await pdf(<NursingMethodologyDocument />).toBlob();
+
+  Replace with:
+  export async function generateNursingROIPDF(data: NursingPDFData): Promise<void> {
+    const blob = await pdf(<NursingMethodologyDocument data={data} />).toBlob();
+
+  Find:
+  export async function generateNursingROIPDFBlob(data: NursingPDFData): Promise<{ blob: Blob; filename: string }> {
+    const blob = await pdf(<NursingMethodologyDocument />).toBlob();
+
+  Replace with:
+  export async function generateNursingROIPDFBlob(data: NursingPDFData): Promise<{ blob: Blob; filename: string }> {
+    const blob = await pdf(<NursingMethodologyDocument data={data} />).toBlob();
+
+  ---
+  FIX 3 — Outpatient copy: cut "conservative" repetition
+
+  File: client/src/lib/outpatient-pdf-generator.tsx
+
+  The word "conservative" appears 20+ times. It stops meaning anything by repetition. Apply these rules:
+
+  1. Keep it in exactly two places:
+    - The TransparencyPage "Methodology Statement" callout — this is where it belongs as a principle statement
+    - One instance in a driver calibration note where the specific rate is cited (e.g., "our 3% is deliberately modest vs. the 8-15% range in published studies")
+  2. Remove it everywhere else. Specifically:
+    - In calibration notes, replace "Conservative estimate" as a standalone label with the actual number and its rationale. Example: instead of "Conservative estimate: 15% realization", write "15%
+  realization — accounts for scheduling friction and demand variability"
+    - Remove any sentence that is purely "We use conservative assumptions" or "These are conservative projections" without adding new information
+    - Remove standalone uses of "conservative" as an adjective in step box explanations where the surrounding copy already explains the reasoning
+  3. Do not change any numbers — only the copy that describes them. The realization rates, inputs, and formulas stay exactly the same.
+
+  ---
+  FIX 4 — Remove 30/60/90 day plan from ED PDF
+
+  File: client/src/lib/ed-pdf-generator.tsx
+
+  Find and replace the entire PathForwardPage function. The current version has a phased rollout plan with "30 days / 60-90 days / Ongoing" timelines. Remove all of that. Replace with an internal champion
+  page — same styling, same page structure, different content.
+
+  Find the complete PathForwardPage function (it starts with const PathForwardPage and ends with the closing };) and replace it entirely with:
+
+  const PathForwardPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
+    const topDriver = data.drivers.filter(d => d.value > 0).sort((a, b) => b.value - a.value)[0];
+
+    return (
+      <Page size="A4" style={styles.contentPage} wrap={false}>
+        <View style={styles.pageHeader}>
+          <Image src={abridgeLogoPath} style={styles.headerLogo} />
+          <Text style={styles.headerTitle}>EMERGENCY DEPARTMENT VALUE ASSESSMENT</Text>
+        </View>
+
+        <View style={styles.content}>
+          <Text style={styles.sectionLabel}>For Your Team</Text>
+          <Text style={styles.sectionTitle}>Selling This Internally</Text>
+          <Text style={styles.sectionSubtitle}>
+            The questions your finance and leadership team will ask — and how to answer them.
+          </Text>
+
+          <View style={styles.phaseSection}>
+            <View style={styles.phaseHeader}>
+              <View style={styles.phaseNumber}>
+                <Text style={styles.phaseNumberText}>1</Text>
+              </View>
+              <Text style={styles.phaseName}>"How do we know these numbers are real?"</Text>
+            </View>
+            <View style={styles.phaseActions}>
+              <Text style={styles.phaseAction}>
+                Every input came from your organization — your physician count, your annual visit volume, your utilization assumption. The realization rates are conservative benchmarks built specifically for
+   emergency medicine constraints: patient arrival unpredictability, high-acuity documentation pressure, shift variability. The model doesn't assume a perfect ED. It assumes yours.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.phaseSection}>
+            <View style={styles.phaseHeader}>
+              <View style={styles.phaseNumber}>
+                <Text style={styles.phaseNumberText}>2</Text>
+              </View>
+              <Text style={styles.phaseName}>"What if adoption is slower than expected?"</Text>
+            </View>
+            <View style={styles.phaseActions}>
+              <Text style={styles.phaseAction}>
+                The timeline page in this document shows what happens at each utilization level. LWBS rate, door-to-disposition time, and physician satisfaction are all measurable early — you'll know within
+  weeks whether the tool is delivering. The model scales with adoption: less adoption, less value. You're not locked into the full projection.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.phaseSection}>
+            <View style={styles.phaseHeader}>
+              <View style={styles.phaseNumber}>
+                <Text style={styles.phaseNumberText}>3</Text>
+              </View>
+              <Text style={styles.phaseName}>"What do we measure to know it's working?"</Text>
+            </View>
+            <View style={styles.phaseActions}>
+              <Text style={styles.phaseAction}>
+                {`Three metrics that trace directly to this model:\n• Documentation time per encounter — target: -${data.timeSavedPerEncounter} min\n• LWBS rate — establish baseline before go-live, track
+  monthly\n• ${topDriver ? topDriver.name : "Your primary value driver"} — the metric tied to your largest value stream`}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.pullQuoteBox}>
+            <Text style={styles.pullQuoteText}>
+              {`The executive summary on page 2 is designed to be forwarded. One page. Headline numbers. Named assumptions. That's what a finance team needs to approve the next step.`}
+            </Text>
+          </View>
+
+          <View style={styles.costOfInactionBox}>
+            <Text style={styles.costOfInactionLabel}>The Cost of Inaction</Text>
+            <Text style={styles.costOfInactionText}>
+              {`Every month documentation burden continues, your physicians carry a load that compounds — on throughput, on retention, on the care they're able to deliver. ${formatCurrency(data.netGain)} in
+  annual value is sitting in the current workflow. It doesn't require new headcount or new infrastructure. It requires better documentation.`}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Abridge ED Value Assessment</Text>
+          <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+        </View>
+      </Page>
+    );
+  };
+
+  Note: This uses styles.phaseSection, styles.phaseHeader, styles.phaseNumber, styles.phaseNumberText, styles.phaseName, styles.phaseActions, styles.phaseAction, styles.pullQuoteBox, styles.pullQuoteText,
+  styles.costOfInactionBox, styles.costOfInactionLabel, styles.costOfInactionText — all of which already exist in the ED file's StyleSheet. Do not add new styles.
+
+  ---
+  What does NOT change
+
+  - No page structure changes
+  - No data interface changes
+  - No StyleSheet additions
+  - No layout changes
+  - Only: brand color in outpatient/inpatient, nursing data wiring + headline, outpatient copy trim, ED PathForwardPage content replacement

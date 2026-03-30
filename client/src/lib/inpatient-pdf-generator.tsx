@@ -109,7 +109,7 @@ export interface InpatientPDFData {
 const brand = {
   black: "#1A1A1A",
   white: "#FFFFFF",
-  coral: "#E85A4F",
+  coral: "#EA2C00",
   warmGray: "#F8F7F6",
   lightGray: "#F5F4F3",
   midGray: "#E5E4E3",
@@ -1439,7 +1439,7 @@ const TimelinePage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; p
             const bgColor = isDelay
               ? brand.lightGray
               : isRamp
-                ? `rgba(232, 90, 79, ${0.25 + rampProgress * 0.75})`
+                ? `rgba(234, 44, 0, ${0.25 + rampProgress * 0.75})`
                 : brand.coral;
             return (
               <View key={i} style={{ flex: 1, backgroundColor: bgColor, borderRadius: 1, justifyContent: "center", alignItems: "center" }}>
@@ -1494,7 +1494,7 @@ const TimelinePage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; p
             <Text style={{ fontSize: 8, fontWeight: 600, color: brand.textPrimary, marginBottom: 5 }}>Retention  ·  Clinician turnover, recruitment costs</Text>
             <View style={{ flexDirection: "row", height: 22, gap: 1 }}>
               {Array.from({ length: 12 }).map((_, i) => (
-                <View key={i} style={{ flex: 1, backgroundColor: `rgba(232, 90, 79, ${i < 6 ? 0.35 : i < 9 ? 0.75 : 1.0})`, borderRadius: 1 }} />
+                <View key={i} style={{ flex: 1, backgroundColor: `rgba(234, 44, 0, ${i < 6 ? 0.35 : i < 9 ? 0.75 : 1.0})`, borderRadius: 1 }} />
               ))}
             </View>
             <Text style={{ fontSize: 7, color: brand.textTertiary, marginTop: 3, lineHeight: 1.4 }}>

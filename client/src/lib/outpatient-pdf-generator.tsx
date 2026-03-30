@@ -119,7 +119,7 @@ export interface OutpatientPDFData {
 const brand = {
   black: "#1A1A1A",
   white: "#FFFFFF",
-  coral: "#E85A4F",
+  coral: "#EA2C00",
   warmGray: "#F8F7F6",
   lightGray: "#F5F4F3",
   midGray: "#E5E4E3",
@@ -899,7 +899,7 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
           {
             label: "STEP 3: TIME CONVERTED",
             formula: `${formatNumber(hoursAllocated)} hours × 15% realization = ${formatNumber(hoursRealized)} hours of visits`,
-            explanation: "Why 15%? Not all freed time converts to volume. Scheduling friction, demand variability, physician preferences all constrain conversion. We're conservative because over-promising destroys credibility.",
+            explanation: "Why 15%? Not all freed time converts to volume. Scheduling friction, demand variability, and physician preferences all constrain conversion. Over-promising destroys credibility.",
           },
           {
             label: "STEP 4: VALUE REALIZED",
@@ -907,7 +907,7 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
             explanation: "This is revenue you're currently leaving on the table. Patients who want appointments but can't get them. Demand you're turning away.",
           },
         ],
-        calibration: "The 15% realization rate is intentionally conservative. Top-quartile organizations convert 20-25% of freed time to volume. If you execute well, you'll beat this projection.",
+        calibration: "Our 15% is deliberately conservative vs. the 20-25% range in top-quartile organizations — it accounts for scheduling friction and demand variability. If you execute well, you'll beat this projection.",
       };
     }
 
@@ -1041,10 +1041,10 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
           {
             label: "VALUE CALCULATION",
             formula: `Total: ${formatCurrency(driver.value)}`,
-            explanation: "Based on your practice inputs and conservative realization rates.",
+            explanation: "Based on your practice inputs and benchmarked realization rates.",
           },
         ],
-        calibration: "All projections use conservative estimates that account for real-world constraints.",
+        calibration: "All projections account for real-world constraints — scheduling friction, payer mix, and implementation ramp.",
       };
   }
 }
@@ -1262,7 +1262,7 @@ const TransparencyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDa
             <View style={styles.realizationHeader}>
               <Text style={[styles.realizationHeaderCell, { flex: 2 }]}>Rate</Text>
               <Text style={[styles.realizationHeaderCell, { flex: 1, textAlign: "center" }]}>Value</Text>
-              <Text style={[styles.realizationHeaderCell, { flex: 3 }]}>Why This Conservative</Text>
+              <Text style={[styles.realizationHeaderCell, { flex: 3 }]}>Rationale</Text>
             </View>
             {realizationRates.map((item, i) => (
               <View key={i} style={[styles.realizationRow, i === realizationRates.length - 1 ? styles.realizationRowLast : {}]}>
@@ -1313,7 +1313,7 @@ const HowToUsePage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; 
           <Text style={styles.actionNumber}>1.</Text>
           <Text style={styles.actionTitle}>"How do we know these numbers are real?"</Text>
           <Text style={styles.actionText}>
-            Every input on page 2 came from your organization — your provider count, your encounter volume, your utilization assumption. The realization rates are conservative benchmarks already discounted for scheduling friction and payer mix. The model doesn't assume perfection. It assumes average execution.
+            Every input on page 2 came from your organization — your provider count, your encounter volume, your utilization assumption. The realization rates are already discounted for scheduling friction and payer mix. The model doesn't assume perfection. It assumes average execution.
           </Text>
         </View>
 
@@ -1442,7 +1442,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
         <View style={styles.insightBox}>
           <Text style={styles.insightLabel}>Honest Context</Text>
           <Text style={styles.insightText}>
-            These projections use conservative realization rates — scheduling friction, payer variability, and implementation ramp are already discounted. Value doesn't start on day one: documentation quality begins around month 3, capacity gains around month 6. Organizations that execute operationally consistently outperform these numbers.
+            These projections already discount for scheduling friction, payer variability, and implementation ramp. Value doesn't start on day one: documentation quality begins around month 3, capacity gains around month 6. Organizations that execute operationally consistently outperform these numbers.
           </Text>
         </View>
       </View>
@@ -1474,7 +1474,7 @@ const TimelinePage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; 
             const bgColor = isDelay
               ? brand.lightGray
               : isRamp
-                ? `rgba(232, 90, 79, ${0.25 + rampProgress * 0.75})`
+                ? `rgba(234, 44, 0, ${0.25 + rampProgress * 0.75})`
                 : brand.coral;
             return (
               <View key={i} style={{ flex: 1, backgroundColor: bgColor, borderRadius: 1, justifyContent: "center", alignItems: "center" }}>
@@ -1529,7 +1529,7 @@ const TimelinePage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; 
             <Text style={{ fontSize: 8, fontWeight: 600, color: brand.textPrimary, marginBottom: 5 }}>Retention  ·  Clinician turnover, recruitment costs</Text>
             <View style={{ flexDirection: "row", height: 22, gap: 1 }}>
               {Array.from({ length: 12 }).map((_, i) => (
-                <View key={i} style={{ flex: 1, backgroundColor: `rgba(232, 90, 79, ${i < 6 ? 0.35 : i < 9 ? 0.75 : 1.0})`, borderRadius: 1 }} />
+                <View key={i} style={{ flex: 1, backgroundColor: `rgba(234, 44, 0, ${i < 6 ? 0.35 : i < 9 ? 0.75 : 1.0})`, borderRadius: 1 }} />
               ))}
             </View>
             <Text style={{ fontSize: 7, color: brand.textTertiary, marginTop: 3, lineHeight: 1.4 }}>

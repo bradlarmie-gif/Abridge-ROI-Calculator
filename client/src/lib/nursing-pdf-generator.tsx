@@ -144,6 +144,12 @@ const brand = {
   connectedBorder: "#BBDEFB",
 };
 
+const formatCurrency = (value: number): string => {
+  if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+  if (Math.abs(value) >= 1000) return `$${Math.round(value / 1000).toLocaleString()}K`;
+  return `$${value.toLocaleString()}`;
+};
+
 // ============================================================================
 // STYLES - PREMIUM VERSION
 // ============================================================================
@@ -443,13 +449,27 @@ function PageFooter({ pageNum, totalPages }: { pageNum: number; totalPages: numb
 // PAGE 1: Context + Categories + Honest Limits + Connected Value
 // ============================================================================
 
-function Page1() {
+function Page1({ data }: { data?: NursingPDFData }) {
   return (
     <Page size="LETTER" style={styles.page}>
       <PageHeader />
       
-      <Text style={styles.mainTitle}>NURSING: HOW WE THINK ABOUT VALUE</Text>
-      <Text style={styles.subtitle}>A transparent methodology for calculating return on investment</Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.mainTitle}>NURSING: HOW WE THINK ABOUT VALUE</Text>
+          <Text style={styles.subtitle}>A transparent methodology for calculating return on investment</Text>
+        </View>
+        {data && data.netGain > 0 && (
+          <View style={{ alignItems: "flex-end", paddingLeft: 12 }}>
+            <Text style={{ fontSize: 22, fontFamily: "Manrope", fontWeight: 700, color: brand.abridgeRed, lineHeight: 1 }}>
+              {formatCurrency(data.netGain)}
+            </Text>
+            <Text style={{ fontSize: 7, color: brand.mediumGray, marginTop: 2 }}>
+              {data.organizationName || data.clientName ? `Est. net annual value · ${data.organizationName || data.clientName}` : "Est. net annual value"}
+            </Text>
+          </View>
+        )}
+      </View>
       
       <SectionHeader title="THE CONTEXT" isFirst />
       <Text style={styles.bodyText}>
@@ -783,10 +803,10 @@ function Page3() {
 // METHODOLOGY DOCUMENT
 // ============================================================================
 
-function NursingMethodologyDocument() {
+function NursingMethodologyDocument({ data }: { data?: NursingPDFData }) {
   return (
     <Document>
-      <Page1 />
+      <Page1 data={data} />
       <Page2 />
       <Page3 />
     </Document>
@@ -803,7 +823,7 @@ export async function generateNursingMethodologyPDF(): Promise<void> {
 }
 
 export async function generateNursingROIPDF(data: NursingPDFData): Promise<void> {
-  const blob = await pdf(<NursingMethodologyDocument />).toBlob();
+  const blob = await pdf(<NursingMethodologyDocument data={data} />).toBlob();
   const filename = data.organizationName 
     ? `Abridge-Nursing-ROI-${data.organizationName.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`
     : "Abridge-Nursing-ROI-Analysis.pdf";
@@ -811,7 +831,7 @@ export async function generateNursingROIPDF(data: NursingPDFData): Promise<void>
 }
 
 export async function generateNursingROIPDFBlob(data: NursingPDFData): Promise<{ blob: Blob; filename: string }> {
-  const blob = await pdf(<NursingMethodologyDocument />).toBlob();
+  const blob = await pdf(<NursingMethodologyDocument data={data} />).toBlob();
   const filename = data.organizationName 
     ? `Abridge-Nursing-ROI-${data.organizationName.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`
     : "Abridge-Nursing-ROI-Analysis.pdf";

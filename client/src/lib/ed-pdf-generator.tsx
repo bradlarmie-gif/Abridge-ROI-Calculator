@@ -1474,6 +1474,8 @@ const DriverDetailPage = ({
 
 // Path Forward Page - Recommendations
 const PathForwardPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
+  const topDriver = data.drivers.filter(d => d.value > 0).sort((a, b) => b.value - a.value)[0];
+
   return (
     <Page size="A4" style={styles.contentPage} wrap={false}>
       <View style={styles.pageHeader}>
@@ -1485,7 +1487,7 @@ const PathForwardPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
         <Text style={styles.sectionLabel}>For Your Team</Text>
         <Text style={styles.sectionTitle}>Selling This Internally</Text>
         <Text style={styles.sectionSubtitle}>
-          The ED CFO will ask three questions. Here's how to answer them.
+          The questions your finance and leadership team will ask — and how to answer them.
         </Text>
 
         <View style={styles.phaseSection}>
@@ -1496,7 +1498,9 @@ const PathForwardPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
             <Text style={styles.phaseName}>"How do we know these numbers are real?"</Text>
           </View>
           <View style={styles.phaseActions}>
-            <Text style={styles.phaseAction}>Every input on page 2 came from your organization — your ED physician count, your annual visit volume, your utilization assumption. The realization rates are conservative benchmarks built specifically for emergency department constraints: patient arrival unpredictability, shift variability, high-acuity documentation pressure. The model doesn't assume a perfect ED. It assumes yours.</Text>
+            <Text style={styles.phaseAction}>
+              Every input came from your organization — your physician count, your annual visit volume, your utilization assumption. The realization rates are benchmarks built specifically for emergency medicine constraints: patient arrival unpredictability, high-acuity documentation pressure, shift variability. The model doesn't assume a perfect ED. It assumes yours.
+            </Text>
           </View>
         </View>
 
@@ -1505,10 +1509,12 @@ const PathForwardPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
             <View style={styles.phaseNumber}>
               <Text style={styles.phaseNumberText}>2</Text>
             </View>
-            <Text style={styles.phaseName}>"What if adoption is slower than projected?"</Text>
+            <Text style={styles.phaseName}>"What if adoption is slower than expected?"</Text>
           </View>
           <View style={styles.phaseActions}>
-            <Text style={styles.phaseAction}>The timeline page shows what happens at each milestone. A 60-day pilot with 3–5 high-volume ED physicians gives you real throughput and documentation data before full commitment. LWBS rate, door-to-disposition time, and physician satisfaction are all measurable within 60 days. The risk is bounded. The data comes fast.</Text>
+            <Text style={styles.phaseAction}>
+              The timeline page in this document shows what happens at each utilization level. LWBS rate, door-to-disposition time, and physician satisfaction are all measurable early — you'll know within weeks whether the tool is delivering. The model scales with adoption: less adoption, less value. You're not locked into the full projection.
+            </Text>
           </View>
         </View>
 
@@ -1517,20 +1523,26 @@ const PathForwardPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
             <View style={styles.phaseNumber}>
               <Text style={styles.phaseNumberText}>3</Text>
             </View>
-            <Text style={styles.phaseName}>"What do we measure after go-live?"</Text>
+            <Text style={styles.phaseName}>"What do we measure to know it's working?"</Text>
           </View>
           <View style={styles.phaseActions}>
-            <Text style={styles.phaseAction}>Three metrics that directly trace to this model:{"\n"}• Documentation time per encounter — target: -{data.timeSavedPerEncounter} min within 60 days{"\n"}• LWBS rate — establish baseline now, measure at 90 days{"\n"}• One coding metric: E&M level distribution or denial rate on ED claims</Text>
+            <Text style={styles.phaseAction}>
+              {`Three metrics that trace directly to this model:\n• Documentation time per encounter — target: -${data.timeSavedPerEncounter} min\n• LWBS rate — establish baseline before go-live, track monthly\n• ${topDriver ? topDriver.name : "Your primary value driver"} — the metric tied to your largest value stream`}
+            </Text>
           </View>
         </View>
 
         <View style={styles.pullQuoteBox}>
-          <Text style={styles.pullQuoteText}>The page 2 summary is designed to be forwarded. One page. Headline numbers. Named assumptions. That's what a finance team needs to schedule the next conversation.</Text>
+          <Text style={styles.pullQuoteText}>
+            {`The executive summary on page 2 is designed to be forwarded. One page. Headline numbers. Named assumptions. That's what a finance team needs to approve the next step.`}
+          </Text>
         </View>
 
         <View style={styles.costOfInactionBox}>
-          <Text style={styles.costOfInactionLabel}>The Cost of Waiting</Text>
-          <Text style={styles.costOfInactionText}>Every month before go-live is a month of documentation burden your physicians are carrying — and a month of value your organization isn't capturing.</Text>
+          <Text style={styles.costOfInactionLabel}>The Cost of Inaction</Text>
+          <Text style={styles.costOfInactionText}>
+            {`Every month documentation burden continues, your physicians carry a load that compounds — on throughput, on retention, on the care they're able to deliver. ${formatCurrency(data.netGain)} in annual value is sitting in the current workflow. It doesn't require new headcount or new infrastructure. It requires better documentation.`}
+          </Text>
         </View>
       </View>
 
