@@ -1,0 +1,117 @@
+ProformaHub — Tab Layout + Value Driver Editing                                                                                                                                                              
+                                                                                                          
+  Restructure client/src/pages/proforma/ProformaView.tsx into a 3-tab layout and add editable value driver inputs. No logic changes — only rendering and state changes.
+                                              
+  ---                                                                                                                                                                                                          
+  Step 1 — Add tab state
+                                                                                                                                                                                                               
+  At the top of the component, add:                                                                       
+  const [activeTab, setActiveTab] = useState<'summary' | 'assumptions' | 'detail'>('summary');                                                                                                                 
+                                                                                                                                                                                                               
+  ---                                         
+  Step 2 — Add tab nav bar                                                                                                                                                                                     
+                                                                                                          
+  Immediately after the <UnifiedHeaderSpacer />, before the hero section, insert this tab bar:                                                                                                                 
+                                              
+  <div className="sticky top-[56px] z-30 bg-white border-b border-neutral-200">                                                                                                                                
+    <div className="max-w-5xl mx-auto px-4 flex gap-0">                                                   
+      {(['summary', 'assumptions', 'detail'] as const).map(tab => (                                                                                                                                            
+        <button                               
+          key={tab}                                                                                                                                                                                            
+          onClick={() => setActiveTab(tab)}                                                               
+          className={`px-5 py-3 text-sm font-medium capitalize border-b-2 transition-colors ${                                                                                                                 
+            activeTab === tab                                                                             
+              ? 'border-[#EA2C00] text-[#EA2C00]'                                                                                                                                                              
+              : 'border-transparent text-neutral-500 hover:text-neutral-800'                              
+          }`}                                                                                                                                                                                                  
+        >                                 
+          {tab === 'summary' ? 'Summary' : tab === 'assumptions' ? 'Assumptions' : 'Detail'}                                                                                                                   
+        </button>                                                                                                                                                                                              
+      ))}                                                                                                                                                                                                      
+    </div>                                                                                                                                                                                                     
+  </div>                                                                                                  
+                                                                                                                                                                                                               
+  ---
+  Step 3 — Wrap sections in tab conditionals                                                                                                                                                                   
+                                                                                                          
+  Wrap each existing section in {activeTab === '...' && (...)} as follows:
+                                              
+  Summary tab — these sections only:          
+  - Hero section (Version A/B comparison panel, snapshot buttons)
+  - Setting strip cards                                                                                                                                                                                        
+  - Value Growth Trajectory chart (the stacked area chart)                                                                                                                                                     
+  - The 4 metric cards (Value-to-Cost, Simple ROI, Payback, 3-Year Net)                                                                                                                                        
+  - Save Version A/B footer buttons                                                                                                                                                                            
+                                                                                                          
+  Assumptions tab — these sections only:                                                                                                                                                                       
+  - NEW value driver editing section (see Step 4 below) — place this FIRST                                
+  - Existing Pricing & Configuration section (contract term, pricing model, provider ramp, utilization, go-live month, implementation fee)                                                                     
+  - Existing Retention Value Model section (retention rate slider, replacement cost, phasing sliders)                                     
+                                                                                                                                                                                                               
+  Detail tab — these sections only:                                                                                                                                                                            
+  - 3-Year Financial Summary table        
+  - Sensitivity Analysis                                                                                                                                                                                       
+  - Cost of Waiting                                                                                                                                                                                            
+  - Methodology accordion                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Step 4 — Add value driver editing in Assumptions tab
+
+  At the top of the Assumptions tab (before Pricing & Configuration), add a new section:                                                                                                                       
+   
+  <div className="mb-8">                                                                                                                                                                                       
+    <h2 className="text-base font-semibold text-neutral-800 mb-1">Value Drivers</h2>                      
+    <p className="text-sm text-neutral-500 mb-4">
+      Annual value per driver, per care setting. Pre-filled from your assessment — edit to explore scenarios.
+    </p>                                                                                                                                                                                                       
+    <div className="space-y-4">                                                                                                                                                                                
+      {settings.map(s => (                                                                                                                                                                                     
+        <div key={s.id} className="border border-neutral-200 rounded-lg p-4 bg-white">                                                                                                                         
+          <div className="flex items-center gap-2 mb-3">                                                  
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />                                                                                                                  
+            <span className="text-sm font-semibold text-neutral-800">{s.label}</span>                     
+            <span className="text-xs text-neutral-400 ml-1">{s.providerCount} providers</span>                                                                                                                 
+          </div>                              
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">                                                                                                                                              
+            {s.drivers.map(driver => (                                                                                                                                                                         
+              <div key={driver.id}>                                                                                                                                                                            
+                <label className="block text-xs text-neutral-500 mb-1">{driver.name} ($/year)</label>                                                                                                          
+                <div className="flex items-center gap-1">                                                                                                                                                      
+                  <span className="text-xs text-neutral-400">$</span>                                                                                                                                          
+                  <input                  
+                    type="number"                                                                                                                                                                              
+                    value={driver.value}                                                                                                                                                                       
+                    onChange={(e) => {                                                                                                                                                                         
+                      const newVal = parseFloat(e.target.value) || 0;                                                                                                                                          
+                      const updatedDrivers = s.drivers.map(d =>                                           
+                        d.id === driver.id ? { ...d, value: newVal } : d
+                      );                                                                                                                                                                                       
+                      onUpdateSetting(s.id, { drivers: updatedDrivers });
+                    }}                                                                                                                                                                                         
+                    className="w-full border border-neutral-200 rounded px-2 py-1.5 text-sm text-neutral-800 focus:outline-none focus:border-neutral-400"                                                      
+                  />                          
+                </div>                                                                                                                                                                                         
+                <p className="text-[10px] text-neutral-400 mt-0.5 capitalize">{driver.onset} onset</p>    
+              </div>                                                                                                                                                                                           
+            ))}                           
+          </div>                                                                                                                                                                                               
+        </div>                                                                                                                                                                                                 
+      ))}
+    </div>                                                                                                                                                                                                     
+  </div>                                                                                                  
+
+  ---                                                                                                                                                                                                          
+  Step 5 — Move Save/Export buttons
+                                                                                                                                                                                                               
+  The "Save Version A / Save Version B / Export PDF" buttons currently appear at the bottom of the page. Move them to be always visible — place them at the bottom of the Summary tab AND keep them in the
+  footer on the Detail tab. They should not disappear when switching tabs.
+                                          
+  The simplest approach: keep them at the very bottom of the page outside all tab conditionals, always rendered.
+                                                                                                                                                                                                               
+  ---
+  Verification:                                                                                                                                                                                                
+  - Default view when opening Financial Proforma = Summary tab, showing only the comparison panel, chart, and 4 metrics
+  - Clicking "Assumptions" shows the value driver editing grid (one card per setting, one input per driver) followed by Pricing & Configuration                                                                
+  - Editing a driver value (e.g., changing Doc Quality from $167K to $250K) immediately updates the chart and metrics on the Summary tab       
+  - Clicking "Detail" shows the 3-year financial table, sensitivity analysis, and methodology                                                                                                                  
+  - No existing calculation logic is changed — only rendering is affected 

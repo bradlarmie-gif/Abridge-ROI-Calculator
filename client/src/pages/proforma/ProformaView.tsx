@@ -200,6 +200,7 @@ export default function ProformaView({
       onConfigChange(updater);
     }
   };
+  const [activeTab, setActiveTab] = useState<'summary' | 'assumptions' | 'detail'>('summary');
   const [showMethodology, setShowMethodology] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [versionA, setVersionA] = useState<ProformaScenario | null>(null);
@@ -411,7 +412,27 @@ export default function ProformaView({
       />
       <UnifiedHeaderSpacer />
 
+      <div className="sticky top-[56px] z-30 bg-white border-b border-neutral-200">
+        <div className="max-w-5xl mx-auto px-4 flex gap-0">
+          {(['summary', 'assumptions', 'detail'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-3 text-sm font-medium capitalize border-b-2 transition-colors ${
+                activeTab === tab
+                  ? 'border-[#EA2C00] text-[#EA2C00]'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-800'
+              }`}
+              data-testid={`tab-${tab}`}
+            >
+              {tab === 'summary' ? 'Summary' : tab === 'assumptions' ? 'Assumptions' : 'Detail'}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* HERO */}
+      {activeTab === 'summary' && (
       <div className="bg-[#1A1A1A] text-white py-8 sm:py-12 px-4">
         <div className="max-w-[1000px] mx-auto">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -572,9 +593,11 @@ export default function ProformaView({
           </div>
         </div>
       </div>
+      )}
 
       <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
+        {activeTab === 'summary' && (<>
         <AnimatePresence>
         {versionA && (
           <motion.div
@@ -1032,6 +1055,90 @@ export default function ProformaView({
             </p>
           )}
         </motion.div>
+
+        {/* METRIC PANELS - 2x2 on mobile, 4 cols on desktop */}
+        <motion.div
+          className="grid grid-cols-2 min-[820px]:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-vtc">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
+            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Value-to-Cost</p>
+            <p className="text-2xl sm:text-3xl font-bold text-[#E8350A]" data-testid="text-vtc-panel">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
+            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{hasInvestment ? "total return per $1 spent" : "No cost entered"}</p>
+          </div>
+          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-simple-roi">
+            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
+            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Simple ROI</p>
+            <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{Math.round(summary.simpleROI * 100)}%</p>
+            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">(net value / investment)</p>
+          </div>
+          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center relative group" data-testid="panel-payback">
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
+            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Payback</p>
+            <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{summary.paybackMonth ?? "—"}</p>
+            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{summary.paybackMonth ? "months" : ""}</p>
+            {summary.paybackMonth && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-neutral-800 text-white text-[10px] rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 leading-relaxed" data-testid="tooltip-payback-context">
+                Payback assumes value begins accruing from go-live. Actual time to value may vary based on training, workflow integration, and adoption speed.
+              </div>
+            )}
+          </div>
+          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-3yr-net">
+            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
+            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{contractTermLabel(config.contractTermMonths)} Net</p>
+            <p className={`text-2xl sm:text-3xl font-bold ${summary.termNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
+              {fmt(summary.termNet)}
+            </p>
+          </div>
+        </motion.div>
+        </>)}
+
+        {activeTab === 'assumptions' && (<>
+        {/* VALUE DRIVERS */}
+        <div className="mb-8" data-testid="panel-value-drivers">
+          <h2 className="text-base font-semibold text-neutral-800 mb-1">Value Drivers</h2>
+          <p className="text-sm text-neutral-500 mb-4">
+            Annual value per driver, per care setting. Pre-filled from your assessment — edit to explore scenarios.
+          </p>
+          <div className="space-y-4">
+            {settings.map(s => (
+              <div key={s.id} className="border border-neutral-200 rounded-lg p-4 bg-white">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+                  <span className="text-sm font-semibold text-neutral-800">{s.label}</span>
+                  <span className="text-xs text-neutral-400 ml-1">{s.providerCount} providers</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {s.drivers.map(driver => (
+                    <div key={driver.id}>
+                      <label className="block text-xs text-neutral-500 mb-1">{driver.name} ($/year)</label>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-neutral-400">$</span>
+                        <input
+                          type="number"
+                          value={driver.value}
+                          onChange={(e) => {
+                            const newVal = parseFloat(e.target.value) || 0;
+                            const updatedDrivers = s.drivers.map(d =>
+                              d.id === driver.id ? { ...d, value: newVal } : d
+                            );
+                            onUpdateSetting(s.id, { drivers: updatedDrivers });
+                          }}
+                          className="w-full border border-neutral-200 rounded px-2 py-1.5 text-sm text-neutral-800 focus:outline-none focus:border-neutral-400"
+                          data-testid={`input-driver-${s.careSetting}-${driver.id}`}
+                        />
+                      </div>
+                      <p className="text-[10px] text-neutral-400 mt-0.5 capitalize">{driver.onset} onset</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* PRICING & CONFIG */}
         <motion.div
@@ -1501,7 +1608,9 @@ export default function ProformaView({
             </div>
           </div>
         </motion.div>
+        </>)}
 
+        {activeTab === 'detail' && (<>
         {/* FINANCIAL SUMMARY */}
         <motion.div
           className="mb-8 sm:mb-10"
@@ -1637,45 +1746,6 @@ export default function ProformaView({
                 </tr>
               </tbody>
             </table>
-          </div>
-        </motion.div>
-
-        {/* METRIC PANELS - 2x2 on mobile, 4 cols on desktop */}
-        <motion.div
-          className="grid grid-cols-2 min-[820px]:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-vtc">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Value-to-Cost</p>
-            <p className="text-2xl sm:text-3xl font-bold text-[#E8350A]" data-testid="text-vtc-panel">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
-            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{hasInvestment ? "total return per $1 spent" : "No cost entered"}</p>
-          </div>
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-simple-roi">
-            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Simple ROI</p>
-            <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{Math.round(summary.simpleROI * 100)}%</p>
-            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">(net value / investment)</p>
-          </div>
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center relative group" data-testid="panel-payback">
-            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Payback</p>
-            <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{summary.paybackMonth ?? "—"}</p>
-            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{summary.paybackMonth ? "months" : ""}</p>
-            {summary.paybackMonth && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-neutral-800 text-white text-[10px] rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 leading-relaxed" data-testid="tooltip-payback-context">
-                Payback assumes value begins accruing from go-live. Actual time to value may vary based on training, workflow integration, and adoption speed.
-              </div>
-            )}
-          </div>
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-3yr-net">
-            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{contractTermLabel(config.contractTermMonths)} Net</p>
-            <p className={`text-2xl sm:text-3xl font-bold ${summary.termNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
-              {fmt(summary.termNet)}
-            </p>
           </div>
         </motion.div>
 
@@ -1866,6 +1936,7 @@ export default function ProformaView({
             </div>
           )}
         </motion.div>
+        </>)}
 
         {/* FOOTER ACTIONS */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-6 border-t border-neutral-200">

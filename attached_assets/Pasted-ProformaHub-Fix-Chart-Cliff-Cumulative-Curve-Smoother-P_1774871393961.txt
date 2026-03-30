@@ -1,0 +1,143 @@
+ProformaHub — Fix Chart Cliff: Cumulative Curve + Smoother Provider Ramp                                                                                                                                     
+                                                                          
+  Two changes to fix the near-vertical cliff in the Value Growth Trajectory chart. The cliff is caused by (1) a 3-month provider ramp that's too abrupt and (2) the chart showing per-quarter values which     
+  makes onset delays and scale-ups look like step functions. The fix extends the ramp window and switches to a cumulative chart that naturally shows smooth compounding growth.
+                                                                                                                                                                                                               
+  ---
+  File 1: client/src/pages/proforma/proformaTypes.ts                                                                                                                                                           
+                                                                                                          
+  Find:                                                                                                                                                                                                        
+  implementationRampMonths: 3,                                                                            
+                                                                                                                                                                                                               
+  Replace with:
+  implementationRampMonths: 6,                                                                                                                                                                                 
+                                                                                                          
+  This spreads each provider cohort transition (Y1→Y2, Y2→Y3) over 6 months instead of 3, splitting what was a single cliff quarter into a gradual ramp across two quarters. Also more defensible operationally
+   — it takes an organization 6 months to onboard a new provider cohort.
+                                          
+  ---                                                                                                                                                                                                          
+  File 2: client/src/pages/proforma/ProformaView.tsx                                                                                                                                                           
+                                                                                                                                                                                                               
+  Change 1 — Add cumulative per-driver fields to chartData                                                                                                                                                     
+                                                                                                          
+  Find the chartData useMemo (starts with let cumValue = 0). Replace it entirely with:
+                                          
+  const chartData = useMemo(() => {                                                                                                                                                                            
+    let cumValue = 0;                                                                                                                                                                                          
+    let cumInvestment = 0;                                                                                                                                                                                     
+    let cumDoc = 0;                                                                                                                                                                                            
+    let cumTime = 0;                                                                                      
+    let cumRetention = 0;                                                                                                                                                                                      
+    const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
+    cumInvestment += totalImplFees;                                                                                                                                                                            
+    return displayData.map(row => {                                                                       
+      cumValue += row.totalValue;                                                                                                                                                                              
+      cumInvestment += row.investment;                                                                                                                                                                         
+      cumDoc += row.docValue;                                                                                                                                                                                  
+      cumTime += row.timeValue;                                                                                                                                                                                
+      cumRetention += row.retentionValue;                                                                                                                                                                      
+      const entry: Record<string, number | string> = {                                                                                                                                                         
+        label: row.label,                     
+        period: row.period,                                                                                                                                                                                    
+        investment: row.investment,                                                                       
+        docValue: row.docValue,                                                                                                                                                                                
+        timeValue: row.timeValue,             
+        retentionValue: row.retentionValue,                                                                                                                                                                    
+        total: row.totalValue,                                                                            
+        cumulativeNet: row.cumulativeNet,                                                                                                                                                                      
+        cumulativeValue: cumValue,            
+        cumulativeInvestment: cumInvestment,                                                                                                                                                                   
+        cumDocValue: cumDoc,                                                                              
+        cumTimeValue: cumTime,                                                                                                                                                                                 
+        cumRetentionValue: cumRetention,      
+      };                                                                                                                                                                                                       
+      settings.forEach(s => {                                                                             
+        entry[s.id] = Math.round(row.bySettings[s.id]?.value || 0);                                                                                                                                            
+      });                                     
+      return entry;                                                                                                                                                                                            
+    });                                                                                                   
+  }, [displayData, settings]);                                                                                                                                                                                 
+   
+  Change 2 — Update lastChartPoint to use cumulative values                                                                                                                                                    
+                                                                                                          
+  Find:
+  const lastChartPoint = useMemo(() => {                                                                                                                                                                       
+    if (chartData.length === 0) return null;
+    const last = chartData[chartData.length - 1];                                                                                                                                                              
+    return {                                                                                              
+      label: last.label as string,        
+      totalValue: (last.docValue as number) + (last.timeValue as number) + (last.retentionValue as number),
+      investment: last.investment as number,                                                                                                                                                                   
+    };                                        
+  }, [chartData]);                                                                                                                                                                                             
+                                                                                                          
+  Replace with:                                                                                                                                                                                                
+  const lastChartPoint = useMemo(() => {
+    if (chartData.length === 0) return null;                                                                                                                                                                   
+    const last = chartData[chartData.length - 1];                                                         
+    return {                                     
+      label: last.label as string,                                                                                                                                                                             
+      totalValue: last.cumulativeValue as number,
+      investment: last.cumulativeInvestment as number,                                                                                                                                                         
+    };                                                                                                    
+  }, [chartData]);                        
+                  
+  Change 3 — Switch <Area> dataKeys to cumulative                                                                                                                                                              
+                                              
+  Find the three <Area> components with stackId="value" and change their dataKey values:                                                                                                                       
+                                                                                                          
+  - dataKey="retentionValue" → dataKey="cumRetentionValue"                                                                                                                                                     
+  - dataKey="timeValue" → dataKey="cumTimeValue"                                                                                                                                                               
+  - dataKey="docValue" → dataKey="cumDocValue"                                                                                                                                                                 
+                                                                                                                                                                                                               
+  Change 4 — Switch investment <Line> to cumulative                                                       
+                                                                                                                                                                                                               
+  Find:                                                                                                   
+  <Line                                                                                                                                                                                                        
+    type="monotone"
+    dataKey="investment"                                                                                                                                                                                       
+                                                                                                          
+  Replace dataKey="investment" with dataKey="cumulativeInvestment".
+                                              
+  Change 5 — Update CustomTooltip dataKey lookups
+
+  Find in the CustomTooltip function:                                                                                                                                                                          
+  const docItem = payload.find((p: any) => p.dataKey === "docValue");
+  const timeItem = payload.find((p: any) => p.dataKey === "timeValue");                                                                                                                                        
+  const retentionItem = payload.find((p: any) => p.dataKey === "retentionValue");                                                                                                                              
+  const investmentItem = payload.find((p: any) => p.dataKey === "investment");
+                                                                                                                                                                                                               
+  Replace with:                                                                                           
+  const docItem = payload.find((p: any) => p.dataKey === "cumDocValue");
+  const timeItem = payload.find((p: any) => p.dataKey === "cumTimeValue");                                                                                                                                     
+  const retentionItem = payload.find((p: any) => p.dataKey === "cumRetentionValue");
+  const investmentItem = payload.find((p: any) => p.dataKey === "cumulativeInvestment");                                                                                                                       
+                                                                                                          
+  Also in the tooltip, find:                                                                                                                                                                                   
+  <span className="font-bold text-neutral-900">Total</span>
+  Replace with:                                                                                                                                                                                                
+  <span className="font-bold text-neutral-900">Cumulative Value</span>                                    
+                                                                                                                                                                                                               
+  And find:                                                                                               
+  <span className="text-neutral-500">Investment</span>                                                                                                                                                         
+  Replace with:                                                                                           
+  <span className="text-neutral-500">Total Invested</span>
+                                                                                                                                                                                                               
+  Change 6 — Update chart subtitle        
+                                                                                                                                                                                                               
+  Find:                                                                                                                                                                                                        
+  ? "Quarterly value by driver type"
+  : `Quarterly value by driver type — Year 1 reflects partial retention and capacity effects. Years 2${...} reflect maturing adoption across all value drivers.`                                               
+                                                                                                          
+  Replace with:                               
+  ? "Cumulative value realized by driver type"
+  : `Cumulative value realized by driver — onset delays and adoption ramp visible in the early curve. Investment line shows total spend to date.`                                                              
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification after applying:                                                                                                                                                                                 
+  - The chart should show a smooth S-curve starting at $0 and rising monotonically to the 3-year total — no vertical cliffs anywhere
+  - Hovering a data point shows "Cumulative Value" and "Total Invested" in the tooltip with increasing values each quarter                                                                                     
+  - The investment dashed line rises gradually from $0 to the total investment, never stepping                            
+  - The payback vertical line still appears at the correct month                                                                                                                                               
+  - The end-of-chart labels on the right show the 3-year cumulative total (e.g., $9.4M) and total invested (e.g., $1.2M)
+  - The 3-year financial summary table and all metric cards (Value-to-Cost, Simple ROI, Payback) are unchanged — only the chart rendering is affected   
