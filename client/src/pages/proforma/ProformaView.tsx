@@ -177,6 +177,46 @@ function getScenarioDiffs(a: ProformaScenario, b: ProformaScenario): DiffItem[] 
   return diffs;
 }
 
+function DriverInput({ driver, careSetting, hint, onChangeValue }: {
+  driver: { id: string; name: string; value: number; onset: string };
+  careSetting: string;
+  hint: string;
+  onChangeValue: (v: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [rawText, setRawText] = useState('');
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <label className="text-xs font-medium text-neutral-700">{driver.name}</label>
+        <span className="text-[10px] text-neutral-400 capitalize">{driver.onset} onset</span>
+      </div>
+      <div className="flex items-center gap-1 mb-1">
+        <span className="text-xs text-neutral-400">$</span>
+        <input
+          type="text"
+          value={editing ? rawText : (driver.value > 0 ? Math.round(driver.value).toLocaleString() : '')}
+          onChange={(e) => {
+            const cleaned = e.target.value.replace(/[^0-9]/g, '');
+            setRawText(cleaned);
+            onChangeValue(parseFloat(cleaned) || 0);
+          }}
+          onFocus={() => {
+            setEditing(true);
+            setRawText(driver.value > 0 ? String(Math.round(driver.value)) : '');
+          }}
+          onBlur={() => { setEditing(false); }}
+          className="w-full border border-neutral-200 rounded px-2 py-1.5 text-sm text-neutral-800 focus:outline-none focus:border-neutral-400"
+          data-testid={`input-driver-${careSetting}-${driver.id}`}
+        />
+        <span className="text-[10px] text-neutral-400 whitespace-nowrap">/yr</span>
+      </div>
+      <p className="text-[10px] text-neutral-400 leading-relaxed">{hint}</p>
+    </div>
+  );
+}
+
 const CHART_COLORS = {
   doc: "#1E3A5F",
   time: "#EA2C00",
@@ -359,6 +399,7 @@ export default function ProformaView({
       const label = month % 3 === 0 ? `Q${qInYear} '${yearStr}` : '';
       return {
         month,
+        period: month,
         label: label || `_${month}`,
         displayLabel: label,
         cumDocValue: cumDoc,
@@ -1170,32 +1211,18 @@ export default function ProformaView({
                     const hint = contextHints[driver.id] || `≈ $${perProvider}/provider/year`;
 
                     return (
-                      <div key={driver.id}>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-xs font-medium text-neutral-700">{driver.name}</label>
-                          <span className="text-[10px] text-neutral-400 capitalize">{driver.onset} onset</span>
-                        </div>
-                        <div className="flex items-center gap-1 mb-1">
-                          <span className="text-xs text-neutral-400">$</span>
-                          <input
-                            type="text"
-                            value={driver.value > 0 ? Math.round(driver.value).toLocaleString() : ''}
-                            onChange={(e) => {
-                              const newVal = parseFloat(e.target.value.replace(/,/g, '')) || 0;
-                              const updatedDrivers = s.drivers.map(d =>
-                                d.id === driver.id ? { ...d, value: newVal } : d
-                              );
-                              onUpdateSetting(s.id, { drivers: updatedDrivers });
-                            }}
-                            onFocus={(e) => { e.target.value = driver.value > 0 ? String(Math.round(driver.value)) : ''; }}
-                            onBlur={(e) => { e.target.value = driver.value > 0 ? Math.round(driver.value).toLocaleString() : ''; }}
-                            className="w-full border border-neutral-200 rounded px-2 py-1.5 text-sm text-neutral-800 focus:outline-none focus:border-neutral-400"
-                            data-testid={`input-driver-${s.careSetting}-${driver.id}`}
-                          />
-                          <span className="text-[10px] text-neutral-400 whitespace-nowrap">/yr</span>
-                        </div>
-                        <p className="text-[10px] text-neutral-400 leading-relaxed">{hint}</p>
-                      </div>
+                      <DriverInput
+                        key={driver.id}
+                        driver={driver}
+                        careSetting={s.careSetting}
+                        hint={hint}
+                        onChangeValue={(newVal) => {
+                          const updatedDrivers = s.drivers.map(d =>
+                            d.id === driver.id ? { ...d, value: newVal } : d
+                          );
+                          onUpdateSetting(s.id, { drivers: updatedDrivers });
+                        }}
+                      />
                     );
                   })}
                 </div>
@@ -2048,13 +2075,15 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
   const investmentItem = payload.find((p: any) => p.dataKey === "cumulativeInvestment");
 
   const total = (docItem?.value || 0) + (timeItem?.value || 0) + (retentionItem?.value || 0);
-  const periodIdx = payload[0]?.payload?.period ? payload[0].payload.period - 1 : 0;
-  const providerCount = totalProvidersByPeriod?.[periodIdx] || 0;
+  const monthNum = payload[0]?.payload?.period || 1;
+  const quarterIdx = Math.ceil(monthNum / 3) - 1;
+  const providerCount = totalProvidersByPeriod?.[quarterIdx] || 0;
+  const displayMonth = `Month ${monthNum}`;
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-neutral-200 p-3 sm:p-4 text-xs sm:text-sm min-w-[200px] sm:min-w-[240px]">
       <div className="flex items-center justify-between mb-2 sm:mb-3">
-        <p className="font-bold text-neutral-900">{label}</p>
+        <p className="font-bold text-neutral-900">{payload[0]?.payload?.displayLabel || displayMonth}</p>
         {providerCount > 0 && (
           <span className="text-[12px] sm:text-xs text-neutral-400 flex items-center gap-1">
             <Users className="w-3 h-3" /> {fmtNum(providerCount)}

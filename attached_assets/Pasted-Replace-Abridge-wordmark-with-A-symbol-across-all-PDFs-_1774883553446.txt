@@ -1,0 +1,99 @@
+Replace Abridge wordmark with A symbol across all PDFs
+
+  The file client/src/assets/abridge-logo-symbol.png has been uploaded. Replace the horizontal wordmark logo with this symbol in every PDF generator. The current wordmark is 90×18px (wide/flat). The A symbol
+   is square, so adjust dimensions to be square at the same height — the logo doesn't get bigger or smaller on the page, it just changes shape.
+
+  ---
+  In each of these 7 files, make two changes — update the import line, and update the logo dimensions:
+
+  client/src/lib/outpatient-pdf-generator.tsx
+
+  Change the import:
+  // FROM:
+  import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+  // TO:
+  import abridgeLogoPath from "@assets/abridge-logo-symbol.png";
+
+  In the styles object, find coverLogo and headerLogo and update dimensions:
+  // FROM:
+  coverLogo: { width: 90, height: 18, marginBottom: 80 },
+  // TO:
+  coverLogo: { width: 30, height: 30, marginBottom: 68 },
+
+  // FROM (headerLogo — find its current width/height):
+  headerLogo: { width: 90, height: 18, ... }
+  // TO:
+  headerLogo: { width: 18, height: 18, ... }
+  (Keep all other style properties — marginBottom, marginRight, etc. — exactly as they are. Only change width and height.)
+
+  ---
+  client/src/lib/inpatient-pdf-generator.tsx
+
+  Same import change:
+  import abridgeLogoPath from "@assets/abridge-logo-symbol.png";
+  Apply the same dimension fix: coverLogo → 30×30, headerLogo → 18×18.
+
+  ---
+  client/src/lib/ed-pdf-generator.tsx
+
+  Same import change:
+  import abridgeLogoPath from "@assets/abridge-logo-symbol.png";
+  Apply same dimension fix to coverLogo and headerLogo styles.
+
+  ---
+  client/src/lib/nursing-pdf-generator.tsx
+
+  Same import change:
+  import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_(1)_1770226183506.png";
+  // TO:
+  import abridgeLogoPath from "@assets/abridge-logo-symbol.png";
+  Find the logo style (used in the page header) and update to 18×18.
+
+  ---
+  client/src/lib/methodology-pdf-generator.tsx
+
+  Same import change:
+  import abridgeLogoPath from "@assets/abridge-logo-symbol.png";
+  Find the logo style and update to 18×18.
+
+  ---
+  client/src/lib/expand-pdf-generator.tsx
+
+  Same import change:
+  import abridgeLogoPath from "@assets/abridge-logo-symbol.png";
+  Find these inline style usages and update both dimensions to be square at the same height:
+  // FROM:
+  style={{ width: 85, height: 17, marginBottom: 24 }}
+  // TO:
+  style={{ width: 17, height: 17, marginBottom: 24 }}
+
+  // FROM:
+  style={{ width: 70, height: 14, marginBottom: 12 }}
+  // TO:
+  style={{ width: 14, height: 14, marginBottom: 12 }}
+  (There are 3 occurrences of the 70×14 variant — update all of them.)
+
+  ---
+  client/src/lib/pdf-theme.tsx
+
+  // FROM:
+  import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_(1)_1770226183506.png";
+  // TO:
+  import abridgeLogoPath from "@assets/abridge-logo-symbol.png";
+  Find the logo style in sharedStyles and update to 18×18.
+
+  ---
+  client/src/lib/data-request-pdf-generator.tsx
+
+  // FROM:
+  import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
+  // TO:
+  import abridgeLogo from "@assets/abridge-logo-symbol.png";
+  Find the logo style and update to 18×18.
+
+  ---
+  Verification:
+  - Generate any PDF (outpatient, ED, inpatient, nursing, methodology, proforma)
+  - Cover page should show the A symbol at approximately 30×30 in the top-left corner
+  - Every page header should show a small A symbol at 18×18
+  - No text, layout, colors, or other content should change — only the logo image
