@@ -10,6 +10,23 @@ import {
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_(1)_1770226183506.png";
+import ManropeRegular from "@/assets/fonts/manrope-regular.ttf";
+import ManropeBold from "@/assets/fonts/manrope-bold.ttf";
+import AbridgeFont from "@/assets/fonts/abridge.otf";
+
+Font.register({
+  family: "Manrope",
+  fonts: [
+    { src: ManropeRegular, fontWeight: 400 },
+    { src: ManropeBold, fontWeight: 700 },
+  ],
+});
+
+Font.register({
+  family: "Abridge",
+  src: AbridgeFont,
+  fontWeight: 400,
+});
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -135,7 +152,7 @@ const styles = StyleSheet.create({
   page: {
     padding: 38,
     paddingBottom: 48,
-    fontFamily: "Helvetica",
+    fontFamily: "Manrope",
     fontSize: 9,
     lineHeight: 1.4,
     color: brand.darkGray,
@@ -162,27 +179,29 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 8,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Manrope", fontWeight: 700,
     color: brand.mediumGray,
     letterSpacing: 0.5,
   },
   
   mainTitle: {
     fontSize: 18,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Abridge",
+    fontWeight: 400,
+    letterSpacing: 0.5,
     color: brand.black,
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 10,
-    fontFamily: "Helvetica",
+    fontFamily: "Manrope",
     color: brand.mediumGray,
     marginBottom: 16,
   },
   
   sectionHeader: {
     fontSize: 11,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Manrope", fontWeight: 700,
     color: brand.black,
     letterSpacing: 0.3,
     marginTop: 12,
@@ -228,13 +247,13 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 9,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Manrope", fontWeight: 700,
     color: brand.black,
     marginBottom: 4,
   },
   cardLabel: {
     fontSize: 8,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Manrope", fontWeight: 700,
     color: brand.black,
     marginTop: 5,
     marginBottom: 2,
@@ -257,12 +276,12 @@ const styles = StyleSheet.create({
   },
   calloutLabel: {
     fontSize: 8,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Manrope", fontWeight: 700,
     color: brand.abridgeRed,
   },
   calloutText: {
     fontSize: 8,
-    fontFamily: "Helvetica-Oblique",
+    fontFamily: "Manrope", fontStyle: "italic",
     lineHeight: 1.4,
     color: brand.darkGray,
   },
@@ -280,7 +299,7 @@ const styles = StyleSheet.create({
   },
   tableHeaderCell: {
     fontSize: 8,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Manrope", fontWeight: 700,
     color: brand.black,
     paddingVertical: 5,
     paddingHorizontal: 6,
@@ -313,7 +332,7 @@ const styles = StyleSheet.create({
   },
   limitsHeader: {
     fontSize: 8,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Manrope", fontWeight: 700,
     color: brand.black,
     marginBottom: 2,
   },
@@ -367,7 +386,7 @@ function Badge({ type }: { type: "direct" | "indirect" | "potential" | "qualitat
   return (
     <Text style={{
       fontSize: 6,
-      fontFamily: "Helvetica-Bold",
+      fontFamily: "Manrope", fontWeight: 700,
       letterSpacing: 0.2,
       marginBottom: 5,
       paddingVertical: 2,
@@ -446,7 +465,7 @@ function Page1() {
             Overtime, retention, and agency spend. These are real dollars that show up in the budget. When nurses spend less time documenting, they finish shifts on time, burn out less, and the organization needs fewer expensive travel nurses.
           </Text>
           <View style={{ marginTop: 6, paddingTop: 5, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
-            <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Direct, measurable value</Text>
+            <Text style={[styles.cardText, { fontFamily: "Manrope", fontWeight: 700 }]}>Direct, measurable value</Text>
           </View>
         </View>
         <View style={[styles.card, styles.column]}>
@@ -455,7 +474,7 @@ function Page1() {
             Falls, pressure injuries, patient satisfaction. These outcomes are influenced by bedside time. More time caring, less time charting, better outcomes. But the causal chain is indirect--documentation supports care, it doesn't replace it.
           </Text>
           <View style={{ marginTop: 6, paddingTop: 5, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
-            <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Potential value (shown separately)</Text>
+            <Text style={[styles.cardText, { fontFamily: "Manrope", fontWeight: 700 }]}>Potential value (shown separately)</Text>
           </View>
         </View>
       </View>
@@ -583,7 +602,7 @@ function Page2() {
           <Text style={styles.cardText}>
             Current falls x Doc-preventable rate (5%) x Cost per fall ($3-30K)
           </Text>
-          <Text style={[styles.cardText, { marginTop: 2, fontFamily: "Helvetica-Oblique", fontSize: 7 }]}>
+          <Text style={[styles.cardText, { marginTop: 2, fontFamily: "Manrope", fontStyle: "italic", fontSize: 7 }]}>
             Note: CMS does NOT reimburse for hospital-acquired fall injuries.
           </Text>
         </View>
@@ -598,7 +617,7 @@ function Page2() {
           <Text style={styles.cardText}>
             HCAHPS is influenced by dozens of factors. Track as directional indicator.
           </Text>
-          <Text style={[styles.cardText, { marginTop: 2, fontFamily: "Helvetica-Oblique", fontSize: 7 }]}>
+          <Text style={[styles.cardText, { marginTop: 2, fontFamily: "Manrope", fontStyle: "italic", fontSize: 7 }]}>
             Top quartile HCAHPS = ~2% higher reimbursement via VBP.
           </Text>
         </View>
@@ -724,7 +743,7 @@ function Page3() {
           <Text style={styles.cardText}>- Survey nurses on doc time/shift; Review EHR session data</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Repeat measurements; Compare with utilization data</Text>
-          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Manrope", fontWeight: 700 }]}>Timeline: 2-4 weeks</Text>
         </View>
         <View style={[styles.card, styles.column, { padding: 7 }]}>
           <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
@@ -732,7 +751,7 @@ function Page3() {
           <Text style={styles.cardText}>- Baseline OT hours per unit/month; Note seasonal patterns</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track OT Abridge vs. control; Control for census/acuity</Text>
-          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Manrope", fontWeight: 700 }]}>Timeline: 2-3 months</Text>
         </View>
       </View>
       
@@ -743,7 +762,7 @@ function Page3() {
           <Text style={styles.cardText}>- Baseline turnover by unit; Exit interview data on burnout</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track turnover Abridge vs control; Survey on satisfaction</Text>
-          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Manrope", fontWeight: 700 }]}>Timeline: 12-18 months</Text>
         </View>
         <View style={[styles.card, styles.column, { padding: 7 }]}>
           <Text style={styles.cardTitle}>CARE QUALITY</Text>
@@ -751,7 +770,7 @@ function Page3() {
           <Text style={styles.cardText}>- Baseline HAPI/falls rates by unit; Baseline HCAHPS scores</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track rates Abridge vs control; Be cautious on attribution</Text>
-          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Oblique" }]}>Treat quality as bonus, not promise</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Manrope", fontStyle: "italic" }]}>Treat quality as bonus, not promise</Text>
         </View>
       </View>
       

@@ -52,4 +52,4 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 ## External Dependencies
 
 -   **UI/Charting Libraries**: Radix UI, Recharts, Lucide React, react-pdf.
--   **Fonts**: Google Fonts (Inter, JetBrains Mono).
+-   **Fonts**: Google Fonts (Inter, JetBrains Mono). PDF generators use custom registered fonts: Manrope (body text, regular + bold), Abridge (display/heading font for titles fontSize 14+).

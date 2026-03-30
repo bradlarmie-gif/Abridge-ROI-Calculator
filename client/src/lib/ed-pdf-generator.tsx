@@ -6,9 +6,29 @@ import {
   StyleSheet,
   Image,
   pdf,
+  Font,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import ManropeRegular from "@/assets/fonts/manrope-regular.ttf";
+import ManropeBold from "@/assets/fonts/manrope-bold.ttf";
+import AbridgeFont from "@/assets/fonts/abridge.otf";
+
+Font.register({
+  family: "Manrope",
+  fonts: [
+    { src: ManropeRegular, fontWeight: 400 },
+    { src: ManropeBold, fontWeight: 700 },
+  ],
+});
+
+Font.register({
+  family: "Abridge",
+  src: AbridgeFont,
+  fontWeight: 400,
+});
+
+Font.registerHyphenationCallback((word) => [word]);
 
 // ============================================================================
 // TYPES
@@ -101,7 +121,7 @@ const brand = {
 const styles = StyleSheet.create({
   page: {
     padding: 0,
-    fontFamily: "Helvetica",
+    fontFamily: "Manrope",
     fontSize: 10,
     color: brand.black,
     backgroundColor: brand.white,
@@ -141,7 +161,9 @@ const styles = StyleSheet.create({
   },
   coverTitle: {
     fontSize: 52,
-    fontWeight: "bold",
+    fontFamily: "Abridge",
+    fontWeight: 400,
+    letterSpacing: 0.5,
     color: brand.white,
     marginBottom: 20,
     lineHeight: 1.0,
@@ -201,7 +223,9 @@ const styles = StyleSheet.create({
   },
   stakesHeroTitle: {
     fontSize: 32,
-    fontWeight: "bold",
+    fontFamily: "Abridge",
+    fontWeight: 400,
+    letterSpacing: 0.5,
     color: brand.white,
     lineHeight: 1.2,
     marginBottom: 32,
@@ -340,7 +364,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 32,
-    fontWeight: "bold",
+    fontFamily: "Abridge",
+    fontWeight: 400,
+    letterSpacing: 0.5,
     color: brand.black,
     marginBottom: 12,
     lineHeight: 1.1,
@@ -450,7 +476,9 @@ const styles = StyleSheet.create({
   },
   driverTitle: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontFamily: "Abridge",
+    fontWeight: 400,
+    letterSpacing: 0.5,
     color: brand.white,
     marginBottom: 12,
   },

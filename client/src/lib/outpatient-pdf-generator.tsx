@@ -10,6 +10,23 @@ import {
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import ManropeRegular from "@/assets/fonts/manrope-regular.ttf";
+import ManropeBold from "@/assets/fonts/manrope-bold.ttf";
+import AbridgeFont from "@/assets/fonts/abridge.otf";
+
+Font.register({
+  family: "Manrope",
+  fonts: [
+    { src: ManropeRegular, fontWeight: 400 },
+    { src: ManropeBold, fontWeight: 700 },
+  ],
+});
+
+Font.register({
+  family: "Abridge",
+  src: AbridgeFont,
+  fontWeight: 400,
+});
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -118,7 +135,7 @@ const brand = {
 
 const styles = StyleSheet.create({
   page: {
-    fontFamily: "Helvetica",
+    fontFamily: "Manrope",
     fontSize: 10,
     color: brand.textPrimary,
     backgroundColor: brand.white,
@@ -154,7 +171,9 @@ const styles = StyleSheet.create({
   },
   coverTitle: {
     fontSize: 36,
-    fontWeight: 700,
+    fontFamily: "Abridge",
+    fontWeight: 400,
+    letterSpacing: 0.5,
     color: brand.white,
     lineHeight: 1.1,
     marginBottom: 16,
@@ -240,7 +259,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 24,
-    fontWeight: 700,
+    fontFamily: "Abridge",
+    fontWeight: 400,
+    letterSpacing: 0.5,
     color: brand.textPrimary,
     lineHeight: 1.2,
     marginBottom: 12,
@@ -377,7 +398,9 @@ const styles = StyleSheet.create({
   },
   driverTitle: {
     fontSize: 22,
-    fontWeight: 700,
+    fontFamily: "Abridge",
+    fontWeight: 400,
+    letterSpacing: 0.5,
     color: brand.textPrimary,
     marginBottom: 4,
   },
@@ -652,7 +675,9 @@ const styles = StyleSheet.create({
   },
   actionTitle: {
     fontSize: 14,
-    fontWeight: 700,
+    fontFamily: "Abridge",
+    fontWeight: 400,
+    letterSpacing: 0.5,
     color: brand.textPrimary,
     marginBottom: 8,
   },
