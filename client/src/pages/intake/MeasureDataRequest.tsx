@@ -77,9 +77,9 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
         data-testid={`metric-row-${metric.id}`}
       >
         <div className="w-4 h-4 rounded-full border-2 border-[#CCCCCC] bg-white flex-shrink-0 transition-colors group-hover:border-[#EA2C00]/50" />
-        <div className="flex-1 min-w-0 flex items-baseline gap-2">
-          <span className="text-sm text-[#1A1A1A] font-medium">{metric.label}</span>
-          <span className="text-xs text-[#AAAAAA]">{metric.unitLabel}</span>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm text-[#1A1A1A] font-medium leading-snug">{metric.label}</span>
+          <span className="text-xs text-[#AAAAAA] ml-1.5 whitespace-nowrap">{metric.unitLabel}</span>
         </div>
       </div>
     );
@@ -93,21 +93,23 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
       style={{ borderLeft: '3px solid #EA2C00', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
       data-testid={`metric-row-${metric.id}`}
     >
-      <div className="flex items-center gap-3 px-4 pt-3 pb-2">
+      <div className="flex items-start gap-3 px-3 sm:px-4 pt-3 pb-2">
         <button
           onClick={onToggle}
-          className="w-4 h-4 rounded-full bg-[#EA2C00] flex-shrink-0 flex items-center justify-center transition-all hover:bg-[#c92500]"
+          className="w-4 h-4 mt-0.5 rounded-full bg-[#EA2C00] flex-shrink-0 flex items-center justify-center transition-all hover:bg-[#c92500]"
           data-testid={`toggle-metric-${metric.id}`}
         >
           <Check className="w-2.5 h-2.5 text-white" />
         </button>
-        <span className="text-sm font-semibold text-[#1A1A1A] flex-1">{metric.label}</span>
-        <span className="text-xs text-[#AAAAAA]">{metric.unitLabel}</span>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-semibold text-[#1A1A1A] leading-snug">{metric.label}</span>
+          <span className="text-xs text-[#AAAAAA] ml-1.5">{metric.unitLabel}</span>
+        </div>
       </div>
 
-      <div className="px-4 pb-3">
-        <div className="flex items-end gap-3">
-          <div className="flex-1">
+      <div className="px-3 sm:px-4 pb-3">
+        <div className="flex items-end gap-2 sm:gap-3">
+          <div className="flex-1 min-w-0">
             <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">Before</label>
             <input
               type="number" min={0} step="any"
@@ -130,7 +132,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
             )}
           </div>
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">With Abridge</label>
             <input
               type="number" min={0} step="any"
@@ -358,7 +360,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   const hasAnyData = hasAnyMetricData;
 
   return (
-    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4">
       <div className="w-full max-w-2xl mb-8">
         <div className="flex items-center justify-center mb-6">
           <img src={abridgeLogo} alt="Abridge" className="h-6" />
@@ -402,7 +404,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
       </div>
 
       <div className="w-full max-w-2xl space-y-6">
-        <div className="bg-white rounded-xl border border-[#E0D9D0] p-6 shadow-md">
+        <div className="bg-white rounded-xl border border-[#E0D9D0] p-4 sm:p-6 shadow-md">
           <h2 className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">Your Organization</h2>
           <div className="space-y-4">
             <div>
@@ -450,7 +452,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
             </div>
             <div>
               <p className="text-[11px] font-medium text-[#777777] mb-2 uppercase tracking-wider">Provider Adoption</p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Total in Org</label>
                   <input
@@ -565,7 +567,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 </div>
               )}
               {Object.entries(byDomain).map(([domain, metrics]) => (
-                <div key={`${s}-${domain}`} className="bg-white rounded-xl border border-[#E0D9D0] p-6 shadow-md mb-6">
+                <div key={`${s}-${domain}`} className="bg-white rounded-xl border border-[#E0D9D0] p-4 sm:p-6 shadow-md mb-6">
                   <div className="flex items-start gap-3 mb-5">
                     <div className="w-1 rounded-full bg-[#EA2C00] flex-shrink-0 mt-1" style={{ height: '2.5rem' }} />
                     <div>
@@ -597,7 +599,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
             </div>
           );
         })}
-        <div className="bg-white rounded-xl border border-[#E0D9D0] p-6 shadow-md">
+        <div className="bg-white rounded-xl border border-[#E0D9D0] p-4 sm:p-6 shadow-md">
           {!hasAnyData ? (
             <div className="text-center">
               <p className="text-sm text-[#BBBBBB]">Select at least one metric and enter a value to export your summary.</p>
