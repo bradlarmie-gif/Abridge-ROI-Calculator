@@ -777,81 +777,37 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
         <div className="flex-1 min-w-0">
 
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
+            className="mb-6"
           >
-            <div className="mb-10" data-testid="card-benchmark">
-              <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[2px] mb-1">
-                Where You Are — And What's Ahead
-              </p>
-              <p className="text-sm text-[#888888] leading-relaxed mb-5">
-                What becomes visible when each domain reaches full capture.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {DOMAIN_ORDER.map((domain) => {
-                  const d = domainData[domain];
-                  const level = (d?.activationLevel || 1) as ActivationLevel;
-                  const contrast = BENCHMARK_CONTRAST[domain as Domain][level];
-                  const isAtCeiling = level === 4;
-                  return (
-                    <div key={domain} className="border border-[#E5E7EB] rounded-lg p-5 bg-white flex flex-col" data-testid={`benchmark-${domain}`}>
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">
-                          {DOMAIN_LABELS[domain as Domain]}
-                        </p>
-                        <span className="text-[10px] text-[#9CA3AF] border border-[#E5E7EB] rounded-full px-2 py-0.5">
-                          Level {level} of 4
-                        </span>
-                      </div>
-                      {isAtCeiling ? (
-                        <div className="flex-1 mt-3">
-                          <p className="text-sm text-[#444444] leading-relaxed italic">
-                            {contrast.benchmarkPicture}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="flex-1 mt-3">
-                          <p className="text-[9px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1.5">
-                            At full capture
-                          </p>
-                          <p className="text-sm text-black font-medium leading-relaxed">
-                            {contrast.benchmarkPicture}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="h-px bg-[#E5E7EB] mb-10" />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.42, duration: 0.5 }}
-          >
-            <div className="mb-10" data-testid="card-data-shows">
-              <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[2px] mb-5">
-                What the Data Shows
-              </p>
-              <div className="space-y-3">
-                {dataShowsCards.map((card, i) => (
-                  <div key={i} className={`bg-[#F9F8F6] rounded-lg p-5 border-l-2 ${i < 2 ? 'border-[#EA2C00]' : 'border-[#1A1A1A]'}`}>
-                    <p className={`text-[10px] font-semibold uppercase tracking-[1.5px] mb-2 ${i < 2 ? 'text-[#EA2C00]' : 'text-black'}`}>
-                      {card.title}
+            <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest mb-3">
+              Domain Status
+            </p>
+            <div className="divide-y divide-[#E5E7EB] border border-[#E5E7EB] rounded-lg overflow-hidden bg-white">
+              {DOMAIN_ORDER.map((domain) => {
+                const d = domainData[domain];
+                const level = (d?.activationLevel || 1) as ActivationLevel;
+                const has = d?.hasValue;
+                const metric = d?.headlineMetric;
+                return (
+                  <div key={domain} className="flex items-center justify-between px-4 py-3 gap-4">
+                    <p className="text-xs font-semibold text-[#EA2C00] w-24 shrink-0">
+                      {DOMAIN_LABELS[domain]}
                     </p>
-                    <p className="text-sm text-[#444444] leading-relaxed">{card.body}</p>
+                    <p className="text-[10px] text-[#9CA3AF] border border-[#E5E7EB] rounded-full px-2 py-0.5 shrink-0">
+                      Level {level} of 4
+                    </p>
+                    <p className="text-sm text-right text-[#1A1A1A] font-medium flex-1">
+                      {has && metric ? metric : (
+                        <span className="text-[#9CA3AF] font-normal">Not yet measured</span>
+                      )}
+                    </p>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-
-            <div className="h-6" />
           </motion.div>
 
           <motion.div
@@ -859,42 +815,31 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.5 }}
           >
-            <div className="bg-[#1A1A1A] rounded-lg p-5 sm:p-8 md:p-10" data-testid="card-invitation">
-              <p className="text-xl sm:text-2xl font-bold text-white leading-snug mb-5" data-testid="text-invitation-opening">
-                {invitationCopy.opening}
+            <div className="bg-[#1A1A1A] rounded-lg p-6 sm:p-8">
+              <p className="text-xl sm:text-2xl font-bold text-white mb-3">
+                Your gap is real. Here's how to close it.
               </p>
-              <p className="text-sm text-white/60 leading-relaxed mb-4" data-testid="text-invitation-body">
-                {invitationCopy.body}
+              <p className="text-sm text-white/50 mb-6">
+                A 45-minute working session turns this assessment into a prioritized measurement plan — built around your domains, your scale, and what peer organizations have done in the first 90 days.
               </p>
-              {invitationCopy.tenureAppend && (
-                <p className="text-sm text-white/40 italic leading-relaxed mb-6" data-testid="text-invitation-tenure">
-                  {invitationCopy.tenureAppend}
-                </p>
-              )}
-              {!invitationCopy.tenureAppend && <div className="mb-6" />}
-
               <div className="flex flex-col items-start gap-3">
                 <Button
                   onClick={() => onNavigateToExplore?.(providers, annualEncounters)}
-                  className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-8 py-6 h-auto text-base font-medium gap-2"
+                  className="bg-[#EA2C00] text-white rounded-full px-8 py-6 h-auto text-base font-medium gap-2"
                   data-testid="button-explore-value"
                 >
                   Request a Working Session
                   <ArrowRight size={16} />
                 </Button>
-                <p className="text-xs text-white/30 leading-relaxed max-w-[440px]">
-                  A working session is not a product walkthrough. It's a 45-minute conversation built around your specific profile — what the domains that haven't been measured are worth at your scale, and what organizations your size have done to move in the first 90 days.
-                </p>
                 <button
                   onClick={openExportModal}
-                  className="flex items-center gap-2 text-sm font-medium text-white/60 border border-white/20 rounded-full px-5 py-2.5 hover:text-white hover:border-white/40 transition-colors bg-transparent cursor-pointer"
+                  className="flex items-center gap-2 text-sm font-medium text-white/50 border border-white/20 rounded-full px-5 py-2.5 hover:text-white hover:border-white/40 transition-colors bg-transparent cursor-pointer"
                   data-testid="button-export"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   Download Your Assessment
                 </button>
               </div>
-
             </div>
           </motion.div>
 
