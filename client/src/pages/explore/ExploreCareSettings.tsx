@@ -105,7 +105,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
               setDataRequestUrl(url);
               setDataRequestModalOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#1A1A1A] text-white hover:bg-[#333333] transition-all"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#F0EBE4] text-[#8C7E6F] hover:bg-[#E8E2DA] transition-all"
             data-testid="button-data-request-header"
           >
             Data Request
