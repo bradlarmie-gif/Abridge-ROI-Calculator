@@ -236,7 +236,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   }));
   const allMetrics = settingMetricGroups.flatMap(g => g.metrics);
 
-  const defaultCheckedIds = new Set(preseed?.preSelectedIds ?? allMetrics.filter((m) => m.phase === 1).map((m) => m.id));
+  const defaultCheckedIds = new Set(preseed?.preSelectedIds ?? []);
 
   const [checkedIds, setCheckedIds] = useState<Set<string>>(defaultCheckedIds);
   const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>({});
