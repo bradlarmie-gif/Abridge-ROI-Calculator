@@ -1,0 +1,55 @@
+Replit prompt:                                                                                                                                                                                               
+                                                                                                                                                                                                               
+  ---                                         
+  In client/src/pages/switch/ambient/domainCalculations.ts, remove all "Not yet tracked / Not yet integrated / Not yet connected" sections from every context string in the file. The right-panel live receipt 
+  should only show what the user has actively selected — not an inventory of everything they haven't chosen yet.
+                                                                                                                                                                                                               
+  Make the following targeted edits:
+                                                                                                                                                                                                               
+  1. Line ~248 — access outcomes tracked, no patients entered:                                            
+  // REMOVE the trailing conditional from the context string:                                                                                                                                                  
+  ${uncheckedLabels.length > 0 ? `\n\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}               
+                                                                                                                                                                                                               
+  2. Line ~262 — access revenue calculated context:
+  // REMOVE:                                                                                                                                                                                                   
+  ${uncheckedLabels.length > 0 ? `\n\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}                                                                                                                    
+                                                                                                                                                                                                               
+  3. Lines ~500–502 — revenue strategic integration, confirmed revenue branch:                                                                                                                                 
+  // REMOVE this entire block:                                                                            
+  if (unchecked.length > 0) {                                                                                                                                                                                  
+    context += `\n\nNot yet integrated:\n${uncheckedLabels}`;                                                                                                                                                  
+  }                                                          
+                                                                                                                                                                                                               
+  4. Lines ~521–523 — revenue strategic integration, unconfirmed revenue branch:                          
+  // REMOVE this entire block:                                                                                                                                                                                 
+  if (unchecked.length > 0) {             
+    context += `\n\nNot yet integrated:\n${uncheckedLabels}`;                                                                                                                                                  
+  }                                                                                                                                                                                                            
+   
+  5. Lines ~777–779 — workforce strategies:                                                                                                                                                                    
+  // REMOVE this entire block:                                                                            
+  if (uncheckedStrategies.length > 0) {   
+    contextParts += `\n\nNot yet integrated:\n${uncheckedStrategies.map(s => `• ${s.split(' — ')[0]}`).join('\n')}`;
+  }                                                                                                                                                                                                            
+                                              
+  6. Line ~928 — quality monitoring dimensions tracked context:                                                                                                                                                
+  // REMOVE the trailing conditional:                                                                     
+  ${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}                                                                                                                                      
+                                                                         
+  7. Line ~971 — quality downstream value context (hasValue: true):                                                                                                                                            
+  // REMOVE:                                                                                              
+  ${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}                                                                                                                                    
+                                                                                                                                                                                                               
+  8. Line ~983 — quality downstream context (hasValue: false):                                                                                                                                                 
+  // REMOVE:                                                                                                                                                                                                   
+  ${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}                                                                                                                                    
+                                                                                                          
+  9. Line ~1023 — quality strategic value context (hasValue: true):
+  // REMOVE:                                                                                                                                                                                                   
+  ${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}
+                                                                                                                                                                                                               
+  10. Line ~1034 — quality strategic context (hasValue: false):                                           
+  // REMOVE:                                                                                                                                                                                                   
+  ${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}
+                                                                                                                                                                                                               
+  After all edits, do a search for the strings "Not yet tracked", "Not yet integrated", and "Not yet connected" in the file and confirm zero results. 

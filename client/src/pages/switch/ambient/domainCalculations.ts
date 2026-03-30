@@ -260,7 +260,7 @@ export function computeCapacityFeedback(
       value: null,
       hasValue: false,
       headlineMetric: `${outcomeCount} access outcome${outcomeCount > 1 ? 's' : ''} tracked`,
-      context: `Your organization is tracking ${outcomeCount} downstream access outcome${outcomeCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}\n\nEnter confirmed additional patients per provider per month to calculate access revenue.${uncheckedLabels.length > 0 ? `\n\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}`,
+      context: `Your organization is tracking ${outcomeCount} downstream access outcome${outcomeCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}\n\nEnter confirmed additional patients per provider per month to calculate access revenue.`,
       formula: '',
       footnote: '',
     };
@@ -274,7 +274,7 @@ export function computeCapacityFeedback(
     value: accessRevenue,
     hasValue: true,
     headlineMetric: `${formatDollar(accessRevenue)} in measured access revenue`,
-    context: `${outcomeCount} access outcome${outcomeCount > 1 ? 's' : ''} tracked\n\n${l4Patients} additional patients/provider/month × ${l4Providers} providers × 11 clinical months = ${annualVisits.toLocaleString()} visits.\nDirect access: ${annualVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}${outcomeCount > 0 ? `\n\nYour organization is tracking ${outcomeCount} downstream access outcome${outcomeCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}` : ''}${uncheckedLabels.length > 0 ? `\n\nNot yet tracked: ${uncheckedLabels.join(', ')}` : ''}${downstreamNarrative}`,
+    context: `${outcomeCount} access outcome${outcomeCount > 1 ? 's' : ''} tracked\n\n${l4Patients} additional patients/provider/month × ${l4Providers} providers × 11 clinical months = ${annualVisits.toLocaleString()} visits.\nDirect access: ${annualVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}${outcomeCount > 0 ? `\n\nYour organization is tracking ${outcomeCount} downstream access outcome${outcomeCount > 1 ? 's' : ''}:\n${checkedLabels.join(', ')}` : ''}${downstreamNarrative}`,
     formula: `[annualVisits] = ${l4Patients} patients/mo × ${l4Providers} providers × 11 months = ${annualVisits.toLocaleString()}\n[accessRevenue] = ${annualVisits.toLocaleString()} × ${formatDollar(revenuePerVisit)} = ${formatDollar(accessRevenue)}`,
     footnote: 'Uses 11 clinical months (230 working days ÷ ~21 working days/month). Revenue per visit from your baseline inputs.\nEstimates based on your inputs. Individual results vary.',
   };
@@ -495,9 +495,6 @@ export function computeRevenueFeedback(
     } else {
       context = `Your organization formally attributes ${formatDollar(recognizedRevenue!)} in annual revenue to documentation quality. Select strategic integrations above to show how documentation intelligence connects to revenue operations.`;
     }
-    if (unchecked.length > 0) {
-      context += `\n\nNot yet integrated:\n${uncheckedLabels}`;
-    }
     return {
       label: 'Estimated Impact',
       value: recognizedRevenue!,
@@ -515,9 +512,6 @@ export function computeRevenueFeedback(
       context += `\n\nNo confirmed revenue attribution yet. Organizations at ${documentedEncounters.toLocaleString()} documented encounters with active revenue cycle integration typically attribute $200K–$600K annually to documentation quality programs. This can serve as a planning estimate until formal attribution is available.`;
     } else {
       context += `\n\nEnter your attributed annual revenue when available. Organizations at this level typically have a figure that revenue cycle and finance leadership reference in planning.`;
-    }
-    if (unchecked.length > 0) {
-      context += `\n\nNot yet integrated:\n${uncheckedLabels}`;
     }
     return {
       label: 'Estimated Impact',
@@ -771,10 +765,6 @@ export function computeWorkforceFeedback(
   if (hasAgency) {
     contextParts += `\n\nAgency/locum reduction: ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualAgencySavings)} annually.`;
   }
-  if (uncheckedStrategies.length > 0) {
-    contextParts += `\n\nNot yet integrated:\n${uncheckedStrategies.map(s => `• ${s.split(' — ')[0]}`).join('\n')}`;
-  }
-
   return {
     label: 'Estimated Impact',
     value: hasAgency ? annualAgencySavings : null,
@@ -915,7 +905,7 @@ export function computeRiskFeedback(
       value: null,
       hasValue: false,
       headlineMetric,
-      context: `Documentation quality is actively monitored via ${approachLabel}.\n\nDimensions tracked:\n${trackedList}${unchecked.length > 0 ? `\n\nNot yet tracked:\n${untrackedList}` : ''}`,
+      context: `Documentation quality is actively monitored via ${approachLabel}.\n\nDimensions tracked:\n${trackedList}`,
       formula: '',
       footnote: 'Estimates based on your inputs. Individual results vary.',
       nextLevelTeaser: 'Level 3 connects documentation quality to downstream programs and workflows.',
@@ -1037,7 +1027,7 @@ export function computeRiskFeedback(
       value: strategicValue,
       hasValue: true,
       headlineMetric: `${formatDollar(strategicValue)} in attributed strategic value`,
-      context: `Documentation quality informs organizational strategy across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${ownerLine}\n\nYour organization attributes ${formatDollar(strategicValue)} in annual value to documentation quality programs.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+      context: `Documentation quality informs organizational strategy across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${ownerLine}\n\nYour organization attributes ${formatDollar(strategicValue)} in annual value to documentation quality programs.`,
       formula: `[strategicValue] = ${formatDollar(strategicValue)} (organization estimate)`,
       footnote: 'Estimates based on your inputs. Individual results vary.',
     };
@@ -1048,7 +1038,7 @@ export function computeRiskFeedback(
     value: null,
     hasValue: false,
     headlineMetric: `${count} strategic area${count > 1 ? 's' : ''} — documentation quality is an organizational asset`,
-    context: `Documentation quality is embedded in organizational strategy across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${ownerLine}\n\nThis is the profile where documentation quality shifts from an operational metric to a board-level asset. The financial value lives across quality penalties avoided, VBC contract performance, compliance governance, and AI readiness — organizations at this level that formalize attribution typically find it materially significant.${unchecked.length > 0 ? `\n\nNot yet connected:\n${uncheckedList}` : ''}`,
+    context: `Documentation quality is embedded in organizational strategy across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${ownerLine}\n\nThis is the profile where documentation quality shifts from an operational metric to a board-level asset. The financial value lives across quality penalties avoided, VBC contract performance, compliance governance, and AI readiness — organizations at this level that formalize attribution typically find it materially significant.`,
     formula: '',
     footnote: 'Estimates based on your inputs. Individual results vary.',
   };
