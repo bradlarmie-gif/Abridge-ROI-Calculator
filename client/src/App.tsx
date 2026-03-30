@@ -45,7 +45,7 @@ import { type IntakeFormPreseed, type ExploreIntakeResponse, decodeIntakePreseed
 import { type DataFormPreseed, type MeasureDataRequestResponse, decodeDataFormPreseed, decodeDataRequest } from "@/lib/dataRequestUrlState";
 import ProformaHub from "@/pages/proforma/ProformaHub";
 import ProformaView from "@/pages/proforma/ProformaView";
-import type { ProformaSettingSnapshot, ProformaScenario, ProformaConfig } from "@/pages/proforma/proformaTypes";
+import type { ProformaSettingSnapshot, ProformaConfig } from "@/pages/proforma/proformaTypes";
 import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
 
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
@@ -272,7 +272,6 @@ export default function App() {
   const [modelResults, setModelResults] = useState<ModelResults | null>(null);
   const [exploreState, setExploreState] = useState<ExploreState | null>(null);
   const [proformaSettings, setProformaSettings] = useState<ProformaSettingSnapshot[]>([]);
-  const [proformaScenarios, setProformaScenarios] = useState<ProformaScenario[]>([]);
   const [proformaConfig, setProformaConfig] = useState<ProformaConfig>(() => ({ ...DEFAULT_PROFORMA_CONFIG }));
   const [proformaAddCareSetting, setProformaAddCareSetting] = useState<ExploreCareSetting | undefined>(undefined);
   const [proformaEditExploreState, setProformaEditExploreState] = useState<ExploreState | undefined>(undefined);
@@ -300,22 +299,6 @@ export default function App() {
     setProformaSettings(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
   }, []);
 
-  const handleSaveScenario = useCallback((scenario: ProformaScenario) => {
-    setProformaScenarios(prev => {
-      const existing = prev.findIndex(s => s.id === scenario.id);
-      if (existing >= 0) {
-        const updated = [...prev];
-        updated[existing] = scenario;
-        return updated;
-      }
-      return [...prev, scenario].slice(0, 4);
-    });
-  }, []);
-
-  const handleDeleteScenario = useCallback((id: string) => {
-    setProformaScenarios(prev => prev.filter(s => s.id !== id));
-  }, []);
-
   const handleSessionClear = useCallback(() => {
     setSelectionState({ selectedSettings: [], selectedLevers: [] });
     setSeedInputs({});
@@ -324,7 +307,6 @@ export default function App() {
     setModelResults(null);
     setExploreState(null);
     setProformaSettings([]);
-    setProformaScenarios([]);
     setProformaConfig({ ...DEFAULT_PROFORMA_CONFIG });
     setProformaAddCareSetting(undefined);
     setCurrentView("splash");
@@ -759,7 +741,6 @@ export default function App() {
             {currentView === "proforma-hub" && (
               <ProformaHub
                 settings={proformaSettings}
-                scenarios={proformaScenarios}
                 config={proformaConfig}
                 onConfigChange={setProformaConfig}
                 onAddSetting={(careSetting) => {
@@ -792,9 +773,6 @@ export default function App() {
                 onUpdateSetting={handleUpdateProformaSetting}
                 onBack={() => navigateTo("proforma-hub")}
                 onHome={() => navigateTo("journey")}
-                scenarios={proformaScenarios}
-                onSaveScenario={handleSaveScenario}
-                onDeleteScenario={handleDeleteScenario}
               />
             )}
             </PageTransition>

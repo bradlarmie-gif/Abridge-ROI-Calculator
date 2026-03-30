@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronDown, ChevronUp, Download, Settings, TrendingUp, Clock, DollarSign, Building2, HeartPulse, BedDouble, Stethoscope, Info, Loader2, Users, BarChart3, Shield, Save, X, GitCompare, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Download, Settings, TrendingUp, Clock, DollarSign, Building2, HeartPulse, BedDouble, Stethoscope, Info, Loader2, Users, BarChart3, Shield, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid, Legend } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
-import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, DEFAULT_PROFORMA_CONFIG, SCENARIO_COLORS, SCENARIO_DASHES, MAX_SCENARIOS, ONSET_DELAY_MONTHS } from "./proformaTypes";
+import { SETTING_LABELS, SETTING_UNIT_LABELS, ONSET_DELAY_MONTHS } from "./proformaTypes";
 import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, getYearlySummary, getContractStartDate } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
@@ -19,9 +19,6 @@ interface ProformaViewProps {
   onUpdateSetting: (id: string, updates: Partial<ProformaSettingSnapshot>) => void;
   onBack: () => void;
   onHome: () => void;
-  scenarios?: ProformaScenario[];
-  onSaveScenario?: (scenario: ProformaScenario) => void;
-  onDeleteScenario?: (id: string) => void;
 }
 
 const SETTING_ICONS: Record<string, typeof Building2> = {
@@ -97,6 +94,89 @@ function contractTermLabel(months: number): string {
   return `${months / 12}-Year`;
 }
 
+interface DiffItem {
+  label: string;
+  valueA: string;
+  valueB: string;
+  category: "scope" | "drivers" | "pricing";
+}
+
+function getScenarioDiffs(a: ProformaScenario, b: ProformaScenario): DiffItem[] {
+  const diffs: DiffItem[] = [];
+
+  const settingsA = a.settings.map(s => s.careSetting);
+  const settingsB = b.settings.map(s => s.careSetting);
+  const allSettingTypes = Array.from(new Set([...settingsA, ...settingsB]));
+  for (const st of allSettingTypes) {
+    const inA = settingsA.includes(st);
+    const inB = settingsB.includes(st);
+    if (inA !== inB) {
+      diffs.push({ label: SETTING_LABELS[st] || st, valueA: inA ? "included" : "—", valueB: inB ? "included" : "—", category: "scope" });
+    }
+  }
+
+  for (const sa of a.settings) {
+    const sb = b.settings.find(s => s.careSetting === sa.careSetting);
+    if (!sb) continue;
+    if (sa.providerCount !== sb.providerCount) {
+      diffs.push({
+        label: `${SETTING_LABELS[sa.careSetting]} ${SETTING_UNIT_LABELS[sa.careSetting] || "providers"}`,
+        valueA: sa.providerCount.toLocaleString(),
+        valueB: sb.providerCount.toLocaleString(),
+        category: "scope",
+      });
+    }
+  }
+
+  for (const sa of a.settings) {
+    const sb = b.settings.find(s => s.careSetting === sa.careSetting);
+    if (!sb) continue;
+
+    const wrvuA = sa.fullExploreState?.docQualityInputs?.wrvuScenario;
+    const wrvuB = sb.fullExploreState?.docQualityInputs?.wrvuScenario;
+    if (wrvuA && wrvuB && wrvuA !== wrvuB) {
+      const pct: Record<string, string> = { conservative: "5%", typical: "7%", aggressive: "10%" };
+      diffs.push({ label: "wRVU Capture", valueA: `${pct[wrvuA] || wrvuA} (${wrvuA})`, valueB: `${pct[wrvuB] || wrvuB} (${wrvuB})`, category: "drivers" });
+    }
+
+    const hccA = sa.fullExploreState?.docQualityInputs?.hccEnabled;
+    const hccB = sb.fullExploreState?.docQualityInputs?.hccEnabled;
+    if (hccA !== undefined && hccB !== undefined && hccA !== hccB) {
+      diffs.push({ label: "HCC Capture", valueA: hccA ? "on" : "off", valueB: hccB ? "on" : "off", category: "drivers" });
+    }
+
+    const retA = sa.fullExploreState?.timeDriverInputs?.calculateRetentionValue;
+    const retB = sb.fullExploreState?.timeDriverInputs?.calculateRetentionValue;
+    if (retA !== undefined && retB !== undefined && retA !== retB) {
+      diffs.push({ label: "Retention Value", valueA: retA ? "modeled" : "off", valueB: retB ? "modeled" : "off", category: "drivers" });
+    }
+
+    const paA = sa.fullExploreState?.timeDriverInputs?.patientAccessEnabled;
+    const paB = sb.fullExploreState?.timeDriverInputs?.patientAccessEnabled;
+    if (paA !== undefined && paB !== undefined && paA !== paB) {
+      diffs.push({ label: "Patient Access", valueA: paA ? "on" : "off", valueB: paB ? "on" : "off", category: "drivers" });
+    }
+
+    const denA = sa.fullExploreState?.docQualityInputs?.denialsEnabled;
+    const denB = sb.fullExploreState?.docQualityInputs?.denialsEnabled;
+    if (denA !== undefined && denB !== undefined && denA !== denB) {
+      diffs.push({ label: "Denial Prevention", valueA: denA ? "on" : "off", valueB: denB ? "on" : "off", category: "drivers" });
+    }
+
+    if (Math.abs(sa.utilizationPercent - sb.utilizationPercent) > 2) {
+      diffs.push({ label: `${SETTING_LABELS[sa.careSetting]} Utilization`, valueA: `${sa.utilizationPercent}%`, valueB: `${sb.utilizationPercent}%`, category: "drivers" });
+    }
+  }
+
+  const priceA = getPricingLabel(a.settings);
+  const priceB = getPricingLabel(b.settings);
+  if (priceA !== priceB) {
+    diffs.push({ label: "Pricing", valueA: priceA, valueB: priceB, category: "pricing" });
+  }
+
+  return diffs;
+}
+
 const CHART_COLORS = {
   doc: "#1E3A5F",
   time: "#EA2C00",
@@ -111,9 +191,6 @@ export default function ProformaView({
   onUpdateSetting,
   onBack,
   onHome,
-  scenarios = [],
-  onSaveScenario,
-  onDeleteScenario,
 }: ProformaViewProps) {
   const isMobile = useIsMobile();
   const setConfig = (updater: ProformaConfig | ((prev: ProformaConfig) => ProformaConfig)) => {
@@ -125,53 +202,21 @@ export default function ProformaView({
   };
   const [showMethodology, setShowMethodology] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [scenarioName, setScenarioName] = useState("");
-  const [editingScenarioId, setEditingScenarioId] = useState<string | null>(null);
-  const [editingScenarioName, setEditingScenarioName] = useState("");
-  const [compareMode, setCompareMode] = useState(false);
+  const [versionA, setVersionA] = useState<ProformaScenario | null>(null);
+  const [versionB, setVersionB] = useState<ProformaScenario | null>(null);
   const { toast } = useToast();
 
-  const handleSaveScenario = () => {
-    const name = scenarioName.trim() || `Scenario ${scenarios.length + 1}`;
+  function snapshotCurrent(label: "A" | "B") {
     const scenario: ProformaScenario = {
-      id: `scenario-${Date.now()}`,
-      name,
+      id: `v${label}-${Date.now()}`,
+      name: `Version ${label}`,
       settings: JSON.parse(JSON.stringify(settings)),
       config: JSON.parse(JSON.stringify(config)),
       createdAt: Date.now(),
     };
-    onSaveScenario?.(scenario);
-    setShowSaveDialog(false);
-    setScenarioName("");
-    toast({ title: `Scenario "${name}" saved` });
-  };
-
-  const handleRenameScenario = (id: string, newName: string) => {
-    const existing = scenarios.find(s => s.id === id);
-    if (existing && onSaveScenario) {
-      onSaveScenario({ ...existing, name: newName.trim() || existing.name });
-    }
-    setEditingScenarioId(null);
-    setEditingScenarioName("");
-  };
-
-  const scenarioSummaries = useMemo(() => {
-    return scenarios.map(sc => {
-      const cf = buildMonthlyCashFlows(sc.settings, sc.config);
-      const sum = calculateProformaSummary(sc.settings, sc.config, cf);
-      const displayRows = sc.config.viewMode === "yearly"
-        ? groupByYear(cf, getContractStartDate())
-        : groupByQuarter(cf, getContractStartDate());
-      const chartRows = displayRows.map(row => ({
-        label: row.label,
-        total: row.totalValue,
-        investment: row.investment,
-        cumulativeNet: row.cumulativeNet,
-      }));
-      return { ...sc, summary: sum, chartData: chartRows };
-    });
-  }, [scenarios]);
+    if (label === "A") setVersionA(scenario);
+    else setVersionB(scenario);
+  }
 
   const startDate = useMemo(() => getContractStartDate(), []);
 
@@ -390,210 +435,69 @@ export default function ProformaView({
                   Years
                 </button>
               </div>
-              <button
-                onClick={() => {
-                  if (scenarios.length === 0) {
-                    setScenarioName("Scenario 1");
-                    setShowSaveDialog(true);
-                    toast({ title: "Save your first scenario", description: "Name this configuration, then change your deal settings to create a second one to compare." });
-                  } else {
-                    setCompareMode(!compareMode);
-                  }
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${compareMode ? "bg-white text-black" : "bg-white/10 text-white/70 hover:text-white"}`}
-                data-testid="toggle-compare"
-              >
-                <GitCompare className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Compare</span>
-              </button>
-              <button
-                onClick={() => {
-                  if (scenarios.length >= MAX_SCENARIOS) {
-                    toast({ title: `Maximum ${MAX_SCENARIOS} scenarios`, description: "Delete one to save a new scenario", variant: "destructive" });
-                    return;
-                  }
-                  setScenarioName(`Scenario ${scenarios.length + 1}`);
-                  setShowSaveDialog(true);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/70 hover:text-white transition-colors"
-                title="Save as Scenario"
-                data-testid="button-save-scenario"
-              >
-                <Save className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Save as Scenario</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {versionA ? (
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="flex items-center gap-1.5 bg-white/15 rounded-full pl-2.5 pr-1.5 py-1"
+                    data-testid="chip-version-a"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-white" />
+                    <span className="text-xs text-white font-medium">A saved</span>
+                    <button onClick={() => { setVersionA(null); setVersionB(null); }}
+                      className="ml-0.5 text-white/40 hover:text-white transition-colors p-0.5"
+                      data-testid="button-clear-version-a"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <button
+                    onClick={() => snapshotCurrent("A")}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-all"
+                    data-testid="button-save-version-a"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Save as A</span>
+                  </button>
+                )}
+
+                {versionA && (
+                  versionB ? (
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex items-center gap-1.5 bg-[#EA2C00]/30 rounded-full pl-2.5 pr-1.5 py-1"
+                      data-testid="chip-version-b"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                      <span className="text-xs text-white font-medium">B saved</span>
+                      <button onClick={() => setVersionB(null)}
+                        className="ml-0.5 text-white/40 hover:text-white transition-colors p-0.5"
+                        data-testid="button-clear-version-b"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      onClick={() => snapshotCurrent("B")}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-[#EA2C00]/20 text-white hover:bg-[#EA2C00]/40 transition-all"
+                      data-testid="button-save-version-b"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Save as B</span>
+                    </motion.button>
+                  )
+                )}
+              </div>
             </div>
           </div>
 
-          {scenarios.length > 0 && (
-            <>
-              <div className="flex items-center gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="scenario-tabs">
-                <span className="text-[12px] text-white/40 uppercase tracking-wider mr-1 flex-shrink-0">Saved:</span>
-                {scenarios.map((sc, idx) => (
-                  <div key={sc.id} className="flex items-center gap-1 flex-shrink-0">
-                    {editingScenarioId === sc.id ? (
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          value={editingScenarioName}
-                          onChange={(e) => setEditingScenarioName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleRenameScenario(sc.id, editingScenarioName);
-                            if (e.key === "Escape") setEditingScenarioId(null);
-                          }}
-                          onBlur={() => handleRenameScenario(sc.id, editingScenarioName)}
-                          className="bg-white/20 text-white text-xs px-2 py-1 rounded w-28 outline-none"
-                          autoFocus
-                          data-testid={`input-rename-scenario-${idx}`}
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-0.5 bg-white/10 rounded-full pl-2.5 pr-1 py-1">
-                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: SCENARIO_COLORS[idx % SCENARIO_COLORS.length] }} />
-                        <span className="text-xs text-white/80 mx-1 max-w-[140px] truncate">{sc.name} <span className="text-white/40">· {getPricingTag(sc.settings)}</span></span>
-                        <button
-                          onClick={() => { setEditingScenarioId(sc.id); setEditingScenarioName(sc.name); }}
-                          className="p-1.5 text-white/40 hover:text-white transition-colors"
-                          title="Rename scenario"
-                          data-testid={`button-rename-scenario-${idx}`}
-                        >
-                          <Pencil className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            onDeleteScenario?.(sc.id);
-                            if (scenarios.length <= 1) setCompareMode(false);
-                          }}
-                          className="p-1.5 text-white/40 hover:text-red-400 transition-colors"
-                          title="Delete scenario"
-                          data-testid={`button-delete-scenario-${idx}`}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              {scenarios.length < MAX_SCENARIOS && (
-                <p className="text-[11px] text-white/40 mt-1">
-                  Change your deal settings above, then save another scenario to compare.
-                </p>
-              )}
-            </>
-          )}
-
-          {compareMode && scenarioSummaries.length > 0 && (
-            <motion.div
-              className="mb-8 sm:mb-10"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              data-testid="panel-scenario-comparison"
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <GitCompare className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-600" />
-                <h2 className="text-base sm:text-lg font-bold text-neutral-900">Scenario Comparison</h2>
-              </div>
-              <p className="text-xs sm:text-sm text-neutral-500 mb-4">Current configuration vs. saved scenarios side-by-side</p>
-
-              <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6 mb-4">
-                <div className="overflow-x-auto -mx-2 px-2 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="comparison-table">
-                  <table className="w-full text-xs sm:text-sm">
-                    <thead>
-                      <tr className="border-b-2 border-neutral-300">
-                        <th className="text-left py-2 sm:py-3 font-medium text-neutral-500 pr-4 min-w-[120px]">Metric</th>
-                        <th className="text-right py-2 sm:py-3 font-bold text-neutral-900 px-3 sm:px-4 min-w-[100px]">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <div className="w-2 h-2 rounded-full bg-[#1A1A1A]" />
-                            Current
-                          </div>
-                        </th>
-                        {scenarioSummaries.map((sc, idx) => (
-                          <th key={sc.id} className="text-right py-2 sm:py-3 font-bold text-neutral-900 px-3 sm:px-4 min-w-[100px]">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: SCENARIO_COLORS[idx % SCENARIO_COLORS.length] }} />
-                              <span className="truncate max-w-[80px]">{sc.name}</span>
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        { label: "Pricing", current: getPricingLabel(settings), values: scenarioSummaries.map(s => getPricingLabel(s.settings)), isText: true },
-                        { label: "Annual Value at Scale", current: fmt(summary.runRateValue), values: scenarioSummaries.map(s => fmt(s.summary.runRateValue)) },
-                        { label: `${contractTermLabel(config.contractTermMonths)} Value`, current: fmt(summary.termValue), values: scenarioSummaries.map(s => fmt(s.summary.termValue)) },
-                        { label: "Total Investment", current: fmt(summary.termInvestment), values: scenarioSummaries.map(s => fmt(s.summary.termInvestment)) },
-                        { label: "Net Value", current: fmt(summary.termNet), values: scenarioSummaries.map(s => fmt(s.summary.termNet)) },
-                        { label: "Value-to-Cost", current: hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A", values: scenarioSummaries.map(s => s.summary.termInvestment > 0 ? `${s.summary.valueToCost.toFixed(1)}x` : "N/A") },
-                        { label: "Simple ROI", current: `${Math.round(summary.simpleROI * 100)}%`, values: scenarioSummaries.map(s => `${Math.round(s.summary.simpleROI * 100)}%`) },
-                        { label: "Payback", current: summary.paybackMonth ? `${summary.paybackMonth} mo` : "—", values: scenarioSummaries.map(s => s.summary.paybackMonth ? `${s.summary.paybackMonth} mo` : "—") },
-                        { label: "Hours Returned", current: fmtNum(summary.totalHours), values: scenarioSummaries.map(s => fmtNum(s.summary.totalHours)) },
-                      ].map((row, ri) => (
-                        <tr key={row.label} className={`border-b ${ri === 4 ? "border-neutral-300 bg-neutral-50" : ri === 0 ? "border-neutral-200 bg-amber-50/50" : "border-neutral-100"}`}>
-                          <td className="py-2 sm:py-2.5 pr-4 font-medium text-neutral-700">{row.label}</td>
-                          <td className={`${(row as any).isText ? "text-left" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold text-neutral-900" : ri === 0 ? "text-neutral-600 text-xs" : "text-neutral-700"}`}>{row.current}</td>
-                          {row.values.map((v, i) => (
-                            <td key={i} className={`${(row as any).isText ? "text-left text-xs" : "text-right"} py-2 sm:py-2.5 px-3 sm:px-4 ${ri === 4 ? "font-bold" : ""}`} style={{ color: ri === 4 ? SCENARIO_COLORS[i % SCENARIO_COLORS.length] : undefined }}>{v}</td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="comparison-chart">
-                <p className="text-xs sm:text-sm font-medium text-neutral-600 mb-3">Value Trajectory Overlay</p>
-                <ResponsiveContainer width="100%" height={isMobile ? 260 : 360}>
-                  <ComposedChart margin={isMobile ? { top: 10, right: 10, left: 0, bottom: 10 } : { top: 20, right: 40, left: 10, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" vertical={false} />
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
-                      allowDuplicatedCategory={false}
-                      axisLine={{ stroke: "#D5D0CB" }}
-                    />
-                    <YAxis
-                      tickFormatter={(v: number) => fmt(v)}
-                      tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
-                      width={isMobile ? 55 : 80}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip formatter={(v: number) => fmt(v)} />
-                    <Legend
-                      verticalAlign="top"
-                      height={28}
-                      formatter={(value: string) => <span style={{ fontSize: 12, color: '#555' }}>{value}</span>}
-                    />
-                    <Line
-                      data={chartData}
-                      type="monotone"
-                      dataKey="total"
-                      stroke="#1A1A1A"
-                      strokeWidth={2.5}
-                      dot={false}
-                      name="Current"
-                    />
-                    {scenarioSummaries.map((sc, idx) => (
-                      <Line
-                        key={sc.id}
-                        data={sc.chartData}
-                        type="monotone"
-                        dataKey="total"
-                        stroke={SCENARIO_COLORS[idx % SCENARIO_COLORS.length]}
-                        strokeWidth={2}
-                        strokeDasharray={SCENARIO_DASHES[idx % SCENARIO_DASHES.length]}
-                        dot={false}
-                        name={sc.name}
-                      />
-                    ))}
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-          )}
+          
 
           {/* Mobile: Annual Value on top, then 2x2 grid */}
           <div className="min-[820px]:hidden">
@@ -611,15 +515,6 @@ export default function ProformaView({
                 {hasInvestment && (
                   <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-vtc-benchmark-mobile">
                     Abridge benchmark: 3–7x
-                  </p>
-                )}
-              </div>
-              <div>
-                <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Payback</p>
-                <p className="text-xl font-bold" data-testid="text-payback">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
-                {summary.paybackMonth && (
-                  <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-payback-benchmark-mobile">
-                    Abridge benchmark: 6–12 mo
                   </p>
                 )}
               </div>
@@ -661,15 +556,6 @@ export default function ProformaView({
               )}
             </div>
             <div>
-              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Payback</p>
-              <p className="text-2xl font-bold">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
-              {summary.paybackMonth && (
-                <p className="text-[12px] text-white/40 mt-1" data-testid="text-payback-benchmark">
-                  Abridge benchmark: 6–12 mo
-                </p>
-              )}
-            </div>
-            <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
               <p className="text-2xl font-bold">{Math.round(summary.simpleROI * 100)}%</p>
               <p className="text-[12px] text-white/40 mt-1" data-testid="text-roi-benchmark">
@@ -688,6 +574,192 @@ export default function ProformaView({
       </div>
 
       <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+        <AnimatePresence>
+        {versionA && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="bg-white border border-[#E8E2DA] rounded-2xl overflow-hidden mb-6 sm:mb-8 shadow-sm"
+            data-testid="panel-version-comparison"
+          >
+            <div className="grid grid-cols-2 divide-x divide-[#E8E2DA]">
+              {[
+                { label: "A", scenario: versionA, color: "#1A1A1A" },
+                { label: "B", scenario: versionB, color: "#EA2C00" },
+              ].map(({ label, scenario, color }) => {
+                const sc = scenario
+                  ? calculateProformaSummary(
+                      scenario.settings,
+                      scenario.config,
+                      buildMonthlyCashFlows(scenario.settings, scenario.config)
+                    )
+                  : null;
+                return (
+                  <div key={label} className="p-4 sm:p-6" data-testid={`version-card-${label.toLowerCase()}`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                        style={{ backgroundColor: color }}
+                      >
+                        {label}
+                      </div>
+                      <span className="text-sm font-semibold text-[#1A1A1A]">Version {label}</span>
+                      {!scenario && (
+                        <span className="text-xs text-[#999999] italic">not saved yet</span>
+                      )}
+                    </div>
+                    {sc ? (
+                      <>
+                        <p className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] tabular-nums" data-testid={`version-value-${label.toLowerCase()}`}>{fmt(sc.runRateValue)}</p>
+                        <p className="text-xs text-[#999999] mt-0.5">annual value at scale</p>
+                        {label === "B" && versionA && (
+                          (() => {
+                            const scA = calculateProformaSummary(
+                              versionA.settings,
+                              versionA.config,
+                              buildMonthlyCashFlows(versionA.settings, versionA.config)
+                            );
+                            const delta = sc.runRateValue - scA.runRateValue;
+                            return delta !== 0 ? (
+                              <span className={`inline-flex items-center gap-1 mt-2 text-xs font-semibold px-2 py-0.5 rounded-full ${delta > 0 ? "bg-green-50 text-green-700" : "bg-[#F5F0EB] text-[#999999]"}`} data-testid="version-delta-badge">
+                                {delta > 0 ? "↑" : "↓"} {fmt(Math.abs(delta))}
+                              </span>
+                            ) : null;
+                          })()
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-[#CCCCCC]">—</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {versionA && versionB && (() => {
+              const diffs = getScenarioDiffs(versionA, versionB);
+              if (diffs.length === 0) return null;
+              return (
+                <div className="border-t border-[#E8E2DA] px-4 sm:px-6 py-4 bg-[#FAFAF8]" data-testid="panel-diffs">
+                  <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-widest mb-3">What's different</p>
+                  <div className="space-y-3">
+                    {(["scope", "drivers", "pricing"] as const).map(category => {
+                      const items = diffs.filter(d => d.category === category);
+                      if (items.length === 0) return null;
+                      const catLabel = { scope: "Scope", drivers: "Value Drivers", pricing: "Pricing" }[category];
+                      return (
+                        <div key={category}>
+                          <p className="text-[10px] font-semibold text-[#BBBBBB] uppercase tracking-wider mb-1.5">{catLabel}</p>
+                          <div className="space-y-1.5">
+                            {items.map((diff, i) => (
+                              <motion.div
+                                key={diff.label}
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.04 }}
+                                className="flex items-center gap-2 flex-wrap"
+                              >
+                                <span className="text-xs font-medium text-[#555555] min-w-[120px]">{diff.label}</span>
+                                <span className="text-xs text-[#999999] bg-[#F0EDEA] px-2 py-0.5 rounded">{diff.valueA}</span>
+                                <span className="text-[10px] text-[#CCCCCC]">→</span>
+                                <span className="text-xs text-[#1A1A1A] font-medium bg-[#F5F0EB] border border-[#E8E2DA] px-2 py-0.5 rounded">{diff.valueB}</span>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {versionA && versionB && (() => {
+              const cfA = buildMonthlyCashFlows(versionA.settings, versionA.config);
+              const cfB = buildMonthlyCashFlows(versionB.settings, versionB.config);
+              const scA = calculateProformaSummary(versionA.settings, versionA.config, cfA);
+              const scB = calculateProformaSummary(versionB.settings, versionB.config, cfB);
+              const rows = [
+                { label: "Annual Value at Scale", a: fmt(scA.runRateValue), b: fmt(scB.runRateValue), delta: scB.runRateValue - scA.runRateValue, isMoney: true },
+                { label: `${config.contractTermMonths / 12}-Year Value`, a: fmt(scA.termValue), b: fmt(scB.termValue), delta: scB.termValue - scA.termValue, isMoney: true },
+                { label: "Total Investment", a: fmt(scA.termInvestment), b: fmt(scB.termInvestment), delta: scB.termInvestment - scA.termInvestment, isMoney: true, invertColor: true },
+                { label: "Net Value", a: fmt(scA.termNet), b: fmt(scB.termNet), delta: scB.termNet - scA.termNet, isMoney: true, bold: true },
+                { label: "Value-to-Cost", a: `${scA.valueToCost.toFixed(1)}x`, b: `${scB.valueToCost.toFixed(1)}x`, delta: scB.valueToCost - scA.valueToCost, isMoney: false },
+                { label: "Hours Returned / Year", a: fmtNum(scA.totalHours), b: fmtNum(scB.totalHours), delta: scB.totalHours - scA.totalHours, isMoney: false },
+              ];
+              return (
+                <div className="border-t border-[#E8E2DA] px-4 sm:px-6 py-4" data-testid="panel-outcomes">
+                  <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-widest mb-3">Outcomes</p>
+                  <div className="space-y-0 divide-y divide-[#F0EDEA]">
+                    {rows.map((row, i) => {
+                      const deltaLabel = row.isMoney ? fmt(Math.abs(row.delta)) : Math.abs(row.delta).toFixed(1) + (row.label.includes("x") || row.label.includes("Cost") ? "x" : "");
+                      const isPositive = row.invertColor ? row.delta < 0 : row.delta > 0;
+                      const isNeutral = Math.abs(row.delta) < 0.01;
+                      return (
+                        <motion.div
+                          key={row.label}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.1 + i * 0.04 }}
+                          className={`flex items-center py-2.5 gap-4 ${row.bold ? "font-semibold" : ""}`}
+                        >
+                          <span className="text-xs text-[#666666] flex-1 min-w-[120px]">{row.label}</span>
+                          <span className="text-xs text-[#999999] w-16 sm:w-20 text-right tabular-nums">{row.a}</span>
+                          <span className="text-xs font-medium text-[#1A1A1A] w-16 sm:w-20 text-right tabular-nums">{row.b}</span>
+                          {!isNeutral ? (
+                            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full min-w-[56px] text-center tabular-nums ${
+                              isPositive ? "bg-green-50 text-green-700" : "bg-[#F5F0EB] text-[#999999]"
+                            }`}>
+                              {row.delta > 0 ? "+" : "−"}{deltaLabel}
+                            </span>
+                          ) : (
+                            <span className="min-w-[56px]" />
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {versionA && versionB && (() => {
+              const flowsA = groupByQuarter(buildMonthlyCashFlows(versionA.settings, versionA.config));
+              const flowsB = groupByQuarter(buildMonthlyCashFlows(versionB.settings, versionB.config));
+              const chartDataA = flowsA.map(r => ({ label: r.label, value: r.cumulativeNet }));
+              const chartDataB = flowsB.map(r => ({ label: r.label, value: r.cumulativeNet }));
+              return (
+                <div className="border-t border-[#E8E2DA] px-4 sm:px-6 py-4" data-testid="panel-trajectory">
+                  <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-widest mb-4">Value Trajectory</p>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <ComposedChart margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F0EDEA" vertical={false} />
+                      <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#BBBBBB" }} allowDuplicatedCategory={false} axisLine={false} tickLine={false} />
+                      <YAxis tickFormatter={(v: number) => fmt(v)} tick={{ fontSize: 10, fill: "#BBBBBB" }} width={60} axisLine={false} tickLine={false} />
+                      <Tooltip formatter={(v: number) => fmt(v)} contentStyle={{ fontSize: 12, borderColor: "#E8E2DA" }} />
+                      <ReferenceLine y={0} stroke="#E8E2DA" strokeWidth={1} />
+                      <Line data={chartDataA} type="monotone" dataKey="value" stroke="#1A1A1A" strokeWidth={2} dot={false} name="Version A" />
+                      <Line data={chartDataB} type="monotone" dataKey="value" stroke="#EA2C00" strokeWidth={2} strokeDasharray="6 3" dot={false} name="Version B" />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                  <div className="flex items-center gap-4 mt-2 justify-center">
+                    <div className="flex items-center gap-1.5"><div className="w-6 h-0.5 bg-[#1A1A1A]" /><span className="text-[11px] text-[#999999]">Version A</span></div>
+                    <div className="flex items-center gap-1.5"><div className="w-6 h-0.5 bg-[#EA2C00]" style={{ backgroundImage: "repeating-linear-gradient(90deg,#EA2C00 0,#EA2C00 6px,transparent 6px,transparent 9px)" }} /><span className="text-[11px] text-[#999999]">Version B</span></div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {versionA && !versionB && (
+              <div className="border-t border-[#E8E2DA] px-6 py-4 bg-[#FAFAF8] text-center" data-testid="prompt-save-b">
+                <p className="text-sm text-[#999999]">Now adjust your settings — pricing, drivers, care settings — then <span className="font-medium text-[#1A1A1A]">Save as B</span> to see the comparison.</p>
+              </div>
+            )}
+          </motion.div>
+        )}
+        </AnimatePresence>
 
         {/* Setting strip cards */}
         <div className="flex gap-3 overflow-x-auto pb-4 mb-6 sm:mb-8 -mx-2 px-2">
@@ -1820,66 +1892,6 @@ export default function ProformaView({
           Projections are modeled estimates based on user-provided inputs and published benchmarks. Retention benefits are conservatively phased. Driver onset timing reflects typical healthcare implementation timelines. This does not constitute a guarantee of financial outcomes.
         </p>
       </div>
-
-      <AnimatePresence>
-        {showSaveDialog && (
-          <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowSaveDialog(false)}
-          >
-            <motion.div
-              className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-neutral-900">Save as Scenario</h3>
-                <button onClick={() => setShowSaveDialog(false)} className="p-1 text-neutral-400 hover:text-neutral-600" data-testid="button-close-save-dialog">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <p className="text-sm text-neutral-500 mb-4">
-                Save your current deal configuration as a named scenario so you can compare different approaches side by side.
-              </p>
-              <input
-                type="text"
-                value={scenarioName}
-                onChange={(e) => setScenarioName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleSaveScenario(); }}
-                placeholder="e.g., Conservative Rollout"
-                className="w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm mb-4 outline-none focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/30"
-                autoFocus
-                data-testid="input-scenario-name"
-              />
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowSaveDialog(false)}
-                  className="flex-1"
-                  data-testid="button-cancel-save"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSaveScenario}
-                  className="flex-1 bg-[#EA2C00] hover:bg-[#D42800] text-white"
-                  data-testid="button-confirm-save"
-                >
-                  Save
-                </Button>
-              </div>
-              <p className="text-[12px] text-neutral-400 mt-3 text-center">
-                {scenarios.length}/{MAX_SCENARIOS} scenarios used
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <PDFExportModal
         open={showExportModal}

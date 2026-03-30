@@ -4,13 +4,12 @@ import { Plus, Trash2, Edit, ArrowRight, Building2, Stethoscope, HeartPulse, Bed
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario, QuarterlyProviders, QuarterlyPricing, QuarterlyUtilization } from "./proformaTypes";
+import type { ProformaSettingSnapshot, ProformaConfig, QuarterlyProviders, QuarterlyPricing, QuarterlyUtilization } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS } from "./proformaTypes";
 import { buildMonthlyCashFlows, calculateProformaSummary, computeYearlyEncounters, annualToQuarterlyProviders, annualToQuarterlyPricing, quarterlyToAnnualProviders, quarterlyToAnnualPricing, annualToQuarterlyUtilization, quarterlyToAnnualUtilization } from "@/lib/proformaCalculations";
 
 interface ProformaHubProps {
   settings: ProformaSettingSnapshot[];
-  scenarios?: ProformaScenario[];
   config: ProformaConfig;
   onConfigChange: (config: ProformaConfig) => void;
   onAddSetting: (careSetting?: string) => void;
@@ -109,7 +108,6 @@ function ValueCompositionBar({ setting }: { setting: ProformaSettingSnapshot }) 
 
 export default function ProformaHub({
   settings,
-  scenarios = [],
   config,
   onConfigChange,
   onAddSetting,
@@ -1136,7 +1134,7 @@ export default function ProformaHub({
             className="gap-2 bg-[#EA2C00] hover:bg-[#D42800] text-white px-8 h-12 text-base font-semibold disabled:opacity-40"
             data-testid="button-view-proforma"
           >
-            Build Financial Case {scenarios.length > 0 && <span className="bg-white/20 text-[12px] px-1.5 py-0.5 rounded-full">{scenarios.length} scenario{scenarios.length !== 1 ? "s" : ""}</span>} <ArrowRight className="w-4 h-4" />
+            Build Financial Case <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
       </div>
