@@ -1,5 +1,5 @@
-import { Page, View, Text, StyleSheet, Svg, Path, Image, Font } from "@react-pdf/renderer";
-import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import { Page, View, Text, StyleSheet, Image, Font } from "@react-pdf/renderer";
+import abridgeLogoRed from "@assets/abridge-logo-symbol_1774900660514.png";
 import abridgeFont from "../../assets/fonts/abridge.otf";
 
 Font.register({
@@ -32,13 +32,6 @@ const styles = StyleSheet.create({
     position: "relative",
     padding: 0,
   },
-  curveContainer: {
-    position: "absolute",
-    bottom: 80,
-    right: 0,
-    width: 300,
-    height: 300,
-  },
   contentContainer: {
     flex: 1,
     paddingHorizontal: 54,
@@ -48,7 +41,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   logo: {
-    width: 90,
+    width: 30,
+    height: 30,
     position: "absolute",
     top: 54,
     left: 54,
@@ -133,19 +127,6 @@ export function PDFCoverPage({
   return (
     <Page size="LETTER" style={styles.page}>
       <Image src={abridgeLogoRed} style={styles.logo} />
-
-      <View style={styles.curveContainer}>
-        <Svg width={300} height={300} viewBox="0 0 300 300">
-          <Path
-            d="M 300 0 Q 250 50 200 120 Q 150 190 80 240 Q 40 270 0 300"
-            stroke={colors.primary}
-            strokeWidth={80}
-            fill="none"
-            strokeOpacity={0.08}
-            strokeLinecap="round"
-          />
-        </Svg>
-      </View>
 
       <View style={styles.contentContainer}>
         <Text style={styles.reportLabel}>{reportLabel}</Text>

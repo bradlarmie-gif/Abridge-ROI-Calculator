@@ -13,7 +13,7 @@ import {
   Polyline,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
-import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import abridgeLogoPath from "@assets/abridge-logo-symbol_1774900660514.png";
 
 // ============================================================================
 // TYPES
@@ -848,7 +848,7 @@ const Page1ExecutiveSummary = ({ data }: { data: ExpandPDFData }) => {
           <Text style={styles.heroMetaText}>{today()}</Text>
           <Text style={styles.heroMetaText}>Prepared by {displayPreparedBy}</Text>
         </View>
-        <Image src={abridgeLogoPath} style={{ width: 85, height: 17, marginBottom: 24 }} />
+        <Image src={abridgeLogoPath} style={{ width: 17, height: 17, marginBottom: 24 }} />
         <Text style={styles.heroClientName}>{displayClientName}</Text>
         <Text style={styles.heroTagline}>
           Your Value Realization Report{"\n"}
@@ -963,7 +963,7 @@ const DriverPage = ({ metric, pageNum, data }: { metric: ExpandMetricData; pageN
     <Page size="A4" style={styles.page}>
       {/* Compact Hero */}
       <View style={styles.heroCompact}>
-        <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 12 }} />
+        <Image src={abridgeLogoPath} style={{ width: 14, height: 14, marginBottom: 12 }} />
         <Text style={styles.heroCompactTitle}>{metric.name}</Text>
         <Text style={styles.heroCompactSubtitle}>
           {getMetricTagline()}
@@ -1102,7 +1102,7 @@ const ExpansionPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.heroCompact}>
-        <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 12 }} />
+        <Image src={abridgeLogoPath} style={{ width: 14, height: 14, marginBottom: 12 }} />
         <Text style={styles.heroCompactTitle}>Looking Ahead</Text>
         <Text style={styles.heroCompactSubtitle}>
           Exploring what broader adoption might look like.
@@ -1204,7 +1204,7 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.heroCompact}>
-        <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 12 }} />
+        <Image src={abridgeLogoPath} style={{ width: 14, height: 14, marginBottom: 12 }} />
         <Text style={styles.heroCompactTitle}>The Bottom Line</Text>
         <Text style={styles.heroCompactSubtitle}>
           A snapshot of {displayClientName}'s Abridge journey—ready to share.
