@@ -55,6 +55,24 @@ const s = StyleSheet.create({
   footerText: { fontSize: 8, color: "#CCCCCC" },
   footerRed: { fontSize: 8, color: "#EA2C00", fontWeight: 700 },
   noDataText: { fontSize: 10, color: "#CCCCCC", fontStyle: "italic" },
+  coverPage: { fontFamily: "Manrope", backgroundColor: "#FFFFFF", paddingHorizontal: 54, paddingVertical: 54 },
+  coverLogo: { width: 96, height: 24, objectFit: "contain" as const, marginBottom: 0 },
+  coverTop: { marginBottom: "auto" },
+  coverLabel: { fontSize: 9, color: "#999999", letterSpacing: 2, textTransform: "uppercase" as const, marginBottom: 12, marginTop: 8 },
+  coverTitle: { fontSize: 32, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.2, marginBottom: 12 },
+  coverRule: { width: 48, height: 2, backgroundColor: "#EA2C00", marginBottom: 20 },
+  coverMeta: { fontSize: 10, color: "#888888", marginBottom: 4 },
+  coverDate: { fontSize: 10, color: "#BBBBBB", marginTop: 16 },
+  profilePage: { fontFamily: "Manrope", backgroundColor: "#FFFFFF", paddingHorizontal: 48, paddingVertical: 48 },
+  profileSection: { marginBottom: 28 },
+  profileSectionTitle: { fontSize: 9, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase" as const, marginBottom: 12 },
+  profileRow: { flexDirection: "row" as const, justifyContent: "space-between" as const, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: "#F3F4F6" },
+  profileLabel: { fontSize: 10, color: "#888888" },
+  profileValue: { fontSize: 10, fontWeight: 700, color: "#1A1A1A" },
+  profileHighlight: { fontSize: 22, fontWeight: 700, color: "#EA2C00" },
+  profileHighlightLabel: { fontSize: 9, color: "#999999", marginTop: 2 },
+  profileStatBlock: { flex: 1, alignItems: "center" as const, paddingVertical: 12, paddingHorizontal: 8 },
+  profileStatsRow: { flexDirection: "row" as const, backgroundColor: "#F9FAFB", borderRadius: 8, marginTop: 8 },
 });
 
 export interface DataRequestPDFMetric {
@@ -72,6 +90,16 @@ export interface DataRequestPDFData {
   settings?: string[];
   metrics: DataRequestPDFMetric[];
   generatedAt: Date;
+  organizationName?: string;
+  monthsOnAbridge?: number;
+  goLiveDate?: string | null;
+  totalProviders?: number;
+  liveProviders?: number;
+  mruProviders?: number;
+  totalEncounters?: number;
+  abridgeEncounters?: number;
+  annualContractValue?: number;
+  preparedBy?: string;
 }
 
 function formatVal(n: number | null): string {
@@ -128,6 +156,149 @@ function MetricCardView({ metric, index }: { metric: DataRequestPDFMetric; index
   );
 }
 
+function CoverPage({ data }: { data: DataRequestPDFData }) {
+  const dateStr = data.generatedAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const orgName = data.organizationName || "Your Organization";
+  const allSettings = data.settings && data.settings.length > 0 ? data.settings : [data.setting];
+  const settingLabel = allSettings.map(s => SETTING_LABELS[s] || s).join(", ");
+
+  return (
+    <Page size="A4" style={s.coverPage}>
+      <View style={s.coverTop}>
+        <Image src={abridgeLogo} style={s.coverLogo} />
+        <Text style={s.coverLabel}>Measurement Data Request</Text>
+        <Text style={s.coverTitle}>{orgName}</Text>
+        <View style={s.coverRule} />
+        <Text style={s.coverMeta}>{settingLabel}</Text>
+        {data.monthsOnAbridge ? (
+          <Text style={s.coverMeta}>{data.monthsOnAbridge} months on Abridge</Text>
+        ) : null}
+        {data.preparedBy ? (
+          <Text style={s.coverMeta}>Prepared by {data.preparedBy}</Text>
+        ) : null}
+      </View>
+      <Text style={s.coverDate}>{dateStr}</Text>
+    </Page>
+  );
+}
+
+function PartnerProfilePage({ data }: { data: DataRequestPDFData }) {
+  const hasProviders = data.totalProviders || data.liveProviders || data.mruProviders;
+  const hasEncounters = data.totalEncounters || data.abridgeEncounters;
+  const utilizationRate = data.totalProviders && data.liveProviders
+    ? Math.round((data.liveProviders / data.totalProviders) * 100)
+    : null;
+  const encounterCoverage = data.totalEncounters && data.abridgeEncounters
+    ? Math.round((data.abridgeEncounters / data.totalEncounters) * 100)
+    : null;
+  const allSettings = data.settings && data.settings.length > 0 ? data.settings : [data.setting];
+  const settingLabel = allSettings.map(st => SETTING_LABELS[st] || st).join(", ");
+
+  return (
+    <Page size="A4" style={s.profilePage}>
+      <View style={s.header}>
+        <Image src={abridgeLogo} style={s.logo} />
+        <View style={s.headerRight}>
+          <Text style={s.headerTitle}>Partner Profile</Text>
+          <Text style={s.headerMeta}>{settingLabel}</Text>
+        </View>
+      </View>
+      <View style={s.divider} />
+
+      <View style={s.profileSection}>
+        <Text style={s.profileSectionTitle}>Deployment Overview</Text>
+        {data.organizationName ? (
+          <View style={s.profileRow}>
+            <Text style={s.profileLabel}>Organization</Text>
+            <Text style={s.profileValue}>{data.organizationName}</Text>
+          </View>
+        ) : null}
+        {data.monthsOnAbridge ? (
+          <View style={s.profileRow}>
+            <Text style={s.profileLabel}>Months on Abridge</Text>
+            <Text style={s.profileValue}>{data.monthsOnAbridge} months</Text>
+          </View>
+        ) : null}
+        {data.goLiveDate ? (
+          <View style={s.profileRow}>
+            <Text style={s.profileLabel}>Go-Live Date</Text>
+            <Text style={s.profileValue}>{data.goLiveDate}</Text>
+          </View>
+        ) : null}
+        {data.annualContractValue ? (
+          <View style={s.profileRow}>
+            <Text style={s.profileLabel}>Annual Contract Value</Text>
+            <Text style={s.profileValue}>${data.annualContractValue.toLocaleString()}</Text>
+          </View>
+        ) : null}
+      </View>
+
+      {hasProviders ? (
+        <View style={s.profileSection}>
+          <Text style={s.profileSectionTitle}>Provider Adoption</Text>
+          <View style={s.profileStatsRow}>
+            {data.totalProviders ? (
+              <View style={s.profileStatBlock}>
+                <Text style={s.profileHighlight}>{data.totalProviders.toLocaleString()}</Text>
+                <Text style={s.profileHighlightLabel}>Total Providers</Text>
+              </View>
+            ) : null}
+            {data.liveProviders ? (
+              <View style={s.profileStatBlock}>
+                <Text style={s.profileHighlight}>{data.liveProviders.toLocaleString()}</Text>
+                <Text style={s.profileHighlightLabel}>Live on Abridge</Text>
+              </View>
+            ) : null}
+            {data.mruProviders ? (
+              <View style={s.profileStatBlock}>
+                <Text style={s.profileHighlight}>{data.mruProviders.toLocaleString()}</Text>
+                <Text style={s.profileHighlightLabel}>Monthly Active</Text>
+              </View>
+            ) : null}
+            {utilizationRate !== null ? (
+              <View style={s.profileStatBlock}>
+                <Text style={[s.profileHighlight, { color: "#1A1A1A" }]}>{utilizationRate}%</Text>
+                <Text style={s.profileHighlightLabel}>Utilization Rate</Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
+
+      {hasEncounters ? (
+        <View style={s.profileSection}>
+          <Text style={s.profileSectionTitle}>Encounter Coverage</Text>
+          <View style={s.profileStatsRow}>
+            {data.totalEncounters ? (
+              <View style={s.profileStatBlock}>
+                <Text style={s.profileHighlight}>{data.totalEncounters.toLocaleString()}</Text>
+                <Text style={s.profileHighlightLabel}>Total Encounters</Text>
+              </View>
+            ) : null}
+            {data.abridgeEncounters ? (
+              <View style={s.profileStatBlock}>
+                <Text style={s.profileHighlight}>{data.abridgeEncounters.toLocaleString()}</Text>
+                <Text style={s.profileHighlightLabel}>Abridge Encounters</Text>
+              </View>
+            ) : null}
+            {encounterCoverage !== null ? (
+              <View style={s.profileStatBlock}>
+                <Text style={[s.profileHighlight, { color: "#1A1A1A" }]}>{encounterCoverage}%</Text>
+                <Text style={s.profileHighlightLabel}>Coverage Rate</Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
+
+      <View style={s.footer}>
+        <Text style={s.footerText}>Prepared for your Abridge partner {"\u00B7"} Confidential</Text>
+        <Text style={s.footerRed}>Abridge</Text>
+      </View>
+    </Page>
+  );
+}
+
 function DataRequestDocument({ data }: { data: DataRequestPDFData }) {
   const dateStr = data.generatedAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const metricsWithData = data.metrics.filter(m => m.before !== null || m.after !== null);
@@ -148,6 +319,8 @@ function DataRequestDocument({ data }: { data: DataRequestPDFData }) {
 
   return (
     <Document>
+      <CoverPage data={data} />
+      <PartnerProfilePage data={data} />
       <Page size="A4" style={s.page}>
         <View style={s.header}>
           <View>

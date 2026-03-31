@@ -322,6 +322,17 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
       settings,
       metrics,
       generatedAt: new Date(),
+      organizationName: deployment.organizationName || undefined,
+      monthsOnAbridge: deployment.monthsOnAbridge || undefined,
+      goLiveDate: deployment.goLiveDate
+        ? new Date(deployment.goLiveDate).toLocaleDateString("en-US", { year: "numeric", month: "long" })
+        : undefined,
+      totalProviders: deployment.totalProviders || undefined,
+      liveProviders: deployment.liveProviders || undefined,
+      mruProviders: deployment.mruProviders || undefined,
+      totalEncounters: deployment.totalEncounters || undefined,
+      abridgeEncounters: deployment.abridgeEncounters || undefined,
+      preparedBy: "Abridge Partner Success",
     };
 
     await generateDataRequestPDF(data);
