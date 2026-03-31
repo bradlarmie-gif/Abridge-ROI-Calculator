@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check } from "lucide-react";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import { formatDollar } from "./ambientCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -13,10 +12,9 @@ import {
   computeDomainScore,
   computeCapacityFeedback, computeRevenueFeedback,
   computeWorkforceFeedback, computeRiskFeedback,
-  QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_INTEGRATIONS,
+  QUALITY_ATTRIBUTES, STRATEGIC_INTEGRATIONS, REVENUE_INTEGRATIONS,
   CAPACITY_TIME_USAGE_LABELS,
   type DomainFeedback,
-  CLINICAL_WEEKS, ANNUAL_HOURS,
 } from "./domainCalculations";
 
 interface Screen4Props {
@@ -148,22 +146,12 @@ function BenchmarkContext({ text }: { text: string }) {
   return <p className="text-xs text-[#999999] italic mt-2">{text}</p>;
 }
 
-function FormulaDisplay({ formula }: { formula: string }) {
-  if (!formula) return null;
-  return (
-    <div className="mt-3 pt-3 border-t border-white/10">
-      <p className="text-[12px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Formula</p>
-      {formula.split('\n').map((line, i) => (
-        <p key={i} className="text-xs text-white/50 italic leading-relaxed font-mono">{line}</p>
-      ))}
-    </div>
-  );
-}
 
 export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen4Props) {
   const { state, dispatch } = useAssessment();
   const { inputs } = state;
   const [activeDomain, setActiveDomain] = useState<Domain>(initialDomain || 'capacity');
+  const [teaserOpen, setTeaserOpen] = useState(false);
 
   const parseDomainInputs = (json: string): Record<string, number | string> => {
     try { return JSON.parse(json); } catch { return {}; }
@@ -257,6 +245,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     const idx = DOMAIN_ORDER.indexOf(activeDomain);
     if (idx < DOMAIN_ORDER.length - 1) {
       setActiveDomain(DOMAIN_ORDER[idx + 1]);
+      setTeaserOpen(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       onNext();
@@ -267,6 +256,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     const idx = DOMAIN_ORDER.indexOf(activeDomain);
     if (idx > 0) {
       setActiveDomain(DOMAIN_ORDER[idx - 1]);
+      setTeaserOpen(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       onBack();
@@ -1776,35 +1766,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     }
   };
 
-  const renderImpactValue = (fb: DomainFeedback) => {
-    if (fb.headlineMetric) {
-      return (
-        <p className="font-bold text-xl sm:text-2xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
-          {fb.headlineMetric}
-        </p>
-      );
-    }
-    if (!fb.hasValue && fb.value === null) {
-      return (
-        <p className="text-sm text-white/60 leading-relaxed italic mb-4" data-testid="text-feedback-value">
-          {fb.context || "Enter the inputs above to see your estimated impact."}
-        </p>
-      );
-    }
-    if (fb.value === 0) {
-      return (
-        <p className="font-bold text-3xl sm:text-4xl text-white/50 leading-[1.1] mb-4" data-testid="text-feedback-value">
-          $0
-        </p>
-      );
-    }
-    return (
-      <p className="font-bold text-3xl sm:text-4xl text-[#EA2C00] leading-[1.1] mb-4" data-testid="text-feedback-value">
-        {formatDollar(fb.value || 0)}
-      </p>
-    );
-  };
-
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
       <div className="flex items-center justify-center gap-1 sm:gap-3 mb-8 sm:mb-10">
@@ -1816,7 +1777,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
             <div key={d} className="flex items-center gap-1 sm:gap-3">
               <div className="flex flex-col items-center min-w-0">
                 <button
-                  onClick={() => setActiveDomain(d)}
+                  onClick={() => { setActiveDomain(d); setTeaserOpen(false); }}
                   className={`text-[10px] sm:text-xs font-medium uppercase tracking-[0.5px] sm:tracking-[1.5px] mb-2 px-0.5 sm:px-1 py-1 whitespace-nowrap cursor-pointer transition-colors ${
                     isActive ? 'text-[#EA2C00]' : 'text-[#888888] hover:text-[#EA2C00]'
                   }`}
@@ -2099,428 +2060,236 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         </div>
 
         <motion.div
-          className="w-full md:w-[320px] flex-shrink-0"
+          className="w-full md:w-[300px] flex-shrink-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
           key={`sidebar-${activeDomain}`}
         >
-          <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-20" data-testid="card-domain-feedback">
-            <p className="text-xs font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
-              Estimated Impact
-            </p>
+          <div className="bg-[#1A1A1A] rounded-xl p-5 md:sticky md:top-20 space-y-4" data-testid="card-domain-feedback">
 
-            {feedback ? (
-              <>
-                {renderImpactValue(feedback)}
-
-                {feedback.hasValue && feedback.value !== null && feedback.value > 0 && (
-                  <p className="text-xs text-white/50 italic leading-relaxed mb-3">
-                    {activeDomain === 'capacity' ? (currentState.activationLevel === 4 ? `Measured access revenue based on confirmed patient volume.` : `Access revenue — based on additional patients seen with recovered time.`) :
-                     activeDomain === 'revenue' ? (currentState.activationLevel === 2 ? `Directional estimate — based on your team's assessment applied to ${documentedEncounters.toLocaleString()} encounters.` : currentState.activationLevel === 3 ? `Measured impact — based on your organization's data.` : `Attributed revenue — formally tracked and incorporated into financial planning.`) :
-                     activeDomain === 'workforce' ? `Workforce impact — based on your ${providers.toLocaleString()} providers and your organization's data.` :
-                     ''}
-                  </p>
-                )}
-
-                {currentState.activationLevel && currentState.activationLevel >= 2 && (() => {
-                  const journeyLines: Record<string, Record<number, string>> = {
-                    capacity: {
-                      2: 'Your organization has recovered documentation time. Here\'s where the access decision stands.',
-                      3: 'Your organization has recovered time and decided to deploy it toward access. Here\'s what that\'s producing.',
-                      4: 'Your organization has recovered time, deployed it toward access, and measured the results. Here\'s the downstream impact.',
-                    },
-                    revenue: {
-                      2: 'Your organization has observed documentation affecting reimbursement. Here\'s your directional estimate.',
-                      3: 'Your organization has observed signals and is now measuring impact. Here\'s what the data shows.',
-                      4: 'Your organization has measured documentation-driven revenue. Here\'s how it informs strategy.',
-                    },
-                    workforce: {
-                      2: 'Your organization is measuring in-clinic burden reduction. Here\'s what the data shows.',
-                      3: 'Your organization has measured burden reduction and is modeling its effect on retention.',
-                      4: 'Your organization has modeled retention and is integrating burden data into workforce strategy.',
-                    },
-                    risk: {
-                      2: 'Your organization has observed documentation quality improving. Here\'s how it\'s being tracked.',
-                      3: 'Your organization is actively monitoring documentation quality and connecting it to downstream workflows.',
-                      4: 'Your organization has connected quality to downstream programs. Here\'s the strategic picture.',
-                    },
-                  };
-                  const line = journeyLines[activeDomain]?.[currentState.activationLevel!];
-                  if (!line) return null;
-                  return (
-                    <p className="text-sm text-white/60 leading-relaxed mb-3" data-testid="text-journey-context">
-                      {line}
-                    </p>
-                  );
-                })()}
-
-                <div className="h-px bg-white/10 my-4" />
-
-                <div className="text-sm text-white/80 leading-relaxed mb-4 space-y-2">
-                  {feedback.context.split('\n').filter(Boolean).map((line, i) => (
-                    <p key={i}>{line}</p>
-                  ))}
-                </div>
-
-                {feedback.warningBanner && (
-                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2.5 mb-3" data-testid="text-warning-banner">
-                    <p className="text-sm text-amber-400 font-medium leading-relaxed">
-                      {feedback.warningBanner}
-                    </p>
-                  </div>
-                )}
-
-                {feedback.costOfWaiting && activeDomain !== 'capacity' && activeDomain !== 'revenue' && activeDomain !== 'workforce' && (
-                  <div className="bg-[#EA2C00]/10 border border-[#EA2C00]/30 rounded-lg px-3 py-2.5 mb-3" data-testid="text-cost-of-waiting">
-                    <p className="text-sm text-[#EA2C00] font-medium leading-relaxed">
-                      {feedback.costOfWaiting}
-                    </p>
-                  </div>
-                )}
-
-                <FormulaDisplay formula={feedback.formula} />
-
-                {feedback.footnote && (
-                  <p className="text-xs text-white/40 italic leading-relaxed">
-                    {feedback.footnote}
-                  </p>
-                )}
-
-                {feedback.nextLevelTeaser && (
-                  <p className="text-xs text-white/70 italic leading-relaxed mt-3 pl-3 border-l border-[#EA2C00]/40" data-testid="text-next-level-teaser">
-                    {feedback.nextLevelTeaser}
-                  </p>
-                )}
-
-                {activeDomain === 'workforce' && currentState.activationLevel && (currentState.activationLevel === 3 || currentState.activationLevel === 4) && !feedback.hasValue && (
-                  <p className="text-xs text-[#EA2C00]/80 italic mt-3 leading-relaxed" data-testid="text-workforce-score-note">
-                    Enter {currentState.activationLevel === 3 ? 'turnover rate and replacement cost' : 'strategy integrations or agency/locum spend'} to complete your score
-                  </p>
-                )}
-
-                <p className="text-[12px] text-white/30 italic mt-3">
-                  Estimates based on your inputs. Individual results vary.
+            <div>
+              <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">
+                Estimated Impact
+              </p>
+              {feedback ? (
+                <p className="font-bold text-2xl text-[#EA2C00] leading-tight" data-testid="text-feedback-value">
+                  {feedback.headlineMetric || (feedback.hasValue && feedback.value !== null && feedback.value !== undefined ? formatDollar(feedback.value) : '—')}
                 </p>
-              </>
-            ) : (() => {
-              const domainProvocations: Record<string, string> = {
-                capacity: 'Select the level that best describes your organization\'s current state.',
-                revenue: `${documentedEncounters.toLocaleString()} documented encounters annually. Select the level that describes your revenue cycle's engagement with documentation changes.`,
-                workforce: `${providers} providers with reduced documentation burden. Select a level to estimate the workforce impact.`,
-                risk: `${documentedEncounters.toLocaleString()} encounters with improved documentation. Select the level that best describes your organization today.`,
-              };
-              const provocation = domainProvocations[activeDomain] || "Select your organization's maturity level to see estimated impact.";
-              return (
-                <>
-                  <p className="font-bold text-2xl text-white/30 leading-[1.1] mb-4">—</p>
-                  <div className="h-px bg-white/10 my-4" />
-                  <p className="text-sm text-white/60 leading-relaxed">
-                    {provocation}
-                  </p>
-                </>
-              );
-            })()}
-
-            <div className="h-px bg-white/10 my-5" />
-
-            <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
-              Domain Progress
-            </p>
-            <div className="space-y-2">
-              {DOMAIN_ORDER.map((d) => {
-                const isActive = d === activeDomain;
-                const dState = domainStates[d];
-                const hasLevel = dState.activationLevel !== null;
-                return (
-                  <div key={d} className="flex items-center justify-between text-sm">
-                    <span className={isActive ? 'text-white font-medium' : 'text-white/50'}>
-                      {DOMAIN_LABELS[d]}
-                    </span>
-                    <span className={hasLevel ? 'text-white font-semibold' : 'text-white/30'}>
-                      {hasLevel ? `Level ${dState.activationLevel}` : '—'}
-                    </span>
-                  </div>
-                );
-              })}
+              ) : (
+                <p className="font-bold text-2xl text-white/20 leading-tight">—</p>
+              )}
             </div>
 
             {(() => {
-              const capState = domainStates.capacity;
-              const revState = domainStates.revenue;
-              const capLevel = capState.activationLevel || 0;
-              const revLevel = revState.activationLevel || 0;
-              const capPts = capLevel >= 3 ? ((capState.inputs.additionalPatientsPerMonth as number) || 0) : 0;
-              const revMetric = revLevel >= 3 ? (revState.inputs.revenueMetricType as string) : null;
-              const capHasValue = capPts > 0;
-              const revHasValue = revMetric !== null && (
-                (revMetric === 'wrvu' && ((revState.inputs.measuredWrvuDelta as number) || 0) > 0) ||
-                (revMetric === 'collections' && ((revState.inputs.measuredCollectionsDelta as number) || 0) > 0) ||
-                (revMetric === 'denial_rate' && ((revState.inputs.measuredDenialReduction as number) || 0) > 0)
+              const inp = currentState.inputs;
+              const level = currentState.activationLevel;
+              if (!level) return null;
+
+              const items: string[] = [];
+
+              if (activeDomain === 'capacity') {
+                const ts = (inp.timeSaved as number) || (inputs.timeSavedPerEncounter as number) || 0;
+                if (ts > 0) items.push(`${ts} min saved per encounter`);
+                if (level >= 2) {
+                  const csv = (inp.capacityTimeUsage as string) || '';
+                  csv.split(',').filter(Boolean).forEach(i => {
+                    const label = CAPACITY_TIME_USAGE_LABELS[parseInt(i)];
+                    if (label) items.push(label);
+                  });
+                }
+                if (level >= 3) {
+                  const pts = (inp.additionalPatientsPerMonth as number) || 0;
+                  if (pts > 0) items.push(`${pts} additional patients/provider/mo`);
+                  const conf = (inp.capacityAccessConfidence as string) || '';
+                  if (conf) items.push(`${conf.charAt(0).toUpperCase() + conf.slice(1)} confidence`);
+                }
+                if (level >= 4) {
+                  const csv = (inp.accessOutcomes as string) || '';
+                  csv.split(',').filter(Boolean).forEach(i => {
+                    const opts = ['Panel size increased','New patient slots opened','Same-day/urgent access expanded','Referral-to-visit time reduced','Third-next-available improved','No-show backfill utilized'];
+                    if (opts[parseInt(i)]) items.push(opts[parseInt(i)]);
+                  });
+                }
+              }
+
+              if (activeDomain === 'revenue') {
+                if (level >= 2) {
+                  const csv = (inp.observedMovement as string) || '';
+                  csv.split(',').filter(Boolean).forEach(i => {
+                    const opts = ['wRVU per encounter trending upward','Coding specificity improving (ICD-10 distribution shifting)','Denial rates trending downward','Collections per encounter trending upward','CDI query volume decreasing','Coder productivity improving'];
+                    if (opts[parseInt(i)]) items.push(opts[parseInt(i)]);
+                  });
+                }
+                if (level >= 3) {
+                  const mt = inp.revenueMetricType as string;
+                  if (mt === 'wrvu') { const d = (inp.measuredWrvuDelta as number) || 0; if (d > 0) items.push(`+${d} wRVU delta per encounter`); }
+                  if (mt === 'collections') { const d = (inp.measuredCollectionsDelta as number) || 0; if (d > 0) items.push(`+$${d} collections per encounter`); }
+                  if (mt === 'denial_rate') { const d = (inp.measuredDenialReduction as number) || 0; if (d > 0) items.push(`${d}% denial reduction`); }
+                }
+              }
+
+              if (activeDomain === 'workforce') {
+                const mins = (inp.editTimeSaved as number) || 0;
+                if (mins > 0) items.push(`${mins} min saved per encounter`);
+                if (level >= 2) {
+                  const csv = (inp.observedBehaviors as string) || '';
+                  const behaviorLabels = [
+                    'After-hours documentation time reduced',
+                    'Leaving clinic on time more consistently',
+                    'Taking lunch breaks resumed',
+                    'Work-outside-of-work documentation eliminated or reduced',
+                    'Weekend catch-up work reduced',
+                    'Notes completed before leaving the clinic',
+                    'More present at home / personal time reclaimed',
+                  ];
+                  csv.split(',').filter(Boolean).forEach(i => {
+                    if (behaviorLabels[parseInt(i)]) items.push(behaviorLabels[parseInt(i)]);
+                  });
+                  const ahr = (inp.afterHoursReduction as number) || 0;
+                  if (ahr > 0) items.push(`${ahr} after-hours hrs/provider/wk reduced`);
+                }
+                if (level >= 3) {
+                  const trB = (inp.beforeTurnoverRate as number) || 0;
+                  const trA = (inp.afterTurnoverRate as number) || 0;
+                  if (trB > 0) items.push(`Turnover: ${trB}% → ${trA > 0 ? trA + '%' : 'entering after rate'}`);
+                }
+                if (level >= 4) {
+                  const csv = (inp.workforceStrategies as string) || '';
+                  const stratLabels = [
+                    'Recruitment and hiring — ambient documentation is part of the value proposition to candidates',
+                    'Retention program design — burden reduction is a measured component of retention initiatives',
+                    'Time-to-fill tracking — positions are filling faster partly attributed to improved work environment',
+                    'Provider experience strategy — documentation burden metrics are tracked alongside satisfaction and engagement',
+                    'Staffing model decisions — documentation efficiency informs how shifts, panels, or coverage are structured',
+                    'Agency/locum spend actively managed against burden reduction trends',
+                  ];
+                  csv.split(',').filter(Boolean).forEach(i => {
+                    if (stratLabels[parseInt(i)]) items.push(stratLabels[parseInt(i)]);
+                  });
+                }
+              }
+
+              if (activeDomain === 'risk') {
+                if (level >= 2) {
+                  const approach = inp.monitoringApproach as string;
+                  if (approach) items.push(`Monitoring: ${approach.replace('_', ' ')}`);
+                  const csv = (inp.qualityAttributes as string) || '';
+                  csv.split(',').filter(Boolean).forEach(i => {
+                    if (QUALITY_ATTRIBUTES[parseInt(i)]) items.push(QUALITY_ATTRIBUTES[parseInt(i)]);
+                  });
+                }
+                if (level >= 3) {
+                  const pathway = inp.financialPathway as string;
+                  if (pathway) items.push(`Pathway: ${pathway.toUpperCase()}`);
+                }
+                if (level >= 4) {
+                  const csv = (inp.strategicIntegrations as string) || '';
+                  csv.split(',').filter(Boolean).forEach(i => {
+                    if (STRATEGIC_INTEGRATIONS[parseInt(i)]) items.push(STRATEGIC_INTEGRATIONS[parseInt(i)]);
+                  });
+                }
+              }
+
+              if (items.length === 0) return null;
+
+              return (
+                <div>
+                  <div className="h-px bg-white/[0.08] mb-3" />
+                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">
+                    What you told us
+                  </p>
+                  <div className="space-y-1.5">
+                    {items.map((item, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <span className="text-[#EA2C00] text-[10px] mt-0.5 shrink-0">✓</span>
+                        <span className="text-xs text-white/70 leading-snug">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               );
-              if (capHasValue && revHasValue) {
+            })()}
+
+            {feedback?.context && (
+              <div>
+                <div className="h-px bg-white/[0.08]" />
+                <p className="text-xs text-white/50 leading-relaxed pt-3">
+                  {feedback.context.split(/\.\s+/)[0].replace(/\.$/, '')}.
+                </p>
+              </div>
+            )}
+
+            {feedback?.nextLevelTeaser && (
+              <div>
+                <button
+                  onClick={() => setTeaserOpen(v => !v)}
+                  className="flex items-center gap-1.5 text-[11px] text-white/35 hover:text-white/60 transition-colors"
+                  data-testid="btn-teaser-toggle"
+                >
+                  <span>What unlocks next</span>
+                  <svg className={`w-3 h-3 transition-transform ${teaserOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {teaserOpen && (
+                  <p className="text-xs text-white/50 italic leading-relaxed mt-2 pl-3 border-l border-[#EA2C00]/40" data-testid="text-next-level-teaser">
+                    {feedback.nextLevelTeaser}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div>
+              <div className="h-px bg-white/[0.08] mb-3" />
+              <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">
+                Progress
+              </p>
+              <div className="space-y-2">
+                {DOMAIN_ORDER.map((d) => {
+                  const isActive = d === activeDomain;
+                  const dState = domainStates[d];
+                  const level = dState.activationLevel;
+                  const gapValue = (inputs as any)[`${d}Gap`] as number || 0;
+                  const hasVal = (inputs as any)[`${d}HasValue`] as boolean;
+                  const levelColors: Record<number, string> = { 1: 'text-white/40', 2: 'text-[#F59E0B]', 3: 'text-[#EA2C00]', 4: 'text-[#EA2C00]' };
+                  return (
+                    <div key={d} className={`flex items-center justify-between text-xs ${isActive ? 'opacity-100' : 'opacity-60'}`}>
+                      <span className={`font-medium ${isActive ? 'text-white' : 'text-white/50'}`}>
+                        {DOMAIN_LABELS[d]}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {level ? (
+                          <span className={`text-[10px] font-bold ${levelColors[level] || 'text-white/40'}`}>L{level}</span>
+                        ) : (
+                          <span className="text-white/20 text-[10px]">—</span>
+                        )}
+                        {hasVal && gapValue > 0 ? (
+                          <span className="text-white/70 font-semibold">{formatDollar(gapValue)}</span>
+                        ) : level ? (
+                          <span className="text-white/25 text-[10px]">no value</span>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {(() => {
+                const total = (['capacity','revenue','workforce','risk'] as Domain[]).reduce((sum, d) => {
+                  const v = (inputs as any)[`${d}Gap`] as number || 0;
+                  return sum + v;
+                }, 0);
+                if (total <= 0) return null;
                 return (
-                  <div className="flex gap-2 bg-[#FFFBEB] border border-[#F59E0B]/30 rounded-lg p-3 mt-2 mb-3">
-                    <span className="text-[#92400E] text-sm flex-shrink-0">⚠</span>
-                    <p className="text-xs text-[#92400E] leading-relaxed">
-                      Capacity value reflects additional visits from recovered time. Revenue value reflects improved documentation on existing encounters. Confirm with finance that these use separate patient pools.
-                    </p>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.08]">
+                    <span className="text-[10px] font-semibold text-white/30 uppercase tracking-[1.5px]">Running Total</span>
+                    <span className="text-sm font-bold text-[#EA2C00]">{formatDollar(total)}</span>
                   </div>
                 );
-              }
-              return null;
-            })()}
+              })()}
+            </div>
 
-            {activeDomain === 'workforce' && currentState.activationLevel && (() => {
-              const inp = currentState.inputs;
-
-              const mins = currentState.activationLevel >= 1 ? ((inp.editTimeSaved as number) || 0) : 0;
-              const clinicHrs = mins > 0 ? Math.round(mins * providers * 230 / 60) : 0;
-
-              const behaviorsCsv = currentState.activationLevel >= 2 ? ((inp.observedBehaviors as string) || '') : '';
-              const behaviorCount = behaviorsCsv.split(',').filter(Boolean).length;
-
-              const ahr = currentState.activationLevel >= 2 ? ((inp.afterHoursReduction as number) || 0) : 0;
-              const afterHoursHrs = ahr > 0 ? Math.round(ahr * providers * CLINICAL_WEEKS) : 0;
-
-              const trBefore = currentState.activationLevel >= 3 ? ((inp.beforeTurnoverRate as number) || 0) : 0;
-              const trAfter = currentState.activationLevel >= 3 ? ((inp.afterTurnoverRate as number) || 0) : 0;
-              const rcRaw = (inp.replacementCost as number) || 0;
-              const rc = rcRaw > 0 ? rcRaw : 350000;
-              const retentionValue = (currentState.activationLevel >= 3 && trBefore > 0 && trAfter < trBefore)
-                ? Math.round(providers * ((trBefore - trAfter) / 100) * rc)
-                : null;
-
-              const strategyCsv = (inp.workforceStrategies as string) || '';
-              const strategyCount = currentState.activationLevel >= 4 ? strategyCsv.split(',').filter(Boolean).length : 0;
-
-              const ar = currentState.activationLevel >= 4 ? ((inp.agencyReduction as number) || 0) : 0;
-              const agencyAnnual = ar > 0 ? Math.round(ar * 12) : null;
-
-              const totalDollar = (retentionValue || 0) + (agencyAnnual || 0);
-              const hasDollarValue = retentionValue !== null || agencyAnnual !== null;
-
-              return (
-                <>
-                  <div className="h-px bg-white/10 my-5" />
-                  <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3" data-testid="text-workforce-summary-label">
-                    Workforce Summary
-                  </p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">In-Clinic Time Returned</span>
-                      <span className="text-white font-medium" data-testid="text-workforce-summary-clinic">
-                        {clinicHrs > 0 ? `${clinicHrs.toLocaleString()} hrs/yr` : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Behavioral Changes</span>
-                      <span className="text-white font-medium" data-testid="text-workforce-summary-behaviors">
-                        {currentState.activationLevel >= 2 && behaviorCount > 0 ? `${behaviorCount} documented` : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Retention Value</span>
-                      <span className="text-white font-medium" data-testid="text-workforce-summary-retention">
-                        {retentionValue !== null ? formatDollar(retentionValue) : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Strategic Integrations</span>
-                      <span className="text-white font-medium" data-testid="text-workforce-summary-strategies">
-                        {currentState.activationLevel >= 4 ? `${strategyCount} of 6` : '—'}
-                      </span>
-                    </div>
-                    {hasDollarValue && (
-                      <>
-                        <div className="h-px bg-white/10 my-2" />
-                        <div className="flex items-center justify-between">
-                          <span className="text-white font-semibold">Total Workforce Value</span>
-                          <span className="text-[#EA2C00] font-bold" data-testid="text-workforce-summary-total">
-                            {formatDollar(totalDollar)}
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </>
-              );
-            })()}
-
-            {activeDomain === 'revenue' && currentState.activationLevel && (() => {
-              const inp = currentState.inputs;
-              const observedCsv = (inp.observedMovement as string) || '';
-              const observedCount = observedCsv.split(',').filter(Boolean).length;
-
-              const metricType = inp.revenueMetricType as string | undefined;
-              let measuredImpact: number | null = null;
-              if (metricType === 'wrvu') {
-                const d = (inp.measuredWrvuDelta as number) || 0;
-                if (d > 0) measuredImpact = Math.round(d * documentedEncounters * ((inputs.conversionFactor as number) || 33));
-              } else if (metricType === 'collections') {
-                const d = (inp.measuredCollectionsDelta as number) || 0;
-                if (d > 0) measuredImpact = Math.round(d * documentedEncounters);
-              }
-
-              const attributedRevenue = (inp.recognizedRevenue as number) || 0;
-
-              const totalDollar = attributedRevenue > 0 ? attributedRevenue : measuredImpact !== null ? measuredImpact : null;
-
-              return (
-                <>
-                  <div className="h-px bg-white/10 my-5" />
-                  <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3" data-testid="text-revenue-summary-label">
-                    Revenue Summary
-                  </p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Revenue Signals</span>
-                      <span className="text-white font-medium" data-testid="text-revenue-summary-signals">
-                        {observedCount > 0 ? `${observedCount} signal${observedCount !== 1 ? 's' : ''} observed` : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Measured Impact</span>
-                      <span className="text-white font-medium" data-testid="text-revenue-summary-measured">
-                        {measuredImpact !== null ? formatDollar(measuredImpact) : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Attributed Revenue</span>
-                      <span className="text-white font-medium" data-testid="text-revenue-summary-attributed">
-                        {attributedRevenue > 0 ? formatDollar(attributedRevenue) : '—'}
-                      </span>
-                    </div>
-                    {totalDollar !== null && totalDollar > 0 && (
-                      <>
-                        <div className="h-px bg-white/10 my-2" />
-                        <div className="flex items-center justify-between">
-                          <span className="text-white font-semibold">Total Revenue</span>
-                          <span className="text-[#EA2C00] font-bold" data-testid="text-revenue-summary-total">
-                            {formatDollar(totalDollar)}
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </>
-              );
-            })()}
-
-            {activeDomain === 'capacity' && currentState.activationLevel && (() => {
-              const inp = currentState.inputs;
-              const ts = (inp.timeSaved as number) || (inputs.timeSavedPerEncounter as number) || 0;
-              const recoveredHours = ts > 0 ? Math.round(documentedEncounters * ts / 60) : 0;
-              const fte = ts > 0 ? (recoveredHours / ANNUAL_HOURS).toFixed(1) : null;
-
-              const pts = (inp.additionalPatientsPerMonth as number) || 0;
-              const rp = (inp.redesignedProviders as number) || providers;
-              const accessRevenue = (currentState.activationLevel >= 3 && pts > 0) ? Math.round(pts * rp * 11 * revenuePerVisit) : null;
-
-              const outcomesCsv = (inp.accessOutcomes as string) || '';
-              const outcomeCount = currentState.activationLevel >= 4 ? outcomesCsv.split(',').filter(Boolean).length : 0;
-
-              return (
-                <>
-                  <div className="h-px bg-white/10 my-5" />
-                  <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3" data-testid="text-capacity-summary-label">
-                    Capacity Summary
-                  </p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Time Recovered</span>
-                      <span className="text-white font-medium" data-testid="text-capacity-summary-hours">
-                        {recoveredHours > 0 ? `${recoveredHours.toLocaleString()} hrs/yr${fte ? ` (${fte} FTE)` : ''}` : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Access Revenue</span>
-                      <span className="text-white font-medium" data-testid="text-capacity-summary-access">
-                        {accessRevenue !== null ? formatDollar(accessRevenue) : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Access Outcomes</span>
-                      <span className="text-white font-medium" data-testid="text-capacity-summary-outcomes">
-                        {currentState.activationLevel >= 4 && outcomeCount > 0 ? `${outcomeCount} of 6 tracked` : '—'}
-                      </span>
-                    </div>
-                    {accessRevenue !== null && (
-                      <>
-                        <div className="h-px bg-white/10 my-2" />
-                        <div className="flex items-center justify-between">
-                          <span className="text-white font-semibold">Total Capacity</span>
-                          <span className="text-[#EA2C00] font-bold" data-testid="text-capacity-summary-total">
-                            {formatDollar(accessRevenue)}
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </>
-              );
-            })()}
-
-            {activeDomain === 'risk' && currentState.activationLevel && (() => {
-              const inp = currentState.inputs;
-              const attrCsv = (inp.qualityAttributes as string) || '';
-              const attrCount = currentState.activationLevel >= 2 ? attrCsv.split(',').filter(Boolean).length : 0;
-
-              const monitoringApproach = currentState.activationLevel >= 2 ? (inp.monitoringApproach as string) || '' : '';
-              const monitoringLabel = monitoringApproach === 'realtime' ? 'Real-time' : monitoringApproach === 'systematic' ? 'Structured' : monitoringApproach === 'spot_checks' ? 'Informal' : '';
-
-              const financialPathway = currentState.activationLevel >= 3 ? (inp.financialPathway as string || '') : '';
-              const pathwayLabel = financialPathway === 'mips' ? 'MIPS' : financialPathway === 'denials' ? 'Denials' : financialPathway === 'hcc' ? 'HCC' : financialPathway === 'cdi' ? 'CDI' : financialPathway === 'none_yet' ? 'None yet' : '—';
-
-              const siCsv = (inp.strategicIntegrations as string) || '';
-              const siCount = currentState.activationLevel >= 4 ? siCsv.split(',').filter(Boolean).length : 0;
-
-              const noStrategic = inp.noConfirmedStrategicValue === 'true';
-              const sv = (currentState.activationLevel >= 4 && !noStrategic) ? ((inp.strategicValue as number) || 0) : 0;
-
-              const totalDollar = sv;
-              const hasDollarValue = sv > 0;
-
-              return (
-                <>
-                  <div className="h-px bg-white/10 my-5" />
-                  <p className="text-[12px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3" data-testid="text-quality-summary-label">
-                    Quality Summary
-                  </p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Quality Tracking</span>
-                      <span className="text-white font-medium" data-testid="text-quality-summary-attributes">
-                        {currentState.activationLevel >= 2 && attrCount > 0 ? `${attrCount} of 5${monitoringLabel ? ` · ${monitoringLabel}` : ''}` : '—'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Financial Pathway</span>
-                      <span className="text-white font-medium" data-testid="text-quality-summary-pathway">
-                        {pathwayLabel}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Strategic Areas</span>
-                      <span className="text-white font-medium" data-testid="text-quality-summary-strategic-count">
-                        {currentState.activationLevel >= 4 && siCount > 0 ? `${siCount} of 6` : '—'}
-                      </span>
-                    </div>
-                    {hasDollarValue && (
-                      <>
-                        <div className="h-px bg-white/10 my-2" />
-                        <div className="flex items-center justify-between">
-                          <span className="text-white font-semibold">Total Quality Value</span>
-                          <span className="text-[#EA2C00] font-bold" data-testid="text-quality-summary-total">
-                            {formatDollar(totalDollar)}
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </>
-              );
-            })()}
           </div>
         </motion.div>
       </div>
