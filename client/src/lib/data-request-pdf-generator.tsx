@@ -27,9 +27,13 @@ const s = StyleSheet.create({
   headerRight: { alignItems: "flex-end" },
   headerTitle: { fontSize: 18, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 },
   headerMeta: { fontSize: 9, color: "#999999" },
-  settingBadge: { backgroundColor: "#F5F0EB", borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3, marginTop: 6 },
+  settingBadgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 6 },
+  settingBadge: { backgroundColor: "#F5F0EB", borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
   settingBadgeText: { fontSize: 9, fontWeight: 700, color: "#EA2C00", textTransform: "uppercase", letterSpacing: 1 },
   divider: { borderBottomWidth: 1, borderBottomColor: "#E8E2DA", marginBottom: 24 },
+  sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12, marginTop: 8 },
+  sectionLine: { flex: 1, height: 1, backgroundColor: "#E8E2DA" },
+  sectionLabel: { fontSize: 9, fontWeight: 700, color: "#1A1A1A", textTransform: "uppercase", letterSpacing: 1.5, paddingHorizontal: 10 },
   metricCard: { marginBottom: 16, borderWidth: 1, borderColor: "#E8E2DA", borderRadius: 8, overflow: "hidden" },
   metricHeader: { backgroundColor: "#FAFAF8", paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#F0EDEA" },
   metricName: { fontSize: 11, fontWeight: 700, color: "#1A1A1A" },
@@ -60,10 +64,12 @@ export interface DataRequestPDFMetric {
   after: number | null;
   notes?: string;
   lowerIsBetter?: boolean;
+  setting?: string;
 }
 
 export interface DataRequestPDFData {
   setting: string;
+  settings?: string[];
   metrics: DataRequestPDFMetric[];
   generatedAt: Date;
 }
@@ -73,9 +79,72 @@ function formatVal(n: number | null): string {
   return n.toLocaleString();
 }
 
+function MetricCardView({ metric, index }: { metric: DataRequestPDFMetric; index: number }) {
+  const hasBefore = metric.before !== null;
+  const hasAfter = metric.after !== null;
+  const hasBoth = hasBefore && hasAfter;
+  let delta: number | null = null;
+  let deltaLabel = "";
+  let isPositive = false;
+
+  if (hasBoth && metric.before !== 0) {
+    delta = ((metric.after! - metric.before!) / Math.abs(metric.before!)) * 100;
+    const improved = metric.lowerIsBetter ? delta < 0 : delta > 0;
+    isPositive = improved;
+    deltaLabel = `${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`;
+  }
+
+  return (
+    <View key={index} style={s.metricCard}>
+      <View style={s.metricHeader}>
+        <Text style={s.metricName}>{metric.label}</Text>
+        <Text style={s.metricUnit}>{metric.unitLabel}</Text>
+      </View>
+      <View style={s.metricBody}>
+        <View style={s.valuesRow}>
+          <View style={s.valueBox}>
+            <Text style={s.valueLabel}>Before Abridge</Text>
+            <Text style={s.valueNumber}>{formatVal(metric.before)}</Text>
+          </View>
+          <Text style={s.arrow}>{"\u2192"}</Text>
+          <View style={s.valueBox}>
+            <Text style={s.valueLabel}>With Abridge</Text>
+            <Text style={[s.valueNumber, { color: "#EA2C00" }]}>{formatVal(metric.after)}</Text>
+          </View>
+          {hasBoth && delta !== null && (
+            <View style={isPositive ? s.deltaBox : s.deltaBoxNeg}>
+              <Text style={isPositive ? s.deltaText : s.deltaTextNeg}>{deltaLabel}</Text>
+            </View>
+          )}
+        </View>
+        {metric.notes && (
+          <View style={s.notesBox}>
+            <Text style={s.notesLabel}>Context</Text>
+            <Text style={s.notesText}>{metric.notes}</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
 function DataRequestDocument({ data }: { data: DataRequestPDFData }) {
   const dateStr = data.generatedAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const metricsWithData = data.metrics.filter(m => m.before !== null || m.after !== null);
+  const allSettings = data.settings && data.settings.length > 0 ? data.settings : [data.setting];
+  const isMultiSetting = allSettings.length > 1;
+
+  const groupedBySetting: Record<string, DataRequestPDFMetric[]> = {};
+  if (isMultiSetting) {
+    for (const setting of allSettings) {
+      groupedBySetting[setting] = [];
+    }
+    for (const m of metricsWithData) {
+      const key = m.setting || data.setting;
+      if (!groupedBySetting[key]) groupedBySetting[key] = [];
+      groupedBySetting[key].push(m);
+    }
+  }
 
   return (
     <Document>
@@ -83,8 +152,12 @@ function DataRequestDocument({ data }: { data: DataRequestPDFData }) {
         <View style={s.header}>
           <View>
             <Image src={abridgeLogo} style={s.logo} />
-            <View style={s.settingBadge}>
-              <Text style={s.settingBadgeText}>{SETTING_LABELS[data.setting] || data.setting}</Text>
+            <View style={s.settingBadgeRow}>
+              {allSettings.map((setting) => (
+                <View key={setting} style={s.settingBadge}>
+                  <Text style={s.settingBadgeText}>{SETTING_LABELS[setting] || setting}</Text>
+                </View>
+              ))}
             </View>
           </View>
           <View style={s.headerRight}>
@@ -96,55 +169,26 @@ function DataRequestDocument({ data }: { data: DataRequestPDFData }) {
 
         {metricsWithData.length === 0 ? (
           <Text style={s.noDataText}>No metric data entered.</Text>
-        ) : (
-          metricsWithData.map((metric, i) => {
-            const hasBefore = metric.before !== null;
-            const hasAfter = metric.after !== null;
-            const hasBoth = hasBefore && hasAfter;
-            let delta: number | null = null;
-            let deltaLabel = "";
-            let isPositive = false;
-
-            if (hasBoth && metric.before !== 0) {
-              delta = ((metric.after! - metric.before!) / Math.abs(metric.before!)) * 100;
-              const improved = metric.lowerIsBetter ? delta < 0 : delta > 0;
-              isPositive = improved;
-              deltaLabel = `${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`;
-            }
-
+        ) : isMultiSetting ? (
+          Object.entries(groupedBySetting).map(([setting, metrics]) => {
+            if (metrics.length === 0) return null;
             return (
-              <View key={i} style={s.metricCard}>
-                <View style={s.metricHeader}>
-                  <Text style={s.metricName}>{metric.label}</Text>
-                  <Text style={s.metricUnit}>{metric.unitLabel}</Text>
+              <View key={setting}>
+                <View style={s.sectionHeader}>
+                  <View style={s.sectionLine} />
+                  <Text style={s.sectionLabel}>{SETTING_LABELS[setting] || setting}</Text>
+                  <View style={s.sectionLine} />
                 </View>
-                <View style={s.metricBody}>
-                  <View style={s.valuesRow}>
-                    <View style={s.valueBox}>
-                      <Text style={s.valueLabel}>Before Abridge</Text>
-                      <Text style={s.valueNumber}>{formatVal(metric.before)}</Text>
-                    </View>
-                    <Text style={s.arrow}>{"\u2192"}</Text>
-                    <View style={s.valueBox}>
-                      <Text style={s.valueLabel}>With Abridge</Text>
-                      <Text style={[s.valueNumber, { color: "#EA2C00" }]}>{formatVal(metric.after)}</Text>
-                    </View>
-                    {hasBoth && delta !== null && (
-                      <View style={isPositive ? s.deltaBox : s.deltaBoxNeg}>
-                        <Text style={isPositive ? s.deltaText : s.deltaTextNeg}>{deltaLabel}</Text>
-                      </View>
-                    )}
-                  </View>
-                  {metric.notes && (
-                    <View style={s.notesBox}>
-                      <Text style={s.notesLabel}>Context</Text>
-                      <Text style={s.notesText}>{metric.notes}</Text>
-                    </View>
-                  )}
-                </View>
+                {metrics.map((metric, i) => (
+                  <MetricCardView key={i} metric={metric} index={i} />
+                ))}
               </View>
             );
           })
+        ) : (
+          metricsWithData.map((metric, i) => (
+            <MetricCardView key={i} metric={metric} index={i} />
+          ))
         )}
 
         <View style={s.footer}>
@@ -161,7 +205,9 @@ export async function generateDataRequestPDF(data: DataRequestPDFData): Promise<
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `abridge-measurement-summary-${data.setting}-${new Date().toISOString().slice(0, 10)}.pdf`;
+  const allSettings = data.settings && data.settings.length > 0 ? data.settings : [data.setting];
+  const settingSlug = allSettings.join("-");
+  a.download = `abridge-measurement-summary-${settingSlug}-${new Date().toISOString().slice(0, 10)}.pdf`;
   a.click();
   URL.revokeObjectURL(url);
 }

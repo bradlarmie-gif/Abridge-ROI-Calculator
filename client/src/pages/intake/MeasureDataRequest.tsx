@@ -237,6 +237,12 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     metrics: getMetricsForSetting(s),
   }));
   const allMetrics = settingMetricGroups.flatMap(g => g.metrics);
+  const metricToSetting: Record<string, MeasureCareSetting> = {};
+  for (const g of settingMetricGroups) {
+    for (const m of g.metrics) {
+      metricToSetting[m.id] = g.setting;
+    }
+  }
 
   const defaultCheckedIds = new Set(preseed?.preSelectedIds ?? []);
 
@@ -306,12 +312,14 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           before: entry?.before ?? null,
           after: entry?.after ?? null,
           notes: entry?.notes,
+          setting: metricToSetting[id] || primarySetting,
         };
       })
       .filter((m): m is NonNullable<typeof m> => m !== null && (m.before !== null || m.after !== null));
 
     const data: DataRequestPDFData = {
       setting: primarySetting,
+      settings,
       metrics,
       generatedAt: new Date(),
     };
@@ -326,7 +334,8 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     for (const m of allMetrics) {
       metricLabels[m.id] = m.label;
     }
-    const lines: string[] = [`ABRIDGE — MEASUREMENT SUMMARY (${SETTING_LABELS[primarySetting]})`, ''];
+    const settingNames = settings.map(s => SETTING_LABELS[s]).join(", ");
+    const lines: string[] = [`ABRIDGE — MEASUREMENT SUMMARY (${settingNames})`, ''];
     if (deployment.organizationName) lines.push(`  Organization: ${deployment.organizationName}`);
     if (deployment.monthsOnAbridge) lines.push(`  Months on Abridge: ${deployment.monthsOnAbridge}`);
     if (deployment.totalProviders) lines.push(`  Total providers: ${deployment.totalProviders}`);
@@ -366,10 +375,12 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           <img src={abridgeLogo} alt="Abridge" className="h-6" />
         </div>
 
-        <div className="flex justify-center mb-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
-            {SETTING_LABELS[primarySetting]}
-          </div>
+        <div className="flex justify-center gap-2 flex-wrap mb-4">
+          {settings.map(s => (
+            <div key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
+              {SETTING_LABELS[s]}
+            </div>
+          ))}
         </div>
 
         <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2 text-center font-abridge uppercase tracking-tight" data-testid="text-data-request-title">
