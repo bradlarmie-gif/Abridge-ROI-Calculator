@@ -50,7 +50,6 @@ type DomainConfig = {
   subheadline?: string;
   reframe: string;
   cards: ActivationCard[];
-  framingQuestions?: Record<number, string | undefined>;
   unlockTeasers?: Record<number, string>;
 };
 
@@ -66,12 +65,6 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 3, label: 'Access Measured', description: 'Additional patients are being seen with recovered time.' },
       { level: 4, label: 'Access Impact Tracked', description: 'Downstream access outcomes are tracked and attributed to recovered time.' },
     ],
-    framingQuestions: {
-      1: undefined,
-      2: 'How is your organization using recovered documentation time?',
-      3: 'How many additional patients are being seen with recovered time?',
-      4: 'Which downstream access outcomes are you tracking?',
-    },
     unlockTeasers: {
       2: 'Identify how recovered time is actively being used.',
       3: 'Measure how many additional patients are seen with recovered time.',
@@ -89,12 +82,6 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 3, label: 'Impact Measured', description: 'Before/after analysis completed. Documentation-driven revenue impact quantified.' },
       { level: 4, label: 'Documentation as a Revenue Lever', description: 'Documentation intelligence drives revenue cycle strategy, payer positioning, and financial planning.' },
     ],
-    framingQuestions: {
-      1: undefined,
-      2: 'What movement has your team observed since deployment?',
-      3: undefined,
-      4: undefined,
-    },
     unlockTeasers: {
       2: 'Observe trends in coding, denials, and collections.',
       3: 'Complete a before/after analysis to quantify documentation-driven revenue impact.',
@@ -112,12 +99,6 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 3, label: 'Retention Confirmed', description: 'Turnover rate has measurably changed. The financial value of improved retention is calculated.' },
       { level: 4, label: 'Workforce Strategically Managed', description: 'Documentation burden data informs recruitment, retention program design, staffing models, and workforce planning at the organizational level.' },
     ],
-    framingQuestions: {
-      1: undefined,
-      2: undefined,
-      3: undefined,
-      4: undefined,
-    },
     unlockTeasers: {
       2: 'Observe and document behavioral changes in provider patterns outside the clinic.',
       3: 'Connect burden reduction to before/after turnover rate changes.',
@@ -135,12 +116,6 @@ const DOMAIN_CONFIGS: Record<Domain, DomainConfig> = {
       { level: 3, label: 'Downstream Connected', description: 'Documentation quality improvements are connected to downstream programs — CDI, coding accuracy, quality measures, HCC/risk adjustment, or denial reduction.' },
       { level: 4, label: 'Documentation as a Strategic Asset', description: 'Documentation quality informs organizational strategy — quality programs, value-based care, HCC/risk adjustment, compliance governance, and AI readiness.' },
     ],
-    framingQuestions: {
-      1: 'Have any downstream teams — coding, CDI, compliance — started working with the improved documentation?',
-      2: undefined,
-      3: undefined,
-      4: undefined,
-    },
     unlockTeasers: {
       2: 'Track which documentation quality dimensions are improving.',
       3: 'Connect documentation quality to downstream programs — CDI, coding, HCC capture, or denial reduction.',
