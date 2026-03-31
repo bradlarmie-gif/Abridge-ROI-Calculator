@@ -35,7 +35,7 @@ export default function DataRequestModal({ open, onOpenChange, url }: DataReques
               Share with Your Partner
             </DialogTitle>
             <p className="text-[#AAAAAA] text-sm mt-1">
-              Send this link so your client can fill out the data request form.
+              Send this link so your partner can fill out the data request form.
             </p>
           </DialogHeader>
         </div>
@@ -43,7 +43,7 @@ export default function DataRequestModal({ open, onOpenChange, url }: DataReques
         <div className="px-6 py-5 space-y-4 bg-white">
           {[
             { n: 1, text: "Copy the link below" },
-            { n: 2, text: "Send it to your client or internal champion" },
+            { n: 2, text: "Send it to your partner or internal champion" },
             { n: 3, text: "They fill out the form and send it back to you" },
           ].map(({ n, text }) => (
             <div key={n} className="flex items-start gap-3">

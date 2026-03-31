@@ -54,7 +54,7 @@ export function PDFExportModal({ open, onClose, onExport, isExporting, documentT
             Export Report
           </DialogTitle>
           <DialogDescription>
-            Personalize your PDF report with client and preparer details.
+            Personalize your PDF report with partner and preparer details.
           </DialogDescription>
         </DialogHeader>
 
