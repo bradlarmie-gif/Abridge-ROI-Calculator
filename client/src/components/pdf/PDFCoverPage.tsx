@@ -95,9 +95,9 @@ const styles = StyleSheet.create({
   cornerMark: {
     position: "absolute",
     bottom: 80,
-    right: 0,
-    width: 200,
-    height: 200,
+    right: 20,
+    width: 260,
+    height: 260,
     opacity: 0.06,
   },
   disclaimer: {
