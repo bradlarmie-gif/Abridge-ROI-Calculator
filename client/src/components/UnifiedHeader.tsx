@@ -86,8 +86,8 @@ export function UnifiedHeader({
     e.stopPropagation();
     if (onHome) {
       onHome();
-    } else {
-      window.location.href = "/";
+    } else if (onBack) {
+      onBack();
     }
   };
 
@@ -107,7 +107,7 @@ export function UnifiedHeader({
         {/* Left: Logo + Back */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
           <a 
-            href="/" 
+            href="#" 
             onClick={handleLogoClick}
             className="flex items-center transition-opacity hover:opacity-70 cursor-pointer flex-shrink-0"
             data-testid="link-logo-home"

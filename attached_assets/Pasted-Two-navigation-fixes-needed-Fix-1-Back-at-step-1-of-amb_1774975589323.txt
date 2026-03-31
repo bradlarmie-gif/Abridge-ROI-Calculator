@@ -1,0 +1,67 @@
+Two navigation fixes needed:
+
+  Fix 1 — Back at step 1 of ambient flow should return to path-selection, not jump to journey
+
+  File: client/src/pages/switch/SwitchUnifiedFlow.tsx
+
+  In the "ambient-flow" case of getPageContent() (around line 89–98), change onBack={onBack} to onBack={handleBackToPathSelection}:
+
+  case "ambient-flow":
+    return (
+      <AssessmentProvider>
+        <AmbientNarrativeFlow
+          onBack={handleBackToPathSelection}   // ← was onBack
+          onBackToJourney={onBackToJourney}
+          onNavigateToExplore={onExploreAmbientAI}
+        />
+      </AssessmentProvider>
+    );
+
+  handleBackToPathSelection is already defined in the same file — it sets phase to "path-selection". This makes the Back button at step 1 of the ambient assessment correctly return to the path-selection
+  screen, not jump all the way to the journey selector.
+
+  ---
+  Fix 2 — Logo click should always navigate to journey (not cause a full-page reload to splash)
+
+  File: client/src/pages/switch/AmbientNarrativeFlow.tsx
+
+  The handleHome function currently has a fallback to window.location.href = "/" if onBackToJourney is undefined. This causes a full-page reload which lands on the splash screen. Replace it with a guaranteed
+   no-reload approach:
+
+  const handleHome = () => {
+    if (onBackToJourney) {
+      onBackToJourney();
+    } else if (onBack) {
+      onBack();
+    }
+    // No window.location.href fallback — never force a full-page reload
+  };
+
+  File: client/src/components/UnifiedHeader.tsx
+
+  Same pattern — if onHome is not provided, fall back to calling onBack() instead of window.location.href = "/":
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onHome) {
+      onHome();
+    } else if (onBack) {
+      onBack();
+    }
+    // Removed: window.location.href = "/" — this caused full-page reload → splash screen
+  };
+
+  Also change the anchor's href attribute from href="/" to href="#" to prevent any browser-level navigation if the React handler is bypassed:
+
+  <a
+    href="#"                         // ← was href="/"
+    onClick={handleLogoClick}
+    className="flex items-center transition-opacity hover:opacity-70 cursor-pointer flex-shrink-0"
+    data-testid="link-logo-home"
+  >
+
+  ---
+  These two changes together fix:
+  1. Back button at step 1 → goes to path-selection (not journey)
+  2. Logo click → stays in React app, navigates to journey via callback (not full-page reload → splash)

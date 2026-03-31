@@ -75,8 +75,11 @@ export default function AmbientNarrativeFlow({
   };
 
   const handleHome = () => {
-    if (onBackToJourney) onBackToJourney();
-    else window.location.href = "/";
+    if (onBackToJourney) {
+      onBackToJourney();
+    } else if (onBack) {
+      onBack();
+    }
   };
 
   const renderScreen = () => {

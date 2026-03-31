@@ -90,7 +90,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
         return (
           <AssessmentProvider>
             <AmbientNarrativeFlow
-              onBack={onBack}
+              onBack={handleBackToPathSelection}
               onBackToJourney={onBackToJourney}
               onNavigateToExplore={onExploreAmbientAI}
             />
