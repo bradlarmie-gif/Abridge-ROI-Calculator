@@ -500,7 +500,7 @@ function FinancialShapePage({ data }: { data: AmbientAssessmentPDFData }) {
             );
           })}
           <Text style={{ fontSize: 7.5, color: "#AAAAAA", marginTop: 10, fontStyle: "italic" }}>
-            {"Compounds because measurement enables optimization \u2014 organizations that measure early improve faster, widening the gap with each passing quarter. Not a projection for your organization."}
+            {"3-year value assumes 55% realization in Year 1 as deployment scales, 75% in Year 2, and 85% in Year 3 as utilization matures \u2014 consistent with typical ambient AI adoption curves. The \u201Cpermanently lost\u201D figures reflect quarters of delayed measurement multiplied by the adoption-curve delta observed between organizations that formalize measurement in Year 1 vs. Year 2+. These are illustrative scenarios, not projections. Methodology available upon request."}
           </Text>
         </View>
       )}
@@ -1112,6 +1112,29 @@ function TheQuestionsPage({ data }: { data: AmbientAssessmentPDFData }) {
         </View>
       ))}
 
+      {/* Next Steps CTA */}
+      <View style={{ marginTop: 28, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.15)", paddingTop: 20 }}>
+        <Text style={{ fontSize: 9, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+          {"What Comes Next"}
+        </Text>
+        <Text style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", marginBottom: 6 }}>
+          {"Schedule a Working Session"}
+        </Text>
+        <Text style={{ fontSize: 9.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.6, marginBottom: 14 }}>
+          {"The gaps identified in this assessment are closeable \u2014 but only with intentional measurement. A 60-minute working session with your Abridge partner team will map your fastest path from where you are to confirmed, board-ready ROI."}
+        </Text>
+        <View style={{ flexDirection: "row", gap: 24 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 8.5, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>{"In That Session"}</Text>
+            <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.65)", lineHeight: 1.6 }}>{"\u2022 Prioritize the 1\u20132 domains with the fastest path to confirmed value\n\u2022 Identify the data sources already available in your systems\n\u2022 Define a 90-day measurement sprint with clear owners"}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 8.5, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>{"To Get Started"}</Text>
+            <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.65)", lineHeight: 1.6 }}>{"Contact your Abridge partner success manager or reach out to\npartnersuccess@abridge.com"}</Text>
+          </View>
+        </View>
+      </View>
+
       <View style={{ marginTop: "auto" }}>
         <View style={{ height: 1, backgroundColor: "rgba(255,255,255,0.08)", marginBottom: 12 }} />
         <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.25)", lineHeight: 1.6 }}>
@@ -1119,7 +1142,7 @@ function TheQuestionsPage({ data }: { data: AmbientAssessmentPDFData }) {
         </Text>
       </View>
 
-      <PageFooter pageNum={8} orgName={data.organizationName} dark />
+      <PageFooter pageNum={10} orgName={data.organizationName} dark />
     </Page>
   );
 }
@@ -1158,6 +1181,69 @@ const opportunityText: Record<string, Record<number, string>> = {
 export { opportunityText };
 
 // ============================================================================
+// METHODOLOGY PAGE
+// ============================================================================
+
+function MethodologyPage({ data }: { data: AmbientAssessmentPDFData }) {
+  return (
+    <Page size="LETTER" style={s.whitePage} wrap={false}>
+      <View style={s.redRule} />
+      <Text style={s.eyebrow}>Methodology & Sources</Text>
+
+      <View style={{ flexDirection: "row", gap: 28 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4, marginTop: 0 }}>How Scores Are Calculated</Text>
+          <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
+            {"Each domain is assessed on a 1\u20134 activation scale. Level 1 indicates measured time recovery with no operational response. Level 4 indicates full integration into strategic planning with board-level reporting. The overall maturity score (0\u2013100) is a weighted composite of domain scores, weighted by typical value contribution at each activation level."}
+          </Text>
+
+          <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Confirmed vs. Benchmark Values</Text>
+          <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
+            {"Values labeled \u201CConfirmed\u201D are derived directly from your stated inputs using conservative formulas (11-month annual projection with confidence discounts applied based on measurement maturity). Values labeled \u201CBenchmark Range\u201D are based on organizations of comparable size and specialty mix from published sources. Benchmark ranges are illustrative, not projections."}
+          </Text>
+
+          <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Capacity Domain</Text>
+          <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
+            {"Time recovered is calculated as: minutes saved per encounter \u00D7 annual documented encounters \u00F7 60. Access revenue at Level 3+ is calculated as: additional patients/provider/month \u00D7 active providers \u00D7 11 months \u00D7 revenue per visit. Source: MGMA Physician Compensation and Production Report."}
+          </Text>
+
+          <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Revenue Domain</Text>
+          <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
+            {"wRVU lift: delta wRVU \u00D7 annual encounters \u00D7 conversion factor. Collections lift: delta collections rate \u00D7 annual billed amount. Denial reduction: denial volume \u00D7 reduction rate \u00D7 average denial value. Source: MGMA, CMS Physician Fee Schedule, published denial management literature."}
+          </Text>
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4, marginTop: 0 }}>Workforce Domain</Text>
+          <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
+            {"Retention value: providers \u00D7 (pre-deployment turnover rate \u2212 post-deployment turnover rate) \u00D7 replacement cost. Default replacement cost: $350,000/physician (AMGA Physician Replacement Cost Study, 2022). Benchmark retention improvement assumes 0.6% net retention from documented burnout reduction, consistent with published ambient AI outcomes studies."}
+          </Text>
+
+          <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Quality / Risk Domain</Text>
+          <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
+            {"MIPS: score improvement \u00D7 4% payment adjustment \u00D7 $10,000/provider/year. HCC capture: additional codes \u00D7 $1,200 average revenue per HCC code (CMS RAF methodology). CDI savings: query reduction \u00D7 $50/query (ACDIS CDI Benchmark Report). Quality benchmark range: $800\u2013$2,000 per provider annually (NEJM Catalyst, Vizient Quality Analytics)."}
+          </Text>
+
+          <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Key Assumptions</Text>
+          <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
+            {"\u2022 Annual projection uses 11 months (conservative, excludes go-live month)\n\u2022 Confidence discounts: Estimated inputs discounted 20%; Aspirational inputs discounted 40%\n\u2022 3-year trajectory: 55% Year 1 / 75% Year 2 / 85% Year 3 utilization ramp\n\u2022 All dollar values in current USD; no inflation adjustment applied"}
+          </Text>
+
+          <View style={{ backgroundColor: "#F5F3EF", borderRadius: 4, padding: 12, marginTop: 4 }}>
+            <Text style={{ fontSize: 8.5, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Sources</Text>
+            <Text style={{ fontSize: 8, color: "#777777", lineHeight: 1.7 }}>
+              {"MGMA Physician Compensation and Production Report (2023)\nAMGA Physician Replacement Cost Study (2022)\nCMS Physician Fee Schedule and RAF Methodology\nACDIS Clinical Documentation Improvement Benchmark Report\nNEJM Catalyst Value-Based Care Analytics\nVizient Quality and Accountability Study\nPublished ambient AI outcomes studies (2021\u20132024)"}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <PageFooter pageNum={9} orgName={data.organizationName} />
+    </Page>
+  );
+}
+
+// ============================================================================
 // DOCUMENT ASSEMBLY
 // ============================================================================
 
@@ -1165,9 +1251,9 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
   return (
     <Document>
       <PDFCoverPage
-        reportLabel="Ambient Assessment"
-        title="Ambient Maturity Assessment"
-        clientName={data.organizationName || "Your Organization"}
+        reportLabel="Ambient AI Value Assessment"
+        title={data.organizationName || "Your Organization"}
+        subtitle="Ambient AI Value Assessment"
         preparedBy={data.preparedBy || "Abridge Partner Success"}
         disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect published industry sources. Individual results vary."
       />
@@ -1178,6 +1264,7 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
       <DomainPage domainKey="revenue" data={data} pageNum={5} />
       <DomainPage domainKey="workforce" data={data} pageNum={6} />
       <DomainPage domainKey="risk" data={data} pageNum={7} />
+      <MethodologyPage data={data} />
       <TheQuestionsPage data={data} />
     </Document>
   );
