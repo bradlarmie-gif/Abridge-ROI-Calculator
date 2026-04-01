@@ -359,12 +359,6 @@ export function computeRevenueFeedback(
     const metricType = inputs.revenueMetricType as string | undefined;
     const direction = (inputs.revenueMetricDirection as string) || 'increase';
     const isDecrease = direction === 'decrease';
-    const attributionConfidence = (inputs.attributionConfidence as string) || 'medium';
-    const attributionMultiplier =
-      attributionConfidence === 'high' ? 0.90 :
-      attributionConfidence === 'low' ? 0.50 : 0.70;
-    const attributionPct = Math.round(attributionMultiplier * 100);
-
     if (!metricType) {
       return {
         label: 'Impact Measured',
@@ -398,15 +392,14 @@ export function computeRevenueFeedback(
           nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
-      const rawImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);
-      const revenueImpact = Math.round(rawImpact * attributionMultiplier);
+      const revenueImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);
       return {
         label: 'Impact Measured',
         value: revenueImpact, hasValue: true,
         headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,
-        context: `wRVU per encounter increased ${wrvuDelta} × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(rawImpact)}\n\n${attributionPct}% attribution applied · ${formatDollar(revenueImpact)}/year\n\nBased on your organization's measured data.`,
-        formula: `[rawImpact] = ${wrvuDelta} × ${documentedEncounters.toLocaleString()} × $${conversionFactor} = ${formatDollar(rawImpact)}\n[revenueImpact] = ${formatDollar(rawImpact)} × ${attributionPct}% = ${formatDollar(revenueImpact)}`,
-        footnote: `CMS conversion factor from your baseline inputs. ${attributionPct}% attribution confidence applied. Individual results vary.`,
+        context: `wRVU per encounter increased ${wrvuDelta} × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(revenueImpact)}.\n\nBased on your organization's measured data. No attribution discount applied — Level 3 uses your confirmed figures directly.`,
+        formula: `[revenueImpact] = ${wrvuDelta} × ${documentedEncounters.toLocaleString()} × $${conversionFactor} = ${formatDollar(revenueImpact)}`,
+        footnote: `CMS conversion factor from your baseline inputs. Individual results vary.`,
         nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }
@@ -433,15 +426,14 @@ export function computeRevenueFeedback(
           nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
-      const rawImpact = Math.round(collectionsDelta * documentedEncounters);
-      const revenueImpact = Math.round(rawImpact * attributionMultiplier);
+      const revenueImpact = Math.round(collectionsDelta * documentedEncounters);
       return {
         label: 'Impact Measured',
         value: revenueImpact, hasValue: true,
         headlineMetric: `${formatDollar(revenueImpact)} in measured revenue impact`,
-        context: `${formatDollar(collectionsDelta)} increase per encounter × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(rawImpact)}\n\n${attributionPct}% attribution applied · ${formatDollar(revenueImpact)}/year\n\nBased on your organization's measured data.`,
-        formula: `[rawImpact] = ${formatDollar(collectionsDelta)} × ${documentedEncounters.toLocaleString()} = ${formatDollar(rawImpact)}\n[revenueImpact] = ${formatDollar(rawImpact)} × ${attributionPct}% = ${formatDollar(revenueImpact)}`,
-        footnote: `${attributionPct}% attribution confidence applied. Individual results vary.`,
+        context: `${formatDollar(collectionsDelta)} increase per encounter × ${documentedEncounters.toLocaleString()} encounters = ${formatDollar(revenueImpact)}.\n\nBased on your organization's measured data. No attribution discount applied — Level 3 uses your confirmed figures directly.`,
+        formula: `[revenueImpact] = ${formatDollar(collectionsDelta)} × ${documentedEncounters.toLocaleString()} = ${formatDollar(revenueImpact)}`,
+        footnote: `Individual results vary.`,
         nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }

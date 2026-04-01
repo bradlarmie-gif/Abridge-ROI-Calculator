@@ -777,42 +777,6 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
             )}
           </AnimatePresence>
 
-          {metricType && (
-            <div className="mt-4">
-              <p className="text-xs font-semibold text-[#1A1A1A] mb-2">
-                How much of this improvement is attributable to ambient documentation?
-              </p>
-              <div className="flex flex-col gap-2">
-                {[
-                  { id: 'high', label: 'Primarily — we compared pre/post with ambient as the main change' },
-                  { id: 'medium', label: 'Partially — other factors also contributed' },
-                  { id: 'low', label: 'Uncertain — we measured the outcome but haven\'t isolated the cause' },
-                ].map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => setDomainInput('attributionConfidence', opt.id)}
-                    className={`rounded-lg p-3 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${
-                      (currentState.inputs.attributionConfidence as string || 'medium') === opt.id
-                        ? 'bg-[#EA2C00]/5 border-2 border-[#EA2C00] text-black font-medium'
-                        : 'bg-white/80 border border-[#E5E7EB] text-[#525252] hover:border-[#D1D5DB]'
-                    }`}
-                    data-testid={`radio-attribution-${opt.id}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${
-                        (currentState.inputs.attributionConfidence as string || 'medium') === opt.id ? 'border-[#EA2C00] bg-[#EA2C00]' : 'border-[#CCCCCC] bg-white'
-                      }`} />
-                      <span>{opt.label}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-[#888888] italic mt-1.5">
-                Applied as a multiplier to the measured value: High = 90%, Partial = 70%, Uncertain = 50%.
-              </p>
-            </div>
-          )}
         </div>
       );
     }
