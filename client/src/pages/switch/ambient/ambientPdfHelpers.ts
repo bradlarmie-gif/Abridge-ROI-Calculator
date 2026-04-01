@@ -157,11 +157,15 @@ export function buildUserInputsSummary(domain: Domain, level: number, raw: Recor
     }
     if (level === 3) {
       if (raw.financialPathway) {
-        const pathLabels: Record<string, string> = { mips: 'MIPS / quality measures', denials: 'Denial rate reduction', none_yet: 'No pathway connected yet' };
+        const pathLabels: Record<string, string> = { mips: 'MIPS / quality measures', denials: 'Denial rate reduction', hcc: 'HCC / risk adjustment', cdi: 'CDI program efficiency', none_yet: 'No pathway connected yet' };
         out['Financial pathway'] = pathLabels[String(raw.financialPathway)] || String(raw.financialPathway);
       }
       if (raw.financialPathway === 'mips' && raw.mipsScoreImprovement) out['MIPS score improvement'] = `${raw.mipsScoreImprovement} points`;
       if (raw.financialPathway === 'denials' && raw.denialReductionPct) out['Denial rate reduction'] = `${raw.denialReductionPct}%`;
+      if (raw.cdiQueriesBefore && raw.cdiQueriesAfter) {
+        const reduction = Number(raw.cdiQueriesBefore) - Number(raw.cdiQueriesAfter);
+        if (reduction > 0) out['CDI query reduction'] = `${reduction} fewer queries/month`;
+      }
     }
     if (level === 4) {
       const si = resolveChecklist(raw.strategicIntegrations as string, STRATEGIC_INTEGRATIONS_LABELS);

@@ -1647,6 +1647,59 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               </motion.div>
             )}
           </AnimatePresence>
+
+          <p className="text-xs text-[#888888] italic leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+            This figure should capture CDI efficiency savings, quality program improvements, and penalty avoidance — not documentation-driven revenue impact (wRVU, collections, denials), which lives in the Revenue domain.
+          </p>
+
+          <div className="pt-2">
+            <p className="text-sm font-semibold text-[#1A1A1A] mb-1">CDI query reduction calculator</p>
+            <p className="text-xs text-[#888888] mb-3 leading-relaxed">
+              If you don't have a confirmed downstream value, use this to estimate CDI efficiency savings from reduced query volume. Your CDI team will have these numbers.
+            </p>
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+                  CDI queries per month — before Abridge
+                </label>
+                <FormattedNumberInput
+                  value={(currentState.inputs.cdiQueriesBefore as number) || 0}
+                  onChange={(v) => setDomainInput('cdiQueriesBefore', Math.max(0, v))}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-cdi-queries-before"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+                  CDI queries per month — with Abridge
+                </label>
+                <FormattedNumberInput
+                  value={(currentState.inputs.cdiQueriesAfter as number) || 0}
+                  onChange={(v) => setDomainInput('cdiQueriesAfter', Math.max(0, v))}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-cdi-queries-after"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+                  Cost per CDI query to resolve ($)
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-[#888888]">$</span>
+                  <FormattedNumberInput
+                    value={(currentState.inputs.cdiQueryCost as number) || 100}
+                    onChange={(v) => setDomainInput('cdiQueryCost', Math.max(0, v))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-cdi-query-cost"
+                  />
+                </div>
+                <BenchmarkContext text="Industry benchmark: $50–$150 per query (physician time + CDI analyst time to resolve). Default $100." />
+              </div>
+            </div>
+          </div>
         </div>
       );
     }
@@ -1825,6 +1878,11 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                   Don't have a confirmed number yet
                 </label>
               </div>
+              {currentState.inputs.noConfirmedStrategicValue === 'true' && (
+                <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+                  Organizations at this level typically find value across: quality penalty avoidance ($10K–$50K per at-risk provider), VBC and HCC capture improvement ($200K–$2M+ for risk-bearing populations), and compliance governance programs. These figures require formal attribution by your finance and quality leadership.
+                </p>
+              )}
             </>
           )}
         </div>

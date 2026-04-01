@@ -1,0 +1,124 @@
+Replit Prompt: Quality domain — add CDI calculator at L3, fix double-count framing, add L4 benchmark guidance                                                                                                
+                                              
+  Changes across two files.                                                                                                                                                                                    
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  FILE 1: client/src/pages/switch/ambient/Screen4Domains.tsx
+                                                                                                                                                                                                               
+  Change A — L3: add anti-double-count note and CDI calculator below the existing downstreamValue input block.
+                                              
+  In renderRiskInputs(), find the level === 3 return block. It has a downstreamValue input and a noDownstreamValue checkbox. After that entire block (after the closing </div> of the noDownstreamValue        
+  section), add:                          
+                                                                                                                                                                                                               
+  <p className="text-xs text-[#888888] italic leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">                                                                                                                    
+    This figure should capture CDI efficiency savings, quality program improvements, and penalty avoidance — not documentation-driven revenue impact (wRVU, collections, denials), which lives in the Revenue  
+  domain.                                                                                                                                                                                                      
+  </p>                                                                                                                                                                                                         
+   
+  <div className="pt-2">                                                                                                                                                                                       
+    <p className="text-sm font-semibold text-[#1A1A1A] mb-1">CDI query reduction calculator</p>           
+    <p className="text-xs text-[#888888] mb-3 leading-relaxed">                                                                                                                                                
+      If you don't have a confirmed downstream value, use this to estimate CDI efficiency savings from reduced query volume. Your CDI team will have these numbers.
+    </p>                                      
+    <div className="flex flex-col gap-3">                                                                                                                                                                      
+      <div>                                                                                                                                                                                                    
+        <label className="block text-sm font-medium text-[#1A1A1A] mb-1">                                                                                                                                      
+          CDI queries per month — before Abridge                                                                                                                                                               
+        </label>                                                                                                                                                                                               
+        <FormattedNumberInput                                                                             
+          value={(currentState.inputs.cdiQueriesBefore as number) || 0}                                                                                                                                        
+          onChange={(v) => setDomainInput('cdiQueriesBefore', Math.max(0, v))}
+          placeholder=""                                                                                                                                                                                       
+          className="w-full h-12 bg-white border-[#E5E7EB]"                                               
+          data-testid="input-cdi-queries-before"                                                                                                                                                               
+        />                                    
+      </div>                                                                                                                                                                                                   
+      <div>                                                                                               
+        <label className="block text-sm font-medium text-[#1A1A1A] mb-1">                                                                                                                                      
+          CDI queries per month — with Abridge
+        </label>                                                                                                                                                                                               
+        <FormattedNumberInput                                                                             
+          value={(currentState.inputs.cdiQueriesAfter as number) || 0}
+          onChange={(v) => setDomainInput('cdiQueriesAfter', Math.max(0, v))}                                                                                                                                  
+          placeholder=""                      
+          className="w-full h-12 bg-white border-[#E5E7EB]"                                                                                                                                                    
+          data-testid="input-cdi-queries-after"                                                           
+        />                                                                                                                                                                                                     
+      </div>
+      <div>                                                                                                                                                                                                    
+        <label className="block text-sm font-medium text-[#1A1A1A] mb-1">                                 
+          Cost per CDI query to resolve ($)   
+        </label>                          
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-[#888888]">$</span>                                                                                                                                                    
+          <FormattedNumberInput               
+            value={(currentState.inputs.cdiQueryCost as number) || 100}                                                                                                                                        
+            onChange={(v) => setDomainInput('cdiQueryCost', Math.max(0, v))}                              
+            placeholder=""                                                                                                                                                                                     
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-cdi-query-cost"                                                                                                                                                                 
+          />                                                                                                                                                                                                   
+        </div>
+        <BenchmarkContext text="Industry benchmark: $50–$150 per query (physician time + CDI analyst time to resolve). Default $100." />                                                                       
+      </div>                                                                                              
+    </div>                                
+  </div>
+                                                                                                                                                                                                               
+  Change B — L4: add benchmark guidance when noConfirmedStrategicValue is checked.
+                                                                                                                                                                                                               
+  In renderRiskInputs(), find the level 4 return block. It has a strategicValue input and a noConfirmedStrategicValue checkbox. Find the conditional block that shows when noConfirmedStrategicValue === 'true'
+   (similar to the revenue domain's benchmark note). If it doesn't exist, add it after the noConfirmedStrategicValue checkbox:                                                                                 
+   
+  {currentState.inputs.noConfirmedStrategicValue === 'true' && (                                                                                                                                               
+    <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">        
+      Organizations at this level typically find value across: quality penalty avoidance ($10K–$50K per at-risk provider), VBC and HCC capture improvement ($200K–$2M+ for risk-bearing populations), and      
+  compliance governance programs. These figures require formal attribution by your finance and quality leadership.
+    </p>                                                                                                                                                                                                       
+  )}
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  FILE 2: client/src/pages/switch/ambient/domainCalculations.ts                                                                                                                                                
+                                                                                                          
+  Change C — L3: compute CDI savings and use as fallback when no downstreamValue is entered.
+                                              
+  In computeRiskFeedback, find the if (level === 3) block. After the existing line:                                                                                                                            
+  const downstreamValue = noDownstreamValue ? 0 : ((inputs.downstreamValue as number) || 0);
+                                                                                                                                                                                                               
+  Add immediately after:                                                                                                                                                                                       
+  const cdiQueriesBefore = (inputs.cdiQueriesBefore as number) || 0;                                                                                                                                           
+  const cdiQueriesAfter = (inputs.cdiQueriesAfter as number) || 0;                                                                                                                                             
+  const cdiQueryCost = (inputs.cdiQueryCost as number) || 100;                                                                                                                                                 
+  const cdiQueryReduction = Math.max(0, cdiQueriesBefore - cdiQueriesAfter);
+  const cdiAnnualSavings = cdiQueryReduction > 0 ? Math.round(cdiQueryReduction * cdiQueryCost * 12) : 0;                                                                                                      
+  const effectiveValue = downstreamValue > 0 ? downstreamValue : cdiAnnualSavings;                        
+  const isCdiEstimate = downstreamValue === 0 && cdiAnnualSavings > 0;                                                                                                                                         
+                                                                      
+  Then find the block if (downstreamValue > 0) and replace it entirely with:                                                                                                                                   
+                                                                                                          
+  if (effectiveValue > 0) {                                                                                                                                                                                    
+    const headlineMetric = isCdiEstimate                                                                  
+      ? `${formatDollar(effectiveValue)} in estimated CDI efficiency savings`                                                                                                                                  
+      : `${formatDollar(effectiveValue)} in downstream quality value`;                                    
+    const context = isCdiEstimate                                                                                                                                                                              
+      ? `CDI query reduction: ${cdiQueryReduction} fewer queries/month × ${formatDollar(cdiQueryCost)}/query × 12 months = ${formatDollar(effectiveValue)} annually.\n\nThis captures CDI efficiency — 
+  physician and analyst time freed from query resolution. Documentation-driven revenue impact (wRVU, coding, denials) is captured separately in the Revenue domain.${count > 0 ? `\n\nConnected downstream     
+  areas:\n${checkedList}` : ''}${depthText ? `\n\n${depthText}` : ''}`                                    
+      : `Documentation quality is driving ${formatDollar(effectiveValue)} in annual value across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}`;                 
+    return {                                                                                                                                                                                                   
+      label: 'Estimated Impact',                                                                                                                                                                               
+      value: effectiveValue,                                                                                                                                                                                   
+      hasValue: true,                                                                                                                                                                                          
+      headlineMetric,
+      context,                                                                                                                                                                                                 
+      formula: isCdiEstimate                                                                              
+        ? `[cdiSavings] = ${cdiQueryReduction} queries/mo × ${formatDollar(cdiQueryCost)} × 12 = ${formatDollar(effectiveValue)}`                                                                              
+        : `[annualValue] = ${formatDollar(effectiveValue)} (organization estimate)`,                      
+      footnote: isCdiEstimate             
+        ? 'CDI estimate based on query volume reduction. Enter a confirmed downstream value above to replace this estimate. Individual results vary.'
+        : 'Based on your organization\'s estimate. Individual results vary.',                                                                                                                                  
+      nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+    };                                                                                                                                                                                                         
+  }                                                                                                       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Two files, three targeted changes. After this, Quality L3 has a live calculation path for any organization with a CDI program — which is essentially every Abridge customer.

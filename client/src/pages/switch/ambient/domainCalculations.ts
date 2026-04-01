@@ -1060,6 +1060,25 @@ export function computeRiskFeedback(
       };
     }
 
+    const cdiQueriesBefore = (inputs.cdiQueriesBefore as number) || 0;
+    const cdiQueriesAfter = (inputs.cdiQueriesAfter as number) || 0;
+    const cdiQueryCost = (inputs.cdiQueryCost as number) || 100;
+    const cdiQueryReduction = Math.max(0, cdiQueriesBefore - cdiQueriesAfter);
+    const cdiAnnualSavings = cdiQueryReduction > 0 ? Math.round(cdiQueryReduction * cdiQueryCost * 12) : 0;
+
+    if (cdiAnnualSavings > 0) {
+      return {
+        label: 'Estimated Impact',
+        value: cdiAnnualSavings,
+        hasValue: true,
+        headlineMetric: `${formatDollar(cdiAnnualSavings)} in estimated CDI efficiency savings`,
+        context: `CDI query reduction: ${cdiQueryReduction} fewer queries/month × ${formatDollar(cdiQueryCost)}/query × 12 months = ${formatDollar(cdiAnnualSavings)} annually.\n\nThis captures CDI efficiency — physician and analyst time freed from query resolution. Documentation-driven revenue impact (wRVU, coding, denials) is captured separately in the Revenue domain.`,
+        formula: `[cdiSavings] = ${cdiQueryReduction} queries/mo × ${formatDollar(cdiQueryCost)} × 12 = ${formatDollar(cdiAnnualSavings)}`,
+        footnote: 'CDI estimate based on query volume reduction. Enter a confirmed downstream value above to replace this estimate. Individual results vary.',
+        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+      };
+    }
+
     return {
       label: 'Estimated Impact',
       value: null,
