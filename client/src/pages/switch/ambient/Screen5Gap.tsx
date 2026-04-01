@@ -857,7 +857,6 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
             </p>
           </div>
 
-          <div className={STEP_FOOTER_SPACER_CLASS} />
         </div>
 
         <motion.div
