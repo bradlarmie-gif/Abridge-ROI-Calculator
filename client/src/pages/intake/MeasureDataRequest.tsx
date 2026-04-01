@@ -39,6 +39,13 @@ function getMetricsForSetting(setting: MeasureCareSetting): MetricDefinition[] {
 
 const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
+function formatWithCommas(val: number | string | null | undefined): string {
+  if (val === '' || val === 0 || val === null || val === undefined) return '';
+  const num = typeof val === 'string' ? val.replace(/,/g, '') : String(val);
+  if (isNaN(Number(num))) return String(val);
+  return Number(num).toLocaleString('en-US');
+}
+
 const defaultDeployment: DeploymentSnapshot = {
   organizationName: '',
   goLiveDate: null,
@@ -112,10 +119,14 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
           <div className="flex-1 min-w-0">
             <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">Before</label>
             <input
-              type="number" min={0} step="any"
-              value={entry?.before ?? ""}
+              type="text"
+              inputMode="numeric"
+              value={formatWithCommas(entry?.before)}
               placeholder="—"
-              onChange={(e) => onUpdate({ before: e.target.value === "" ? null : Number(e.target.value) })}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^0-9.]/g, '');
+                onUpdate({ before: raw === '' ? null : Number(raw) });
+              }}
               className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors"
               data-testid={`input-before-${metric.id}`}
             />
@@ -135,10 +146,14 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
           <div className="flex-1 min-w-0">
             <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">With Abridge</label>
             <input
-              type="number" min={0} step="any"
-              value={entry?.after ?? ""}
+              type="text"
+              inputMode="numeric"
+              value={formatWithCommas(entry?.after)}
               placeholder="—"
-              onChange={(e) => onUpdate({ after: e.target.value === "" ? null : Number(e.target.value) })}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^0-9.]/g, '');
+                onUpdate({ after: raw === '' ? null : Number(raw) });
+              }}
               className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#EA2C00] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors"
               data-testid={`input-after-${metric.id}`}
             />
@@ -398,9 +413,35 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           Help Us Tell Your Story
         </h1>
 
-        <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto mb-6">
-          Check the metrics you track, enter your before and after numbers, add context if needed, then download the PDF to share with your Abridge partner.
+        <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto mb-4">
+          Select the metrics you track and enter what you have. You don't need both before and after — partial data is useful too.
         </p>
+
+        <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 mb-6 max-w-md mx-auto space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
+            <div>
+              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
+              <p className="text-xs text-[#888888] mt-0.5">Before only is fine. After only is fine. Add context notes if a number needs explanation.</p>
+            </div>
+          </div>
+          <div className="h-px bg-[#F0EBE3]" />
+          <div className="flex items-start gap-3">
+            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
+            <div>
+              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download the PDF when done</p>
+              <p className="text-xs text-[#888888] mt-0.5">This form doesn't save. When you're finished, hit Download — that's what gets shared with your Abridge team.</p>
+            </div>
+          </div>
+          <div className="h-px bg-[#F0EBE3]" />
+          <div className="flex items-start gap-3">
+            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
+            <div>
+              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Skip anything you don't track</p>
+              <p className="text-xs text-[#888888] mt-0.5">Only check the metrics your team actually measures. Incomplete is better than estimated.</p>
+            </div>
+          </div>
+        </div>
 
         {(() => {
           const totalChecked = checkedIds.size;
@@ -478,10 +519,14 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Total in Org</label>
                   <input
-                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
-                    value={deployment.totalProviders || ''}
+                    type="text"
+                    inputMode="numeric"
+                    value={formatWithCommas(deployment.totalProviders)}
                     placeholder="—"
-                    onChange={(e) => updateDeployment({ totalProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, '');
+                      updateDeployment({ totalProviders: raw === '' ? 0 : Number(raw) });
+                    }}
                     className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-total-providers"
                   />
@@ -489,10 +534,14 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Live on Abridge</label>
                   <input
-                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
-                    value={deployment.liveProviders || ''}
+                    type="text"
+                    inputMode="numeric"
+                    value={formatWithCommas(deployment.liveProviders)}
                     placeholder="—"
-                    onChange={(e) => updateDeployment({ liveProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, '');
+                      updateDeployment({ liveProviders: raw === '' ? 0 : Number(raw) });
+                    }}
                     className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-live-providers"
                   />
@@ -500,10 +549,14 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Mthly Recording Users</label>
                   <input
-                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
-                    value={deployment.mruProviders || ''}
+                    type="text"
+                    inputMode="numeric"
+                    value={formatWithCommas(deployment.mruProviders)}
                     placeholder="—"
-                    onChange={(e) => updateDeployment({ mruProviders: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, '');
+                      updateDeployment({ mruProviders: raw === '' ? 0 : Number(raw) });
+                    }}
                     className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-mru-providers"
                   />
@@ -537,10 +590,14 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Total Encounters</label>
                   <input
-                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
-                    value={deployment.totalEncounters || ''}
+                    type="text"
+                    inputMode="numeric"
+                    value={formatWithCommas(deployment.totalEncounters)}
                     placeholder="—"
-                    onChange={(e) => updateDeployment({ totalEncounters: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, '');
+                      updateDeployment({ totalEncounters: raw === '' ? 0 : Number(raw) });
+                    }}
                     className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-total-encounters"
                   />
@@ -548,10 +605,14 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Abridge Encounters</label>
                   <input
-                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
-                    value={deployment.abridgeEncounters || ''}
+                    type="text"
+                    inputMode="numeric"
+                    value={formatWithCommas(deployment.abridgeEncounters)}
                     placeholder="—"
-                    onChange={(e) => updateDeployment({ abridgeEncounters: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, '');
+                      updateDeployment({ abridgeEncounters: raw === '' ? 0 : Number(raw) });
+                    }}
                     className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-abridge-encounters"
                   />
@@ -630,6 +691,9 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
             <div className="text-center">
               <p className="text-sm font-medium text-[#1A1A1A] mb-1">Ready to share</p>
               <p className="text-xs text-[#999999] mb-4">Download as a PDF or copy as text to send to your Abridge partner.</p>
+              <p className="text-xs text-[#AAAAAA] text-center mb-2 italic">
+                This form doesn't autosave — download before closing the tab.
+              </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
                   onClick={handleDownloadMeasurementPDF}

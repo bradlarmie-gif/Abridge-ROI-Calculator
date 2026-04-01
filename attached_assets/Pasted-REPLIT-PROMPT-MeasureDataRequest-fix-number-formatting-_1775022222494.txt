@@ -1,0 +1,91 @@
+REPLIT PROMPT — MeasureDataRequest: fix number formatting + improve page instructions
+
+  File: client/src/pages/intake/MeasureDataRequest.tsx
+
+  ---
+  Fix 1 — Format large numbers with commas in deployment inputs
+
+  The deployment inputs (Total Providers, Live on Abridge, MRUs, Total Encounters, Abridge Encounters) use type="number" which shows raw unformatted numbers. Switch them to formatted text inputs that display
+   commas but store numbers.
+
+  For each of the 5 deployment number inputs, replace the <input type="number" ...> pattern with this approach — using type="text" with comma formatting:
+
+  // Helper function — add near the top of the file with other helpers:
+  function formatWithCommas(val: number | string): string {
+    if (val === '' || val === 0 || val === null || val === undefined) return '';
+    const num = typeof val === 'string' ? val.replace(/,/g, '') : String(val);
+    if (isNaN(Number(num))) return String(val);
+    return Number(num).toLocaleString('en-US');
+  }
+
+  function parseCommas(val: string): number {
+    const clean = val.replace(/,/g, '');
+    const n = Number(clean);
+    return isNaN(n) ? 0 : n;
+  }
+
+  Then for each deployment number input (totalProviders, liveProviders, mruProviders, totalEncounters, abridgeEncounters), change type="number" to:
+
+  <input
+    type="text"
+    inputMode="numeric"
+    value={formatWithCommas(deployment.FIELD_NAME || '')}
+    placeholder="—"
+    onChange={(e) => {
+      const raw = e.target.value.replace(/[^0-9]/g, '');
+      updateDeployment({ FIELD_NAME: raw === '' ? 0 : Number(raw) });
+    }}
+    className="..."  // keep existing className unchanged
+  />
+
+  Replace FIELD_NAME with the actual field name for each input. Do the same for the MetricRow component's before/after inputs (around line 114) — these use type="number" too. Apply the same text+inputMode
+  pattern with formatWithCommas for display and parseCommas for storing.
+
+  ---
+  Fix 2 — Rewrite the page header instructions
+
+  Replace the current subtitle (lines 379–381):
+  <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto mb-6">
+    Check the metrics you track, enter your before and after numbers, add context if needed, then download the PDF to share with your Abridge partner.
+  </p>
+
+  With:
+  <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto mb-4">
+    Select the metrics you track and enter what you have. You don't need both before and after — partial data is useful too.
+  </p>
+
+  {/* Instruction callout */}
+  <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 mb-6 max-w-md mx-auto space-y-3">
+    <div className="flex items-start gap-3">
+      <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
+      <div>
+        <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
+        <p className="text-xs text-[#888888] mt-0.5">Before only is fine. After only is fine. Add context notes if a number needs explanation.</p>
+      </div>
+    </div>
+    <div className="h-px bg-[#F0EBE3]" />
+    <div className="flex items-start gap-3">
+      <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
+      <div>
+        <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download the PDF when done</p>
+        <p className="text-xs text-[#888888] mt-0.5">This form doesn't save. When you're finished, hit Download — that's what gets shared with your Abridge team.</p>
+      </div>
+    </div>
+    <div className="h-px bg-[#F0EBE3]" />
+    <div className="flex items-start gap-3">
+      <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
+      <div>
+        <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Skip anything you don't track</p>
+        <p className="text-xs text-[#888888] mt-0.5">Only check the metrics your team actually measures. Incomplete is better than estimated.</p>
+      </div>
+    </div>
+  </div>
+
+  ---
+  Fix 3 — Add "doesn't save" reminder near the download button
+
+  Find the download/generate PDF button (around line 290 area, wherever handleDownloadMeasurementPDF is called). Just above it, add:
+
+  <p className="text-xs text-[#AAAAAA] text-center mb-2 italic">
+    This form doesn't autosave — download before closing the tab.
+  </p>
