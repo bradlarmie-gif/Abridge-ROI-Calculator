@@ -270,10 +270,35 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
         </div>
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Pre-Call Intake</p>
         <h1 className="text-3xl font-bold text-black mb-3 uppercase tracking-tight" data-testid="text-intake-title">Help us prepare for our call</h1>
-        <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto">
-          Share a few details about your organization before we connect.
-          Takes about 2 minutes.
+        <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto mb-5">
+          Share what you know about your organization before we connect. You don't need every number — fill in what you have.
         </p>
+
+        <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 max-w-md mx-auto space-y-3 text-left">
+          <div className="flex items-start gap-3">
+            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
+            <div>
+              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Select your care settings</p>
+              <p className="text-xs text-[#888888] mt-0.5">Only pick the ones Abridge is deployed — or being considered — in your org.</p>
+            </div>
+          </div>
+          <div className="h-px bg-[#F0EBE3]" />
+          <div className="flex items-start gap-3">
+            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
+            <div>
+              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
+              <p className="text-xs text-[#888888] mt-0.5">Estimates are fine. Skip anything you're unsure about — blank is better than a guess.</p>
+            </div>
+          </div>
+          <div className="h-px bg-[#F0EBE3]" />
+          <div className="flex items-start gap-3">
+            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
+            <div>
+              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download before the call</p>
+              <p className="text-xs text-[#888888] mt-0.5">Your answers stay in this browser tab. Download the PDF and share it with your Abridge team so we can prepare.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="w-full max-w-2xl space-y-4">
@@ -548,7 +573,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
               <Download className="w-4 h-4" />
               {pdfLoading ? "Generating…" : "Download PDF"}
             </button>
-            <p className="text-xs text-[#BBBBBB] text-center mt-2">Save a copy for your records</p>
+            <p className="text-xs text-[#BBBBBB] text-center mt-2">Share this with your Abridge team before the call</p>
             {!hasMinimum && (
               <p className="text-xs text-[#BBBBBB] mt-3 text-center">Enter at least one provider or FTE count to continue.</p>
             )}
@@ -567,7 +592,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
         )}
 
         <p className="text-center text-[11px] text-[#CCCCCC] pb-8 mt-4 max-w-sm mx-auto leading-relaxed">
-          No account required. Your answers are saved in this browser — nothing is stored on any server.
+          No account required. Your answers are saved in this browser tab only — nothing is stored on any server. Download the PDF before closing.
         </p>
       </div>
     </div>

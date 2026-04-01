@@ -1,0 +1,62 @@
+ REPLIT PROMPT — Update ExploreIntakeForm page instructions
+
+  File: client/src/pages/intake/ExploreIntakeForm.tsx
+
+  Step 1 — Replace the subtitle (lines 273–276):
+
+  // REPLACE:
+  <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto">
+    Share a few details about your organization before we connect.
+    Takes about 2 minutes.
+  </p>
+
+  // WITH:
+  <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto mb-5">
+    Share what you know about your organization before we connect. You don't need every number — fill in what you have.
+  </p>
+
+  <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 max-w-md mx-auto space-y-3 text-left">
+    <div className="flex items-start gap-3">
+      <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
+      <div>
+        <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Select your care settings</p>
+        <p className="text-xs text-[#888888] mt-0.5">Only pick the ones Abridge is deployed — or being considered — in your org.</p>
+      </div>
+    </div>
+    <div className="h-px bg-[#F0EBE3]" />
+    <div className="flex items-start gap-3">
+      <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
+      <div>
+        <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
+        <p className="text-xs text-[#888888] mt-0.5">Estimates are fine. Skip anything you're unsure about — blank is better than a guess.</p>
+      </div>
+    </div>
+    <div className="h-px bg-[#F0EBE3]" />
+    <div className="flex items-start gap-3">
+      <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
+      <div>
+        <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download before the call</p>
+        <p className="text-xs text-[#888888] mt-0.5">Your answers stay in this browser tab. Download the PDF and share it with your Abridge team so we can prepare.</p>
+      </div>
+    </div>
+  </div>
+
+  Step 2 — Update the download button footer text (line 551):
+
+  // REPLACE:
+  <p className="text-xs text-[#BBBBBB] text-center mt-2">Save a copy for your records</p>
+
+  // WITH:
+  <p className="text-xs text-[#BBBBBB] text-center mt-2">Share this with your Abridge team before the call</p>
+
+  Step 3 — Update the bottom disclaimer (lines 569–570):
+
+  // REPLACE:
+  <p className="text-center text-[11px] text-[#CCCCCC] pb-8 mt-4 max-w-sm mx-auto leading-relaxed">
+    No account required. Your answers are saved in this browser — nothing is stored on any server.
+  </p>
+
+  // WITH:
+  <p className="text-center text-[11px] text-[#CCCCCC] pb-8 mt-4 max-w-sm mx-auto leading-relaxed">
+    No account required. Your answers are saved in this browser tab only — nothing is stored on any server. Download the PDF before closing.
+  </p>
