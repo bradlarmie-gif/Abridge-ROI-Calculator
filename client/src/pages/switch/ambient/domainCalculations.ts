@@ -313,7 +313,7 @@ export function computeRevenueFeedback(
     if (estimatedWrvuL2 && estimatedWrvuL2 > 0) {
       const rawImpact = Math.round(estimatedWrvuL2 * documentedEncounters * conversionFactor);
       const adjustedImpact = Math.round(rawImpact * confidenceMultiplier);
-      let context = `Estimated ${estimatedWrvuL2} wRVU improvement per encounter × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(rawImpact)}.\n\n${Math.round(confidenceMultiplier * 100)}% confidence adjustment applied (${confidenceLabel}) = ${formatDollar(adjustedImpact)}.\n\nA formal before/after analysis (Level 3) would validate this figure.`;
+      let context = `Estimated ${estimatedWrvuL2} wRVU × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(rawImpact)} → ${Math.round(confidenceMultiplier * 100)}% ${confidenceLabel} discount applied = ${formatDollar(adjustedImpact)}.\n\nA formal before/after analysis (Level 3) would validate this figure.`;
       if (count > 0) {
         context += `\n\n${count} area${count !== 1 ? 's' : ''} showing movement:\n${checkedLabels}`;
       }

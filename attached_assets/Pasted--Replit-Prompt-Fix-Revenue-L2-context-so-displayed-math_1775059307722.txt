@@ -1,0 +1,14 @@
+ Replit Prompt: Fix Revenue L2 context so displayed math matches the headline figure                                                                                                                          
+                                                                                                                                                                                                               
+  In client/src/pages/switch/ambient/domainCalculations.ts, inside computeRevenueFeedback, find the if (level === 2) block and the if (estimatedWrvuL2 && estimatedWrvuL2 > 0) return. Find this line in the 
+  context variable:                                                                                                                                                                                            
+                                                                                                                                                                                                             
+  let context = `Estimated ${estimatedWrvuL2} wRVU improvement per encounter × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor =                                  
+  ${formatDollar(rawImpact)}.\n\n${Math.round(confidenceMultiplier * 100)}% confidence adjustment applied (${confidenceLabel}) = ${formatDollar(adjustedImpact)}.`                                           
+                                                                                                                                                                                                               
+  Replace with:                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  let context = `Estimated ${estimatedWrvuL2} wRVU × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(rawImpact)} → 
+  ${Math.round(confidenceMultiplier * 100)}% ${confidenceLabel} discount applied = ${formatDollar(adjustedImpact)}.`                                                                                           
+                                                                                                                                                                                                             
+  One file, one line. Now the math chain reads as a single sentence ending at $26K, matching the headline exactly.
