@@ -309,7 +309,7 @@ export default function MeasureMetricSelection({
   onBack,
   onHome,
 }: MeasureMetricSelectionProps) {
-  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set(['foundational', 'quality']));
+  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set());
   const [showAssumptions, setShowAssumptions] = useState(false);
   const domainRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
