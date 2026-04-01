@@ -447,49 +447,45 @@ export function computeRevenueFeedback(
 
     if (metricType === 'denial_rate') {
       const denialPct = inputs.measuredDenialReduction as number | undefined;
-      const monthlyBilled = inputs.monthlyBilledAmount as number | undefined;
 
       if (!denialPct || denialPct <= 0) {
         return {
-          label: 'Impact Measured',
-          value: null, hasValue: false,
-          headlineMetric: 'Enter denial rate change to calculate.',
-          context: 'Enter the percentage point change in your documentation-related denial rate, select the direction, and optionally enter monthly billed amount for a dollar figure.',
-          formula: '', footnote: '',
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          headlineMetric: 'Enter measured denial rate reduction to calculate.',
+          context: 'Enter your measured denial rate reduction percentage. Organizations at this level have reported 5–15% reduction in documentation-related denials.',
+          formula: '',
+          footnote: '',
           nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
 
-      if (isDecrease) {
-        if (monthlyBilled && monthlyBilled > 0) {
-          const rawRecovery = Math.round((denialPct / 100) * monthlyBilled * 12);
-          const annualRecovery = Math.round(rawRecovery * attributionMultiplier);
-          return {
-            label: 'Impact Measured',
-            value: annualRecovery, hasValue: true,
-            headlineMetric: `${formatDollar(annualRecovery)} in recovered annual revenue`,
-            context: `Denial rate decreased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}.\n\n${denialPct}% × ${formatDollar(monthlyBilled)} monthly billed × 12 months = ${formatDollar(rawRecovery)} annually.\n\n${attributionPct}% attribution applied · ${formatDollar(annualRecovery)}/year\n\nBased on your organization's measured data.`,
-            formula: `[rawRecovery] = ${denialPct}% × ${formatDollar(monthlyBilled)} × 12 = ${formatDollar(rawRecovery)}\n[annualRecovery] = ${formatDollar(rawRecovery)} × ${attributionPct}% = ${formatDollar(annualRecovery)}`,
-            footnote: `Based on total billed charges. ${attributionPct}% attribution confidence applied. Actual recovery depends on denial resolution rate. Individual results vary.`,
-            nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
-          };
-        }
+      const monthlyDenialVolume = inputs.monthlyDenialVolume as number | undefined;
+      const noDenialVolume = inputs.noDenialVolume === 'true';
+
+      if (noDenialVolume || !monthlyDenialVolume || monthlyDenialVolume <= 0) {
         return {
-          label: 'Impact Measured',
-          value: null, hasValue: false,
-          headlineMetric: `Denial rate decreased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}`,
-          context: `Documentation-related denial rate improved by ${denialPct}pp.\n\nTo calculate the dollar impact, enter your average monthly billed amount above.`,
-          formula: '', footnote: '',
+          label: 'Estimated Impact',
+          value: null,
+          hasValue: false,
+          headlineMetric: `Denial rate reduced ${denialPct}% — enter monthly denial volume to calculate dollar impact`,
+          context: `Your documentation-related denial rate decreased by ${denialPct}%.\n\nTo calculate the dollar impact, enter your average monthly documentation-related denial volume above. Your revenue cycle team will have this figure.`,
+          formula: '',
+          footnote: 'Estimates based on your inputs. Individual results vary.',
           nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
         };
       }
 
+      const annualDenialSavings = Math.round(monthlyDenialVolume * (denialPct / 100) * 12);
       return {
-        label: 'Impact Measured',
-        value: null, hasValue: false,
-        headlineMetric: `Denial rate increased ${denialPct} percentage point${denialPct !== 1 ? 's' : ''}`,
-        context: `An increase in documentation-related denials is unexpected with ambient documentation deployment. This may indicate the analysis includes denial categories outside documentation quality, or other operational factors are at play. Worth isolating documentation-specific denial codes before drawing conclusions.`,
-        formula: '', footnote: '',
+        label: 'Confirmed Impact',
+        value: annualDenialSavings,
+        hasValue: true,
+        headlineMetric: `${formatDollar(annualDenialSavings)} in annual denial reduction`,
+        context: `Documentation-related denial rate reduced ${denialPct}%.\n\n${formatDollar(monthlyDenialVolume)} monthly denial volume × ${denialPct}% reduction × 12 months = ${formatDollar(annualDenialSavings)} annually.\n\nBased on your organization's measured data.`,
+        formula: `[annualDenialSavings] = ${formatDollar(monthlyDenialVolume)} × ${denialPct}% × 12 = ${formatDollar(annualDenialSavings)}`,
+        footnote: 'Based on your measured denial rate reduction and your organization\'s monthly denial volume. Individual results vary.',
         nextLevelTeaser: 'Level 4 integrates documentation intelligence into revenue strategy, payer positioning, and financial planning.',
       };
     }

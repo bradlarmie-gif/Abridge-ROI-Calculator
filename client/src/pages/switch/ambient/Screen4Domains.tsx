@@ -596,6 +596,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
       const metricType = currentState.inputs.revenueMetricType as string | undefined;
       return (
         <div className="flex flex-col gap-5">
+          <p className="text-sm text-[#525252] italic leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+            Level 3 requires a completed before/after analysis — your organization has a confirmed number from formal measurement, not a directional estimate.
+          </p>
           <div>
             <label className="block text-sm font-medium text-black mb-3">
               What did you measure?
@@ -748,22 +751,36 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                     </div>
                     <BenchmarkContext text="Industry average: 3–5% documentation-related denial rate. A 1–2 point decrease is meaningful." />
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                      Average monthly billed amount <span className="font-normal text-[#888888]">(optional — needed to calculate dollars)</span>
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-[#888888]">$</span>
-                      <FormattedNumberInput
-                        value={(currentState.inputs.monthlyBilledAmount as number) || 0}
-                        onChange={(v) => setDomainInput('monthlyBilledAmount', Math.max(0, v))}
-                        placeholder=""
-                        className="w-full h-12 bg-white border-[#E5E7EB]"
-                        data-testid="input-monthly-billed"
-                      />
+                  {(currentState.inputs.measuredDenialReduction as number) > 0 && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+                        Average monthly documentation-related denial volume ($)
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-[#888888]">$</span>
+                        <FormattedNumberInput
+                          value={(currentState.inputs.monthlyDenialVolume as number) || 0}
+                          onChange={(v) => setDomainInput('monthlyDenialVolume', Math.max(0, v))}
+                          placeholder=""
+                          className="w-full h-12 bg-white border-[#E5E7EB]"
+                          data-testid="input-monthly-denial-volume"
+                          disabled={currentState.inputs.noDenialVolume === 'true'}
+                        />
+                      </div>
+                      <BenchmarkContext text="Your revenue cycle team will have this figure — total monthly value of documentation-related denied claims." />
+                      <div className="flex items-center gap-2.5 mt-3">
+                        <Checkbox
+                          id="no-denial-volume"
+                          checked={currentState.inputs.noDenialVolume === 'true'}
+                          onCheckedChange={(checked) => setDomainInput('noDenialVolume', checked ? 'true' : 'false')}
+                          data-testid="checkbox-no-denial-volume"
+                        />
+                        <label htmlFor="no-denial-volume" className="text-sm text-[#525252] cursor-pointer select-none">
+                          Don't have this figure yet
+                        </label>
+                      </div>
                     </div>
-                    <p className="text-xs text-[#888888] mt-1">Total billed charges across all payers. Leave blank to show rate change only.</p>
-                  </div>
+                  )}
                 </div>
               </motion.div>
             )}

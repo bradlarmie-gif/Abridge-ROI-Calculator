@@ -83,6 +83,7 @@ export function buildUserInputsSummary(domain: Domain, level: number, raw: Recor
       if (raw.measuredWrvuDelta) out['Measured wRVU delta'] = `+${raw.measuredWrvuDelta}`;
       if (raw.measuredCollectionsDelta) out['Collections delta'] = fmtDollar(Number(raw.measuredCollectionsDelta));
       if (raw.measuredDenialReduction) out['Denial rate reduction'] = `${raw.measuredDenialReduction}%`;
+      if (raw.monthlyDenialVolume) out['Monthly denial volume'] = fmtDollar(Number(raw.monthlyDenialVolume));
     }
     if (level === 4) {
       const areas = resolveChecklist(raw.revenueIntegrations as string, REVENUE_INTEGRATIONS_LABELS);
