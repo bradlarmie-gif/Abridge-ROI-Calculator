@@ -342,22 +342,6 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
     ];
   }, [strategicAnnual, totalMeasured]);
 
-  const cumulativeData = useMemo(() => {
-    if (totalMeasured <= 0) return [];
-    const y1 = totalMeasured;
-    const y2 = Math.round(totalMeasured * 1.12);
-    const y3 = Math.round(totalMeasured * 1.26);
-    return [
-      { month: 0,  value: 0 },
-      { month: 6,  value: Math.round(y1 * 0.5) },
-      { month: 12, value: y1 },
-      { month: 18, value: Math.round((y1 + y2) * 0.5) },
-      { month: 24, value: y1 + y2 },
-      { month: 30, value: Math.round((y1 + y2 + y3) * 0.85) },
-      { month: 36, value: y1 + y2 + y3 },
-    ];
-  }, [totalMeasured]);
-
   const gap36mo = useMemo(() => {
     if (!chartData.length) return 0;
     return chartData[chartData.length - 1].gap;
@@ -631,131 +615,90 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
             className="mb-8"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="bg-[#FFF0ED] rounded-xl p-5" data-testid="tile-math-shows">
-                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[2px] mb-2">What the Math Shows</p>
-                {totalMeasured > 0 ? (
-                  <>
-                    <p className="text-2xl font-bold text-[#EA2C00] tracking-tight mb-1" data-testid="value-measured">
-                      <CountUpNumber target={totalMeasured} />
-                    </p>
-                    <p className="text-xs text-[#1A1A1A]/60">
-                      modeled across {DOMAIN_ORDER.filter(d => domainHasValue[d] && !(d === 'revenue' && domainLevels[d] === 2)).length} of 4 domains · per year
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-2xl font-bold text-[#1A1A1A]/20 tracking-tight mb-1" data-testid="value-measured">—</p>
-                    <p className="text-xs text-[#1A1A1A]/40">no domains formally measured yet</p>
-                  </>
-                )}
-                {revL2Value > 0 && (
-                  <p className="text-xs text-[#92400E] mt-2">+ ~{formatDollar(revL2Value)}/yr revenue signal</p>
-                )}
-              </div>
-              <div className="bg-[#F5F0EB] rounded-xl p-5" data-testid="tile-not-measured">
-                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-2">Not Yet in the Picture</p>
-                {unmeasuredLow > 0 ? (
-                  <>
-                    <p className="text-2xl font-bold text-[#1A1A1A]/50 tracking-tight mb-1" data-testid="value-unmeasured">
-                      {unmeasuredHigh > unmeasuredLow
-                        ? `$${unmeasuredLow.toLocaleString()}–$${unmeasuredHigh.toLocaleString()}`
-                        : `$${unmeasuredLow.toLocaleString()}`}
-                    </p>
-                    <p className="text-xs text-[#888888]">industry benchmark · not yet confirmed at your org</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-2xl font-bold text-[#1A1A1A]/20 tracking-tight mb-1">—</p>
-                    <p className="text-xs text-[#888888]">all domains have measurement in place</p>
-                  </>
-                )}
-              </div>
-            </div>
-          </motion.div>
+            <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-3">
+              Where You Are — And What's Ahead
+            </p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="domain-band">
+              {DOMAIN_ORDER.map((domain) => {
+                const Icon = DOMAIN_ICONS[domain];
+                const level = domainLevels[domain];
+                const status = domainStatusLine[domain];
+                const content = nextLevelContents[domain];
 
-          <motion.div
-            className="mb-8"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <div className="bg-[#F5F0EB] rounded-xl p-6 md:p-8">
-              <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-4">Where You Are — And What's Ahead</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" data-testid="domain-band">
-                {DOMAIN_ORDER.map((domain) => {
-                  const Icon = DOMAIN_ICONS[domain];
-                  const level = domainLevels[domain];
-                  const status = domainStatusLine[domain];
-                  const content = nextLevelContents[domain];
+                const dotColor = status.isConfirmed
+                  ? '#EA2C00'
+                  : status.isSignal
+                    ? '#D97706'
+                    : '#D1D5DB';
+                const iconColor = status.isConfirmed
+                  ? 'text-[#EA2C00]'
+                  : status.isSignal
+                    ? 'text-[#D97706]'
+                    : 'text-[#BBBBBB]';
 
-                  return (
-                    <div
-                      key={domain}
-                      className="bg-white rounded-lg overflow-hidden"
-                      data-testid={`domain-card-${domain}`}
-                    >
-                      <div
-                        className="w-full text-left p-5"
-                        data-testid={`toggle-domain-${domain}`}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-start gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-full bg-[#F5F0EB] flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <Icon className={`w-4 h-4 ${status.isConfirmed ? 'text-[#EA2C00]' : status.isSignal ? 'text-[#F59E0B]' : 'text-[#AAAAAA]'}`} />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <p className="text-xs font-bold uppercase tracking-[1px] text-[#1A1A1A]">
-                                  {DOMAIN_LABELS[domain]}
-                                </p>
-                                <span className={`text-[9px] font-semibold uppercase tracking-[1px] px-1.5 py-0.5 rounded ${
-                                  level >= 3 ? 'bg-[#EA2C00]/10 text-[#EA2C00]' :
-                                  level === 2 ? 'bg-[#1A1A1A]/[0.08] text-[#666666]' :
-                                  'bg-[#1A1A1A]/[0.05] text-[#AAAAAA]'
-                                }`}>
-                                  Level {level} of 4
-                                </span>
-                              </div>
-                              <p className={`text-[11px] leading-snug ${
-                                status.isConfirmed ? 'text-[#EA2C00] font-medium' :
-                                status.isSignal ? 'text-[#92400E]' :
-                                'text-[#888888]'
-                              }`}>
-                                {status.text}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                const hasOpportunity = level < 4 && (content.lowEstimate ?? 0) > 0;
+                const opportunityLine = hasOpportunity
+                  ? `${formatDollar(content.lowEstimate!)}${content.highEstimate && content.highEstimate !== content.lowEstimate ? `–${formatDollar(content.highEstimate)}` : ''} at L${level + 1}`
+                  : level < 4
+                    ? ACTIVATION_LABELS[domain][(level + 1) as ActivationLevel]
+                    : null;
+
+                return (
+                  <div
+                    key={domain}
+                    className="bg-white rounded-xl p-4 border border-[#E8E3DC] flex flex-col gap-3"
+                    data-testid={`domain-card-${domain}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="w-8 h-8 rounded-full bg-[#F5F0EB] flex items-center justify-center flex-shrink-0">
+                        <Icon className={`w-4 h-4 ${iconColor}`} />
                       </div>
-
-                      <div className="px-5 pb-4 border-t border-[#E5E5E5]/60">
-                        <p className="text-xs text-[#888888] leading-relaxed mt-3" data-testid={`narrative-${domain}`}>
-                          {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
-                        </p>
-                        {content.narrative.includes('OPPORTUNITY AHEAD:') && (
-                          <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60">
-                            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">The next level unlocks</p>
-                            <p className="text-xs text-[#888888] leading-relaxed">
-                              {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
-                            </p>
-                          </div>
-                        )}
-                        {domain === 'capacity' && domainLevels.capacity >= 3 && capacityConfidence === 'aspirational' && (
-                          <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60 flex gap-2">
-                            <span className="text-[#888888] text-xs flex-shrink-0">⚠</span>
-                            <p className="text-[11px] text-[#888888] italic leading-relaxed">
-                              Access data marked as a planning target — validate with scheduling records before using in a formal business case.
-                            </p>
-                          </div>
-                        )}
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4].map(i => (
+                          <div
+                            key={i}
+                            className="w-2 h-2 rounded-full transition-colors"
+                            style={{ backgroundColor: i <= level ? dotColor : '#E5E7EB' }}
+                          />
+                        ))}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[1px] text-[#1A1A1A] leading-tight">
+                        {DOMAIN_LABELS[domain]}
+                      </p>
+                      <p className="text-[10px] text-[#AAAAAA] mt-0.5 leading-tight">
+                        L{level} · {ACTIVATION_LABELS[domain][level as ActivationLevel]}
+                      </p>
+                    </div>
+
+                    <div className="flex-1">
+                      {domainHasValue[domain] && domainGaps[domain] > 0 ? (
+                        <>
+                          <p className="text-lg font-bold text-[#EA2C00] leading-none">
+                            {formatDollar(domainGaps[domain])}
+                          </p>
+                          <p className="text-[10px] text-[#AAAAAA] mt-0.5">per year · confirmed</p>
+                        </>
+                      ) : (
+                        <p className={`text-xs leading-snug ${status.isConfirmed ? 'text-[#EA2C00] font-medium' : status.isSignal ? 'text-[#92400E]' : 'text-[#AAAAAA]'}`}>
+                          {level === 4 ? 'Full maturity' : status.text}
+                        </p>
+                      )}
+                    </div>
+
+                    {level < 4 && opportunityLine && (
+                      <div className="border-t border-[#F0EDE8] pt-2.5 flex items-start gap-1.5">
+                        <ArrowRight className="w-3 h-3 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+                        <p className="text-[10px] text-[#888888] leading-snug">{opportunityLine}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
 
@@ -819,7 +762,7 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
             </motion.div>
           )}
 
-          {chartData.length === 0 && cumulativeData.length > 0 && (
+          {chartData.length === 0 && totalMeasured > 0 && (
             <motion.div
               className="mb-10"
               initial={{ opacity: 0, y: 12 }}
@@ -828,17 +771,28 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
             >
               <div className="bg-[#F5F0EB] rounded-xl p-5 sm:p-7" data-testid="card-chart-cumulative">
                 <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-1">
-                  Your 3-Year Value Trajectory
+                  3-Year Value Trajectory
                 </p>
                 <p className="text-sm font-medium text-[#1A1A1A] mb-1">
-                  {formatDollar(cumulativeData[cumulativeData.length - 1].value)} cumulative over 36 months.
+                  {formatDollar(Math.round(totalMeasured * (1 + 1.12 + 1.26)))} cumulative over 36 months.
                 </p>
                 <p className="text-xs text-[#888888] mb-5">
-                  Based on your confirmed {formatDollar(totalMeasured)}/year, compounding as measurement depth increases annually.
+                  Based on {formatDollar(totalMeasured)}/year confirmed, with ~12% annual improvement as measurement programs mature.
                 </p>
-                <div className="h-[240px] sm:h-[300px] md:h-[360px]">
+                <div className="h-[220px] sm:h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={cumulativeData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                    <AreaChart
+                      data={[
+                        { month: 0, value: 0 },
+                        { month: 6, value: Math.round(totalMeasured * 0.5) },
+                        { month: 12, value: totalMeasured },
+                        { month: 18, value: Math.round(totalMeasured * (1 + 1.12 * 0.5)) },
+                        { month: 24, value: Math.round(totalMeasured * (1 + 1.12)) },
+                        { month: 30, value: Math.round(totalMeasured * (1 + 1.12 + 1.26 * 0.5)) },
+                        { month: 36, value: Math.round(totalMeasured * (1 + 1.12 + 1.26)) },
+                      ]}
+                      margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                    >
                       <defs>
                         <linearGradient id="cumulativeGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#EA2C00" stopOpacity={0.15} />
@@ -849,9 +803,8 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
                       <XAxis
                         dataKey="month"
                         ticks={[0, 12, 24, 36]}
-                        tickFormatter={(v: number) => v === 0 ? 'Now' : `Mo ${v}`}
+                        tickFormatter={(v: number) => v === 0 ? 'Today' : `Year ${v / 12}`}
                         tick={{ fontSize: 11, fill: '#9CA3AF' }}
-                        interval="preserveStartEnd"
                       />
                       <YAxis
                         tickFormatter={(v) => formatDollar(v)}
@@ -873,7 +826,7 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
                   </ResponsiveContainer>
                 </div>
                 <p className="text-xs text-[#888888] italic leading-relaxed mt-4">
-                  Assumes ~12% annual improvement as measurement programs mature — consistent with organizations that move from tracking to optimizing in years 2–3.
+                  ~12% annual improvement reflects organizations that move from tracking to optimizing in years 2–3. Based on your confirmed value, not a benchmark estimate.
                 </p>
               </div>
             </motion.div>
