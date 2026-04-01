@@ -1,0 +1,309 @@
+⏺ Here's the full prompt:
+
+  ---
+  Replit prompt — MeasureJourney.tsx: rebuild as narrative presentation screen
+
+  This screen comes after metric entry. It's used in live executive meetings — the CS person turns the laptop toward the exec and walks through what changed. The redesign makes it narrative-first: each
+  domain opens with an educational sentence that explains the metric and what the data shows, then the bars follow as supporting evidence.
+
+  ---
+  Step 1 — Add computeDomainNarrative function
+
+  Add this function near the top of MeasureJourney.tsx, after the imports:
+
+  function computeDomainNarrative(
+    domainKey: string,
+    metrics: { metricDef: MetricDefinition; before: number; after: number }[],
+    months: number,
+    providers: number,
+  ): string {
+    const ids = new Set(metrics.map(m => m.metricDef.id));
+    const get = (id: string) => metrics.find(m => m.metricDef.id === id);
+    const absDelta = (b: number, a: number) => Math.abs(a - b).toFixed(1);
+    const monthsLabel = months > 0 ? `over the past ${months} months` : 'since go-live';
+
+    if (domainKey === 'quality') {
+      const star = get('note_star_rating');
+      const cap = get('diagnosis_capture');
+      const spec = get('diagnosis_specificity');
+
+      if (star && cap && spec)
+        return `Note quality, diagnosis capture, and coding specificity are all moving in the right direction since go-live. That's not one thing — that's the documentation itself getting better in ways that
+   touch quality programs, billing, and risk adjustment all at once.`;
+      if (cap && spec)
+        return `Two things happen when documentation improves: more diagnoses get captured, and they get coded more precisely. Both are moving here. Capture is up ${absDelta(cap.before, cap.after)}pp,
+  specificity is up ${absDelta(spec.before, spec.after)}pp. What used to get missed or undercoded is now showing up in the record.`;
+      if (star && cap)
+        return `Note quality ratings moved from ${star.before} to ${star.after} stars, and diagnosis capture improved ${absDelta(cap.before, cap.after)}pp — both ${monthsLabel}. When providers rate notes
+  highly and more diagnoses make it into the record, the documentation is doing its job.`;
+      if (star)
+        return `Note star rating is how your providers score the quality of what Abridge generates — accuracy, completeness, clinical tone. When it's high, providers are using the note with minimal edits.
+  Yours moved from ${star.before} to ${star.after} ${monthsLabel}. That's the foundation everything else builds on.`;
+      if (cap)
+        return `Diagnosis capture measures how many of the conditions discussed in a visit actually make it into the coded record. When it's low, you're having clinical conversations that disappear — they
+  don't show up in billing, in quality data, or in risk scores. Yours improved ${absDelta(cap.before, cap.after)}pp since go-live. More of what's being said in those rooms is now documented and codeable.`;
+      if (spec)
+        return `ICD-10 has thousands of codes, and there's usually a vague version and a precise version of the same diagnosis. Coders can only use what's in the note. Specificity measures how often you're
+  hitting the precise one. Yours is up ${absDelta(spec.before, spec.after)}pp — more conditions are being captured at their highest ICD-10 level, which matters for reimbursement accuracy and quality measure
+  credit.`;
+    }
+
+    if (domainKey === 'workforce') {
+      const ttc = get('time_to_close');
+      const ahp = get('work_after_hours');
+      const ahe = get('work_outside_work');
+      const burn = get('burnout_assessment');
+      const lts = get('likelihood_to_stay');
+      const ah = ahp || ahe;
+
+      if (ttc && ah && lts)
+        return `Three workforce metrics moved since go-live. Documentation time is down, after-hours burden is down, and provider sentiment about staying improved. That's not noise — three signals moving in
+  the same direction, over ${months} months, is a pattern worth naming in the room.`;
+      if (ttc && lts)
+        return `Time to close dropped from ${ttc.before} to ${ttc.after} hours — that's the burden measure. Likelihood to stay improved ${absDelta(lts.before, lts.after)}pp — that's the sentiment measure.
+  These two don't usually move together unless something fundamental changed about how providers experience documentation. Both moved here.`;
+      if (ttc && ah)
+        return `Two things moved here. Time to close dropped from ${ttc.before} to ${ttc.after} hours — that's the in-clinic side. And the share of providers reporting after-hours documentation work fell
+  from ${ah.before}% to ${ah.after}% — that's the after-clinic side. When both move together, it means the burden shift is real, not just perceived.`;
+      if (ttc)
+        return `Time to close is how long it takes from the end of a patient visit to a signed note. It's the most direct measure of documentation burden — it's what providers think about when they talk
+  about staying late, finishing charts at home. Yours dropped from ${ttc.before} to ${ttc.after} hours ${monthsLabel}. Across ${providers} providers seeing patients every day, that's a meaningful change in
+  how their time is actually spent.`;
+      if (ah && lts)
+        return `After-hours documentation burden fell from ${ah.before}% to ${ah.after}% of the provider cohort, and likelihood to stay improved ${absDelta(lts.before, lts.after)}pp. Burden and retention
+  sentiment moving together is a meaningful signal — one typically precedes the other.`;
+      if (lts)
+        return `Likelihood to stay comes from asking providers directly: do you expect to still be here in 12 months? It's a leading indicator — it moves before turnover shows up in the data. The reason it
+  matters financially is that every physician departure costs roughly $350K–$500K in recruitment, onboarding, and productivity loss. Yours improved ${absDelta(lts.before, lts.after)}pp across the cohort.
+  That shift in sentiment is worth watching.`;
+      if (ah)
+        return `This measures what percentage of your providers are doing documentation work outside scheduled hours — evenings, weekends, from home. It's not just about productivity. It's about where work
+  ends. That share fell from ${ah.before}% to ${ah.after}% since go-live. For ${providers} providers, that's a change in what their evenings look like.`;
+      if (burn)
+        return `Burnout scores come from validated instruments that ask about emotional exhaustion and sense of effectiveness. High scores predict departure intent. Yours moved ${absDelta(burn.before,
+  burn.after)} points in the right direction since go-live. One data point isn't a conclusion — but it's the right kind of early signal.`;
+    }
+
+    if (domainKey === 'revenue') {
+      const wrvu = get('wrvu_per_encounter');
+      const em = get('level_of_service');
+      const hcc = get('hcc_capture_rate');
+      const cc = get('clean_claim_rate');
+
+      if (wrvu && hcc)
+        return `Both wRVU and HCC capture have moved since go-live — that's fee-for-service and risk adjustment moving together. wRVU is up ${absDelta(wrvu.before, wrvu.after)}, HCC capture improved
+  ${absDelta(hcc.before, hcc.after)}pp. The documentation is supporting more complete coding across two distinct financial pathways at the same time.`;
+      if (wrvu && em)
+        return `Two billing metrics are moving in the right direction. wRVU per encounter is up ${absDelta(wrvu.before, wrvu.after)} and average E/M level shifted from ${em.before} to ${em.after}. Both are
+  consistent with documentation that gives coders more clinical detail to work with. The visits didn't change — the documentation supporting them did.`;
+      if (wrvu)
+        return `A wRVU — work relative value unit — is how Medicare prices the complexity of physician work. Each E/M code maps to a wRVU value, and that's what insurers pay against. More complete
+  documentation means coders can justify higher values for the same visit. Yours moved from ${wrvu.before} to ${wrvu.after} per encounter ${monthsLabel}. More of what your providers actually did is now
+  showing up in what you bill.`;
+      if (em)
+        return `E/M levels run 99211 to 99215 — they're the billing codes for office visits, differentiated by clinical complexity and documentation thoroughness. Coders can only code to what the note
+  supports. Yours moved from ${em.before} to ${em.after} since go-live. The visits didn't change — the documentation supporting them did.`;
+      if (hcc)
+        return `HCC stands for Hierarchical Condition Category — it's how Medicare Advantage plans get paid by CMS based on how sick their enrolled population is, documented. When a chronic condition gets
+  coded, it contributes to the risk score. When it doesn't, that revenue goes uncaptured. Your capture rate improved ${absDelta(hcc.before, hcc.after)}pp since go-live. More of those risk-adjustable
+  conditions are making it into the record.`;
+      if (cc)
+        return `A clean claim is one accepted on first submission without correction. When it's denied, someone has to rework it — that costs time and delays payment. Your clean claim rate improved
+  ${absDelta(cc.before, cc.after)}pp since go-live. Documentation quality is reducing the most common reason claims come back.`;
+    }
+
+    if (['capacity', 'throughput', 'patientFlow', 'staffing'].includes(domainKey)) {
+      const tin = get('time_in_note');
+      const eff = get('effort_reduction');
+      const ppp = get('patients_per_provider');
+      const vph = get('visits_per_clinician_hour');
+
+      if (tin && ppp)
+        return `These two numbers tell the capacity story. Documentation time per appointment dropped from ${tin.before} to ${tin.after} minutes — that's the input. Patients seen per provider per month moved
+   from ${ppp.before} to ${ppp.after} — that's the output. Less time in the note, more time with patients.`;
+      if (tin)
+        return `This measures how many minutes a provider spends actively in the note per appointment — typing, reviewing, editing. It's the input side of the capacity equation. Yours dropped from
+  ${tin.before} to ${tin.after} minutes per visit ${monthsLabel}. The question that follows naturally is: where does that time go? The next screen gets at that.`;
+      if (ppp)
+        return `This is the output side of the capacity equation — how many patients a provider sees per month. When documentation time comes down, this is where it shows up if the organization directs that
+  time back into access. Yours moved from ${ppp.before} to ${ppp.after} per provider per month. That's ${absDelta(ppp.before, ppp.after)} additional patients per provider.`;
+      if (vph)
+        return `Visits per clinician hour measures how efficiently providers move through patient volume. More visits per hour without additional staff is a direct capacity lever. Yours moved from
+  ${vph.before} to ${vph.after} since go-live.`;
+      if (eff)
+        return `This is a self-reported measure — providers estimating how much lighter the documentation burden feels compared to before. It's directional, not precise. But ${eff.after}% reported reduction
+  across ${providers} providers is a signal worth including. Perceived burden is what shows up in retention surveys before it shows up in turnover data.`;
+    }
+
+    return '';
+  }
+
+  ---
+  Step 2 — Add financial connection footer map
+
+  Add this constant after the computeDomainNarrative function:
+
+  const DOMAIN_FINANCIAL_FOOTER: Record<string, string> = {
+    quality: 'Diagnosis capture and specificity connect to billing capture and HCC value on the next screen',
+    workforce: 'Time and sentiment data feed the workforce retention cost model on the next screen',
+    revenue: 'This data feeds directly into the financial calculation on the next screen',
+    capacity: 'Capacity data connects to the access revenue calculation on the next screen',
+    throughput: 'Throughput data connects to the access revenue calculation on the next screen',
+    patientFlow: 'Patient flow data connects to the capacity calculation on the next screen',
+    staffing: 'Staffing data connects to the workforce cost model on the next screen',
+  };
+
+  ---
+  Step 3 — Replace the return JSX entirely
+
+  Replace everything inside the return (...) of MeasureJourney with the following. Keep all the existing data logic above the return — only the JSX changes.
+
+  return (
+    <div className="min-h-screen bg-[#FAFAFA]" data-testid="page-journey">
+      <UnifiedHeader
+        pathType="measure"
+        currentStep={3}
+        totalSteps={5}
+        onBack={onBack}
+        onHome={onHome}
+      />
+      <UnifiedHeaderSpacer />
+
+      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+
+        {/* ── Hero ── */}
+        <div className="mb-10" data-testid="page-hero">
+          <p className="text-xs uppercase tracking-[2px] text-[#999999] mb-3">
+            {[
+              state.deployment.organizationName,
+              settingLabels,
+              months > 0 ? `${months} months with Abridge` : null,
+            ].filter(Boolean).join(' · ')}
+          </p>
+          <h1 className="text-3xl md:text-4xl font-bold font-abridge uppercase tracking-tight text-[#1A1A1A] mb-5" data-testid="text-page-title">
+            Here's what changed.
+          </h1>
+          <div className="flex flex-wrap gap-6 pb-6 border-b border-[#EEEBE7]" data-testid="summary-strip">
+            {[
+              { label: 'Providers', value: String(state.deployment.providers || '—') },
+              { label: 'Encounters documented', value: state.deployment.totalEncounters > 0 ? state.deployment.totalEncounters.toLocaleString() : '—' },
+              { label: 'Domains with data', value: `${domainsSignaling} of 4` },
+            ].map(stat => (
+              <div key={stat.label}>
+                <p className="text-[11px] text-[#AAAAAA] mb-0.5">{stat.label}</p>
+                <p className="text-lg font-bold text-[#1A1A1A]">{stat.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Domain sections ── */}
+        <div className="space-y-10">
+          {domainSections.map((section, si) => {
+            const hasData = section.metrics.length > 0;
+            const narrative = hasData
+              ? computeDomainNarrative(
+                  section.domainKey,
+                  section.metrics,
+                  months,
+                  state.deployment.providers || 0,
+                )
+              : '';
+            const footer = DOMAIN_FINANCIAL_FOOTER[section.domainKey];
+
+            if (!hasData) {
+              return (
+                <div key={section.domainKey} className="flex items-center gap-3 py-2" data-testid={`journey-domain-${section.domainKey}`}>
+                  <span className="text-xs font-bold uppercase tracking-[1.5px] text-[#CCCCCC]">{section.label}</span>
+                  <span className="text-xs text-[#DDDDDD]">—</span>
+                  <span className="text-xs text-[#CCCCCC]">not yet measured</span>
+                </div>
+              );
+            }
+
+            return (
+              <div key={section.domainKey} data-testid={`journey-domain-${section.domainKey}`}>
+
+                {/* Domain label */}
+                <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">
+                  {section.label}
+                </p>
+
+                {/* Narrative sentence */}
+                {narrative && (
+                  <p className="text-[15px] text-[#1A1A1A] leading-relaxed mb-6 max-w-[640px]">
+                    {narrative}
+                  </p>
+                )}
+
+                {/* Metric bars */}
+                <div className="space-y-1">
+                  {section.metrics.map((m, mi) => (
+                    <MetricBar
+                      key={`${m.metricDef.id}-${m.setting || 'org'}`}
+                      label={m.setting ? `${m.metricDef.label} (${SETTING_DISPLAY_LABELS[m.setting] || m.setting})` : m.metricDef.label}
+                      before={m.before}
+                      after={m.after}
+                      lowerIsBetter={m.metricDef.lowerIsBetter}
+                      unit={m.metricDef.unit}
+                      template={m.metricDef.plainEnglishTemplate}
+                      delay={si * 150 + mi * 80}
+                    />
+                  ))}
+                </div>
+
+                {/* Financial connection footer */}
+                {footer && (
+                  <p className="text-[11px] text-[#BBBBBB] mt-4 flex items-center gap-1.5">
+                    <span className="text-[#EA2C00]">→</span>
+                    {footer}
+                  </p>
+                )}
+
+                <div className="border-b border-[#F0EDE8] mt-8" />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── Empty state ── */}
+        {totalMetrics === 0 && (
+          <div className="text-center py-16">
+            <p className="text-sm text-[#AAAAAA] mb-4">No metrics have been entered yet.</p>
+            <button
+              onClick={onBack}
+              className="text-sm font-medium text-[#EA2C00] hover:text-[#D12800]"
+              data-testid="button-go-back-add"
+            >
+              ← Go back and add metrics
+            </button>
+          </div>
+        )}
+
+        {/* ── CTA ── */}
+        {totalMetrics > 0 && (
+          <div className="mt-12 flex flex-col items-center gap-3" data-testid="cta-section">
+            <Button
+              onClick={onNext}
+              className="bg-[#EA2C00] hover:bg-[#D12800] text-white px-8 py-3 rounded-full text-sm font-semibold shadow-md"
+              data-testid="button-next"
+            >
+              What Could This Mean Financially
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+
+  ---
+  What this produces:
+                                              
+  - Hero: "MAYO CLINIC · OUTPATIENT · 7 MONTHS WITH ABRIDGE / Here's what changed." — no accordion, no domain questions, no data-review framing
+  - Each domain with data: red domain label → educational narrative sentence (teaches + shows the number) → before/after bars → muted → connects to X footer line
+  - Each domain without data: single line QUALITY — not yet measured — no ghost bars, no skeleton cards                                                                                                        
+  - Tone: a knowledgeable colleague showing an exec what happened, not a report being reviewed
+                                                                                                                                                                                                               
+  No changes to the MetricBar component, the data logic above the return, or the UnifiedHeader.  
