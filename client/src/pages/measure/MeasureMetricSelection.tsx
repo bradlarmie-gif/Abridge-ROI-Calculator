@@ -542,7 +542,7 @@ export default function MeasureMetricSelection({
               <button
                 key={group.domainKey}
                 onClick={() => scrollToDomain(group.domainKey)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${isActive ? 'bg-[#EA2C00] text-white' : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EDE8E3]'}`}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${isActive ? 'bg-[#1A1A1A] text-white' : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EDE8E3]'}`}
                 data-testid={`pill-domain-${group.domainKey}`}
               >
                 {group.label}
