@@ -1,0 +1,1066 @@
+    6  import {
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/ambient/Screen5Gap.tsx)
+  ⎿  Added 17 lines, removed 2 lines
+      12    DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS,
+      13    scoreToActivationLevel,
+      14    ANNUAL_HOURS,
+      15 -  tenureLabel, tenureMonthsMidpoint, tenureIsLong,                                                                                                                                            
+      15 +  tenureLabel, tenureMonthsMidpoint, tenureIsLong, tenureScoreBand,                                                                                                                           
+      16  } from "./domainCalculations";
+      17 -import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";                                                                                                               
+      17 +import { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";                                                                                                                           
+      18 +import { Button } from "@/components/ui/button";                                                                                                                                              
+      19 +import { Input } from "@/components/ui/input";                                                                                                                                                
+      20 +import { Label } from "@/components/ui/label";                                                                                                                                                
+      21 +import {                                                                                                                                                                                      
+      22 +  Dialog,                                                                                                                                                                                     
+      23 +  DialogContent,                                                                                                                                                                              
+      24 +  DialogHeader,                                                                                                                                                                               
+      25 +  DialogTitle,                                                                                                                                                                                
+      26 +  DialogDescription,                                                                                                                                                                          
+      27 +} from "@/components/ui/dialog";                                                                                                                                                              
+      28 +import {                                                                                                                                                                                      
+      29 +  generateAmbientAssessmentPDF,                                                                                                                                                               
+      30 +  opportunityText,                                                                                                                                                                            
+      31 +  type AmbientAssessmentPDFData,                                                                                                                                                              
+      32 +} from "@/lib/ambient-assessment-pdf";                                                                                                                                                        
+      33  
+      34  interface Screen5Props {
+      35    onNext: () => void;
+
+⏺ Now add the helper functions before the component definition:
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/ambient/Screen5Gap.tsx)
+  ⎿  Added 70 lines, removed 1 line
+       31    type AmbientAssessmentPDFData,
+       32  } from "@/lib/ambient-assessment-pdf";
+       33  
+       34 +// --- PDF helpers (mirrors Screen6 logic) ---                                                                                                                                               
+       35 +const ACCESS_OUTCOME_OPTIONS_S5 = ['Panel size increased','New patient slots opened','Same-day/urgent access expanded','Referral-to-visit time reduced','Third-next-available improved','No-s
+          +how backfill utilized'];                                                                                                                                                                     
+       36 +const QUALITY_ATTRIBUTES_LABELS_S5 = ['Completeness','Specificity','Quality measures','Compliance','HCC / RAF accuracy'];                                                                    
+       37 +const DOWNSTREAM_WORKFLOWS_LABELS_S5 = ['CDI','Coding accuracy','Quality measures','Prior authorization','Chart abstraction','Risk adjustment'];                                             
+       38 +const STRATEGIC_INTEGRATIONS_LABELS_S5 = ['Quality program design','Value-based care','Compliance governance','AI and automation readiness','Payer strategy','Clinical research'];           
+       39 +const REVENUE_INTEGRATIONS_LABELS_S5 = ['Specialty-level revenue analysis','CDI strategy','Payer negotiations','Proactive denial prevention','Financial planning line item','Shared doc-to-re
+          +venue view'];                                                                                                                                                                                
+       40 +const OBSERVATION_AREAS_LABELS_S5 = ['wRVU trending up','Coding specificity improving','Denial rates trending down','Collections trending up','CDI queries decreasing','Coder productivity im
+          +proving'];                                                                                                                                                                                   
+       41 +const SURVEY_FINDINGS_LABELS_S5 = ['Reduced documentation burden','Better work-life balance','Less after-hours charting','Higher job satisfaction','Would recommend to peers'];              
+       42 +                                                                                                                                                                                             
+       43 +function resolveChecklist_s5(csv: string | undefined, labels: string[]): string[] {                                                                                                          
+       44 +  if (!csv) return [];                                                                                                                                                                       
+       45 +  return csv.split(',').filter(Boolean).map(i => labels[parseInt(i)] || '').filter(Boolean);                                                                                                 
+       46 +}                                                                                                                                                                                            
+       47 +function fmtDollar_s5(n: number): string { return n ? `$${n.toLocaleString()}` : ''; }                                                                                                       
+       48 +                                                                                                                                                                                             
+       49 +function buildUserInputsSummary_s5(domain: Domain, level: number, raw: Record<string, number | string>): Record<string, string> {                                                            
+       50 +  const out: Record<string, string> = {};                                                                                                                                                    
+       51 +  if (domain === 'capacity') {                                                                                                                                                               
+       52 +    if (raw.timeSaved) out['Time saved per encounter'] = `${raw.timeSaved} min`;                                                                                                             
+       53 +    if (level === 2) { const c = (raw.capacityTimeUsage as string || '').split(',').filter(Boolean); if (c.length) out['Active uses of recovered time'] = `${c.length} selected`; }          
+       54 +    if (level === 3) { if (raw.additionalPatientsPerMonth) out['Additional patients/provider/month'] = `${raw.additionalPatientsPerMonth}`; if (raw.capacityAccessConfidence) out['Data confi
+          +dence'] = String(raw.capacityAccessConfidence).charAt(0).toUpperCase() + String(raw.capacityAccessConfidence).slice(1); }                                                                    
+       55 +    if (level === 4) { const o = resolveChecklist_s5(raw.accessOutcomes as string, ACCESS_OUTCOME_OPTIONS_S5); if (o.length) out['Access outcomes tracked'] = o.join(', '); if (raw.additiona
+          +lPatientsPerMonth) out['Additional patients/provider/month'] = `${raw.additionalPatientsPerMonth}`; }                                                                                        
+       56 +  }                                                                                                                                                                                          
+       57 +  if (domain === 'revenue') {                                                                                                                                                                
+       58 +    if (level === 1) { if (raw.revenueCycleEngaged) out['Revenue cycle engagement'] = raw.revenueCycleEngaged === 'yes' ? 'Formally engaged' : raw.revenueCycleEngaged === 'informal' ? 'Conv
+          +ersations started' : 'Not yet'; }                                                                                                                                                            
+       59 +    if (level === 2) { const a = resolveChecklist_s5(raw.observedMovement as string, OBSERVATION_AREAS_LABELS_S5); if (a.length) out['Areas showing movement'] = a.join(', '); }             
+       60 +    if (level === 3) { if (raw.measuredWrvuDelta) out['Measured wRVU delta'] = `+${raw.measuredWrvuDelta}`; if (raw.measuredCollectionsDelta) out['Collections delta'] = fmtDollar_s5(Number(
+          +raw.measuredCollectionsDelta)); if (raw.measuredDenialReduction) out['Denial rate reduction'] = `${raw.measuredDenialReduction}%`; }                                                         
+       61 +    if (level === 4) { const a = resolveChecklist_s5(raw.revenueIntegrations as string, REVENUE_INTEGRATIONS_LABELS_S5); if (a.length) out['Strategic integrations'] = a.join(', '); if (raw.
+          +recognizedRevenue) out['Attributed annual revenue'] = fmtDollar_s5(Number(raw.recognizedRevenue)); }                                                                                         
+       62 +  }                                                                                                                                                                                          
+       63 +  if (domain === 'workforce') {                                                                                                                                                              
+       64 +    if (level === 1) { if (raw.editTimeSaved) out['In-clinic time saved'] = `${raw.editTimeSaved} min/day`; const f = resolveChecklist_s5(raw.surveyFindings as string, SURVEY_FINDINGS_LABEL
+          +S_S5); if (f.length) out['Survey findings'] = f.join(', '); }                                                                                                                                
+       65 +    if (level === 2) { const b = resolveChecklist_s5(raw.observedBehaviors as string, ['After-hours time reduced','Leaving on time','Lunch breaks resumed','Work-outside-of-work reduced','We
+          +ekend catch-up reduced','Notes completed before leaving','More present at home']); if (b.length) out['Behavioral changes'] = b.join(', '); if (raw.afterHoursReduction) out['After-hours redu
+          +ction'] = `${raw.afterHoursReduction} hrs/week`; }                                                                                                                                           
+       66 +    if (level === 3) { if (raw.beforeTurnoverRate) out['Turnover rate before Abridge'] = `${raw.beforeTurnoverRate}%`; if (raw.afterTurnoverRate) out['Turnover rate with Abridge'] = `${raw.
+          +afterTurnoverRate}%`; if (raw.replacementCost) out['Replacement cost per provider'] = fmtDollar_s5(Number(raw.replacementCost)); }                                                           
+       67 +    if (level === 4) { const s = resolveChecklist_s5(raw.workforceStrategies as string, ['Recruitment and hiring','Retention program design','Time-to-fill tracking','Provider experience str
+          +ategy','Staffing model decisions','Agency/locum spend management']); if (s.length) out['Strategic integrations'] = s.join(', '); }                                                           
+       68 +  }                                                                                                                                                                                          
+       69 +  if (domain === 'risk') {                                                                                                                                                                   
+       70 +    if (level === 1) out['Status'] = 'Quality improving — downstream not yet connected';                                                                                                     
+       71 +    if (level === 2) { const a = resolveChecklist_s5(raw.qualityAttributes as string, QUALITY_ATTRIBUTES_LABELS_S5); if (a.length) out['Quality attributes tracked'] = a.join(', '); }       
+       72 +    if (level === 3) { if (raw.financialPathway) { const p: Record<string, string> = { mips: 'MIPS / quality measures', denials: 'Denial rate reduction', none_yet: 'No pathway connected yet
+          +' }; out['Financial pathway'] = p[String(raw.financialPathway)] || String(raw.financialPathway); } }                                                                                         
+       73 +    if (level === 4) { const si = resolveChecklist_s5(raw.strategicIntegrations as string, STRATEGIC_INTEGRATIONS_LABELS_S5); if (si.length) out['Strategic areas'] = si.join(', '); if (raw.
+          +executiveOwner) out['Executive owner'] = raw.executiveOwner === 'yes' ? 'Yes' : 'Not yet'; }                                                                                                 
+       74 +  }                                                                                                                                                                                          
+       75 +  return out;                                                                                                                                                                                
+       76 +}                                                                                                                                                                                            
+       77 +                                                                                                                                                                                             
+       78 +function getScoreBandLabel_s5(score: number): string {                                                                                                                                       
+       79 +  if (score <= 16) return "Pre-Measurement";                                                                                                                                                 
+       80 +  if (score <= 38) return "Signal";                                                                                                                                                          
+       81 +  if (score <= 60) return "Confirmed";                                                                                                                                                       
+       82 +  if (score <= 79) return "Managed ROI";                                                                                                                                                     
+       83 +  return "Strategic Asset";                                                                                                                                                                  
+       84 +}                                                                                                                                                                                            
+       85 +                                                                                                                                                                                             
+       86 +function getArchetypeName_s5(levels: Record<Domain, number>): string {                                                                                                                       
+       87 +  const high = DOMAIN_ORDER.filter(d => levels[d] >= 3);                                                                                                                                     
+       88 +  const unmeasured = DOMAIN_ORDER.filter(d => levels[d] === 1);                                                                                                                              
+       89 +  if (unmeasured.length === 4) return 'Live. Not Yet Measured.';                                                                                                                             
+       90 +  if (DOMAIN_ORDER.every(d => levels[d] >= 3)) return 'Strategic Maturity.';                                                                                                                 
+       91 +  if (high.length === 0) return DOMAIN_ORDER.filter(d => levels[d] === 2).length >= 3 ? 'Early Measurement Across All Domains.' : 'Measuring the Basics. Opportunity Ahead.';                
+       92 +  if (high.length >= 3) return 'Measuring Across Most Domains.';                                                                                                                             
+       93 +  if (high.length === 1) {                                                                                                                                                                   
+       94 +    const names: Record<Domain, string> = { capacity: 'Time Captured. Financial Story Unwritten.', revenue: 'Revenue Signal Measured. Ecosystem Unmeasured.', workforce: 'Provider Experience
+          + Quantified. Broader Picture Unmeasured.', risk: 'Quality Infrastructure Present. Value Chain Not Yet Built.' };                                                                             
+       95 +    return names[high[0]];                                                                                                                                                                   
+       96 +  }                                                                                                                                                                                          
+       97 +  const pair = [...high].sort().join('+');                                                                                                                                                   
+       98 +  const m: Record<string, string> = { 'capacity+revenue': 'Operational and Financial Capture Underway.', 'capacity+workforce': 'Provider and Operational Value Captured.', 'capacity+risk': '
+          +Operations and Quality Tracked. Revenue and Workforce Unmeasured.', 'revenue+workforce': 'Financial and Provider Value Both Measured.', 'revenue+risk': 'Financial and Clinical Intelligence 
+          +Present.', 'risk+workforce': 'Clinical Quality and Provider Experience Measured.' };                                                                                                         
+       99 +  return m[pair] || 'Multiple Domains Measured.';                                                                                                                                            
+      100 +}                                                                                                                                                                                            
+      101 +// --- end PDF helpers ---                                                                                                                                                                   
+      102 +                                                                                                                                                                                             
+      103  interface Screen5Props {
+       35 -  onNext: () => void;                                                                                                                                                                        
+      104    onBack: () => void;
+      105    onNavigateToBaseline?: () => void;
+      106 +  onNavigateToExplore?: (providers: number, encounters: number) => void;                                                                                                                     
+      107  }
+      108  
+      109  function CountUpNumber({ target, duration = 1400, prefix = "$" }: { target: number; duration?: number; prefix?: string }) {
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/ambient/Screen5Gap.tsx)
+  ⎿  Added 1 line, removed 1 line
+      140    );
+      141  }
+      142  
+      143 -export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Screen5Props) {                                                                                                 
+      143 +export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToExplore }: Screen5Props) {                                                                                    
+      144    const { state } = useAssessment();
+      145    const { inputs } = state;
+      146  
+
+⏺ Now add the export state and computed values right after the capacityConfidence useMemo:
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/ambient/Screen5Gap.tsx)
+  ⎿  Added 123 lines
+      500      } catch { return ''; }
+      501    }, [inputs.capacityDomainInputs]);
+      502  
+      503 +  // --- PDF export state ---                                                                                                                                                                
+      504 +  const [isExporting, setIsExporting] = useState(false);                                                                                                                                     
+      505 +  const [exportModalOpen, setExportModalOpen] = useState(false);                                                                                                                             
+      506 +  const [exportSuccess, setExportSuccess] = useState(false);                                                                                                                                 
+      507 +  const [exportError, setExportError] = useState(false);                                                                                                                                     
+      508 +  const [exportOrgName, setExportOrgName] = useState("");                                                                                                                                    
+      509 +  const [exportPreparedBy, setExportPreparedBy] = useState("");                                                                                                                              
+      510 +                                                                                                                                                                                             
+      511 +  const revenuePerVisit = inputs.revenuePerVisit || 200;                                                                                                                                     
+      512 +  const dt = totalMeasured;                                                                                                                                                                  
+      513 +  const displayedMonthly = Math.round(dt / 12);                                                                                                                                              
+      514 +  const displayedDaily = Math.round(dt / 365);                                                                                                                                               
+      515 +  const actNow3yr = Math.round(dt * 3.45);                                                                                                                                                   
+      516 +  const permanentlyLost6mo = Math.round(dt * 0.42);                                                                                                                                          
+      517 +  const permanentlyLost12mo = Math.round(dt * 0.95);                                                                                                                                         
+      518 +                                                                                                                                                                                             
+      519 +  const scoreBandLabel = useMemo(() => getScoreBandLabel_s5(                                                                                                                                 
+      520 +    (inputs.capacityScore || 0) + (inputs.revenueScore || 0) + (inputs.workforceScore || 0) + (inputs.riskScore || 0)                                                                        
+      521 +  ), [inputs.capacityScore, inputs.revenueScore, inputs.workforceScore, inputs.riskScore]);                                                                                                  
+      522 +                                                                                                                                                                                             
+      523 +  const archetypeName = useMemo(() => getArchetypeName_s5(domainLevels), [domainLevels]);                                                                                                    
+      524 +                                                                                                                                                                                             
+      525 +  const pdfDomainData = useMemo(() => {                                                                                                                                                      
+      526 +    const parseDI = (json: string): Record<string, number | string> => { try { return JSON.parse(json); } catch { return {}; } };                                                            
+      527 +    const r: Record<string, any> = {};                                                                                                                                                       
+      528 +    for (const d of DOMAIN_ORDER) {                                                                                                                                                          
+      529 +      const level = domainLevels[d] as ActivationLevel;                                                                                                                                      
+      530 +      const raw = parseDI((inputs as any)[`${d}DomainInputs`] || '{}');                                                                                                                      
+      531 +      r[d] = {                                                                                                                                                                               
+      532 +        activationLevel: level,                                                                                                                                                              
+      533 +        activationLabel: ACTIVATION_LABELS[d][level],                                                                                                                                        
+      534 +        score: (inputs as any)[`${d}Score`] || 0,                                                                                                                                            
+      535 +        gapValue: domainGaps[d],                                                                                                                                                             
+      536 +        hasValue: domainHasValue[d],                                                                                                                                                         
+      537 +        headlineMetric: (inputs as any)[`${d}HeadlineMetric`] || '',                                                                                                                         
+      538 +        primaryOpportunity: opportunityText[d]?.[level] || '',                                                                                                                               
+      539 +        context: (inputs as any)[`${d}Context`] || '',                                                                                                                                       
+      540 +        formula: (inputs as any)[`${d}Formula`] || '',                                                                                                                                       
+      541 +        footnote: (inputs as any)[`${d}Footnote`] || '',                                                                                                                                     
+      542 +        userInputs: buildUserInputsSummary_s5(d as Domain, level, raw),                                                                                                                      
+      543 +      };                                                                                                                                                                                     
+      544 +    }                                                                                                                                                                                        
+      545 +    return r;                                                                                                                                                                                
+      546 +  }, [inputs, domainLevels, domainGaps, domainHasValue]);                                                                                                                                    
+      547 +                                                                                                                                                                                             
+      548 +  const assessmentNarrative = useMemo(() => {                                                                                                                                                
+      549 +    const totalScore = (inputs.capacityScore || 0) + (inputs.revenueScore || 0) + (inputs.workforceScore || 0) + (inputs.riskScore || 0);                                                    
+      550 +    const TIEBREAKER: Domain[] = ['risk', 'revenue', 'workforce', 'capacity'];                                                                                                               
+      551 +    let lowestDomain = TIEBREAKER[0];                                                                                                                                                        
+      552 +    let lowestLevel = domainLevels[lowestDomain];                                                                                                                                            
+      553 +    for (const d of TIEBREAKER) { if (domainLevels[d] < lowestLevel) { lowestDomain = d; lowestLevel = domainLevels[d]; } }                                                                  
+      554 +    const strongDomains = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d]);                                                                                         
+      555 +    const weakDomains = DOMAIN_ORDER.filter(d => domainLevels[d] <= 2).map(d => DOMAIN_LABELS[d]);                                                                                           
+      556 +    const INSIGHTS: Record<string, Record<1|2, string>> = {                                                                                                                                  
+      557 +      capacity: { 1: "Recovered time isn't being tracked or deployed.", 2: "Recovered time is measured but not being converted to access." },                                                
+      558 +      revenue: { 1: "No one has analyzed whether documentation changes are affecting reimbursement.", 2: "Directional signals observed but not formally validated." },                       
+      559 +      workforce: { 1: "After-hours burden reduced but broader workforce impact isn't tracked.", 2: "Burden is measured but not connected to retention or labor costs." },                    
+      560 +      risk: { 1: "Documentation quality improved but no downstream teams have been engaged.", 2: "Quality attributes tracked but not yet connected to downstream programs." },               
+      561 +    };                                                                                                                                                                                       
+      562 +    const insightLevel = Math.min(lowestLevel, 2) as 1|2;                                                                                                                                    
+      563 +    const domainInsight = INSIGHTS[lowestDomain]?.[insightLevel] || '';                                                                                                                      
+      564 +    const lowestLabel = DOMAIN_LABELS[lowestDomain as Domain].toLowerCase();                                                                                                                 
+      565 +    if (totalScore <= 30) return `Your organization is in the early stages of capturing ambient ROI. Time is being saved, but value capture is largely unmeasured and unstructured. Your bigg
+          +est opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;                                                                                                                 
+      566 +    if (totalScore <= 50) return `Your organization is beginning to capture ambient ROI${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')} remain${weakDomains.length === 1 ? 's' 
+          +: ''} in early stages` : ''}. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;                                                                          
+      567 +    if (totalScore <= 70) return `Your organization is actively managing ambient ROI in ${strongDomains.join(' and ') || 'some domains'}${weakDomains.length > 0 ? `, but ${weakDomains.join(
+          +' and ')} remain${weakDomains.length === 1 ? 's' : ''} in early stages` : ''}. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;                         
+      568 +    if (totalScore <= 85) return `Your organization is strategically managing ambient ROI across ${strongDomains.join(', ') || 'multiple domains'}. Focus on ${lowestLabel} to reach full mat
+          +urity \u2014 ${domainInsight.toLowerCase()}`;                                                                                                                                                
+      569 +    return 'Your organization has institutionalized ambient ROI across all four domains. This is strategic-level documentation intelligence.';                                               
+      570 +  }, [inputs, domainLevels]);                                                                                                                                                                
+      571 +                                                                                                                                                                                             
+      572 +  const openExportModal = () => { setExportSuccess(false); setExportError(false); setExportModalOpen(true); };                                                                               
+      573 +                                                                                                                                                                                             
+      574 +  const handleExport = async () => {                                                                                                                                                         
+      575 +    setIsExporting(true);                                                                                                                                                                    
+      576 +    setExportError(false);                                                                                                                                                                   
+      577 +    setExportSuccess(false);                                                                                                                                                                 
+      578 +    try {                                                                                                                                                                                    
+      579 +      const totalScore = (inputs.capacityScore || 0) + (inputs.revenueScore || 0) + (inputs.workforceScore || 0) + (inputs.riskScore || 0);                                                  
+      580 +      const pdfData: AmbientAssessmentPDFData = {                                                                                                                                            
+      581 +        organizationName: exportOrgName || "Your Organization",                                                                                                                              
+      582 +        preparedBy: exportPreparedBy || undefined,                                                                                                                                           
+      583 +        assessmentDate: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),                                                                          
+      584 +        providers,                                                                                                                                                                           
+      585 +        annualEncounters,                                                                                                                                                                    
+      586 +        utilization,                                                                                                                                                                         
+      587 +        timeSavings: userTimeSaved,                                                                                                                                                          
+      588 +        documentationScore: totalScore,                                                                                                                                                      
+      589 +        totalAnnualGap: dt,                                                                                                                                                                  
+      590 +        monthlyGap: displayedMonthly,                                                                                                                                                        
+      591 +        dailyGap: displayedDaily,                                                                                                                                                            
+      592 +        actNow3yr,                                                                                                                                                                           
+      593 +        wait6mo3yr: Math.round(dt * (3.45 - 0.42)),                                                                                                                                          
+      594 +        wait12mo3yr: Math.round(dt * (3.45 - 0.95)),                                                                                                                                         
+      595 +        permanentlyLost6mo,                                                                                                                                                                  
+      596 +        permanentlyLost12mo,                                                                                                                                                                 
+      597 +        revenuePerVisit,                                                                                                                                                                     
+      598 +        conversionFactor: inputs.conversionFactor || 33,                                                                                                                                     
+      599 +        assessmentNarrative,                                                                                                                                                                 
+      600 +        deploymentTenure: inputs.deploymentTenure || '',                                                                                                                                     
+      601 +        orgContext: {                                                                                                                                                                        
+      602 +          systemSize: (inputs as any).systemSize || 0,                                                                                                                                       
+      603 +          orgType: (inputs as any).orgType || '',                                                                                                                                            
+      604 +          payerMixMedicare: (inputs as any).payerMixMedicare || 0,                                                                                                                           
+      605 +          payerMixMedicaid: (inputs as any).payerMixMedicaid || 0,                                                                                                                           
+      606 +          payerMixCommercial: (inputs as any).payerMixCommercial || 0,                                                                                                                       
+      607 +        },                                                                                                                                                                                   
+      608 +        domains: {                                                                                                                                                                           
+      609 +          capacity: pdfDomainData.capacity,                                                                                                                                                  
+      610 +          revenue: pdfDomainData.revenue,                                                                                                                                                    
+      611 +          workforce: pdfDomainData.workforce,                                                                                                                                                
+      612 +          risk: pdfDomainData.risk,                                                                                                                                                          
+      613 +        },                                                                                                                                                                                   
+      614 +      };                                                                                                                                                                                     
+      615 +      await generateAmbientAssessmentPDF(pdfData);                                                                                                                                           
+      616 +      setExportSuccess(true);                                                                                                                                                                
+      617 +    } catch (err) {                                                                                                                                                                          
+      618 +      console.error('PDF generation failed:', err instanceof Error ? err.message : err, err);                                                                                                
+      619 +      setExportError(true);                                                                                                                                                                  
+      620 +    } finally {                                                                                                                                                                              
+      621 +      setIsExporting(false);                                                                                                                                                                 
+      622 +    }                                                                                                                                                                                        
+      623 +  };                                                                                                                                                                                         
+      624 +  // --- end PDF export ---                                                                                                                                                                  
+      625 +                                                                                                                                                                                             
+      626    const domainStatusLine = useMemo((): Record<Domain, { text: string; isConfirmed: boolean; isSignal: boolean }> => {
+      627      const result = {} as Record<Domain, { text: string; isConfirmed: boolean; isSignal: boolean }>;
+      628  
+
+⏺ Now replace the StepFooter block with the CTA card + Dialog:
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/ambient/Screen5Gap.tsx)
+  ⎿  Added 35 lines, removed 3 lines
+      888              </p>
+      889            </div>
+      890  
+      891 -          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>                                                             
+      892 -            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary →" showBack={false} />                                                                                     
+      891 +          <motion.div                                                                                                                                                                        
+      892 +            className="mb-8"                                                                                                                                                                 
+      893 +            initial={{ opacity: 0, y: 12 }}                                                                                                                                                  
+      894 +            animate={{ opacity: 1, y: 0 }}                                                                                                                                                   
+      895 +            transition={{ delay: 0.85, duration: 0.5 }}                                                                                                                                      
+      896 +          >                                                                                                                                                                                  
+      897 +            <div className="bg-[#1A1A1A] rounded-lg p-6 sm:p-8">                                                                                                                             
+      898 +              <p className="text-xl sm:text-2xl font-bold text-white mb-3">                                                                                                                  
+      899 +                Your gap is real. Here's how to close it.                                                                                                                                    
+      900 +              </p>                                                                                                                                                                           
+      901 +              <p className="text-sm text-white/50 mb-6">                                                                                                                                     
+      902 +                A 45-minute working session turns this assessment into a prioritized measurement plan — built around your domains, your scale, and what peer organizations have done in the f
+          +irst 90 days.                                                                                                                                                                                
+      903 +              </p>                                                                                                                                                                           
+      904 +              <div className="flex flex-col items-start gap-3">                                                                                                                              
+      905 +                <Button                                                                                                                                                                      
+      906 +                  onClick={() => onNavigateToExplore?.(providers, annualEncounters)}                                                                                                         
+      907 +                  className="bg-[#EA2C00] text-white rounded-full px-8 py-6 h-auto text-base font-medium gap-2"                                                                              
+      908 +                  data-testid="button-explore-value"                                                                                                                                         
+      909 +                >                                                                                                                                                                            
+      910 +                  Request a Working Session                                                                                                                                                  
+      911 +                  <ArrowRight size={16} />                                                                                                                                                   
+      912 +                </Button>                                                                                                                                                                    
+      913 +                <button                                                                                                                                                                      
+      914 +                  onClick={openExportModal}                                                                                                                                                  
+      915 +                  className="flex items-center gap-2 text-sm font-medium text-white/50 border border-white/20 rounded-full px-5 py-2.5 hover:text-white hover:border-white/40 transition-colo
+          +rs bg-transparent cursor-pointer"                                                                                                                                                            
+      916 +                  data-testid="button-export"                                                                                                                                                
+      917 +                >                                                                                                                                                                            
+      918 +                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="
+          +round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>                                                
+      919 +                  Download Your Assessment                                                                                                                                                   
+      920 +                </button>                                                                                                                                                                    
+      921 +              </div>                                                                                                                                                                         
+      922 +            </div>                                                                                                                                                                           
+      923            </motion.div>
+      924  
+      895 -          <div className={STEP_FOOTER_SPACER_CLASS} />                                                                                                                                       
+      925 +          <p className="text-xs text-[#888888] leading-relaxed mb-8 italic">                                                                                                                 
+      926 +            This assessment provides directional estimates based on organizational self-assessment and the inputs you provide. It does not guarantee specific financial outcomes. Benchmarks 
+          +reflect maturity-based scoring and aggregated deployment data. Roadmap guidance is general — specific implementation should be tailored to your organization. Individual results vary. Method
+          +ology available on request.                                                                                                                                                                  
+      927 +          </p>                                                                                                                                                                               
+      928          </div>
+      929  
+      930          <motion.div
+
+⏺ Now add the Dialog before the closing tag of the component. First let me check the current end of the file:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Now add the Dialog before the closing </div> of the component:
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/ambient/Screen5Gap.tsx)
+  ⎿  Added 67 lines
+      1007            </div>
+      1008          </motion.div>
+      1009        </div>
+      1010 +                                                                                                                                                                                            
+      1011 +      <Dialog open={exportModalOpen} onOpenChange={(open) => { setExportModalOpen(open); if (!open) setExportSuccess(false); }}>                                                            
+      1012 +        <DialogContent className="sm:max-w-[460px]">                                                                                                                                        
+      1013 +          <DialogHeader>                                                                                                                                                                    
+      1014 +            <DialogTitle className="flex items-center gap-2">                                                                                                                               
+      1015 +              <FileText className="h-5 w-5 text-[#EA2C00]" />                                                                                                                               
+      1016 +              Export Ambient Assessment                                                                                                                                                     
+      1017 +            </DialogTitle>                                                                                                                                                                  
+      1018 +            <DialogDescription>                                                                                                                                                             
+      1019 +              Generate a professional PDF report with your assessment results, domain analysis, and cost-of-inaction projections.                                                           
+      1020 +            </DialogDescription>                                                                                                                                                            
+      1021 +          </DialogHeader>                                                                                                                                                                   
+      1022 +                                                                                                                                                                                            
+      1023 +          {exportError ? (                                                                                                                                                                  
+      1024 +            <div className="py-8 text-center space-y-4">                                                                                                                                    
+      1025 +              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">                                                                                  
+      1026 +                <X className="h-6 w-6 text-red-600" />                                                                                                                                      
+      1027 +              </div>                                                                                                                                                                        
+      1028 +              <div>                                                                                                                                                                         
+      1029 +                <h3 className="font-semibold text-lg">PDF Generation Failed</h3>                                                                                                            
+      1030 +                <p className="text-sm text-neutral-500 mt-1">Something went wrong. Please try again.</p>                                                                                    
+      1031 +              </div>                                                                                                                                                                        
+      1032 +              <div className="flex gap-3 pt-4">                                                                                                                                             
+      1033 +                <Button className="flex-1" onClick={() => { setExportError(false); handleExport(); }}>Retry</Button>                                                                        
+      1034 +                <Button variant="outline" className="flex-1" onClick={() => setExportModalOpen(false)}>Close</Button>                                                                       
+      1035 +              </div>                                                                                                                                                                        
+      1036 +            </div>                                                                                                                                                                          
+      1037 +          ) : !exportSuccess ? (                                                                                                                                                            
+      1038 +            <div className="space-y-5 py-3">                                                                                                                                                
+      1039 +              <div className="space-y-4">                                                                                                                                                   
+      1040 +                <div className="space-y-2">                                                                                                                                                 
+      1041 +                  <Label htmlFor="s5-export-org-name" className="text-sm font-medium">Organization name</Label>                                                                             
+      1042 +                  <Input id="s5-export-org-name" placeholder="e.g., Memorial Health System" value={exportOrgName} onChange={(e) => setExportOrgName(e.target.value)} />                     
+      1043 +                </div>                                                                                                                                                                      
+      1044 +                <div className="space-y-2">                                                                                                                                                 
+      1045 +                  <Label htmlFor="s5-export-prepared-by" className="text-sm font-medium">Prepared by (optional)</Label>                                                                     
+      1046 +                  <Input id="s5-export-prepared-by" placeholder="e.g., Partner Success Team" value={exportPreparedBy} onChange={(e) => setExportPreparedBy(e.target.value)} />              
+      1047 +                </div>                                                                                                                                                                      
+      1048 +              </div>                                                                                                                                                                        
+      1049 +              <div className="flex items-center justify-between text-sm text-neutral-500 border-t pt-4">                                                                                    
+      1050 +                <span>Estimated length: <span className="font-medium">8 pages</span></span>                                                                                                 
+      1051 +                <span>Format: <span className="font-medium">PDF</span></span>                                                                                                               
+      1052 +              </div>                                                                                                                                                                        
+      1053 +              <div className="flex gap-3 pt-1">                                                                                                                                             
+      1054 +                <Button variant="outline" className="flex-1" onClick={() => setExportModalOpen(false)}>Cancel</Button>                                                                      
+      1055 +                <Button className="flex-1 bg-[#EA2C00]" onClick={handleExport} disabled={isExporting}>                                                                                      
+      1056 +                  {isExporting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</>) : (<><Download className="mr-2 h-4 w-4" />Generate PDF</>)}                          
+      1057 +                </Button>                                                                                                                                                                   
+      1058 +              </div>                                                                                                                                                                        
+      1059 +            </div>                                                                                                                                                                          
+      1060 +          ) : (                                                                                                                                                                             
+      1061 +            <div className="py-8 text-center space-y-4">                                                                                                                                    
+      1062 +              <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">                                                                                
+      1063 +                <Check className="h-6 w-6 text-green-600" />                                                                                                                                
+      1064 +              </div>                                                                                                                                                                        
+      1065 +              <div>                                                                                                                                                                         
+      1066 +                <h3 className="font-semibold text-lg">PDF Generated Successfully</h3>                                                                                                       
+      1067 +                <p className="text-sm text-neutral-500 mt-1">Check your downloads folder for the file.</p>                                                                                  
+      1068 +              </div>                                                                                                                                                                        
+      1069 +              <div className="flex gap-3 pt-4">                                                                                                                                             
+      1070 +                <Button variant="outline" className="flex-1" onClick={handleExport}><Download className="mr-2 h-4 w-4" />Download Again</Button>                                            
+      1071 +                <Button className="flex-1" onClick={() => setExportModalOpen(false)}><X className="mr-2 h-4 w-4" />Close</Button>                                                           
+      1072 +              </div>                                                                                                                                                                        
+      1073 +            </div>                                                                                                                                                                          
+      1074 +          )}                                                                                                                                                                                
+      1075 +        </DialogContent>                                                                                                                                                                    
+      1076 +      </Dialog>                                                                                                                                                                             
+      1077      </div>
+      1078    );
+      1079  }
+
+⏺ Now also remove the outer STEP_FOOTER_SPACER_CLASS wrapper since we no longer have a sticky footer:
+
+⏺ Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/ambient/Screen5Gap.tsx)
+  ⎿  Removed 1 line
+      14    ANNUAL_HOURS,
+      15    tenureLabel, tenureMonthsMidpoint, tenureIsLong, tenureScoreBand,
+      16  } from "./domainCalculations";
+      17 -import { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";                                                                                                                           
+      17  import { Button } from "@/components/ui/button";
+      18  import { Input } from "@/components/ui/input";
+      19  import { Label } from "@/components/ui/label";
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/ambient/Screen5Gap.tsx)
+  ⎿  Added 1 line, removed 1 line
+      658    }, [domainLevels, domainHasValue, domainGaps, nextLevelContents, qualityAttrCount]);
+      659  
+      660    return (
+      661 -    <div className={STEP_FOOTER_SPACER_CLASS}>                                                                                                                                               
+      661 +    <div>                                                                                                                                                                                    
+      662  
+      663        <motion.div
+      664          className="mb-10"
+
+⏺ Now update AmbientNarrativeFlow.tsx to drop Screen6 and reduce to 4 steps:
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/AmbientNarrativeFlow.tsx)
+  ⎿  Added 1 line, removed 3 lines
+       9  import Screen3Domains from "./ambient/Screen4Domains";
+      10  import Screen4Score from "./ambient/Screen3Score";
+      11  import Screen5Gap from "./ambient/Screen5Gap";
+      12 -import Screen6Invitation from "./ambient/Screen6Invitation";                                                                                                                                  
+      12  
+      13  interface AmbientNarrativeFlowProps {
+      14    onBack: () => void;
+     ...
+      16    onNavigateToExplore?: (providers: number, encounters: number) => void;
+      17  }
+      18  
+      20 -const TOTAL_SCREENS = 5;                                                                                                                                                                      
+      19 +const TOTAL_SCREENS = 4;                                                                                                                                                                      
+      20  
+      21  const STEP_NAMES = [
+      22    "Your Deployment",
+      23    "Four Domains",
+      24    "The Reveal",
+      25    "Your Trajectory",
+      27 -  "Your Roadmap",                                                                                                                                                                             
+      26  ];
+      27  
+      28  export default function AmbientNarrativeFlow({
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/AmbientNarrativeFlow.tsx)
+  ⎿  Added 1 line, removed 3 lines
+      89        case 3:
+      90          return <Screen4Score onNext={handleNext} onBack={handleBack} onNavigateToDomain={(domain) => { setInitialDomain(domain); goToStep(2); }} />;
+      91        case 4:
+      92 -        return <Screen5Gap onNext={handleNext} onBack={handleBack} onNavigateToBaseline={() => goToStep(1)} />;                                                                               
+      93 -      case 5:                                                                                                                                                                                 
+      94 -        return <Screen6Invitation onBack={handleBack} onBackToJourney={onBackToJourney} onNavigateToExplore={onNavigateToExplore} />;                                                         
+      92 +        return <Screen5Gap onBack={handleBack} onNavigateToBaseline={() => goToStep(1)} onNavigateToExplore={onNavigateToExplore} />;                                                         
+      93        default:
+      94          return null;
+      95      }
+
+⏺ Now let me do a quick check for TypeScript issues — specifically verifying the tenureScoreBand export exists and checking the unused variables:
+
+⏺ Searched for 5 patterns (ctrl+o to expand)
+
+⏺ Update(~/Downloads/The-ROI-Calculator 3/client/src/pages/switch/ambient/Screen5Gap.tsx)
+  ⎿  Added 1 line, removed 1 line
+      12    DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS,
+      13    scoreToActivationLevel,
+      14    ANNUAL_HOURS,
+      15 -  tenureLabel, tenureMonthsMidpoint, tenureIsLong, tenureScoreBand,                                                                                                                           
+      15 +  tenureLabel, tenureMonthsMidpoint, tenureIsLong,                                                                                                                                            
+      16  } from "./domainCalculations";
+      17  import { Button } from "@/components/ui/button";
+      18  import { Input } from "@/components/ui/input";
+
+⏺ Now let me verify the final structure of the file looks right:
+
+⏺ Searched for 2 patterns (ctrl+o to expand)
+
+⏺ Everything looks clean. Let me also verify the flow file no longer references Screen6:
+
+⏺ Searched for 1 pattern (ctrl+o to expand)
+
+⏺ Clean. Let me do a final sanity check on the line count and make sure the Dialog is properly closed:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ The file closes cleanly. Here's what was done:
+
+  Screen5Gap.tsx — now the final screen:
+  - Removed onNext from props, added onNavigateToExplore
+  - Added all PDF export helpers (buildUserInputsSummary_s5, getScoreBandLabel_s5, getArchetypeName_s5, option label arrays)
+  - Added export state (isExporting, exportModalOpen, exportOrgName, etc.)
+  - Added handleExport that assembles the full AmbientAssessmentPDFData and calls generateAmbientAssessmentPDF
+  - Added assessmentNarrative, pdfDomainData, scoreBandLabel computations
+  - Replaced StepFooter with a dark CTA card: "Your gap is real. Here's how to close it." → "Request a Working Session" button + "Download Your Assessment" button
+  - Added the export Dialog with org name / prepared-by inputs, success/error states
+  - Removed the sticky footer spacer wrapper
+
+  AmbientNarrativeFlow.tsx:
+  - TOTAL_SCREENS: 5 → 4
+  - STEP_NAMES: dropped "Your Roadmap"
+  - Removed Screen6Invitation import and case 5
+  - Screen5Gap now receives onNavigateToExplore directly
+
+  The flow is now: Your Deployment → Four Domains → The Reveal (climax) → Your Trajectory (final, with CTA + export).
+
+✻ Cooked for 8m 47s · 1 background task still running (↓ to manage)
+
+❯ explain to me what you did.. ii wanna make sure that its my vision before we get a replit prompt to update online 
+
+⏺ Here's exactly what changed and why:
+
+  ---
+  What the flow used to be (5 steps)
+
+  1. Your Deployment (baseline)
+  2. Four Domains (assessment)
+  3. The Reveal (score)
+  4. Your Trajectory (cost of inaction + chart)
+  5. Your Roadmap ← this was the final screen with the CTA and PDF download
+
+  The problem: the climax moment (seeing your score in step 3) was buried in the middle. Then you had to sit through two more screens before you could do anything. Step 5 also repeated a lot of the same
+  numbers from step 4.
+
+  ---
+  What it is now (4 steps)
+
+  1. Your Deployment
+  2. Four Domains
+  3. The Reveal ← climax
+  4. Your Trajectory ← now the final screen, with everything you need to act
+
+  ---
+  What Screen 4 (Your Trajectory) now contains
+
+  Everything that was already there — the domain breakdown cards, the "value of acting now" chart, the measured vs. unmeasured tiles — plus two things that used to only live on Screen 5 (the old roadmap):
+
+  A dark CTA card at the bottom:
+  "Your gap is real. Here's how to close it."
+  — "Request a Working Session" button (the red primary action → takes them to the Explore/ROI path)
+  — "Download Your Assessment" button (ghost button → triggers the PDF modal)
+
+  The full PDF export dialog — same as what was on Screen 5: org name field, prepared-by field, generate button, success/error states.
+
+  ---
+  What was removed
+
+  Screen 5 (Your Roadmap / Screen6Invitation.tsx) is no longer in the flow. The file still exists — it just isn't wired up anymore. Nothing was deleted, so it's recoverable if you ever want it.
+
+  ---
+  The narrative arc now
+
+  Score reveal lands. The next thing they see is what it means in dollars and what's not yet counted. They read it. At the bottom of that same page: "Here's how to close it." One button to book a working
+  session. One button to download the PDF and take it with them. Done.
+
+  No extra screen. No redundancy. The cost-of-inaction page is the closing argument.
+
+  ---
+  Does that match your vision? If yes, I can write the Replit prompt.
+
+❯ yes write the replit prompt 
+
+⏺ Here's the Replit prompt:
+
+  ---
+  Restructure the ambient assessment flow from 5 steps to 4 steps. The goal is to make "Your Trajectory" (Screen5Gap) the final screen, with the PDF export and CTA living there instead of on a separate "Your
+   Roadmap" screen.
+
+  ---
+  File 1: client/src/pages/switch/AmbientNarrativeFlow.tsx
+
+  Make these three changes:
+
+  1. Remove the Screen6Invitation import:
+  // DELETE this line:
+  import Screen6Invitation from "./ambient/Screen6Invitation";
+
+  2. Change TOTAL_SCREENS and STEP_NAMES:
+  // OLD:
+  const TOTAL_SCREENS = 5;
+
+  const STEP_NAMES = [
+    "Your Deployment",
+    "Four Domains",
+    "The Reveal",
+    "Your Trajectory",
+    "Your Roadmap",
+  ];
+
+  // NEW:
+  const TOTAL_SCREENS = 4;
+
+  const STEP_NAMES = [
+    "Your Deployment",
+    "Four Domains",
+    "The Reveal",
+    "Your Trajectory",
+  ];
+
+  3. Update the renderScreen switch — replace case 4 and remove case 5:
+  // OLD:
+        case 4:
+          return <Screen5Gap onNext={handleNext} onBack={handleBack} onNavigateToBaseline={() => goToStep(1)} />;
+        case 5:
+          return <Screen6Invitation onBack={handleBack} onBackToJourney={onBackToJourney} onNavigateToExplore={onNavigateToExplore} />;
+
+  // NEW:
+        case 4:
+          return <Screen5Gap onBack={handleBack} onNavigateToBaseline={() => goToStep(1)} onNavigateToExplore={onNavigateToExplore} />;
+
+  ---
+  File 2: client/src/pages/switch/ambient/Screen5Gap.tsx
+
+  This file needs several additions. Make them in order:
+
+  ---
+  Step A — Update the lucide-react import to add new icons:
+  // OLD:
+  import { Stethoscope, Zap, HeartPulse, ClipboardList } from "lucide-react";
+
+  // NEW:
+  import { Stethoscope, Zap, HeartPulse, ClipboardList, ArrowRight, Download, Loader2, FileText, Check, X } from "lucide-react";
+
+  ---
+  Step B — Update the domainCalculations import and replace the StepFooter import with new imports:
+  // OLD:
+    tenureLabel, tenureMonthsMidpoint, tenureIsLong,
+  } from "./domainCalculations";
+  import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+
+  // NEW:
+    tenureLabel, tenureMonthsMidpoint, tenureIsLong,
+  } from "./domainCalculations";
+  import { Button } from "@/components/ui/button";
+  import { Input } from "@/components/ui/input";
+  import { Label } from "@/components/ui/label";
+  import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+  } from "@/components/ui/dialog";
+  import {
+    generateAmbientAssessmentPDF,
+    opportunityText,
+    type AmbientAssessmentPDFData,
+  } from "@/lib/ambient-assessment-pdf";
+
+  ---
+  Step C — Replace the Screen5Props interface and add helper functions before it:
+
+  // OLD:
+  interface Screen5Props {
+    onNext: () => void;
+    onBack: () => void;
+    onNavigateToBaseline?: () => void;
+  }
+
+  // NEW — paste this entire block in place of the old interface:
+  const ACCESS_OUTCOME_OPTIONS_S5 = ['Panel size increased','New patient slots opened','Same-day/urgent access expanded','Referral-to-visit time reduced','Third-next-available improved','No-show backfill
+  utilized'];
+  const QUALITY_ATTRIBUTES_LABELS_S5 = ['Completeness','Specificity','Quality measures','Compliance','HCC / RAF accuracy'];
+  const STRATEGIC_INTEGRATIONS_LABELS_S5 = ['Quality program design','Value-based care','Compliance governance','AI and automation readiness','Payer strategy','Clinical research'];
+  const REVENUE_INTEGRATIONS_LABELS_S5 = ['Specialty-level revenue analysis','CDI strategy','Payer negotiations','Proactive denial prevention','Financial planning line item','Shared doc-to-revenue view'];
+  const OBSERVATION_AREAS_LABELS_S5 = ['wRVU trending up','Coding specificity improving','Denial rates trending down','Collections trending up','CDI queries decreasing','Coder productivity improving'];
+  const SURVEY_FINDINGS_LABELS_S5 = ['Reduced documentation burden','Better work-life balance','Less after-hours charting','Higher job satisfaction','Would recommend to peers'];
+
+  function resolveChecklist_s5(csv: string | undefined, labels: string[]): string[] {
+    if (!csv) return [];
+    return csv.split(',').filter(Boolean).map(i => labels[parseInt(i)] || '').filter(Boolean);
+  }
+  function fmtDollar_s5(n: number): string { return n ? `$${n.toLocaleString()}` : ''; }
+
+  function buildUserInputsSummary_s5(domain: Domain, level: number, raw: Record<string, number | string>): Record<string, string> {
+    const out: Record<string, string> = {};
+    if (domain === 'capacity') {
+      if (raw.timeSaved) out['Time saved per encounter'] = `${raw.timeSaved} min`;
+      if (level === 2) { const c = (raw.capacityTimeUsage as string || '').split(',').filter(Boolean); if (c.length) out['Active uses of recovered time'] = `${c.length} selected`; }
+      if (level === 3) { if (raw.additionalPatientsPerMonth) out['Additional patients/provider/month'] = `${raw.additionalPatientsPerMonth}`; if (raw.capacityAccessConfidence) out['Data confidence'] =
+  String(raw.capacityAccessConfidence).charAt(0).toUpperCase() + String(raw.capacityAccessConfidence).slice(1); }
+      if (level === 4) { const o = resolveChecklist_s5(raw.accessOutcomes as string, ACCESS_OUTCOME_OPTIONS_S5); if (o.length) out['Access outcomes tracked'] = o.join(', '); if
+  (raw.additionalPatientsPerMonth) out['Additional patients/provider/month'] = `${raw.additionalPatientsPerMonth}`; }
+    }
+    if (domain === 'revenue') {
+      if (level === 1) { if (raw.revenueCycleEngaged) out['Revenue cycle engagement'] = raw.revenueCycleEngaged === 'yes' ? 'Formally engaged' : raw.revenueCycleEngaged === 'informal' ? 'Conversations
+  started' : 'Not yet'; }
+      if (level === 2) { const a = resolveChecklist_s5(raw.observedMovement as string, OBSERVATION_AREAS_LABELS_S5); if (a.length) out['Areas showing movement'] = a.join(', '); }
+      if (level === 3) { if (raw.measuredWrvuDelta) out['Measured wRVU delta'] = `+${raw.measuredWrvuDelta}`; if (raw.measuredCollectionsDelta) out['Collections delta'] =
+  fmtDollar_s5(Number(raw.measuredCollectionsDelta)); if (raw.measuredDenialReduction) out['Denial rate reduction'] = `${raw.measuredDenialReduction}%`; }
+      if (level === 4) { const a = resolveChecklist_s5(raw.revenueIntegrations as string, REVENUE_INTEGRATIONS_LABELS_S5); if (a.length) out['Strategic integrations'] = a.join(', '); if
+  (raw.recognizedRevenue) out['Attributed annual revenue'] = fmtDollar_s5(Number(raw.recognizedRevenue)); }
+    }
+    if (domain === 'workforce') {
+      if (level === 1) { if (raw.editTimeSaved) out['In-clinic time saved'] = `${raw.editTimeSaved} min/day`; const f = resolveChecklist_s5(raw.surveyFindings as string, SURVEY_FINDINGS_LABELS_S5); if
+  (f.length) out['Survey findings'] = f.join(', '); }
+      if (level === 2) { const b = resolveChecklist_s5(raw.observedBehaviors as string, ['After-hours time reduced','Leaving on time','Lunch breaks resumed','Work-outside-of-work reduced','Weekend catch-up
+  reduced','Notes completed before leaving','More present at home']); if (b.length) out['Behavioral changes'] = b.join(', '); if (raw.afterHoursReduction) out['After-hours reduction'] =
+  `${raw.afterHoursReduction} hrs/week`; }
+      if (level === 3) { if (raw.beforeTurnoverRate) out['Turnover rate before Abridge'] = `${raw.beforeTurnoverRate}%`; if (raw.afterTurnoverRate) out['Turnover rate with Abridge'] =
+  `${raw.afterTurnoverRate}%`; if (raw.replacementCost) out['Replacement cost per provider'] = fmtDollar_s5(Number(raw.replacementCost)); }
+      if (level === 4) { const s = resolveChecklist_s5(raw.workforceStrategies as string, ['Recruitment and hiring','Retention program design','Time-to-fill tracking','Provider experience strategy','Staffing
+   model decisions','Agency/locum spend management']); if (s.length) out['Strategic integrations'] = s.join(', '); }
+    }
+    if (domain === 'risk') {
+      if (level === 1) out['Status'] = 'Quality improving — downstream not yet connected';
+      if (level === 2) { const a = resolveChecklist_s5(raw.qualityAttributes as string, QUALITY_ATTRIBUTES_LABELS_S5); if (a.length) out['Quality attributes tracked'] = a.join(', '); }
+      if (level === 3) { if (raw.financialPathway) { const p: Record<string, string> = { mips: 'MIPS / quality measures', denials: 'Denial rate reduction', none_yet: 'No pathway connected yet' };
+  out['Financial pathway'] = p[String(raw.financialPathway)] || String(raw.financialPathway); } }
+      if (level === 4) { const si = resolveChecklist_s5(raw.strategicIntegrations as string, STRATEGIC_INTEGRATIONS_LABELS_S5); if (si.length) out['Strategic areas'] = si.join(', '); if (raw.executiveOwner)
+  out['Executive owner'] = raw.executiveOwner === 'yes' ? 'Yes' : 'Not yet'; }
+    }
+    return out;
+  }
+
+  function getScoreBandLabel_s5(score: number): string {
+    if (score <= 16) return "Pre-Measurement";
+    if (score <= 38) return "Signal";
+    if (score <= 60) return "Confirmed";
+    if (score <= 79) return "Managed ROI";
+    return "Strategic Asset";
+  }
+
+  function getArchetypeName_s5(levels: Record<Domain, number>): string {
+    const high = DOMAIN_ORDER.filter(d => levels[d] >= 3);
+    const unmeasured = DOMAIN_ORDER.filter(d => levels[d] === 1);
+    if (unmeasured.length === 4) return 'Live. Not Yet Measured.';
+    if (DOMAIN_ORDER.every(d => levels[d] >= 3)) return 'Strategic Maturity.';
+    if (high.length === 0) return DOMAIN_ORDER.filter(d => levels[d] === 2).length >= 3 ? 'Early Measurement Across All Domains.' : 'Measuring the Basics. Opportunity Ahead.';
+    if (high.length >= 3) return 'Measuring Across Most Domains.';
+    if (high.length === 1) {
+      const names: Record<Domain, string> = { capacity: 'Time Captured. Financial Story Unwritten.', revenue: 'Revenue Signal Measured. Ecosystem Unmeasured.', workforce: 'Provider Experience Quantified.
+  Broader Picture Unmeasured.', risk: 'Quality Infrastructure Present. Value Chain Not Yet Built.' };
+      return names[high[0]];
+    }
+    const pair = [...high].sort().join('+');
+    const m: Record<string, string> = { 'capacity+revenue': 'Operational and Financial Capture Underway.', 'capacity+workforce': 'Provider and Operational Value Captured.', 'capacity+risk': 'Operations and
+  Quality Tracked. Revenue and Workforce Unmeasured.', 'revenue+workforce': 'Financial and Provider Value Both Measured.', 'revenue+risk': 'Financial and Clinical Intelligence Present.', 'risk+workforce':
+  'Clinical Quality and Provider Experience Measured.' };
+    return m[pair] || 'Multiple Domains Measured.';
+  }
+
+  interface Screen5Props {
+    onBack: () => void;
+    onNavigateToBaseline?: () => void;
+    onNavigateToExplore?: (providers: number, encounters: number) => void;
+  }
+
+  ---
+  Step D — Update the component signature:
+  // OLD:
+  export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Screen5Props) {
+
+  // NEW:
+  export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToExplore }: Screen5Props) {
+
+  ---
+  Step E — Add export state and computed values inside the component.
+
+  Find this comment/line inside the component body (it's the last useMemo before the return statement, the one computing domainStatusLine):
+
+    const domainStatusLine = useMemo((): Record<Domain, { text: string; isConfirmed: boolean; isSignal: boolean }> => {
+
+  Insert this entire block immediately before that line:
+
+    // --- PDF export state ---
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportModalOpen, setExportModalOpen] = useState(false);
+    const [exportSuccess, setExportSuccess] = useState(false);
+    const [exportError, setExportError] = useState(false);
+    const [exportOrgName, setExportOrgName] = useState("");
+    const [exportPreparedBy, setExportPreparedBy] = useState("");
+
+    const revenuePerVisit = inputs.revenuePerVisit || 200;
+    const dt = totalMeasured;
+    const displayedMonthly = Math.round(dt / 12);
+    const displayedDaily = Math.round(dt / 365);
+    const actNow3yr = Math.round(dt * 3.45);
+    const permanentlyLost6mo = Math.round(dt * 0.42);
+    const permanentlyLost12mo = Math.round(dt * 0.95);
+
+    const scoreBandLabel = useMemo(() => getScoreBandLabel_s5(
+      (inputs.capacityScore || 0) + (inputs.revenueScore || 0) + (inputs.workforceScore || 0) + (inputs.riskScore || 0)
+    ), [inputs.capacityScore, inputs.revenueScore, inputs.workforceScore, inputs.riskScore]);
+
+    const archetypeName = useMemo(() => getArchetypeName_s5(domainLevels), [domainLevels]);
+
+    const pdfDomainData = useMemo(() => {
+      const parseDI = (json: string): Record<string, number | string> => { try { return JSON.parse(json); } catch { return {}; } };
+      const r: Record<string, any> = {};
+      for (const d of DOMAIN_ORDER) {
+        const level = domainLevels[d] as ActivationLevel;
+        const raw = parseDI((inputs as any)[`${d}DomainInputs`] || '{}');
+        r[d] = {
+          activationLevel: level,
+          activationLabel: ACTIVATION_LABELS[d][level],
+          score: (inputs as any)[`${d}Score`] || 0,
+          gapValue: domainGaps[d],
+          hasValue: domainHasValue[d],
+          headlineMetric: (inputs as any)[`${d}HeadlineMetric`] || '',
+          primaryOpportunity: opportunityText[d]?.[level] || '',
+          context: (inputs as any)[`${d}Context`] || '',
+          formula: (inputs as any)[`${d}Formula`] || '',
+          footnote: (inputs as any)[`${d}Footnote`] || '',
+          userInputs: buildUserInputsSummary_s5(d as Domain, level, raw),
+        };
+      }
+      return r;
+    }, [inputs, domainLevels, domainGaps, domainHasValue]);
+
+    const assessmentNarrative = useMemo(() => {
+      const totalScore = (inputs.capacityScore || 0) + (inputs.revenueScore || 0) + (inputs.workforceScore || 0) + (inputs.riskScore || 0);
+      const TIEBREAKER: Domain[] = ['risk', 'revenue', 'workforce', 'capacity'];
+      let lowestDomain = TIEBREAKER[0];
+      let lowestLevel = domainLevels[lowestDomain];
+      for (const d of TIEBREAKER) { if (domainLevels[d] < lowestLevel) { lowestDomain = d; lowestLevel = domainLevels[d]; } }
+      const strongDomains = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d]);
+      const weakDomains = DOMAIN_ORDER.filter(d => domainLevels[d] <= 2).map(d => DOMAIN_LABELS[d]);
+      const INSIGHTS: Record<string, Record<1|2, string>> = {
+        capacity: { 1: "Recovered time isn't being tracked or deployed.", 2: "Recovered time is measured but not being converted to access." },
+        revenue: { 1: "No one has analyzed whether documentation changes are affecting reimbursement.", 2: "Directional signals observed but not formally validated." },
+        workforce: { 1: "After-hours burden reduced but broader workforce impact isn't tracked.", 2: "Burden is measured but not connected to retention or labor costs." },
+        risk: { 1: "Documentation quality improved but no downstream teams have been engaged.", 2: "Quality attributes tracked but not yet connected to downstream programs." },
+      };
+      const insightLevel = Math.min(lowestLevel, 2) as 1|2;
+      const domainInsight = INSIGHTS[lowestDomain]?.[insightLevel] || '';
+      const lowestLabel = DOMAIN_LABELS[lowestDomain as Domain].toLowerCase();
+      if (totalScore <= 30) return `Your organization is in the early stages of capturing ambient ROI. Time is being saved, but value capture is largely unmeasured and unstructured. Your biggest opportunity
+  is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
+      if (totalScore <= 50) return `Your organization is beginning to capture ambient ROI${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')} remain${weakDomains.length === 1 ? 's' : ''} in early
+  stages` : ''}. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
+      if (totalScore <= 70) return `Your organization is actively managing ambient ROI in ${strongDomains.join(' and ') || 'some domains'}${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')}
+  remain${weakDomains.length === 1 ? 's' : ''} in early stages` : ''}. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
+      if (totalScore <= 85) return `Your organization is strategically managing ambient ROI across ${strongDomains.join(', ') || 'multiple domains'}. Focus on ${lowestLabel} to reach full maturity \u2014
+  ${domainInsight.toLowerCase()}`;
+      return 'Your organization has institutionalized ambient ROI across all four domains. This is strategic-level documentation intelligence.';
+    }, [inputs, domainLevels]);
+
+    const openExportModal = () => { setExportSuccess(false); setExportError(false); setExportModalOpen(true); };
+
+    const handleExport = async () => {
+      setIsExporting(true);
+      setExportError(false);
+      setExportSuccess(false);
+      try {
+        const totalScore = (inputs.capacityScore || 0) + (inputs.revenueScore || 0) + (inputs.workforceScore || 0) + (inputs.riskScore || 0);
+        const pdfData: AmbientAssessmentPDFData = {
+          organizationName: exportOrgName || "Your Organization",
+          preparedBy: exportPreparedBy || undefined,
+          assessmentDate: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+          providers,
+          annualEncounters,
+          utilization,
+          timeSavings: userTimeSaved,
+          documentationScore: totalScore,
+          totalAnnualGap: dt,
+          monthlyGap: displayedMonthly,
+          dailyGap: displayedDaily,
+          actNow3yr,
+          wait6mo3yr: Math.round(dt * (3.45 - 0.42)),
+          wait12mo3yr: Math.round(dt * (3.45 - 0.95)),
+          permanentlyLost6mo,
+          permanentlyLost12mo,
+          revenuePerVisit,
+          conversionFactor: inputs.conversionFactor || 33,
+          assessmentNarrative,
+          deploymentTenure: inputs.deploymentTenure || '',
+          orgContext: {
+            systemSize: (inputs as any).systemSize || 0,
+            orgType: (inputs as any).orgType || '',
+            payerMixMedicare: (inputs as any).payerMixMedicare || 0,
+            payerMixMedicaid: (inputs as any).payerMixMedicaid || 0,
+            payerMixCommercial: (inputs as any).payerMixCommercial || 0,
+          },
+          domains: {
+            capacity: pdfDomainData.capacity,
+            revenue: pdfDomainData.revenue,
+            workforce: pdfDomainData.workforce,
+            risk: pdfDomainData.risk,
+          },
+        };
+        await generateAmbientAssessmentPDF(pdfData);
+        setExportSuccess(true);
+      } catch (err) {
+        console.error('PDF generation failed:', err instanceof Error ? err.message : err, err);
+        setExportError(true);
+      } finally {
+        setIsExporting(false);
+      }
+    };
+    // --- end PDF export ---
+
+  ---
+  Step F — Replace the StepFooter and inner spacer div with the CTA card.
+
+  Find and replace this block:
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
+              <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary →" showBack={false} />
+            </motion.div>
+
+            <div className={STEP_FOOTER_SPACER_CLASS} />
+
+  Replace with:
+            <motion.div
+              className="mb-8"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.85, duration: 0.5 }}
+            >
+              <div className="bg-[#1A1A1A] rounded-lg p-6 sm:p-8">
+                <p className="text-xl sm:text-2xl font-bold text-white mb-3">
+                  Your gap is real. Here's how to close it.
+                </p>
+                <p className="text-sm text-white/50 mb-6">
+                  A 45-minute working session turns this assessment into a prioritized measurement plan — built around your domains, your scale, and what peer organizations have done in the first 90 days.
+                </p>
+                <div className="flex flex-col items-start gap-3">
+                  <Button
+                    onClick={() => onNavigateToExplore?.(providers, annualEncounters)}
+                    className="bg-[#EA2C00] text-white rounded-full px-8 py-6 h-auto text-base font-medium gap-2"
+                  >
+                    Request a Working Session
+                    <ArrowRight size={16} />
+                  </Button>
+                  <button
+                    onClick={openExportModal}
+                    className="flex items-center gap-2 text-sm font-medium text-white/50 border border-white/20 rounded-full px-5 py-2.5 hover:text-white hover:border-white/40 transition-colors
+  bg-transparent cursor-pointer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path 
+  d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download Your Assessment
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+
+            <p className="text-xs text-[#888888] leading-relaxed mb-8 italic">
+              This assessment provides directional estimates based on organizational self-assessment and the inputs you provide. It does not guarantee specific financial outcomes. Benchmarks reflect
+  maturity-based scoring and aggregated deployment data. Roadmap guidance is general — specific implementation should be tailored to your organization. Individual results vary. Methodology available on
+  request.
+            </p>
+
+  ---
+  Step G — Add the export Dialog just before the component's final closing </div>.
+
+  The very end of the component's return statement currently closes with:
+        </div>
+      </div>
+    );
+  }
+
+  Change it to:
+        </div>
+
+        <Dialog open={exportModalOpen} onOpenChange={(open) => { setExportModalOpen(open); if (!open) setExportSuccess(false); }}>
+          <DialogContent className="sm:max-w-[460px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-[#EA2C00]" />
+                Export Ambient Assessment
+              </DialogTitle>
+              <DialogDescription>
+                Generate a professional PDF report with your assessment results, domain analysis, and cost-of-inaction projections.
+              </DialogDescription>
+            </DialogHeader>
+
+            {exportError ? (
+              <div className="py-8 text-center space-y-4">
+                <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <X className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">PDF Generation Failed</h3>
+                  <p className="text-sm text-neutral-500 mt-1">Something went wrong. Please try again.</p>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <Button className="flex-1" onClick={() => { setExportError(false); handleExport(); }}>Retry</Button>
+                  <Button variant="outline" className="flex-1" onClick={() => setExportModalOpen(false)}>Close</Button>
+                </div>
+              </div>
+            ) : !exportSuccess ? (
+              <div className="space-y-5 py-3">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="s5-export-org-name" className="text-sm font-medium">Organization name</Label>
+                    <Input id="s5-export-org-name" placeholder="e.g., Memorial Health System" value={exportOrgName} onChange={(e) => setExportOrgName(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="s5-export-prepared-by" className="text-sm font-medium">Prepared by (optional)</Label>
+                    <Input id="s5-export-prepared-by" placeholder="e.g., Partner Success Team" value={exportPreparedBy} onChange={(e) => setExportPreparedBy(e.target.value)} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-sm text-neutral-500 border-t pt-4">
+                  <span>Estimated length: <span className="font-medium">8 pages</span></span>
+                  <span>Format: <span className="font-medium">PDF</span></span>
+                </div>
+                <div className="flex gap-3 pt-1">
+                  <Button variant="outline" className="flex-1" onClick={() => setExportModalOpen(false)}>Cancel</Button>
+                  <Button className="flex-1 bg-[#EA2C00]" onClick={handleExport} disabled={isExporting}>
+                    {isExporting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</>) : (<><Download className="mr-2 h-4 w-4" />Generate PDF</>)}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="py-8 text-center space-y-4">
+                <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <Check className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">PDF Generated Successfully</h3>
+                  <p className="text-sm text-neutral-500 mt-1">Check your downloads folder for the file.</p>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <Button variant="outline" className="flex-1" onClick={handleExport}><Download className="mr-2 h-4 w-4" />Download Again</Button>
+                  <Button className="flex-1" onClick={() => setExportModalOpen(false)}><X className="mr-2 h-4 w-4" />Close</Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
+
+  ---
+  Also: remove the outer STEP_FOOTER_SPACER_CLASS wrapper on the root div of the component's return.
+                                                                                                    
+  Find:                                   
+    return (                                  
+      <div className={STEP_FOOTER_SPACER_CLASS}>                                                                                                                                                               
+   
+  Replace with:                                                                                                                                                                                                
+    return (                                                                                              
+      <div>                                                                                                                                                                                                    
+                                                                                                          
+  ---
+  Do not touch any other files. Screen6Invitation.tsx should remain in the codebase but is no longer rendered anywhere — that's intentional.
