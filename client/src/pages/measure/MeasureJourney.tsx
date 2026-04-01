@@ -24,113 +24,6 @@ const SETTING_DISPLAY_LABELS: Record<string, string> = {
   nursing: 'Nursing',
 };
 
-function computeDomainNarrative(
-  domainKey: string,
-  metrics: { metricDef: MetricDefinition; before: number; after: number }[],
-  months: number,
-  providers: number,
-): string {
-  const ids = new Set(metrics.map(m => m.metricDef.id));
-  const get = (id: string) => metrics.find(m => m.metricDef.id === id);
-  const absDelta = (b: number, a: number) => Math.abs(a - b).toFixed(1);
-  const monthsLabel = months > 0 ? `over the past ${months} months` : 'since go-live';
-
-  if (domainKey === 'quality') {
-    const star = get('note_star_rating');
-    const cap = get('diagnosis_capture');
-    const spec = get('diagnosis_specificity');
-
-    if (star && cap && spec)
-      return `Note quality, diagnosis capture, and coding specificity are all moving in the right direction since go-live. That\u2019s not one thing \u2014 that\u2019s the documentation itself getting better in ways that touch quality programs, billing, and risk adjustment all at once.`;
-    if (cap && spec)
-      return `Two things happen when documentation improves: more diagnoses get captured, and they get coded more precisely. Both are moving here. Capture is up ${absDelta(cap.before, cap.after)}pp, specificity is up ${absDelta(spec.before, spec.after)}pp. What used to get missed or undercoded is now showing up in the record.`;
-    if (star && cap)
-      return `Note quality ratings moved from ${star.before} to ${star.after} stars, and diagnosis capture improved ${absDelta(cap.before, cap.after)}pp \u2014 both ${monthsLabel}. When providers rate notes highly and more diagnoses make it into the record, the documentation is doing its job.`;
-    if (star)
-      return `Note star rating is how your providers score the quality of what Abridge generates \u2014 accuracy, completeness, clinical tone. When it\u2019s high, providers are using the note with minimal edits. Yours moved from ${star.before} to ${star.after} ${monthsLabel}. That\u2019s the foundation everything else builds on.`;
-    if (cap)
-      return `Diagnosis capture measures how many of the conditions discussed in a visit actually make it into the coded record. When it\u2019s low, you\u2019re having clinical conversations that disappear \u2014 they don\u2019t show up in billing, in quality data, or in risk scores. Yours improved ${absDelta(cap.before, cap.after)}pp since go-live. More of what\u2019s being said in those rooms is now documented and codeable.`;
-    if (spec)
-      return `ICD-10 has thousands of codes, and there\u2019s usually a vague version and a precise version of the same diagnosis. Coders can only use what\u2019s in the note. Specificity measures how often you\u2019re hitting the precise one. Yours is up ${absDelta(spec.before, spec.after)}pp \u2014 more conditions are being captured at their highest ICD-10 level, which matters for reimbursement accuracy and quality measure credit.`;
-  }
-
-  if (domainKey === 'workforce') {
-    const ttc = get('time_to_close');
-    const ahp = get('work_after_hours_perceived');
-    const ahe = get('work_outside_work_empirical');
-    const burn = get('burnout_assessment');
-    const lts = get('likelihood_to_stay');
-    const ah = ahp || ahe;
-
-    if (ttc && ah && lts)
-      return `Three workforce metrics moved since go-live. Documentation time is down, after-hours burden is down, and provider sentiment about staying improved. That\u2019s not noise \u2014 three signals moving in the same direction, over ${months} months, is a pattern worth naming in the room.`;
-    if (ttc && lts)
-      return `Time to close dropped from ${ttc.before} to ${ttc.after} hours \u2014 that\u2019s the burden measure. Likelihood to stay improved ${absDelta(lts.before, lts.after)}pp \u2014 that\u2019s the sentiment measure. These two don\u2019t usually move together unless something fundamental changed about how providers experience documentation. Both moved here.`;
-    if (ttc && ah)
-      return `Two things moved here. Time to close dropped from ${ttc.before} to ${ttc.after} hours \u2014 that\u2019s the in-clinic side. And the share of providers reporting after-hours documentation work fell from ${ah.before}% to ${ah.after}% \u2014 that\u2019s the after-clinic side. When both move together, it means the burden shift is real, not just perceived.`;
-    if (ttc)
-      return `Time to close is how long it takes from the end of a patient visit to a signed note. It\u2019s the most direct measure of documentation burden \u2014 it\u2019s what providers think about when they talk about staying late, finishing charts at home. Yours dropped from ${ttc.before} to ${ttc.after} hours ${monthsLabel}. Across ${providers} providers seeing patients every day, that\u2019s a meaningful change in how their time is actually spent.`;
-    if (ah && lts)
-      return `After-hours documentation burden fell from ${ah.before}% to ${ah.after}% of the provider cohort, and likelihood to stay improved ${absDelta(lts.before, lts.after)}pp. Burden and retention sentiment moving together is a meaningful signal \u2014 one typically precedes the other.`;
-    if (lts)
-      return `Likelihood to stay comes from asking providers directly: do you expect to still be here in 12 months? It\u2019s a leading indicator \u2014 it moves before turnover shows up in the data. The reason it matters financially is that every physician departure costs roughly $350K\u2013$500K in recruitment, onboarding, and productivity loss. Yours improved ${absDelta(lts.before, lts.after)}pp across the cohort. That shift in sentiment is worth watching.`;
-    if (ah)
-      return `This measures what percentage of your providers are doing documentation work outside scheduled hours \u2014 evenings, weekends, from home. It\u2019s not just about productivity. It\u2019s about where work ends. That share fell from ${ah.before}% to ${ah.after}% since go-live. For ${providers} providers, that\u2019s a change in what their evenings look like.`;
-    if (burn)
-      return `Burnout scores come from validated instruments that ask about emotional exhaustion and sense of effectiveness. High scores predict departure intent. Yours moved ${absDelta(burn.before, burn.after)} points in the right direction since go-live. One data point isn\u2019t a conclusion \u2014 but it\u2019s the right kind of early signal.`;
-  }
-
-  if (domainKey === 'revenue') {
-    const wrvu = get('wrvu');
-    const em = get('em_level');
-    const hcc = get('hcc_capture');
-    const cc = get('clean_claim_rate');
-
-    if (wrvu && hcc)
-      return `Both wRVU and HCC capture have moved since go-live \u2014 that\u2019s fee-for-service and risk adjustment moving together. wRVU is up ${absDelta(wrvu.before, wrvu.after)}, HCC capture improved ${absDelta(hcc.before, hcc.after)}pp. The documentation is supporting more complete coding across two distinct financial pathways at the same time.`;
-    if (wrvu && em)
-      return `Two billing metrics are moving in the right direction. wRVU per encounter is up ${absDelta(wrvu.before, wrvu.after)} and average E/M level shifted from ${em.before} to ${em.after}. Both are consistent with documentation that gives coders more clinical detail to work with. The visits didn\u2019t change \u2014 the documentation supporting them did.`;
-    if (wrvu)
-      return `A wRVU \u2014 work relative value unit \u2014 is how Medicare prices the complexity of physician work. Each E/M code maps to a wRVU value, and that\u2019s what insurers pay against. More complete documentation means coders can justify higher values for the same visit. Yours moved from ${wrvu.before} to ${wrvu.after} per encounter ${monthsLabel}. More of what your providers actually did is now showing up in what you bill.`;
-    if (em)
-      return `E/M levels run 99211 to 99215 \u2014 they\u2019re the billing codes for office visits, differentiated by clinical complexity and documentation thoroughness. Coders can only code to what the note supports. Yours moved from ${em.before} to ${em.after} since go-live. The visits didn\u2019t change \u2014 the documentation supporting them did.`;
-    if (hcc)
-      return `HCC stands for Hierarchical Condition Category \u2014 it\u2019s how Medicare Advantage plans get paid by CMS based on how sick their enrolled population is, documented. When a chronic condition gets coded, it contributes to the risk score. When it doesn\u2019t, that revenue goes uncaptured. Your capture rate improved ${absDelta(hcc.before, hcc.after)}pp since go-live. More of those risk-adjustable conditions are making it into the record.`;
-    if (cc)
-      return `A clean claim is one accepted on first submission without correction. When it\u2019s denied, someone has to rework it \u2014 that costs time and delays payment. Your clean claim rate improved ${absDelta(cc.before, cc.after)}pp since go-live. Documentation quality is reducing the most common reason claims come back.`;
-  }
-
-  if (['capacity', 'throughput', 'patientFlow', 'staffing'].includes(domainKey)) {
-    const tin = get('time_in_note');
-    const eff = get('effort_reduction');
-    const ppp = get('patients_per_provider_month');
-    const vph = get('visits_per_clinician_hour');
-
-    if (tin && ppp)
-      return `These two numbers tell the capacity story. Documentation time per appointment dropped from ${tin.before} to ${tin.after} minutes \u2014 that\u2019s the input. Patients seen per provider per month moved from ${ppp.before} to ${ppp.after} \u2014 that\u2019s the output. Less time in the note, more time with patients.`;
-    if (tin)
-      return `This measures how many minutes a provider spends actively in the note per appointment \u2014 typing, reviewing, editing. It\u2019s the input side of the capacity equation. Yours dropped from ${tin.before} to ${tin.after} minutes per visit ${monthsLabel}. The question that follows naturally is: where does that time go? The next screen gets at that.`;
-    if (ppp)
-      return `This is the output side of the capacity equation \u2014 how many patients a provider sees per month. When documentation time comes down, this is where it shows up if the organization directs that time back into access. Yours moved from ${ppp.before} to ${ppp.after} per provider per month. That\u2019s ${absDelta(ppp.before, ppp.after)} additional patients per provider.`;
-    if (vph)
-      return `Visits per clinician hour measures how efficiently providers move through patient volume. More visits per hour without additional staff is a direct capacity lever. Yours moved from ${vph.before} to ${vph.after} since go-live.`;
-    if (eff)
-      return `This is a self-reported measure \u2014 providers estimating how much lighter the documentation burden feels compared to before. It\u2019s directional, not precise. But ${eff.after}% reported reduction across ${providers} providers is a signal worth including. Perceived burden is what shows up in retention surveys before it shows up in turnover data.`;
-  }
-
-  return '';
-}
-
-const DOMAIN_FINANCIAL_FOOTER: Record<string, string> = {
-  quality: 'Diagnosis capture and specificity connect to billing capture and HCC value on the next screen',
-  workforce: 'Time and sentiment data feed the workforce retention cost model on the next screen',
-  revenue: 'This data feeds directly into the financial calculation on the next screen',
-  capacity: 'Capacity data connects to the access revenue calculation on the next screen',
-  throughput: 'Throughput data connects to the access revenue calculation on the next screen',
-  patientFlow: 'Patient flow data connects to the capacity calculation on the next screen',
-  staffing: 'Staffing data connects to the workforce cost model on the next screen',
-};
-
 interface MeasureJourneyProps {
   state: MeasureState;
   onNext: () => void;
@@ -144,6 +37,154 @@ function getFourthDomain(settings: MeasureCareSetting[]): { key: DomainKey; labe
   const primary = settings[0] || 'outpatient';
   const config = CARE_SETTING_CONFIGS[primary];
   return { key: config.fourthDomainKey, label: config.fourthDomainLabel };
+}
+
+const DOMAIN_FINANCIAL_FOOTER: Record<string, string> = {
+  quality: 'Billing capture \u00b7 HCC value \u00b7 denial recovery',
+  workforce: 'Clinician retention \u00b7 recruitment cost avoidance',
+  revenue: 'Direct revenue \u2014 shows up in billing',
+  capacity: 'Patient access revenue \u00b7 utilization',
+  throughput: 'Revenue per available hour',
+  patientFlow: 'Length-of-stay cost \u00b7 bed utilization',
+  staffing: 'Recruitment cost avoidance \u00b7 vacancy burden',
+};
+
+function computeDomainNarrative(
+  domainKey: DomainKey,
+  metrics: { metricDef: MetricDefinition; before: number; after: number }[],
+  _months: number,
+  _providers: number,
+): string {
+  if (metrics.length === 0) return '';
+
+  const has = (id: string) => metrics.some(m => m.metricDef.id === id);
+  const get = (id: string) => metrics.find(m => m.metricDef.id === id);
+
+  if (domainKey === 'quality') {
+    if (has('note_star_rating') && has('diagnosis_capture')) {
+      const star = get('note_star_rating')!;
+      const cap = get('diagnosis_capture')!;
+      return `Provider note ratings are the first signal that documentation is actually changing \u2014 a higher rating means less manual editing and more clinical detail surviving into the record. Since go-live, note ratings moved from ${star.before} to ${star.after} stars; diagnosis capture from ${cap.before}% to ${cap.after}%.`;
+    }
+    if (has('note_star_rating')) {
+      const star = get('note_star_rating')!;
+      return `Provider note ratings are the first signal that documentation is actually changing \u2014 a higher rating means less manual editing and more clinical detail surviving into the record downstream. Yours moved from ${star.before} to ${star.after} stars since go-live.`;
+    }
+    if (has('diagnosis_capture') && has('diagnosis_specificity')) {
+      const cap = get('diagnosis_capture')!;
+      const spec = get('diagnosis_specificity')!;
+      return `When a diagnosis discussed in the room doesn\u2019t make it into the coded record, it\u2019s invisible to payers. Capture rate moved from ${cap.before}% to ${cap.after}%; specificity from ${spec.before}% to ${spec.after}% \u2014 meaning more of the clinical picture is reaching billing.`;
+    }
+    if (has('diagnosis_capture')) {
+      const cap = get('diagnosis_capture')!;
+      return `Diagnoses that are discussed but not documented never reach billing. Capture rate moved from ${cap.before}% to ${cap.after}% since go-live \u2014 more of what\u2019s happening in the visit is making it into the coded record.`;
+    }
+    if (has('diagnosis_specificity')) {
+      const spec = get('diagnosis_specificity')!;
+      return `Diagnosis specificity determines whether a claim reflects the actual complexity of the visit. Specificity moved from ${spec.before}% to ${spec.after}% \u2014 more encounters coded at the level of detail that supports accurate reimbursement.`;
+    }
+    return `Documentation quality is shifting. The metrics below show where the signal is strongest.`;
+  }
+
+  if (domainKey === 'workforce') {
+    if (has('work_outside_work_empirical') && has('burnout_assessment')) {
+      const wow = get('work_outside_work_empirical')!;
+      const burn = get('burnout_assessment')!;
+      return `Documentation burden is the primary driver of physician burnout \u2014 and burnout is the primary driver of turnover. After-hours documentation dropped from ${wow.before} to ${wow.after} hrs/week; burnout scores moved from ${burn.before} to ${burn.after}.`;
+    }
+    if (has('likelihood_to_stay')) {
+      const lts = get('likelihood_to_stay')!;
+      const delta = lts.after - lts.before;
+      const sign = delta > 0 ? '+' : '';
+      return `Retention intent is the leading indicator \u2014 it typically shifts before actual departures do. Likelihood to stay moved from ${lts.before}% to ${lts.after}%, a ${sign}${delta.toFixed(0)}pp shift in the population most likely to be making that decision right now.`;
+    }
+    if (has('work_outside_work_empirical')) {
+      const wow = get('work_outside_work_empirical')!;
+      return `Documentation done outside scheduled hours is a direct proxy for documentation burden \u2014 it\u2019s what providers measure when they say the tool \u201cgives me my evenings back.\u201d Empirical after-hours documentation dropped from ${wow.before} to ${wow.after} hrs/week.`;
+    }
+    if (has('time_to_close')) {
+      const ttc = get('time_to_close')!;
+      return `Encounter close time measures how long the documentation tail follows a patient visit. The shorter it is, the less cognitive carry-over providers bring into the next room. Time to close moved from ${ttc.before} to ${ttc.after} hours.`;
+    }
+    if (has('burnout_assessment')) {
+      const burn = get('burnout_assessment')!;
+      return `Burnout scores measure the accumulated weight of documentation burden over time \u2014 they move slowly, so when they do move, the signal is meaningful. Score moved from ${burn.before} to ${burn.after} on a 100-point scale.`;
+    }
+    if (has('work_after_hours_perceived')) {
+      const wah = get('work_after_hours_perceived')!;
+      return `Perceived after-hours burden is a leading indicator of burnout even before the empirical hours change \u2014 the psychological tax of knowing work is waiting at home. The share reporting after-hours work moved from ${wah.before}% to ${wah.after}%.`;
+    }
+    return `Clinician time and wellbeing metrics are shifting. The bars below show where the signal is strongest.`;
+  }
+
+  if (domainKey === 'revenue') {
+    if (has('wrvu') && has('hcc_capture')) {
+      const wrvu = get('wrvu')!;
+      const hcc = get('hcc_capture')!;
+      return `Better documentation reaches billing two ways: visit complexity (wRVU) and chronic condition documentation (HCC). wRVU per encounter moved from ${wrvu.before} to ${wrvu.after}; HCC capture rate from ${hcc.before}% to ${hcc.after}%.`;
+    }
+    if (has('wrvu')) {
+      const wrvu = get('wrvu')!;
+      return `wRVU capture is how documentation quality becomes a billing number \u2014 more specific notes support higher complexity coding at the encounter level. wRVU per encounter moved from ${wrvu.before} to ${wrvu.after} since go-live.`;
+    }
+    if (has('initial_denial_rate') && has('clean_claim_rate')) {
+      const denial = get('initial_denial_rate')!;
+      const clean = get('clean_claim_rate')!;
+      return `Denials and rework are symptoms of documentation gaps \u2014 claims get kicked back when the clinical support isn\u2019t in the note. Denial rate moved from ${denial.before}% to ${denial.after}%; clean claim rate from ${clean.before}% to ${clean.after}%.`;
+    }
+    if (has('hcc_capture')) {
+      const hcc = get('hcc_capture')!;
+      return `In risk-adjusted contracts, undocumented HCCs translate directly to underfunded capitation \u2014 conditions discussed but not coded don\u2019t exist to payers. HCC capture rate moved from ${hcc.before}% to ${hcc.after}%.`;
+    }
+    if (has('em_level')) {
+      const em = get('em_level')!;
+      return `E/M level is the billing expression of visit complexity \u2014 documentation that captures the full clinical picture supports more accurate level assignment. Average E/M moved from ${em.before} to ${em.after}.`;
+    }
+    if (has('clean_claim_rate')) {
+      const clean = get('clean_claim_rate')!;
+      return `Clean claim rate is the billing efficiency signal \u2014 when documentation supports the claim, it goes through first try without rework or resubmission. Rate moved from ${clean.before}% to ${clean.after}%.`;
+    }
+    return `Revenue cycle metrics are shifting \u2014 documentation quality changes are beginning to show up downstream in billing.`;
+  }
+
+  if (domainKey === 'capacity') {
+    if (has('time_in_note') && has('patients_per_provider_month')) {
+      const tin = get('time_in_note')!;
+      const ppm = get('patients_per_provider_month')!;
+      return `Documentation time savings only generate revenue when they\u2019re reinvested in access. Time in note moved from ${tin.before} to ${tin.after} min/encounter; providers went from ${ppm.before} to ${ppm.after} patients per month.`;
+    }
+    if (has('time_in_note')) {
+      const tin = get('time_in_note')!;
+      return `Time in note is the primary capacity metric \u2014 every minute recovered per encounter compounds across the full appointment schedule. Note time moved from ${tin.before} to ${tin.after} min/encounter.`;
+    }
+    if (has('patients_per_provider_month')) {
+      const ppm = get('patients_per_provider_month')!;
+      return `Patients per provider per month is the downstream expression of documentation efficiency \u2014 when notes get faster, the recovered time becomes available for more appointments. Volume moved from ${ppm.before} to ${ppm.after} patients/month.`;
+    }
+    if (has('visits_per_clinician_hour')) {
+      const vph = get('visits_per_clinician_hour')!;
+      return `Visits per clinician hour is the scheduling-level signal that documentation savings are translating to access. Throughput moved from ${vph.before} to ${vph.after} visits per hour scheduled.`;
+    }
+    return `Capacity and efficiency metrics are shifting since go-live. The bars below show where.`;
+  }
+
+  if (domainKey === 'throughput') {
+    return `Patient throughput metrics have shifted since go-live \u2014 the bars below show where efficiency gains are appearing.`;
+  }
+
+  if (domainKey === 'patientFlow') {
+    return `Patient flow metrics have shifted since go-live \u2014 the bars below show where gains are appearing.`;
+  }
+
+  if (domainKey === 'staffing') {
+    if (has('likelihood_to_stay')) {
+      const lts = get('likelihood_to_stay')!;
+      return `Staff retention intent is the leading indicator of actual turnover \u2014 when it improves, the recruitment and onboarding cost risk shifts before anyone has actually left. Likelihood to stay moved from ${lts.before}% to ${lts.after}%.`;
+    }
+    return `Staffing stability metrics have shifted since go-live.`;
+  }
+
+  return '';
 }
 
 function interpolateTemplate(template: string, before: number, after: number): string {
@@ -364,13 +405,13 @@ export default function MeasureJourney({
     return fourDomainKeys.map(dk => sectionMap.get(dk)!);
   }, [activeMetrics, allResolved, fourthDomain]);
 
-  const domainsSignaling = domainSections.filter(ds => ds.metrics.length > 0).length;
+  const domainsWithData = domainSections.filter(ds => ds.metrics.length > 0).length;
   const totalMetrics = activeMetrics.length;
   const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
   const settingLabels = activeSettings.map(s => SETTING_DISPLAY_LABELS[s] || s).join(' \u00b7 ');
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]" data-testid="page-journey">
+    <div className="min-h-screen bg-white" data-testid="page-journey">
       <UnifiedHeader
         pathType="measure"
         currentStep={3}
@@ -383,67 +424,69 @@ export default function MeasureJourney({
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
 
         <div className="mb-10" data-testid="page-hero">
-          <p className="text-xs uppercase tracking-[2px] text-[#999999] mb-3">
-            {[
-              state.deployment.organizationName,
-              settingLabels,
-              months > 0 ? `${months} months with Abridge` : null,
-            ].filter(Boolean).join(' \u00b7 ')}
+          <p className="text-xs uppercase tracking-[2px] text-[#999999] mb-2">
+            {[state.deployment.organizationName, settingLabels, state.goLiveDate ? `Live since ${state.goLiveDate}` : '', months > 0 ? `${months} months` : ''].filter(Boolean).join(' \u00b7 ')}
           </p>
-          <h1 className="text-3xl md:text-4xl font-bold font-abridge uppercase tracking-tight text-[#1A1A1A] mb-5" data-testid="text-page-title">
+          <h1 className="text-3xl font-bold font-abridge uppercase tracking-tight text-[#1A1A1A] mb-6" data-testid="text-page-title">
             Here's what changed.
           </h1>
-          <div className="flex flex-wrap gap-6 pb-6 border-b border-[#EEEBE7]" data-testid="summary-strip">
+          <div className="flex gap-8 pb-6 border-b border-[#F0F0F0]" data-testid="summary-strip">
             {[
-              { label: 'Providers', value: String(state.deployment.providers || '\u2014') },
+              { label: 'Providers', value: String(state.deployment.providers) },
               { label: 'Encounters documented', value: state.deployment.totalEncounters > 0 ? state.deployment.totalEncounters.toLocaleString() : '\u2014' },
-              { label: 'Domains with data', value: `${domainsSignaling} of 4` },
+              { label: 'Domains with data', value: `${domainsWithData} of 4` },
+              { label: 'Metrics active', value: String(totalMetrics) },
             ].map(stat => (
               <div key={stat.label}>
-                <p className="text-[11px] text-[#AAAAAA] mb-0.5">{stat.label}</p>
-                <p className="text-lg font-bold text-[#1A1A1A]">{stat.value}</p>
+                <p className="text-[11px] text-[#999999] mb-0.5">{stat.label}</p>
+                <p className="text-xl font-bold text-[#1A1A1A]">{stat.value}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="space-y-10">
+        <div>
           {domainSections.map((section, si) => {
             const hasData = section.metrics.length > 0;
-            const narrative = hasData
-              ? computeDomainNarrative(
-                  section.domainKey,
-                  section.metrics,
-                  months,
-                  state.deployment.providers || 0,
-                )
-              : '';
+            const narrative = computeDomainNarrative(
+              section.domainKey,
+              section.metrics,
+              months,
+              state.deployment.providers,
+            );
             const footer = DOMAIN_FINANCIAL_FOOTER[section.domainKey];
 
             if (!hasData) {
               return (
-                <div key={section.domainKey} className="flex items-center gap-3 py-2" data-testid={`journey-domain-${section.domainKey}`}>
-                  <span className="text-xs font-bold uppercase tracking-[1.5px] text-[#CCCCCC]">{section.label}</span>
-                  <span className="text-xs text-[#DDDDDD]">&mdash;</span>
-                  <span className="text-xs text-[#CCCCCC]">not yet measured</span>
+                <div
+                  key={section.domainKey}
+                  className="py-6 border-b border-[#F0F0F0]"
+                  data-testid={`journey-domain-${section.domainKey}-empty`}
+                >
+                  <p className="text-[11px] uppercase tracking-[2px] text-[#CCCCCC] font-semibold">
+                    {section.label.toUpperCase()} &mdash; not yet measured
+                  </p>
                 </div>
               );
             }
 
             return (
-              <div key={section.domainKey} data-testid={`journey-domain-${section.domainKey}`}>
-
-                <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">
-                  {section.label}
+              <div
+                key={section.domainKey}
+                className="py-10 border-b border-[#F0F0F0]"
+                data-testid={`journey-domain-${section.domainKey}`}
+              >
+                <p className="text-[11px] uppercase tracking-[2px] text-[#EA2C00] font-semibold mb-3">
+                  {section.label.toUpperCase()}
                 </p>
 
                 {narrative && (
-                  <p className="text-[15px] text-[#1A1A1A] leading-relaxed mb-6 max-w-[640px]">
+                  <p className="text-base text-[#1A1A1A] leading-relaxed mb-7 max-w-[640px]">
                     {narrative}
                   </p>
                 )}
 
-                <div className="space-y-1">
+                <div>
                   {section.metrics.map((m, mi) => (
                     <MetricBar
                       key={`${m.metricDef.id}-${m.setting || 'org'}`}
@@ -459,28 +502,26 @@ export default function MeasureJourney({
                 </div>
 
                 {footer && (
-                  <p className="text-[11px] text-[#BBBBBB] mt-4 flex items-center gap-1.5">
-                    <span className="text-[#EA2C00]">&rarr;</span>
-                    {footer}
+                  <p className="text-[11px] text-[#CCCCCC] mt-2">
+                    &rarr; Connects to: {footer}
                   </p>
                 )}
-
-                <div className="border-b border-[#F0EDE8] mt-8" />
               </div>
             );
           })}
         </div>
 
         {totalMetrics === 0 && (
-          <div className="text-center py-16">
-            <p className="text-sm text-[#AAAAAA] mb-4">No metrics have been entered yet.</p>
-            <button
+          <div className="text-center py-12">
+            <p className="text-sm text-gray-400 mb-4">No metrics have been measured yet.</p>
+            <Button
               onClick={onBack}
-              className="text-sm font-medium text-[#EA2C00] hover:text-[#D12800]"
+              variant="outline"
+              className="rounded-full"
               data-testid="button-go-back-add"
             >
-              &larr; Go back and add metrics
-            </button>
+              Go back and add metrics
+            </Button>
           </div>
         )}
 
@@ -496,7 +537,6 @@ export default function MeasureJourney({
             </Button>
           </div>
         )}
-
       </div>
     </div>
   );
