@@ -186,17 +186,8 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
 
   useEffect(() => {
     if (!pendingScrollRef.current) return;
-    const target = pendingScrollRef.current;
     pendingScrollRef.current = null;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const el = document.querySelector(`[data-domain-level="${target}"]`);
-        if (el) {
-          const y = el.getBoundingClientRect().top + window.scrollY - 80;
-          window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-        }
-      });
-    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentState.activationLevel]);
 
   const setDomainInput = useCallback((key: string, value: number | string) => {

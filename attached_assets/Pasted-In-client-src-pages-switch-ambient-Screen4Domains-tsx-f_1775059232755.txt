@@ -1,0 +1,26 @@
+In client/src/pages/switch/ambient/Screen4Domains.tsx, find the useEffect that watches currentState.activationLevel. It currently looks like this:                                                           
+                                                                                                                                                                                                               
+  useEffect(() => {                                                                                                                                                                                            
+    if (!pendingScrollRef.current) return;                                                                                                                                                                     
+    const target = pendingScrollRef.current;
+    pendingScrollRef.current = null;                                                                                                                                                                           
+    requestAnimationFrame(() => {                                                                                                                                                                            
+      requestAnimationFrame(() => {       
+        const el = document.querySelector(`[data-domain-level="${target}"]`);
+        if (el) {                                                                                                                                                                                              
+          const y = el.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });                                                                                                                                        
+        }                                                                                                                                                                                                    
+      });
+    });                                                                                                                                                                                                        
+  }, [currentState.activationLevel]);
+                                                                                                                                                                                                               
+  Replace it with:                                                                                                                                                                                           
+                                          
+  useEffect(() => {
+    if (!pendingScrollRef.current) return;                                                                                                                                                                     
+    pendingScrollRef.current = null;                                                                                                                                                                           
+    window.scrollTo({ top: 0, behavior: 'smooth' });                                                                                                                                                           
+  }, [currentState.activationLevel]);                                                                                                                                                                          
+                                                                                                                                                                                                             
+  No other changes. One file, one block.     
