@@ -49,6 +49,29 @@ const EM_ELIGIBILITY_DEFAULTS: Record<string, number> = {
   nursing: 0,
 };
 
+const ATTRIBUTION_PRESETS = [
+  {
+    id: 'conservative',
+    label: 'Conservative',
+    value: 50,
+    description: 'About half the improvement attributed to the tool',
+  },
+  {
+    id: 'standard',
+    label: 'Standard',
+    value: 62,
+    description: 'Typical for well-deployed Abridge accounts',
+  },
+  {
+    id: 'favorable',
+    label: 'Favorable',
+    value: 75,
+    description: 'High utilization, clean data, strong correlation',
+  },
+] as const;
+
+type AttributionPresetId = typeof ATTRIBUTION_PRESETS[number]['id'];
+
 const DEFAULT_ASSUMPTIONS: Assumptions = {
   attribution: 62,
   realization: 80,
@@ -639,6 +662,14 @@ export default function MeasureAllocate({
     ...state?.streamStates,
   }));
 
+  const [selectedPreset, setSelectedPreset] = useState<AttributionPresetId>('standard');
+
+  const selectPreset = (presetId: AttributionPresetId) => {
+    const preset = ATTRIBUTION_PRESETS.find(p => p.id === presetId)!;
+    setSelectedPreset(presetId);
+    setAssumptions(prev => ({ ...prev, attribution: preset.value }));
+  };
+
   const toggleStream = (id: string) => {
     setStreamStates(prev => {
       const next = { ...prev, [id]: !prev[id] };
@@ -745,7 +776,7 @@ export default function MeasureAllocate({
             </p>
             <p className="text-sm text-[#666666] mb-1">modeled annual value range</p>
             <p className="text-xs text-[#999999]">
-              {formatNumber(fin.providers)} providers · attribution: {assumptions.attribution}%
+              {formatNumber(fin.providers)} providers · {ATTRIBUTION_PRESETS.find(p => p.id === selectedPreset)?.label ?? 'Standard'} attribution
             </p>
             <p className="text-xs text-[#888888] mt-2">
               Based on {toggledTotal.enabledCount} of {toggledTotal.totalCount} value streams.
@@ -766,6 +797,27 @@ export default function MeasureAllocate({
             </p>
           </motion.div>
         )}
+
+        <div className="flex gap-3 mb-8" data-testid="attribution-presets">
+          {ATTRIBUTION_PRESETS.map(preset => (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => selectPreset(preset.id)}
+              data-testid={`preset-${preset.id}`}
+              className={`flex-1 rounded-xl border px-4 py-3 text-left transition-all ${
+                selectedPreset === preset.id
+                  ? 'border-[#1A1A1A] bg-white shadow-sm'
+                  : 'border-[#E5E5E5] bg-[#FAFAFA] hover:border-[#CCCCCC]'
+              }`}
+            >
+              <p className={`text-sm font-semibold mb-0.5 ${selectedPreset === preset.id ? 'text-[#1A1A1A]' : 'text-[#666666]'}`}>
+                {preset.label}
+              </p>
+              <p className="text-[11px] text-[#999999] leading-snug">{preset.description}</p>
+            </button>
+          ))}
+        </div>
 
         {fin.activeSettings.length > 1 && toggledTotal.low > 0 && fin.settingBreakdown && (
           <div className="mt-6 mb-8 rounded-xl border border-[#E5E5E5] overflow-hidden" data-testid="table-setting-breakdown">
@@ -1185,26 +1237,6 @@ export default function MeasureAllocate({
                 className="overflow-hidden"
               >
                 <div className="px-5 pb-5 space-y-5">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-sm text-[#666666]">Attribution confidence</label>
-                      <span className="text-sm font-bold text-[#1A1A1A]">{assumptions.attribution}%</span>
-                    </div>
-                    <Slider
-                      value={[assumptions.attribution]}
-                      onValueChange={([v]) => updateAssumption('attribution', v)}
-                      min={50}
-                      max={75}
-                      step={1}
-                      className="w-full"
-                      data-testid="slider-attribution"
-                    />
-                    <div className="flex justify-between text-[10px] text-[#CCCCCC] mt-1">
-                      <span>50%</span>
-                      <span>75%</span>
-                    </div>
-                  </div>
-
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="text-sm text-[#666666]">Realization rate</label>

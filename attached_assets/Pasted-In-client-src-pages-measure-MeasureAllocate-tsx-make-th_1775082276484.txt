@@ -1,0 +1,100 @@
+In client/src/pages/measure/MeasureAllocate.tsx, make the following targeted changes:                                                                                                                        
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Step 1 — Add a preset constant near the top of the file, after the DEFAULT_ASSUMPTIONS block:                                                                                                                
+                                                                                                                                                                                                               
+  const ATTRIBUTION_PRESETS = [           
+    {                                                                                                                                                                                                          
+      id: 'conservative',                                                                                                                                                                                      
+      label: 'Conservative',
+      value: 50,                                                                                                                                                                                               
+      description: 'About half the improvement attributed to the tool',                                   
+    },                                        
+    {                                     
+      id: 'standard',
+      label: 'Standard',                                                                                                                                                                                       
+      value: 62,
+      description: 'Typical for well-deployed Abridge accounts',                                                                                                                                               
+    },                                                                                                    
+    {                                         
+      id: 'favorable',                    
+      label: 'Favorable',
+      value: 75,                                                                                                                                                                                               
+      description: 'High utilization, clean data, strong correlation',
+    },                                                                                                                                                                                                         
+  ] as const;                                                                                             
+
+  type AttributionPresetId = typeof ATTRIBUTION_PRESETS[number]['id'];
+                                          
+  ---
+  Step 2 — Add a selectedPreset state inside the MeasureAllocate component, right after the existing useState calls:                                                                                           
+                                              
+  const [selectedPreset, setSelectedPreset] = useState<AttributionPresetId>('standard');                                                                                                                       
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Step 3 — Add a handler that updates both the preset and the attribution assumption, right after the existing toggleStream function:
+                                                                                                                                                                                                               
+  const selectPreset = (presetId: AttributionPresetId) => {                                               
+    const preset = ATTRIBUTION_PRESETS.find(p => p.id === presetId)!;                                                                                                                                          
+    setSelectedPreset(presetId);                                                                                                                                                                               
+    setAssumptions(prev => ({ ...prev, attribution: preset.value }));
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---                                         
+  Step 4 — Add the preset selector to the JSX, right after the closing </motion.div> of the hero value block (the one with data-testid="section-hero-value" or data-testid="section-empty-prompt") and before  
+  the setting breakdown table:                                                                            
+                                                                                                                                                                                                               
+  <div className="flex gap-3 mb-8" data-testid="attribution-presets">
+    {ATTRIBUTION_PRESETS.map(preset => (                                                                                                                                                                       
+      <button                                                                                             
+        key={preset.id}                                                                                                                                                                                        
+        type="button"                                                                                                                                                                                          
+        onClick={() => selectPreset(preset.id)}
+        data-testid={`preset-${preset.id}`}                                                                                                                                                                    
+        className={`flex-1 rounded-xl border px-4 py-3 text-left transition-all ${                                                                                                                             
+          selectedPreset === preset.id        
+            ? 'border-[#1A1A1A] bg-white shadow-sm'                                                                                                                                                            
+            : 'border-[#E5E5E5] bg-[#FAFAFA] hover:border-[#CCCCCC]'                                      
+        }`}                                                                                                                                                                                                    
+      >                                   
+        <p className={`text-sm font-semibold mb-0.5 ${selectedPreset === preset.id ? 'text-[#1A1A1A]' : 'text-[#666666]'}`}>                                                                                   
+          {preset.label}                                                                                                                                                                                       
+        </p>                                                                                                                                                                                                   
+        <p className="text-[11px] text-[#999999] leading-snug">{preset.description}</p>                                                                                                                        
+      </button>                                                                                                                                                                                                
+    ))}                                   
+  </div>                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ---
+  Step 5 — Update the attribution line in the hero card. Find this line:                                                                                                                                       
+                                                                                                          
+  formatNumber(fin.providers)} providers · attribution: {assumptions.attribution}%
+                                              
+  Replace with:                                                                                                                                                                                                
+   
+  {formatNumber(fin.providers)} providers · {ATTRIBUTION_PRESETS.find(p => p.id === selectedPreset)?.label ?? 'Standard'} attribution                                                                          
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Step 6 — Remove the attribution slider from the assumptions panel. Delete this entire block inside the sensitivityOpen section:
+                                                                                                                                                                                                               
+  <div>                                   
+    <div className="flex items-center justify-between mb-2">                                                                                                                                                   
+      <label className="text-sm text-[#666666]">Attribution confidence</label>                                                                                                                                 
+      <span className="text-sm font-bold text-[#1A1A1A]">{assumptions.attribution}%</span>
+    </div>                                                                                                                                                                                                     
+    <Slider                                                                                               
+      value={[assumptions.attribution]}                                                                                                                                                                        
+      onValueChange={([v]) => updateAssumption('attribution', v)}
+      min={50}                                                                                                                                                                                                 
+      max={75}                                                                                                                                                                                                 
+      step={1}                                
+      className="w-full"                                                                                                                                                                                       
+      data-testid="slider-attribution"                                                                    
+    />                                                                                                                                                                                                         
+    <div className="flex justify-between text-[10px] text-[#CCCCCC] mt-1">
+      <span>50%</span>                                                                                                                                                                                         
+      <span>75%</span>                                                                                    
+    </div>
+  </div>                                                                                                                                                                                                       
+                                          
+  Do not modify any other files. Do not change any calculation logic.     
