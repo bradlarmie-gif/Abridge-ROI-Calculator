@@ -1,0 +1,114 @@
+ Replit Prompt: Replace Revenue L2 percentage guessing with wRVU-based directional estimate                                                                                                                   
+                                                                                                                                                                                                               
+  Make changes to two files. This replaces the old "what % of encounter revenue" radio buttons at Revenue Level 2 with a more defensible wRVU-based estimate.
+                                              
+  ---                                                                                                                                                                                                          
+  FILE 1: client/src/pages/switch/ambient/Screen4Domains.tsx
+                                                                                                                                                                                                               
+  In renderRevenueInputs(), find the entire level === 2 block. It currently has two sections: an observation checklist and a "directional estimate" percentage radio group. Keep the observation checklist
+  exactly as-is. Replace everything from the <div> that contains the label "What's your directional estimate of the revenue impact?" through the end of that section with:                                     
+                                                                                                                                                                                                               
+  <div>
+    <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">                                                                                                                                        
+      Estimated wRVU improvement per encounter                                                            
+    </label>                                                                                                                                                                                                   
+    <FormattedNumberInput                                                                                 
+      value={(currentState.inputs.estimatedWrvuL2 as number) || 0}
+      onChange={(v) => setDomainInput('estimatedWrvuL2', Math.max(0, v))}
+      placeholder=""                                                                                                                                                                                           
+      className="w-full h-12 bg-white border-[#E5E7EB]"
+      data-testid="input-estimated-wrvu-l2"                                                                                                                                                                    
+      step={0.01}                                                                                         
+    />                                                                                                                                                                                                         
+    <BenchmarkContext text="Abridge benchmark: 0.05–0.15 wRVU per encounter. Enter 0 if you don't have a sense yet." />
+  </div>                                                                                                                                                                                                       
+                                                                                                          
+  <div>
+    <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">                                                                                                                                        
+      Confidence in this estimate             
+    </label>                                                                                                                                                                                                   
+    <div className="flex gap-2">                                                                          
+      {(['directional', 'partial'] as const).map((opt) => (                                                                                                                                                    
+        <button
+          key={opt}                                                                                                                                                                                            
+          type="button"                                                                                   
+          onClick={() => setDomainInput('l2Confidence', opt)}
+          className={`px-4 py-2 rounded-full text-sm transition-all cursor-pointer ${
+            ((currentState.inputs.l2Confidence as string) || 'directional') === opt                                                                                                                            
+              ? 'bg-[#EA2C00] text-white font-medium'
+              : 'bg-[#F0EFED] text-[#525252] hover:bg-[#E5E3E0]'                                                                                                                                               
+          }`}                                                                                             
+          data-testid={`pill-l2-confidence-${opt}`}                                                                                                                                                            
+        >
+          {opt.charAt(0).toUpperCase() + opt.slice(1)}                                                                                                                                                         
+        </button>                                                                                         
+      ))}                                                                                                                                                                                                      
+    </div>                                                                                                
+    <p className="text-xs text-[#888888] mt-2 leading-relaxed">
+      <span className="font-semibold">Directional</span> — a rough sense, not yet validated. <span className="font-semibold">Partial</span> — based on preliminary data your team has reviewed. Your choice
+  adjusts how this figure is labeled in results.
+    </p>                                                                                                                                                                                                       
+  </div>
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  FILE 2: client/src/pages/switch/ambient/domainCalculations.ts                                                                                                                                                
+                                                                                                          
+  In computeRevenueFeedback, replace the entire if (level === 2) block with:                                                                                                                                   
+                                              
+  if (level === 2) {                                                                                                                                                                                           
+    const { checked } = parseCheckedItems(inputs.observedMovement as string, REVENUE_SIGNALS);            
+    const count = checked.length;                                                                                                                                                                              
+    const checkedLabels = checked.map(shortLabel).join(', ');
+                                                                                                                                                                                                               
+    const estimatedWrvuL2 = inputs.estimatedWrvuL2 as number | undefined;                                 
+    const l2Confidence = (inputs.l2Confidence as string) || 'directional';                                                                                                                                     
+    const confidenceMultiplier = l2Confidence === 'partial' ? 0.7 : 0.5;
+    const confidenceLabel = l2Confidence === 'partial' ? 'partial confidence' : 'directional estimate';                                                                                                        
+                                                                                                          
+    if (estimatedWrvuL2 && estimatedWrvuL2 > 0) {                                                                                                                                                              
+      const rawImpact = Math.round(estimatedWrvuL2 * documentedEncounters * conversionFactor);
+      const adjustedImpact = Math.round(rawImpact * confidenceMultiplier);                                                                                                                                     
+      let context = `Estimated ${estimatedWrvuL2} wRVU improvement per encounter × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = 
+  ${formatDollar(rawImpact)}.\n\n${Math.round(confidenceMultiplier * 100)}% confidence adjustment applied (${confidenceLabel}) = ${formatDollar(adjustedImpact)}.\n\nA formal before/after analysis (Level 3)  
+  would validate this figure.`;                                                                           
+      if (count > 0) {                                                                                                                                                                                         
+        context += `\n\n${count} area${count !== 1 ? 's' : ''} showing movement:\n${checkedLabels}`;                                                                                                           
+      }                                                                                                                                                                                                        
+      return {                                                                                                                                                                                                 
+        label: 'Estimated Impact',                                                                        
+        value: adjustedImpact,                                                                                                                                                                                 
+        hasValue: true,
+        headlineMetric: `${formatDollar(adjustedImpact)} directional revenue estimate`,                                                                                                                        
+        context,                                                                                          
+        formula: `[rawImpact] = ${estimatedWrvuL2} wRVU × ${documentedEncounters.toLocaleString()} × $${conversionFactor} = ${formatDollar(rawImpact)}\n[adjusted] = ${formatDollar(rawImpact)} × 
+  ${confidenceMultiplier} (${confidenceLabel}) = ${formatDollar(adjustedImpact)}`,
+        footnote: 'Directional estimate — not validated by formal before/after analysis. Individual results vary.',                                                                                            
+        nextLevelTeaser: 'Level 3 requires a formal before/after analysis to confirm this figure.',
+      };                                                                                                                                                                                                       
+    }                                                                                                     
+                                                                                                                                                                                                               
+    if (count > 0) {                                                                                      
+      return {                                                                                                                                                                                                 
+        label: 'Estimated Impact',                                                                        
+        value: null,                          
+        hasValue: false,                  
+        headlineMetric: `${count} area${count !== 1 ? 's' : ''} showing movement`,
+        context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nEnter an estimated wRVU improvement per encounter above to calculate a directional    
+  dollar figure.`,                            
+        formula: '',                                                                                                                                                                                           
+        footnote: 'Estimates based on your inputs. Individual results vary.',                             
+        nextLevelTeaser: 'Organizations with before/after measurement have reported 2–7% revenue improvement.',                                                                                                
+      };                                  
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    return {
+      label: 'Estimated Impact',                                                                                                                                                                               
+      value: null,                                                                                        
+      hasValue: false,
+      headlineMetric: 'Select observed areas and enter an estimated wRVU improvement.',
+      context: 'Select the areas where your organization has observed movement, then enter an estimated wRVU improvement per encounter.',
+      formula: '',
+      footnote: '',                                                                                                                                                                                            
+      nextLevelTeaser: 'Level 3 requires before/after measurement data.',
+    };                                                                                                                                                                                                         
+  }                                                                  

@@ -1194,6 +1194,23 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
           </div>
           <BenchmarkContext text="Benchmark: $5K–$30K/month agency and locum reduction as permanent staff stabilize. Derive from your current spend × reduction rate." />
         </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+            Monthly savings from reduced physician vacancy / time-to-fill (if tracking)
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.timeFillReduction as number) || 0}
+              onChange={(v) => setDomainInput('timeFillReduction', v)}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-time-fill-reduction"
+            />
+          </div>
+          <BenchmarkContext text="Physician vacancy typically costs $15K–$40K/month in locum coverage or lost productivity. Enter monthly savings if time-to-fill has improved." />
+        </div>
       </div>
     );
   };

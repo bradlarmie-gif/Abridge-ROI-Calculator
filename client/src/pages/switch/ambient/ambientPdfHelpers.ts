@@ -140,6 +140,7 @@ export function buildUserInputsSummary(domain: Domain, level: number, raw: Recor
       const outcomes = resolveChecklist(raw.workforceOutcomes as string, WORKFORCE_OUTCOME_SHORT);
       if (outcomes.length) out['Measured outcomes'] = outcomes.join(', ');
       if (raw.agencyReduction) out['Monthly agency/locum reduction'] = fmtDollar(Number(raw.agencyReduction));
+      if (raw.timeFillReduction) out['Monthly vacancy/time-to-fill savings'] = fmtDollar(Number(raw.timeFillReduction));
     }
   }
 

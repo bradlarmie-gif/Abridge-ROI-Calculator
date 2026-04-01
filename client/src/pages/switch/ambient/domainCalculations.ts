@@ -732,8 +732,12 @@ export function computeWorkforceFeedback(
 
   const agencyReduction = (inputs.agencyReduction as number) || 0;
   const annualAgencySavings = agencyReduction > 0 ? Math.round(agencyReduction * 12) : 0;
+  const timeFillReduction = (inputs.timeFillReduction as number) || 0;
+  const annualTimeFillSavings = timeFillReduction > 0 ? Math.round(timeFillReduction * 12) : 0;
+  const hasTimeFill = annualTimeFillSavings > 0;
+  const totalWorkforceL4Value = annualAgencySavings + annualTimeFillSavings;
 
-  if (strategyCount === 0 && agencyReduction <= 0) {
+  if (strategyCount === 0 && agencyReduction <= 0 && timeFillReduction <= 0) {
     return {
       label: 'Estimated Impact',
       value: null,
@@ -748,6 +752,7 @@ export function computeWorkforceFeedback(
   const hasAgency = annualAgencySavings > 0;
   const headlineParts: string[] = [];
   if (hasAgency) headlineParts.push(`${formatDollar(annualAgencySavings)} in agency/locum reduction`);
+  if (hasTimeFill) headlineParts.push(`${formatDollar(annualTimeFillSavings)} in vacancy/time-to-fill savings`);
   if (strategyCount > 0) headlineParts.push(`${strategyCount} strategic integration${strategyCount !== 1 ? 's' : ''}`);
   if (outcomesStatus === 'yes' && outcomeCount > 0) headlineParts.push(`${outcomeCount} workforce outcome${outcomeCount !== 1 ? 's' : ''} measured`);
 
@@ -765,13 +770,19 @@ export function computeWorkforceFeedback(
   if (hasAgency) {
     contextParts += `\n\nAgency/locum reduction: ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualAgencySavings)} annually.`;
   }
+  if (hasTimeFill) {
+    contextParts += `\n\nVacancy/time-to-fill savings: ${formatDollar(timeFillReduction)} × 12 = ${formatDollar(annualTimeFillSavings)} annually.`;
+  }
   return {
     label: 'Estimated Impact',
-    value: hasAgency ? annualAgencySavings : null,
-    hasValue: hasAgency,
+    value: (hasAgency || hasTimeFill) ? totalWorkforceL4Value : null,
+    hasValue: hasAgency || hasTimeFill,
     headlineMetric: headlineParts.join('\n'),
     context: contextParts,
-    formula: hasAgency ? `[annualAgencySavings] = ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualAgencySavings)}` : '',
+    formula: [
+      hasAgency ? `[annualAgencySavings] = ${formatDollar(agencyReduction)} × 12 = ${formatDollar(annualAgencySavings)}` : '',
+      hasTimeFill ? `[annualTimeFillSavings] = ${formatDollar(timeFillReduction)} × 12 = ${formatDollar(annualTimeFillSavings)}` : '',
+    ].filter(Boolean).join('\n'),
     footnote: 'Estimates based on your inputs. Individual results vary.',
   };
 }
