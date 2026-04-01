@@ -1,0 +1,69 @@
+Replit prompt — "Where You Are and What's Ahead": always open, next level always visible
+
+  In client/src/pages/switch/ambient/Screen5Gap.tsx, make three targeted changes:
+
+  1. Remove the collapse state entirely
+
+  Find and delete these three blocks (around lines 470–478):
+  const [expandedDomains, setExpandedDomains] = useState<Record<Domain, boolean>>(() => {
+    const init: Record<Domain, boolean> = { capacity: false, revenue: false, workforce: false, risk: false };
+    return init;
+  });
+
+  useEffect(() => {
+    setExpandedDomains({ capacity: false, revenue: false, workforce: false, risk: false, [topDomain]: true } as Record<Domain, boolean>);
+  }, [topDomain]);
+  const toggleDomain = (domain: Domain) => setExpandedDomains(prev => ({ ...prev, [domain]: !prev[domain] }));
+
+  2. In the domain card render loop, remove the isExpanded variable and the toggle button behavior. Find this block (inside the DOMAIN_ORDER.map around lines 748–819):
+
+  const isExpanded = expandedDomains[domain];
+
+  return (
+    <div
+      key={domain}
+      className="bg-white rounded-lg overflow-hidden"
+      data-testid={`domain-card-${domain}`}
+    >
+      <button
+        type="button"
+        className="w-full text-left p-5 bg-transparent border-none cursor-pointer hover:bg-black/[0.02] transition-colors"
+        onClick={() => toggleDomain(domain)}
+        data-testid={`toggle-domain-${domain}`}
+      >
+
+  Replace with:
+  return (
+    <div
+      key={domain}
+      className="bg-white rounded-lg overflow-hidden"
+      data-testid={`domain-card-${domain}`}
+    >
+      <div
+        className="w-full text-left p-5"
+        data-testid={`toggle-domain-${domain}`}
+      >
+
+  Also find and remove the closing </button> tag that ends the header area (the one just before {isExpanded && (), replacing it with </div>.
+
+  Also remove the chevron span entirely:
+  <span className="text-[#AAAAAA] text-base flex-shrink-0 mt-1 transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+
+  3. Make the expanded content always visible
+
+  Find:
+  {isExpanded && (
+    <div className="px-5 pb-4 border-t border-[#E5E5E5]/60">
+
+  Replace with:
+  <div className="px-5 pb-4 border-t border-[#E5E5E5]/60">
+
+  And find the closing )} that ends the isExpanded && block — the one just after the capacity confidence warning block — and remove that outer )}, leaving just the </div> that closes the content div.
+
+  What this produces:
+  - All 4 domain cards are always fully open — narrative text and "THE NEXT LEVEL UNLOCKS" always visible
+  - No chevron toggle
+  - Domains at Level 4 show their "full maturity" narrative with no opportunity section (correct — there's no next level to unlock)
+  - Domains at Levels 1–3 always show the "THE NEXT LEVEL UNLOCKS" section with the benchmark opportunity
+
+  No changes needed to nextLevelContents, domainStatusLine, or any calculation logic.

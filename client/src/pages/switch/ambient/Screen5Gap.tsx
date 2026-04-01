@@ -406,15 +406,6 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
     return DOMAIN_ORDER.find(d => domainLevels[d] === 1) ?? DOMAIN_ORDER[0];
   }, [domainHasValue, domainGaps, domainLevels]);
 
-  const [expandedDomains, setExpandedDomains] = useState<Record<Domain, boolean>>(() => {
-    const init: Record<Domain, boolean> = { capacity: false, revenue: false, workforce: false, risk: false };
-    return init;
-  });
-
-  useEffect(() => {
-    setExpandedDomains({ capacity: false, revenue: false, workforce: false, risk: false, [topDomain]: true } as Record<Domain, boolean>);
-  }, [topDomain]);
-  const toggleDomain = (domain: Domain) => setExpandedDomains(prev => ({ ...prev, [domain]: !prev[domain] }));
 
   const revL2Value = useMemo(() => {
     if (domainLevels.revenue === 2 && domainHasValue.revenue) return domainGaps.revenue;
@@ -683,7 +674,6 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
                   const level = domainLevels[domain];
                   const status = domainStatusLine[domain];
                   const content = nextLevelContents[domain];
-                  const isExpanded = expandedDomains[domain];
 
                   return (
                     <div
@@ -691,10 +681,8 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
                       className="bg-white rounded-lg overflow-hidden"
                       data-testid={`domain-card-${domain}`}
                     >
-                      <button
-                        type="button"
-                        className="w-full text-left p-5 bg-transparent border-none cursor-pointer hover:bg-black/[0.02] transition-colors"
-                        onClick={() => toggleDomain(domain)}
+                      <div
+                        className="w-full text-left p-5"
                         data-testid={`toggle-domain-${domain}`}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -724,33 +712,30 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
                               </p>
                             </div>
                           </div>
-                          <span className="text-[#AAAAAA] text-base flex-shrink-0 mt-1 transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
                         </div>
-                      </button>
+                      </div>
 
-                      {isExpanded && (
-                        <div className="px-5 pb-4 border-t border-[#E5E5E5]/60">
-                          <p className="text-xs text-[#888888] leading-relaxed mt-3" data-testid={`narrative-${domain}`}>
-                            {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
-                          </p>
-                          {content.narrative.includes('OPPORTUNITY AHEAD:') && (
-                            <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60">
-                              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">The next level unlocks</p>
-                              <p className="text-xs text-[#888888] leading-relaxed">
-                                {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
-                              </p>
-                            </div>
-                          )}
-                          {domain === 'capacity' && domainLevels.capacity >= 3 && capacityConfidence === 'aspirational' && (
-                            <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60 flex gap-2">
-                              <span className="text-[#888888] text-xs flex-shrink-0">⚠</span>
-                              <p className="text-[11px] text-[#888888] italic leading-relaxed">
-                                Access data marked as a planning target — validate with scheduling records before using in a formal business case.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      <div className="px-5 pb-4 border-t border-[#E5E5E5]/60">
+                        <p className="text-xs text-[#888888] leading-relaxed mt-3" data-testid={`narrative-${domain}`}>
+                          {content.narrative.split('\n\nOPPORTUNITY AHEAD:')[0]}
+                        </p>
+                        {content.narrative.includes('OPPORTUNITY AHEAD:') && (
+                          <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60">
+                            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">The next level unlocks</p>
+                            <p className="text-xs text-[#888888] leading-relaxed">
+                              {content.narrative.split('OPPORTUNITY AHEAD:')[1].trim()}
+                            </p>
+                          </div>
+                        )}
+                        {domain === 'capacity' && domainLevels.capacity >= 3 && capacityConfidence === 'aspirational' && (
+                          <div className="mt-3 pt-3 border-t border-[#E5E5E5]/60 flex gap-2">
+                            <span className="text-[#888888] text-xs flex-shrink-0">⚠</span>
+                            <p className="text-[11px] text-[#888888] italic leading-relaxed">
+                              Access data marked as a planning target — validate with scheduling records before using in a formal business case.
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
