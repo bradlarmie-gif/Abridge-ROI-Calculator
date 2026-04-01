@@ -275,7 +275,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
         </p>
 
         <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 max-w-md mx-auto space-y-3 text-left">
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 min-h-[48px]">
             <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
             <div>
               <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Select your care settings</p>
@@ -283,7 +283,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
             </div>
           </div>
           <div className="h-px bg-[#F0EBE3]" />
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 min-h-[48px]">
             <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
             <div>
               <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
@@ -291,7 +291,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
             </div>
           </div>
           <div className="h-px bg-[#F0EBE3]" />
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 min-h-[48px]">
             <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
             <div>
               <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download before the call</p>
