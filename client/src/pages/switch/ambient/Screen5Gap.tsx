@@ -342,6 +342,22 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
     ];
   }, [strategicAnnual, totalMeasured]);
 
+  const cumulativeData = useMemo(() => {
+    if (totalMeasured <= 0) return [];
+    const y1 = totalMeasured;
+    const y2 = Math.round(totalMeasured * 1.12);
+    const y3 = Math.round(totalMeasured * 1.26);
+    return [
+      { month: 0,  value: 0 },
+      { month: 6,  value: Math.round(y1 * 0.5) },
+      { month: 12, value: y1 },
+      { month: 18, value: Math.round((y1 + y2) * 0.5) },
+      { month: 24, value: y1 + y2 },
+      { month: 30, value: Math.round((y1 + y2 + y3) * 0.85) },
+      { month: 36, value: y1 + y2 + y3 },
+    ];
+  }, [totalMeasured]);
+
   const gap36mo = useMemo(() => {
     if (!chartData.length) return 0;
     return chartData[chartData.length - 1].gap;
@@ -803,22 +819,61 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
             </motion.div>
           )}
 
-          {totalMeasured === 0 && chartData.length > 0 && (
+          {chartData.length === 0 && cumulativeData.length > 0 && (
             <motion.div
               className="mb-10"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.5 }}
             >
-              <div className="bg-[#F5F0EB] rounded-xl p-6 sm:p-8" data-testid="card-chart-placeholder">
-                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-3">
-                  Value of Acting Now
+              <div className="bg-[#F5F0EB] rounded-xl p-5 sm:p-7" data-testid="card-chart-cumulative">
+                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-1">
+                  Your 3-Year Value Trajectory
                 </p>
-                <p className="text-sm font-medium text-[#1A1A1A] mb-2">
-                  The chart becomes meaningful once you have at least one confirmed domain.
+                <p className="text-sm font-medium text-[#1A1A1A] mb-1">
+                  {formatDollar(cumulativeData[cumulativeData.length - 1].value)} cumulative over 36 months.
                 </p>
-                <p className="text-xs text-[#888888] leading-relaxed">
-                  No domain at your organization has been formally measured yet. The benchmark ranges above reflect what organizations your size typically find when they first look — but projecting a compounding cost-of-inaction curve requires a confirmed starting point, not an estimate. Start with one domain, confirm the number, and this chart will tell your story.
+                <p className="text-xs text-[#888888] mb-5">
+                  Based on your confirmed {formatDollar(totalMeasured)}/year, compounding as measurement depth increases annually.
+                </p>
+                <div className="h-[240px] sm:h-[300px] md:h-[360px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={cumulativeData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="cumulativeGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#EA2C00" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#EA2C00" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis
+                        dataKey="month"
+                        ticks={[0, 12, 24, 36]}
+                        tickFormatter={(v: number) => v === 0 ? 'Now' : `Mo ${v}`}
+                        tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis
+                        tickFormatter={(v) => formatDollar(v)}
+                        tick={{ fontSize: 11, fill: '#888888' }}
+                        width={70}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#EA2C00"
+                        strokeWidth={2.5}
+                        fill="url(#cumulativeGradient)"
+                        dot={{ fill: '#EA2C00', r: 4 }}
+                        activeDot={{ r: 6 }}
+                        name="Cumulative value"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <p className="text-xs text-[#888888] italic leading-relaxed mt-4">
+                  Assumes ~12% annual improvement as measurement programs mature — consistent with organizations that move from tracking to optimizing in years 2–3.
                 </p>
               </div>
             </motion.div>
