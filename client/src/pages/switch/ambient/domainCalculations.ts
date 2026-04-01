@@ -944,121 +944,12 @@ export function computeRiskFeedback(
   }
 
   if (level === 3) {
-    const financialPathway = inputs.financialPathway as string | undefined;
-
-    if (!financialPathway || financialPathway === 'none_yet') {
-      return {
-        label: 'Estimated Impact',
-        value: null,
-        hasValue: false,
-        headlineMetric: financialPathway === 'none_yet' ? 'No financial pathway connected yet' : 'Select a financial pathway',
-        context: financialPathway === 'none_yet'
-          ? 'Documentation quality improvements are happening, but no downstream financial mechanism has been connected yet. This is the most common gap at Level 3 — the quality is real, but the financial proof hasn\'t been built.'
-          : 'Select which financial pathway documentation quality is connected to.',
-        formula: '',
-        footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
-      };
-    }
-
-    if (financialPathway === 'mips') {
-      const mipsScore = (inputs.mipsScoreImprovement as number) || 0;
-      const MIPS_PAYMENT_PER_PROVIDER = 10000;
-      const mipsPaymentDelta = mipsScore > 0 ? Math.round(mipsScore * 0.04 * MIPS_PAYMENT_PER_PROVIDER * providers) : 0;
-      const hasVal = mipsPaymentDelta > 0;
-      const mipsContext = hasVal
-        ? `MIPS score improved by ${mipsScore} points since deployment. Each point shifts the payment adjustment by ~4% of the per-provider MIPS payment pool (${formatDollar(MIPS_PAYMENT_PER_PROVIDER)}/provider benchmark), yielding an estimated ${formatDollar(mipsPaymentDelta)} in annual payment impact across ${providers.toLocaleString()} providers.`
-        : 'MIPS performance is the selected pathway. Enter your score improvement to quantify the connection.';
-      return {
-        label: 'Estimated Impact',
-        value: hasVal ? mipsPaymentDelta : null,
-        hasValue: hasVal,
-        headlineMetric: hasVal ? `${formatDollar(mipsPaymentDelta)} MIPS payment impact` : 'MIPS pathway selected',
-        context: `${mipsContext}\n\nMIPS payment adjustments are tied directly to documentation quality — completeness, specificity, and measure capture all affect the final score.`,
-        formula: hasVal ? `[mipsPaymentDelta] = ${mipsScore} points × 4% × ${formatDollar(MIPS_PAYMENT_PER_PROVIDER)}/provider × ${providers} providers = ${formatDollar(mipsPaymentDelta)}` : '',
-        footnote: 'Estimates based on your inputs. Individual results vary. MIPS payment adjustment rate is approximate.',
-        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
-      };
-    }
-
-    if (financialPathway === 'denials') {
-      const annualDenialVolume = (inputs.annualDenialVolume as number) || 0;
-      const denialReductionRate = (inputs.denialReductionRate as number) || 0;
-      const avgDenialValue = (inputs.avgDenialValue as number) || 250;
-      const existingDownstreamValue = (inputs.downstreamValue as number) || 0;
-
-      const denialsPrevented = Math.round(annualDenialVolume * (denialReductionRate / 100));
-      const denialRecovery = Math.round(denialsPrevented * avgDenialValue);
-      const downstreamValue = denialRecovery > 0 ? denialRecovery : existingDownstreamValue;
-      const hasVal = downstreamValue > 0;
-      const usedFormula = denialRecovery > 0;
-
-      const denialContext = usedFormula
-        ? `${denialsPrevented.toLocaleString()} denials prevented × ${formatDollar(avgDenialValue)} avg value = ${formatDollar(denialRecovery)}/year\n\nFrom ${annualDenialVolume.toLocaleString()} annual documentation-related denials with a ${denialReductionRate}% reduction rate.`
-        : hasVal
-          ? `Measured denial prevention value: ${formatDollar(existingDownstreamValue)}/year (entered directly from CDI program, audit, or finance team).`
-          : 'Enter your denial volume, reduction rate, and average value to calculate the prevention impact. Or enter a measured value directly.';
-      return {
-        label: 'Estimated Impact',
-        value: hasVal ? downstreamValue : null,
-        hasValue: hasVal,
-        headlineMetric: hasVal ? `${formatDollar(downstreamValue)} denial prevention value` : 'Denial reduction pathway selected',
-        context: `${denialContext}\n\nDenial prevention compounds over time: fewer recoded claims, faster payment cycles, and stronger payer relationships. Each prevented denial saves the denial value plus the $25–$50 rework cost your billing team avoids.`,
-        formula: usedFormula ? `[denialsPrevented] = ${annualDenialVolume.toLocaleString()} × ${denialReductionRate}% = ${denialsPrevented.toLocaleString()}\n[denialRecovery] = ${denialsPrevented.toLocaleString()} × ${formatDollar(avgDenialValue)} = ${formatDollar(denialRecovery)}` : '',
-        footnote: usedFormula
-          ? `Based on your inputs. Average denial value: ${formatDollar(avgDenialValue)}.`
-          : hasVal ? 'Based on your directly entered measured value.' : 'Estimates based on your inputs.',
-        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
-      };
-    }
-
-    if (financialPathway === 'hcc') {
-      const additionalCodes = (inputs.hccAdditionalCodes as number) || 0;
-      const revenuePerCode = (inputs.hccRevenuePerCode as number) || 1200;
-      const measuredValue = (inputs.hccMeasuredValue as number) || 0;
-      const calculatedValue = Math.round(additionalCodes * revenuePerCode);
-      const hccValue = measuredValue > 0 ? measuredValue : calculatedValue;
-      const hasVal = hccValue > 0;
-      const usedFormula = calculatedValue > 0 && measuredValue === 0;
-      return {
-        label: 'Estimated Impact',
-        value: hasVal ? hccValue : null,
-        hasValue: hasVal,
-        headlineMetric: hasVal ? `${formatDollar(hccValue)} in HCC capture value` : 'HCC pathway selected',
-        context: hasVal
-          ? usedFormula
-            ? `${additionalCodes.toLocaleString()} additional HCC codes captured × ${formatDollar(revenuePerCode)}/code = ${formatDollar(hccValue)}/year.\n\nImproved documentation specificity directly increases RAF scores, translating to higher risk-adjusted payments from Medicare Advantage and value-based contracts.`
-            : `Measured HCC/risk adjustment value: ${formatDollar(hccValue)}/year (entered directly from risk adjustment or finance team).\n\nImproved documentation specificity directly increases RAF scores, translating to higher risk-adjusted payments from Medicare Advantage and value-based contracts.`
-          : 'Enter your HCC capture volume or a measured value to calculate risk adjustment impact.',
-        formula: usedFormula ? `[hccValue] = ${additionalCodes.toLocaleString()} codes × ${formatDollar(revenuePerCode)} = ${formatDollar(hccValue)}` : '',
-        footnote: 'Based on your inputs. Average revenue per HCC varies by category and payer mix. Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
-      };
-    }
-
-    if (financialPathway === 'cdi') {
-      const queryReduction = (inputs.cdiQueryReduction as number) || 0;
-      const costPerQuery = (inputs.cdiCostPerQuery as number) || 50;
-      const measuredValue = (inputs.cdiMeasuredValue as number) || 0;
-      const calculatedValue = Math.round(queryReduction * costPerQuery);
-      const cdiValue = measuredValue > 0 ? measuredValue : calculatedValue;
-      const hasVal = cdiValue > 0;
-      const usedFormula = calculatedValue > 0 && measuredValue === 0;
-      return {
-        label: 'Estimated Impact',
-        value: hasVal ? cdiValue : null,
-        hasValue: hasVal,
-        headlineMetric: hasVal ? `${formatDollar(cdiValue)} in CDI program savings` : 'CDI pathway selected',
-        context: hasVal
-          ? usedFormula
-            ? `${queryReduction.toLocaleString()} fewer CDI queries × ${formatDollar(costPerQuery)}/query = ${formatDollar(cdiValue)}/year.\n\nWhen ambient documentation improves note specificity, CDI specialists spend less time querying physicians — reducing program cost and physician interruptions simultaneously.`
-            : `Measured CDI program savings: ${formatDollar(cdiValue)}/year (entered directly from CDI program or finance team).\n\nWhen ambient documentation improves note specificity, CDI specialists spend less time querying physicians — reducing program cost and physician interruptions simultaneously.`
-          : 'Enter your CDI query reduction or a measured value to calculate program savings.',
-        formula: usedFormula ? `[cdiValue] = ${queryReduction.toLocaleString()} queries × ${formatDollar(costPerQuery)} = ${formatDollar(cdiValue)}` : '',
-        footnote: 'Based on your inputs. Cost per CDI query includes specialist time and rework. Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
-      };
-    }
+    const { checked } = parseCheckedItems(inputs.connectedWorkflows as string, DOWNSTREAM_WORKFLOWS);
+    const count = checked.length;
+    const checkedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
+    const depth = inputs.qualityMeasurementDepth as string | undefined;
+    const noDownstreamValue = inputs.noDownstreamValue === 'true';
+    const downstreamValue = noDownstreamValue ? 0 : ((inputs.downstreamValue as number) || 0);
 
     const cdiQueriesBefore = (inputs.cdiQueriesBefore as number) || 0;
     const cdiQueriesAfter = (inputs.cdiQueriesAfter as number) || 0;
@@ -1066,15 +957,88 @@ export function computeRiskFeedback(
     const cdiQueryReduction = Math.max(0, cdiQueriesBefore - cdiQueriesAfter);
     const cdiAnnualSavings = cdiQueryReduction > 0 ? Math.round(cdiQueryReduction * cdiQueryCost * 12) : 0;
 
-    if (cdiAnnualSavings > 0) {
+    const maLives = (inputs.maLives as number) || 0;
+    const avgAnnualPayment = (inputs.avgAnnualPayment as number) || 13000;
+    const hccImprovementPct = (inputs.hccImprovementPct as number) || 0;
+    const hccAnnualValue = (maLives > 0 && hccImprovementPct > 0)
+      ? Math.round(maLives * avgAnnualPayment * (hccImprovementPct / 100))
+      : 0;
+
+    const mipsValue = (inputs.mipsValue as number) || 0;
+
+    const calculatedValue = cdiAnnualSavings + hccAnnualValue + mipsValue;
+    const effectiveValue = downstreamValue > 0 ? downstreamValue : calculatedValue;
+    const isCalculatorEstimate = downstreamValue === 0 && calculatedValue > 0;
+
+    if (count === 0) {
       return {
         label: 'Estimated Impact',
-        value: cdiAnnualSavings,
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Select connected downstream areas.',
+        context: 'Select which downstream areas have been connected to documentation quality improvements.',
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+      };
+    }
+
+    const depthText = depth === 'measured'
+      ? 'Measured data is available.'
+      : depth === 'partial'
+        ? 'Some areas have measured data.'
+        : depth === 'qualitative'
+          ? 'Impact is visible but not yet quantified.'
+          : '';
+
+    if (effectiveValue > 0) {
+      const componentLabels = [
+        cdiAnnualSavings > 0 ? 'CDI' : '',
+        hccAnnualValue > 0 ? 'HCC' : '',
+        mipsValue > 0 ? 'quality program' : '',
+      ].filter(Boolean);
+
+      const headlineMetric = isCalculatorEstimate
+        ? `${formatDollar(effectiveValue)} in estimated ${componentLabels.join(' + ')} value`
+        : `${formatDollar(effectiveValue)} in downstream quality value`;
+
+      const calculatorLines = [
+        cdiAnnualSavings > 0
+          ? `CDI query reduction: ${cdiQueryReduction} fewer queries/month × ${formatDollar(cdiQueryCost)}/query × 12 = ${formatDollar(cdiAnnualSavings)} annually.`
+          : '',
+        hccAnnualValue > 0
+          ? `HCC capture improvement: ${maLives.toLocaleString()} MA/VBC lives × ${formatDollar(avgAnnualPayment)}/year × ${hccImprovementPct}% = ${formatDollar(hccAnnualValue)} in additional risk-adjusted revenue.`
+          : '',
+        mipsValue > 0
+          ? `MIPS / quality program value: ${formatDollar(mipsValue)} in penalty avoidance or quality incentives.`
+          : '',
+      ].filter(Boolean);
+
+      const context = isCalculatorEstimate
+        ? calculatorLines.join('\n') +
+          `\n\nNote: This captures CDI efficiency and HCC/risk adjustment value. Documentation-driven revenue (wRVU, collections, denials) is captured separately in the Revenue domain.` +
+          (count > 0 ? `\n\nConnected downstream areas:\n${checkedList}` : '') +
+          (depthText ? `\n\n${depthText}` : '')
+        : `Documentation quality is driving ${formatDollar(effectiveValue)} in annual value across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}`;
+
+      const formulaLines = [
+        cdiAnnualSavings > 0 ? `[cdiSavings] = ${cdiQueryReduction} queries/mo × ${formatDollar(cdiQueryCost)} × 12 = ${formatDollar(cdiAnnualSavings)}` : '',
+        hccAnnualValue > 0 ? `[hccValue] = ${maLives.toLocaleString()} lives × ${formatDollar(avgAnnualPayment)} × ${hccImprovementPct}% = ${formatDollar(hccAnnualValue)}` : '',
+        mipsValue > 0 ? `[mipsValue] = ${formatDollar(mipsValue)} (organization estimate)` : '',
+      ].filter(Boolean);
+
+      return {
+        label: 'Estimated Impact',
+        value: effectiveValue,
         hasValue: true,
-        headlineMetric: `${formatDollar(cdiAnnualSavings)} in estimated CDI efficiency savings`,
-        context: `CDI query reduction: ${cdiQueryReduction} fewer queries/month × ${formatDollar(cdiQueryCost)}/query × 12 months = ${formatDollar(cdiAnnualSavings)} annually.\n\nThis captures CDI efficiency — physician and analyst time freed from query resolution. Documentation-driven revenue impact (wRVU, coding, denials) is captured separately in the Revenue domain.`,
-        formula: `[cdiSavings] = ${cdiQueryReduction} queries/mo × ${formatDollar(cdiQueryCost)} × 12 = ${formatDollar(cdiAnnualSavings)}`,
-        footnote: 'CDI estimate based on query volume reduction. Enter a confirmed downstream value above to replace this estimate. Individual results vary.',
+        headlineMetric,
+        context,
+        formula: isCalculatorEstimate
+          ? formulaLines.join('\n')
+          : `[annualValue] = ${formatDollar(effectiveValue)} (organization estimate)`,
+        footnote: isCalculatorEstimate
+          ? 'Calculator estimates — validate CDI data with your CDI team, HCC improvement with actual RAF score data after 12+ months, and MIPS value with your quality team. Individual results vary.'
+          : 'Based on your organization\'s estimate. Individual results vary.',
         nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
       };
     }
@@ -1083,8 +1047,8 @@ export function computeRiskFeedback(
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'Select a financial pathway',
-      context: 'Select which financial pathway documentation quality is connected to.',
+      headlineMetric: `${count} downstream area${count > 1 ? 's' : ''} connected`,
+      context: `Documentation quality is driving improvement across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}`,
       formula: '',
       footnote: 'Estimates based on your inputs. Individual results vary.',
       nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',

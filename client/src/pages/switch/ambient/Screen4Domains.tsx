@@ -12,7 +12,7 @@ import {
   computeDomainScore,
   computeCapacityFeedback, computeRevenueFeedback,
   computeWorkforceFeedback, computeRiskFeedback,
-  QUALITY_ATTRIBUTES, STRATEGIC_INTEGRATIONS, REVENUE_INTEGRATIONS,
+  QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, STRATEGIC_INTEGRATIONS, REVENUE_INTEGRATIONS,
   CAPACITY_TIME_USAGE_LABELS,
   type DomainFeedback,
 } from "./domainCalculations";
@@ -1286,15 +1286,15 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     if (level === 1) {
       const reviewedReports = currentState.inputs.qualityReportsReviewed as string || '';
       const REVIEW_OPTIONS = [
-        { id: 'not_yet', label: 'Not yet — no formal review of documentation quality data' },
-        { id: 'informally', label: 'Informally — spot-checked or discussed anecdotally' },
-        { id: 'yes', label: 'Yes — we have reviewed documentation quality reports' },
+        { id: 'no', label: 'Not yet — downstream teams haven\'t engaged with it yet' },
+        { id: 'informal', label: 'Starting informally — conversations have begun with coding, CDI, or compliance' },
+        { id: 'yes', label: 'One or more teams are formally engaged' },
       ];
       return (
         <div className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-3">
-              Have you reviewed documentation quality reports since deployment?
+            <label className="block text-sm font-medium text-black mb-3">
+              Have any downstream teams started engaging with the improved documentation?
             </label>
             <div className="flex flex-col gap-2.5">
               {REVIEW_OPTIONS.map((opt) => (
@@ -1405,301 +1405,241 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     }
 
     if (level === 3) {
-      const financialPathway = (currentState.inputs.financialPathway as string) || '';
+      const noDownstreamValue = currentState.inputs.noDownstreamValue === 'true';
+      const connectedWorkflowsCsv = (currentState.inputs.connectedWorkflows as string) || '';
+      const connectedSet = new Set(connectedWorkflowsCsv.split(',').filter(Boolean));
+      const cdiChecked = connectedSet.has('0');
+      const mipsChecked = connectedSet.has('2');
+      const hccChecked = connectedSet.has('5');
 
       return (
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
-              Which financial pathway has documentation quality been connected to?
+              Which downstream workflows have been connected to documentation quality?
             </label>
             <div className="flex flex-col gap-2.5">
-              {[
-                { id: 'mips', label: 'MIPS / quality measure performance' },
-                { id: 'denials', label: 'Denial rate reduction' },
-                { id: 'hcc', label: 'HCC / risk adjustment capture' },
-                { id: 'cdi', label: 'CDI program savings' },
-                { id: 'none_yet', label: 'No financial pathway connected yet' },
-              ].map((opt) => (
-                <label
-                  key={opt.id}
-                  className={`flex items-center gap-3 p-3.5 sm:p-4 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
-                    financialPathway === opt.id
-                      ? 'border-[#EA2C00] bg-[#EA2C00]/5'
-                      : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
-                  }`}
-                  data-testid={`radio-financial-pathway-${opt.id}`}
-                >
-                  <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    financialPathway === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
-                  }`}>
-                    {financialPathway === opt.id && <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />}
-                  </div>
-                  <span className="text-sm text-[#525252]">{opt.label}</span>
-                  <input
-                    type="radio"
-                    name="financialPathway"
-                    value={opt.id}
-                    checked={financialPathway === opt.id}
-                    onChange={() => setDomainInput('financialPathway', opt.id)}
-                    className="sr-only"
-                  />
-                </label>
-              ))}
+              {DOWNSTREAM_WORKFLOWS.map((item, i) => {
+                const checked = isChecked('connectedWorkflows', i);
+                return (
+                  <label
+                    key={i}
+                    htmlFor={`downstream-${i}`}
+                    className={`flex items-start gap-3 rounded-lg border px-3.5 py-3 cursor-pointer transition-all active:scale-[0.99] ${
+                      checked ? 'border-[#EA2C00] bg-[#FFF5F2]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                    }`}
+                  >
+                    <Checkbox
+                      id={`downstream-${i}`}
+                      checked={checked}
+                      onCheckedChange={() => toggleCheckboxItem('connectedWorkflows', i)}
+                      data-testid={`checkbox-downstream-${i}`}
+                      className="mt-0.5"
+                    />
+                    <span className="text-sm text-[#525252] select-none leading-snug">
+                      {item}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
           <AnimatePresence>
-            {financialPathway === 'mips' && (
+            {connectedWorkflowsCsv && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                  MIPS score improvement (points)
+                <label className="block text-sm font-medium text-black mb-3">
+                  How would you describe the depth of measurement?
                 </label>
-                <FormattedNumberInput
-                  value={(currentState.inputs.mipsScoreImprovement as number) || 0}
-                  onChange={(v) => setDomainInput('mipsScoreImprovement', Math.max(0, v))}
-                  placeholder=""
-                  className="w-full h-12 bg-white border-[#E5E7EB]"
-                  data-testid="input-mips-score"
-                />
-                <BenchmarkContext text="MIPS score improvement since ambient deployment. Even small improvements affect payment adjustments." />
-              </motion.div>
-            )}
-            {financialPathway === 'denials' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col gap-4"
-              >
-                <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider">Recommended: Calculate from denial data</p>
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Annual documentation-related denials (estimated)
-                  </label>
-                  <FormattedNumberInput
-                    value={(currentState.inputs.annualDenialVolume as number) || 0}
-                    onChange={(v) => setDomainInput('annualDenialVolume', Math.max(0, v))}
-                    placeholder=""
-                    className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-annual-denial-volume"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    What % reduction have you seen or estimated?
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <FormattedNumberInput
-                      value={(currentState.inputs.denialReductionRate as number) || 0}
-                      onChange={(v) => setDomainInput('denialReductionRate', Math.min(100, Math.max(0, v)))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-denial-reduction-rate"
-                    />
-                    <span className="text-sm text-[#888888]">%</span>
-                  </div>
-                  <BenchmarkContext text="Organizations have reported 5–15% reduction in documentation-related denials." />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Average value per denial ($)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#888888]">$</span>
-                    <FormattedNumberInput
-                      value={(currentState.inputs.avgDenialValue as number) || 250}
-                      onChange={(v) => setDomainInput('avgDenialValue', Math.max(0, v))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-avg-denial-value"
-                    />
-                  </div>
-                  <p className="text-xs text-[#888888] mt-1">Default: $250. Include claim value and rework cost.</p>
-                </div>
-
-                <div className="border-t border-[#E5E7EB] pt-4 mt-1">
-                  <p className="text-xs text-[#888888] italic mb-2">Or enter a measured value directly (from CDI program, audit, or finance team):</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#888888]">$</span>
-                    <FormattedNumberInput
-                      value={(currentState.inputs.downstreamValue as number) || 0}
-                      onChange={(v) => setDomainInput('downstreamValue', Math.max(0, v))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-downstream-value"
-                    />
-                    <span className="text-xs text-[#888888]">/year</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-            {financialPathway === 'hcc' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col gap-4"
-              >
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Additional HCC codes captured per year
-                  </label>
-                  <FormattedNumberInput
-                    value={(currentState.inputs.hccAdditionalCodes as number) || 0}
-                    onChange={(v) => setDomainInput('hccAdditionalCodes', Math.max(0, v))}
-                    placeholder=""
-                    className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-hcc-additional-codes"
-                  />
-                  <BenchmarkContext text="Abridge benchmark: 1–3 additional HCCs per provider per month with improved specificity." />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Average annual revenue per HCC captured ($)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#888888]">$</span>
-                    <FormattedNumberInput
-                      value={(currentState.inputs.hccRevenuePerCode as number) || 1200}
-                      onChange={(v) => setDomainInput('hccRevenuePerCode', Math.max(0, v))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-hcc-revenue-per-code"
-                    />
-                  </div>
-                  <p className="text-xs text-[#888888] mt-1">Default: $1,200. Range: $800–$2,000 depending on HCC category and payer mix.</p>
-                </div>
-                <div className="border-t border-[#E5E7EB] pt-4 mt-1">
-                  <p className="text-xs text-[#888888] italic mb-2">Or enter a measured annual value directly (from risk adjustment or finance team):</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#888888]">$</span>
-                    <FormattedNumberInput
-                      value={(currentState.inputs.hccMeasuredValue as number) || 0}
-                      onChange={(v) => setDomainInput('hccMeasuredValue', Math.max(0, v))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-hcc-measured-value"
-                    />
-                    <span className="text-xs text-[#888888]">/year</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-            {financialPathway === 'cdi' && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col gap-4"
-              >
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Reduction in CDI query volume per year
-                  </label>
-                  <FormattedNumberInput
-                    value={(currentState.inputs.cdiQueryReduction as number) || 0}
-                    onChange={(v) => setDomainInput('cdiQueryReduction', Math.max(0, v))}
-                    placeholder=""
-                    className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-cdi-query-reduction"
-                  />
-                  <BenchmarkContext text="CDI query volume typically decreases 20–40% when ambient documentation improves note specificity." />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
-                    Average cost per CDI query ($)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#888888]">$</span>
-                    <FormattedNumberInput
-                      value={(currentState.inputs.cdiCostPerQuery as number) || 50}
-                      onChange={(v) => setDomainInput('cdiCostPerQuery', Math.max(0, v))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-cdi-cost-per-query"
-                    />
-                  </div>
-                  <p className="text-xs text-[#888888] mt-1">Default: $50. Include CDI specialist time and rework cost per query.</p>
-                </div>
-                <div className="border-t border-[#E5E7EB] pt-4 mt-1">
-                  <p className="text-xs text-[#888888] italic mb-2">Or enter a measured annual CDI savings directly (from CDI program or finance team):</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#888888]">$</span>
-                    <FormattedNumberInput
-                      value={(currentState.inputs.cdiMeasuredValue as number) || 0}
-                      onChange={(v) => setDomainInput('cdiMeasuredValue', Math.max(0, v))}
-                      placeholder=""
-                      className="w-full h-12 bg-white border-[#E5E7EB]"
-                      data-testid="input-cdi-measured-value"
-                    />
-                    <span className="text-xs text-[#888888]">/year</span>
-                  </div>
+                <div className="flex flex-col gap-2.5">
+                  {[
+                    { id: 'qualitative', label: 'Qualitative — impact is visible but not formally measured' },
+                    { id: 'partial', label: 'Partially measured — some areas have data, others are anecdotal' },
+                    { id: 'measured', label: 'Measured — we have data and can quantify the impact' },
+                  ].map((opt) => (
+                    <label
+                      key={opt.id}
+                      className={`flex items-center gap-3 p-3.5 sm:p-4 rounded-lg border cursor-pointer transition-all active:scale-[0.99] ${
+                        (currentState.inputs.qualityMeasurementDepth as string) === opt.id
+                          ? 'border-[#EA2C00] bg-[#EA2C00]/5'
+                          : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                      }`}
+                      data-testid={`radio-measurement-depth-${opt.id}`}
+                    >
+                      <div className={`w-5 h-5 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                        (currentState.inputs.qualityMeasurementDepth as string) === opt.id ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                      }`}>
+                        {(currentState.inputs.qualityMeasurementDepth as string) === opt.id && <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />}
+                      </div>
+                      <span className="text-sm text-[#525252]">{opt.label}</span>
+                      <input
+                        type="radio"
+                        name="qualityMeasurementDepth"
+                        value={opt.id}
+                        checked={(currentState.inputs.qualityMeasurementDepth as string) === opt.id}
+                        onChange={() => setDomainInput('qualityMeasurementDepth', opt.id)}
+                        className="sr-only"
+                      />
+                    </label>
+                  ))}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <p className="text-xs text-[#888888] italic leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
-            This figure should capture CDI efficiency savings, quality program improvements, and penalty avoidance — not documentation-driven revenue impact (wRVU, collections, denials), which lives in the Revenue domain.
-          </p>
-
-          <div className="pt-2">
-            <p className="text-sm font-semibold text-[#1A1A1A] mb-1">CDI query reduction calculator</p>
-            <p className="text-xs text-[#888888] mb-3 leading-relaxed">
-              If you don't have a confirmed downstream value, use this to estimate CDI efficiency savings from reduced query volume. Your CDI team will have these numbers.
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Combined annual value of documentation quality improvements (optional — or use calculators below)
+            </label>
+            <p className="text-xs text-[#888888] mb-2">
+              Include CDI efficiency savings, HCC/risk adjustment revenue, quality measure incentives, or other downstream value. Do not include documentation-driven wRVU, collections, or denial reduction — those belong in the Revenue domain.
             </p>
-            <div className="flex flex-col gap-3">
-              <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
-                  CDI queries per month — before Abridge
-                </label>
-                <FormattedNumberInput
-                  value={(currentState.inputs.cdiQueriesBefore as number) || 0}
-                  onChange={(v) => setDomainInput('cdiQueriesBefore', Math.max(0, v))}
-                  placeholder=""
-                  className="w-full h-12 bg-white border-[#E5E7EB]"
-                  data-testid="input-cdi-queries-before"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
-                  CDI queries per month — with Abridge
-                </label>
-                <FormattedNumberInput
-                  value={(currentState.inputs.cdiQueriesAfter as number) || 0}
-                  onChange={(v) => setDomainInput('cdiQueriesAfter', Math.max(0, v))}
-                  placeholder=""
-                  className="w-full h-12 bg-white border-[#E5E7EB]"
-                  data-testid="input-cdi-queries-after"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
-                  Cost per CDI query to resolve ($)
-                </label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#888888]">$</span>
-                  <FormattedNumberInput
-                    value={(currentState.inputs.cdiQueryCost as number) || 100}
-                    onChange={(v) => setDomainInput('cdiQueryCost', Math.max(0, v))}
-                    placeholder=""
-                    className="w-full h-12 bg-white border-[#E5E7EB]"
-                    data-testid="input-cdi-query-cost"
-                  />
-                </div>
-                <BenchmarkContext text="Industry benchmark: $50–$150 per query (physician time + CDI analyst time to resolve). Default $100." />
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[#888888]">$</span>
+              <FormattedNumberInput
+                value={(currentState.inputs.downstreamValue as number) || 0}
+                onChange={(v) => setDomainInput('downstreamValue', Math.max(0, v))}
+                placeholder=""
+                className="w-full h-12 bg-white border-[#E5E7EB]"
+                data-testid="input-downstream-value"
+                disabled={noDownstreamValue}
+              />
+              <span className="text-xs text-[#888888]">/year</span>
+            </div>
+            <div className="flex items-center gap-2.5 mt-3">
+              <Checkbox
+                id="no-downstream-value"
+                checked={noDownstreamValue}
+                onCheckedChange={(checked) => {
+                  setDomainInput('noDownstreamValue', checked ? 'true' : 'false');
+                }}
+                data-testid="checkbox-no-downstream-value"
+              />
+              <label htmlFor="no-downstream-value" className="text-sm text-[#525252] cursor-pointer select-none">
+                Don't have a confirmed number — use calculators below
+              </label>
             </div>
           </div>
+
+          {cdiChecked && (
+            <div className="pt-4 border-t border-[#E5E7EB]">
+              <p className="text-sm font-semibold text-[#1A1A1A] mb-1">CDI query reduction calculator</p>
+              <p className="text-xs text-[#888888] mb-3 leading-relaxed">
+                Estimate annual CDI efficiency savings from reduced query volume. Your CDI team will have these numbers.
+              </p>
+              <div className="flex flex-col gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-[#1A1A1A] mb-1">CDI queries per month — before Abridge</label>
+                  <FormattedNumberInput
+                    value={(currentState.inputs.cdiQueriesBefore as number) || 0}
+                    onChange={(v) => setDomainInput('cdiQueriesBefore', Math.max(0, v))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-cdi-queries-before"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#1A1A1A] mb-1">CDI queries per month — with Abridge</label>
+                  <FormattedNumberInput
+                    value={(currentState.inputs.cdiQueriesAfter as number) || 0}
+                    onChange={(v) => setDomainInput('cdiQueriesAfter', Math.max(0, v))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-cdi-queries-after"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#1A1A1A] mb-1">Cost per CDI query to resolve ($)</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput
+                      value={(currentState.inputs.cdiQueryCost as number) || 100}
+                      onChange={(v) => setDomainInput('cdiQueryCost', Math.max(0, v))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-cdi-query-cost"
+                    />
+                  </div>
+                  <BenchmarkContext text="Industry benchmark: $50–$150 per query (physician + CDI analyst time). Default $100." />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {hccChecked && (
+            <div className="pt-4 border-t border-[#E5E7EB]">
+              <p className="text-sm font-semibold text-[#1A1A1A] mb-1">HCC / risk adjustment calculator</p>
+              <p className="text-xs text-[#888888] mb-3 leading-relaxed">
+                Improved documentation specificity increases chronic condition capture rates — the most underestimated financial lever in an ambient deployment. Better notes reflect what physicians already know about their patients.
+              </p>
+              <div className="flex flex-col gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-[#1A1A1A] mb-1">Medicare Advantage / VBC lives under risk contract</label>
+                  <FormattedNumberInput
+                    value={(currentState.inputs.maLives as number) || 0}
+                    onChange={(v) => setDomainInput('maLives', Math.max(0, v))}
+                    placeholder=""
+                    className="w-full h-12 bg-white border-[#E5E7EB]"
+                    data-testid="input-ma-lives"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#1A1A1A] mb-1">Average annual payment per member ($)</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput
+                      value={(currentState.inputs.avgAnnualPayment as number) || 13000}
+                      onChange={(v) => setDomainInput('avgAnnualPayment', Math.max(0, v))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-avg-annual-payment"
+                    />
+                  </div>
+                  <BenchmarkContext text="National Medicare Advantage average: ~$12,000–$15,000/member/year. Use your contracted PMPM × 12 if known." />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#1A1A1A] mb-1">Expected HCC capture improvement (%)</label>
+                  <div className="flex items-center gap-2">
+                    <FormattedNumberInput
+                      value={(currentState.inputs.hccImprovementPct as number) || 0}
+                      onChange={(v) => setDomainInput('hccImprovementPct', Math.min(20, Math.max(0, v)))}
+                      placeholder=""
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-hcc-improvement-pct"
+                      step={0.5}
+                    />
+                    <span className="text-sm text-[#888888]">%</span>
+                  </div>
+                  <BenchmarkContext text="Ambient documentation typically improves chronic condition capture by 3–8% in year 1 through improved specificity and completeness. Use a conservative estimate — validate with actual RAF score data after 12+ months." />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {mipsChecked && (
+            <div className="pt-4 border-t border-[#E5E7EB]">
+              <p className="text-sm font-semibold text-[#1A1A1A] mb-1">MIPS / quality program value</p>
+              <p className="text-xs text-[#888888] mb-3 leading-relaxed">
+                Include penalty avoidance, quality incentive payments, or Stars / HEDIS bonus payments. Your quality team will have this figure.
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[#888888]">$</span>
+                <FormattedNumberInput
+                  value={(currentState.inputs.mipsValue as number) || 0}
+                  onChange={(v) => setDomainInput('mipsValue', Math.max(0, v))}
+                  placeholder=""
+                  className="w-full h-12 bg-white border-[#E5E7EB]"
+                  data-testid="input-mips-value"
+                />
+              </div>
+              <BenchmarkContext text="2024 MIPS maximum penalty: 9% of Medicare Part B payments for lowest performers. For a group with $2M in Part B billing, max penalty exposure = $180K. Enter your estimated annual value from quality program improvement." />
+            </div>
+          )}
         </div>
       );
     }
@@ -1848,6 +1788,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
                 Annual strategic value attributed to documentation quality programs
               </label>
+              <p className="text-xs text-[#888888] mb-2">
+                Enter incremental strategic value not already captured at Level 3 — this could include VBC contract performance, compliance governance, or quality program design outcomes. CDI and HCC values entered above should not be re-entered here.
+              </p>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-[#888888]">$</span>
                 <FormattedNumberInput
@@ -1880,7 +1823,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
               </div>
               {currentState.inputs.noConfirmedStrategicValue === 'true' && (
                 <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
-                  Organizations at this level typically find value across: quality penalty avoidance ($10K–$50K per at-risk provider), VBC and HCC capture improvement ($200K–$2M+ for risk-bearing populations), and compliance governance programs. These figures require formal attribution by your finance and quality leadership.
+                  Organizations at this level typically find value across: quality penalty avoidance ($10K–$50K per at-risk provider), VBC contract performance improvements ($200K–$2M+ for risk-bearing populations), and compliance governance programs. If you already calculated CDI or HCC value at Level 3, do not include those here — enter only incremental strategic value beyond what was already quantified.
                 </p>
               )}
             </>

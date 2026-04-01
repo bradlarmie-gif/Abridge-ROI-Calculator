@@ -1,0 +1,323 @@
+ Complete Replit Prompt:
+
+  ---
+  Replit Prompt: Quality domain — complete overhaul of L1 copy, L3 calculators, L4 benchmark guidance
+
+  Changes across two files. This is the complete Quality domain fix — apply all of it together.
+
+  ---
+  FILE 1: client/src/pages/switch/ambient/Screen4Domains.tsx
+
+  Change A — L1: add question label and fix option copy.
+
+  In renderRiskInputs(), find the level === 1 return block. It has three radio options with no label above them. Add a label and update the option text. Replace the <div className="flex flex-col gap-2"> and
+  its contents:
+
+  <label className="block text-sm font-medium text-black mb-3">
+    Have any downstream teams started engaging with the improved documentation?
+  </label>
+  <div className="flex flex-col gap-2">
+    {[
+      { id: 'no', label: 'Not yet — downstream teams haven\'t engaged with it yet' },
+      { id: 'informal', label: 'Starting informally — conversations have begun with coding, CDI, or compliance' },
+      { id: 'yes', label: 'One or more teams are formally engaged' },
+    ].map((opt) => (
+
+  Keep the rest of the radio render logic identical, just the label text changes.
+
+  Change B — L3: add conditional calculators for CDI, HCC, and MIPS.
+
+  In renderRiskInputs(), find the if (level === 3) return block. It currently ends after the noDownstreamValue checkbox section (closing </div> of the downstreamValue block, then </div> closing the whole
+  return).
+
+  First, add these computed variables at the top of the if (level === 3) block, right after the existing const noDownstreamValue line:
+
+  const connectedWorkflowsCsv = (currentState.inputs.connectedWorkflows as string) || '';
+  const connectedSet = new Set(connectedWorkflowsCsv.split(',').filter(Boolean));
+  const cdiChecked = connectedSet.has('0');
+  const mipsChecked = connectedSet.has('2');
+  const hccChecked = connectedSet.has('5');
+
+  Second, update the downstreamValue label and helper text to add anti-double-count guidance. Find:
+  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+    Combined annual value of documentation quality improvements across connected workflows (optional)
+  </label>
+  <p className="text-xs text-[#888888] mb-2">
+    This could include CDI efficiency gains, coding accuracy improvements, quality measure incentives captured, abstraction time saved, or other measurable downstream value.
+  </p>
+
+  Replace with:
+  <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+    Combined annual value of documentation quality improvements (optional — or use calculators below)
+  </label>
+  <p className="text-xs text-[#888888] mb-2">
+    Include CDI efficiency savings, HCC/risk adjustment revenue, quality measure incentives, or other downstream value. Do not include documentation-driven wRVU, collections, or denial reduction — those
+  belong in the Revenue domain.
+  </p>
+
+  Third, after the closing </div> of the noDownstreamValue checkbox section and before the final closing </div> of the return, add the three conditional calculator sections:
+
+  {cdiChecked && (
+    <div className="pt-4 border-t border-[#E5E7EB]">
+      <p className="text-sm font-semibold text-[#1A1A1A] mb-1">CDI query reduction calculator</p>
+      <p className="text-xs text-[#888888] mb-3 leading-relaxed">
+        Estimate annual CDI efficiency savings from reduced query volume. Your CDI team will have these numbers.
+      </p>
+      <div className="flex flex-col gap-3">
+        <div>
+          <label className="block text-sm font-medium text-[#1A1A1A] mb-1">CDI queries per month — before Abridge</label>
+          <FormattedNumberInput
+            value={(currentState.inputs.cdiQueriesBefore as number) || 0}
+            onChange={(v) => setDomainInput('cdiQueriesBefore', Math.max(0, v))}
+            placeholder=""
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-cdi-queries-before"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[#1A1A1A] mb-1">CDI queries per month — with Abridge</label>
+          <FormattedNumberInput
+            value={(currentState.inputs.cdiQueriesAfter as number) || 0}
+            onChange={(v) => setDomainInput('cdiQueriesAfter', Math.max(0, v))}
+            placeholder=""
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-cdi-queries-after"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[#1A1A1A] mb-1">Cost per CDI query to resolve ($)</label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.cdiQueryCost as number) || 100}
+              onChange={(v) => setDomainInput('cdiQueryCost', Math.max(0, v))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-cdi-query-cost"
+            />
+          </div>
+          <BenchmarkContext text="Industry benchmark: $50–$150 per query (physician + CDI analyst time). Default $100." />
+        </div>
+      </div>
+    </div>
+  )}
+
+  {hccChecked && (
+    <div className="pt-4 border-t border-[#E5E7EB]">
+      <p className="text-sm font-semibold text-[#1A1A1A] mb-1">HCC / risk adjustment calculator</p>
+      <p className="text-xs text-[#888888] mb-3 leading-relaxed">
+        Improved documentation specificity increases chronic condition capture rates — the most underestimated financial lever in an ambient deployment. Better notes reflect what physicians already know
+  about their patients.
+      </p>
+      <div className="flex flex-col gap-3">
+        <div>
+          <label className="block text-sm font-medium text-[#1A1A1A] mb-1">Medicare Advantage / VBC lives under risk contract</label>
+          <FormattedNumberInput
+            value={(currentState.inputs.maLives as number) || 0}
+            onChange={(v) => setDomainInput('maLives', Math.max(0, v))}
+            placeholder=""
+            className="w-full h-12 bg-white border-[#E5E7EB]"
+            data-testid="input-ma-lives"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[#1A1A1A] mb-1">Average annual payment per member ($)</label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#888888]">$</span>
+            <FormattedNumberInput
+              value={(currentState.inputs.avgAnnualPayment as number) || 13000}
+              onChange={(v) => setDomainInput('avgAnnualPayment', Math.max(0, v))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-avg-annual-payment"
+            />
+          </div>
+          <BenchmarkContext text="National Medicare Advantage average: ~$12,000–$15,000/member/year. Use your contracted PMPM × 12 if known." />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[#1A1A1A] mb-1">Expected HCC capture improvement (%)</label>
+          <div className="flex items-center gap-2">
+            <FormattedNumberInput
+              value={(currentState.inputs.hccImprovementPct as number) || 0}
+              onChange={(v) => setDomainInput('hccImprovementPct', Math.min(20, Math.max(0, v)))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-hcc-improvement-pct"
+              step={0.5}
+            />
+            <span className="text-sm text-[#888888]">%</span>
+          </div>
+          <BenchmarkContext text="Ambient documentation typically improves chronic condition capture by 3–8% in year 1 through improved specificity and completeness. Use a conservative estimate — validate
+  with actual RAF score data after 12+ months." />
+        </div>
+      </div>
+    </div>
+  )}
+
+  {mipsChecked && (
+    <div className="pt-4 border-t border-[#E5E7EB]">
+      <p className="text-sm font-semibold text-[#1A1A1A] mb-1">MIPS / quality program value</p>
+      <p className="text-xs text-[#888888] mb-3 leading-relaxed">
+        Include penalty avoidance, quality incentive payments, or Stars / HEDIS bonus payments. Your quality team will have this figure.
+      </p>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-[#888888]">$</span>
+        <FormattedNumberInput
+          value={(currentState.inputs.mipsValue as number) || 0}
+          onChange={(v) => setDomainInput('mipsValue', Math.max(0, v))}
+          placeholder=""
+          className="w-full h-12 bg-white border-[#E5E7EB]"
+          data-testid="input-mips-value"
+        />
+      </div>
+      <BenchmarkContext text="2024 MIPS maximum penalty: 9% of Medicare Part B payments for lowest performers. For a group with $2M in Part B billing, max penalty exposure = $180K. Enter your estimated
+  annual value from quality program improvement." />
+    </div>
+  )}
+
+  Change C — L4: add benchmark guidance and anti-double-count note.
+
+  In renderRiskInputs(), find the level 4 return block. Find the noConfirmedStrategicValue checkbox section. After the closing </div> of that checkbox's label, add:
+
+  {currentState.inputs.noConfirmedStrategicValue === 'true' && (
+    <p className="text-xs text-[#888888] italic mt-2 leading-relaxed bg-[#F9FAFB] p-3 rounded-lg">
+      Organizations at this level typically find value across: quality penalty avoidance ($10K–$50K per at-risk provider), VBC contract performance improvements ($200K–$2M+ for risk-bearing populations), and
+   compliance governance programs. If you already calculated CDI or HCC value at Level 3, do not include those here — enter only incremental strategic value beyond what was already quantified.
+    </p>
+  )}
+
+  Also update the existing description above the strategicValue input. Find:
+  <p className="text-xs text-[#888888] mb-2">
+    This is hard to quantify precisely. If your organization can estimate the combined strategic value of documentation-driven quality, compliance, VBC, and AI initiatives — enter it here. If not, leave
+  blank.
+  </p>
+
+  Replace with:
+  <p className="text-xs text-[#888888] mb-2">
+    Enter incremental strategic value not already captured at Level 3 — this could include VBC contract performance, compliance governance, or quality program design outcomes. CDI and HCC values entered
+  above should not be re-entered here.
+  </p>
+
+  ---
+  FILE 2: client/src/pages/switch/ambient/domainCalculations.ts
+
+  Change D — Replace the entire if (level === 3) block in computeRiskFeedback with the version that supports CDI, HCC, and MIPS calculators.
+
+  Find the line if (level === 3) { inside computeRiskFeedback and replace the entire block through its closing } with:
+
+  if (level === 3) {
+    const { checked } = parseCheckedItems(inputs.connectedWorkflows as string, DOWNSTREAM_WORKFLOWS);
+    const count = checked.length;
+    const checkedList = checked.map(c => `• ${shortLabel(c)}`).join('\n');
+    const depth = inputs.qualityMeasurementDepth as string | undefined;
+    const noDownstreamValue = inputs.noDownstreamValue === 'true';
+    const downstreamValue = noDownstreamValue ? 0 : ((inputs.downstreamValue as number) || 0);
+
+    const cdiQueriesBefore = (inputs.cdiQueriesBefore as number) || 0;
+    const cdiQueriesAfter = (inputs.cdiQueriesAfter as number) || 0;
+    const cdiQueryCost = (inputs.cdiQueryCost as number) || 100;
+    const cdiQueryReduction = Math.max(0, cdiQueriesBefore - cdiQueriesAfter);
+    const cdiAnnualSavings = cdiQueryReduction > 0 ? Math.round(cdiQueryReduction * cdiQueryCost * 12) : 0;
+
+    const maLives = (inputs.maLives as number) || 0;
+    const avgAnnualPayment = (inputs.avgAnnualPayment as number) || 13000;
+    const hccImprovementPct = (inputs.hccImprovementPct as number) || 0;
+    const hccAnnualValue = (maLives > 0 && hccImprovementPct > 0)
+      ? Math.round(maLives * avgAnnualPayment * (hccImprovementPct / 100))
+      : 0;
+
+    const mipsValue = (inputs.mipsValue as number) || 0;
+
+    const calculatedValue = cdiAnnualSavings + hccAnnualValue + mipsValue;
+    const effectiveValue = downstreamValue > 0 ? downstreamValue : calculatedValue;
+    const isCalculatorEstimate = downstreamValue === 0 && calculatedValue > 0;
+
+    if (count === 0) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Select connected downstream areas.',
+        context: 'Select which downstream areas have been connected to documentation quality improvements.',
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+      };
+    }
+
+    const depthText = depth === 'measured'
+      ? 'Measured data is available.'
+      : depth === 'partial'
+        ? 'Some areas have measured data.'
+        : depth === 'qualitative'
+          ? 'Impact is visible but not yet quantified.'
+          : '';
+
+    if (effectiveValue > 0) {
+      const componentLabels = [
+        cdiAnnualSavings > 0 ? 'CDI' : '',
+        hccAnnualValue > 0 ? 'HCC' : '',
+        mipsValue > 0 ? 'quality program' : '',
+      ].filter(Boolean);
+
+      const headlineMetric = isCalculatorEstimate
+        ? `${formatDollar(effectiveValue)} in estimated ${componentLabels.join(' + ')} value`
+        : `${formatDollar(effectiveValue)} in downstream quality value`;
+
+      const calculatorLines = [
+        cdiAnnualSavings > 0
+          ? `CDI query reduction: ${cdiQueryReduction} fewer queries/month × ${formatDollar(cdiQueryCost)}/query × 12 = ${formatDollar(cdiAnnualSavings)} annually.`
+          : '',
+        hccAnnualValue > 0
+          ? `HCC capture improvement: ${maLives.toLocaleString()} MA/VBC lives × ${formatDollar(avgAnnualPayment)}/year × ${hccImprovementPct}% = ${formatDollar(hccAnnualValue)} in additional risk-adjusted
+  revenue.`
+          : '',
+        mipsValue > 0
+          ? `MIPS / quality program value: ${formatDollar(mipsValue)} in penalty avoidance or quality incentives.`
+          : '',
+      ].filter(Boolean);
+
+      const context = isCalculatorEstimate
+        ? calculatorLines.join('\n') +
+          `\n\nNote: This captures CDI efficiency and HCC/risk adjustment value. Documentation-driven revenue (wRVU, collections, denials) is captured separately in the Revenue domain.` +
+          (count > 0 ? `\n\nConnected downstream areas:\n${checkedList}` : '') +
+          (depthText ? `\n\n${depthText}` : '')
+        : `Documentation quality is driving ${formatDollar(effectiveValue)} in annual value across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}`;
+
+      const formulaLines = [
+        cdiAnnualSavings > 0 ? `[cdiSavings] = ${cdiQueryReduction} queries/mo × ${formatDollar(cdiQueryCost)} × 12 = ${formatDollar(cdiAnnualSavings)}` : '',
+        hccAnnualValue > 0 ? `[hccValue] = ${maLives.toLocaleString()} lives × ${formatDollar(avgAnnualPayment)} × ${hccImprovementPct}% = ${formatDollar(hccAnnualValue)}` : '',
+        mipsValue > 0 ? `[mipsValue] = ${formatDollar(mipsValue)} (organization estimate)` : '',
+      ].filter(Boolean);
+
+      return {
+        label: 'Estimated Impact',
+        value: effectiveValue,
+        hasValue: true,
+        headlineMetric,
+        context,
+        formula: isCalculatorEstimate
+          ? formulaLines.join('\n')
+          : `[annualValue] = ${formatDollar(effectiveValue)} (organization estimate)`,
+        footnote: isCalculatorEstimate
+          ? 'Calculator estimates — validate CDI data with your CDI team, HCC improvement with actual RAF score data after 12+ months, and MIPS value with your quality team. Individual results vary.'
+          : 'Based on your organization\'s estimate. Individual results vary.',
+        nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+      };
+    }
+
+    return {
+      label: 'Estimated Impact',
+      value: null,
+      hasValue: false,
+      headlineMetric: `${count} downstream area${count > 1 ? 's' : ''} connected`,
+      context: `Documentation quality is driving improvement across ${count} area${count > 1 ? 's' : ''}:\n${checkedList}${depthText ? `\n\n${depthText}` : ''}`,
+      formula: '',
+      footnote: 'Estimates based on your inputs. Individual results vary.',
+      nextLevelTeaser: 'Level 4 embeds documentation quality into quality programs, value-based care, compliance, and AI readiness.',
+    };
+  }
+
+  ---
+  Two files, four changes. After this every level of Quality has a defensible story, L3 has three live calculation paths that unlock based on what the customer has actually connected, and L4 has clear
+  guidance when they don't have a confirmed number yet.

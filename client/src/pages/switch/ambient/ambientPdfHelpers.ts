@@ -25,6 +25,10 @@ const REVENUE_INTEGRATIONS_LABELS = [
   'Specialty-level revenue analysis', 'CDI strategy', 'Payer negotiations', 'Proactive denial prevention', 'Financial planning line item', 'Shared doc-to-revenue view',
 ];
 
+const DOWNSTREAM_WORKFLOWS_LABELS = [
+  'CDI', 'Coding accuracy', 'Quality measures', 'Prior authorization', 'Chart abstraction', 'Risk adjustment',
+];
+
 const OBSERVATION_AREAS_LABELS = [
   'wRVU trending up', 'Coding specificity improving', 'Denial rates trending down', 'Collections trending up', 'CDI queries decreasing', 'Coder productivity improving',
 ];
@@ -156,16 +160,19 @@ export function buildUserInputsSummary(domain: Domain, level: number, raw: Recor
       if (attrs.length) out['Quality attributes tracked'] = attrs.join(', ');
     }
     if (level === 3) {
-      if (raw.financialPathway) {
-        const pathLabels: Record<string, string> = { mips: 'MIPS / quality measures', denials: 'Denial rate reduction', hcc: 'HCC / risk adjustment', cdi: 'CDI program efficiency', none_yet: 'No pathway connected yet' };
-        out['Financial pathway'] = pathLabels[String(raw.financialPathway)] || String(raw.financialPathway);
+      const workflows = resolveChecklist(raw.connectedWorkflows as string, DOWNSTREAM_WORKFLOWS_LABELS);
+      if (workflows.length) out['Connected workflows'] = workflows.join(', ');
+      if (raw.qualityMeasurementDepth) {
+        const depthLabels: Record<string, string> = { qualitative: 'Qualitative', partial: 'Partially measured', measured: 'Measured' };
+        out['Measurement depth'] = depthLabels[String(raw.qualityMeasurementDepth)] || String(raw.qualityMeasurementDepth);
       }
-      if (raw.financialPathway === 'mips' && raw.mipsScoreImprovement) out['MIPS score improvement'] = `${raw.mipsScoreImprovement} points`;
-      if (raw.financialPathway === 'denials' && raw.denialReductionPct) out['Denial rate reduction'] = `${raw.denialReductionPct}%`;
+      if (raw.downstreamValue && raw.noDownstreamValue !== 'true') out['Downstream value'] = fmtDollar(Number(raw.downstreamValue));
       if (raw.cdiQueriesBefore && raw.cdiQueriesAfter) {
         const reduction = Number(raw.cdiQueriesBefore) - Number(raw.cdiQueriesAfter);
         if (reduction > 0) out['CDI query reduction'] = `${reduction} fewer queries/month`;
       }
+      if (raw.maLives && raw.hccImprovementPct) out['HCC improvement'] = `${raw.maLives} lives × ${raw.hccImprovementPct}%`;
+      if (raw.mipsValue) out['MIPS / quality program'] = fmtDollar(Number(raw.mipsValue));
     }
     if (level === 4) {
       const si = resolveChecklist(raw.strategicIntegrations as string, STRATEGIC_INTEGRATIONS_LABELS);
