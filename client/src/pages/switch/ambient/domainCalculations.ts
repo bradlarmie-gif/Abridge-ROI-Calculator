@@ -286,6 +286,7 @@ export function computeRevenueFeedback(
   documentedEncounters: number,
   revenuePerVisit: number,
   conversionFactor: number = 33,
+  providers: number = 0,
 ): DomainFeedback {
   if (level === 1) {
     return {
@@ -1123,7 +1124,7 @@ export function computeGapForDomain(
       feedback = computeCapacityFeedback(level, inputs, providers, documentedEncounters, revenuePerVisit);
       break;
     case 'revenue':
-      feedback = computeRevenueFeedback(level, inputs, documentedEncounters, revenuePerVisit, conversionFactor);
+      feedback = computeRevenueFeedback(level, inputs, documentedEncounters, revenuePerVisit, conversionFactor, providers);
       break;
     case 'workforce':
       feedback = computeWorkforceFeedback(level, inputs, providers);

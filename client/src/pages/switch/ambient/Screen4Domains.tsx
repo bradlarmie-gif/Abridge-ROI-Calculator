@@ -213,7 +213,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         const capacityInp = inp.timeSaved ? inp : { ...inp, timeSaved: inputs.timeSavedPerEncounter || 0 };
         return computeCapacityFeedback(level, capacityInp, providers, documentedEncounters, revenuePerVisit);
       }
-      case 'revenue': return computeRevenueFeedback(level, inp, documentedEncounters, revenuePerVisit, inputs.conversionFactor || 33);
+      case 'revenue': return computeRevenueFeedback(level, inp, documentedEncounters, revenuePerVisit, inputs.conversionFactor || 33, providers);
       case 'workforce': return computeWorkforceFeedback(level, inp, providers);
       case 'risk': return computeRiskFeedback(level, inp, documentedEncounters, revenuePerVisit, providers);
     }
@@ -2014,7 +2014,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                     if (card.level === 3) {
                       const metricType = inp.revenueMetricType as string;
                       if (metricType) {
-                        const fb = computeRevenueFeedback(3, inp, documentedEncounters, revenuePerVisit);
+                        const fb = computeRevenueFeedback(3, inp, documentedEncounters, revenuePerVisit, inputs.conversionFactor || 33, providers);
                         if (fb.hasValue && fb.value) return formatDollar(fb.value);
                         return metricType === 'wrvu' ? 'wRVU measured' : metricType === 'collections' ? 'Collections measured' : metricType === 'denial_rate' ? 'Denial rate measured' : 'Revenue measured';
                       }
@@ -2247,8 +2247,14 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
                   });
                 }
                 if (level >= 3) {
-                  const pathway = inp.financialPathway as string;
-                  if (pathway) items.push(`Pathway: ${pathway.toUpperCase()}`);
+                  const csv = (inp.connectedWorkflows as string) || '';
+                  csv.split(',').filter(Boolean).forEach(i => {
+                    if (DOWNSTREAM_WORKFLOWS[parseInt(i)]) items.push(DOWNSTREAM_WORKFLOWS[parseInt(i)]);
+                  });
+                  const depth = inp.qualityMeasurementDepth as string;
+                  if (depth) items.push(`Measurement: ${depth}`);
+                  const dv = inp.downstreamValue as number;
+                  if (dv > 0) items.push(`Downstream value: $${dv.toLocaleString()}`);
                 }
                 if (level >= 4) {
                   const csv = (inp.strategicIntegrations as string) || '';

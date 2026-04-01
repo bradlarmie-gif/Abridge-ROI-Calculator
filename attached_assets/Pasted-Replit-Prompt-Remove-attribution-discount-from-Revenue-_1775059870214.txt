@@ -1,0 +1,16 @@
+Replit Prompt: Remove attribution discount from Revenue L3 wRVU — measured data should not be discounted                                                                                                   
+                                                                                                          
+  In client/src/pages/switch/ambient/domainCalculations.ts, find computeRevenueFeedback, inside if (level === 3), inside if (metricType === 'wrvu').
+                                              
+  Find wherever a multiplier (70%, attribution, or confidence discount) is being applied to revenueImpact. The calculation should be exactly:                                                                  
+                                          
+  const revenueImpact = Math.round(wrvuDelta * documentedEncounters * conversionFactor);                                                                                                                       
+                                                                                                                                                                                                               
+  No multiplier. No attribution percentage. Remove any line that reduces revenueImpact by a percentage factor.                                                                                                 
+                                                                                                                                                                                                               
+  Update the context string to read:                                                                                                                                                                           
+                                                                                                                                                                                                               
+  context: `wRVU per encounter increased ${wrvuDelta} × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(revenueImpact)}.\n\nBased on your        
+  organization's measured data. No attribution discount applied — Level 3 uses your confirmed figures directly.`,                                                                                              
+                                                                                                                                                                                                             
+  Same fix applies to the collections and revenue_pct metric paths at Level 3 — if any attribution multiplier was added to those, remove it there too. Measured data at Level 3 is always taken at face value.

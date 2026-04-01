@@ -1,0 +1,33 @@
+Replit Prompt: Fix Domain Progress section — remove yellow, improve readability                                                                                                                              
+                                                                                                                                                                                                               
+  In client/src/pages/switch/ambient/Screen4Domains.tsx, find the "PROGRESS" or "Domain Progress" section inside the right sidebar panel. It maps over DOMAIN_ORDER and renders a row for each domain showing  
+  the domain name and a level indicator.                                                                                                                                                                     
+                                              
+  Make the following changes to that map:                                                                                                                                                                      
+                                              
+  1. Remove all yellow/amber colors. Any class like text-yellow-400, text-amber-400, bg-yellow-500, or similar — remove them. Replace with the logic below.                                                    
+                                                                                                                                                                                                             
+  2. Replace the entire color/style logic for each row with:                                                                                                                                                   
+                                                                                                                                                                                                             
+  <div key={d} className="flex items-center justify-between">                                                                                                                                                  
+    <span className={`text-sm ${isActive ? 'text-white font-semibold' : hasLevel ? 'text-white/70' : 'text-white/30'}`}>                                                                                     
+      {DOMAIN_LABELS[d]}                                                                                                                                                                                       
+    </span>                                                                                                                                                                                                  
+    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${                                                                                                                                        
+      isActive                                                                                                                                                                                                 
+        ? 'bg-[#EA2C00] text-white'                                                                                                                                                                            
+        : hasLevel                                                                                                                                                                                             
+          ? 'bg-white/10 text-white/60'                                                                                                                                                                        
+          : 'text-white/20'                                                                                                                                                                                    
+    }`}>                   
+      {hasLevel ? `L${dState.activationLevel}` : '—'}                                                                                                                                                          
+    </span>                                                                                                                                                                                                  
+  </div>                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  3. Update the "PROGRESS" label — increase it slightly from text-[12px] to text-xs and brighten it from text-white/50 to text-white/60:
+                                                                                                                                                                                                               
+  <p className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-3">                                                                                                                         
+    Progress                                                                        
+  </p>                                                                                                                                                                                                         
+                                          
+  Three rules after this: active domain gets the red badge, domains with a level set get a subtle gray badge, untouched domains get a dash. No yellow anywhere.
