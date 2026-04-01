@@ -2279,34 +2279,28 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
 
             <div>
               <div className="h-px bg-white/[0.08] mb-3" />
-              <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[2px] mb-2">
+              <p className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-3">
                 Progress
               </p>
               <div className="space-y-2">
                 {DOMAIN_ORDER.map((d) => {
                   const isActive = d === activeDomain;
                   const dState = domainStates[d];
-                  const level = dState.activationLevel;
-                  const gapValue = (inputs as any)[`${d}Gap`] as number || 0;
-                  const hasVal = (inputs as any)[`${d}HasValue`] as boolean;
-                  const levelColors: Record<number, string> = { 1: 'text-white/40', 2: 'text-[#F59E0B]', 3: 'text-[#EA2C00]', 4: 'text-[#EA2C00]' };
+                  const hasLevel = !!dState.activationLevel;
                   return (
-                    <div key={d} className={`flex items-center justify-between text-xs ${isActive ? 'opacity-100' : 'opacity-60'}`}>
-                      <span className={`font-medium ${isActive ? 'text-white' : 'text-white/50'}`}>
+                    <div key={d} className="flex items-center justify-between">
+                      <span className={`text-sm ${isActive ? 'text-white font-semibold' : hasLevel ? 'text-white/70' : 'text-white/30'}`}>
                         {DOMAIN_LABELS[d]}
                       </span>
-                      <div className="flex items-center gap-2">
-                        {level ? (
-                          <span className={`text-[10px] font-bold ${levelColors[level] || 'text-white/40'}`}>L{level}</span>
-                        ) : (
-                          <span className="text-white/20 text-[10px]">—</span>
-                        )}
-                        {hasVal && gapValue > 0 ? (
-                          <span className="text-white/70 font-semibold">{formatDollar(gapValue)}</span>
-                        ) : level ? (
-                          <span className="text-white/25 text-[10px]">no value</span>
-                        ) : null}
-                      </div>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        isActive
+                          ? 'bg-[#EA2C00] text-white'
+                          : hasLevel
+                            ? 'bg-white/10 text-white/60'
+                            : 'text-white/20'
+                      }`}>
+                        {hasLevel ? `L${dState.activationLevel}` : '—'}
+                      </span>
                     </div>
                   );
                 })}
