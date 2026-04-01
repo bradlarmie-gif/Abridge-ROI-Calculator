@@ -837,28 +837,28 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.5 }}
           >
-            <div className="bg-[#1A1A1A] rounded-lg p-6 sm:p-8 mt-8">
-              <p className="text-xl sm:text-2xl font-bold text-white mb-3">
-                Your gap is real. Here's how to close it.
+            <div className="border border-[#E8E3DC] rounded-xl p-6">
+              <p className="text-sm font-semibold text-[#1A1A1A] mb-1">
+                The next step is a conversation.
               </p>
-              <p className="text-sm text-white/50 mb-6">
-                A 45-minute working session turns this assessment into a prioritized measurement plan — built around your domains, your scale, and what peer organizations have done in the first 90 days.
+              <p className="text-sm text-[#888888] leading-relaxed mb-5">
+                A 45-minute working session turns this into a prioritized measurement plan — built around your domains, your scale, and what peer organizations have done in the first 90 days.
               </p>
-              <div className="flex flex-col items-start gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <Button
                   onClick={() => onNavigateToExplore?.(providers, annualEncounters)}
-                  className="bg-[#EA2C00] text-white rounded-full px-8 py-6 h-auto text-base font-medium gap-2"
+                  className="bg-[#EA2C00] text-white rounded-full px-6 py-2.5 h-auto text-sm font-medium gap-2"
                   data-testid="button-explore-value"
                 >
                   Request a Working Session
-                  <ArrowRight size={16} />
+                  <ArrowRight size={14} />
                 </Button>
                 <button
                   onClick={openExportModal}
-                  className="flex items-center gap-2 text-sm font-medium text-white/50 border border-white/20 rounded-full px-5 py-2.5 hover:text-white hover:border-white/40 transition-colors bg-transparent cursor-pointer"
+                  className="flex items-center gap-2 text-sm font-medium text-[#525252] border border-[#E8E3DC] rounded-full px-5 py-2.5 hover:border-[#EA2C00]/40 hover:text-[#1A1A1A] transition-colors bg-transparent cursor-pointer"
                   data-testid="button-export"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   Download Your Assessment
                 </button>
               </div>
