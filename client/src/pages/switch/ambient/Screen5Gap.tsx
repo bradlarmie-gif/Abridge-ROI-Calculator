@@ -14,7 +14,6 @@ import {
   ANNUAL_HOURS,
   tenureLabel, tenureMonthsMidpoint, tenureIsLong,
 } from "./domainCalculations";
-import { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -596,7 +595,7 @@ export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToE
   };
 
   return (
-    <div className={STEP_FOOTER_SPACER_CLASS}>
+    <div>
 
       <motion.div
         className="mb-10"
