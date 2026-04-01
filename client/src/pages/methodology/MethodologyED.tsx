@@ -106,14 +106,13 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
       <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
         <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <a
-              href="/"
-              onClick={(e) => { e.preventDefault(); onBack(); }}
-              className="flex items-center"
+            <button
+              onClick={onBack}
+              className="flex items-center cursor-pointer bg-transparent border-none p-0"
               data-testid="link-home-logo"
             >
               <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
-            </a>
+            </button>
             <span className="text-[#E5E5E5]">|</span>
             <button
               onClick={onBack}
