@@ -9,7 +9,6 @@ import Screen2Baseline from "./ambient/Screen2Baseline";
 import Screen3Domains from "./ambient/Screen4Domains";
 import Screen4Score from "./ambient/Screen3Score";
 import Screen5Gap from "./ambient/Screen5Gap";
-import Screen6Invitation from "./ambient/Screen6Invitation";
 
 interface AmbientNarrativeFlowProps {
   onBack: () => void;
@@ -17,14 +16,13 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_SCREENS = 5;
+const TOTAL_SCREENS = 4;
 
 const STEP_NAMES = [
   "Your Deployment",
   "Four Domains",
   "The Reveal",
   "Your Trajectory",
-  "Your Roadmap",
 ];
 
 export default function AmbientNarrativeFlow({
@@ -91,9 +89,7 @@ export default function AmbientNarrativeFlow({
       case 3:
         return <Screen4Score onNext={handleNext} onBack={handleBack} onNavigateToDomain={(domain) => { setInitialDomain(domain); goToStep(2); }} />;
       case 4:
-        return <Screen5Gap onNext={handleNext} onBack={handleBack} onNavigateToBaseline={() => goToStep(1)} />;
-      case 5:
-        return <Screen6Invitation onBack={handleBack} onBackToJourney={onBackToJourney} onNavigateToExplore={onNavigateToExplore} />;
+        return <Screen5Gap onBack={handleBack} onNavigateToBaseline={() => goToStep(1)} onNavigateToExplore={onNavigateToExplore} />;
       default:
         return null;
     }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Stethoscope, Zap, HeartPulse, ClipboardList } from "lucide-react";
+import { Stethoscope, Zap, HeartPulse, ClipboardList, ArrowRight, Download, Loader2, FileText, Check, X } from "lucide-react";
 import { useAssessment } from "@/lib/assessment";
 import { formatDollar, formatDollarFull } from "./ambientCalculator";
 import {
@@ -14,12 +14,28 @@ import {
   ANNUAL_HOURS,
   tenureLabel, tenureMonthsMidpoint, tenureIsLong,
 } from "./domainCalculations";
-import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+import { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  generateAmbientAssessmentPDF,
+  opportunityText,
+  type AmbientAssessmentPDFData,
+} from "@/lib/ambient-assessment-pdf";
+import { buildUserInputsSummary, parseDomainInputs } from "./ambientPdfHelpers";
 
 interface Screen5Props {
-  onNext: () => void;
   onBack: () => void;
   onNavigateToBaseline?: () => void;
+  onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
 function CountUpNumber({ target, duration = 1400, prefix = "$" }: { target: number; duration?: number; prefix?: string }) {
@@ -56,9 +72,16 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Screen5Props) {
+export default function Screen5Gap({ onBack, onNavigateToBaseline, onNavigateToExplore }: Screen5Props) {
   const { state } = useAssessment();
   const { inputs } = state;
+
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
+  const [exportError, setExportError] = useState(false);
+  const [exportOrgName, setExportOrgName] = useState("");
+  const [exportPreparedBy, setExportPreparedBy] = useState("");
 
   const DOMAIN_ICONS: Record<Domain, typeof Stethoscope> = {
     capacity: Stethoscope,
@@ -451,6 +474,127 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
     return result;
   }, [domainLevels, domainHasValue, domainGaps, nextLevelContents, qualityAttrCount]);
 
+  const revenuePerVisit = inputs.revenuePerVisit || 200;
+
+  const totalScore = useMemo(() => {
+    return (inputs.capacityScore || 0) + (inputs.revenueScore || 0) +
+           (inputs.workforceScore || 0) + (inputs.riskScore || 0);
+  }, [inputs.capacityScore, inputs.revenueScore, inputs.workforceScore, inputs.riskScore]);
+
+  const pdfDomainData = useMemo(() => {
+    const r: Record<string, any> = {};
+    for (const d of DOMAIN_ORDER) {
+      const level = domainLevels[d] as ActivationLevel;
+      const rawInputs = parseDomainInputs((inputs as any)[`${d}DomainInputs`] || '{}');
+      r[d] = {
+        activationLevel: level,
+        activationLabel: ACTIVATION_LABELS[d][level],
+        score: (inputs as any)[`${d}Score`] || 0,
+        gapValue: domainGaps[d],
+        hasValue: domainHasValue[d],
+        headlineMetric: (inputs as any)[`${d}HeadlineMetric`] || '',
+        primaryOpportunity: opportunityText[d]?.[level] || '',
+        context: (inputs as any)[`${d}Context`] || '',
+        formula: (inputs as any)[`${d}Formula`] || '',
+        footnote: (inputs as any)[`${d}Footnote`] || '',
+        userInputs: buildUserInputsSummary(d as Domain, level, rawInputs),
+      };
+    }
+    return r;
+  }, [inputs, domainLevels, domainHasValue, domainGaps]);
+
+  const assessmentNarrative = useMemo(() => {
+    const TIEBREAKER: (typeof DOMAIN_ORDER[number])[] = ['risk', 'revenue', 'workforce', 'capacity'];
+    let lowestDomain = TIEBREAKER[0];
+    let lowestLevel = domainLevels[lowestDomain];
+    for (const d of TIEBREAKER) {
+      if (domainLevels[d] < lowestLevel) { lowestDomain = d; lowestLevel = domainLevels[d]; }
+    }
+    const strongDomains = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d]);
+    const weakDomains = DOMAIN_ORDER.filter(d => domainLevels[d] <= 2).map(d => DOMAIN_LABELS[d]);
+
+    const INSIGHTS: Record<string, Record<1|2, string>> = {
+      capacity: { 1: "Recovered time isn't being tracked or deployed.", 2: "Recovered time is measured but not being converted to access." },
+      revenue: { 1: "No one has analyzed whether documentation changes are affecting reimbursement.", 2: "Directional signals observed but not formally validated." },
+      workforce: { 1: "After-hours burden reduced but broader workforce impact isn't tracked.", 2: "Burden is measured but not connected to retention or labor costs." },
+      risk: { 1: "Documentation quality improved but no downstream teams have been engaged.", 2: "Quality attributes tracked but not yet connected to downstream programs." },
+    };
+    const insightLevel = Math.min(lowestLevel, 2) as 1|2;
+    const domainInsight = INSIGHTS[lowestDomain]?.[insightLevel] || '';
+    const lowestLabel = DOMAIN_LABELS[lowestDomain as Domain].toLowerCase();
+
+    if (totalScore <= 30) return `Your organization is in the early stages of capturing ambient ROI. Time is being saved, but value capture is largely unmeasured and unstructured. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
+    if (totalScore <= 50) return `Your organization is beginning to capture ambient ROI${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')} remain${weakDomains.length === 1 ? 's' : ''} in early stages` : ''}. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
+    if (totalScore <= 70) return `Your organization is actively managing ambient ROI in ${strongDomains.join(' and ') || 'some domains'}${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')} remain${weakDomains.length === 1 ? 's' : ''} in early stages` : ''}. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
+    if (totalScore <= 85) return `Your organization is strategically managing ambient ROI across ${strongDomains.join(', ') || 'multiple domains'}. Focus on ${lowestLabel} to reach full maturity \u2014 ${domainInsight.toLowerCase()}`;
+    return 'Your organization has institutionalized ambient ROI across all four domains. This is strategic-level documentation intelligence.';
+  }, [domainLevels, totalScore]);
+
+  const openExportModal = () => {
+    setExportSuccess(false);
+    setExportError(false);
+    setExportModalOpen(true);
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    setExportError(false);
+    setExportSuccess(false);
+    try {
+      const dt = totalMeasured;
+      const displayedMonthly = Math.round(dt / 12);
+      const displayedDaily = Math.round(dt / 365);
+      const actNow3yr = Math.round(dt * 3.45);
+      const permanentlyLost6mo = Math.round(dt * 0.42);
+      const permanentlyLost12mo = Math.round(dt * 0.95);
+
+      const pdfData: AmbientAssessmentPDFData = {
+        organizationName: exportOrgName || "Your Organization",
+        preparedBy: exportPreparedBy || undefined,
+        assessmentDate: new Date().toLocaleDateString("en-US", {
+          month: "long", day: "numeric", year: "numeric"
+        }),
+        providers,
+        annualEncounters,
+        utilization,
+        timeSavings: (inputs as any).timeSavedPerEncounter || 0,
+        documentationScore: totalScore,
+        totalAnnualGap: dt,
+        monthlyGap: displayedMonthly,
+        dailyGap: displayedDaily,
+        actNow3yr,
+        wait6mo3yr: Math.round(dt * (3.45 - 0.42)),
+        wait12mo3yr: Math.round(dt * (3.45 - 0.95)),
+        permanentlyLost6mo,
+        permanentlyLost12mo,
+        revenuePerVisit,
+        conversionFactor: inputs.conversionFactor || 33,
+        assessmentNarrative,
+        deploymentTenure: inputs.deploymentTenure || '',
+        orgContext: {
+          systemSize: (inputs as any).systemSize || 0,
+          orgType: (inputs as any).orgType || '',
+          payerMixMedicare: (inputs as any).payerMixMedicare || 0,
+          payerMixMedicaid: (inputs as any).payerMixMedicaid || 0,
+          payerMixCommercial: (inputs as any).payerMixCommercial || 0,
+        },
+        domains: {
+          capacity: pdfDomainData.capacity as any,
+          revenue: pdfDomainData.revenue as any,
+          workforce: pdfDomainData.workforce as any,
+          risk: pdfDomainData.risk as any,
+        },
+      };
+      await generateAmbientAssessmentPDF(pdfData);
+      setExportSuccess(true);
+    } catch (err) {
+      console.error('PDF generation failed:', err instanceof Error ? err.message : err, err);
+      setExportError(true);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className={STEP_FOOTER_SPACER_CLASS}>
 
@@ -675,15 +819,44 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
             </motion.div>
           )}
 
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.5 }}
+          >
+            <div className="bg-[#1A1A1A] rounded-lg p-6 sm:p-8 mt-8">
+              <p className="text-xl sm:text-2xl font-bold text-white mb-3">
+                Your gap is real. Here's how to close it.
+              </p>
+              <p className="text-sm text-white/50 mb-6">
+                A 45-minute working session turns this assessment into a prioritized measurement plan — built around your domains, your scale, and what peer organizations have done in the first 90 days.
+              </p>
+              <div className="flex flex-col items-start gap-3">
+                <Button
+                  onClick={() => onNavigateToExplore?.(providers, annualEncounters)}
+                  className="bg-[#EA2C00] text-white rounded-full px-8 py-6 h-auto text-base font-medium gap-2"
+                  data-testid="button-explore-value"
+                >
+                  Request a Working Session
+                  <ArrowRight size={16} />
+                </Button>
+                <button
+                  onClick={openExportModal}
+                  className="flex items-center gap-2 text-sm font-medium text-white/50 border border-white/20 rounded-full px-5 py-2.5 hover:text-white hover:border-white/40 transition-colors bg-transparent cursor-pointer"
+                  data-testid="button-export"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download Your Assessment
+                </button>
+              </div>
+            </div>
+          </motion.div>
+
           <div className="mt-8 pt-6 border-t border-[#E5E5E5]">
             <p className="text-xs text-[#AAAAAA] leading-relaxed">
               Dollar values shown are modeled estimates based on user-provided inputs and published industry benchmarks. Capacity: based on MGMA Physician Compensation data and published literature on time-to-access in ambulatory care. Revenue: based on AMA/MGMA coding benchmarks on E&M level distribution, denial rate data, and CDI program outcomes. Workforce: based on AMGA Physician Retention Survey; physician replacement cost literature ($250K–$500K per physician). Quality: based on CMS quality penalty exposure data and CDI program ROI literature. Actual results depend on implementation approach, provider adoption, and organizational factors. Abridge makes no guarantee of financial results.
             </p>
           </div>
-
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
-            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See My Summary →" showBack={false} />
-          </motion.div>
 
           <div className={STEP_FOOTER_SPACER_CLASS} />
         </div>
@@ -697,11 +870,6 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-20" data-testid="panel-gap-summary">
 
             {(() => {
-              const totalScore = DOMAIN_ORDER.reduce((sum, d) => {
-                const lvl = domainLevels[d];
-                const scoreMap: Record<number, number> = { 1: 4, 2: 12, 3: 19, 4: 25 };
-                return sum + (scoreMap[lvl] ?? 0);
-              }, 0);
               const band = totalScore <= 16 ? 'Pre-Measurement' : totalScore <= 38 ? 'Signal' : totalScore <= 60 ? 'Confirmed' : totalScore <= 79 ? 'Managed ROI' : 'Strategic Asset';
               return (
                 <div className="flex items-center justify-between mb-6">
@@ -768,6 +936,146 @@ export default function Screen5Gap({ onNext, onBack, onNavigateToBaseline }: Scr
           </div>
         </motion.div>
       </div>
+
+      <Dialog open={exportModalOpen} onOpenChange={(open) => { setExportModalOpen(open); if (!open) setExportSuccess(false); }}>
+        <DialogContent className="sm:max-w-[460px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-[#EA2C00]" />
+              Export Ambient Assessment
+            </DialogTitle>
+            <DialogDescription>
+              Generate a professional PDF report with your assessment results, domain analysis, and cost-of-inaction projections.
+            </DialogDescription>
+          </DialogHeader>
+
+          {exportError ? (
+            <div className="py-8 text-center space-y-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <X className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg" data-testid="text-pdf-error">PDF Generation Failed</h3>
+                <p className="text-sm text-neutral-500 mt-1">
+                  Something went wrong. Please try again.
+                </p>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  className="flex-1"
+                  onClick={() => { setExportError(false); handleExport(); }}
+                  data-testid="button-retry-pdf"
+                >
+                  Retry
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setExportModalOpen(false)}
+                  data-testid="button-close-error"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          ) : !exportSuccess ? (
+            <div className="space-y-5 py-3">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="export-org-name" className="text-sm font-medium">
+                    Organization name
+                  </Label>
+                  <Input
+                    id="export-org-name"
+                    placeholder="e.g., Memorial Health System"
+                    value={exportOrgName}
+                    onChange={(e) => setExportOrgName(e.target.value)}
+                    data-testid="input-export-org-name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="export-prepared-by" className="text-sm font-medium">
+                    Prepared by (optional)
+                  </Label>
+                  <Input
+                    id="export-prepared-by"
+                    placeholder="e.g., Partner Success Team"
+                    value={exportPreparedBy}
+                    onChange={(e) => setExportPreparedBy(e.target.value)}
+                    data-testid="input-export-prepared-by"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-sm text-neutral-500 border-t pt-4">
+                <span>Estimated length: <span className="font-medium">8 pages</span></span>
+                <span>Format: <span className="font-medium">PDF</span></span>
+              </div>
+
+              <div className="flex gap-3 pt-1">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setExportModalOpen(false)}
+                  data-testid="button-cancel-export"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 bg-[#EA2C00]"
+                  onClick={handleExport}
+                  disabled={isExporting}
+                  data-testid="button-generate-pdf"
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Generate PDF
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center space-y-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                <Check className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">PDF Generated Successfully</h3>
+                <p className="text-sm text-neutral-500 mt-1">
+                  Check your downloads folder for the file.
+                </p>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleExport}
+                  data-testid="button-download-again"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Again
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => setExportModalOpen(false)}
+                  data-testid="button-close-export"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

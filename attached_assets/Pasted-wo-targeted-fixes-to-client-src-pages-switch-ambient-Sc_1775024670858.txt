@@ -1,0 +1,102 @@
+wo targeted fixes to client/src/pages/switch/ambient/Screen5Gap.tsx. Do not touch any other file.
+
+  ---
+  Fix 1 — "Not Yet in the Picture" tile label
+
+  Find this exact line:
+                      <p className="text-xs text-[#888888]">benchmark range · based on your scale</p>
+
+  Replace with:
+                      <p className="text-xs text-[#888888]">industry benchmark · not yet confirmed at your org</p>
+
+  ---
+  Fix 2 — "Value of Acting Now" chart
+
+  Find and replace the entire chart block. It currently starts with {chartData.length > 0 && ( and ends with )}.
+
+  Replace the entire block with this:
+
+            {chartData.length > 0 && totalMeasured > 0 && (
+              <motion.div
+                className="mb-10"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.5 }}
+              >
+                <div className="bg-[#F5F0EB] rounded-xl p-5 sm:p-7" data-testid="card-chart">
+                  <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-1">
+                    Value of Acting Now
+                  </p>
+                  <p className="text-sm font-medium text-[#1A1A1A] mb-1">
+                    {formatDollar(gap36mo)} in value at stake over 36 months.
+                  </p>
+                  <p className="text-xs text-[#888888] mb-5">
+                    Based on your confirmed {formatDollar(totalMeasured)}/year, compounding as measurement matures over 36 months.
+                  </p>
+                  <div className="h-[240px] sm:h-[300px] md:h-[360px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#EA2C00" stopOpacity={0.15} />
+                            <stop offset="95%" stopColor="#EA2C00" stopOpacity={0.02} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                        <XAxis
+                          dataKey="month"
+                          ticks={[0, 12, 24, 36]}
+                          tickFormatter={(v: number) => v === 0 ? 'Now' : `Mo ${v}`}
+                          tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                          interval="preserveStartEnd"
+                        />
+                        <YAxis
+                          tickFormatter={(v) => formatDollar(v)}
+                          tick={{ fontSize: 11, fill: '#888888' }}
+                          width={70}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Area
+                          type="monotone"
+                          dataKey="gap"
+                          stroke="#EA2C00"
+                          strokeWidth={2.5}
+                          fill="url(#gapGradient)"
+                          dot={{ fill: '#EA2C00', r: 4 }}
+                          activeDot={{ r: 6 }}
+                          name="Value of acting now"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-xs text-[#888888] italic leading-relaxed mt-4" data-testid="text-chart-rationale">
+                    Compounds because measurement enables optimization — organizations that measure early improve faster, widening the gap with each passing quarter.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
+            {totalMeasured === 0 && chartData.length > 0 && (
+              <motion.div
+                className="mb-10"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.5 }}
+              >
+                <div className="bg-[#F5F0EB] rounded-xl p-6 sm:p-8" data-testid="card-chart-placeholder">
+                  <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[2px] mb-3">
+                    Value of Acting Now
+                  </p>
+                  <p className="text-sm font-medium text-[#1A1A1A] mb-2">
+                    The chart becomes meaningful once you have at least one confirmed domain.
+                  </p>
+                  <p className="text-xs text-[#888888] leading-relaxed">
+                    No domain at your organization has been formally measured yet. The benchmark ranges above reflect what organizations your size typically find when they first look — but projecting a
+  compounding cost-of-inaction curve requires a confirmed starting point, not an estimate. Start with one domain, confirm the number, and this chart will tell your story.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
+  ---
+  That's the full prompt. Two edits, one file
