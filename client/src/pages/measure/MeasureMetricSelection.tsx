@@ -172,6 +172,11 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-900">{metric.label}</p>
           <p className="text-xs text-gray-500 mt-0.5 truncate">{metric.description}</p>
+          {metric.financialStream && (
+            <p className="text-[10px] text-[#888888] mt-1">
+              <span className="font-medium text-[#525252]">&rarr;</span> {metric.financialStream}
+            </p>
+          )}
         </div>
         <button
           className="flex-shrink-0 text-xs font-medium text-[#EA2C00] border border-[#EA2C00]/40 px-3 py-1.5 rounded-lg hover:bg-[#EA2C00]/5 hover:border-[#EA2C00] transition-all ml-3"
@@ -223,6 +228,21 @@ function MetricEntryRow({ rm, metricValues, isActive, onToggle, onUpdate, monthL
           </button>
         </div>
       </div>
+
+      {(metric.description || metric.whyItMatters) && (
+        <div className="mb-4 p-3 bg-[#FAFAF9] rounded-lg border border-[#F0EDE8]">
+          {metric.financialStream && (
+            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-1.5">
+              &rarr; {metric.financialStream}
+            </p>
+          )}
+          {metric.whyItMatters ? (
+            <p className="text-xs text-[#525252] leading-relaxed">{metric.whyItMatters}</p>
+          ) : (
+            <p className="text-xs text-[#525252] leading-relaxed">{metric.description}</p>
+          )}
+        </div>
+      )}
 
       {settingsToShow.map(setting => {
         const k = metricKey(metric.id, setting);
@@ -575,8 +595,12 @@ export default function MeasureMetricSelection({
                     <h3 className="text-[13px] font-bold uppercase tracking-[1.5px] text-[#1A1A1A]">{group.label}</h3>
                     <p className="text-sm text-[#666666] mt-1 leading-snug">{DOMAIN_QUESTIONS[group.domainKey] || ''}</p>
                   </div>
-                  {count > 0 && (
+                  {count > 0 ? (
                     <span className="text-[10px] font-medium text-[#EA2C00]">{count} active</span>
+                  ) : (
+                    group.domainKey !== 'foundational' && (
+                      <span className="text-[10px] text-[#BBBBBB]">not included in calculation</span>
+                    )
                   )}
                   <ChevronDown className={`w-4 h-4 text-[#999999] flex-shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                 </button>

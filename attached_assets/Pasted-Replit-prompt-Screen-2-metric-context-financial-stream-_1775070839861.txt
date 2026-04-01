@@ -1,0 +1,179 @@
+Replit prompt — Screen 2: metric context, financial stream badges, skip signals
+                                                                                                                                                                                                               
+  Two files need changes.                                                                                 
+                                              
+  ---                                                                                                                                                                                                          
+  File 1: client/src/lib/measureCareSettings.ts
+                                                                                                                                                                                                               
+  Add two new fields to the MetricDefinition type/interface:                                              
+  financialStream: string;                                                                                                                                                                                     
+  whyItMatters: string;                                                                                                                                                                                        
+                                              
+  Then add these values to each metric object:                                                                                                                                                                 
+                                                                                                          
+  Foundational metrics:                                                                                                                                                                                        
+   
+  utilization:                                                                                                                                                                                                 
+  - financialStream: "Adoption signal"                                                                    
+  - whyItMatters: "Every downstream financial calculation is scoped to Abridge-documented encounters. Low utilization doesn't mean low value — it means less of your total encounter volume is in the          
+  calculation. This metric sets the denominator."                                                                                                                                                     
+                                                 
+  user_retention:                                                                                                                                                                                              
+  - financialStream: "Adoption signal"        
+  - whyItMatters: "Retained users are the only users generating data. A provider who adopted and stopped using Abridge contributes $0 to every value stream. Retention rate determines what percentage of your 
+  'live' count is actually in the model."                                                                 
+                                                                                                                                                                                                               
+  consent_rate:                                                                                           
+  - financialStream: "Adoption signal"                                                                                                                                                                         
+  - whyItMatters: "Ambient documentation only applies to consented encounters. A 10% consent rate on a 10,000 encounter base means 9,000 encounters are outside the calculation entirely. Most organizations   
+  reach 85–95% within 90 days."
+                                                                                                                                                                                                               
+  Quality metrics:                                                                                        
+
+  note_star_rating:                                                                                                                                                                                            
+  - financialStream: "Documentation quality"
+  - whyItMatters: "Star rating is a proxy for note completeness and accuracy. It doesn't directly feed a dollar calculation, but it validates that the documentation Abridge is producing is high enough       
+  quality to support the billing, coding, and HCC claims made in other metrics."                          
+                                              
+  diagnosis_capture:                                                                                                                                                                                           
+  - financialStream: "HCC value · Billing capture"
+  - whyItMatters: "When a chronic condition is discussed but not documented, it cannot be coded. For Medicare Advantage patients, each uncoded HCC condition represents a missed risk adjustment payment —     
+  typically $1,200–$1,500 per condition per year from CMS. The mechanic: Abridge captures the diagnosis in the note → coder can code it → plan receives the RAF-adjusted payment. A 5pp improvement on 5,000 MA
+   encounters can represent hundreds of thousands in recaptured revenue."                                                                                                                                      
+                                                                                                          
+  diagnosis_specificity:
+  - financialStream: "HCC value · Billing capture"                                                                                                                                                             
+  - whyItMatters: "ICD-10 has thousands of codes, and payers reimburse differently based on specificity level. 'Diabetes' (E11.9) is worth less than 'Type 2 diabetes with CKD stage 3' (E11.65). Abridge 
+  captures the clinical detail providers discuss — which allows coders to use the more specific, higher-value code. Each specificity shift also affects HCC tier and RAF score."                               
+                                                                                                                                                                                
+  Workforce metrics:                                                                                                                                                                                           
+                                              
+  time_to_close:                                                                                                                                                                                               
+  - financialStream: "Workforce burden"                                                                   
+  - whyItMatters: "Time to close is the most operationally concrete measure of documentation burden. It feeds the workforce model in two ways: (1) hours recovered × provider count × hourly cost rate = time  
+  value, and (2) documentation burden is consistently the top-ranked driver of physician burnout and departure intent. A reduction here is the input to every retention cost calculation downstream."
+                                                                                                                                                                                                               
+  work_after_hours:                                                                                       
+  - financialStream: "Retention cost"
+  - whyItMatters: "After-hours documentation is the primary burnout driver in most physician surveys. The financial mechanic: providers who report high after-hours burden score significantly lower on        
+  likelihood-to-stay surveys. When that survey score improves, departure probability changes. This metric provides the leading signal — it's the 'why' behind the retention numbers, which makes the downstream
+   cost avoidance defensible."                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  work_outside_work:
+  - financialStream: "Retention cost"                                                                                                                                                                          
+  - whyItMatters: "Empirical after-hours hours — from time-tracking or EHR audit data — is more defensible than survey perception. The mechanic: AMGA data shows average documentation outside work hours of 
+  1.5–2 hrs/evening. At a conservative OT rate of $150/hr, that's $45K–$60K per physician per year in time cost. Reduction here feeds directly into the retention cost model as hours × rate × providers       
+  recovered."                                                                                                                                                                                                  
+                                          
+  burnout_assessment:                                                                                                                                                                                          
+  - financialStream: "Retention cost"                                                                                                                                                                          
+  - whyItMatters: "Validated burnout instruments (Maslach, MBI-HSS) are predictive of departure. The mechanic: physicians scoring in the high-burnout range have 2–3× the departure rate of those in the low 
+  range. A 10-point normalized improvement in burnout score correlates with roughly a 1% reduction in annualized departure probability. At 100 providers × $350K AMGA replacement cost, that's $350K of cost   
+  avoidance per 10-point improvement."                                                                    
+                                          
+  likelihood_to_stay:
+  - financialStream: "Retention cost"                                                                                                                                                                          
+  - whyItMatters: "This metric measures the percentage of providers who say they're likely to still be here in 12 months. The financial mechanic: (1) baseline 'at-risk' population = 100% minus this 
+  percentage; (2) industry data shows roughly 15–25% of at-risk providers actually depart in a 12-month window; (3) a 5pp improvement in a 100-physician group moves 5 providers from at-risk to stable — at   
+  20% conversion that's 1 departure avoided; (4) at AMGA's $350K benchmark, 1 avoided departure = $350K. The debate isn't whether the math works — it's what conversion rate to use. Conservative (15%) to 
+  moderate (25%) gives a defensible range."
+
+  Capacity metrics:                                                                                                                                                                                            
+   
+  time_in_note:                                                                                                                                                                                                
+  - financialStream: "Capacity revenue"                                                                   
+  - whyItMatters: "Minutes per appointment spent in the note is the upstream input to the capacity calculation. The mechanic: minutes saved × encounters/day × working days = total hours recovered. Those 
+  hours can be redeployed as additional patient slots. The model uses your revenue-per-visit rate to translate slots into dollars."
+                                              
+  effort_reduction:                       
+  - financialStream: "Capacity revenue"
+  - whyItMatters: "Self-reported effort reduction is a reasonable proxy when time-tracking data isn't available. It's less precise than time-in-note, but the mechanic is the same: percentage reduction ×     
+  estimated minutes/note × encounters = hours recovered → patient slots → revenue. Useful for early-stage conversations where hard data isn't in yet."
+                                                                                                                                                                                                               
+  patients_per_provider:                                                                                  
+  - financialStream: "Capacity revenue"
+  - whyItMatters: "This is the direct capacity revenue driver — the cleanest metric on this screen. The mechanic: (after − before) × providers × 12 months × revenue-per-visit = annual revenue impact. No     
+  assumptions about conversion rates or attribution needed — if the number is real, the math is straightforward. A 1-patient-per-provider-per-month improvement on a 100-provider group at $200/visit = 
+  $240K/year."                                                                                                                                                                                                 
+                                                                                                          
+  visits_per_clinician_hour:
+  - financialStream: "Capacity revenue"                                                                                                                                                                        
+  - whyItMatters: "Throughput per hour measures how efficiently providers move through patient volume. The financial mechanic: improvement in visits/hour × scheduled hours × working days × revenue-per-visit 
+  = incremental revenue from the same staffing base. Most useful in high-volume ambulatory or ED settings where scheduling is tight and every slot has value."                                                 
+                                                                                                          
+  Revenue metrics:                        
+
+  wrvu_per_encounter:                                                                                                                                                                                          
+  - financialStream: "Billing capture"
+  - whyItMatters: "wRVU is the unit of physician reimbursement in outpatient. The mechanic is direct: (after − before) wRVU × Abridge-documented encounters × conversion factor ($33 default) = billing        
+  capture. Better documentation allows coders to justify higher E/M levels, which map to higher wRVU values. A 0.1 wRVU improvement on 10,000 encounters at $33 = $33,000. This is not a projection — it's 
+  arithmetic from your data."                 
+                                          
+  level_of_service:
+  - financialStream: "Billing capture"                                                                                                                                                                         
+  - whyItMatters: "E/M levels (99211–99215) have defined wRVU values. A shift from average 99213 to 99214 is roughly a 0.7 wRVU difference per encounter. The mechanic: (after level − before level) × wRVU 
+  difference per level × encounters × conversion factor = billing capture. This is the second path to billing capture if wRVU data isn't available — coders can report before/after average level, and the     
+  model translates it."                                                                                   
+                                          
+  hcc_capture_rate:
+  - financialStream: "HCC value"                                                                                                                                                                               
+  - whyItMatters: "Medicare Advantage plans are paid by CMS based on the risk (RAF) score of their enrolled population. Each HCC code contributes to that score. The mechanic: (after rate − before rate) × 
+  MA-eligible encounters × $1,200 per HCC point = annual revenue impact. The $1,200 figure is the CMS-published average per-HCC payment in MA risk adjustment. Organizations with large MA populations — even  
+  20–30% of encounters — often find this is the largest single value stream."                                                                                                                                 
+                                                                                                                                                                                                               
+  clean_claim_rate:
+  - financialStream: "Revenue recovery"                                                                                                                                                                        
+  - whyItMatters: "A denied claim costs $25–$50 to rework and delays cash by 30–60 days — or gets written off entirely. The mechanic: (after rate − before rate) × total claims × average denial cost = denial 
+  management savings. Better documentation reduces the most common denial triggers: insufficient clinical detail, missing diagnoses, unsupported E/M level. This metric captures that relationship directly."  
+                                                                                                                                                                                                               
+  ---                                     
+  File 2: client/src/pages/measure/MeasureMetricSelection.tsx                                                                                                                                                  
+                                                                                                                                                                                                               
+  Change 1 — Add financialStream badge to the collapsed metric row
+                                                                                                                                                                                                               
+  In MetricEntryRow, find the collapsed (!isActive) return block. After the description <p>, add:                                                                                                              
+                                          
+  {metric.financialStream && (                                                                                                                                                                                 
+    <p className="text-[10px] text-[#888888] mt-1">                                                                                                                                                            
+      <span className="font-medium text-[#525252]">→</span> {metric.financialStream}                                                                                                                           
+    </p>                                                                                                                                                                                                       
+  )}                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Change 2 — Keep description visible in expanded row + add "Why it matters"                                                                                                                                   
+                                                                                                                                                                                                               
+  In the expanded state of MetricEntryRow, find the header div that shows metric.label and metric.unitLabel. After the header div and before settingsToShow.map(...), add:                                     
+                                                                                                                                                                                                               
+  {(metric.description || metric.whyItMatters) && (
+    <div className="mb-4 p-3 bg-[#FAFAF9] rounded-lg border border-[#F0EDE8]">                                                                                                                                 
+      {metric.financialStream && (                                                                        
+        <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1px] mb-1.5">                                                                                                               
+          → {metric.financialStream}                                                                      
+        </p>                                                                                                                                                                                                   
+      )}                                                                                                                                                                                                       
+      {metric.whyItMatters ? (                                                                                                                                                                                 
+        <p className="text-xs text-[#525252] leading-relaxed">{metric.whyItMatters}</p>                                                                                                                        
+      ) : (                                                                                                                                                                                                    
+        <p className="text-xs text-[#525252] leading-relaxed">{metric.description}</p>                                                                                                                         
+      )}
+    </div>                                                                                                                                                                                                     
+  )}                                                                                                      
+                                                                                                                                                                                                               
+  Change 3 — Skip signal on domain headers                                                                
+                                          
+  In the domain section render, find where count > 0 renders "X active". Replace that conditional with:
+                                                                                                                                                                                                               
+  {count > 0 ? (
+    <span className="text-[10px] font-medium text-[#EA2C00]">{count} active</span>                                                                                                                             
+  ) : (                                                                                                   
+    group.domainKey !== 'foundational' && (                                                                                                                                                                    
+      <span className="text-[10px] text-[#BBBBBB]">not included in calculation</span>                     
+    )                                                                                                                                                                                                          
+  )}                                      
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  What this produces:                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  - Collapsed row: label · description · → Billing capture (one line, no added height)                    
+  - Expanded row: a soft callout box with the stream label in red and the full mechanic in plain English — the CSM reads it once, closes the laptop, and can say it out loud
+  - Domain header: "not included in calculation" when skipped — whisper not a warning                                                                                                                          
+  - No structural changes to the form itself — data entry works exactly the same
