@@ -44,8 +44,8 @@ const SETTING_SUGGESTIONS: Record<string, { label: string; benchmarks: string[] 
     benchmarks: ['wRVU lift +0.15–0.40 per encounter', 'Note time −44%', 'After-hours work −1.2 hrs/day'],
   },
   nursing: {
-    label: 'Inpatient',
-    benchmarks: ['CMI improvement +0.02–0.05', 'Note completion same-day +28%', 'Documentation time −35%'],
+    label: 'Outpatient',
+    benchmarks: ['wRVU lift +0.15–0.40 per encounter', 'Note time −44%', 'After-hours work −1.2 hrs/day'],
   },
 };
 
@@ -483,11 +483,6 @@ export default function MeasureOpportunity({
             })}
           </div>
 
-          {currentStageIdx >= 0 && (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs text-[#999999]">↑ you are here</span>
-            </div>
-          )}
 
           <p className="text-sm text-[#666666] mb-4">
             {STAGE_DESCRIPTIONS[ctx.maturityStage]}
@@ -674,7 +669,7 @@ export default function MeasureOpportunity({
                     <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-3">Add a Care Setting</h3>
                     <p className="text-sm text-[#666666] mb-1">Currently measuring: {settingLabel}</p>
                     <p className="text-sm text-[#666666] mb-3">Next setting to consider: <span className="font-medium text-[#1A1A1A]">{suggestionData.label}</span></p>
-                    <p className="text-xs text-[#999999] mb-2">{suggestionData.label} deployments at peer systems have shown:</p>
+                    <p className="text-xs text-[#999999] mb-2">{suggestionData.label} deployments have shown (Abridge customer data, 2025–2026):</p>
                     <ul className="space-y-1">
                       {suggestionData.benchmarks.map((b, i) => (
                         <li key={i} className="text-sm text-[#666666] flex items-start gap-2">

@@ -1,0 +1,61 @@
+Fix 1 — Remove the "↑ you are here" label. Find and delete this block:                                                                                                                                       
+                                                                                                                                                                                                               
+  {currentStageIdx >= 0 && (              
+    <div className="flex items-center gap-2 mb-2">                                                                                                                                                             
+      <span className="text-xs text-[#999999]">↑ you are here</span>                                                                                                                                           
+    </div>                                                                                                                                                                                                     
+  )}                                                                                                                                                                                                           
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  Fix 2 — Add source attribution to the "Add a Care Setting" benchmarks. Find this block:                 
+                                                                                                                                                                                                               
+  <p className="text-xs text-[#999999] mb-2">{suggestionData.label} deployments at peer systems have shown:</p>
+                                              
+  Replace with:                                                                                                                                                                                                
+                                          
+  <p className="text-xs text-[#999999] mb-2">{suggestionData.label} deployments have shown (Abridge customer data, 2025–2026):</p>                                                                             
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Fix 3 — Fix the nursing setting suggestion. Find this block:                                                                                                                                                 
+                                                                                                                                                                                                               
+  const SETTING_SUGGESTIONS: Record<string, { label: string; benchmarks: string[] }> = {
+    outpatient: {                                                                                                                                                                                              
+      label: 'Emergency Department',                                                                      
+      benchmarks: ['LWBS rate −0.6 to −1.2 pts', 'Door-to-doc time −18%', 'Note time −42%'],
+    },                                                                                                                                                                                                         
+    ed: {                                 
+      label: 'Inpatient',                                                                                                                                                                                      
+      benchmarks: ['CMI improvement +0.02–0.05', 'Note completion same-day +28%', 'Documentation time −35%'],                                                                                                  
+    },                                        
+    inpatient: {                                                                                                                                                                                               
+      label: 'Outpatient',                                                                                
+      benchmarks: ['wRVU lift +0.15–0.40 per encounter', 'Note time −44%', 'After-hours work −1.2 hrs/day'],                                                                                                   
+    },                                                                                                    
+    nursing: {                                                                                                                                                                                                 
+      label: 'Inpatient',                                                                                 
+      benchmarks: ['CMI improvement +0.02–0.05', 'Note completion same-day +28%', 'Documentation time −35%'],                                                                                                  
+    },                                                                                                    
+  };                                                                                                                                                                                                           
+                                                                                                          
+  Replace with:                               
+                                          
+  const SETTING_SUGGESTIONS: Record<string, { label: string; benchmarks: string[] }> = {
+    outpatient: {                                                                                                                                                                                              
+      label: 'Emergency Department',
+      benchmarks: ['LWBS rate −0.6 to −1.2 pts', 'Door-to-doc time −18%', 'Note time −42%'],                                                                                                                   
+    },                                                                                                    
+    ed: {                                 
+      label: 'Inpatient',
+      benchmarks: ['CMI improvement +0.02–0.05', 'Note completion same-day +28%', 'Documentation time −35%'],                                                                                                  
+    },                                        
+    inpatient: {                                                                                                                                                                                               
+      label: 'Outpatient',                                                                                
+      benchmarks: ['wRVU lift +0.15–0.40 per encounter', 'Note time −44%', 'After-hours work −1.2 hrs/day'],                                                                                                   
+    },                                        
+    nursing: {                                                                                                                                                                                                 
+      label: 'Outpatient',                                                                                
+      benchmarks: ['wRVU lift +0.15–0.40 per encounter', 'Note time −44%', 'After-hours work −1.2 hrs/day'],                                                                                                   
+    },                                        
+  };                                                                                                                                                                                                           
+                                                                                                          
+  Do not modify any other files.                                                                          
