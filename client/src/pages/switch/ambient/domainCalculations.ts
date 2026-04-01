@@ -289,11 +289,65 @@ export function computeRevenueFeedback(
   providers: number = 0,
 ): DomainFeedback {
   if (level === 1) {
+    const engagement = inputs.revenueCycleEngaged as string | undefined;
+
+    if (!engagement) {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Not yet analyzed.',
+        context: `Documentation specificity has improved across ${documentedEncounters.toLocaleString()} encounters. No one has analyzed whether this is affecting coding, collections, or reimbursement.`,
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 2 involves observing trends in coding, denials, and collections.',
+      };
+    }
+
+    if (engagement === 'no') {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Revenue cycle not yet engaged.',
+        context: `Documentation specificity has improved across ${documentedEncounters.toLocaleString()} encounters — but no one from coding or revenue cycle has reviewed whether it's moving the financial needle.\n\nThis is the most common gap in early ambient deployments. The signal is almost always there; it just hasn't been looked for.`,
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 2 starts with a simple question to your coding team: are they seeing any change in specificity, first-pass rates, or query volume?',
+      };
+    }
+
+    if (engagement === 'informal') {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Conversations started — no data yet.',
+        context: `Your team has started talking with revenue cycle about documentation impact across ${documentedEncounters.toLocaleString()} encounters. That instinct is right.\n\nInformal conversations are Level 1. Moving to Level 2 means asking for one concrete signal — coding specificity, denial rates, or query frequency — so you have something to bring to a leadership conversation.`,
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Level 2: pick the one area where your coders have the most intuition and quantify it directionally.',
+      };
+    }
+
+    if (engagement === 'yes') {
+      return {
+        label: 'Estimated Impact',
+        value: null,
+        hasValue: false,
+        headlineMetric: 'Revenue cycle engaged — ready for Level 2.',
+        context: `Your organization is formally tracking the revenue impact of documentation improvements across ${documentedEncounters.toLocaleString()} encounters. That means you have the raw ingredients for a real number.\n\nLevel 2 takes what your coders and RCM team are already seeing and translates it into a directional dollar estimate. You're one step away.`,
+        formula: '',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Select Level 2 to quantify the movement your revenue cycle team is already observing.',
+      };
+    }
+
     return {
       label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: 'Documentation quality has improved. Revenue impact not yet analyzed.',
+      headlineMetric: 'Not yet analyzed.',
       context: `Documentation specificity has improved across ${documentedEncounters.toLocaleString()} encounters. No one has analyzed whether this is affecting coding, collections, or reimbursement.`,
       formula: '',
       footnote: 'Estimates based on your inputs. Individual results vary.',
