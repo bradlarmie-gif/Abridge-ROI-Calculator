@@ -305,28 +305,52 @@ export function computeRevenueFeedback(
     const count = checked.length;
     const checkedLabels = checked.map(shortLabel).join(', ');
 
-    if (count === 0) {
+    const estimatedWrvuL2 = inputs.estimatedWrvuL2 as number | undefined;
+    const l2Confidence = (inputs.l2Confidence as string) || 'directional';
+    const confidenceMultiplier = l2Confidence === 'partial' ? 0.7 : 0.5;
+    const confidenceLabel = l2Confidence === 'partial' ? 'partial confidence' : 'directional estimate';
+
+    if (estimatedWrvuL2 && estimatedWrvuL2 > 0) {
+      const rawImpact = Math.round(estimatedWrvuL2 * documentedEncounters * conversionFactor);
+      const adjustedImpact = Math.round(rawImpact * confidenceMultiplier);
+      let context = `Estimated ${estimatedWrvuL2} wRVU improvement per encounter × ${documentedEncounters.toLocaleString()} encounters × $${conversionFactor} conversion factor = ${formatDollar(rawImpact)}.\n\n${Math.round(confidenceMultiplier * 100)}% confidence adjustment applied (${confidenceLabel}) = ${formatDollar(adjustedImpact)}.\n\nA formal before/after analysis (Level 3) would validate this figure.`;
+      if (count > 0) {
+        context += `\n\n${count} area${count !== 1 ? 's' : ''} showing movement:\n${checkedLabels}`;
+      }
       return {
-        label: 'Revenue Signals Observed',
+        label: 'Estimated Impact',
+        value: adjustedImpact,
+        hasValue: true,
+        headlineMetric: `${formatDollar(adjustedImpact)} directional revenue estimate`,
+        context,
+        formula: `[rawImpact] = ${estimatedWrvuL2} wRVU × ${documentedEncounters.toLocaleString()} × $${conversionFactor} = ${formatDollar(rawImpact)}\n[adjusted] = ${formatDollar(rawImpact)} × ${confidenceMultiplier} (${confidenceLabel}) = ${formatDollar(adjustedImpact)}`,
+        footnote: 'Directional estimate — not validated by formal before/after analysis. Individual results vary.',
+        nextLevelTeaser: 'Level 3 requires a formal before/after analysis to confirm this figure.',
+      };
+    }
+
+    if (count > 0) {
+      return {
+        label: 'Estimated Impact',
         value: null,
         hasValue: false,
-        headlineMetric: 'Select the revenue signals your organization has observed.',
-        context: 'Check the areas where your team has seen movement since ambient documentation deployment.',
+        headlineMetric: `${count} area${count !== 1 ? 's' : ''} showing movement`,
+        context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nEnter an estimated wRVU improvement per encounter above to calculate a directional dollar figure.`,
         formula: '',
-        footnote: '',
-        nextLevelTeaser: 'Level 3: A retrospective coding audit confirms the dollar value behind what you\'re seeing.',
+        footnote: 'Estimates based on your inputs. Individual results vary.',
+        nextLevelTeaser: 'Organizations with before/after measurement have reported 2–7% revenue improvement.',
       };
     }
 
     return {
-      label: 'Revenue Signals Observed',
+      label: 'Estimated Impact',
       value: null,
       hasValue: false,
-      headlineMetric: `${count} of 6 revenue signals observed`,
-      context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nThese are leading indicators — a retrospective coding audit is the typical next step to produce a confirmed number.`,
+      headlineMetric: 'Select observed areas and enter an estimated wRVU improvement.',
+      context: 'Select the areas where your organization has observed movement, then enter an estimated wRVU improvement per encounter.',
       formula: '',
       footnote: '',
-      nextLevelTeaser: 'Level 3: Run a retrospective coding audit. Most organizations find $2K–$6K per provider annually in coding and denial impact when they first run this analysis.',
+      nextLevelTeaser: 'Level 3 requires before/after measurement data.',
     };
   }
 

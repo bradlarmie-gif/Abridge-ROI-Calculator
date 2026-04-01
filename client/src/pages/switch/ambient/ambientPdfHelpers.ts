@@ -75,6 +75,8 @@ export function buildUserInputsSummary(domain: Domain, level: number, raw: Recor
     if (level === 2) {
       const areas = resolveChecklist(raw.observedMovement as string, OBSERVATION_AREAS_LABELS);
       if (areas.length) out['Areas showing movement'] = areas.join(', ');
+      if (raw.estimatedWrvuL2) out['Estimated wRVU improvement'] = `${raw.estimatedWrvuL2} per encounter`;
+      if (raw.l2Confidence) out['Confidence level'] = String(raw.l2Confidence).charAt(0).toUpperCase() + String(raw.l2Confidence).slice(1);
     }
     if (level === 3) {
       if (raw.revenueMetricType) out['Metric measured'] = String(raw.revenueMetricType);

@@ -547,6 +547,47 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Estimated wRVU improvement per encounter
+            </label>
+            <FormattedNumberInput
+              value={(currentState.inputs.estimatedWrvuL2 as number) || 0}
+              onChange={(v) => setDomainInput('estimatedWrvuL2', Math.max(0, v))}
+              placeholder=""
+              className="w-full h-12 bg-white border-[#E5E7EB]"
+              data-testid="input-estimated-wrvu-l2"
+              step={0.01}
+            />
+            <BenchmarkContext text="Abridge benchmark: 0.05–0.15 wRVU per encounter. Enter 0 if you don't have a sense yet." />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">
+              Confidence in this estimate
+            </label>
+            <div className="flex gap-2">
+              {(['directional', 'partial'] as const).map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setDomainInput('l2Confidence', opt)}
+                  className={`px-4 py-2 rounded-full text-sm transition-all cursor-pointer ${
+                    ((currentState.inputs.l2Confidence as string) || 'directional') === opt
+                      ? 'bg-[#EA2C00] text-white font-medium'
+                      : 'bg-[#F0EFED] text-[#525252] hover:bg-[#E5E3E0]'
+                  }`}
+                  data-testid={`pill-l2-confidence-${opt}`}
+                >
+                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-[#888888] mt-2 leading-relaxed">
+              <span className="font-semibold">Directional</span> — a rough sense, not yet validated. <span className="font-semibold">Partial</span> — based on preliminary data your team has reviewed. Your choice adjusts how this figure is labeled in results.
+            </p>
+          </div>
+
         </div>
       );
     }
