@@ -1,0 +1,29 @@
+Here's the Replit prompt:                                                                                                                                                                                    
+                                                                                                          
+  ---                                                                                                                                                                                                          
+  In client/src/lib/measureCareSettings.ts, make two targeted copy changes:                               
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Fix 1 — time_to_close whyItMatters. Find:                                                                                                                                                                    
+                                                                                                          
+  'Time to close is the most operationally concrete measure of documentation burden. It feeds the workforce model in two ways: (1) hours recovered × provider count × hourly cost rate = time value, and (2)   
+  documentation burden is consistently the top-ranked driver of physician burnout and departure intent. A reduction here is the input to every retention cost calculation downstream.'                      
+                                                                                                                                                                                                               
+  Replace with:                                                                                                                                                                                                
+               
+  'Time to close measures how long documentation follows a provider after the patient leaves. The financial path isn\'t the time itself — physicians are salaried. The path is: high close times correlate with
+   higher after-hours burden, higher burnout scores, and lower likelihood-to-stay. A reduction here feeds the retention risk model downstream, not a time-dollar calculation.'                                 
+                                                                                                                                                                                                               
+  ---                                                                                                     
+  Fix 2 — work_outside_work_empirical whyItMatters. Find:
+                                                                                                                                                                                                               
+  'Empirical after-hours hours — from time-tracking or EHR audit data — is more defensible than survey perception. The mechanic: AMGA data shows average documentation outside work hours of 1.5–2 hrs/evening.
+   At a conservative OT rate of $150/hr, that\'s $45K–$60K per physician per year in time cost. Reduction here feeds directly into the retention cost model as hours × rate × providers recovered.'            
+                                                                                                                                                                                                   
+  Replace with:                                                                                                                                                                                                
+                                                                                                          
+  'Empirical after-hours documentation — from EHR audit trails — is more defensible than survey perception because it\'s not self-reported. The financial path isn\'t hours × salary: physicians are salaried  
+  and that math doesn\'t hold. The path is that providers doing documentation at 10pm have measurably lower likelihood-to-stay scores — and each departure costs $350K–$500K to replace. This metric provides
+  the signal. The retention cost model provides the dollar.'                                                                                                                                                   
+                                                                                                          
+  Do not modify any other files.
