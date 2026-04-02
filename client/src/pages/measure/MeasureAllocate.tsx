@@ -54,18 +54,21 @@ const ATTRIBUTION_PRESETS = [
     id: 'conservative',
     label: 'Conservative',
     value: 50,
+    realization: 70,
     description: 'About half the improvement attributed to the tool',
   },
   {
     id: 'standard',
     label: 'Standard',
     value: 62,
+    realization: 80,
     description: 'Typical for well-deployed Abridge accounts',
   },
   {
     id: 'favorable',
     label: 'Favorable',
     value: 75,
+    realization: 90,
     description: 'High utilization, clean data, strong correlation',
   },
 ] as const;
@@ -206,8 +209,8 @@ function computeFinancials(state: MeasureState, assumptions: Assumptions) {
         : '';
       billingDetails.push({
         label: `wRVU lift: +${wrvuD.toFixed(2)} per encounter${sourceNote}${multiSetting ? ` (${s === 'ed' ? 'ED' : s.charAt(0).toUpperCase() + s.slice(1)})` : ''}`,
-        detail: `E/M encounters: ${formatNumber(emEligibleEncounters)}/yr (${assumptions.emEligibilityRate}% of ${formatNumber(effectiveAdopted)} adopted)`,
-        formula: `+${wrvuD.toFixed(2)} wRVU × ${formatNumber(emEligibleEncounters)} E/M encounters × $${assumptions.conversionFactor} × ${Math.round(assumptions.realization)}% = ${fmt(base * (assumptions.realization / 100))}`,
+        detail: `${formatNumber(emEligibleEncounters)} E/M-billable encounters/yr — ${assumptions.emEligibilityRate}% haircut applied (${formatNumber(effectiveAdopted)} adopted total)`,
+        formula: `+${wrvuD.toFixed(2)} wRVU × ${formatNumber(emEligibleEncounters)} E/M encounters × $${assumptions.conversionFactor} = ${fmt(base)} base → × ${Math.round(assumptions.realization)}% realization × ${Math.round(attrLow * 100)}–${Math.round(attrHigh * 100)}% attribution = ${fmt(lo)}–${fmt(hi)}`,
       });
     }
 
@@ -667,7 +670,7 @@ export default function MeasureAllocate({
   const selectPreset = (presetId: AttributionPresetId) => {
     const preset = ATTRIBUTION_PRESETS.find(p => p.id === presetId)!;
     setSelectedPreset(presetId);
-    setAssumptions(prev => ({ ...prev, attribution: preset.value }));
+    setAssumptions(prev => ({ ...prev, attribution: preset.value, realization: preset.realization }));
   };
 
   const toggleStream = (id: string) => {
@@ -869,7 +872,7 @@ export default function MeasureAllocate({
                   <button
                     type="button"
                     onClick={() => toggleStream('billingCapture')}
-                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.billingCapture !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${streamStates.billingCapture !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
                     aria-label={streamStates.billingCapture !== false ? 'Exclude from total' : 'Include in total'}
                     data-testid="toggle-billing-capture"
                   >
@@ -946,7 +949,7 @@ export default function MeasureAllocate({
                   <button
                     type="button"
                     onClick={() => toggleStream('revenueRecovery')}
-                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.revenueRecovery !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${streamStates.revenueRecovery !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
                     aria-label={streamStates.revenueRecovery !== false ? 'Exclude from total' : 'Include in total'}
                     data-testid="toggle-revenue-recovery"
                   >
@@ -988,7 +991,7 @@ export default function MeasureAllocate({
                   <button
                     type="button"
                     onClick={() => toggleStream('hccCapture')}
-                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.hccCapture !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${streamStates.hccCapture !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
                     aria-label={streamStates.hccCapture !== false ? 'Exclude from total' : 'Include in total'}
                     data-testid="toggle-hcc-capture"
                   >
@@ -1028,7 +1031,7 @@ export default function MeasureAllocate({
                   <button
                     type="button"
                     onClick={() => toggleStream('patientFlow')}
-                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.patientFlow !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${streamStates.patientFlow !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
                     aria-label={streamStates.patientFlow !== false ? 'Exclude from total' : 'Include in total'}
                     data-testid="toggle-patient-flow"
                   >
@@ -1080,7 +1083,7 @@ export default function MeasureAllocate({
                   <button
                     type="button"
                     onClick={() => toggleStream('capacityRevenue')}
-                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.capacityRevenue !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${streamStates.capacityRevenue !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
                     aria-label={streamStates.capacityRevenue !== false ? 'Exclude from total' : 'Include in total'}
                     data-testid="toggle-capacity-revenue"
                   >
@@ -1116,7 +1119,7 @@ export default function MeasureAllocate({
                   <button
                     type="button"
                     onClick={() => toggleStream('costReduction')}
-                    className={`w-9 h-5 rounded-full transition-colors relative ${streamStates.costReduction !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
+                    className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${streamStates.costReduction !== false ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'}`}
                     aria-label={streamStates.costReduction !== false ? 'Exclude from total' : 'Include in total'}
                     data-testid="toggle-cost-reduction"
                   >

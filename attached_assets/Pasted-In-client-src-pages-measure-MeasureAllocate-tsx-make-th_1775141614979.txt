@@ -1,0 +1,75 @@
+In client/src/pages/measure/MeasureAllocate.tsx, make the following changes:
+
+  ---
+  Fix 1 — Add realization to each preset. Replace the ATTRIBUTION_PRESETS constant:
+
+  const ATTRIBUTION_PRESETS = [
+    {
+      id: 'conservative',
+      label: 'Conservative',
+      value: 50,
+      realization: 70,
+      description: 'About half the improvement attributed to the tool',
+    },
+    {
+      id: 'standard',
+      label: 'Standard',
+      value: 62,
+      realization: 80,
+      description: 'Typical for well-deployed Abridge accounts',
+    },
+    {
+      id: 'favorable',
+      label: 'Favorable',
+      value: 75,
+      realization: 90,
+      description: 'High utilization, clean data, strong correlation',
+    },
+  ] as const;
+
+  ---
+  Fix 2 — Update selectPreset to also set realization. Replace:
+
+  const selectPreset = (presetId: AttributionPresetId) => {
+    const preset = ATTRIBUTION_PRESETS.find(p => p.id === presetId)!;
+    setSelectedPreset(presetId);
+    setAssumptions(prev => ({ ...prev, attribution: preset.value }));
+  };
+
+  With:
+
+  const selectPreset = (presetId: AttributionPresetId) => {
+    const preset = ATTRIBUTION_PRESETS.find(p => p.id === presetId)!;
+    setSelectedPreset(presetId);
+    setAssumptions(prev => ({ ...prev, attribution: preset.value, realization: preset.realization }));
+  };
+
+  ---
+  Fix 3 — Fix the formula to show the full calculation chain. Find this line (around line 210):
+
+  formula: `+${wrvuD.toFixed(2)} wRVU × ${formatNumber(emEligibleEncounters)} E/M encounters × $${assumptions.conversionFactor} × ${Math.round(assumptions.realization)}% = ${fmt(base *
+  (assumptions.realization / 100))}`,
+
+  Replace with:
+
+  formula: `+${wrvuD.toFixed(2)} wRVU × ${formatNumber(emEligibleEncounters)} E/M encounters × $${assumptions.conversionFactor} = ${fmt(base)} base → × ${Math.round(assumptions.realization)}% realization ×
+  ${Math.round(attrLow * 100)}–${Math.round(attrHigh * 100)}% attribution = ${fmt(lo)}–${fmt(hi)}`,
+
+  ---
+  Fix 4 — Add flex-shrink-0 to every toggle button to stop it bleeding into the label. There are 6 toggle buttons. For each one, find the className that starts with `w-9 h-5 rounded-full transition-colors
+  relative and add flex-shrink-0 to it. All 6 follow the same pattern — do a find-and-replace across all instances:
+
+  Find: className={\w-9 h-5 rounded-full transition-colors relative `
+
+  Replace with: className={\w-9 h-5 rounded-full transition-colors relative flex-shrink-0 `
+
+  ---
+  Fix 5 — Make the E/M eligibility haircut line more visible. Find:
+
+  detail: `E/M encounters: ${formatNumber(emEligibleEncounters)}/yr (${assumptions.emEligibilityRate}% of ${formatNumber(effectiveAdopted)} adopted)`,
+
+  Replace with:
+
+  detail: `${formatNumber(emEligibleEncounters)} E/M-billable encounters/yr — ${assumptions.emEligibilityRate}% haircut applied (${formatNumber(effectiveAdopted)} adopted total)`,
+
+  Do not modify any other files.
