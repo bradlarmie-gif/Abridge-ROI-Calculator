@@ -1,0 +1,1573 @@
+    365 +    if (mid <= 0) return null;                                                                                                                                                               
+      366 +    const roiMultiple = (mid / annualContractValue).toFixed(1);                                                                                                                              
+      367 +    const paybackMonths = Math.round((annualContractValue / mid) * 12);                                                                                                                      
+      368 +    const netValue = mid - annualContractValue;                                                                                                                                              
+      369 +    return { roiMultiple, paybackMonths, netValue, low, high, hasDeepenLever, hasExpandLever };                                                                                              
+      370 +  }, [annualContractValue, enabledConfirmed, showDeepenAdoption, showExpandProviders, targetAdoption, targetProviderCount, utilizationRate, providers]);                                     
+      371 +                                                                                                                                                                                             
+      372    const additionalEncountersAtTarget = useMemo(() => {
+      373      if (!showDeepenAdoption) return 0;
+      374      const total = state.deployment.totalEncounters || 0;
+
+⏺ Now update the current ROI card to show the range context and explanation:
+
+⏺ Update(~/Downloads/The-ROI-Calculator 4/client/src/pages/measure/MeasureOpportunity.tsx)
+  ⎿  Added 12 lines, removed 4 lines
+      530              transition={{ delay: 0.12 }}
+      531              data-testid="card-roi"
+      532            >
+      533 -            <div className="flex items-center justify-between mb-4">                                                                                                                         
+      534 -              <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Return on Investment</p>                                                                      
+      533 +            <div className="flex items-center justify-between mb-1">                                                                                                                         
+      534 +              <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Current ROI · {Math.round(utilizationRate)}% adoption today</p>                               
+      535                <span className="text-[10px] text-white/30 uppercase tracking-wide">{confidenceLabel}</span>
+      536              </div>
+      537 -            <div className="grid grid-cols-3 gap-4">                                                                                                                                         
+      537 +            <p className="text-[10px] text-white/25 mb-4">                                                                                                                                   
+      538 +              Confirmed value: {fmtRange(enabledConfirmed.low, enabledConfirmed.high)}/yr · midpoint used for metrics below                                                                  
+      539 +            </p>                                                                                                                                                                             
+      540 +            <div className="grid grid-cols-3 gap-4 mb-4">                                                                                                                                    
+      541                <div>
+      542                  <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-roi-multiple">{roiMetrics.roiMultiple}×</p>
+      543                  <p className="text-xs text-white/40 mt-1">ROI ratio</p>
+     ...
+      548                </div>
+      549                <div>
+      550                  <p className="text-2xl font-bold text-white" data-testid="text-net-value">{fmt(roiMetrics.netValue)}</p>
+      548 -                <p className="text-xs text-white/40 mt-1">Net value</p>                                                                                                                      
+      551 +                <p className="text-xs text-white/40 mt-1">Net value / yr</p>                                                                                                                 
+      552                </div>
+      553              </div>
+      554 +            <div className="pt-3 border-t border-white/10">                                                                                                                                  
+      555 +              <p className="text-[10px] text-white/20 leading-relaxed">                                                                                                                      
+      556 +                Range driven by two bands: <span className="text-white/35">attribution</span> (50–75% of observed lift attributable to Abridge) and <span className="text-white/35">realizati
+          +on</span> (70–90% captured in revenue or cost). Conservative end = 50% × 70%. Favorable end = 75% × 90%.                                                                                     
+      557 +              </p>                                                                                                                                                                           
+      558 +            </div>                                                                                                                                                                           
+      559            </motion.div>
+      560          )}
+      561  
+
+⏺ Now add the Projected ROI card after the expansion section (after the closing </motion.div> for "Expansion Opportunity"):
+
+⏺ Update(~/Downloads/The-ROI-Calculator 4/client/src/pages/measure/MeasureOpportunity.tsx)
+  ⎿  Added 37 lines
+      709            )}
+      710          </motion.div>
+      711  
+      712 +        {projectedROI && annualContractValue > 0 && (                                                                                                                                        
+      713 +          <motion.div                                                                                                                                                                        
+      714 +            className="bg-[#1A1A1A] rounded-xl p-6 mb-8"                                                                                                                                     
+      715 +            initial={{ opacity: 0, y: 16 }}                                                                                                                                                  
+      716 +            animate={{ opacity: 1, y: 0 }}                                                                                                                                                   
+      717 +            key={`projected-${targetAdoption}-${targetProviderCount}`}                                                                                                                       
+      718 +            data-testid="card-projected-roi"                                                                                                                                                 
+      719 +          >                                                                                                                                                                                  
+      720 +            <div className="flex items-center justify-between mb-1">                                                                                                                         
+      721 +              <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Projected ROI at Target</p>                                                                   
+      722 +            </div>                                                                                                                                                                           
+      723 +            <p className="text-[10px] text-white/25 mb-4">                                                                                                                                   
+      724 +              {projectedROI.hasDeepenLever && projectedROI.hasExpandLever                                                                                                                    
+      725 +                ? `${Math.round(targetAdoption)}% adoption · ${targetProviderCount} providers`                                                                                               
+      726 +                : projectedROI.hasDeepenLever                                                                                                                                                
+      727 +                  ? `${Math.round(targetAdoption)}% adoption · current ${providers} providers`                                                                                               
+      728 +                  : `${targetProviderCount} providers · current ${Math.round(utilizationRate)}% adoption`                                                                                    
+      729 +              }                                                                                                                                                                              
+      730 +              {' '}· Projected value: {fmtRange(projectedROI.low, projectedROI.high)}/yr                                                                                                     
+      731 +            </p>                                                                                                                                                                             
+      732 +            <div className="grid grid-cols-3 gap-4">                                                                                                                                         
+      733 +              <div>                                                                                                                                                                          
+      734 +                <p className="text-2xl font-bold text-[#EA2C00]">{projectedROI.roiMultiple}×</p>                                                                                             
+      735 +                <p className="text-xs text-white/40 mt-1">ROI ratio</p>                                                                                                                      
+      736 +              </div>                                                                                                                                                                         
+      737 +              <div>                                                                                                                                                                          
+      738 +                <p className="text-2xl font-bold text-white">{projectedROI.paybackMonths}mo</p>                                                                                              
+      739 +                <p className="text-xs text-white/40 mt-1">Payback period</p>                                                                                                                 
+      740 +              </div>                                                                                                                                                                         
+      741 +              <div>                                                                                                                                                                          
+      742 +                <p className="text-2xl font-bold text-white">{fmt(projectedROI.netValue)}</p>                                                                                                
+      743 +                <p className="text-xs text-white/40 mt-1">Net value / yr</p>                                                                                                                 
+      744 +              </div>                                                                                                                                                                         
+      745 +            </div>                                                                                                                                                                           
+      746 +          </motion.div>                                                                                                                                                                      
+      747 +        )}                                                                                                                                                                                   
+      748 +                                                                                                                                                                                             
+      749          <motion.div
+      750            className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6 mb-8"
+      751            initial={{ opacity: 0, y: 16 }}
+
+⏺ Now let me verify the final file looks correct in the key sections:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ The code looks exactly right. Here's a summary of what was changed and why:
+
+  ---
+  4 fixes made to MeasureOpportunity.tsx:
+
+  1. Payback formula bug fixed (line 274)
+  Before: Math.round(annualContractValue / (confirmedMid / 12))
+  After:  Math.round((annualContractValue / confirmedMid) * 12)
+  Same math, but the old version hid operator-precedence intent. More importantly, it now matches what "payback period" means: (cost ÷ annual value) × 12 months.
+
+  2. Current ROI card — labeled + range explained
+  - Header now reads: "Current ROI · 52% adoption today" (uses actual utilization rate)
+  - Sub-line shows: "Confirmed value: $355K — $684K/yr · midpoint used for metrics below"
+  - "Net value" label updated to "Net value / yr" (previously implied it was multi-year)
+  - Footer explains the two bands: attribution (50–75% of lift attributable to Abridge) × realization (70–90% captured in revenue). Conservative = 50% × 70%, favorable = 75% × 90%.
+
+  3. projectedROI useMemo added
+  Computes combined ROI when either/both expansion sliders are active:
+  adoptionScale = targetAdoption / currentUtilization
+  providerScale = targetProviderCount / currentProviders
+  combinedValue = currentValue × adoptionScale × providerScale
+  Only activates when sliders are actually doing something (lever exists AND slider > current state).
+
+  4. Projected ROI at Target card — new dark card below expansion section
+  Shows live-updating ROI/payback/net when sliders are moved. The sub-line spells out exactly which levers are active: "72% adoption · 884 providers · Projected value: $890K — $1.7M/yr". The key prop on the
+  motion.div triggers a re-render animation as sliders move.
+
+✻ Brewed for 4m 3s · 1 background task still running (↓ to manage)
+
+❯ i need the replit prompt 
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Here's your Replit prompt:
+
+  ---
+  File to edit: client/src/pages/measure/MeasureOpportunity.tsx
+
+  Make the following 4 changes to the MeasureOpportunity component:
+
+  ---
+  Change 1 — Fix payback formula in roiMetrics useMemo
+
+  Find:
+  const paybackMonths = Math.round(annualContractValue / (confirmedMid / 12));
+  Replace with:
+  const paybackMonths = Math.round((annualContractValue / confirmedMid) * 12);
+
+  ---
+  Change 2 — Add projectedROI useMemo
+
+  Find the line:
+    const additionalEncountersAtTarget = useMemo(() => {
+
+  Insert the following block immediately BEFORE that line:
+    const projectedROI = useMemo(() => {
+      if (annualContractValue <= 0 || enabledConfirmed.low <= 0) return null;
+      const hasDeepenLever = showDeepenAdoption && utilizationRate > 0 && targetAdoption > utilizationRate;
+      const hasExpandLever = showExpandProviders && providers > 0 && targetProviderCount > providers;
+      if (!hasDeepenLever && !hasExpandLever) return null;
+      const adoptionScale = hasDeepenLever ? targetAdoption / utilizationRate : 1;
+      const providerScale = hasExpandLever ? targetProviderCount / providers : 1;
+      const low = Math.round(enabledConfirmed.low * adoptionScale * providerScale);
+      const high = Math.round(enabledConfirmed.high * adoptionScale * providerScale);
+      const mid = Math.round((low + high) / 2);
+      if (mid <= 0) return null;
+      const roiMultiple = (mid / annualContractValue).toFixed(1);
+      const paybackMonths = Math.round((annualContractValue / mid) * 12);
+      const netValue = mid - annualContractValue;
+      return { roiMultiple, paybackMonths, netValue, low, high, hasDeepenLever, hasExpandLever };
+    }, [annualContractValue, enabledConfirmed, showDeepenAdoption, showExpandProviders, targetAdoption, targetProviderCount, utilizationRate, providers]);
+
+
+  ---
+  Change 3 — Rebuild the current ROI card JSX
+
+  Find this entire block:
+          {roiMetrics && (
+            <motion.div
+              className="bg-[#1A1A1A] rounded-xl p-6 mb-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12 }}
+              data-testid="card-roi"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Return on Investment</p>
+                <span className="text-[10px] text-white/30 uppercase tracking-wide">{confidenceLabel}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-roi-multiple">{roiMetrics.roiMultiple}×</p>
+                  <p className="text-xs text-white/40 mt-1">ROI ratio</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white" data-testid="text-payback-months">{roiMetrics.paybackMonths}mo</p>
+                  <p className="text-xs text-white/40 mt-1">Payback period</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white" data-testid="text-net-value">{fmt(roiMetrics.netValue)}</p>
+                  <p className="text-xs text-white/40 mt-1">Net value</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+  Replace with:
+          {roiMetrics && (
+            <motion.div
+              className="bg-[#1A1A1A] rounded-xl p-6 mb-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12 }}
+              data-testid="card-roi"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Current ROI · {Math.round(utilizationRate)}% adoption today</p>
+                <span className="text-[10px] text-white/30 uppercase tracking-wide">{confidenceLabel}</span>
+              </div>
+              <p className="text-[10px] text-white/25 mb-4">
+                Confirmed value: {fmtRange(enabledConfirmed.low, enabledConfirmed.high)}/yr · midpoint used for metrics below
+              </p>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-roi-multiple">{roiMetrics.roiMultiple}×</p>
+                  <p className="text-xs text-white/40 mt-1">ROI ratio</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white" data-testid="text-payback-months">{roiMetrics.paybackMonths}mo</p>
+                  <p className="text-xs text-white/40 mt-1">Payback period</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white" data-testid="text-net-value">{fmt(roiMetrics.netValue)}</p>
+                  <p className="text-xs text-white/40 mt-1">Net value / yr</p>
+                </div>
+              </div>
+              <div className="pt-3 border-t border-white/10">
+                <p className="text-[10px] text-white/20 leading-relaxed">
+                  Range driven by two bands: <span className="text-white/35">attribution</span> (50–75% of observed lift attributable to Abridge) and <span className="text-white/35">realization</span>
+  (70–90% captured in revenue or cost). Conservative end = 50% × 70%. Favorable end = 75% × 90%.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+  ---
+  Change 4 — Add Projected ROI at Target card after the Expansion Opportunity section
+
+  Find this line (the start of the Next Moves section):
+          <motion.div
+            className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6 mb-8"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            data-testid="section-next-moves"
+          >
+
+  Insert this entire block immediately BEFORE it:
+          {projectedROI && annualContractValue > 0 && (
+            <motion.div
+              className="bg-[#1A1A1A] rounded-xl p-6 mb-8"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              key={`projected-${targetAdoption}-${targetProviderCount}`}
+              data-testid="card-projected-roi"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Projected ROI at Target</p>
+              </div>
+              <p className="text-[10px] text-white/25 mb-4">
+                {projectedROI.hasDeepenLever && projectedROI.hasExpandLever
+                  ? `${Math.round(targetAdoption)}% adoption · ${targetProviderCount} providers`
+                  : projectedROI.hasDeepenLever
+                    ? `${Math.round(targetAdoption)}% adoption · current ${providers} providers`
+                    : `${targetProviderCount} providers · current ${Math.round(utilizationRate)}% adoption`
+                }
+                {' '}· Projected value: {fmtRange(projectedROI.low, projectedROI.high)}/yr
+              </p>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-2xl font-bold text-[#EA2C00]">{projectedROI.roiMultiple}×</p>
+                  <p className="text-xs text-white/40 mt-1">ROI ratio</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white">{projectedROI.paybackMonths}mo</p>
+                  <p className="text-xs text-white/40 mt-1">Payback period</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white">{fmt(projectedROI.netValue)}</p>
+                  <p className="text-xs text-white/40 mt-1">Net value / yr</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+
+  ---
+  No other files need to be changed. Do not modify any other logic, styling, or component structure.
+
+✻ Sautéed for 36s · 1 background task still running (↓ to manage)
+
+❯ ignoring the cover page on the pdf.. the rest of the whole pdf needs a lotttttttt of help here.. i dont even know wtf is in there.. i dont like it at all.. we gotta keep the same branding and style    
+  and colors and all that.. but the content needs to be different.. im not feeling it.. for a post EBR document. it sucks.. its sooo confusing... be super super fucking hyper critical.                   
+
+⏺ Let me read the PDF export component first.
+
+⏺ Searched for 1 pattern, read 2 files (ctrl+o to expand)
+
+⏺ Bash(cat "/Users/brad/.claude/projects/-Users-brad/21041fb4-91e0-4ead-9569-e59c8e066c5e/tool-results/toolu_018T1zDcfe1yJzx83wJeeu2e.txt" | sed 's/^[ ]*[0-9]*→[ ]*[0-…)
+  ⎿  import {
+       Document,
+       Page,
+     … +150 lines (ctrl+o to expand)
+
+⏺ Read 2 files (ctrl+o to expand)
+
+⏺ Okay I've read every page. Here's my hyper-critical take:
+
+  ---
+  What's wrong with this PDF — brutal honest breakdown
+
+  The fundamental problem: This document is written by a CSM for a CSM to review. It is NOT written for a CFO or CMO in an EBR. It reads like an internal audit, not an executive business review.
+
+  ---
+  Page 1 — "Your Deployment"
+
+  - Stat cards are wrong. "Adopted Encounters" means nothing to an exec. Nobody knows what that is.
+  - The "How to read the numbers" callout is 3 lines of attribution math on PAGE ONE. You're front-loading defense before you've said anything interesting. That's the opposite of confidence.
+  - The narrative paragraph is a nothing paragraph. "X has deployed across Y providers in Z setting, achieving W% utilization over V months." That's just restating numbers they already know. It has zero
+  insight.
+
+  Page 2 — "Before & After — What Changed"
+
+  This page is the worst page. It's a raw spreadsheet dump. Metric | Before → After | Delta with no grouping, no callout, no narrative. The CFO sees +0.25 (8%) next to "wRVU per encounter" and has zero idea
+  if that's a win or noise. There's no "here's the one that matters" moment. It's a data table, not a story.
+
+  Page 3 — Financial
+
+  - The big headline number is fine but everything below it is a catastrophe. Formula strings like "+0.25 wRVU × 12,450 encounters × $33/wRVU × 80% realization" do not belong in a C-suite document. When the
+  CFO reads a formula, the ONLY thing they do is question each variable. You're handing them ammunition to poke holes.
+  - "Near-term (0–12 mo)" vs "Building value (1–3 yr)" bucketing is confusing. It's not obvious that billing/recovery = near-term and retention = long-term. Nobody will get this without explanation.
+
+  Page 4 — Qualitative Signals
+
+  - The signal cards are just showing whyItMatters boilerplate copy. The before/after numbers are there but there's no "this is a leading indicator of what's coming financially." The framing "The Qualitative
+   Picture" actively telegraphs: this is the soft stuff that doesn't really count.
+
+  Page 5 — "The Measurement Journey"
+
+  This page is almost entirely generic. "Organizations that reach 60%+ utilization typically unlock 2–3x more measurable domains." That applies to EVERY customer. It says nothing about THIS org's specific
+  gap, THIS org's trajectory, or what hitting the next stage is worth in dollars for THEM. It's a brochure, not a business review.
+
+  Page 6 — Methodology
+
+  Fine as a concept, but "DRG base rate: $6,800" listed as a raw table invites the question: why are you using $6,800 instead of our actual rates? It creates doubt instead of resolving it.
+
+  ---
+  What it should be instead
+
+  4 pages, clean narrative arc:
+
+  1. Scorecard — Replace pages 1 entirely. Org name, go-live date, key 4 stats (providers, utilization, domains measured, months on Abridge). If ACV exists: ROI multiple + payback period as the headline. One
+   sentence contextualizing where they are.
+  2. What Changed — Replace the raw table. Group metrics by domain (Documentation Quality / Time Efficiency / Patient Access / Retention). For each domain: show the delta prominently with a one-line
+  narrative. Drop the formula. If a domain has no data: don't show it.
+  3. The Financial Case — Keep the big dollar range at the top. Remove ALL formula strings. Each value stream = one row: stream name, dollar range, one plain-English sentence. ROI multiple + payback period
+  in a dark callout. "What this doesn't count" as a small callout at the bottom.
+  4. What's Next — Make it specific. Show THIS org's maturity stage. Show the 1-2 specific gaps. Then: "If you reach X% adoption, that's an additional $Y–$Z/yr." That's the Expansion Opportunity section from
+   screen 5 in PDF form. End with 3 concrete actions, numbered.
+
+  Methodology goes to a 3-line footnote on the financial page. Not a full page.
+
+  ---
+  Here's the Replit prompt to rebuild it:
+
+  ---
+  File: client/src/components/measure/MeasurePDFExport.tsx
+
+  Completely rewrite the MeasureEBR component (the JSX return from line 572 to line 971). Do NOT change the imports, font registration, computeFinancials function, helper functions (fmtC, fmtRange, fmtN,
+  fmtDelta, settingShort, settingFull), or the generateMeasurePDF export. Only rewrite the MeasureEBR component's JSX and its local variable setup.
+
+  The new PDF has 4 pages after the cover:
+  - Page 1: Scorecard
+  - Page 2: What Changed (grouped by domain)
+  - Page 3: The Financial Case (no formula strings)
+  - Page 4: What's Next (specific to this org)
+
+  No methodology page. No separate signals page. Methodology becomes a 2-line footnote on Page 3.
+
+  ---
+  Keep the existing style constants (C.* and s.*). You may add new inline styles as needed.
+
+  ---
+  Page 1 — Scorecard
+
+  Eyebrow: "Executive Business Review"
+  Headline: orgName
+  Subline: "${settingLabel} · ${months} months with Abridge · Generated ${today}"
+
+  Four stat cards (same 2-column grid, using s.statCard/s.statRow styles):
+  - Row 1: "Providers on Abridge" = providers | "Total Providers" = totalProviders
+  - Row 2: "Utilization Rate" = utilRate% | "Domains Measured" = activeDomains
+
+  If annualContractValue > 0 AND fin.totalMid > 0, show a dark (#1A1A1A bg) callout card immediately below the stats:
+    [ROI Multiple]     [Payback]         [Net Value / yr]
+    X.Xx               Xmo               $XXXk
+    ROI ratio          Payback period    Net value / yr
+  Where payback = Math.round((annualContractValue / fin.totalMid) * 12) months, net value = fin.totalMid - annualContractValue. Use #EA2C00 text for the ROI multiple, white for the others.
+
+  Below that: one narrative paragraph (use s.narrative) that references the org by name, mentions what domains are measured, and states the maturity stage. Example: "[Org] has been running Abridge for [N]
+  months across [setting], with [N]% of encounters now using the tool. Data has been collected across [N] measurement domains, placing [Org] at the [Stage] stage of the Abridge measurement journey."
+
+  Footer as before.
+
+  ---
+  Page 2 — What Changed
+
+  Eyebrow: "Your Data"
+  Headline: "What Changed Since Abridge"
+  Subline: "${activeMetrics.length} metrics tracked · ${activeDomains} domains"
+
+  Group the active metrics by domain. Use this domain order: ["Documentation Quality", "Time Efficiency", "Patient Access & Throughput", "Workforce & Retention"]. For each domain that has at least one active
+   metric:
+
+  Show a domain header: small all-caps orange label (use s.eyebrow style but marginBottom: 2) with the domain name, then for each metric in that domain show:
+
+  A metric card (s.cardOutline with marginBottom: 6):
+  - Top row: metric label (bold, s.mName style) + delta badge on right (if improvement: #EA2C00 text, bold, e.g. "+0.25 wRVU" or "−1.8 hrs/day")
+  - Bottom row if hasBoth: small muted text showing "Before: X → After: Y"
+  - Do NOT show formula strings anywhere
+
+  For metrics with no domain match or domain = undefined, put them in a catch-all section "Other Metrics" at the bottom.
+
+  The domain grouping logic: look up each metric via METRIC_MAP.get(am.metricId) and check def?.domain. Map domain strings to the 4 buckets:
+  - "Documentation Quality" → metrics where domain contains "documentation" or "billing" or "coding"
+  - "Time Efficiency" → metrics where domain contains "time" or "efficiency" or "after"
+  - "Patient Access & Throughput" → metrics where domain contains "access" or "throughput" or "patient" or "flow"
+  - "Workforce & Retention" → metrics where domain contains "retention" or "burnout" or "workforce" or "satisfaction"
+
+  If none match, use "Other Metrics."
+
+  Footer as before.
+
+  ---
+  Page 3 — The Financial Case
+
+  Only render this page if fin.hasAny.
+
+  Eyebrow: "Financial Impact"
+  Headline: "What the Numbers Add Up To"
+
+  Top card (cream bg C.card, padding 20, centered):
+  - Big orange number: fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))
+  - Below: "estimated annual value · ${activeDomains} domains measured"
+
+  If ACV > 0 and fin.totalMid > 0, dark card (#1A1A1A bg, white text, borderRadius 4, padding 14, marginBottom 10) showing 3-column grid:
+  - ROI multiple (#EA2C00): (fin.totalMid / annualContractValue).toFixed(1)×
+  - Payback period (white): Xmo
+  - Net value / yr (white): fmt(fin.totalMid - annualContractValue)
+
+  Value streams section — plain table, no formulas. For each enabled stream with value > 0, show ONE row:
+  [Stream Name]    [fmtRange(lo, hi)] / yr    [one plain-English sentence]
+
+  Use these one-sentence descriptions (not formula strings):
+  - Billing Capture: "Improved documentation quality drives higher wRVU coding accuracy and E/M level capture."
+  - Revenue Recovery: "Faster, cleaner notes reduce left-without-being-seen events and denial rates."
+  - Patient Flow: "Shorter documentation time enables faster discharge decisions and lower length of stay."
+  - Capacity Revenue: "Time recovered per provider translates to additional appointment capacity."
+  - Workforce: "Burnout and retention signals suggest reduced turnover risk — modeled against replacement costs."
+
+  Format each stream as a View with flexDirection: "row" containing: stream name (bold, flex 2), dollar range (#EA2C00, bold, flex 1.5, textAlign right), sentence (muted, flex 3, fontSize 8).
+
+  At the bottom, a small callout (s.callout style) titled "What this doesn't include" listing: after-hours documentation burden (not monetized for salaried staff), recruitment advantage, prior auth delays,
+  and audit defensibility.
+
+  Two-line footnote at the bottom before footer: "Estimates use ${fin.attrRange} attribution and ${DEFAULT_ASMP.realization}% realization. See methodology for assumptions." in 7pt muted text.
+
+  Footer as before.
+
+  ---
+  Page 4 — What's Next
+
+  Eyebrow: "Your Path Forward"
+  Headline: "Where ${orgName} Goes From Here"
+
+  Section 1 — Maturity Stage card (use s.card):
+  - Pip bar (4 pips, filled up to maturity index, using s.pipOn/s.pip)
+  - Stage label in orange, bold, 12pt
+  - One-sentence stage description
+
+  Section 2 — Expansion Opportunity (only if utilRate < 75 OR providers < totalProviders):
+  Show a cream card with eyebrow "Expansion Opportunity" and:
+
+  If utilRate < 75:
+  Deepen to 75% adoption → additional [fmtRange] / yr
+  Compute: additionalValue = fmtRange(Math.round(fin.totalLo * (75/utilRate - 1)), Math.round(fin.totalHi * (75/utilRate - 1))) (only if utilRate > 0)
+
+  If providers < totalProviders:
+  Expand to [totalProviders] providers → additional [fmtRange] / yr
+  Compute: perProvLo = fin.totalLo / providers, perProvHi = fin.totalHi / providers, additional = fmtRange(Math.round(perProvLo * (totalProviders - providers)), Math.round(perProvHi * (totalProviders -
+  providers))) (only if providers > 0)
+
+  Section 3 — Concrete Next Steps (3 items, numbered):
+  These should be dynamically derived from maturity stage:
+
+  If maturityIdx === 0 (Unmeasured):
+  1. "Establish before/after data in at least one domain before the next EBR."
+  2. "Drive adoption to 20% — the minimum threshold for measurable signal."
+  3. "Identify one provider champion to anchor the internal measurement narrative."
+
+  If maturityIdx === 1 (Signaling):
+  1. "Expand before/after tracking to ${3 - activeDomains} more domain${...} — 3 domains is the Validated threshold."
+  2. "Run a structured Abridge vs. non-Abridge encounter analysis for CMO review."
+  3. "Share a one-page findings brief with your finance team — the data is there."
+
+  If maturityIdx === 2 (Validated):
+  1. "Prepare a formal outcomes report for CFO and CMO — you have board-ready data."
+  2. "Drive adoption to 70%+ to reach Strategic maturity."
+  3. "Set one specific expansion target — adoption depth or provider count — and name an owner."
+
+  If maturityIdx === 3 (Strategic):
+  1. "Publish findings internally — this report is board-level proof."
+  2. "Explore a second care setting to add a new measurement category."
+  3. "Partner with Abridge to document this as a case study."
+
+  Footer as before. Update TOTAL to 4 (plus cover).
+
+  ---
+  Do not change anything outside the MeasureEBR component body. Keep all imports, computeFinancials, helper functions, and generateMeasurePDF exactly as they are.
+
+✻ Brewed for 2m 38s · 1 background task still running (↓ to manage)
+
+❯ okay one thing i noticed.. in the measure workflow and even the explore workflow we both have the data request button... the data request page that is created is different looking in both. i like the  
+  background color of the explore workflow path one more than the measure workflow.. can we align on the UX of both of these. and the instructions... i dont like the card width being a little off.. this 
+   data request has to be very fucking clear because i dont want our partners being like wtf is this... and that shit not being a thing... so need help out there for sure                                 
+
+⏺ Let me find both data request components first.
+
+⏺ Explore(Find data request components)
+  ⎿  Done (31 tool uses · 34.0k tokens · 43s)
+  (ctrl+o to expand)
+
+⏺ Read 2 files (ctrl+o to expand)
+
+⏺ Okay I can see exactly what's happening. Two different components doing the same job with different UX:
+
+  - Measure uses DataRequestModal — dark #1A1A1A header, max-w-md width, 3 plain bullet steps, URL in a separate section below a border. Copy is vague.
+  - Explore uses DataRequestDialog — clean all-white, sm:max-w-[480px], numbered steps with connecting timeline lines, URL + copy button inline. Much better.
+
+  The fix is: rewrite DataRequestModal to match DataRequestDialog's guide phase design exactly (no pick phase needed since Measure already knows the setting). Then tighten the copy in both so it's
+  unmistakably clear to the partner what they're being asked to do.
+
+  Problems in the current copy across both:
+  - "Send it to your partner or internal champion" — who is that? Say it plainly.
+  - "They fill out the form and send it back to you" — what form? What do they fill out? How many questions?
+  - "Once submitted, they'll download a PDF" — implies the submission IS the PDF, which is confusing
+  - Neither version says what happens AFTER the partner fills it in from the CSM's perspective
+
+  Here's the Replit prompt:
+
+  ---
+  Make two changes:
+
+  ---
+  Change 1 — Rewrite DataRequestModal.tsx
+
+  File: client/src/components/DataRequestModal.tsx
+
+  Replace the entire file content with:
+
+  import { useState } from "react";
+  import { Copy, Check, Link, Send } from "lucide-react";
+  import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+  } from "@/components/ui/dialog";
+
+  interface DataRequestModalProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    url: string;
+    settingLabel?: string;
+  }
+
+  export default function DataRequestModal({ open, onOpenChange, url, settingLabel }: DataRequestModalProps) {
+    const [copied, setCopied] = useState(false);
+    const [copyFailed, setCopyFailed] = useState(false);
+
+    const handleCopy = async () => {
+      setCopyFailed(false);
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      } catch {
+        setCopyFailed(true);
+      }
+    };
+
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[480px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden" data-testid="dialog-data-request-modal">
+
+          <DialogHeader className="px-7 pt-7 pb-1">
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-8 h-8 rounded-lg bg-[#FFF3EE] flex items-center justify-center">
+                <Send className="w-4 h-4 text-[#EA2C00]" />
+              </div>
+              <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                Send a Data Request
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-[#888888] text-[13px] mt-1 leading-relaxed">
+              {settingLabel
+                ? `Share this link to collect deployment data for ${settingLabel}.`
+                : "Share this link so your contact can enter their deployment data."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="px-7 pt-5 pb-7 space-y-0">
+
+            {/* Step 1 */}
+            <div className="flex items-start gap-3.5">
+              <div className="flex flex-col items-center flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-[11px] font-bold">1</div>
+                <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
+              </div>
+              <div className="flex-1 min-w-0 pb-5">
+                <p className="text-[13px] font-semibold text-[#1A1A1A] mb-2.5">Copy and send this link</p>
+                <p className="text-[12px] text-[#999999] mb-2.5 leading-relaxed">
+                  Send it to whoever at the health system has access to Abridge utilization and deployment data — usually the IT or clinical informatics contact.
+                </p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0 bg-[#FAF8F5] border border-[#E8E2DA] rounded-lg px-3.5 py-2.5 font-mono text-[11px] text-[#666666] truncate select-all" data-testid="text-data-request-url">
+                    {url}
+                  </div>
+                  <button
+                    onClick={handleCopy}
+                    className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
+                      copied ? "bg-emerald-600 text-white" : "bg-[#1A1A1A] text-white hover:bg-[#333333]"
+                    }`}
+                    data-testid="button-copy-data-request-link"
+                  >
+                    {copied ? <><Check className="w-3.5 h-3.5" />Copied!</> : <><Copy className="w-3.5 h-3.5" />Copy</>}
+                  </button>
+                </div>
+                {copyFailed && (
+                  <p className="text-[11px] text-red-500 mt-1.5">Couldn't copy — select the link above and copy manually.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex items-start gap-3.5">
+              <div className="flex flex-col items-center flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">2</div>
+                <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
+              </div>
+              <div className="pb-5">
+                <p className="text-[13px] font-semibold text-[#1A1A1A]">They answer ~8 questions</p>
+                <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">They'll open the link in any browser and enter their Abridge deployment details: number of providers, encounter volume,
+  utilization rate, and go-live date.</p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex items-start gap-3.5">
+              <div className="flex flex-col items-center flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">3</div>
+              </div>
+              <div className="pb-1">
+                <p className="text-[13px] font-semibold text-[#1A1A1A]">They send you the completed link</p>
+                <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">Once they've filled it in, they share the link back with you. Opening it in your browser loads the calculator pre-filled with
+  their data — ready to run.</p>
+              </div>
+            </div>
+
+            <div className="pt-5">
+              <button
+                onClick={() => onOpenChange(false)}
+                className="w-full h-10 rounded-xl text-[13px] font-medium bg-[#F5F3F0] text-[#666666] hover:bg-[#ECEAE6] hover:text-[#1A1A1A] transition-all duration-200"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  ---
+  Change 2 — Update guide phase copy in DataRequestDialog.tsx
+
+  File: client/src/components/DataRequestDialog.tsx
+
+  In the phase === 'guide' section, replace Step 2 and Step 3 copy only:
+
+  Find:
+                <p className="text-[13px] font-semibold text-[#1A1A1A]">Partner fills out the form</p>
+                <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">They'll open the link and enter their deployment data for the selected care settings.</p>
+  Replace with:
+                <p className="text-[13px] font-semibold text-[#1A1A1A]">They answer ~8 questions</p>
+                <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">They'll open the link in any browser and enter their Abridge deployment details: providers, encounter volume, utilization rate,
+  and go-live date.</p>
+
+  Find:
+                <p className="text-[13px] font-semibold text-[#1A1A1A]">They send the completed data</p>
+                <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">Once submitted, they'll download a PDF with their data to share with you.</p>
+  Replace with:
+                <p className="text-[13px] font-semibold text-[#1A1A1A]">They send you the completed link</p>
+                <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">Once they've filled it in, they share the link back with you. Opening it in your browser loads the calculator pre-filled with
+  their data — ready to run.</p>
+
+  Also update the DialogDescription subtitle in the guide phase. Find:
+                <DialogDescription className="text-[#888888] text-[13px] mt-1 leading-relaxed">
+                  Send this link to collect deployment data for {settingLabels}.
+                </DialogDescription>
+  Replace with:
+                <DialogDescription className="text-[#888888] text-[13px] mt-1 leading-relaxed">
+                  Share this link with whoever at the health system has access to Abridge utilization data — usually IT or clinical informatics.
+                </DialogDescription>
+
+  ---
+  No other changes needed. Do not modify any other files.
+
+✻ Brewed for 2m 2s · 1 background task still running (↓ to manage)
+
+❯ hold on hold on... a lot of fucking quesitons now.. i thought this thing worked where they can only download the pdf and send it back to us.. im less concerned with the pop up that copies the link and 
+   sends it to the partner. im more talking about when the partner receives the link.. what should be at the top of that.. im thinking like i work at a health system i receive this link. i click on it.. 
+   and now.. i need instructions and a very fucking easy way of knowing what to do... thts what i want to strategize about... so thats the stuff i want..                                                  
+
+⏺ Got it. Let me look at what the partner actually lands on.
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Okay now I've seen the full thing. Here's what the partner actually lands on and what's wrong with it:
+
+  ---
+  What the partner currently sees
+
+  Logo → orange setting pill → "Help Us Tell Your Story" → vague subtext → 3-step instruction card → immediately a 6-field form → then 5-8 domain cards with metrics → then export at the bottom.
+
+  ---
+  What's broken at the top
+
+  1. "Help Us Tell Your Story" is the worst headline for this.
+  The person opening this link is likely an IT analyst, clinical informatics manager, or CMO admin. They clicked a link they got from an Abridge rep. They have zero context. "Help Us Tell Your Story" sounds
+  like a marketing campaign, not a form. Their first thought is what story, whose story, tell who?
+
+  2. There's no context about WHY they're here.
+  Nothing on the page says "Your Abridge team sent you this to prepare your upcoming Executive Business Review." The partner doesn't know this is for their EBR prep. They don't know who asked them to do this
+   or what happens to their data.
+
+  3. The most critical information is buried.
+  "This form doesn't save" appears as a tiny italic line near the bottom, inside the export card, which nobody sees until they've already filled everything out. If they close the tab, it's all gone. That
+  warning needs to be the first thing after the headline — not a footnote.
+
+  4. The instructions don't close the loop.
+  Step 2 says "Download the PDF when done" — but doesn't say then what? Send it where? To whom? The partner downloads a PDF and then sits there wondering what to do with it.
+
+  5. "Mthly Recording Users" — that label is truncated. Nobody outside of Abridge knows what an MRU is.
+
+  6. "Copy as Text" split the CTA. There's a Download PDF button AND a Copy as Text button at the bottom. Two competing primary actions. The partner will pause, think "which one do I use?", and potentially
+  do the wrong one.
+
+  ---
+  What the top of the page should do
+
+  The partner needs to know 5 things in the first 10 seconds:
+  1. Who sent this and why — "Your Abridge rep is preparing an Executive Business Review for your organization. They asked you to fill this in."
+  2. How long it takes — "~10 minutes."
+  3. What to do with the result — "Download the PDF and send it back."
+  4. Permission to be incomplete — "Skip anything you don't track. Partial data is useful."
+  5. The critical warning — "This doesn't save — download before closing the tab."
+
+  ---
+  Proposed top-of-page redesign
+
+  [Abridge logo — centered]
+
+  [Setting pill: Outpatient]
+
+  HEADLINE: "Your Abridge rep needs your deployment data"
+
+  SUBTEXT: "They're building an Executive Business Review for [org name if known].
+  Fill in what you can — it takes about 10 minutes.
+  Skip anything your team doesn't measure."
+
+  [Privacy trust strip]:
+    ✓ No login required  ·  ✓ Nothing stored on a server  ·  ✓ Works on any device
+
+  [Amber warning banner]:
+    ⚠  Download the PDF before closing this tab — this form doesn't autosave.
+
+  --- then the form starts ---
+
+  Bottom CTA becomes one button only: big red "Download PDF" — with copy below it: "Send this PDF to your Abridge rep once downloaded." Cut "Copy as Text."
+
+  ---
+  Two questions before we build this:
+
+  1. Does the link ever include the Abridge rep's name or org name in the URL state, so we could say "[Name] at Abridge is preparing a review for [Org]"? Or is it always anonymous?
+  2. Do you want "download PDF + send it back" to stay as the mechanism, or do you want to explore the idea of a "submit" button that sends the data directly to the rep somehow (email, webhook)?
+
+✻ Crunched for 1m 5s · 1 background task still running (↓ to manage)
+
+❯ I agree with you. Now number 1 - we should include the reps name and org name. Because we send it specific to our partner.. I want the download pdf and send it back to be the flow. I just want a UX    
+  and flow that is so simple for someone to understand. because remember we are going to need to change the explore path.. and the measure path.. so both of these are going to need instructions.         
+  obviously the data on each page is different in these two paths..                                                                                                                                        
+
+⏺ Let me check what the Explore intake page looks like and what's currently in the URL state before we design anything.
+
+⏺ Searched for 1 pattern, read 2 files (ctrl+o to expand)
+
+⏺ Good. Now let me check intakeUrlState.ts to see the Explore preseed structure before we design the full solution.
+
+⏺ Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ Now I have everything I need. Here's the full picture and the Replit prompt:
+
+  What needs to change across 7 files:
+  - Add repName + orgName to both preseed URL state interfaces
+  - Both dialogs get a name-entry step before generating the link
+  - Both intake pages get a complete header redesign using those values
+  - The Explore dialog already handles the generation flow cleanly — just needs name fields added to the pick phase
+  - The Measure modal needs a new "setup" phase before showing the link
+
+  ---
+  Replit prompt:
+
+  Make the following changes across 7 files. Each change is described precisely.
+
+  ---
+  File 1 — client/src/lib/dataRequestUrlState.ts
+
+  Add repName and orgName to the DataFormPreseed interface:
+
+  Find:
+  export interface DataFormPreseed {
+    settings: MeasureCareSetting[];
+    setting?: MeasureCareSetting;
+    preSelectedIds?: string[];
+  }
+  Replace with:
+  export interface DataFormPreseed {
+    settings: MeasureCareSetting[];
+    setting?: MeasureCareSetting;
+    preSelectedIds?: string[];
+    repName?: string;
+    orgName?: string;
+  }
+
+  ---
+  File 2 — client/src/lib/intakeUrlState.ts
+
+  Add repName and orgName to the IntakeFormPreseed interface:
+
+  Find:
+  export interface IntakeFormPreseed {
+    preSelectedSettings?: ExploreCareSetting[];
+  }
+  Replace with:
+  export interface IntakeFormPreseed {
+    preSelectedSettings?: ExploreCareSetting[];
+    repName?: string;
+    orgName?: string;
+  }
+
+  ---
+  File 3 — client/src/components/DataRequestModal.tsx
+
+  This component is used in the Measure path. Fully replace its contents:
+
+  import { useState } from "react";
+  import { Copy, Check, Send, Loader2, ArrowRight } from "lucide-react";
+  import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+  } from "@/components/ui/dialog";
+
+  interface DataRequestModalProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    generateUrl: (repName: string, orgName: string) => Promise<string>;
+    orgName?: string;
+  }
+
+  export default function DataRequestModal({ open, onOpenChange, generateUrl, orgName: initialOrgName = "" }: DataRequestModalProps) {
+    const [phase, setPhase] = useState<'setup' | 'guide'>('setup');
+    const [repName, setRepName] = useState("");
+    const [orgName, setOrgName] = useState(initialOrgName);
+    const [url, setUrl] = useState("");
+    const [generating, setGenerating] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [copyFailed, setCopyFailed] = useState(false);
+
+    const reset = () => {
+      setPhase('setup');
+      setRepName("");
+      setOrgName(initialOrgName);
+      setUrl("");
+      setGenerating(false);
+      setCopied(false);
+      setCopyFailed(false);
+    };
+
+    const handleOpenChange = (v: boolean) => {
+      if (!v) reset();
+      onOpenChange(v);
+    };
+
+    const handleGenerate = async () => {
+      if (!repName.trim() || generating) return;
+      setGenerating(true);
+      try {
+        const generatedUrl = await generateUrl(repName.trim(), orgName.trim());
+        setUrl(generatedUrl);
+        setPhase('guide');
+      } catch {
+        // stay on setup
+      } finally {
+        setGenerating(false);
+      }
+    };
+
+    const handleCopy = async () => {
+      setCopyFailed(false);
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      } catch {
+        setCopyFailed(true);
+      }
+    };
+
+    return (
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[480px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden" data-testid="dialog-data-request-modal">
+
+          {phase === 'setup' ? (
+            <>
+              <DialogHeader className="px-7 pt-7 pb-1">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF3EE] flex items-center justify-center">
+                    <Send className="w-4 h-4 text-[#EA2C00]" />
+                  </div>
+                  <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                    Send a Data Request
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-[#888888] text-[13px] mt-1 leading-relaxed">
+                  We'll personalize the link with your name so the partner knows who sent it.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-7 pt-5 pb-7 space-y-4">
+                <div>
+                  <label className="block text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-1.5">Your name at Abridge</label>
+                  <input
+                    type="text"
+                    value={repName}
+                    onChange={e => setRepName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleGenerate(); }}
+                    placeholder="e.g. Sarah"
+                    autoFocus
+                    className="w-full bg-[#FAFAF8] border border-[#E8E2DA] rounded-xl px-4 h-11 text-sm text-[#1A1A1A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20
+  focus:border-[#EA2C00] transition-colors"
+                    data-testid="input-rep-name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-1.5">Organization name</label>
+                  <input
+                    type="text"
+                    value={orgName}
+                    onChange={e => setOrgName(e.target.value)}
+                    placeholder="e.g. Valley Health System"
+                    className="w-full bg-[#FAFAF8] border border-[#E8E2DA] rounded-xl px-4 h-11 text-sm text-[#1A1A1A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20
+  focus:border-[#EA2C00] transition-colors"
+                    data-testid="input-org-name"
+                  />
+                </div>
+                <button
+                  onClick={handleGenerate}
+                  disabled={!repName.trim() || generating}
+                  className={`w-full h-11 rounded-xl text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                    repName.trim()
+                      ? 'bg-[#1A1A1A] text-white hover:bg-[#333333]'
+                      : 'bg-[#F0EEEC] text-[#BBBBBB] cursor-not-allowed'
+                  }`}
+                  data-testid="button-generate-link"
+                >
+                  {generating ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" />Generating…</>
+                  ) : (
+                    <>Generate Link<ArrowRight className="w-4 h-4" /></>
+                  )}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <DialogHeader className="px-7 pt-7 pb-1">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF3EE] flex items-center justify-center">
+                    <Send className="w-4 h-4 text-[#EA2C00]" />
+                  </div>
+                  <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                    Share with {orgName || "Your Partner"}
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-[#888888] text-[13px] mt-1 leading-relaxed">
+                  Send this link to whoever at {orgName || "the health system"} has access to Abridge utilization and deployment data.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-7 pt-5 pb-7 space-y-0">
+                <div className="flex items-start gap-3.5">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-[11px] font-bold">1</div>
+                    <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
+                  </div>
+                  <div className="flex-1 min-w-0 pb-5">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A] mb-2.5">Copy and send this link</p>
+                    <p className="text-[12px] text-[#999999] mb-2.5 leading-relaxed">Usually the IT contact, clinical informatics lead, or whoever pulls Abridge utilization reports.</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0 bg-[#FAF8F5] border border-[#E8E2DA] rounded-lg px-3.5 py-2.5 font-mono text-[11px] text-[#666666] truncate select-all" 
+  data-testid="text-data-request-url">
+                        {url}
+                      </div>
+                      <button
+                        onClick={handleCopy}
+                        className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
+                          copied ? "bg-emerald-600 text-white" : "bg-[#1A1A1A] text-white hover:bg-[#333333]"
+                        }`}
+                        data-testid="button-copy-data-request-link"
+                      >
+                        {copied ? <><Check className="w-3.5 h-3.5" />Copied!</> : <><Copy className="w-3.5 h-3.5" />Copy</>}
+                      </button>
+                    </div>
+                    {copyFailed && <p className="text-[11px] text-red-500 mt-1.5">Couldn't copy — select the link above and copy manually.</p>}
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">2</div>
+                    <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
+                  </div>
+                  <div className="pb-5">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A]">They fill in ~10 minutes of data</p>
+                    <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">The link opens a form with their name pre-filled. They enter deployment details and the metrics they track — before/after
+  values where available.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">3</div>
+                  </div>
+                  <div className="pb-1">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A]">They download a PDF and send it back</p>
+                    <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">The form generates a summary PDF of their answers. They email it back to you — you use it to finish the analysis.</p>
+                  </div>
+                </div>
+
+                <div className="pt-5">
+                  <button
+                    onClick={() => handleOpenChange(false)}
+                    className="w-full h-10 rounded-xl text-[13px] font-medium bg-[#F5F3F0] text-[#666666] hover:bg-[#ECEAE6] hover:text-[#1A1A1A] transition-all duration-200"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  ---
+  File 4 — client/src/components/DataRequestDialog.tsx
+
+  In the 'pick' phase, add rep name and org name inputs at the top before the care setting cards. Also update the generateUrl prop type to accept name fields.
+
+  Find the interface definition:
+  interface DataRequestDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    generateUrl: (settings: string[]) => Promise<string>;
+    careSettingOptions?: CareSettingOption[];
+    singleSelect?: boolean;
+  }
+  Replace with:
+  interface DataRequestDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    generateUrl: (settings: string[], repName: string, orgName: string) => Promise<string>;
+    careSettingOptions?: CareSettingOption[];
+    singleSelect?: boolean;
+    defaultOrgName?: string;
+  }
+
+  Find:
+  export function DataRequestDialog({ open, onOpenChange, generateUrl, careSettingOptions, singleSelect = false }: DataRequestDialogProps) {
+    const visibleSettings = careSettingOptions ?? CARE_SETTINGS;
+    const [phase, setPhase] = useState<'pick' | 'guide'>('pick');
+    const [selected, setSelected] = useState<string[]>([]);
+    const [url, setUrl] = useState('');
+    const [generating, setGenerating] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [copyFailed, setCopyFailed] = useState(false);
+    const { toast } = useToast();
+  Replace with:
+  export function DataRequestDialog({ open, onOpenChange, generateUrl, careSettingOptions, singleSelect = false, defaultOrgName = "" }: DataRequestDialogProps) {
+    const visibleSettings = careSettingOptions ?? CARE_SETTINGS;
+    const [phase, setPhase] = useState<'pick' | 'guide'>('pick');
+    const [selected, setSelected] = useState<string[]>([]);
+    const [repName, setRepName] = useState("");
+    const [orgName, setOrgName] = useState(defaultOrgName);
+    const [url, setUrl] = useState('');
+    const [generating, setGenerating] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [copyFailed, setCopyFailed] = useState(false);
+    const { toast } = useToast();
+
+  Find the reset function and add the two new state resets:
+    const reset = useCallback(() => {
+      setPhase('pick');
+      setSelected([]);
+      setUrl('');
+      setCopied(false);
+      setCopyFailed(false);
+      setGenerating(false);
+    }, []);
+  Replace with:
+    const reset = useCallback(() => {
+      setPhase('pick');
+      setSelected([]);
+      setRepName("");
+      setOrgName(defaultOrgName);
+      setUrl('');
+      setCopied(false);
+      setCopyFailed(false);
+      setGenerating(false);
+    }, [defaultOrgName]);
+
+  Find the handleContinue function:
+    const handleContinue = async () => {
+      if (selected.length === 0 || generating) return;
+      setGenerating(true);
+      try {
+        const generatedUrl = await generateUrl(selected);
+  Replace with:
+    const handleContinue = async () => {
+      if (selected.length === 0 || !repName.trim() || generating) return;
+      setGenerating(true);
+      try {
+        const generatedUrl = await generateUrl(selected, repName.trim(), orgName.trim());
+
+  In the 'pick' phase JSX, find the DialogHeader block:
+              <DialogHeader className="px-7 pt-7 pb-1">
+                <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                  Send a Data Request
+                </DialogTitle>
+                <DialogDescription className="text-[#888888] text-[13px] mt-1.5 leading-relaxed">
+                  {singleSelect
+                    ? 'Choose the care setting to request data for.'
+                    : 'Select the care settings you need data for.'}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-7 pt-4 pb-7 space-y-5">
+                <div className={`grid gap-2.5 ${visibleSettings.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+  Replace with:
+              <DialogHeader className="px-7 pt-7 pb-1">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF3EE] flex items-center justify-center">
+                    <Send className="w-4 h-4 text-[#EA2C00]" />
+                  </div>
+                  <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                    Send a Data Request
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-[#888888] text-[13px] mt-1.5 leading-relaxed">
+                  We'll personalize the link so the partner knows who sent it and why.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-7 pt-4 pb-7 space-y-5">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-1.5">Your name at Abridge</label>
+                    <input
+                      type="text"
+                      value={repName}
+                      onChange={e => setRepName(e.target.value)}
+                      placeholder="e.g. Sarah"
+                      autoFocus
+                      className="w-full bg-[#FAFAF8] border border-[#E8E2DA] rounded-xl px-3.5 h-10 text-sm text-[#1A1A1A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20
+  focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-rep-name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-1.5">Organization</label>
+                    <input
+                      type="text"
+                      value={orgName}
+                      onChange={e => setOrgName(e.target.value)}
+                      placeholder="e.g. Valley Health"
+                      className="w-full bg-[#FAFAF8] border border-[#E8E2DA] rounded-xl px-3.5 h-10 text-sm text-[#1A1A1A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20
+  focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-org-name"
+                    />
+                  </div>
+                </div>
+                <div className="border-t border-[#F0EEEC] pt-4">
+                  <p className="text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-2.5">{singleSelect ? 'Care Setting' : 'Care Settings'}</p>
+                </div>
+                <div className={`grid gap-2.5 ${visibleSettings.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+
+  Also update the continue button's disabled condition and add Send to the imports at the top of the file. Find:
+  import { Copy, Check, Loader2, ArrowRight, Stethoscope, Zap, ClipboardList, HeartPulse, Send } from "lucide-react";
+  This import already includes Send — no change needed.
+
+  Update the button disabled state. Find:
+                  disabled={selected.length === 0 || generating}
+                  className={`w-full h-11 rounded-xl text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                    selected.length > 0
+                      ? 'bg-[#1A1A1A] text-white hover:bg-[#333333] shadow-sm'
+                      : 'bg-[#F0EEEC] text-[#BBBBBB] cursor-not-allowed'
+                  }`}
+  Replace with:
+                  disabled={selected.length === 0 || !repName.trim() || generating}
+                  className={`w-full h-11 rounded-xl text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                    selected.length > 0 && repName.trim()
+                      ? 'bg-[#1A1A1A] text-white hover:bg-[#333333] shadow-sm'
+                      : 'bg-[#F0EEEC] text-[#BBBBBB] cursor-not-allowed'
+                  }`}
+
+  Also update the guide phase step 2 and step 3 copy to match the Measure path copy (same as what we updated earlier in DataRequestModal).
+
+  ---
+  File 5 — client/src/pages/intake/MeasureDataRequest.tsx
+
+  Replace the header section of the component. Find this entire block (starts at return ( and ends just before the <div className="w-full max-w-2xl space-y-6">):
+
+    return (
+      <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4">
+        <div className="w-full max-w-2xl mb-8">
+          <div className="flex items-center justify-center mb-6">
+            <img src={abridgeLogo} alt="Abridge" className="h-6" />
+          </div>
+
+          <div className="flex justify-center gap-2 flex-wrap mb-4">
+            {settings.map(s => (
+              <div key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
+                {SETTING_LABELS[s]}
+              </div>
+            ))}
+          </div>
+
+          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2 text-center font-abridge uppercase tracking-tight" data-testid="text-data-request-title">
+            Help Us Tell Your Story
+          </h1>
+
+          <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto mb-4">
+            Select the metrics you track and enter what you have. You don't need both before and after — partial data is useful too.
+          </p>
+
+          <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 mb-6 max-w-md mx-auto space-y-3">
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
+                <p className="text-xs text-[#888888] mt-0.5">Before only is fine. After only is fine. Add context notes if a number needs explanation.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download the PDF when done</p>
+                <p className="text-xs text-[#888888] mt-0.5">This form doesn't save. When you're finished, hit Download — that's what gets shared with your Abridge team.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Skip anything you don't track</p>
+                <p className="text-xs text-[#888888] mt-0.5">Only check the metrics your team actually measures. Incomplete is better than estimated.</p>
+              </div>
+            </div>
+          </div>
+
+  Replace with:
+
+    const repName = preseed?.repName;
+    const orgNameFromPreseed = preseed?.orgName;
+    const contextLine = repName && orgNameFromPreseed
+      ? `${repName} at Abridge is preparing an Executive Business Review for ${orgNameFromPreseed}.`
+      : repName
+        ? `${repName} at Abridge sent you this form.`
+        : "Your Abridge team sent you this form.";
+
+    return (
+      <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4">
+        <div className="w-full max-w-2xl mb-8">
+          <div className="flex items-center justify-center mb-6">
+            <img src={abridgeLogo} alt="Abridge" className="h-6" />
+          </div>
+
+          <div className="flex justify-center gap-2 flex-wrap mb-5">
+            {settings.map(s => (
+              <div key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
+                {SETTING_LABELS[s]}
+              </div>
+            ))}
+          </div>
+
+          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2 text-center font-abridge uppercase tracking-tight" data-testid="text-data-request-title">
+            We need your help
+          </h1>
+
+          <p className="text-sm text-[#444444] leading-relaxed text-center max-w-lg mx-auto mb-1">
+            {contextLine}
+          </p>
+          <p className="text-sm text-[#666666] leading-relaxed text-center max-w-lg mx-auto mb-5">
+            They need a few numbers from you — fill in what you can and download the PDF when done. Takes about 10 minutes.
+          </p>
+
+          <div className="flex items-center justify-center gap-4 text-[11px] text-[#AAAAAA] mb-5">
+            <span>✓ No login required</span>
+            <span>·</span>
+            <span>✓ Nothing stored on a server</span>
+            <span>·</span>
+            <span>✓ Works on any device</span>
+          </div>
+
+          <div className="bg-[#FFFBF0] border border-[#F0E0A0] rounded-xl px-4 py-3 mb-6 max-w-lg mx-auto flex items-start gap-3">
+            <span className="text-base leading-none mt-0.5">⚠️ </span>
+            <p className="text-sm text-[#7A6000] font-medium leading-snug">
+              Download the PDF before closing this tab — this form doesn't autosave.
+            </p>
+          </div>
+
+          <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 mb-6 max-w-lg mx-auto space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Enter your deployment details</p>
+                <p className="text-xs text-[#888888] mt-0.5">Organization name, go-live date, provider count, and encounter volume. Estimates are fine.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Select and fill in your metrics</p>
+                <p className="text-xs text-[#888888] mt-0.5">Only pick the metrics your team actually measures. Before only is fine. After only is fine. Skip anything you don't track.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download the PDF and send it back</p>
+                <p className="text-xs text-[#888888] mt-0.5">
+                  Hit Download at the bottom of the page, then email the PDF to {repName ? `${repName} at Abridge` : "your Abridge rep"}.
+                </p>
+              </div>
+            </div>
+          </div>
+
+  Also fix the label "Mthly Recording Users" — find:
+                    <label className="block text-[10px] text-gray-400 mb-1">Mthly Recording Users</label>
+  Replace with:
+                    <label className="block text-[10px] text-gray-400 mb-1">Monthly Active Users</label>
+
+  Also remove the "Copy as Text" button and its associated state/handler entirely from the export section at the bottom. Remove the copied, fallbackText state variables and handleCopy function and the "Copy
+  as Text" button JSX. Keep only the Download PDF button. Update the "Ready to share" copy:
+
+  Find:
+                <p className="text-xs text-[#999999] mb-4">Download as a PDF or copy as text to send to your Abridge partner.</p>
+  Replace with:
+                <p className="text-xs text-[#999999] mb-4">Download the PDF, then email it to {repName ? `${repName} at Abridge` : "your Abridge rep"}.</p>
+
+  ---
+  File 6 — client/src/pages/intake/ExploreIntakeForm.tsx
+
+  Replace the header section. Find the entire header block:
+
+        <div className="w-full max-w-2xl mb-10 text-center">
+          <div className="flex items-center justify-center mb-8">
+            <img src={abridgeLogo} alt="Abridge" className="h-7" />
+          </div>
+          <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Pre-Call Intake</p>
+          <h1 className="text-3xl font-bold text-black mb-3 uppercase tracking-tight" data-testid="text-intake-title">Help us prepare for our call</h1>
+          <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto mb-5">
+            Share what you know about your organization before we connect. You don't need every number — fill in what you have.
+          </p>
+
+          <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 max-w-md mx-auto space-y-3 text-left">
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Select your care settings</p>
+                <p className="text-xs text-[#888888] mt-0.5">Only pick the ones Abridge is deployed — or being considered — in your org.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
+                <p className="text-xs text-[#888888] mt-0.5">Estimates are fine. Skip anything you're unsure about — blank is better than a guess.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download before the call</p>
+                <p className="text-xs text-[#888888] mt-0.5">Your answers stay in this browser tab. Download the PDF and share it with your Abridge team so we can prepare.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+  Replace with:
+
+        <div className="w-full max-w-2xl mb-10 text-center">
+          <div className="flex items-center justify-center mb-6">
+            <img src={abridgeLogo} alt="Abridge" className="h-7" />
+          </div>
+
+          {(() => {
+            const repName = preseed?.repName;
+            const orgName = preseed?.orgName;
+            const contextLine = repName && orgName
+              ? `${repName} at Abridge is preparing an ROI analysis for ${orgName}.`
+              : repName
+                ? `${repName} at Abridge sent you this form.`
+                : "Your Abridge team sent you this form.";
+            return (
+              <>
+                <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2 uppercase tracking-tight" data-testid="text-intake-title">
+                  We need your help
+                </h1>
+                <p className="text-sm text-[#444444] leading-relaxed max-w-lg mx-auto mb-1">
+                  {contextLine}
+                </p>
+                <p className="text-sm text-[#666666] leading-relaxed max-w-lg mx-auto mb-5">
+                  They need some baseline numbers to run the analysis. Fill in what you have — estimates are fine. Takes about 10 minutes.
+                </p>
+                <div className="flex items-center justify-center gap-4 text-[11px] text-[#AAAAAA] mb-5">
+                  <span>✓ No login required</span>
+                  <span>·</span>
+                  <span>✓ Nothing stored on a server</span>
+                  <span>·</span>
+                  <span>✓ Works on any device</span>
+                </div>
+                <div className="bg-[#FFFBF0] border border-[#F0E0A0] rounded-xl px-4 py-3 mb-6 max-w-lg mx-auto flex items-start gap-3 text-left">
+                  <span className="text-base leading-none mt-0.5">⚠️ </span>
+                  <p className="text-sm text-[#7A6000] font-medium leading-snug">
+                    Download the PDF before closing this tab — this form doesn't autosave.
+                  </p>
+                </div>
+                <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 max-w-lg mx-auto space-y-3 text-left">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Choose your care settings</p>
+                      <p className="text-xs text-[#888888] mt-0.5">Only the ones where Abridge is deployed or being evaluated at your organization.</p>
+                    </div>
+                  </div>
+                  <div className="h-px bg-[#F0EBE3]" />
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in your numbers</p>
+                      <p className="text-xs text-[#888888] mt-0.5">Estimates are fine. Skip anything you're unsure about — a blank field is better than a guess.</p>
+                    </div>
+                  </div>
+                  <div className="h-px bg-[#F0EBE3]" />
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download the PDF and send it back</p>
+                      <p className="text-xs text-[#888888] mt-0.5">
+                        Hit Download at the bottom, then email the PDF to {repName ? `${repName} at Abridge` : "your Abridge rep"}.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+
+  Also change the background from bg-[#FAFAF9] to bg-[#F5F0EB] to match the Measure path:
+
+  Find:
+      <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4">
+  Replace with:
+      <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-12 px-4">
+
+  ---
+  File 7 — Find where DataRequestModal is used (likely client/src/pages/measure/MeasureDataEntry.tsx) and update the call
+
+  Search for where DataRequestModal is imported and used. In that file, the modal currently receives a url prop. Update it to receive a generateUrl prop and pass orgName from state.
+
+  Find the usage pattern (it will look something like):
+  <DataRequestModal
+    open={...}
+    onOpenChange={...}
+    url={dataRequestUrl}
+  />
+
+  Replace with:
+  <DataRequestModal
+    open={...}
+    onOpenChange={...}
+    orgName={state?.deployment?.organizationName || ""}
+    generateUrl={async (repName, orgName) => {
+      const { generateDataFormUrl } = await import('@/lib/dataRequestUrlState');
+      return generateDataFormUrl({
+        settings: [primarySetting],
+        repName,
+        orgName,
+      });
+    }}
+  />
+
+  Remove any existing URL pre-generation state/logic that was feeding the old url prop (variables like dataRequestUrl and the async calls that generated it before the modal opened).
+
+  Also find where DataRequestDialog is used in the Explore path (likely client/src/pages/explore/ExploreCareSettings.tsx) and update the generateUrl callback signature to accept repName and orgName and
+  include them in the preseed:
+
+  Find the generateUrl callback passed to DataRequestDialog. It will look something like:
+  generateUrl={async (settings) => {
+    return generateIntakeFormUrl({ preSelectedSettings: settings as ExploreCareSetting[] });
+  }}
+  Replace with:
+  generateUrl={async (settings, repName, orgName) => {
+    return generateIntakeFormUrl({
+      preSelectedSettings: settings as ExploreCareSetting[],
+      repName,
+      orgName,
+    });
+  }}
+
+  Make sure generateIntakeFormUrl (or whatever the function is called in intakeUrlState.ts) passes through repName and orgName in the encoded preseed — since we already added those fields to the
+  IntakeFormPreseed interface in File 2, the encoding will happen automatically.
+
+  ---
+  Do not change any other files. Do not modify the PDF generation logic, any metric/calculator logic, or any other components.
