@@ -97,7 +97,7 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden" data-testid="dialog-data-request">
+      <DialogContent className="sm:max-w-[560px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto" data-testid="dialog-data-request">
 
         {phase === 'pick' ? (
           <>
@@ -226,8 +226,8 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
                 </div>
                 <div className="flex-1 min-w-0 pb-5">
                   <p className="text-[13px] font-semibold text-[#1A1A1A] mb-2.5">Copy and share this link</p>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 min-w-0 bg-[#FAF8F5] border border-[#E8E2DA] rounded-lg px-3.5 py-2.5 font-mono text-[11px] text-[#666666] truncate select-all" data-testid="text-data-request-url">
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex-1 min-w-0 bg-[#FAF8F5] border border-[#E8E2DA] rounded-lg px-3.5 py-2.5 font-mono text-[11px] text-[#666666] break-all select-all" data-testid="text-data-request-url">
                       {url}
                     </div>
                     <button

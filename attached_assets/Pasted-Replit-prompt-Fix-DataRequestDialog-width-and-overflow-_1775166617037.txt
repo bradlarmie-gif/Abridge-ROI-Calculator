@@ -1,0 +1,25 @@
+Replit prompt — Fix DataRequestDialog width and overflow                                                                                                                                                     
+                                                                                                                                                                                                               
+  In client/src/components/DataRequestDialog.tsx, find the DialogContent element:                                                                                                                              
+                                              
+    <DialogContent className="sm:max-w-[480px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden" ...>                                                                                        
+                                                                                                          
+  Change it to:                                                                                                                                                                                                
+                                                                                                                                                                                                               
+    <DialogContent className="sm:max-w-[560px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto" ...>                                                           
+                                                                                                                                                                                                               
+  Then in the guide phase, find the URL + Copy button row:                                                
+    <div className="flex items-center gap-2">                                                                                                                                                                  
+      <div className="flex-1 min-w-0 bg-[#FAF8F5] ...truncate...">
+      <button ...>Copy</button>                                                                                                                                                                                
+    </div>                                                                                                
+                                                                                                                                                                                                               
+  Change that outer div to:                                                                                                                                                                                    
+    <div className="flex items-center gap-2 mt-2">                                                                                                                                                             
+                                                                                                                                                                                                               
+  And make the URL div not truncate but instead wrap with break-all:                                      
+    <div className="flex-1 min-w-0 bg-[#FAF8F5] border border-[#E8E2DA] rounded-lg px-3.5 py-2.5 font-mono text-[11px] text-[#666666] break-all select-all" ...>                                               
+      {url}                                                                                               
+    </div>                                                                                                                                                                                                     
+  
+  This makes the dialog wider (560px), scrollable on small screens, and ensures the URL wraps instead of getting clipped.  
