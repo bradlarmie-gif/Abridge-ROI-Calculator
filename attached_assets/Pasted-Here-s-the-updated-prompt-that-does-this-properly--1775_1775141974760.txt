@@ -1,0 +1,129 @@
+Here's the updated prompt that does this properly:                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  In client/src/pages/measure/MeasureAllocate.tsx, make the following changes:                                                                                                                                 
+                                              
+  ---                                                                                                                                                                                                          
+  Step 1 — Add the outcome trigger map near the top of the file, after the ATTRIBUTION_PRESETS block:                                                                                                        
+                                                                                                                                                                                                               
+  const UNQUANTIFIED_OUTCOME_TRIGGERS: {  
+    id: string;                                                                                                                                                                                                
+    metricIds: string[];                                                                                                                                                                                       
+    title: string;
+    body: string;                                                                                                                                                                                              
+  }[] = [                                                                                                                                                                                                    
+    {
+      id: 'retention-intent',                                                                                                                                                                                  
+      metricIds: ['likelihood_to_stay', 'burnout_assessment', 'work_outside_work_empirical', 'work_after_hours_perceived'],
+      title: 'Retention intent is a leading indicator',                                                                                                                                                        
+      body: "The model captures replacement cost. It doesn't capture the 6-month productivity ramp of a new hire, the institutional knowledge that leaves with them, or the scheduling gaps while a search is 
+  open.",                                     
+    },                                                                                                                                                                                                         
+    {
+      id: 'provider-presence',                                                                                                                                                                                 
+      metricIds: ['time_to_close', 'time_in_note', 'effort_reduction'],                                                                                                                                      
+      title: 'Documentation burden and provider presence',                                                                                                                                                     
+      body: "Minutes recovered from documentation are minutes the provider is present with the patient. That changes diagnostic quality, patient experience, and provider satisfaction in ways that don't    
+  appear in any cost model.",                 
+    },                                    
+    {
+      id: 'clinical-record',                                                                                                                                                                                   
+      metricIds: ['note_star_rating', 'diagnosis_capture', 'diagnosis_specificity'],
+      title: 'The clinical record as a downstream asset',                                                                                                                                                      
+      body: "Documentation quality affects every system that touches the record — quality reporting, risk stratification, population health analytics, and continuity of care. The billing impact is one     
+  expression of that. The rest doesn't have a line item.",
+    },                                                                                                                                                                                                         
+    {
+      id: 'admin-friction',                                                                                                                                                                                    
+      metricIds: ['clean_claim_rate', 'initial_denial_rate', 'net_collection_rate'],                                                                                                                         
+      title: 'Administrative friction reduction',                                                                                                                                                              
+      body: "Fewer denied claims means less staff time on rework, fewer provider abrasions from audit queries, and faster cash conversion. The human cost of a denied claim rarely shows up in a cost model.",
+    },                                                                                                                                                                                                         
+    {                                     
+      id: 'access',                                                                                                                                                                                            
+      metricIds: ['patients_per_provider_month', 'visits_per_clinician_hour'],                                                                                                                                 
+      title: 'Access as a community asset',
+      body: "More patients seen per provider isn't just revenue — it's reduced wait times, shorter appointment lead times, and more community members who can actually see their doctor this month.",          
+    },                                                                                                                                                                                                       
+    {
+      id: 'risk-adjustment',                                                                                                                                                                                   
+      metricIds: ['hcc_capture', 'hcc_capture_rate', 'wrvu', 'em_level'],
+      title: 'Population health data accuracy',                                                                                                                                                                
+      body: "Better documentation affects how payers understand your patient population's acuity. Undercaptured conditions mean underfunded care — and a population that looks healthier on paper than it    
+  actually is.",                                                                                                                                                                                               
+    },                                    
+  ];                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---                                         
+  Step 2 — Add a useMemo inside the MeasureAllocate component, right before the return statement:                                                                                                              
+                                                                                                                                                                                                             
+  const unquantifiedItems = useMemo(() => {                                                                                                                                                                    
+    const activeMids = new Set(getActiveMetrics(state).map(m => m.metricId));
+                                                                                                                                                                                                               
+    const triggered = UNQUANTIFIED_OUTCOME_TRIGGERS.filter(t =>                                                                                                                                              
+      t.metricIds.some(id => activeMids.has(id))
+    );                                                                                                                                                                                                         
+                                          
+    // Recruitment is always relevant — append if there's room                                                                                                                                                 
+    const recruitment = {                                                                                                                                                                                      
+      id: 'recruitment',
+      title: 'Recruitment differentiation',                                                                                                                                                                    
+      body: "Candidates increasingly ask about ambient documentation during interviews. An Abridge deployment changes the talent conversation before a contract is signed — and that doesn't appear in any cost
+   model.",                                                                                                                                                                                                    
+    };                                                                                                                                                                                                       
+
+    const all = [...triggered, recruitment];                                                                                                                                                                   
+    return all.slice(0, 4);
+  }, [state]);                                                                                                                                                                                                 
+                                                                                                                                                                                                             
+  ---
+  Step 3 — Replace the section-not-counted block. Find:                                                                                                                                                        
+                                              
+  <motion.div                                                                                                                                                                                                  
+    className="bg-[#F5F0EB] rounded-xl border border-[#E5E5E5] p-5 mb-8 max-w-lg mx-auto"                                                                                                                    
+    initial={{ opacity: 0, y: 16 }}                                                                                                                                                                            
+    animate={{ opacity: 1, y: 0 }}            
+    transition={{ delay: 0.35 }}                                                                                                                                                                               
+    data-testid="section-not-counted"                                                                                                                                                                        
+  >                                                                                                                                                                                                            
+    <h3 className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-3">Also Real. Not Quantified.</h3>
+    <div className="space-y-2">                                                                                                                                                                                
+      {[                                                                                                                                                                                                     
+        'Provider satisfaction and intent to stay',
+        'Recruitment advantage ("physicians ask about Abridge")',                                                                                                                                              
+        'Reduced administrative backlog and prior auth delays',
+        'Audit readiness and documentation defensibility',                                                                                                                                                     
+      ].map((item) => (                                                                                                                                                                                      
+        <p key={item} className="text-sm text-[#888888] leading-relaxed">{"\u2022"} {item}</p>                                                                                                                 
+      ))}                                     
+    </div>                                                                                                                                                                                                     
+  </motion.div>                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Replace with:                           
+                                                                                                                                                                                                               
+  {unquantifiedItems.length > 0 && (                                                                                                                                                                           
+    <motion.div
+      className="border-t border-[#F0F0F0] pt-8 mb-8"                                                                                                                                                          
+      initial={{ opacity: 0, y: 16 }}                                                                                                                                                                        
+      animate={{ opacity: 1, y: 0 }}      
+      transition={{ delay: 0.35 }}
+      data-testid="section-not-counted"                                                                                                                                                                        
+    >                                         
+      <p className="text-[11px] uppercase tracking-[2px] text-[#999999] font-semibold mb-6">                                                                                                                   
+        What the model doesn't capture                                                                                                                                                                       
+      </p>                                                                                                                                                                                                     
+      <div className="space-y-6">         
+        {unquantifiedItems.map((item) => (                                                                                                                                                                     
+          <div key={item.id} className="flex gap-4">                                                                                                                                                           
+            <div className="w-0.5 rounded-full bg-[#E5E5E5] flex-shrink-0 self-stretch" />
+            <div>                                                                                                                                                                                              
+              <p className="text-sm font-semibold text-[#1A1A1A] mb-1">{item.title}</p>                                                                                                                      
+              <p className="text-sm text-[#666666] leading-relaxed">{item.body}</p>                                                                                                                            
+            </div>                        
+          </div>                                                                                                                                                                                               
+        ))}                                                                                                                                                                                                    
+      </div>
+    </motion.div>                                                                                                                                                                                              
+  )}                                                                                                                                                                                                         
+
+  Do not modify any other files.                         
