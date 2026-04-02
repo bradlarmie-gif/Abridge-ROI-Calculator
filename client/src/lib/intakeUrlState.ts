@@ -57,6 +57,8 @@ export interface ExploreIntakeResponse {
 
 export interface IntakeFormPreseed {
   preSelectedSettings?: ExploreCareSetting[];
+  repName?: string;
+  orgName?: string;
 }
 
 export function encodeIntake(data: ExploreIntakeResponse): string {
@@ -89,9 +91,13 @@ export function decodeIntakePreseed(encoded: string): IntakeFormPreseed | null {
   }
 }
 
-export async function generateIntakeFormUrl(preSelectedSettings?: ExploreCareSetting[]): Promise<string> {
+export async function generateIntakeFormUrl(opts?: { preSelectedSettings?: ExploreCareSetting[]; repName?: string; orgName?: string }): Promise<string> {
   const { createShortLink } = await import('./shortLinks');
-  const preseed: IntakeFormPreseed = { preSelectedSettings };
+  const preseed: IntakeFormPreseed = {
+    preSelectedSettings: opts?.preSelectedSettings,
+    repName: opts?.repName,
+    orgName: opts?.orgName,
+  };
   const encoded = encodeIntakePreseed(preseed);
   return createShortLink('intake_form', encoded);
 }

@@ -1,0 +1,738 @@
+Replit prompt:
+
+  Make the following changes across 7 files. Each change is described precisely.
+
+  ---
+  File 1 — client/src/lib/dataRequestUrlState.ts
+
+  Add repName and orgName to the DataFormPreseed interface:
+
+  Find:
+  export interface DataFormPreseed {
+    settings: MeasureCareSetting[];
+    setting?: MeasureCareSetting;
+    preSelectedIds?: string[];
+  }
+  Replace with:
+  export interface DataFormPreseed {
+    settings: MeasureCareSetting[];
+    setting?: MeasureCareSetting;
+    preSelectedIds?: string[];
+    repName?: string;
+    orgName?: string;
+  }
+
+  ---
+  File 2 — client/src/lib/intakeUrlState.ts
+
+  Add repName and orgName to the IntakeFormPreseed interface:
+
+  Find:
+  export interface IntakeFormPreseed {
+    preSelectedSettings?: ExploreCareSetting[];
+  }
+  Replace with:
+  export interface IntakeFormPreseed {
+    preSelectedSettings?: ExploreCareSetting[];
+    repName?: string;
+    orgName?: string;
+  }
+
+  ---
+  File 3 — client/src/components/DataRequestModal.tsx
+
+  This component is used in the Measure path. Fully replace its contents:
+
+  import { useState } from "react";
+  import { Copy, Check, Send, Loader2, ArrowRight } from "lucide-react";
+  import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+  } from "@/components/ui/dialog";
+
+  interface DataRequestModalProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    generateUrl: (repName: string, orgName: string) => Promise<string>;
+    orgName?: string;
+  }
+
+  export default function DataRequestModal({ open, onOpenChange, generateUrl, orgName: initialOrgName = "" }: DataRequestModalProps) {
+    const [phase, setPhase] = useState<'setup' | 'guide'>('setup');
+    const [repName, setRepName] = useState("");
+    const [orgName, setOrgName] = useState(initialOrgName);
+    const [url, setUrl] = useState("");
+    const [generating, setGenerating] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [copyFailed, setCopyFailed] = useState(false);
+
+    const reset = () => {
+      setPhase('setup');
+      setRepName("");
+      setOrgName(initialOrgName);
+      setUrl("");
+      setGenerating(false);
+      setCopied(false);
+      setCopyFailed(false);
+    };
+
+    const handleOpenChange = (v: boolean) => {
+      if (!v) reset();
+      onOpenChange(v);
+    };
+
+    const handleGenerate = async () => {
+      if (!repName.trim() || generating) return;
+      setGenerating(true);
+      try {
+        const generatedUrl = await generateUrl(repName.trim(), orgName.trim());
+        setUrl(generatedUrl);
+        setPhase('guide');
+      } catch {
+        // stay on setup
+      } finally {
+        setGenerating(false);
+      }
+    };
+
+    const handleCopy = async () => {
+      setCopyFailed(false);
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      } catch {
+        setCopyFailed(true);
+      }
+    };
+
+    return (
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[480px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden" data-testid="dialog-data-request-modal">
+
+          {phase === 'setup' ? (
+            <>
+              <DialogHeader className="px-7 pt-7 pb-1">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF3EE] flex items-center justify-center">
+                    <Send className="w-4 h-4 text-[#EA2C00]" />
+                  </div>
+                  <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                    Send a Data Request
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-[#888888] text-[13px] mt-1 leading-relaxed">
+                  We'll personalize the link with your name so the partner knows who sent it.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-7 pt-5 pb-7 space-y-4">
+                <div>
+                  <label className="block text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-1.5">Your name at Abridge</label>
+                  <input
+                    type="text"
+                    value={repName}
+                    onChange={e => setRepName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleGenerate(); }}
+                    placeholder="e.g. Sarah"
+                    autoFocus
+                    className="w-full bg-[#FAFAF8] border border-[#E8E2DA] rounded-xl px-4 h-11 text-sm text-[#1A1A1A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20
+  focus:border-[#EA2C00] transition-colors"
+                    data-testid="input-rep-name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-1.5">Organization name</label>
+                  <input
+                    type="text"
+                    value={orgName}
+                    onChange={e => setOrgName(e.target.value)}
+                    placeholder="e.g. Valley Health System"
+                    className="w-full bg-[#FAFAF8] border border-[#E8E2DA] rounded-xl px-4 h-11 text-sm text-[#1A1A1A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20
+  focus:border-[#EA2C00] transition-colors"
+                    data-testid="input-org-name"
+                  />
+                </div>
+                <button
+                  onClick={handleGenerate}
+                  disabled={!repName.trim() || generating}
+                  className={`w-full h-11 rounded-xl text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                    repName.trim()
+                      ? 'bg-[#1A1A1A] text-white hover:bg-[#333333]'
+                      : 'bg-[#F0EEEC] text-[#BBBBBB] cursor-not-allowed'
+                  }`}
+                  data-testid="button-generate-link"
+                >
+                  {generating ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" />Generating…</>
+                  ) : (
+                    <>Generate Link<ArrowRight className="w-4 h-4" /></>
+                  )}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <DialogHeader className="px-7 pt-7 pb-1">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF3EE] flex items-center justify-center">
+                    <Send className="w-4 h-4 text-[#EA2C00]" />
+                  </div>
+                  <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                    Share with {orgName || "Your Partner"}
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-[#888888] text-[13px] mt-1 leading-relaxed">
+                  Send this link to whoever at {orgName || "the health system"} has access to Abridge utilization and deployment data.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-7 pt-5 pb-7 space-y-0">
+                <div className="flex items-start gap-3.5">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-[11px] font-bold">1</div>
+                    <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
+                  </div>
+                  <div className="flex-1 min-w-0 pb-5">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A] mb-2.5">Copy and send this link</p>
+                    <p className="text-[12px] text-[#999999] mb-2.5 leading-relaxed">Usually the IT contact, clinical informatics lead, or whoever pulls Abridge utilization reports.</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0 bg-[#FAF8F5] border border-[#E8E2DA] rounded-lg px-3.5 py-2.5 font-mono text-[11px] text-[#666666] truncate select-all" 
+  data-testid="text-data-request-url">
+                        {url}
+                      </div>
+                      <button
+                        onClick={handleCopy}
+                        className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
+                          copied ? "bg-emerald-600 text-white" : "bg-[#1A1A1A] text-white hover:bg-[#333333]"
+                        }`}
+                        data-testid="button-copy-data-request-link"
+                      >
+                        {copied ? <><Check className="w-3.5 h-3.5" />Copied!</> : <><Copy className="w-3.5 h-3.5" />Copy</>}
+                      </button>
+                    </div>
+                    {copyFailed && <p className="text-[11px] text-red-500 mt-1.5">Couldn't copy — select the link above and copy manually.</p>}
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">2</div>
+                    <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
+                  </div>
+                  <div className="pb-5">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A]">They fill in ~10 minutes of data</p>
+                    <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">The link opens a form with their name pre-filled. They enter deployment details and the metrics they track — before/after
+  values where available.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">3</div>
+                  </div>
+                  <div className="pb-1">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A]">They download a PDF and send it back</p>
+                    <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">The form generates a summary PDF of their answers. They email it back to you — you use it to finish the analysis.</p>
+                  </div>
+                </div>
+
+                <div className="pt-5">
+                  <button
+                    onClick={() => handleOpenChange(false)}
+                    className="w-full h-10 rounded-xl text-[13px] font-medium bg-[#F5F3F0] text-[#666666] hover:bg-[#ECEAE6] hover:text-[#1A1A1A] transition-all duration-200"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  ---
+  File 4 — client/src/components/DataRequestDialog.tsx
+
+  In the 'pick' phase, add rep name and org name inputs at the top before the care setting cards. Also update the generateUrl prop type to accept name fields.
+
+  Find the interface definition:
+  interface DataRequestDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    generateUrl: (settings: string[]) => Promise<string>;
+    careSettingOptions?: CareSettingOption[];
+    singleSelect?: boolean;
+  }
+  Replace with:
+  interface DataRequestDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    generateUrl: (settings: string[], repName: string, orgName: string) => Promise<string>;
+    careSettingOptions?: CareSettingOption[];
+    singleSelect?: boolean;
+    defaultOrgName?: string;
+  }
+
+  Find:
+  export function DataRequestDialog({ open, onOpenChange, generateUrl, careSettingOptions, singleSelect = false }: DataRequestDialogProps) {
+    const visibleSettings = careSettingOptions ?? CARE_SETTINGS;
+    const [phase, setPhase] = useState<'pick' | 'guide'>('pick');
+    const [selected, setSelected] = useState<string[]>([]);
+    const [url, setUrl] = useState('');
+    const [generating, setGenerating] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [copyFailed, setCopyFailed] = useState(false);
+    const { toast } = useToast();
+  Replace with:
+  export function DataRequestDialog({ open, onOpenChange, generateUrl, careSettingOptions, singleSelect = false, defaultOrgName = "" }: DataRequestDialogProps) {
+    const visibleSettings = careSettingOptions ?? CARE_SETTINGS;
+    const [phase, setPhase] = useState<'pick' | 'guide'>('pick');
+    const [selected, setSelected] = useState<string[]>([]);
+    const [repName, setRepName] = useState("");
+    const [orgName, setOrgName] = useState(defaultOrgName);
+    const [url, setUrl] = useState('');
+    const [generating, setGenerating] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [copyFailed, setCopyFailed] = useState(false);
+    const { toast } = useToast();
+
+  Find the reset function and add the two new state resets:
+    const reset = useCallback(() => {
+      setPhase('pick');
+      setSelected([]);
+      setUrl('');
+      setCopied(false);
+      setCopyFailed(false);
+      setGenerating(false);
+    }, []);
+  Replace with:
+    const reset = useCallback(() => {
+      setPhase('pick');
+      setSelected([]);
+      setRepName("");
+      setOrgName(defaultOrgName);
+      setUrl('');
+      setCopied(false);
+      setCopyFailed(false);
+      setGenerating(false);
+    }, [defaultOrgName]);
+
+  Find the handleContinue function:
+    const handleContinue = async () => {
+      if (selected.length === 0 || generating) return;
+      setGenerating(true);
+      try {
+        const generatedUrl = await generateUrl(selected);
+  Replace with:
+    const handleContinue = async () => {
+      if (selected.length === 0 || !repName.trim() || generating) return;
+      setGenerating(true);
+      try {
+        const generatedUrl = await generateUrl(selected, repName.trim(), orgName.trim());
+
+  In the 'pick' phase JSX, find the DialogHeader block:
+              <DialogHeader className="px-7 pt-7 pb-1">
+                <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                  Send a Data Request
+                </DialogTitle>
+                <DialogDescription className="text-[#888888] text-[13px] mt-1.5 leading-relaxed">
+                  {singleSelect
+                    ? 'Choose the care setting to request data for.'
+                    : 'Select the care settings you need data for.'}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-7 pt-4 pb-7 space-y-5">
+                <div className={`grid gap-2.5 ${visibleSettings.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+  Replace with:
+              <DialogHeader className="px-7 pt-7 pb-1">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF3EE] flex items-center justify-center">
+                    <Send className="w-4 h-4 text-[#EA2C00]" />
+                  </div>
+                  <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                    Send a Data Request
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-[#888888] text-[13px] mt-1.5 leading-relaxed">
+                  We'll personalize the link so the partner knows who sent it and why.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-7 pt-4 pb-7 space-y-5">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-1.5">Your name at Abridge</label>
+                    <input
+                      type="text"
+                      value={repName}
+                      onChange={e => setRepName(e.target.value)}
+                      placeholder="e.g. Sarah"
+                      autoFocus
+                      className="w-full bg-[#FAFAF8] border border-[#E8E2DA] rounded-xl px-3.5 h-10 text-sm text-[#1A1A1A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20
+  focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-rep-name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-1.5">Organization</label>
+                    <input
+                      type="text"
+                      value={orgName}
+                      onChange={e => setOrgName(e.target.value)}
+                      placeholder="e.g. Valley Health"
+                      className="w-full bg-[#FAFAF8] border border-[#E8E2DA] rounded-xl px-3.5 h-10 text-sm text-[#1A1A1A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20
+  focus:border-[#EA2C00] transition-colors"
+                      data-testid="input-org-name"
+                    />
+                  </div>
+                </div>
+                <div className="border-t border-[#F0EEEC] pt-4">
+                  <p className="text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-2.5">{singleSelect ? 'Care Setting' : 'Care Settings'}</p>
+                </div>
+                <div className={`grid gap-2.5 ${visibleSettings.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+
+  Also update the continue button's disabled condition and add Send to the imports at the top of the file. Find:
+  import { Copy, Check, Loader2, ArrowRight, Stethoscope, Zap, ClipboardList, HeartPulse, Send } from "lucide-react";
+  This import already includes Send — no change needed.
+
+  Update the button disabled state. Find:
+                  disabled={selected.length === 0 || generating}
+                  className={`w-full h-11 rounded-xl text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                    selected.length > 0
+                      ? 'bg-[#1A1A1A] text-white hover:bg-[#333333] shadow-sm'
+                      : 'bg-[#F0EEEC] text-[#BBBBBB] cursor-not-allowed'
+                  }`}
+  Replace with:
+                  disabled={selected.length === 0 || !repName.trim() || generating}
+                  className={`w-full h-11 rounded-xl text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                    selected.length > 0 && repName.trim()
+                      ? 'bg-[#1A1A1A] text-white hover:bg-[#333333] shadow-sm'
+                      : 'bg-[#F0EEEC] text-[#BBBBBB] cursor-not-allowed'
+                  }`}
+
+  Also update the guide phase step 2 and step 3 copy to match the Measure path copy (same as what we updated earlier in DataRequestModal).
+
+  ---
+  File 5 — client/src/pages/intake/MeasureDataRequest.tsx
+
+  Replace the header section of the component. Find this entire block (starts at return ( and ends just before the <div className="w-full max-w-2xl space-y-6">):
+
+    return (
+      <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4">
+        <div className="w-full max-w-2xl mb-8">
+          <div className="flex items-center justify-center mb-6">
+            <img src={abridgeLogo} alt="Abridge" className="h-6" />
+          </div>
+
+          <div className="flex justify-center gap-2 flex-wrap mb-4">
+            {settings.map(s => (
+              <div key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
+                {SETTING_LABELS[s]}
+              </div>
+            ))}
+          </div>
+
+          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2 text-center font-abridge uppercase tracking-tight" data-testid="text-data-request-title">
+            Help Us Tell Your Story
+          </h1>
+
+          <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto mb-4">
+            Select the metrics you track and enter what you have. You don't need both before and after — partial data is useful too.
+          </p>
+
+          <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 mb-6 max-w-md mx-auto space-y-3">
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
+                <p className="text-xs text-[#888888] mt-0.5">Before only is fine. After only is fine. Add context notes if a number needs explanation.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download the PDF when done</p>
+                <p className="text-xs text-[#888888] mt-0.5">This form doesn't save. When you're finished, hit Download — that's what gets shared with your Abridge team.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Skip anything you don't track</p>
+                <p className="text-xs text-[#888888] mt-0.5">Only check the metrics your team actually measures. Incomplete is better than estimated.</p>
+              </div>
+            </div>
+          </div>
+
+  Replace with:
+
+    const repName = preseed?.repName;
+    const orgNameFromPreseed = preseed?.orgName;
+    const contextLine = repName && orgNameFromPreseed
+      ? `${repName} at Abridge is preparing an Executive Business Review for ${orgNameFromPreseed}.`
+      : repName
+        ? `${repName} at Abridge sent you this form.`
+        : "Your Abridge team sent you this form.";
+
+    return (
+      <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4">
+        <div className="w-full max-w-2xl mb-8">
+          <div className="flex items-center justify-center mb-6">
+            <img src={abridgeLogo} alt="Abridge" className="h-6" />
+          </div>
+
+          <div className="flex justify-center gap-2 flex-wrap mb-5">
+            {settings.map(s => (
+              <div key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
+                {SETTING_LABELS[s]}
+              </div>
+            ))}
+          </div>
+
+          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2 text-center font-abridge uppercase tracking-tight" data-testid="text-data-request-title">
+            We need your help
+          </h1>
+
+          <p className="text-sm text-[#444444] leading-relaxed text-center max-w-lg mx-auto mb-1">
+            {contextLine}
+          </p>
+          <p className="text-sm text-[#666666] leading-relaxed text-center max-w-lg mx-auto mb-5">
+            They need a few numbers from you — fill in what you can and download the PDF when done. Takes about 10 minutes.
+          </p>
+
+          <div className="flex items-center justify-center gap-4 text-[11px] text-[#AAAAAA] mb-5">
+            <span>✓ No login required</span>
+            <span>·</span>
+            <span>✓ Nothing stored on a server</span>
+            <span>·</span>
+            <span>✓ Works on any device</span>
+          </div>
+
+          <div className="bg-[#FFFBF0] border border-[#F0E0A0] rounded-xl px-4 py-3 mb-6 max-w-lg mx-auto flex items-start gap-3">
+            <span className="text-base leading-none mt-0.5">⚠️ </span>
+            <p className="text-sm text-[#7A6000] font-medium leading-snug">
+              Download the PDF before closing this tab — this form doesn't autosave.
+            </p>
+          </div>
+
+          <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 mb-6 max-w-lg mx-auto space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Enter your deployment details</p>
+                <p className="text-xs text-[#888888] mt-0.5">Organization name, go-live date, provider count, and encounter volume. Estimates are fine.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Select and fill in your metrics</p>
+                <p className="text-xs text-[#888888] mt-0.5">Only pick the metrics your team actually measures. Before only is fine. After only is fine. Skip anything you don't track.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download the PDF and send it back</p>
+                <p className="text-xs text-[#888888] mt-0.5">
+                  Hit Download at the bottom of the page, then email the PDF to {repName ? `${repName} at Abridge` : "your Abridge rep"}.
+                </p>
+              </div>
+            </div>
+          </div>
+
+  Also fix the label "Mthly Recording Users" — find:
+                    <label className="block text-[10px] text-gray-400 mb-1">Mthly Recording Users</label>
+  Replace with:
+                    <label className="block text-[10px] text-gray-400 mb-1">Monthly Active Users</label>
+
+  Also remove the "Copy as Text" button and its associated state/handler entirely from the export section at the bottom. Remove the copied, fallbackText state variables and handleCopy function and the "Copy
+  as Text" button JSX. Keep only the Download PDF button. Update the "Ready to share" copy:
+
+  Find:
+                <p className="text-xs text-[#999999] mb-4">Download as a PDF or copy as text to send to your Abridge partner.</p>
+  Replace with:
+                <p className="text-xs text-[#999999] mb-4">Download the PDF, then email it to {repName ? `${repName} at Abridge` : "your Abridge rep"}.</p>
+
+  ---
+  File 6 — client/src/pages/intake/ExploreIntakeForm.tsx
+
+  Replace the header section. Find the entire header block:
+
+        <div className="w-full max-w-2xl mb-10 text-center">
+          <div className="flex items-center justify-center mb-8">
+            <img src={abridgeLogo} alt="Abridge" className="h-7" />
+          </div>
+          <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Pre-Call Intake</p>
+          <h1 className="text-3xl font-bold text-black mb-3 uppercase tracking-tight" data-testid="text-intake-title">Help us prepare for our call</h1>
+          <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto mb-5">
+            Share what you know about your organization before we connect. You don't need every number — fill in what you have.
+          </p>
+
+          <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 max-w-md mx-auto space-y-3 text-left">
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Select your care settings</p>
+                <p className="text-xs text-[#888888] mt-0.5">Only pick the ones Abridge is deployed — or being considered — in your org.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
+                <p className="text-xs text-[#888888] mt-0.5">Estimates are fine. Skip anything you're unsure about — blank is better than a guess.</p>
+              </div>
+            </div>
+            <div className="h-px bg-[#F0EBE3]" />
+            <div className="flex items-start gap-3 min-h-[48px]">
+              <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download before the call</p>
+                <p className="text-xs text-[#888888] mt-0.5">Your answers stay in this browser tab. Download the PDF and share it with your Abridge team so we can prepare.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+  Replace with:
+
+        <div className="w-full max-w-2xl mb-10 text-center">
+          <div className="flex items-center justify-center mb-6">
+            <img src={abridgeLogo} alt="Abridge" className="h-7" />
+          </div>
+
+          {(() => {
+            const repName = preseed?.repName;
+            const orgName = preseed?.orgName;
+            const contextLine = repName && orgName
+              ? `${repName} at Abridge is preparing an ROI analysis for ${orgName}.`
+              : repName
+                ? `${repName} at Abridge sent you this form.`
+                : "Your Abridge team sent you this form.";
+            return (
+              <>
+                <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2 uppercase tracking-tight" data-testid="text-intake-title">
+                  We need your help
+                </h1>
+                <p className="text-sm text-[#444444] leading-relaxed max-w-lg mx-auto mb-1">
+                  {contextLine}
+                </p>
+                <p className="text-sm text-[#666666] leading-relaxed max-w-lg mx-auto mb-5">
+                  They need some baseline numbers to run the analysis. Fill in what you have — estimates are fine. Takes about 10 minutes.
+                </p>
+                <div className="flex items-center justify-center gap-4 text-[11px] text-[#AAAAAA] mb-5">
+                  <span>✓ No login required</span>
+                  <span>·</span>
+                  <span>✓ Nothing stored on a server</span>
+                  <span>·</span>
+                  <span>✓ Works on any device</span>
+                </div>
+                <div className="bg-[#FFFBF0] border border-[#F0E0A0] rounded-xl px-4 py-3 mb-6 max-w-lg mx-auto flex items-start gap-3 text-left">
+                  <span className="text-base leading-none mt-0.5">⚠️ </span>
+                  <p className="text-sm text-[#7A6000] font-medium leading-snug">
+                    Download the PDF before closing this tab — this form doesn't autosave.
+                  </p>
+                </div>
+                <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 max-w-lg mx-auto space-y-3 text-left">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Choose your care settings</p>
+                      <p className="text-xs text-[#888888] mt-0.5">Only the ones where Abridge is deployed or being evaluated at your organization.</p>
+                    </div>
+                  </div>
+                  <div className="h-px bg-[#F0EBE3]" />
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in your numbers</p>
+                      <p className="text-xs text-[#888888] mt-0.5">Estimates are fine. Skip anything you're unsure about — a blank field is better than a guess.</p>
+                    </div>
+                  </div>
+                  <div className="h-px bg-[#F0EBE3]" />
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download the PDF and send it back</p>
+                      <p className="text-xs text-[#888888] mt-0.5">
+                        Hit Download at the bottom, then email the PDF to {repName ? `${repName} at Abridge` : "your Abridge rep"}.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+
+  Also change the background from bg-[#FAFAF9] to bg-[#F5F0EB] to match the Measure path:
+
+  Find:
+      <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4">
+  Replace with:
+      <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-12 px-4">
+
+  ---
+  File 7 — Find where DataRequestModal is used (likely client/src/pages/measure/MeasureDataEntry.tsx) and update the call
+
+  Search for where DataRequestModal is imported and used. In that file, the modal currently receives a url prop. Update it to receive a generateUrl prop and pass orgName from state.
+
+  Find the usage pattern (it will look something like):
+  <DataRequestModal
+    open={...}
+    onOpenChange={...}
+    url={dataRequestUrl}
+  />
+
+  Replace with:
+  <DataRequestModal
+    open={...}
+    onOpenChange={...}
+    orgName={state?.deployment?.organizationName || ""}
+    generateUrl={async (repName, orgName) => {
+      const { generateDataFormUrl } = await import('@/lib/dataRequestUrlState');
+      return generateDataFormUrl({
+        settings: [primarySetting],
+        repName,
+        orgName,
+      });
+    }}
+  />
+
+  Remove any existing URL pre-generation state/logic that was feeding the old url prop (variables like dataRequestUrl and the async calls that generated it before the modal opened).
+
+  Also find where DataRequestDialog is used in the Explore path (likely client/src/pages/explore/ExploreCareSettings.tsx) and update the generateUrl callback signature to accept repName and orgName and
+  include them in the preseed:
+
+  Find the generateUrl callback passed to DataRequestDialog. It will look something like:
+  generateUrl={async (settings) => {
+    return generateIntakeFormUrl({ preSelectedSettings: settings as ExploreCareSetting[] });
+  }}
+  Replace with:
+  generateUrl={async (settings, repName, orgName) => {
+    return generateIntakeFormUrl({
+      preSelectedSettings: settings as ExploreCareSetting[],
+      repName,
+      orgName,
+    });
+  }}
+
+  Make sure generateIntakeFormUrl (or whatever the function is called in intakeUrlState.ts) passes through repName and orgName in the encoded preseed — since we already added those fields to the
+  IntakeFormPreseed interface in File 2, the encoding will happen automatically.
+
+  ---
+  Do not change any other files. Do not modify the PDF generation logic, any metric/calculator logic, or any other components.

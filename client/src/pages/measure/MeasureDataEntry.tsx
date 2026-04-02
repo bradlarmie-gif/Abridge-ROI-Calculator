@@ -40,7 +40,6 @@ export default function MeasureDataEntry({
     : ['outpatient' as MeasureCareSetting];
 
   const [dataRequestModalOpen, setDataRequestModalOpen] = useState(false);
-  const [dataRequestUrl, setDataRequestUrl] = useState("");
 
   const hasNursing = activeSettings.includes('nursing');
   const hasProviderSettings = activeSettings.some(s => s !== 'nursing');
@@ -209,12 +208,7 @@ export default function MeasureDataEntry({
         onHome={onHome}
         rightAction={
           <button
-            onClick={async () => {
-              const { generateDataFormUrl } = await import("@/lib/dataRequestUrlState");
-              const url = await generateDataFormUrl({ settings: activeSettings });
-              setDataRequestUrl(url);
-              setDataRequestModalOpen(true);
-            }}
+            onClick={() => setDataRequestModalOpen(true)}
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#F0EBE4] text-[#8C7E6F] hover:bg-[#E8E2DA] transition-all"
             data-testid="button-send-data-request"
           >
@@ -672,7 +666,11 @@ export default function MeasureDataEntry({
       <DataRequestModal
         open={dataRequestModalOpen}
         onOpenChange={setDataRequestModalOpen}
-        url={dataRequestUrl}
+        orgName={state.deployment?.organizationName || ""}
+        generateUrl={async (repName: string, orgName: string) => {
+          const { generateDataFormUrl } = await import("@/lib/dataRequestUrlState");
+          return generateDataFormUrl({ settings: activeSettings, repName, orgName });
+        }}
       />
     </div>
   );

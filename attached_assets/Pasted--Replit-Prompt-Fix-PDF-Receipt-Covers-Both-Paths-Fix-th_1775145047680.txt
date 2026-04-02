@@ -1,0 +1,167 @@
+ Replit Prompt — Fix PDF Receipt Covers (Both Paths)
+
+  Fix the cover pages on both data-intake PDFs so they use the real Abridge branding instead of a fake red text "ABRIDGE" banner. There are 4 files to change.
+
+  ---
+
+  ### FILE 1: client/src/lib/data-request-pdf-generator.tsx
+
+  **A. Add `repName` to the data interface**
+
+  In the `DataRequestPDFData` interface, add:
+    repName?: string;
+
+  (Place it after the existing `preparedBy?: string` field.)
+
+  **B. Replace the hand-rolled CoverPage with PDFCoverPage**
+
+  Add this import at the top of the file:
+    import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
+
+  Remove the entire `function CoverPage({ data }: { data: DataRequestPDFData }) { ... }` component (lines 159–183).
+
+  In `DataRequestDocument`, replace the `<CoverPage data={data} />` line with:
+  <PDFCoverPage
+    reportLabel="Measurement Data Request"
+    title={data.organizationName || "Your Organization"}
+    subtitle={allSettings.map(s => SETTING_LABELS[s] || s).join(", ")}
+    preparedBy={data.repName ? ${data.repName} · Abridge : "Abridge Partner Success"}
+  />
+
+  Note: `allSettings` is already computed a few lines later in `DataRequestDocument`. Move the `allSettings` const to before the return statement (it already exists there — just make sure it's defined before
+   the JSX block).
+
+  **C. Switch all pages from A4 to LETTER**
+
+  In `PartnerProfilePage`, change `size="A4"` → `size="LETTER"`.
+  In `DataRequestDocument`'s `<Page>`, change `size="A4"` → `size="LETTER"`.
+  Also in the styles, `coverPage` and `profilePage` — no size is set in styles, size is on the Page component. So just fix the two `<Page size="A4"` in the JSX.
+
+  **D. Update footer copy**
+
+  In both places where footer text reads:
+    `Prepared for your Abridge partner · Confidential`
+
+  Change to:
+    `{data.repName ? `Send to ${data.repName} at Abridge · Confidential` : "Return to your Abridge partner · Confidential"}`
+
+  This means in `PartnerProfilePage` and in `DataRequestDocument`'s content page, update the footer `<Text>` accordingly.
+
+  ---
+
+  ### FILE 2: client/src/pages/intake/MeasureDataRequest.tsx
+
+  Find the block where `DataRequestPDFData` is built (around line 335). It currently has:
+    `preparedBy: "Abridge Partner Success",`
+
+  Change that line to:
+    `preparedBy: preseed?.repName || "Abridge Partner Success",`
+
+  And add this field right after it:
+    `repName: preseed?.repName,`
+
+  ---
+
+  ### FILE 3: client/src/components/intake/IntakeReceiptPDF.tsx
+
+  **A. Add repName/orgName params to the export function**
+
+  Change the signature of `downloadIntakeReceiptPDF` from:
+    `export async function downloadIntakeReceiptPDF(data: ExploreIntakeResponse): Promise<void>`
+  to:
+    `export async function downloadIntakeReceiptPDF(data: ExploreIntakeResponse, repName?: string, orgName?: string): Promise<void>`
+
+  Pass these down: where `<SingleSettingDocument data={data} />` and `<MultiSettingDocument data={data} />` are rendered, add the new props:
+    `<SingleSettingDocument data={data} repName={repName} orgName={orgName} />`
+    `<MultiSettingDocument data={data} repName={repName} orgName={orgName} />`
+
+  **B. Add props interfaces**
+
+  `SingleSettingDocument` and `MultiSettingDocument` both receive `{ data: ExploreIntakeResponse }` — change them to also accept `repName?: string; orgName?: string`. Pass those props down to `CoverPage` in
+  both documents.
+
+  **C. Import PDFCoverPage and the real logo**
+
+  Add these imports:
+    import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
+    import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+
+  (Use the same asset path used in PDFCoverPage.tsx itself — check that file for the exact filename.)
+
+  **D. Replace the fake CoverPage**
+
+  The current `CoverPage` component (line 217) uses `logoBanner` with fake "ABRIDGE" text. Replace it entirely with:
+
+  ```tsx
+  function CoverPage({ data, repName, orgName }: { data: ExploreIntakeResponse; repName?: string; orgName?: string }) {
+    const settingsLabel = data.settings.map(st => SETTING_LABELS[st]).join(" · ");
+    const displayOrg = orgName || "Your Organization";
+    const displayRep = repName ? `${repName} · Abridge` : "Abridge Partner Success";
+    return (
+      <PDFCoverPage
+        reportLabel="Baseline Data Summary"
+        title={displayOrg}
+        subtitle={settingsLabel}
+        preparedBy={displayRep}
+        disclaimerText="This document contains organization-provided baseline data only. No ROI projections are included. Please send this PDF to your Abridge contact."
+      />
+    );
+  }
+
+  E. Replace the fake logo banner on content pages
+
+  Remove the logoBanner and logoText styles (they're only used for the fake banner).
+
+  In SettingPage and SingleSettingDocument, remove:
+  <View style={s.logoBanner}>
+    <Text style={s.logoText}>ABRIDGE</Text>
+  </View>
+
+  Replace with a small real logo image at the top of each content page:
+  <Image src={abridgeLogoRed} style={{ width: 72, height: 18, objectFit: "contain", marginBottom: 20 }} />
+
+  F. Fix the footer text
+
+  In FooterBlock, change:
+    Prepared by Abridge · {today()}
+  to:
+    just keep the disclaimer text but remove the "Abridge" byline — the cover already credits Abridge.
+
+  Actually, update it to:
+    This document contains organization-provided baseline data only. No ROI projections are included.
+
+  Remove the today() call from the footer (date is on the cover).
+
+  ---
+  FILE 4: client/src/pages/intake/ExploreIntakeForm.tsx
+
+  Find line 246 where downloadIntakeReceiptPDF(buildResponse()) is called. Change it to:
+    await downloadIntakeReceiptPDF(buildResponse(), preseed?.repName, preseed?.orgName);
+
+  Also find the same call in client/src/pages/intake/ExploreIntakeReceipt.tsx (line 175):
+    await downloadIntakeReceiptPDF(data);
+  Change to:
+    await downloadIntakeReceiptPDF(data, data.repName, data.orgName);
+
+  But note: ExploreIntakeResponse doesn't have repName/orgName fields yet. In client/src/lib/intakeUrlState.ts, find the ExploreIntakeResponse type and add:
+    repName?: string;
+    orgName?: string;
+
+  (If ExploreIntakeResponse is derived from IntakeFormPreseed or generated from form state, add them to whatever interface is the source of truth and ensure they flow through buildResponse().)
+
+  ---
+  Summary of what changes visually
+
+  Before: Both receipt PDFs had a red rectangle with white "ABRIDGE" text as a fake logo banner. The Measure PDF cover said "Measurement Data Request" with a hand-rolled layout. The Explore PDF cover said
+  "PRE-CALL DATA INTAKE · Abridge Sales Team" in plain text.
+
+  After: Both PDFs open with the real PDFCoverPage — Abridge wordmark image, 36pt Abridge-font title (org name), red rule, settings subtitle, rep name byline, watermark symbol in corner. Content pages have
+  the small real logo instead of the fake banner. Footer on content pages has a clean disclaimer. "Sales Team" jargon is gone.
+
+  ---
+
+  That's the full prompt. The four files are:
+  1. `client/src/lib/data-request-pdf-generator.tsx` — use `PDFCoverPage`, add `repName`, switch A4→LETTER, fix footer
+  2. `client/src/pages/intake/MeasureDataRequest.tsx` — pass `preseed?.repName` to the PDF data
+  3. `client/src/components/intake/IntakeReceiptPDF.tsx` — replace fake banner with `PDFCoverPage`, real logo on content pages
+  4. `client/src/pages/intake/ExploreIntakeForm.tsx` + `ExploreIntakeReceipt.tsx` + `intakeUrlState.ts` — thread repName/orgName through

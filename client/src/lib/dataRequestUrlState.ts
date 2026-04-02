@@ -31,6 +31,8 @@ export interface DataFormPreseed {
   settings: MeasureCareSetting[];
   setting?: MeasureCareSetting;
   preSelectedIds?: string[];
+  repName?: string;
+  orgName?: string;
 }
 
 export function encodeDataRequest(data: MeasureDataRequestResponse): string {

@@ -26,15 +26,18 @@ const CARE_SETTINGS: CareSettingOption[] = [
 interface DataRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  generateUrl: (settings: string[]) => Promise<string>;
+  generateUrl: (settings: string[], repName: string, orgName: string) => Promise<string>;
   careSettingOptions?: CareSettingOption[];
   singleSelect?: boolean;
+  defaultOrgName?: string;
 }
 
-export function DataRequestDialog({ open, onOpenChange, generateUrl, careSettingOptions, singleSelect = false }: DataRequestDialogProps) {
+export function DataRequestDialog({ open, onOpenChange, generateUrl, careSettingOptions, singleSelect = false, defaultOrgName = "" }: DataRequestDialogProps) {
   const visibleSettings = careSettingOptions ?? CARE_SETTINGS;
   const [phase, setPhase] = useState<'pick' | 'guide'>('pick');
   const [selected, setSelected] = useState<string[]>([]);
+  const [repName, setRepName] = useState("");
+  const [orgName, setOrgName] = useState(defaultOrgName);
   const [url, setUrl] = useState('');
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -44,11 +47,13 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
   const reset = useCallback(() => {
     setPhase('pick');
     setSelected([]);
+    setRepName("");
+    setOrgName(defaultOrgName);
     setUrl('');
     setCopied(false);
     setCopyFailed(false);
     setGenerating(false);
-  }, []);
+  }, [defaultOrgName]);
 
   const handleOpenChange = useCallback((v: boolean) => {
     if (!v) reset();
@@ -64,10 +69,10 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
   };
 
   const handleContinue = async () => {
-    if (selected.length === 0 || generating) return;
+    if (selected.length === 0 || !repName.trim() || generating) return;
     setGenerating(true);
     try {
-      const generatedUrl = await generateUrl(selected);
+      const generatedUrl = await generateUrl(selected, repName.trim(), orgName.trim());
       setUrl(generatedUrl);
       setPhase('guide');
     } catch {
@@ -97,17 +102,48 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
         {phase === 'pick' ? (
           <>
             <DialogHeader className="px-7 pt-7 pb-1">
-              <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
-                Send a Data Request
-              </DialogTitle>
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="w-8 h-8 rounded-lg bg-[#FFF3EE] flex items-center justify-center">
+                  <Send className="w-4 h-4 text-[#EA2C00]" />
+                </div>
+                <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                  Send a Data Request
+                </DialogTitle>
+              </div>
               <DialogDescription className="text-[#888888] text-[13px] mt-1.5 leading-relaxed">
-                {singleSelect
-                  ? 'Choose the care setting to request data for.'
-                  : 'Select the care settings you need data for.'}
+                We'll personalize the link so the partner knows who sent it and why.
               </DialogDescription>
             </DialogHeader>
 
             <div className="px-7 pt-4 pb-7 space-y-5">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-1.5">Your name at Abridge</label>
+                  <input
+                    type="text"
+                    value={repName}
+                    onChange={e => setRepName(e.target.value)}
+                    placeholder="e.g. Sarah"
+                    autoFocus
+                    className="w-full bg-[#FAFAF8] border border-[#E8E2DA] rounded-xl px-3.5 h-10 text-sm text-[#1A1A1A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-colors"
+                    data-testid="input-rep-name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-1.5">Organization</label>
+                  <input
+                    type="text"
+                    value={orgName}
+                    onChange={e => setOrgName(e.target.value)}
+                    placeholder="e.g. Valley Health"
+                    className="w-full bg-[#FAFAF8] border border-[#E8E2DA] rounded-xl px-3.5 h-10 text-sm text-[#1A1A1A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-colors"
+                    data-testid="input-org-name"
+                  />
+                </div>
+              </div>
+              <div className="border-t border-[#F0EEEC] pt-4">
+                <p className="text-[11px] font-medium text-[#777777] uppercase tracking-wider mb-2.5">{singleSelect ? 'Care Setting' : 'Care Settings'}</p>
+              </div>
               <div className={`grid gap-2.5 ${visibleSettings.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 {visibleSettings.map(setting => {
                   const Icon = setting.icon;
@@ -144,9 +180,9 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
 
               <button
                 onClick={handleContinue}
-                disabled={selected.length === 0 || generating}
+                disabled={selected.length === 0 || !repName.trim() || generating}
                 className={`w-full h-11 rounded-xl text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                  selected.length > 0
+                  selected.length > 0 && repName.trim()
                     ? 'bg-[#1A1A1A] text-white hover:bg-[#333333] shadow-sm'
                     : 'bg-[#F0EEEC] text-[#BBBBBB] cursor-not-allowed'
                 }`}
@@ -174,11 +210,11 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
                   <Send className="w-4 h-4 text-[#EA2C00]" />
                 </div>
                 <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
-                  Share with Your Partner
+                  Share with {orgName || "Your Partner"}
                 </DialogTitle>
               </div>
               <DialogDescription className="text-[#888888] text-[13px] mt-1 leading-relaxed">
-                Send this link to collect deployment data for {settingLabels}.
+                Send this link to whoever at {orgName || "the health system"} has access to deployment data for {settingLabels}.
               </DialogDescription>
             </DialogHeader>
 
@@ -216,8 +252,8 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
                   <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
                 </div>
                 <div className="pb-5">
-                  <p className="text-[13px] font-semibold text-[#1A1A1A]">Partner fills out the form</p>
-                  <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">They'll open the link and enter their deployment data for the selected care settings.</p>
+                  <p className="text-[13px] font-semibold text-[#1A1A1A]">They fill in ~10 minutes of data</p>
+                  <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">The link opens a form with their name pre-filled. They enter deployment details and the metrics they track — before/after values where available.</p>
                 </div>
               </div>
 
@@ -226,8 +262,8 @@ export function DataRequestDialog({ open, onOpenChange, generateUrl, careSetting
                   <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">3</div>
                 </div>
                 <div className="pb-1">
-                  <p className="text-[13px] font-semibold text-[#1A1A1A]">They send the completed data</p>
-                  <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">Once submitted, they'll download a PDF with their data to share with you.</p>
+                  <p className="text-[13px] font-semibold text-[#1A1A1A]">They download a PDF and send it back</p>
+                  <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">The form generates a summary PDF of their answers. They email it back to you — you use it to finish the analysis.</p>
                 </div>
               </div>
 

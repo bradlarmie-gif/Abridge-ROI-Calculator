@@ -58,7 +58,6 @@ interface ExploreCareSettingsProps {
 export default function ExploreCareSettings({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [] }: ExploreCareSettingsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [dataRequestModalOpen, setDataRequestModalOpen] = useState(false);
-  const [dataRequestUrl, setDataRequestUrl] = useState("");
   const [selectedForRequest, setSelectedForRequest] = useState<ExploreCareSetting[]>(
     selectedSetting && !disabledSettings.includes(selectedSetting) ? [selectedSetting] : []
   );
@@ -99,12 +98,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
         onHome={onHome}
         rightAction={
           <button
-            onClick={async () => {
-              const { generateIntakeFormUrl } = await import("@/lib/intakeUrlState");
-              const url = await generateIntakeFormUrl(selectedForRequest.length > 0 ? selectedForRequest : undefined);
-              setDataRequestUrl(url);
-              setDataRequestModalOpen(true);
-            }}
+            onClick={() => setDataRequestModalOpen(true)}
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#F0EBE4] text-[#8C7E6F] hover:bg-[#E8E2DA] transition-all"
             data-testid="button-data-request-header"
           >
@@ -333,7 +327,14 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
       <DataRequestModal
         open={dataRequestModalOpen}
         onOpenChange={setDataRequestModalOpen}
-        url={dataRequestUrl}
+        generateUrl={async (repName: string, orgName: string) => {
+          const { generateIntakeFormUrl } = await import("@/lib/intakeUrlState");
+          return generateIntakeFormUrl({
+            preSelectedSettings: selectedForRequest.length > 0 ? selectedForRequest : undefined,
+            repName,
+            orgName,
+          });
+        }}
       />
     </div>
   );

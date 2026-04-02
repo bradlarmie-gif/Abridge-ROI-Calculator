@@ -263,11 +263,17 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
   const hasAnyData = Object.entries(formState).some(([k, v]) => k !== 'selectedSettings' && v != null);
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-12 px-4">
       <div className="w-full max-w-2xl mb-10 text-center">
         <div className="flex items-center justify-center mb-8">
           <img src={abridgeLogo} alt="Abridge" className="h-7" />
         </div>
+        {(preseed?.repName || preseed?.orgName) && (
+          <p className="text-sm text-[#666666] mb-4" data-testid="text-intake-context">
+            {preseed.repName ? `${preseed.repName} at Abridge` : 'Your Abridge team'} sent this form
+            {preseed.orgName ? ` for ${preseed.orgName}` : ''}.
+          </p>
+        )}
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Pre-Call Intake</p>
         <h1 className="text-3xl font-bold text-black mb-3 uppercase tracking-tight" data-testid="text-intake-title">Help us prepare for our call</h1>
         <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto mb-5">

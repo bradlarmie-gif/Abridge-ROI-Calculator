@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Trash2, Download, Loader2, Copy, ClipboardCheck } from "lucide-react";
+import { Check, Trash2, Download, Loader2 } from "lucide-react";
 import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot } from "@/lib/dataRequestUrlState";
 import { generateDataRequestPDF, type DataRequestPDFData } from "@/lib/data-request-pdf-generator";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
@@ -265,8 +265,6 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>({});
   const [deployment, setDeployment] = useState<DeploymentSnapshot>(defaultDeployment);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [fallbackText, setFallbackText] = useState<string | null>(null);
 
   function toggleMetric(id: string) {
     setCheckedIds((prev) => {
@@ -354,40 +352,6 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     setIsGeneratingPDF(false);
   }
 
-  function handleCopy() {
-    const response = buildResponse();
-    const metricLabels: Record<string, string> = {};
-    for (const m of allMetrics) {
-      metricLabels[m.id] = m.label;
-    }
-    const settingNames = settings.map(s => SETTING_LABELS[s]).join(", ");
-    const lines: string[] = [`ABRIDGE — MEASUREMENT SUMMARY (${settingNames})`, ''];
-    if (deployment.organizationName) lines.push(`  Organization: ${deployment.organizationName}`);
-    if (deployment.monthsOnAbridge) lines.push(`  Months on Abridge: ${deployment.monthsOnAbridge}`);
-    if (deployment.totalProviders) lines.push(`  Total providers: ${deployment.totalProviders}`);
-    lines.push('');
-    for (const m of response.metrics) {
-      const label = metricLabels[m.metricId] || m.metricId;
-      const parts: string[] = [`  ${label}`];
-      if (m.before != null) parts.push(`    Before: ${m.before}`);
-      if (m.after != null) parts.push(`    After:  ${m.after}`);
-      if (m.notes) parts.push(`    Notes:  ${m.notes}`);
-      lines.push(parts.join('\n'));
-    }
-    const text = lines.join('\n').trim();
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => {
-        setCopied(true);
-        setFallbackText(null);
-        setTimeout(() => setCopied(false), 2000);
-      }).catch(() => {
-        setFallbackText(text);
-      });
-    } else {
-      setFallbackText(text);
-    }
-  }
-
   const hasAnyMetricData = Array.from(checkedIds).some((id) => {
     const e = entries[id];
     return e && (e.before !== null || e.after !== null || e.isMonthlyMode);
@@ -400,6 +364,13 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
         <div className="flex items-center justify-center mb-6">
           <img src={abridgeLogo} alt="Abridge" className="h-6" />
         </div>
+
+        {(preseed?.repName || preseed?.orgName) && (
+          <p className="text-center text-sm text-[#666666] mb-4" data-testid="text-data-request-context">
+            {preseed.repName ? `${preseed.repName} at Abridge` : 'Your Abridge team'} sent this form
+            {preseed.orgName ? ` for ${preseed.orgName}` : ''}.
+          </p>
+        )}
 
         <div className="flex justify-center gap-2 flex-wrap mb-4">
           {settings.map(s => (
@@ -416,6 +387,12 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
         <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto mb-4">
           Select the metrics you track and enter what you have. You don't need both before and after — partial data is useful too.
         </p>
+
+        <div className="bg-[#FFF8F0] border border-[#F5DFC8] rounded-lg px-4 py-3 max-w-md mx-auto mb-4">
+          <p className="text-xs text-[#8B6914] leading-relaxed text-center">
+            This form doesn't save — download the PDF before closing the tab.
+          </p>
+        </div>
 
         <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 mb-6 max-w-md mx-auto space-y-3">
           <div className="flex items-start gap-3 min-h-[48px]">
@@ -547,7 +524,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-gray-400 mb-1">Mthly Recording Users</label>
+                  <label className="block text-[10px] text-gray-400 mb-1">Monthly Active Users</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -690,11 +667,10 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           ) : (
             <div className="text-center">
               <p className="text-sm font-medium text-[#1A1A1A] mb-1">Ready to share</p>
-              <p className="text-xs text-[#999999] mb-4">Download as a PDF or copy as text to send to your Abridge partner.</p>
-              <p className="text-xs text-[#AAAAAA] text-center mb-2 italic">
-                This form doesn't autosave — download before closing the tab.
+              <p className="text-xs text-[#999999] mb-4">
+                Download the PDF, then email it to {preseed?.repName ? `${preseed.repName} at Abridge` : 'your Abridge rep'}.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex justify-center">
                 <button
                   onClick={handleDownloadMeasurementPDF}
                   disabled={!hasAnyData || isGeneratingPDF}
@@ -711,37 +687,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                     <><Download className="w-4 h-4" /> Download PDF</>
                   )}
                 </button>
-                <button
-                  onClick={handleCopy}
-                  disabled={!hasAnyData}
-                  className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all border ${
-                    copied
-                      ? "bg-green-500 text-white border-green-500"
-                      : "border-[#E0D9D0] text-[#444444] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
-                  }`}
-                  data-testid="button-copy-data-request"
-                >
-                  {copied ? <><ClipboardCheck className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy as Text</>}
-                </button>
               </div>
-              {copied && (
-                <p className="text-xs text-green-600 mt-3">Send this to your Abridge partner — they'll use it to prep your business review.</p>
-              )}
-            </div>
-          )}
-
-          {fallbackText && (
-            <div className="mt-4 rounded-lg border border-[#E8E2DA] bg-[#F5F0EB] p-3 text-left">
-              <p className="text-xs text-[#666] mb-2">Auto-copy wasn't available. Select all and copy manually.</p>
-              <textarea
-                readOnly
-                value={fallbackText}
-                autoFocus
-                ref={(el) => { if (el) { el.focus(); el.select(); } }}
-                className="w-full h-48 text-xs font-mono bg-white rounded-lg p-3 border border-[#E0D9D0] resize-none focus:ring-2 focus:ring-[#EA2C00]/20"
-                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
-                data-testid="textarea-fallback-data-request"
-              />
             </div>
           )}
         </div>
