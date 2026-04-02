@@ -1,0 +1,153 @@
+File: client/src/components/measure/MeasurePDFExport.tsx
+
+  Completely rewrite the MeasureEBR component (the JSX return from line 572 to line 971). Do NOT change the imports, font registration, computeFinancials function, helper functions (fmtC, fmtRange, fmtN,
+  fmtDelta, settingShort, settingFull), or the generateMeasurePDF export. Only rewrite the MeasureEBR component's JSX and its local variable setup.
+
+  The new PDF has 4 pages after the cover:
+  - Page 1: Scorecard
+  - Page 2: What Changed (grouped by domain)
+  - Page 3: The Financial Case (no formula strings)
+  - Page 4: What's Next (specific to this org)
+
+  No methodology page. No separate signals page. Methodology becomes a 2-line footnote on Page 3.
+
+  ---
+  Keep the existing style constants (C.* and s.*). You may add new inline styles as needed.
+
+  ---
+  Page 1 — Scorecard
+
+  Eyebrow: "Executive Business Review"
+  Headline: orgName
+  Subline: "${settingLabel} · ${months} months with Abridge · Generated ${today}"
+
+  Four stat cards (same 2-column grid, using s.statCard/s.statRow styles):
+  - Row 1: "Providers on Abridge" = providers | "Total Providers" = totalProviders
+  - Row 2: "Utilization Rate" = utilRate% | "Domains Measured" = activeDomains
+
+  If annualContractValue > 0 AND fin.totalMid > 0, show a dark (#1A1A1A bg) callout card immediately below the stats:
+    [ROI Multiple]     [Payback]         [Net Value / yr]
+    X.Xx               Xmo               $XXXk
+    ROI ratio          Payback period    Net value / yr
+  Where payback = Math.round((annualContractValue / fin.totalMid) * 12) months, net value = fin.totalMid - annualContractValue. Use #EA2C00 text for the ROI multiple, white for the others.
+
+  Below that: one narrative paragraph (use s.narrative) that references the org by name, mentions what domains are measured, and states the maturity stage. Example: "[Org] has been running Abridge for [N]
+  months across [setting], with [N]% of encounters now using the tool. Data has been collected across [N] measurement domains, placing [Org] at the [Stage] stage of the Abridge measurement journey."
+
+  Footer as before.
+
+  ---
+  Page 2 — What Changed
+
+  Eyebrow: "Your Data"
+  Headline: "What Changed Since Abridge"
+  Subline: "${activeMetrics.length} metrics tracked · ${activeDomains} domains"
+
+  Group the active metrics by domain. Use this domain order: ["Documentation Quality", "Time Efficiency", "Patient Access & Throughput", "Workforce & Retention"]. For each domain that has at least one active
+   metric:
+
+  Show a domain header: small all-caps orange label (use s.eyebrow style but marginBottom: 2) with the domain name, then for each metric in that domain show:
+
+  A metric card (s.cardOutline with marginBottom: 6):
+  - Top row: metric label (bold, s.mName style) + delta badge on right (if improvement: #EA2C00 text, bold, e.g. "+0.25 wRVU" or "−1.8 hrs/day")
+  - Bottom row if hasBoth: small muted text showing "Before: X → After: Y"
+  - Do NOT show formula strings anywhere
+
+  For metrics with no domain match or domain = undefined, put them in a catch-all section "Other Metrics" at the bottom.
+
+  The domain grouping logic: look up each metric via METRIC_MAP.get(am.metricId) and check def?.domain. Map domain strings to the 4 buckets:
+  - "Documentation Quality" → metrics where domain contains "documentation" or "billing" or "coding"
+  - "Time Efficiency" → metrics where domain contains "time" or "efficiency" or "after"
+  - "Patient Access & Throughput" → metrics where domain contains "access" or "throughput" or "patient" or "flow"
+  - "Workforce & Retention" → metrics where domain contains "retention" or "burnout" or "workforce" or "satisfaction"
+
+  If none match, use "Other Metrics."
+
+  Footer as before.
+
+  ---
+  Page 3 — The Financial Case
+
+  Only render this page if fin.hasAny.
+
+  Eyebrow: "Financial Impact"
+  Headline: "What the Numbers Add Up To"
+
+  Top card (cream bg C.card, padding 20, centered):
+  - Big orange number: fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))
+  - Below: "estimated annual value · ${activeDomains} domains measured"
+
+  If ACV > 0 and fin.totalMid > 0, dark card (#1A1A1A bg, white text, borderRadius 4, padding 14, marginBottom 10) showing 3-column grid:
+  - ROI multiple (#EA2C00): (fin.totalMid / annualContractValue).toFixed(1)×
+  - Payback period (white): Xmo
+  - Net value / yr (white): fmt(fin.totalMid - annualContractValue)
+
+  Value streams section — plain table, no formulas. For each enabled stream with value > 0, show ONE row:
+  [Stream Name]    [fmtRange(lo, hi)] / yr    [one plain-English sentence]
+
+  Use these one-sentence descriptions (not formula strings):
+  - Billing Capture: "Improved documentation quality drives higher wRVU coding accuracy and E/M level capture."
+  - Revenue Recovery: "Faster, cleaner notes reduce left-without-being-seen events and denial rates."
+  - Patient Flow: "Shorter documentation time enables faster discharge decisions and lower length of stay."
+  - Capacity Revenue: "Time recovered per provider translates to additional appointment capacity."
+  - Workforce: "Burnout and retention signals suggest reduced turnover risk — modeled against replacement costs."
+
+  Format each stream as a View with flexDirection: "row" containing: stream name (bold, flex 2), dollar range (#EA2C00, bold, flex 1.5, textAlign right), sentence (muted, flex 3, fontSize 8).
+
+  At the bottom, a small callout (s.callout style) titled "What this doesn't include" listing: after-hours documentation burden (not monetized for salaried staff), recruitment advantage, prior auth delays,
+  and audit defensibility.
+
+  Two-line footnote at the bottom before footer: "Estimates use ${fin.attrRange} attribution and ${DEFAULT_ASMP.realization}% realization. See methodology for assumptions." in 7pt muted text.
+
+  Footer as before.
+
+  ---
+  Page 4 — What's Next
+
+  Eyebrow: "Your Path Forward"
+  Headline: "Where ${orgName} Goes From Here"
+
+  Section 1 — Maturity Stage card (use s.card):
+  - Pip bar (4 pips, filled up to maturity index, using s.pipOn/s.pip)
+  - Stage label in orange, bold, 12pt
+  - One-sentence stage description
+
+  Section 2 — Expansion Opportunity (only if utilRate < 75 OR providers < totalProviders):
+  Show a cream card with eyebrow "Expansion Opportunity" and:
+
+  If utilRate < 75:
+  Deepen to 75% adoption → additional [fmtRange] / yr
+  Compute: additionalValue = fmtRange(Math.round(fin.totalLo * (75/utilRate - 1)), Math.round(fin.totalHi * (75/utilRate - 1))) (only if utilRate > 0)
+
+  If providers < totalProviders:
+  Expand to [totalProviders] providers → additional [fmtRange] / yr
+  Compute: perProvLo = fin.totalLo / providers, perProvHi = fin.totalHi / providers, additional = fmtRange(Math.round(perProvLo * (totalProviders - providers)), Math.round(perProvHi * (totalProviders -
+  providers))) (only if providers > 0)
+
+  Section 3 — Concrete Next Steps (3 items, numbered):
+  These should be dynamically derived from maturity stage:
+
+  If maturityIdx === 0 (Unmeasured):
+  1. "Establish before/after data in at least one domain before the next EBR."
+  2. "Drive adoption to 20% — the minimum threshold for measurable signal."
+  3. "Identify one provider champion to anchor the internal measurement narrative."
+
+  If maturityIdx === 1 (Signaling):
+  1. "Expand before/after tracking to ${3 - activeDomains} more domain${...} — 3 domains is the Validated threshold."
+  2. "Run a structured Abridge vs. non-Abridge encounter analysis for CMO review."
+  3. "Share a one-page findings brief with your finance team — the data is there."
+
+  If maturityIdx === 2 (Validated):
+  1. "Prepare a formal outcomes report for CFO and CMO — you have board-ready data."
+  2. "Drive adoption to 70%+ to reach Strategic maturity."
+  3. "Set one specific expansion target — adoption depth or provider count — and name an owner."
+
+  If maturityIdx === 3 (Strategic):
+  1. "Publish findings internally — this report is board-level proof."
+  2. "Explore a second care setting to add a new measurement category."
+  3. "Partner with Abridge to document this as a case study."
+
+  Footer as before. Update TOTAL to 4 (plus cover).
+
+  ---
+  Do not change anything outside the MeasureEBR component body. Keep all imports, computeFinancials, helper functions, and generateMeasurePDF exactly as they are

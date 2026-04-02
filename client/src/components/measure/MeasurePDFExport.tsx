@@ -533,21 +533,17 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
   const totalProviders = state.deployment.totalProviders || providers;
   const totalEncounters = state.deployment.totalEncounters || 0;
   const utilRate = state.deployment.utilizationRate || 0;
-  const adopted = Math.round(totalEncounters * (utilRate / 100));
+  const annualContractValue = state.deployment.annualContractValue ?? 0;
   const activeCareSettings = state.activeCareSettings?.length
     ? state.activeCareSettings
     : [state.careSetting || "outpatient"];
   const settingLabel = activeCareSettings.map(settingFull).join(" \u00B7 ");
 
   const activeMetrics = getActiveMetrics(state);
-  const signalMetrics = activeMetrics.filter((m) => !FINANCIAL_IDS.has(m.metricId));
   const fin = computeFinancials(state, state.streamStates);
-
-  const hasMetrics = activeMetrics.length > 0;
   const hasFinancials = fin.hasAny;
-  const hasSignals = signalMetrics.length > 0;
 
-  const TOTAL = 4 + (hasFinancials ? 1 : 0) + (hasSignals ? 1 : 0);
+  const TOTAL = 4 + (hasFinancials ? 1 : 0);
   let pageN = 0;
   const P = () => ++pageN;
 
@@ -569,6 +565,67 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
     "Abridge is embedded in organizational strategy with board-ready proof.",
   ];
 
+  const domainBuckets: Record<string, typeof activeMetrics> = {
+    "Documentation Quality": [],
+    "Time Efficiency": [],
+    "Patient Access & Throughput": [],
+    "Workforce & Retention": [],
+    "Other Metrics": [],
+  };
+  for (const am of activeMetrics) {
+    const def = METRIC_MAP.get(am.metricId);
+    const d = (def?.domain || "").toLowerCase();
+    if (d.includes("documentation") || d.includes("billing") || d.includes("coding")) {
+      domainBuckets["Documentation Quality"].push(am);
+    } else if (d.includes("time") || d.includes("efficiency") || d.includes("after")) {
+      domainBuckets["Time Efficiency"].push(am);
+    } else if (d.includes("access") || d.includes("throughput") || d.includes("patient") || d.includes("flow")) {
+      domainBuckets["Patient Access & Throughput"].push(am);
+    } else if (d.includes("retention") || d.includes("burnout") || d.includes("workforce") || d.includes("satisfaction")) {
+      domainBuckets["Workforce & Retention"].push(am);
+    } else {
+      domainBuckets["Other Metrics"].push(am);
+    }
+  }
+  const domainOrder = ["Documentation Quality", "Time Efficiency", "Patient Access & Throughput", "Workforce & Retention", "Other Metrics"];
+
+  const streamDescriptions: Record<string, string> = {
+    "Billing Capture": "Improved documentation quality drives higher wRVU coding accuracy and E/M level capture.",
+    "Revenue Recovery": "Faster, cleaner notes reduce left-without-being-seen events and denial rates.",
+    "Patient Flow": "Shorter documentation time enables faster discharge decisions and lower length of stay.",
+    "Capacity Revenue": "Time recovered per provider translates to additional appointment capacity.",
+    "Workforce": "Burnout and retention signals suggest reduced turnover risk \u2014 modeled against replacement costs.",
+  };
+  const streamValues: { name: string; lo: number; hi: number }[] = [];
+  if (fin.hasBill) streamValues.push({ name: "Billing Capture", lo: fin.billLo, hi: fin.billHi });
+  if (fin.hasRec) streamValues.push({ name: "Revenue Recovery", lo: fin.recLo, hi: fin.recHi });
+  if (fin.hasPF) streamValues.push({ name: "Patient Flow", lo: fin.pfLo, hi: fin.pfHi });
+  if (fin.hasCap) streamValues.push({ name: "Capacity Revenue", lo: fin.capLo, hi: fin.capHi });
+  if (fin.hasCost) streamValues.push({ name: "Workforce", lo: fin.costLo, hi: fin.costHi });
+
+  const nextSteps: string[][] = [
+    [
+      "Establish before/after data in at least one domain before the next EBR.",
+      "Drive adoption to 20% \u2014 the minimum threshold for measurable signal.",
+      "Identify one provider champion to anchor the internal measurement narrative.",
+    ],
+    [
+      `Expand before/after tracking to ${Math.max(0, 3 - activeDomains)} more domain${3 - activeDomains !== 1 ? "s" : ""} \u2014 3 domains is the Validated threshold.`,
+      "Run a structured Abridge vs. non-Abridge encounter analysis for CMO review.",
+      "Share a one-page findings brief with your finance team \u2014 the data is there.",
+    ],
+    [
+      "Prepare a formal outcomes report for CFO and CMO \u2014 you have board-ready data.",
+      "Drive adoption to 70%+ to reach Strategic maturity.",
+      "Set one specific expansion target \u2014 adoption depth or provider count \u2014 and name an owner.",
+    ],
+    [
+      "Publish findings internally \u2014 this report is board-level proof.",
+      "Explore a second care setting to add a new measurement category.",
+      "Partner with Abridge to document this as a case study.",
+    ],
+  ];
+
   return (
     <Document>
       <PDFCoverPage
@@ -576,16 +633,16 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
         title={orgName}
         subtitle={`${providers} providers \u00B7 ${months} months \u00B7 ${settingLabel}`}
         preparedBy="Abridge Partner Success"
-        disclaimerText="This EBR reflects actual deployment data and Abridge methodology. Estimates are ranges, not audited projections. See the methodology page for full assumptions and limitations."
+        disclaimerText="This EBR reflects actual deployment data and Abridge methodology. Estimates are ranges, not audited projections."
       />
 
-      {/* PAGE 1: Partnership */}
+      {/* PAGE 1: Scorecard */}
       <Page size="LETTER" style={s.page} wrap={false}>
         <View style={s.wrap}>
           <Conf org={orgName} />
-          <Text style={s.eyebrow}>Your Deployment</Text>
-          <Text style={s.headline}>{orgName} {"\u2014"} {months} Months In</Text>
-          <Text style={s.subline}>{settingLabel} \u00B7 {months} months since go-live \u00B7 Generated {today}</Text>
+          <Text style={s.eyebrow}>Executive Business Review</Text>
+          <Text style={s.headline}>{orgName}</Text>
+          <Text style={s.subline}>{settingLabel} {"\u00B7"} {months} months with Abridge {"\u00B7"} Generated {today}</Text>
 
           <View style={s.statRow}>
             <View style={s.statCard}>
@@ -596,65 +653,85 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
               <Text style={s.statNum}>{totalProviders}</Text>
               <Text style={s.statLabel}>Total Providers</Text>
             </View>
+          </View>
+          <View style={s.statRow}>
             <View style={s.statCard}>
               <Text style={s.statNum}>{utilRate}%</Text>
               <Text style={s.statLabel}>Utilization Rate</Text>
             </View>
             <View style={s.statCard}>
-              <Text style={s.statNum}>{fmtN(adopted)}</Text>
-              <Text style={s.statLabel}>Adopted Encounters</Text>
+              <Text style={s.statNum}>{activeDomains}</Text>
+              <Text style={s.statLabel}>Domains Measured</Text>
             </View>
           </View>
 
-          <View style={s.callout}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>How to read the numbers in this report</Text>
-            <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.55 }}>
-              All financial estimates in this report use an attribution range of {fin.attrRange} and a realization rate of {DEFAULT_ASMP.realization}%.
-              Every financial estimate in this report shows a range, not a single number. The range reflects two honest questions: how much of the improvement is attributable to documentation change specifically, and how much of that improvement typically makes it through to realized revenue or cost. We show the math so you can stress-test it.
-              Where before/after data exists, we use the observed delta. Where only directional signals exist (e.g., burnout scores), we apply published benchmark ranges.
-            </Text>
-          </View>
+          {annualContractValue > 0 && fin.totalMid > 0 && (() => {
+            const roiRatio = (fin.totalMid / annualContractValue).toFixed(1);
+            const payback = Math.round((annualContractValue / fin.totalMid) * 12);
+            const netVal = fin.totalMid - annualContractValue;
+            return (
+              <View style={{ backgroundColor: C.dark, borderRadius: 4, padding: 14, marginBottom: 10 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <View style={{ alignItems: "center", flex: 1 }}>
+                    <Text style={{ fontSize: 20, fontWeight: "bold", color: C.orange }}>{roiRatio}{"\u00D7"}</Text>
+                    <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>ROI ratio</Text>
+                  </View>
+                  <View style={{ alignItems: "center", flex: 1 }}>
+                    <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF" }}>{payback}mo</Text>
+                    <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>Payback period</Text>
+                  </View>
+                  <View style={{ alignItems: "center", flex: 1 }}>
+                    <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF" }}>{fmtC(netVal)}</Text>
+                    <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>Net value / yr</Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })()}
 
           <Text style={s.narrative}>
-            {orgName} has deployed Abridge across {providers} providers in {settingLabel.toLowerCase()},
-            achieving {utilRate}% utilization over {months} months.
-            {" "}This report walks through what {orgName}{"\u2019"}s own data shows {"\u2014"} before and after Abridge {"\u2014"} across {activeDomains} measurement domain{activeDomains !== 1 ? "s" : ""}. The goal is to help your team build a shared picture of what{"\u2019"}s changed and where the next opportunity sits.
+            {orgName} has been running Abridge for {months} months across {settingLabel.toLowerCase()}, with {utilRate}% of encounters now using the tool. Data has been collected across {activeDomains} measurement domain{activeDomains !== 1 ? "s" : ""}, placing {orgName} at the {maturityLabels[maturityIdx]} stage of the Abridge measurement journey.
           </Text>
 
           <Footer n={P()} total={TOTAL} org={orgName} />
         </View>
       </Page>
 
-      {/* PAGE 2: What Your Data Shows */}
+      {/* PAGE 2: What Changed */}
       <Page size="LETTER" style={s.page} wrap={false}>
         <View style={s.wrap}>
           <Conf org={orgName} />
           <Text style={s.eyebrow}>Your Data</Text>
-          <Text style={s.headline}>Before &amp; After {"\u2014"} What Changed</Text>
-          <Text style={s.subline}>{activeMetrics.length} metric{activeMetrics.length !== 1 ? "s" : ""} tracked across {activeDomains} domain{activeDomains !== 1 ? "s" : ""}</Text>
+          <Text style={s.headline}>What Changed Since Abridge</Text>
+          <Text style={s.subline}>{activeMetrics.length} metric{activeMetrics.length !== 1 ? "s" : ""} tracked {"\u00B7"} {activeDomains} domain{activeDomains !== 1 ? "s" : ""}</Text>
 
-          <View style={s.metricRowHeader}>
-            <Text style={[s.mName, { fontSize: 8, textTransform: "uppercase" as const, letterSpacing: 1 }]}>Metric</Text>
-            <Text style={[s.mBefore, { fontSize: 8, textTransform: "uppercase" as const, letterSpacing: 1 }]}>Before</Text>
-            <Text style={[s.mArrow, { fontSize: 8 }]}></Text>
-            <Text style={[s.mAfter, { fontSize: 8, textTransform: "uppercase" as const, letterSpacing: 1 }]}>After</Text>
-            <Text style={[s.mDelta, { fontSize: 8, textTransform: "uppercase" as const, letterSpacing: 1 }]}>Change</Text>
-          </View>
-
-          {activeMetrics.map((am, idx) => {
-            const def = METRIC_MAP.get(am.metricId);
-            const label = def?.label || am.metricId;
-            const unit = def?.unit || "";
-            const hasBoth = am.before != null && am.after != null;
-            const settingTag = am.setting && activeCareSettings.length > 1 ? ` (${settingShort(am.setting)})` : "";
-
+          {domainOrder.map((domainName) => {
+            const metrics = domainBuckets[domainName];
+            if (!metrics || metrics.length === 0) return null;
             return (
-              <View key={`${am.metricId}-${am.setting}-${idx}`} style={[s.metricRow, idx % 2 === 1 ? { backgroundColor: C.altRow } : {}]}>
-                <Text style={s.mName}>{label}{settingTag}</Text>
-                <Text style={s.mBefore}>{hasBoth ? `${am.before}${unit === "%" ? "%" : ` ${unit}`}` : "\u2014"}</Text>
-                <Text style={s.mArrow}>{hasBoth ? "\u2192" : ""}</Text>
-                <Text style={s.mAfter}>{hasBoth ? `${am.after}${unit === "%" ? "%" : ` ${unit}`}` : (am.after != null ? `${am.after}${unit === "%" ? "%" : ` ${unit}`}` : "\u2014")}</Text>
-                <Text style={s.mDelta}>{hasBoth ? fmtDelta(am.before!, am.after!, unit) : ""}</Text>
+              <View key={domainName} style={{ marginBottom: 10 }}>
+                <Text style={[s.eyebrow, { marginBottom: 2 }]}>{domainName}</Text>
+                {metrics.map((am, idx) => {
+                  const def = METRIC_MAP.get(am.metricId);
+                  const label = def?.label || am.metricId;
+                  const unit = def?.unit || "";
+                  const hasBoth = am.before != null && am.after != null;
+                  const settingTag = am.setting && activeCareSettings.length > 1 ? ` (${settingShort(am.setting)})` : "";
+                  const delta = hasBoth ? fmtDelta(am.before!, am.after!, unit) : "";
+                  return (
+                    <View key={`${am.metricId}-${am.setting}-${idx}`} style={[s.cardOutline, { marginBottom: 6 }]}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                        <Text style={s.mName}>{label}{settingTag}</Text>
+                        {delta ? <Text style={{ fontSize: 10, fontWeight: "bold", color: C.orange }}>{delta}</Text> : null}
+                      </View>
+                      {hasBoth && (
+                        <Text style={{ fontSize: 8, color: C.muted, marginTop: 3 }}>
+                          Before: {am.before}{unit === "%" ? "%" : ` ${unit}`} {"\u2192"} After: {am.after}{unit === "%" ? "%" : ` ${unit}`}
+                        </Text>
+                      )}
+                    </View>
+                  );
+                })}
               </View>
             );
           })}
@@ -663,229 +740,75 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
         </View>
       </Page>
 
-      {/* PAGE 3: Financial Impact (conditional) */}
+      {/* PAGE 3: The Financial Case (conditional) */}
       {hasFinancials && (
         <Page size="LETTER" style={s.page} wrap={false}>
           <View style={s.wrap}>
             <Conf org={orgName} />
-            <Text style={s.eyebrow}>Translating Data to Dollars</Text>
+            <Text style={s.eyebrow}>Financial Impact</Text>
             <Text style={s.headline}>What the Numbers Add Up To</Text>
 
-            <View style={[s.card, { alignItems: "center", paddingVertical: 20, marginBottom: 4 }]}>
+            <View style={[s.card, { alignItems: "center", paddingVertical: 20, marginBottom: 10 }]}>
               <Text style={{ fontSize: 28, fontWeight: "bold", color: C.orange }}>{fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))}</Text>
-              <Text style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>modeled annual value {"\u00B7"} attribution range {fin.attrRange} {"\u00B7"} realization {DEFAULT_ASMP.realization}%</Text>
+              <Text style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>estimated annual value {"\u00B7"} {activeDomains} domain{activeDomains !== 1 ? "s" : ""} measured</Text>
             </View>
-            <Text style={{ fontSize: 8, color: C.muted, textAlign: "center", marginBottom: 14 }}>
-              Based on {fin.enabledStreams.length} of {fin.enabledStreams.length + fin.excludedStreams.length} value streams
-              {fin.excludedStreams.length > 0 ? ` \u00B7 ${fin.excludedStreams.join(", ")} excluded by reviewer` : ""}
-            </Text>
 
-            {(state.deployment.annualContractValue ?? 0) > 0 && fin.totalMid > 0 && (() => {
-              const acv = state.deployment.annualContractValue || 0;
-              const ratio = (fin.totalMid / acv).toFixed(1);
+            {annualContractValue > 0 && fin.totalMid > 0 && (() => {
+              const roiRatio = (fin.totalMid / annualContractValue).toFixed(1);
+              const payback = Math.round((annualContractValue / fin.totalMid) * 12);
+              const netVal = fin.totalMid - annualContractValue;
               return (
-                <>
-                  <View style={[s.cardOutline, { paddingVertical: 14, marginBottom: 10 }]}>
-                    <Text style={{ fontSize: 8, fontWeight: "bold", color: C.muted, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>What This Investment Is Returning</Text>
-                    <View style={s.rule} />
-                    <View style={[s.finRow, { marginBottom: 4 }]}>
-                      <Text style={{ fontSize: 10, color: C.mid }}>Annual investment</Text>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>{fmtC(acv)}</Text>
+                <View style={{ backgroundColor: C.dark, borderRadius: 4, padding: 14, marginBottom: 10 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    <View style={{ alignItems: "center", flex: 1 }}>
+                      <Text style={{ fontSize: 20, fontWeight: "bold", color: C.orange }}>{roiRatio}{"\u00D7"}</Text>
+                      <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>ROI ratio</Text>
                     </View>
-                    <View style={[s.finRow, { marginBottom: 4 }]}>
-                      <Text style={{ fontSize: 10, color: C.mid }}>Modeled annual value</Text>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>{fmtC(fin.totalMid)}</Text>
+                    <View style={{ alignItems: "center", flex: 1 }}>
+                      <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF" }}>{payback}mo</Text>
+                      <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>Payback period</Text>
                     </View>
-                    <View style={[s.finRow, { marginBottom: 6 }]}>
-                      <Text style={{ fontSize: 10, color: C.mid }}>Return on investment</Text>
-                      <Text style={{ fontSize: 14, fontWeight: "bold", color: C.orange }}>{ratio}{"\u00D7"}</Text>
+                    <View style={{ alignItems: "center", flex: 1 }}>
+                      <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF" }}>{fmtC(netVal)}</Text>
+                      <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>Net value / yr</Text>
                     </View>
-                    <View style={s.rule} />
-                    <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.5, fontStyle: "italic" }}>
-                      For every $1 invested in Abridge, {orgName} is generating ${ratio} in measured value.
-                    </Text>
                   </View>
-
-                  <View style={[s.cardOutline, { paddingVertical: 12, marginBottom: 14 }]}>
-                    <Text style={{ fontSize: 8, fontWeight: "bold", color: C.muted, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>When This Value Shows Up</Text>
-                    <View style={s.rule} />
-                    <View style={[s.finRow, { marginBottom: 6 }]}>
-                      <View style={{ flex: 2 }}>
-                        <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>Near-term (0{"\u2013"}12 mo)</Text>
-                        <Text style={{ fontSize: 8, color: C.muted }}>Billing, recovery, throughput</Text>
-                      </View>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>{fmtRange(Math.round(fin.billLo + fin.recLo + fin.pfLo), Math.round(fin.billHi + fin.recHi + fin.pfHi))} /yr</Text>
-                    </View>
-                    <View style={[s.finRow, { marginBottom: 6 }]}>
-                      <View style={{ flex: 2 }}>
-                        <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>Building value (1{"\u2013"}3 yr)</Text>
-                        <Text style={{ fontSize: 8, color: C.muted }}>Retention, capacity</Text>
-                      </View>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark }}>{fmtRange(Math.round(fin.capLo + fin.costLo), Math.round(fin.capHi + fin.costHi))} /yr</Text>
-                    </View>
-                    <View style={s.rule} />
-                    <Text style={{ fontSize: 8, color: C.muted, lineHeight: 1.5, fontStyle: "italic" }}>
-                      Near-term value is already visible in billing and throughput data. Building value grows as documentation discipline reduces turnover risk and frees capacity {"\u2014"} it compounds, but it takes time to show up in a budget line.
-                    </Text>
-                  </View>
-                </>
+                </View>
               );
             })()}
 
-            {fin.excludedStreams.length > 0 && (
-              <View style={{ marginBottom: 14, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: "#FAF8F5", borderRadius: 6 }}>
-                <Text style={{ fontSize: 8, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>What&apos;s Included</Text>
-                {fin.enabledStreams.length > 0 && (
-                  <Text style={{ fontSize: 7, color: C.muted }}>{fin.enabledStreams.join(" \u00B7 ")}</Text>
-                )}
-                <Text style={{ fontSize: 7, color: C.muted, marginTop: 2 }}>Excluded by reviewer: {fin.excludedStreams.join(", ")}</Text>
+            {streamValues.map((sv, i) => (
+              <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 6, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: C.border }}>
+                <Text style={{ flex: 2, fontSize: 10, fontWeight: "bold", color: C.dark }}>{sv.name}</Text>
+                <Text style={{ flex: 1.5, fontSize: 10, fontWeight: "bold", color: C.orange, textAlign: "right" }}>{fmtRange(Math.round(sv.lo), Math.round(sv.hi))} / yr</Text>
+                <Text style={{ flex: 3, fontSize: 8, color: C.muted, paddingLeft: 10 }}>{streamDescriptions[sv.name] || ""}</Text>
               </View>
-            )}
+            ))}
 
-            {fin.settingBreakdown.length > 1 && (
-              <View style={{ marginBottom: 14, borderWidth: 1, borderColor: "#E5E5E5", borderRadius: 6, overflow: "hidden" }}>
-                <View style={{ flexDirection: "row", backgroundColor: "#F5F0EB", paddingVertical: 6, paddingHorizontal: 8 }}>
-                  <Text style={{ flex: 2, fontSize: 7, fontWeight: "bold", color: C.muted, textTransform: "uppercase" }}>Setting</Text>
-                  <Text style={{ flex: 1, fontSize: 7, fontWeight: "bold", color: C.muted, textAlign: "right", textTransform: "uppercase" }}>Providers</Text>
-                  <Text style={{ flex: 1, fontSize: 7, fontWeight: "bold", color: C.muted, textAlign: "right", textTransform: "uppercase" }}>Encounters</Text>
-                  <Text style={{ flex: 2, fontSize: 7, fontWeight: "bold", color: C.muted, textAlign: "right", textTransform: "uppercase" }}>Value Range</Text>
-                </View>
-                {fin.settingBreakdown.map((row: { setting: string; label: string; providers: number; encounters: number; totalLow: number; totalHigh: number }) => (
-                  <View key={row.setting} style={{ flexDirection: "row", borderTopWidth: 1, borderTopColor: "#E5E5E5", paddingVertical: 5, paddingHorizontal: 8 }}>
-                    <Text style={{ flex: 2, fontSize: 8, fontWeight: "600", color: C.dark }}>{row.label}</Text>
-                    <Text style={{ flex: 1, fontSize: 8, color: C.muted, textAlign: "right" }}>{row.providers.toLocaleString()}</Text>
-                    <Text style={{ flex: 1, fontSize: 8, color: C.muted, textAlign: "right" }}>{row.encounters.toLocaleString()}</Text>
-                    <Text style={{ flex: 2, fontSize: 8, fontWeight: "600", color: C.dark, textAlign: "right" }}>{fmtRange(Math.round(row.totalLow), Math.round(row.totalHigh))}</Text>
-                  </View>
-                ))}
-                <View style={{ flexDirection: "row", borderTopWidth: 2, borderTopColor: C.dark, backgroundColor: "#F5F0EB", paddingVertical: 5, paddingHorizontal: 8 }}>
-                  <Text style={{ flex: 4, fontSize: 8, fontWeight: "bold", color: C.dark }}>Total</Text>
-                  <Text style={{ flex: 2, fontSize: 8, fontWeight: "bold", color: C.dark, textAlign: "right" }}>{fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))}</Text>
-                </View>
-              </View>
-            )}
+            <View style={[s.callout, { marginTop: 10 }]}>
+              <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>What this doesn{"\u2019"}t include</Text>
+              <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.55 }}>
+                After-hours documentation burden (not monetized for salaried staff), recruitment advantage, prior auth delays, and audit defensibility.
+              </Text>
+            </View>
 
-            {fin.hasBill && (
-              <View style={{ marginBottom: 14 }}>
-                <Text style={s.finCat}>Billing Capture</Text>
-                <View style={s.finRow}>
-                  <Text style={s.finLabel}>What billing data shows</Text>
-                  <Text style={s.finValue}>{fmtRange(Math.round(fin.billLo), Math.round(fin.billHi))} / yr</Text>
-                </View>
-                {fin.billDetails.map((d, i) => (
-                  <View key={i}>
-                    <Text style={s.finDetail}>{d.label}</Text>
-                    <Text style={s.finFormula}>{d.formula}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {fin.hasRec && (
-              <View style={{ marginBottom: 14 }}>
-                <Text style={s.finCat}>Revenue Recovery</Text>
-                <View style={s.finRow}>
-                  <Text style={s.finLabel}>What throughput data shows</Text>
-                  <Text style={s.finValue}>{fmtRange(Math.round(fin.recLo), Math.round(fin.recHi))} / yr</Text>
-                </View>
-                {fin.recDetails.map((d, i) => (
-                  <View key={i}>
-                    <Text style={s.finDetail}>{d.label}</Text>
-                    <Text style={s.finFormula}>{d.formula}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {fin.hasPF && (
-              <View style={{ marginBottom: 14 }}>
-                <Text style={s.finCat}>Patient Flow</Text>
-                <View style={s.finRow}>
-                  <Text style={s.finLabel}>What length-of-stay data shows</Text>
-                  <Text style={s.finValue}>{fmtRange(Math.round(fin.pfLo), Math.round(fin.pfHi))} / yr</Text>
-                </View>
-                {fin.pfDetails.map((d, i) => (
-                  <View key={i}>
-                    <Text style={s.finDetail}>{d.label}</Text>
-                    <Text style={s.finFormula}>{d.formula}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {fin.hasCap && (
-              <View style={{ marginBottom: 14 }}>
-                <Text style={s.finCat}>Capacity Revenue</Text>
-                <View style={s.finRow}>
-                  <Text style={s.finLabel}>What capacity data shows</Text>
-                  <Text style={s.finValue}>{fmtRange(Math.round(fin.capLo), Math.round(fin.capHi))} / yr</Text>
-                </View>
-              </View>
-            )}
-
-            {fin.hasCost && (
-              <View style={{ marginBottom: 14 }}>
-                <Text style={s.finCat}>Actual Cost Reduction</Text>
-                <View style={s.finRow}>
-                  <Text style={s.finLabel}>What workforce data shows</Text>
-                  <Text style={s.finValue}>{fmtRange(Math.round(fin.costLo), Math.round(fin.costHi))} / yr</Text>
-                </View>
-                {fin.costDetails.map((d, i) => (
-                  <View key={i}>
-                    <Text style={s.finDetail}>{d.label}</Text>
-                    <Text style={s.finFormula}>{d.formula}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
+            <Text style={{ fontSize: 7, color: C.muted, marginTop: 8, lineHeight: 1.4 }}>
+              Estimates use {fin.attrRange} attribution and {DEFAULT_ASMP.realization}% realization. See methodology for assumptions.
+            </Text>
 
             <Footer n={P()} total={TOTAL} org={orgName} />
           </View>
         </Page>
       )}
 
-      {/* PAGE 4: Signals Worth Watching (conditional) */}
-      {hasSignals && (
-        <Page size="LETTER" style={s.page} wrap={false}>
-          <View style={s.wrap}>
-            <Conf org={orgName} />
-            <Text style={s.eyebrow}>The Qualitative Picture</Text>
-            <Text style={s.headline}>What the Data Doesn{"\u2019"}t Fully Capture Yet</Text>
-            <Text style={s.subline}>These are real changes in how your providers work. They don{"\u2019"}t map cleanly to a dollar amount yet {"\u2014"} but they often predict what shows up in the financial data 6{"\u2013"}12 months from now.</Text>
-
-            {signalMetrics.map((sm, i) => {
-              const def = METRIC_MAP.get(sm.metricId);
-              if (!def) return null;
-              const hasBoth = sm.before != null && sm.after != null;
-              return (
-                <View key={i} style={s.signalCard}>
-                  <Text style={s.signalDomain}>{def.domain}</Text>
-                  <Text style={s.signalTitle}>{def.label}</Text>
-                  {hasBoth && (
-                    <Text style={s.signalChange}>
-                      {sm.before}{def.unit === "%" ? "%" : ` ${def.unit}`} \u2192 {sm.after}{def.unit === "%" ? "%" : ` ${def.unit}`}
-                      {" "}({fmtDelta(sm.before!, sm.after!, def.unit)})
-                    </Text>
-                  )}
-                  <Text style={s.signalText}>{def.whyItMatters}</Text>
-                </View>
-              );
-            })}
-
-            <Footer n={P()} total={TOTAL} org={orgName} />
-          </View>
-        </Page>
-      )}
-
-      {/* PAGE 5: Maturity & What's Next */}
+      {/* PAGE 4: What's Next */}
       <Page size="LETTER" style={s.page} wrap={false}>
         <View style={s.wrap}>
           <Conf org={orgName} />
-          <Text style={s.eyebrow}>Where You Are</Text>
-          <Text style={s.headline}>The Measurement Journey</Text>
+          <Text style={s.eyebrow}>Your Path Forward</Text>
+          <Text style={s.headline}>Where {orgName} Goes From Here</Text>
 
           <View style={s.card}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 6 }}>Measurement Maturity</Text>
             <View style={s.pipRow}>
               {[0, 1, 2, 3].map((i) => (
                 <View key={i} style={i <= maturityIdx ? s.pipOn : s.pip} />
@@ -895,74 +818,40 @@ const MeasureEBR = ({ state }: { state: MeasureState }) => {
             <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.5 }}>{maturityDescs[maturityIdx]}</Text>
           </View>
 
+          {(utilRate < 75 || providers < totalProviders) && (
+            <View style={[s.card, { marginTop: 4 }]}>
+              <Text style={[s.eyebrow, { marginBottom: 6 }]}>Expansion Opportunity</Text>
+              {utilRate < 75 && utilRate > 0 && fin.totalLo > 0 && (
+                <View style={{ marginBottom: 6 }}>
+                  <Text style={{ fontSize: 10, color: C.dark, lineHeight: 1.5 }}>
+                    Deepen to 75% adoption {"\u2192"} additional {fmtRange(Math.round(fin.totalLo * (75 / utilRate - 1)), Math.round(fin.totalHi * (75 / utilRate - 1)))} / yr
+                  </Text>
+                </View>
+              )}
+              {providers < totalProviders && providers > 0 && fin.totalLo > 0 && (() => {
+                const perProvLo = fin.totalLo / providers;
+                const perProvHi = fin.totalHi / providers;
+                const addCount = totalProviders - providers;
+                return (
+                  <View style={{ marginBottom: 6 }}>
+                    <Text style={{ fontSize: 10, color: C.dark, lineHeight: 1.5 }}>
+                      Expand to {totalProviders} providers {"\u2192"} additional {fmtRange(Math.round(perProvLo * addCount), Math.round(perProvHi * addCount))} / yr
+                    </Text>
+                  </View>
+                );
+              })()}
+            </View>
+          )}
+
           <View style={s.rule} />
-          <Text style={{ fontSize: 11, fontWeight: "bold", color: C.dark, marginBottom: 8 }}>What Tends to Move Organizations Forward</Text>
+          <Text style={{ fontSize: 11, fontWeight: "bold", color: C.dark, marginBottom: 8 }}>Concrete Next Steps</Text>
 
-          {[
-            {
-              text: `Organizations that reach 60%+ utilization typically unlock 2\u20133x more measurable domains. ${orgName} is at ${utilRate}% \u2014 the next milestone changes what\u2019s countable.`,
-            },
-            {
-              text: "The most durable EBR outcomes happen when the finance team sees this data directly. A one-page summary from this report tends to open that conversation.",
-            },
-            {
-              text: "Each care setting has its own value story. Adding a second setting doesn\u2019t just add volume \u2014 it adds a new measurement category that often surfaces value the first setting can\u2019t see.",
-            },
-            {
-              text: "The organizations that move fastest from Signaling to Validated are the ones that name one metric, one target, and one owner before they leave the room.",
-            },
-          ].map((item, i) => (
+          {nextSteps[maturityIdx].map((step, i) => (
             <View key={i} style={s.bulletRow}>
-              <View style={s.bullet} />
-              <Text style={s.bulletText}>{item.text}</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: C.orange, width: 16 }}>{i + 1}.</Text>
+              <Text style={[s.bulletText, { fontSize: 10 }]}>{step}</Text>
             </View>
           ))}
-
-          <Footer n={P()} total={TOTAL} org={orgName} />
-        </View>
-      </Page>
-
-      {/* PAGE 6: Methodology */}
-      <Page size="LETTER" style={s.page} wrap={false}>
-        <View style={s.wrap}>
-          <Conf org={orgName} />
-          <Text style={s.eyebrow}>How the Math Works</Text>
-          <Text style={s.headline}>A Plain-English Guide to the Numbers</Text>
-          <Text style={s.subline}>If something in this report doesn{"\u2019"}t add up, this page is where to look.</Text>
-
-          <View style={s.card}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 8 }}>Why we show ranges, not single numbers</Text>
-            <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.55 }}>
-              No single initiative fully explains a change in wRVU, CMI, or retention. Other things are happening in your organization at the same time. The attribution range ({fin.attrRange}) is our attempt to be honest about that {"\u2014"} it represents the share of observed improvement that documentation change plausibly explains, based on published literature and the structure of your deployment.
-            </Text>
-          </View>
-
-          <Text style={{ fontSize: 10, fontWeight: "bold", color: C.dark, marginTop: 10, marginBottom: 6 }}>The inputs behind every estimate</Text>
-          {[
-            { k: "Attribution range", v: fin.attrRange },
-            { k: "Realization rate", v: `${DEFAULT_ASMP.realization}%` },
-            { k: "Conversion factor ($/wRVU)", v: `$${DEFAULT_ASMP.conversionFactor}` },
-            { k: "ED revenue per visit", v: `$${DEFAULT_ASMP.edRevenuePerVisit}` },
-            { k: "DRG base rate", v: `$${fmtN(DEFAULT_ASMP.drgBaseRate)}` },
-            { k: "Cost per bed day", v: `$${fmtN(DEFAULT_ASMP.costPerBedDay)}` },
-            { k: "Revenue per visit (OP)", v: `$${DEFAULT_ASMP.revenuePerVisit}` },
-            { k: "Adopted encounters", v: `${fmtN(adopted)} (${utilRate}% of ${fmtN(totalEncounters)})` },
-          ].map((row, i) => (
-            <View key={i} style={s.methRow}>
-              <Text style={s.methKey}>{row.k}</Text>
-              <Text style={s.methVal}>{row.v}</Text>
-            </View>
-          ))}
-
-          <View style={[s.callout, { marginTop: 14 }]}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>What we don{"\u2019"}t count</Text>
-            <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.55 }}>
-              Provider satisfaction and intent to stay, recruitment advantage ("{"\u201C"}physicians ask about Abridge{"\u201D"}),
-              reduced administrative backlog and prior auth delays, and audit readiness / documentation defensibility.
-              These are real but difficult to isolate financially. We mention them but do not include them in any dollar estimate.
-              If any of these become measurable in your organization, they belong in the next EBR.
-            </Text>
-          </View>
 
           <Footer n={P()} total={TOTAL} org={orgName} />
         </View>
