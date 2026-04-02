@@ -1,0 +1,295 @@
+    370 +  }, [annualContractValue, enabledConfirmed, showDeepenAdoption, showExpandProviders, targetAdoption, targetProviderCount, utilizationRate, providers]);                                     
+      371 +                                                                                                                                                                                             
+      372    const additionalEncountersAtTarget = useMemo(() => {
+      373      if (!showDeepenAdoption) return 0;
+      374      const total = state.deployment.totalEncounters || 0;
+
+⏺ Now update the current ROI card to show the range context and explanation:
+
+⏺ Update(~/Downloads/The-ROI-Calculator 4/client/src/pages/measure/MeasureOpportunity.tsx)
+  ⎿  Added 12 lines, removed 4 lines
+      530              transition={{ delay: 0.12 }}
+      531              data-testid="card-roi"
+      532            >
+      533 -            <div className="flex items-center justify-between mb-4">                                                                                                                         
+      534 -              <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Return on Investment</p>                                                                      
+      533 +            <div className="flex items-center justify-between mb-1">                                                                                                                         
+      534 +              <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Current ROI · {Math.round(utilizationRate)}% adoption today</p>                               
+      535                <span className="text-[10px] text-white/30 uppercase tracking-wide">{confidenceLabel}</span>
+      536              </div>
+      537 -            <div className="grid grid-cols-3 gap-4">                                                                                                                                         
+      537 +            <p className="text-[10px] text-white/25 mb-4">                                                                                                                                   
+      538 +              Confirmed value: {fmtRange(enabledConfirmed.low, enabledConfirmed.high)}/yr · midpoint used for metrics below                                                                  
+      539 +            </p>                                                                                                                                                                             
+      540 +            <div className="grid grid-cols-3 gap-4 mb-4">                                                                                                                                    
+      541                <div>
+      542                  <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-roi-multiple">{roiMetrics.roiMultiple}×</p>
+      543                  <p className="text-xs text-white/40 mt-1">ROI ratio</p>
+     ...
+      548                </div>
+      549                <div>
+      550                  <p className="text-2xl font-bold text-white" data-testid="text-net-value">{fmt(roiMetrics.netValue)}</p>
+      548 -                <p className="text-xs text-white/40 mt-1">Net value</p>                                                                                                                      
+      551 +                <p className="text-xs text-white/40 mt-1">Net value / yr</p>                                                                                                                 
+      552                </div>
+      553              </div>
+      554 +            <div className="pt-3 border-t border-white/10">                                                                                                                                  
+      555 +              <p className="text-[10px] text-white/20 leading-relaxed">                                                                                                                      
+      556 +                Range driven by two bands: <span className="text-white/35">attribution</span> (50–75% of observed lift attributable to Abridge) and <span className="text-white/35">realizati
+          +on</span> (70–90% captured in revenue or cost). Conservative end = 50% × 70%. Favorable end = 75% × 90%.                                                                                     
+      557 +              </p>                                                                                                                                                                           
+      558 +            </div>                                                                                                                                                                           
+      559            </motion.div>
+      560          )}
+      561  
+
+⏺ Now add the Projected ROI card after the expansion section (after the closing </motion.div> for "Expansion Opportunity"):
+
+⏺ Update(~/Downloads/The-ROI-Calculator 4/client/src/pages/measure/MeasureOpportunity.tsx)
+  ⎿  Added 37 lines
+      709            )}
+      710          </motion.div>
+      711  
+      712 +        {projectedROI && annualContractValue > 0 && (                                                                                                                                        
+      713 +          <motion.div                                                                                                                                                                        
+      714 +            className="bg-[#1A1A1A] rounded-xl p-6 mb-8"                                                                                                                                     
+      715 +            initial={{ opacity: 0, y: 16 }}                                                                                                                                                  
+      716 +            animate={{ opacity: 1, y: 0 }}                                                                                                                                                   
+      717 +            key={`projected-${targetAdoption}-${targetProviderCount}`}                                                                                                                       
+      718 +            data-testid="card-projected-roi"                                                                                                                                                 
+      719 +          >                                                                                                                                                                                  
+      720 +            <div className="flex items-center justify-between mb-1">                                                                                                                         
+      721 +              <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Projected ROI at Target</p>                                                                   
+      722 +            </div>                                                                                                                                                                           
+      723 +            <p className="text-[10px] text-white/25 mb-4">                                                                                                                                   
+      724 +              {projectedROI.hasDeepenLever && projectedROI.hasExpandLever                                                                                                                    
+      725 +                ? `${Math.round(targetAdoption)}% adoption · ${targetProviderCount} providers`                                                                                               
+      726 +                : projectedROI.hasDeepenLever                                                                                                                                                
+      727 +                  ? `${Math.round(targetAdoption)}% adoption · current ${providers} providers`                                                                                               
+      728 +                  : `${targetProviderCount} providers · current ${Math.round(utilizationRate)}% adoption`                                                                                    
+      729 +              }                                                                                                                                                                              
+      730 +              {' '}· Projected value: {fmtRange(projectedROI.low, projectedROI.high)}/yr                                                                                                     
+      731 +            </p>                                                                                                                                                                             
+      732 +            <div className="grid grid-cols-3 gap-4">                                                                                                                                         
+      733 +              <div>                                                                                                                                                                          
+      734 +                <p className="text-2xl font-bold text-[#EA2C00]">{projectedROI.roiMultiple}×</p>                                                                                             
+      735 +                <p className="text-xs text-white/40 mt-1">ROI ratio</p>                                                                                                                      
+      736 +              </div>                                                                                                                                                                         
+      737 +              <div>                                                                                                                                                                          
+      738 +                <p className="text-2xl font-bold text-white">{projectedROI.paybackMonths}mo</p>                                                                                              
+      739 +                <p className="text-xs text-white/40 mt-1">Payback period</p>                                                                                                                 
+      740 +              </div>                                                                                                                                                                         
+      741 +              <div>                                                                                                                                                                          
+      742 +                <p className="text-2xl font-bold text-white">{fmt(projectedROI.netValue)}</p>                                                                                                
+      743 +                <p className="text-xs text-white/40 mt-1">Net value / yr</p>                                                                                                                 
+      744 +              </div>                                                                                                                                                                         
+      745 +            </div>                                                                                                                                                                           
+      746 +          </motion.div>                                                                                                                                                                      
+      747 +        )}                                                                                                                                                                                   
+      748 +                                                                                                                                                                                             
+      749          <motion.div
+      750            className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6 mb-8"
+      751            initial={{ opacity: 0, y: 16 }}
+
+⏺ Now let me verify the final file looks correct in the key sections:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ The code looks exactly right. Here's a summary of what was changed and why:
+
+  ---
+  4 fixes made to MeasureOpportunity.tsx:
+
+  1. Payback formula bug fixed (line 274)
+  Before: Math.round(annualContractValue / (confirmedMid / 12))
+  After:  Math.round((annualContractValue / confirmedMid) * 12)
+  Same math, but the old version hid operator-precedence intent. More importantly, it now matches what "payback period" means: (cost ÷ annual value) × 12 months.
+
+  2. Current ROI card — labeled + range explained
+  - Header now reads: "Current ROI · 52% adoption today" (uses actual utilization rate)
+  - Sub-line shows: "Confirmed value: $355K — $684K/yr · midpoint used for metrics below"
+  - "Net value" label updated to "Net value / yr" (previously implied it was multi-year)
+  - Footer explains the two bands: attribution (50–75% of lift attributable to Abridge) × realization (70–90% captured in revenue). Conservative = 50% × 70%, favorable = 75% × 90%.
+
+  3. projectedROI useMemo added
+  Computes combined ROI when either/both expansion sliders are active:
+  adoptionScale = targetAdoption / currentUtilization
+  providerScale = targetProviderCount / currentProviders
+  combinedValue = currentValue × adoptionScale × providerScale
+  Only activates when sliders are actually doing something (lever exists AND slider > current state).
+
+  4. Projected ROI at Target card — new dark card below expansion section
+  Shows live-updating ROI/payback/net when sliders are moved. The sub-line spells out exactly which levers are active: "72% adoption · 884 providers · Projected value: $890K — $1.7M/yr". The key prop on the
+  motion.div triggers a re-render animation as sliders move.
+
+✻ Brewed for 4m 3s · 1 background task still running (↓ to manage)
+
+❯ i need the replit prompt 
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Here's your Replit prompt:
+
+  ---
+  File to edit: client/src/pages/measure/MeasureOpportunity.tsx
+
+  Make the following 4 changes to the MeasureOpportunity component:
+
+  ---
+  Change 1 — Fix payback formula in roiMetrics useMemo
+
+  Find:
+  const paybackMonths = Math.round(annualContractValue / (confirmedMid / 12));
+  Replace with:
+  const paybackMonths = Math.round((annualContractValue / confirmedMid) * 12);
+
+  ---
+  Change 2 — Add projectedROI useMemo
+
+  Find the line:
+    const additionalEncountersAtTarget = useMemo(() => {
+
+  Insert the following block immediately BEFORE that line:
+    const projectedROI = useMemo(() => {
+      if (annualContractValue <= 0 || enabledConfirmed.low <= 0) return null;
+      const hasDeepenLever = showDeepenAdoption && utilizationRate > 0 && targetAdoption > utilizationRate;
+      const hasExpandLever = showExpandProviders && providers > 0 && targetProviderCount > providers;
+      if (!hasDeepenLever && !hasExpandLever) return null;
+      const adoptionScale = hasDeepenLever ? targetAdoption / utilizationRate : 1;
+      const providerScale = hasExpandLever ? targetProviderCount / providers : 1;
+      const low = Math.round(enabledConfirmed.low * adoptionScale * providerScale);
+      const high = Math.round(enabledConfirmed.high * adoptionScale * providerScale);
+      const mid = Math.round((low + high) / 2);
+      if (mid <= 0) return null;
+      const roiMultiple = (mid / annualContractValue).toFixed(1);
+      const paybackMonths = Math.round((annualContractValue / mid) * 12);
+      const netValue = mid - annualContractValue;
+      return { roiMultiple, paybackMonths, netValue, low, high, hasDeepenLever, hasExpandLever };
+    }, [annualContractValue, enabledConfirmed, showDeepenAdoption, showExpandProviders, targetAdoption, targetProviderCount, utilizationRate, providers]);
+
+
+  ---
+  Change 3 — Rebuild the current ROI card JSX
+
+  Find this entire block:
+          {roiMetrics && (
+            <motion.div
+              className="bg-[#1A1A1A] rounded-xl p-6 mb-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12 }}
+              data-testid="card-roi"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Return on Investment</p>
+                <span className="text-[10px] text-white/30 uppercase tracking-wide">{confidenceLabel}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-roi-multiple">{roiMetrics.roiMultiple}×</p>
+                  <p className="text-xs text-white/40 mt-1">ROI ratio</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white" data-testid="text-payback-months">{roiMetrics.paybackMonths}mo</p>
+                  <p className="text-xs text-white/40 mt-1">Payback period</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white" data-testid="text-net-value">{fmt(roiMetrics.netValue)}</p>
+                  <p className="text-xs text-white/40 mt-1">Net value</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+  Replace with:
+          {roiMetrics && (
+            <motion.div
+              className="bg-[#1A1A1A] rounded-xl p-6 mb-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12 }}
+              data-testid="card-roi"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Current ROI · {Math.round(utilizationRate)}% adoption today</p>
+                <span className="text-[10px] text-white/30 uppercase tracking-wide">{confidenceLabel}</span>
+              </div>
+              <p className="text-[10px] text-white/25 mb-4">
+                Confirmed value: {fmtRange(enabledConfirmed.low, enabledConfirmed.high)}/yr · midpoint used for metrics below
+              </p>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-roi-multiple">{roiMetrics.roiMultiple}×</p>
+                  <p className="text-xs text-white/40 mt-1">ROI ratio</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white" data-testid="text-payback-months">{roiMetrics.paybackMonths}mo</p>
+                  <p className="text-xs text-white/40 mt-1">Payback period</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white" data-testid="text-net-value">{fmt(roiMetrics.netValue)}</p>
+                  <p className="text-xs text-white/40 mt-1">Net value / yr</p>
+                </div>
+              </div>
+              <div className="pt-3 border-t border-white/10">
+                <p className="text-[10px] text-white/20 leading-relaxed">
+                  Range driven by two bands: <span className="text-white/35">attribution</span> (50–75% of observed lift attributable to Abridge) and <span className="text-white/35">realization</span>
+  (70–90% captured in revenue or cost). Conservative end = 50% × 70%. Favorable end = 75% × 90%.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+  ---
+  Change 4 — Add Projected ROI at Target card after the Expansion Opportunity section
+
+  Find this line (the start of the Next Moves section):
+          <motion.div
+            className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6 mb-8"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            data-testid="section-next-moves"
+          >
+
+  Insert this entire block immediately BEFORE it:
+          {projectedROI && annualContractValue > 0 && (
+            <motion.div
+              className="bg-[#1A1A1A] rounded-xl p-6 mb-8"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              key={`projected-${targetAdoption}-${targetProviderCount}`}
+              data-testid="card-projected-roi"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Projected ROI at Target</p>
+              </div>
+              <p className="text-[10px] text-white/25 mb-4">
+                {projectedROI.hasDeepenLever && projectedROI.hasExpandLever
+                  ? `${Math.round(targetAdoption)}% adoption · ${targetProviderCount} providers`
+                  : projectedROI.hasDeepenLever
+                    ? `${Math.round(targetAdoption)}% adoption · current ${providers} providers`
+                    : `${targetProviderCount} providers · current ${Math.round(utilizationRate)}% adoption`
+                }
+                {' '}· Projected value: {fmtRange(projectedROI.low, projectedROI.high)}/yr
+              </p>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-2xl font-bold text-[#EA2C00]">{projectedROI.roiMultiple}×</p>
+                  <p className="text-xs text-white/40 mt-1">ROI ratio</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white">{projectedROI.paybackMonths}mo</p>
+                  <p className="text-xs text-white/40 mt-1">Payback period</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white">{fmt(projectedROI.netValue)}</p>
+                  <p className="text-xs text-white/40 mt-1">Net value / yr</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+
+  ---
+  No other files need to be changed. Do not modify any other logic, styling, or component structure.
