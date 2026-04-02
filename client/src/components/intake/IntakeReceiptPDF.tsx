@@ -1,9 +1,11 @@
 import {
-  Document, Page, Text, View, StyleSheet, pdf, Font,
+  Document, Page, Text, View, StyleSheet, Image, pdf, Font,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import type { ExploreIntakeResponse } from "@/lib/intakeUrlState";
 import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
+import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
+import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
 
@@ -27,13 +29,7 @@ const C = {
 
 const s = StyleSheet.create({
   page: { padding: 54, paddingBottom: 50, fontFamily: "Manrope", fontSize: 10, color: C.text, backgroundColor: C.bg },
-  logoBanner: { backgroundColor: C.primary, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 4, marginBottom: 24, alignSelf: "flex-start" },
-  logoText: { color: "#FFFFFF", fontSize: 14, fontWeight: 700, letterSpacing: 3 },
-  coverTitle: { fontSize: 22, fontWeight: 700, marginBottom: 6 },
-  coverSub: { fontSize: 12, color: C.muted, marginBottom: 20 },
-  metaRow: { flexDirection: "row", gap: 24, marginBottom: 4 },
-  metaLabel: { fontSize: 9, color: C.muted, textTransform: "uppercase", letterSpacing: 1, width: 110 },
-  metaValue: { fontSize: 10, color: C.text },
+  contentLogo: { width: 72, height: 18, objectFit: "contain" as const, marginBottom: 20 },
   settingHeader: { fontSize: 16, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: C.text, marginBottom: 16, borderBottomWidth: 2, borderBottomColor: C.primary, paddingBottom: 8 },
   sectionLabel: { fontSize: 8.5, color: C.primary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 700, marginTop: 12, marginBottom: 5, paddingBottom: 3, borderBottomWidth: 0.5, borderBottomColor: C.border },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 0 },
@@ -174,15 +170,11 @@ function getFieldsForSetting(setting: ExploreCareSetting, d: ExploreIntakeRespon
   }
 }
 
-const today = () => new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-
 function FooterBlock() {
   return (
     <View style={s.footer}>
       <Text style={s.footerText}>
-        This document contains organization-provided baseline data only.{"\n"}
-        No ROI projections or Abridge benchmarks are included.{"\n"}
-        Prepared by Abridge · {today()}
+        This document contains organization-provided baseline data only. No ROI projections are included.
       </Text>
     </View>
   );
@@ -214,42 +206,25 @@ function SettingContent({ setting, data }: { setting: ExploreCareSetting; data: 
   );
 }
 
-function CoverPage({ data }: { data: ExploreIntakeResponse }) {
-  const settingsLabel = data.settings.map(st => SETTING_LABELS[st]).join(" · ");
+function CoverPage({ data, repName, orgName }: { data: ExploreIntakeResponse; repName?: string; orgName?: string }) {
+  const settingsLabel = data.settings.map(st => SETTING_LABELS[st]).join(" \u00B7 ");
+  const displayOrg = orgName || "Your Organization";
+  const displayRep = repName ? `${repName} \u00B7 Abridge` : "Abridge Partner Success";
   return (
-    <Page size="LETTER" style={s.page}>
-      <View style={s.logoBanner}>
-        <Text style={s.logoText}>ABRIDGE</Text>
-      </View>
-      <Text style={s.coverTitle}>PRE-CALL DATA INTAKE</Text>
-      <Text style={s.coverSub}>Organization Baseline Summary</Text>
-      <View style={s.metaRow}>
-        <Text style={s.metaLabel}>Prepared for</Text>
-        <Text style={s.metaValue}>Abridge Sales Team</Text>
-      </View>
-      <View style={s.metaRow}>
-        <Text style={s.metaLabel}>Date</Text>
-        <Text style={s.metaValue}>{today()}</Text>
-      </View>
-      <View style={s.metaRow}>
-        <Text style={s.metaLabel}>Care Settings</Text>
-        <Text style={s.metaValue}>{data.settings.length}</Text>
-      </View>
-      <View style={{ ...s.metaRow, marginBottom: 24 }}>
-        <Text style={s.metaLabel}>Ref</Text>
-        <Text style={s.metaValue}>Explore Intake — {settingsLabel}</Text>
-      </View>
-      <FooterBlock />
-    </Page>
+    <PDFCoverPage
+      reportLabel="Baseline Data Summary"
+      title={displayOrg}
+      subtitle={settingsLabel}
+      preparedBy={displayRep}
+      disclaimerText="This document contains organization-provided baseline data only. No ROI projections are included. Please send this PDF to your Abridge contact."
+    />
   );
 }
 
 function SettingPage({ setting, data, pageNum, totalPages }: { setting: ExploreCareSetting; data: ExploreIntakeResponse; pageNum: number; totalPages: number }) {
   return (
     <Page size="LETTER" style={s.page}>
-      <View style={s.logoBanner}>
-        <Text style={s.logoText}>ABRIDGE</Text>
-      </View>
+      <Image src={abridgeLogoRed} style={s.contentLogo} />
       <SettingContent setting={setting} data={data} />
       <FooterBlock />
       <Text style={s.pageNumber}>{pageNum} / {totalPages}</Text>
@@ -257,28 +232,12 @@ function SettingPage({ setting, data, pageNum, totalPages }: { setting: ExploreC
   );
 }
 
-function SingleSettingDocument({ data }: { data: ExploreIntakeResponse }) {
-  const settingsLabel = data.settings.map(st => SETTING_LABELS[st]).join(" · ");
+function SingleSettingDocument({ data, repName, orgName }: { data: ExploreIntakeResponse; repName?: string; orgName?: string }) {
   return (
     <Document>
+      <CoverPage data={data} repName={repName} orgName={orgName} />
       <Page size="LETTER" style={s.page}>
-        <View style={s.logoBanner}>
-          <Text style={s.logoText}>ABRIDGE</Text>
-        </View>
-        <Text style={s.coverTitle}>PRE-CALL DATA INTAKE</Text>
-        <Text style={s.coverSub}>Organization Baseline Summary</Text>
-        <View style={s.metaRow}>
-          <Text style={s.metaLabel}>Prepared for</Text>
-          <Text style={s.metaValue}>Abridge Sales Team</Text>
-        </View>
-        <View style={s.metaRow}>
-          <Text style={s.metaLabel}>Date</Text>
-          <Text style={s.metaValue}>{today()}</Text>
-        </View>
-        <View style={{ ...s.metaRow, marginBottom: 24 }}>
-          <Text style={s.metaLabel}>Ref</Text>
-          <Text style={s.metaValue}>Explore Intake — {settingsLabel}</Text>
-        </View>
+        <Image src={abridgeLogoRed} style={s.contentLogo} />
         <SettingContent setting={data.settings[0]} data={data} />
         <FooterBlock />
       </Page>
@@ -286,11 +245,11 @@ function SingleSettingDocument({ data }: { data: ExploreIntakeResponse }) {
   );
 }
 
-function MultiSettingDocument({ data }: { data: ExploreIntakeResponse }) {
+function MultiSettingDocument({ data, repName, orgName }: { data: ExploreIntakeResponse; repName?: string; orgName?: string }) {
   const totalPages = data.settings.length + 1;
   return (
     <Document>
-      <CoverPage data={data} />
+      <CoverPage data={data} repName={repName} orgName={orgName} />
       {data.settings.map((setting, i) => (
         <SettingPage key={setting} setting={setting} data={data} pageNum={i + 2} totalPages={totalPages} />
       ))}
@@ -298,9 +257,11 @@ function MultiSettingDocument({ data }: { data: ExploreIntakeResponse }) {
   );
 }
 
-export async function downloadIntakeReceiptPDF(data: ExploreIntakeResponse): Promise<void> {
+export async function downloadIntakeReceiptPDF(data: ExploreIntakeResponse, repName?: string, orgName?: string): Promise<void> {
   const isMulti = data.settings.length > 1;
-  const doc = isMulti ? <MultiSettingDocument data={data} /> : <SingleSettingDocument data={data} />;
+  const doc = isMulti
+    ? <MultiSettingDocument data={data} repName={repName} orgName={orgName} />
+    : <SingleSettingDocument data={data} repName={repName} orgName={orgName} />;
   const blob = await pdf(doc).toBlob();
   await savePdfBlob(blob, `Abridge_Intake_Receipt_${new Date().toISOString().slice(0, 10)}.pdf`, "Pre-Call Data Intake");
 }

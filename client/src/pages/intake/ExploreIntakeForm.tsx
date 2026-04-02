@@ -243,7 +243,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
   async function handleDownloadPDF() {
     setPdfLoading(true);
     try {
-      await downloadIntakeReceiptPDF(buildResponse());
+      await downloadIntakeReceiptPDF(buildResponse(), preseed?.repName, preseed?.orgName);
     } finally {
       setPdfLoading(false);
     }

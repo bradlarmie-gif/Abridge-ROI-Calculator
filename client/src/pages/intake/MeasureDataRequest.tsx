@@ -345,7 +345,8 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
       mruProviders: deployment.mruProviders || undefined,
       totalEncounters: deployment.totalEncounters || undefined,
       abridgeEncounters: deployment.abridgeEncounters || undefined,
-      preparedBy: "Abridge Partner Success",
+      preparedBy: preseed?.repName || "Abridge Partner Success",
+      repName: preseed?.repName,
     };
 
     await generateDataRequestPDF(data);

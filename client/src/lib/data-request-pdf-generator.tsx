@@ -2,6 +2,7 @@ import {
   Document, Page, Text, View, StyleSheet, Image, Font, pdf,
 } from "@react-pdf/renderer";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
+import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import ManropeRegular from "../assets/fonts/manrope-regular.ttf";
 import ManropeBold from "../assets/fonts/manrope-bold.ttf";
 
@@ -55,14 +56,6 @@ const s = StyleSheet.create({
   footerText: { fontSize: 8, color: "#CCCCCC" },
   footerRed: { fontSize: 8, color: "#EA2C00", fontWeight: 700 },
   noDataText: { fontSize: 10, color: "#CCCCCC", fontStyle: "italic" },
-  coverPage: { fontFamily: "Manrope", backgroundColor: "#FFFFFF", paddingHorizontal: 54, paddingVertical: 54 },
-  coverLogo: { width: 96, height: 24, objectFit: "contain" as const, marginBottom: 0 },
-  coverTop: { marginBottom: "auto" },
-  coverLabel: { fontSize: 9, color: "#999999", letterSpacing: 2, textTransform: "uppercase" as const, marginBottom: 12, marginTop: 8 },
-  coverTitle: { fontSize: 32, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.2, marginBottom: 12 },
-  coverRule: { width: 48, height: 2, backgroundColor: "#EA2C00", marginBottom: 20 },
-  coverMeta: { fontSize: 10, color: "#888888", marginBottom: 4 },
-  coverDate: { fontSize: 10, color: "#BBBBBB", marginTop: 16 },
   profilePage: { fontFamily: "Manrope", backgroundColor: "#FFFFFF", paddingHorizontal: 48, paddingVertical: 48 },
   profileSection: { marginBottom: 28 },
   profileSectionTitle: { fontSize: 9, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase" as const, marginBottom: 12 },
@@ -100,6 +93,7 @@ export interface DataRequestPDFData {
   abridgeEncounters?: number;
   annualContractValue?: number;
   preparedBy?: string;
+  repName?: string;
 }
 
 function formatVal(n: number | null): string {
@@ -156,31 +150,6 @@ function MetricCardView({ metric, index }: { metric: DataRequestPDFMetric; index
   );
 }
 
-function CoverPage({ data }: { data: DataRequestPDFData }) {
-  const dateStr = data.generatedAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  const orgName = data.organizationName || "Your Organization";
-  const allSettings = data.settings && data.settings.length > 0 ? data.settings : [data.setting];
-  const settingLabel = allSettings.map(s => SETTING_LABELS[s] || s).join(", ");
-
-  return (
-    <Page size="A4" style={s.coverPage}>
-      <View style={s.coverTop}>
-        <Image src={abridgeLogo} style={s.coverLogo} />
-        <Text style={s.coverLabel}>Measurement Data Request</Text>
-        <Text style={s.coverTitle}>{orgName}</Text>
-        <View style={s.coverRule} />
-        <Text style={s.coverMeta}>{settingLabel}</Text>
-        {data.monthsOnAbridge ? (
-          <Text style={s.coverMeta}>{data.monthsOnAbridge} months on Abridge</Text>
-        ) : null}
-        {data.preparedBy ? (
-          <Text style={s.coverMeta}>Prepared by {data.preparedBy}</Text>
-        ) : null}
-      </View>
-      <Text style={s.coverDate}>{dateStr}</Text>
-    </Page>
-  );
-}
 
 function PartnerProfilePage({ data }: { data: DataRequestPDFData }) {
   const hasProviders = data.totalProviders || data.liveProviders || data.mruProviders;
@@ -195,7 +164,7 @@ function PartnerProfilePage({ data }: { data: DataRequestPDFData }) {
   const settingLabel = allSettings.map(st => SETTING_LABELS[st] || st).join(", ");
 
   return (
-    <Page size="A4" style={s.profilePage}>
+    <Page size="LETTER" style={s.profilePage}>
       <View style={s.header}>
         <Image src={abridgeLogo} style={s.logo} />
         <View style={s.headerRight}>
@@ -292,7 +261,7 @@ function PartnerProfilePage({ data }: { data: DataRequestPDFData }) {
       ) : null}
 
       <View style={s.footer}>
-        <Text style={s.footerText}>Prepared for your Abridge partner {"\u00B7"} Confidential</Text>
+        <Text style={s.footerText}>{data.repName ? `Send to ${data.repName} at Abridge \u00B7 Confidential` : "Return to your Abridge partner \u00B7 Confidential"}</Text>
         <Text style={s.footerRed}>Abridge</Text>
       </View>
     </Page>
@@ -317,11 +286,18 @@ function DataRequestDocument({ data }: { data: DataRequestPDFData }) {
     }
   }
 
+  const allSettingsCover = data.settings && data.settings.length > 0 ? data.settings : [data.setting];
+
   return (
     <Document>
-      <CoverPage data={data} />
+      <PDFCoverPage
+        reportLabel="Measurement Data Request"
+        title={data.organizationName || "Your Organization"}
+        subtitle={allSettingsCover.map(st => SETTING_LABELS[st] || st).join(", ")}
+        preparedBy={data.repName ? `${data.repName} \u00B7 Abridge` : "Abridge Partner Success"}
+      />
       <PartnerProfilePage data={data} />
-      <Page size="A4" style={s.page}>
+      <Page size="LETTER" style={s.page}>
         <View style={s.header}>
           <View>
             <Image src={abridgeLogo} style={s.logo} />
@@ -365,7 +341,7 @@ function DataRequestDocument({ data }: { data: DataRequestPDFData }) {
         )}
 
         <View style={s.footer}>
-          <Text style={s.footerText}>Prepared for your Abridge partner {"\u00B7"} Confidential</Text>
+          <Text style={s.footerText}>{data.repName ? `Send to ${data.repName} at Abridge \u00B7 Confidential` : "Return to your Abridge partner \u00B7 Confidential"}</Text>
           <Text style={s.footerRed}>Abridge</Text>
         </View>
       </Page>

@@ -172,7 +172,7 @@ export default function ExploreIntakeReceipt({ data, onLoadInCalculator }: Explo
 
   async function handleDownloadPDF() {
     setPdfLoading(true);
-    try { await downloadIntakeReceiptPDF(data); } finally { setPdfLoading(false); }
+    try { await downloadIntakeReceiptPDF(data, data.repName, data.orgName); } finally { setPdfLoading(false); }
   }
 
   return (

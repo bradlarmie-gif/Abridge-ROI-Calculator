@@ -3,6 +3,8 @@ import type { ExploreCareSetting } from '../pages/explore/ExploreFlow';
 
 export interface ExploreIntakeResponse {
   settings: ExploreCareSetting[];
+  repName?: string;
+  orgName?: string;
 
   opProviders?: number | null;
   opAnnualEncounters?: number | null;
