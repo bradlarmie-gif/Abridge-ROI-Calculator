@@ -488,7 +488,8 @@ export default function SummaryCommandCenter({
     const departuresAvoided = burnoutDepartures * (retentionLift / 100);
     
     Object.entries(mergedDriverResults).forEach(([key, result]) => {
-      if (result && result.value > 0) {
+      const isPatientAccess = key === "patientAccess" || key === "patient_access";
+      if (result && (result.value > 0 || isPatientAccess)) {
         const normalizedId = driverIdMap[key] || key;
         
         // Enrich workforce/retention driver with calculated inputs for all care settings
