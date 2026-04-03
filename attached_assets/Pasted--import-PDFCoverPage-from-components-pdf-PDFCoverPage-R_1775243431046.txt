@@ -1,0 +1,1176 @@
+  import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
+
+  Remove the entire `function CoverPage({ data }: { data: DataRequestPDFData }) { ... }` component (lines 159–183).
+
+  In `DataRequestDocument`, replace the `<CoverPage data={data} />` line with:
+  <PDFCoverPage
+    reportLabel="Measurement Data Request"
+    title={data.organizationName || "Your Organization"}
+    subtitle={allSettings.map(s => SETTING_LABELS[s] || s).join(", ")}
+    preparedBy={data.repName ? ${data.repName} · Abridge : "Abridge Partner Success"}
+  />
+
+  Note: `allSettings` is already computed a few lines later in `DataRequestDocument`. Move the `allSettings` const to before the return statement (it already exists there — just make sure it's defined before
+   the JSX block).
+
+  **C. Switch all pages from A4 to LETTER**
+
+  In `PartnerProfilePage`, change `size="A4"` → `size="LETTER"`.
+  In `DataRequestDocument`'s `<Page>`, change `size="A4"` → `size="LETTER"`.
+  Also in the styles, `coverPage` and `profilePage` — no size is set in styles, size is on the Page component. So just fix the two `<Page size="A4"` in the JSX.
+
+  **D. Update footer copy**
+
+  In both places where footer text reads:
+    `Prepared for your Abridge partner · Confidential`
+
+  Change to:
+    `{data.repName ? `Send to ${data.repName} at Abridge · Confidential` : "Return to your Abridge partner · Confidential"}`
+
+  This means in `PartnerProfilePage` and in `DataRequestDocument`'s content page, update the footer `<Text>` accordingly.
+
+  ---
+
+  ### FILE 2: client/src/pages/intake/MeasureDataRequest.tsx
+
+  Find the block where `DataRequestPDFData` is built (around line 335). It currently has:
+    `preparedBy: "Abridge Partner Success",`
+
+  Change that line to:
+    `preparedBy: preseed?.repName || "Abridge Partner Success",`
+
+  And add this field right after it:
+    `repName: preseed?.repName,`
+
+  ---
+
+  ### FILE 3: client/src/components/intake/IntakeReceiptPDF.tsx
+
+  **A. Add repName/orgName params to the export function**
+
+  Change the signature of `downloadIntakeReceiptPDF` from:
+    `export async function downloadIntakeReceiptPDF(data: ExploreIntakeResponse): Promise<void>`
+  to:
+    `export async function downloadIntakeReceiptPDF(data: ExploreIntakeResponse, repName?: string, orgName?: string): Promise<void>`
+
+  Pass these down: where `<SingleSettingDocument data={data} />` and `<MultiSettingDocument data={data} />` are rendered, add the new props:
+    `<SingleSettingDocument data={data} repName={repName} orgName={orgName} />`
+    `<MultiSettingDocument data={data} repName={repName} orgName={orgName} />`
+
+  **B. Add props interfaces**
+
+  `SingleSettingDocument` and `MultiSettingDocument` both receive `{ data: ExploreIntakeResponse }` — change them to also accept `repName?: string; orgName?: string`. Pass those props down to `CoverPage` in
+  both documents.
+
+  **C. Import PDFCoverPage and the real logo**
+
+  Add these imports:
+    import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
+    import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+
+  (Use the same asset path used in PDFCoverPage.tsx itself — check that file for the exact filename.)
+
+  **D. Replace the fake CoverPage**
+
+  The current `CoverPage` component (line 217) uses `logoBanner` with fake "ABRIDGE" text. Replace it entirely with:
+
+  ```tsx
+  function CoverPage({ data, repName, orgName }: { data: ExploreIntakeResponse; repName?: string; orgName?: string }) {
+    const settingsLabel = data.settings.map(st => SETTING_LABELS[st]).join(" · ");
+    const displayOrg = orgName || "Your Organization";
+    const displayRep = repName ? `${repName} · Abridge` : "Abridge Partner Success";
+    return (
+      <PDFCoverPage
+        reportLabel="Baseline Data Summary"
+        title={displayOrg}
+        subtitle={settingsLabel}
+        preparedBy={displayRep}
+        disclaimerText="This document contains organization-provided baseline data only. No ROI projections are included. Please send this PDF to your Abridge contact."
+      />
+    );
+  }
+
+  E. Replace the fake logo banner on content pages
+
+  Remove the logoBanner and logoText styles (they're only used for the fake banner).
+
+  In SettingPage and SingleSettingDocument, remove:
+  <View style={s.logoBanner}>
+    <Text style={s.logoText}>ABRIDGE</Text>
+  </View>
+
+  Replace with a small real logo image at the top of each content page:
+  <Image src={abridgeLogoRed} style={{ width: 72, height: 18, objectFit: "contain", marginBottom: 20 }} />
+
+  F. Fix the footer text
+
+  In FooterBlock, change:
+    Prepared by Abridge · {today()}
+  to:
+    just keep the disclaimer text but remove the "Abridge" byline — the cover already credits Abridge.
+
+  Actually, update it to:
+    This document contains organization-provided baseline data only. No ROI projections are included.
+
+  Remove the today() call from the footer (date is on the cover).
+
+  ---
+  FILE 4: client/src/pages/intake/ExploreIntakeForm.tsx
+
+  Find line 246 where downloadIntakeReceiptPDF(buildResponse()) is called. Change it to:
+    await downloadIntakeReceiptPDF(buildResponse(), preseed?.repName, preseed?.orgName);
+
+  Also find the same call in client/src/pages/intake/ExploreIntakeReceipt.tsx (line 175):
+    await downloadIntakeReceiptPDF(data);
+  Change to:
+    await downloadIntakeReceiptPDF(data, data.repName, data.orgName);
+
+  But note: ExploreIntakeResponse doesn't have repName/orgName fields yet. In client/src/lib/intakeUrlState.ts, find the ExploreIntakeResponse type and add:
+    repName?: string;
+    orgName?: string;
+
+  (If ExploreIntakeResponse is derived from IntakeFormPreseed or generated from form state, add them to whatever interface is the source of truth and ensure they flow through buildResponse().)
+
+  ---
+  Summary of what changes visually
+
+  Before: Both receipt PDFs had a red rectangle with white "ABRIDGE" text as a fake logo banner. The Measure PDF cover said "Measurement Data Request" with a hand-rolled layout. The Explore PDF cover said
+  "PRE-CALL DATA INTAKE · Abridge Sales Team" in plain text.
+
+  After: Both PDFs open with the real PDFCoverPage — Abridge wordmark image, 36pt Abridge-font title (org name), red rule, settings subtitle, rep name byline, watermark symbol in corner. Content pages have
+  the small real logo instead of the fake banner. Footer on content pages has a clean disclaimer. "Sales Team" jargon is gone.
+
+  ---
+
+  That's the full prompt. The four files are:
+  1. `client/src/lib/data-request-pdf-generator.tsx` — use `PDFCoverPage`, add `repName`, switch A4→LETTER, fix footer
+  2. `client/src/pages/intake/MeasureDataRequest.tsx` — pass `preseed?.repName` to the PDF data
+  3. `client/src/components/intake/IntakeReceiptPDF.tsx` — replace fake banner with `PDFCoverPage`, real logo on content pages
+  4. `client/src/pages/intake/ExploreIntakeForm.tsx` + `ExploreIntakeReceipt.tsx` + `intakeUrlState.ts` — thread repName/orgName through
+
+✻ Cogitated for 4m 26s · 1 background task still running (↓ to manage)
+
+❯ this is now screwed up.. i like teh UX of what i had before this looks bad.. bad.. 
+  ⎿  [Image #3]
+
+⏺ Let me look at what's in v18 to understand what changed:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Let me check the current state of DataRequestDialog in the repo:
+
+⏺ Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ The Replit prompt from last session changed the DataRequestDialog — it swapped in verbose step descriptions and added the org name to the title. The original v4 version is cleaner. Here's a Replit prompt
+  to revert it:
+
+  ---
+  Replit prompt — Revert DataRequestDialog to previous design
+
+  Replace the entire contents of client/src/components/DataRequestDialog.tsx with exactly the following:
+
+  import { useState, useCallback } from "react";
+  import { Copy, Check, Loader2, ArrowRight, Stethoscope, Zap, ClipboardList, HeartPulse, Send } from "lucide-react";
+  import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+  } from "@/components/ui/dialog";
+  import { useToast } from "@/hooks/use-toast";
+
+  export interface CareSettingOption {
+    id: string;
+    label: string;
+    desc: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
+
+  const CARE_SETTINGS: CareSettingOption[] = [
+    { id: 'outpatient', label: 'Outpatient', desc: 'Primary care & specialty', icon: Stethoscope },
+    { id: 'ed', label: 'Emergency', desc: 'Emergency department', icon: Zap },
+    { id: 'inpatient', label: 'Inpatient', desc: 'Hospital medicine', icon: ClipboardList },
+    { id: 'nursing', label: 'Nursing', desc: 'Inpatient nursing', icon: HeartPulse },
+  ];
+
+  interface DataRequestDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    generateUrl: (settings: string[]) => Promise<string>;
+    careSettingOptions?: CareSettingOption[];
+    singleSelect?: boolean;
+  }
+
+  export function DataRequestDialog({ open, onOpenChange, generateUrl, careSettingOptions, singleSelect = false }: DataRequestDialogProps) {
+    const visibleSettings = careSettingOptions ?? CARE_SETTINGS;
+    const [phase, setPhase] = useState<'pick' | 'guide'>('pick');
+    const [selected, setSelected] = useState<string[]>([]);
+    const [url, setUrl] = useState('');
+    const [generating, setGenerating] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [copyFailed, setCopyFailed] = useState(false);
+    const { toast } = useToast();
+
+    const reset = useCallback(() => {
+      setPhase('pick');
+      setSelected([]);
+      setUrl('');
+      setCopied(false);
+      setCopyFailed(false);
+      setGenerating(false);
+    }, []);
+
+    const handleOpenChange = useCallback((v: boolean) => {
+      if (!v) reset();
+      onOpenChange(v);
+    }, [onOpenChange, reset]);
+
+    const toggleSetting = (id: string) => {
+      if (singleSelect) {
+        setSelected(prev => prev.includes(id) ? [] : [id]);
+      } else {
+        setSelected(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
+      }
+    };
+
+    const handleContinue = async () => {
+      if (selected.length === 0 || generating) return;
+      setGenerating(true);
+      try {
+        const generatedUrl = await generateUrl(selected);
+        setUrl(generatedUrl);
+        setPhase('guide');
+      } catch {
+        toast({ title: "Could not generate link", description: "Something went wrong. Please try again.", variant: "destructive" });
+      } finally {
+        setGenerating(false);
+      }
+    };
+
+    const handleCopy = async () => {
+      setCopyFailed(false);
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      } catch {
+        setCopyFailed(true);
+      }
+    };
+
+    const settingLabels = selected.map(id => visibleSettings.find(s => s.id === id)?.label).filter(Boolean).join(' & ');
+
+    return (
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[480px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden" data-testid="dialog-data-request">
+
+          {phase === 'pick' ? (
+            <>
+              <DialogHeader className="px-7 pt-7 pb-1">
+                <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                  Send a Data Request
+                </DialogTitle>
+                <DialogDescription className="text-[#888888] text-[13px] mt-1.5 leading-relaxed">
+                  {singleSelect
+                    ? 'Choose the care setting to request data for.'
+                    : 'Select the care settings you need data for.'}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-7 pt-4 pb-7 space-y-5">
+                <div className={`grid gap-2.5 ${visibleSettings.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                  {visibleSettings.map(setting => {
+                    const Icon = setting.icon;
+                    const isSelected = selected.includes(setting.id);
+                    return (
+                      <button
+                        key={setting.id}
+                        onClick={() => toggleSetting(setting.id)}
+                        className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border-[1.5px] text-left transition-all duration-150 ${
+                          isSelected
+                            ? 'border-[#EA2C00] bg-[#FFF8F5] shadow-[0_0_0_1px_rgba(234,44,0,0.08)]'
+                            : 'border-[#E8E2DA] bg-[#FAFAF8] hover:border-[#D0C8BF] hover:bg-[#F7F4F0]'
+                        }`}
+                        data-testid={`pick-setting-${setting.id}`}
+                      >
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
+                          isSelected ? 'bg-[#EA2C00]' : 'bg-white border border-[#E8E2DA]'
+                        }`}>
+                          <Icon className={`w-[18px] h-[18px] ${isSelected ? 'text-white' : 'text-[#999999]'}`} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-[13px] font-semibold leading-tight ${isSelected ? 'text-[#1A1A1A]' : 'text-[#555555]'}`}>{setting.label}</p>
+                          <p className="text-[11px] text-[#AAAAAA] leading-tight mt-0.5">{setting.desc}</p>
+                        </div>
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#EA2C00] flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={handleContinue}
+                  disabled={selected.length === 0 || generating}
+                  className={`w-full h-11 rounded-xl text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                    selected.length > 0
+                      ? 'bg-[#1A1A1A] text-white hover:bg-[#333333] shadow-sm'
+                      : 'bg-[#F0EEEC] text-[#BBBBBB] cursor-not-allowed'
+                  }`}
+                  data-testid="button-continue-data-request"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating link…
+                    </>
+                  ) : (
+                    <>
+                      Generate Link
+                      {selected.length > 0 && <ArrowRight className="w-4 h-4" />}
+                    </>
+                  )}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <DialogHeader className="px-7 pt-7 pb-1">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF3EE] flex items-center justify-center">
+                    <Send className="w-4 h-4 text-[#EA2C00]" />
+                  </div>
+                  <DialogTitle className="text-[#1A1A1A] text-[17px] font-semibold tracking-[-0.01em]">
+                    Share with Your Partner
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-[#888888] text-[13px] mt-1 leading-relaxed">
+                  Send this link to collect deployment data for {settingLabels}.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-7 pt-5 pb-7 space-y-0">
+                <div className="flex items-start gap-3.5">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-[11px] font-bold">1</div>
+                    <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
+                  </div>
+                  <div className="flex-1 min-w-0 pb-5">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A] mb-2.5">Copy and share this link</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0 bg-[#FAF8F5] border border-[#E8E2DA] rounded-lg px-3.5 py-2.5 font-mono text-[11px] text-[#666666] truncate select-all"
+  data-testid="text-data-request-url">
+                        {url}
+                      </div>
+                      <button
+                        onClick={handleCopy}
+                        className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
+                          copied ? "bg-emerald-600 text-white" : "bg-[#1A1A1A] text-white hover:bg-[#333333]"
+                        }`}
+                        data-testid="button-copy-link"
+                      >
+                        {copied ? (<><Check className="w-3.5 h-3.5" />Copied!</>) : (<><Copy className="w-3.5 h-3.5" />Copy</>)}
+                      </button>
+                    </div>
+                    {copyFailed && (
+                      <p className="text-[11px] text-red-500 mt-1.5">Couldn't copy — select the link above and copy manually.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">2</div>
+                    <div className="w-px h-full bg-[#E8E2DA] mt-1.5" />
+                  </div>
+                  <div className="pb-5">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A]">Partner fills out the form</p>
+                    <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">They'll open the link and enter their deployment data for the selected care settings.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-bold">3</div>
+                  </div>
+                  <div className="pb-1">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A]">They send the completed data</p>
+                    <p className="text-[12px] text-[#999999] mt-1 leading-relaxed">Once submitted, they'll download a PDF with their data to share with you.</p>
+                  </div>
+                </div>
+
+                <div className="pt-5">
+                  <button
+                    onClick={() => handleOpenChange(false)}
+                    className="w-full h-10 rounded-xl text-[13px] font-medium bg-[#F5F3F0] text-[#666666] hover:bg-[#ECEAE6] hover:text-[#1A1A1A] transition-all duration-200"
+                    data-testid="button-close-dialog"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  This is a straight revert — removes the org-name personalization in the title, restores the original concise step descriptions, and keeps the two-phase pick→guide flow exactly as it was.
+
+✻ Crunched for 1m 31s · 1 background task still running (↓ to manage)
+
+❯ i just dont like the box that pops up.. thats more of what i am talking about... like i cant see everything in the box 
+
+⏺ Got it — the dialog is clipping content on the right and things are getting cut off. The fix is making it wider and adding scroll for overflow. Here's the prompt:
+
+  ---
+  Replit prompt — Fix DataRequestDialog width and overflow
+
+  In client/src/components/DataRequestDialog.tsx, find the DialogContent element:
+
+    <DialogContent className="sm:max-w-[480px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden" ...>
+
+  Change it to:
+
+    <DialogContent className="sm:max-w-[560px] p-0 gap-0 bg-white border-0 shadow-2xl rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto" ...>
+
+  Then in the guide phase, find the URL + Copy button row:
+    <div className="flex items-center gap-2">
+      <div className="flex-1 min-w-0 bg-[#FAF8F5] ...truncate...">
+      <button ...>Copy</button>
+    </div>
+
+  Change that outer div to:
+    <div className="flex items-center gap-2 mt-2">
+
+  And make the URL div not truncate but instead wrap with break-all:
+    <div className="flex-1 min-w-0 bg-[#FAF8F5] border border-[#E8E2DA] rounded-lg px-3.5 py-2.5 font-mono text-[11px] text-[#666666] break-all select-all" ...>
+      {url}
+    </div>
+
+  This makes the dialog wider (560px), scrollable on small screens, and ensures the URL wraps instead of getting clipped.
+
+  ---
+  That said — if the bigger issue is you just want to revert the whole dialog back to the original clean design (before Replit modified it last session), apply that full revert prompt I gave above first,
+  then apply this width fix on top of it.
+
+  Which problem do you want to solve first — revert the content, or just fix the clipping?
+
+❯ okay the way we made that work is great. now this page.. the top is a mess. ya know? 
+  ⎿  [Image #4]
+
+⏺ Let me read the current state of MeasureDataRequest.tsx to see what's rendering at the top:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Let me look at the current v4 header section:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ The issues are clear from the screenshot: giant "ABRIDGE" text header, the big font-abridge uppercase H1, the amber warning box, AND the 3-step card are all stacked up creating a wall of stuff before the
+  actual form. Here's the fix:
+
+  ---
+  Replit prompt — Clean up MeasureDataRequest header
+
+  In client/src/pages/intake/MeasureDataRequest.tsx, find the outer header block inside the return statement — the div with class "w-full max-w-2xl mb-8" that contains the logo, badges, h1 title, subtitle,
+  warning banner, and steps card.
+
+  Replace that entire header block (everything from the opening <div className="w-full max-w-2xl mb-8"> down to and including its closing </div>, before the <div className="w-full max-w-2xl space-y-6">) with
+   the following:
+
+        <div className="w-full max-w-2xl mb-8">
+          {/* Logo */}
+          <div className="flex items-center justify-center mb-4">
+            <img src={abridgeLogo} alt="Abridge" className="h-6" />
+          </div>
+
+          {/* Rep / org context line */}
+          {(preseed?.repName || preseed?.orgName) && (
+            <p className="text-center text-sm text-[#888888] mb-4">
+              {preseed.repName && preseed.orgName
+                ? <>{preseed.repName} at Abridge sent this form for <strong className="text-[#1A1A1A]">{preseed.orgName}</strong>.</>
+                : preseed.repName
+                ? <>{preseed.repName} at Abridge sent you this form.</>
+                : <>This form was prepared for <strong className="text-[#1A1A1A]">{preseed.orgName}</strong>.</>
+              }
+            </p>
+          )}
+
+          {/* Setting badges */}
+          <div className="flex justify-center gap-2 flex-wrap mb-5">
+            {settings.map(s => (
+              <div key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
+                {SETTING_LABELS[s]}
+              </div>
+            ))}
+          </div>
+
+          {/* Title + subtitle */}
+          <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2 text-center" data-testid="text-data-request-title">
+            Help us tell your story
+          </h1>
+          <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto mb-5">
+            Select the metrics you track and enter what you have. Before only or after only is fine — partial data is useful.
+          </p>
+
+          {/* Quiet save reminder */}
+          <p className="text-center text-xs text-[#EA2C00] mb-6">
+            This form doesn't save — download the PDF before closing the tab.
+          </p>
+
+          {/* Progress bar (only when metrics are checked) */}
+          {(() => {
+            const totalChecked = checkedIds.size;
+            const totalFilled = Array.from(checkedIds).filter(id => {
+              const e = entries[id];
+              return e && (e.before !== null || e.after !== null);
+            }).length;
+            if (totalChecked === 0) return null;
+            return (
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div className="flex-1 max-w-xs bg-[#E8E2DA] rounded-full h-1.5">
+                  <div
+                    className="bg-[#EA2C00] h-1.5 rounded-full transition-all duration-300"
+                    style={{ width: totalChecked > 0 ? `${(totalFilled / totalChecked) * 100}%` : '0%' }}
+                  />
+                </div>
+                <span className="text-xs text-[#999999] flex-shrink-0">
+                  {totalFilled} of {totalChecked} filled
+                </span>
+              </div>
+            );
+          })()}
+        </div>
+
+  What this does:
+  - Removes the giant "ABRIDGE" text — replaces it with the real logo image (h-6, same as the other pages)
+  - Removes the big font-abridge uppercase H1 — replaces with a clean text-xl font-semibold
+  - Removes the bulky 3-step card
+  - Removes the amber warning box — replaces with a single quiet red line of text
+  - Keeps the rep/org context line, setting badges, subtitle, and progress bar
+
+  ---
+
+  This cuts the header from 7 stacked elements down to 5 lean ones: logo → context line → badges → title+subtitle → quiet save reminder.
+
+✻ Brewed for 1m 33s · 1 background task still running (↓ to manage)
+
+❯ hold up.. i wanna strategize with you for a second.. our customer success send this link to our partner.. they need a way of filling this out.. a way that ultimately.. helps them see value in a way    
+  thats demonstrative... because the partner wont have access to the application.. they just get a link with some instructions.. so when they open this.. won't we need to oritent them in some way shape  
+  or form.. like calling out it doesnt save is perfect.. but im just thinking this through out loud                                                                                                        
+
+⏺ Good instinct to pause here. Let me think through this with you.
+
+  The partner's mindset when they click that link:
+  - They've never seen this app
+  - They don't know what "before/after metrics" means in this context
+  - They're a clinical informatics person or ops lead — busy, skeptical of forms
+  - Their first 5 seconds: "Why am I here, what do I do, and how long is this going to take?"
+
+  The orientation job the header needs to do:
+
+  1. Who sent this and why — "Brad Larmie at Abridge sent this to document the impact of your deployment." Not "help us tell your story" (Abridge-centric). Frame it as for them — this becomes their ROI
+  story.
+  2. What they're actually doing — They're entering before/after numbers for metrics they already track. It's not a survey. 5-10 min. Partial data is fine.
+  3. What happens next — This is the part that's currently totally missing. When they're done: download a PDF → email it to [rep name] at Abridge → they use it to prepare your business review. The partner
+  needs to know there's a clear handoff and it goes somewhere useful.
+  4. The save warning — Critical. But it should feel helpful, not alarming.
+
+  The 3-step card is actually the right idea — just wrong framing. Right now it says things like "fill in what you know" (obvious) and "skip what you don't track" (also obvious). It should instead tell them
+  the flow: fill in → download PDF → send back.
+
+  My suggestion for the header:
+
+  [Abridge logo]
+
+  Brad Larmie at Abridge sent this form to measure
+  the impact of your deployment at Mayo Clinic.
+
+  [OUTPATIENT] [EMERGENCY DEPARTMENT]  ← what settings they're filling out for
+
+  ──────────────────────────────────────────
+    1  Fill in your numbers      → 2  Download the PDF      → 3  Email it to Brad
+       Before, after, or both.        Tap Download below.        brad@abridge.com
+       5–10 min. Partial is fine.     This form doesn't save.    He'll take it from there.
+  ──────────────────────────────────────────
+
+  The key shift: step 3 names the rep specifically. That closes the loop for the partner — they know exactly what to do when they're done and who it goes to. Right now the form just says "download the PDF"
+  with no "...and then what?"
+
+  Does that match your mental model of the flow? And do you have the rep's email in the preseed data, or just their name?
+
+✻ Worked for 35s · 1 background task still running (↓ to manage)
+
+❯ the email back.. thats not the right email.. way too many email addressess that are possible here.. i think ur close. but i wonder what is premium UX here in this context 
+
+⏺ Right — email is a dead end because every rep has a different address and you'd need to encode it in the URL (messy) or require a backend.
+
+  Here's where I think premium UX actually lands for this context:
+
+  The partner doesn't need to be told how to send it back. They already have a relationship with the rep. They have an email thread. They have a phone number. The moment they see "Brad Larmie at Abridge sent
+   this" — they know who to send it to. You don't need to solve that problem on the page.
+
+  What premium actually means here:
+
+  The form's only job is to get the partner to a downloaded PDF with zero confusion. So the experience is:
+
+  1. Land — instantly understand what this is and who asked for it
+  2. Fill — low friction, obvious what to enter, no anxiety about missing data
+  3. Done — one big CTA: Download PDF. After download, a clean success state: "Your summary is ready — send this PDF to Brad to complete your impact review." That's it. No email address needed. They know
+  Brad.
+
+  The thing that makes it feel premium vs. clunky:
+
+  The current model treats this like a survey form. Premium feels like a tool built specifically for this person at this org. The header should feel like it was sent to them specifically — not like they
+  filled out a generic intake form. The preseed data (org name, rep name, settings) lets you do that. Everything on the page should feel like it already knows who they are.
+
+  One thing worth thinking through: should the form show them what their data will look like — i.e., a preview of the PDF output as they fill in? Even a simple "your summary will include X metrics across Y
+  domains" would make the output feel real and worth completing.
+
+  What's your instinct — do you want a richer completion/success state after download, or keep it minimal and trust the relationship does the work?
+
+✻ Sautéed for 42s · 1 background task still running (↓ to manage)
+
+❯ this is the problem i am trying to solve.. right now.. our ROI application this calculator.. is internal only.. our partners want our help telling the story. in the explore tab.. they wnna know what   
+  the ROI could be.. and in the measure path they wanna know what story their data does or does not tell.. thats the truth.. so if that is the status of the situation.... the measure path is something   
+  that a PX or customer success person is emailing them.. the partner will get the data. .share the link to whoever needs to fill out the data.. this person in the organization may be an analytics       
+  person or something.. so in the game of telephone one part that is super important is that they know the link will not save.. so if they click the link.. a week from now or an hour from after they     
+  entered data.. they gotta know exactly what to do ya know.. then we use that data plug it back in.. and that guides either an ROI conversation in the explore path.. o r in the measure path.. it guides 
+   an EBR / ROI convo..                                                                                                                                                                                    
+
+⏺ Okay, now I have the full picture. Let me reflect it back:
+
+  The actual chain of custody:
+
+  1. CS/PX rep → sends link to partner champion (CMO, VP Ops)
+  2. Partner champion → forwards to analytics person or IT lead ("hey fill this out")
+  3. Analytics person → opens link, maybe days later, cold — no context except what's in the URL
+  4. They fill it out → download PDF → send it back up the chain → back to the rep
+
+  The analytics person is the real user of this form. They are:
+  - Not on the original email chain with the Abridge rep
+  - Probably got the link forwarded with minimal context ("fill this out")
+  - Might open it, get interrupted, close it, come back later — and lose everything
+  - Don't know what Abridge is building with this data
+
+  So the form's header needs to do the work of that entire chain of custody. It has to answer:
+  - "Who sent this and why" (for the forwarded link recipient)
+  - "This doesn't save — fill it in one sitting or download a partial PDF as you go"
+  - "When you're done, download the PDF and send it back to [whoever forwarded it to you]"
+
+  The save warning isn't a footnote — it's the most important UX decision on the page. That's what's going to cause the most pain when someone fills in 20 minutes of data and loses it.
+
+  What I'd suggest:
+
+  Rather than one warning at the top that gets scrolled past, make it persistent. A sticky bar at the bottom of the page — always visible as they scroll — that shows:
+
+  ⬇ Download PDF to save your progress · X of Y metrics filled
+
+  That bar does triple duty: save reminder, progress indicator, and the primary CTA all in one. It's always there. They can't miss it.
+
+  And the top header becomes simple:
+  - Logo
+  - "[Rep name] at Abridge sent this form for [Org]"
+  - What they're filling out (setting badges)
+  - One line: "Enter the numbers you have. Download the PDF when done. Send it to whoever shared this link with you."
+
+  That last line solves the "who do I send it to" problem without needing an email — because the analytics person already knows who forwarded it to them.
+
+  Does the sticky download bar concept resonate? That feels like the thing that actually protects against the data-loss scenario you're worried about.
+
+❯ yeah but even if they download the pdf.. next time they just gotta type it all back in right? 
+
+⏺ Exactly. The PDF doesn't solve the persistence problem — it's just a static snapshot. They'd have to retype everything.
+
+  Here's the thing though — the codebase already solves this. The older v18 version of MeasureDataRequest has localStorage auto-save with a storageFingerprint tied to the URL. Meaning:
+
+  - Same link + same browser = their data is still there when they come back
+  - It saves automatically as they type (400ms debounce)
+  - The fingerprint in the URL ties the save to that specific form instance
+
+  The v4 version removed it. It should go back in.
+
+  So the real message to show the partner isn't "this doesn't save" — it's actually:
+
+  "Your answers are saved in this browser. Come back to this link any time to pick up where you left off. Download the PDF when you're done to send back to [rep name]."
+
+  That's a completely different emotional experience. Instead of anxiety ("don't close this tab!"), it's confidence ("I can do this in pieces").
+
+  The two scenarios it doesn't cover:
+  - They switch to a different computer → data gone
+  - They clear their browser history → data gone
+
+  For those you'd need a backend. But for the realistic case — analytics person on their work laptop, same browser — localStorage with the URL fingerprint is solid.
+
+  The header message becomes:
+  - Who sent it and why
+  - "Your progress saves automatically in this browser"
+  - Download PDF when done to share back
+
+  Want me to write the Replit prompt to restore the localStorage auto-save from v18 into the v4 version of MeasureDataRequest?
+
+❯ well legal is all up in arms about data storage.. how long.. what we store.. blah blah blah.. security will say the same thing.. thats why we are doing it this way for now 
+
+⏺ That's actually the right call — and it clarifies the UX strategy completely.
+
+  Since there's no persistence by design, the form experience has to be built around one honest truth:
+
+  "Do this in one sitting."
+
+  That changes everything. The job of the header isn't to reassure them their data is safe — it's to set the right expectation before they start, so they don't get halfway through, close the tab for a
+  meeting, and lose it.
+
+  That means the header needs to communicate:
+
+  1. Why they're here — "[Rep] sent this to capture your Abridge impact data"
+  2. How long it takes — "~10 minutes"
+  3. The one rule — "This doesn't save. Do it in one sitting and download the PDF when you're done."
+  4. What done looks like — "Download the PDF → send it back to whoever shared this link"
+
+  The "~10 minutes" is the most important piece that's currently missing. If someone opens a form and doesn't know if it's a 2-minute thing or a 45-minute thing, they close it and come back "later." Later
+  never happens. If they see "~10 minutes" they either do it now or consciously schedule it.
+
+  The sticky download bar still makes sense — not as a save mechanism, but as a constant reminder that downloading is the only exit that preserves their work.
+
+  So the page has one job: get them to hit Download before they close the tab.
+
+  Want me to design the header and sticky bar around that framing and write the Replit prompt?
+
+❯  yes please.. we need it for both explore and measure path tbh 
+
+⏺ Let me read both files before writing the prompt:
+
+⏺ Searched for 3 patterns, read 4 files (ctrl+o to expand)
+
+⏺ Good — now I have everything. Here's the full prompt:
+
+  ---
+  Replit prompt — Clean headers + sticky save bar for both intake forms
+
+  Make the following changes across 4 files.
+
+  ---
+
+  ### FILE 1: client/src/lib/dataRequestUrlState.ts
+
+  Find:
+    export interface DataFormPreseed {
+      settings: MeasureCareSetting[];
+      setting?: MeasureCareSetting;
+      preSelectedIds?: string[];
+    }
+
+  Replace with:
+    export interface DataFormPreseed {
+      settings: MeasureCareSetting[];
+      setting?: MeasureCareSetting;
+      preSelectedIds?: string[];
+      repName?: string;
+      orgName?: string;
+    }
+
+  ---
+
+  ### FILE 2: client/src/lib/intakeUrlState.ts
+
+  Find:
+    export interface IntakeFormPreseed {
+      preSelectedSettings?: ExploreCareSetting[];
+    }
+
+  Replace with:
+    export interface IntakeFormPreseed {
+      preSelectedSettings?: ExploreCareSetting[];
+      repName?: string;
+      orgName?: string;
+    }
+
+  ---
+
+  ### FILE 3: client/src/pages/intake/MeasureDataRequest.tsx
+
+  **A. Add Download to the imports from lucide-react** (it may already be there — confirm `Download` and `Loader2` are imported).
+
+  **B. Replace the entire header block** — find the opening `<div className="w-full max-w-2xl mb-8">` and everything inside it up to and including its closing `</div>` (before `<div className="w-full
+  max-w-2xl space-y-6">`). Replace with:
+
+        <div className="w-full max-w-2xl mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <img src={abridgeLogo} alt="Abridge" className="h-6" />
+          </div>
+
+          {(preseed?.repName || preseed?.orgName) && (
+            <p className="text-center text-sm text-[#888888] mb-4">
+              {preseed.repName && preseed.orgName
+                ? `${preseed.repName} at Abridge sent this form for ${preseed.orgName}.`
+                : preseed.repName
+                ? `${preseed.repName} at Abridge sent you this form.`
+                : `This form was prepared for ${preseed.orgName}.`}
+            </p>
+          )}
+
+          <div className="flex justify-center gap-2 flex-wrap mb-5">
+            {settings.map(s => (
+              <div key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
+                {SETTING_LABELS[s]}
+              </div>
+            ))}
+          </div>
+
+          <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2 text-center" data-testid="text-data-request-title">
+            Help us tell your story
+          </h1>
+          <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto">
+            Select the metrics you track and enter what you have. Before only or after only is fine — partial data is useful. Takes about 10 minutes.
+          </p>
+        </div>
+
+  **C. Add a sticky bottom bar.** Find the outermost return div:
+    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4">
+
+  Change it to add bottom padding:
+    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4 pb-24">
+
+  Then just before the final closing `</div>` of the whole return, add:
+
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0D9D0] shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <p className="text-xs text-[#EA2C00] leading-snug">
+              This form doesn't save — download the PDF before closing this tab.
+            </p>
+            <button
+              onClick={handleDownloadMeasurementPDF}
+              disabled={!hasAnyData || isGeneratingPDF}
+              className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                hasAnyData && !isGeneratingPDF
+                  ? "bg-[#EA2C00] hover:bg-[#D42800] text-white"
+                  : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+              }`}
+            >
+              <Download className="w-4 h-4" />
+              {isGeneratingPDF ? "Generating…" : "Download PDF"}
+            </button>
+          </div>
+        </div>
+
+  ---
+
+  ### FILE 4: client/src/pages/intake/ExploreIntakeForm.tsx
+
+  **A. Replace the entire header block** — find the opening `<div className="w-full max-w-2xl mb-10 text-center">` and everything inside it up to and including its closing `</div>` (before `<div
+  className="w-full max-w-2xl space-y-4">`). Replace with:
+
+        <div className="w-full max-w-2xl mb-8 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <img src={abridgeLogo} alt="Abridge" className="h-7" />
+          </div>
+
+          {(preseed?.repName || preseed?.orgName) && (
+            <p className="text-center text-sm text-[#888888] mb-4">
+              {preseed.repName && preseed.orgName
+                ? `${preseed.repName} at Abridge sent this to model your ROI potential at ${preseed.orgName}.`
+                : preseed.repName
+                ? `${preseed.repName} at Abridge sent you this form.`
+                : `This form was prepared for ${preseed.orgName}.`}
+            </p>
+          )}
+
+          <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2" data-testid="text-intake-title">
+            Help us prepare for our call
+          </h1>
+          <p className="text-sm text-[#666666] leading-relaxed max-w-md mx-auto">
+            Share what you know about your organization. You don't need every number — fill in what you have. Takes about 10 minutes.
+          </p>
+        </div>
+
+  **B. Add the sticky bottom bar.** Find the outermost return div:
+    <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4">
+
+  Change to:
+    <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4 pb-24">
+
+  Then just before the final closing `</div>` of the whole return, add:
+
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0D9D0] shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <p className="text-xs text-[#EA2C00] leading-snug">
+              This form doesn't save — download the PDF before closing this tab.
+            </p>
+            <button
+              onClick={handleDownloadPDF}
+              disabled={!hasMinimum || pdfLoading}
+              className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                hasMinimum && !pdfLoading
+                  ? "bg-[#EA2C00] hover:bg-[#D42800] text-white"
+                  : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+              }`}
+            >
+              <Download className="w-4 h-4" />
+              {pdfLoading ? "Generating…" : "Download PDF"}
+            </button>
+          </div>
+        </div>
+
+  ---
+  The result on both forms:
+  - Clean logo → context line → badges/title → subtitle (no walls of instruction text)
+  - Sticky red bar at the bottom at all times: "This form doesn't save" on the left, Download PDF button on the right
+  - Download button is disabled until they have enough data to generate a PDF, enabled otherwise
+  - No instruction card, no amber warning banner, no steps list
+
+✻ Brewed for 1m 57s · 1 background task still running (↓ to manage)
+
+❯ im trying to look at .. the patient access part of the calculator.. im getting people trying ot understand how if we save X number of hours per week.. adn then the patient access calculates more       
+  patients seen per provider per week.. idk something about that feels off. like i can choose 2 patietns per week.. does that make sense?                                                                  
+
+⏺ Let me find the patient access calculation in the Explore path:
+
+⏺ Explore(Find patient access calculation)
+  ⎿  Done (16 tool uses · 57.6k tokens · 37s)
+  (ctrl+o to expand)
+
+⏺ Here's what's happening and why it feels off:
+
+  The current model asks the wrong question. It just says "how many additional patients per week?" and lets you pick 0.5/1/2. That number is disconnected from everything else — it's just a floating
+  assumption. There's no logic tying it back to Abridge's actual time savings. So when you pick 2, you can't really defend it.
+
+  The more defensible chain is:
+  1. Abridge saves X minutes per encounter
+  2. Provider sees Y encounters per day
+  3. That recovers (X × Y) minutes per day per provider
+  4. A percentage of that recovered time gets reinvested into capacity (not all of it — providers also leave earlier, do admin, etc.)
+  5. At Z minutes per visit, that yields additional patients per week
+
+  So instead of picking "2 patients/week" as a raw input, the user would control:
+  - Minutes saved per encounter (Abridge benchmark: 5–8 min)
+  - % of recovered time reinvested into scheduling (conservative: 20–30%)
+  - Visit length (already an input)
+
+  And the model calculates the additional patients per week from those inputs rather than asking for it directly.
+
+  Example that's fully defensible:
+  "Your providers see 15 patients/day. Abridge saves 6 minutes per encounter — that's 90 minutes per day per provider. At 30% reinvestment and 20-minute visits, that's 2.25 additional patients per week per
+  provider. At 100 providers, that's $2.1M in additional revenue annually."
+
+  Every number in that sentence has a source. The "2 patients" falls out of the math rather than being assumed.
+
+  The legacy PatientAccessDrawer component in your codebase actually already has this exact formula — it just isn't being used in the Explore model. Want to look at wiring that logic in?
+
+✻ Baked for 1m 23s · 1 background task still running (↓ to manage)
+
+❯ yeah but no.. because on the page before we calculate the total number of hours saved.. based on the total number of minutes the user selects.. so i need that logic tied in 
+
+⏺ Let me look at exactly how hours saved is calculated and how it currently connects (or doesn't) to patient access:
+
+⏺ Read 2 files (ctrl+o to expand)
+
+⏺ Now I see the exact problem. The capacityRealizationPercent (25% default) already exists and hoursPerProviderPerWeek is already calculated — but they're just displayed as context. They don't actually feed
+  the formula. The revenue formula uses the raw additionalVisitsPerWeek input directly, completely ignoring the hours saved.
+
+  So right now two completely disconnected things are shown on the same screen:
+  - "You save 1.2 hrs/provider/week" (from the time model)
+  - "Pick 0.5 / 1 / 2 additional patients/week" (just a floating assumption)
+
+  The fix is straightforward. Make additionalVisitsPerWeek a derived value instead of a user input:
+
+  additionalVisitsPerWeek = hoursPerProviderPerWeek × (capacityRealizationPercent / 100) / (visitDuration / 60)
+
+  The user controls:
+  - % of recovered time reinvested into scheduling (already exists as capacityRealizationPercent, just needs to actually drive the formula)
+  - Visit duration (already an input)
+  - Revenue per visit (already an input)
+
+  And the UI shows additionalVisitsPerWeek as a calculated output — "= 1.4 additional patients/week per provider" — so in the room you can say:
+
+  "Your providers recover 1.8 hours a week with Abridge. We're modeling 30% of that going to additional scheduling — at 30-minute visits, that's 1.1 more patients per provider per week."
+
+  Every number is traceable. Nothing is picked out of thin air.
+
+  Want me to write the Replit prompt to wire this up? It's changes to ExploreModel.tsx and ExploreValueDrivers.tsx — remove the 0.5/1/2 picker, make additionalVisitsPerWeek derived, and flip
+  capacityRealizationPercent from display-only to the actual control.
+
+✻ Crunched for 43s · 1 background task still running (↓ to manage)
+
+❯ yes i think that would be better right? i guess that doesnt acount for the subset of the total providers right/ 
+
+⏺ Right — and that's already handled. There's already an accessProviders input that works as exactly that subset. The formula stays clean:
+
+  hoursPerProviderPerWeek = totalHoursSaved ÷ totalProviders ÷ 48
+
+  additionalVisitsPerWeek (per provider) = hoursPerProviderPerWeek × reinvestmentRate ÷ visitDurationHours
+
+  annualRevenue = additionalVisitsPerWeek × accessProviders × 48 × revenuePerVisit
+
+  So accessProviders controls the subset — if you have 100 providers but only 60 have schedulable capacity, you set that to 60 and only those 60 contribute revenue. The per-provider rate is based on the
+  org-wide average hours saved, which is reasonable since Abridge saves time uniformly.
+
+  The UI would show three controls:
+  - Providers with scheduling capacity — already exists (accessProviders)
+  - % of recovered time reinvested — already exists (capacityRealizationPercent, just needs to actually drive the formula)
+  - Visit duration + Revenue per visit — already exist
+
+  And the derived output shows:
+  "= 1.4 additional patients/week per provider in scope"
+
+  Then below that, the revenue: "60 providers × 1.4 visits/week × 48 weeks × $250/visit = $1.0M"
+
+  Every lever is defensible. Want me to write the prompt now?
+
+❯ yes write the prompt 
+
+⏺ Read 2 files (ctrl+o to expand)
+
+⏺ Now I have everything. Here's the prompt:
+
+  ---
+  Replit prompt — Wire patient access to hours saved
+
+  In the Explore ROI calculator, the patient access driver currently uses a floating "additional visits per week" input (0.5/1/2 presets) that is completely disconnected from the hours saved calculation. Fix
+   this so additional visits per week is derived from hours saved, with the user controlling what % of recovered time gets reinvested into scheduling capacity.
+
+  ---
+
+  ### FILE 1: client/src/pages/explore/ExploreModel.tsx
+
+  Find the existing `patientAccessValue` useMemo (around line 102):
+
+    const patientAccessValue = useMemo(() => {
+      if (!timeDriverInputs.patientAccessEnabled) return 0;
+      const annualVisits = timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;
+      return Math.round(annualVisits * timeDriverInputs.revenuePerVisit);
+    }, [timeDriverInputs, effectiveAccessProviders]);
+
+  Replace it with the following two blocks (insert before patientAccessValue):
+
+    const derivedVisitsPerWeek = useMemo(() => {
+      if (state.numberOfProviders <= 0 || totalHoursSaved <= 0) return 0;
+      const weeksPerYear = isOutpatientSetting ? 52 : 48;
+      const hoursPerProvPerWeek = totalHoursSaved / state.numberOfProviders / weeksPerYear;
+      return hoursPerProvPerWeek * (timeDriverInputs.capacityRealizationPercent / 100) / (timeDriverInputs.visitDuration / 60);
+    }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.capacityRealizationPercent, timeDriverInputs.visitDuration, isOutpatientSetting]);
+
+    const patientAccessValue = useMemo(() => {
+      if (!timeDriverInputs.patientAccessEnabled) return 0;
+      const weeksPerYear = isOutpatientSetting ? 52 : 48;
+      const annualVisits = derivedVisitsPerWeek * effectiveAccessProviders * weeksPerYear;
+      return Math.round(annualVisits * timeDriverInputs.revenuePerVisit);
+    }, [timeDriverInputs, effectiveAccessProviders, derivedVisitsPerWeek, isOutpatientSetting]);
+
+  ---
+
+  ### FILE 2: client/src/pages/explore/ExploreValueDrivers.tsx
+
+  **A. Update derived calculations at the top of the component.**
+
+  Find the existing `potentialVisits` useMemo:
+
+    const potentialVisits = useMemo(() => {
+      return timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;
+    }, [timeDriverInputs.additionalVisitsPerWeek, effectiveAccessProviders]);
+
+  Replace the `potentialVisits` and `capacityHoursUsed` and `capacityPctOfSaved` blocks with:
+
+    const derivedVisitsPerWeek = useMemo(() => {
+      if (state.numberOfProviders <= 0 || totalHoursSaved <= 0) return 0;
+      const weeksPerYear = isOutpatientSetting ? 52 : 48;
+      const hoursPerProvPerWeek = totalHoursSaved / state.numberOfProviders / weeksPerYear;
+      return hoursPerProvPerWeek * (timeDriverInputs.capacityRealizationPercent / 100) / (timeDriverInputs.visitDuration / 60);
+    }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.capacityRealizationPercent, timeDriverInputs.visitDuration, isOutpatientSetting]);
+
+    const potentialVisits = useMemo(() => {
+      const weeksPerYear = isOutpatientSetting ? 52 : 48;
+      return derivedVisitsPerWeek * effectiveAccessProviders * weeksPerYear;
+    }, [derivedVisitsPerWeek, effectiveAccessProviders, isOutpatientSetting]);
+
+    const potentialRevenue = useMemo(() => {
+      return potentialVisits * timeDriverInputs.revenuePerVisit;
+    }, [potentialVisits, timeDriverInputs.revenuePerVisit]);
+
+  **B. Replace the visits-per-week input section in the UI.**
+
+  Find and remove this entire block (the description text, the +/- stepper, the three preset buttons, and the disclaimer paragraph) — from:
+    <p className="text-sm text-black mb-4">
+      If providers had more time, how many additional visits per week...
+    </p>
+    <div className="space-y-3 mb-6">
+      ...
+    </div>
+
+  Replace it with:
+
+    <div className="mb-6">
+      <p className="text-sm text-[#888888] mb-3">
+        What percentage of recovered documentation time gets reinvested into scheduling additional patients?
+      </p>
+      <div className="flex gap-2 mb-3">
+        {[
+          { label: 'Conservative', value: 20, desc: 'Most time → quality of life' },
+          { label: 'Moderate', value: 30, desc: 'Some intentional rescheduling' },
+          { label: 'Aggressive', value: 40, desc: 'Active capacity expansion' },
+        ].map((preset) => (
+          <button
+            key={preset.label}
+            onClick={() => updateTimeDriverInputs({ capacityRealizationPercent: preset.value })}
+            className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+              timeDriverInputs.capacityRealizationPercent === preset.value
+                ? 'bg-[#EA2C00] text-white'
+                : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+            }`}
+          >
+            <span className="font-medium">{preset.label}</span>
+            <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}%</span>
+          </button>
+        ))}
+      </div>
+      <div className="bg-[#F5F0EB] rounded-lg px-4 py-3 flex items-center justify-between">
+        <span className="text-sm text-[#666666]">Additional patients per provider per week</span>
+        <span className="text-xl font-bold text-black" data-testid="text-visits-per-week">
+          {derivedVisitsPerWeek < 0.1 ? '<0.1' : derivedVisitsPerWeek.toFixed(1)}
+        </span>
+      </div>
+      <p className="text-xs text-[#AAAAAA] mt-2">
+        Derived from your hours saved — not a manual assumption.
+      </p>
+    </div>
+
+  **C. Update the calculation box** (the bg-[#F5F0EB] rounded-lg p-4 block at the bottom of the expanded section).
+
+  Find the existing calculation display lines and replace the entire inner content of that box with:
+
+    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">How we got here</p>
+    <div className="space-y-1.5 text-sm">
+      <div className="flex justify-between gap-2">
+        <span className="text-[#666666]">{hoursPerProviderPerWeek} hrs/wk saved × {timeDriverInputs.capacityRealizationPercent}% reinvested ÷ {timeDriverInputs.visitDuration} min visits</span>
+        <span className="font-semibold text-black flex-shrink-0">= {derivedVisitsPerWeek.toFixed(1)} visits/wk</span>
+      </div>
+      <div className="flex justify-between gap-2">
+        <span className="text-[#666666]">{derivedVisitsPerWeek.toFixed(1)} visits/wk × {effectiveAccessProviders} providers × {isOutpatientSetting ? 52 : 48} wks</span>
+        <span className="font-semibold text-black flex-shrink-0">= {formatNumber(Math.round(potentialVisits))} visits/yr</span>
+      </div>
+      <div className="flex justify-between gap-2">
+        <span className="text-[#666666]">× {formatCurrency(timeDriverInputs.revenuePerVisit)} per visit</span>
+        <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(potentialRevenue)}</span>
+      </div>
+    </div>
+    {effectiveAccessProviders < state.numberOfProviders && (
+      <p className="text-xs text-[#AAAAAA] mt-3">{effectiveAccessProviders} of {state.numberOfProviders} providers have scheduling capacity.</p>
+    )}
+
+  ---
+
+  ### FILE 3: client/src/pages/explore/ExploreFlow.tsx
+
+  Find the default value for `capacityRealizationPercent` in the initial state (should be 25). Change it to 30 to match the "Moderate" preset.
+
+  ---
+  What changes:
+  - The 0.5/1/2 picker is gone — replaced by a 20%/30%/40% reinvestment rate selector
+  - Additional visits per week becomes a calculated output shown as a read-only number
+  - The calculation box shows the full chain: hours saved → % reinvested → visit length → visits per week → revenue
+  - In the room: every number has a s
