@@ -693,8 +693,15 @@ export default function SummaryCommandCenter({
                 const totalHoursSaved = Math.round(totalMinutesSaved / 60);
                 const valuePerProvider = Math.round(totalAnnualValue / pilotUnits);
                 
+                const hasPatientAccess = selectedLevers.some(l => (l.leverId === "patientAccess" || l.leverId === "patient_access") && l.active);
+                const patientAccessResult = modelResults.driverResults?.patientAccess || modelResults.driverResults?.patient_access;
+                const visitsEnabled = hasPatientAccess && patientAccessResult
+                  ? Number(patientAccessResult.inputs?.additionalVisits || 0)
+                  : 0;
+                const showVisitsCard = hasPatientAccess;
+                
                 return (
-                  <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+                  <div className={`grid ${showVisitsCard ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3'} gap-4 max-w-2xl mx-auto`}>
                     <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
                       <div className="text-2xl md:text-3xl font-bold text-white mb-1" data-testid="summary-roi">
                         {roiMultiple.toFixed(1)}×
@@ -721,6 +728,17 @@ export default function SummaryCommandCenter({
                         Hours Saved
                       </div>
                     </div>
+                    
+                    {showVisitsCard && (
+                      <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-white mb-1" data-testid="summary-visits-enabled">
+                          {visitsEnabled.toLocaleString()}
+                        </div>
+                        <div className="text-white/40 text-xs uppercase tracking-wider">
+                          Visits Enabled
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
