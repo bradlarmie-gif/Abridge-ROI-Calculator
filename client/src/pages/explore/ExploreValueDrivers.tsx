@@ -58,9 +58,8 @@ export default function ExploreValueDrivers({
 
   const hoursPerProviderPerWeek = useMemo(() => {
     if (state.numberOfProviders <= 0) return '0';
-    const weeksPerYear = isOutpatientSetting ? 52 : 48;
-    return (totalHoursSaved / state.numberOfProviders / weeksPerYear).toFixed(1);
-  }, [totalHoursSaved, state.numberOfProviders, isOutpatientSetting]);
+    return (totalHoursSaved / state.numberOfProviders / 48).toFixed(1);
+  }, [totalHoursSaved, state.numberOfProviders]);
 
   // Retention value calculations
   const retentionScenarios: Record<RetentionScenario, number> = {
