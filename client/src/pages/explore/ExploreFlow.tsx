@@ -347,7 +347,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     patientAccessEnabled: false,
     additionalVisitsPerWeek: 1,
     accessProviders: 0,
-    capacityRealizationPercent: 25,
+    capacityRealizationPercent: 30,
     visitDuration: 30,
     revenuePerVisit: 200,
     costReductionEnabled: false,
@@ -758,7 +758,11 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       // Outpatient: Patient Access and Wellbeing/Retention
       if (timeDriverInputs.patientAccessEnabled) {
         const effectiveAccessProviders = Math.min(timeDriverInputs.accessProviders || numberOfProviders, numberOfProviders);
-        const annualVisits = timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;
+        const hrsPerProvPerWeek = numberOfProviders > 0 ? totalHoursSaved / numberOfProviders / 48 : 0;
+        const reinvestmentRate = (timeDriverInputs.capacityRealizationPercent || 30) / 100;
+        const visitDurationHrs = (timeDriverInputs.visitDuration || 30) / 60;
+        const derivedVisitsPerWeek = visitDurationHrs > 0 ? Math.round((hrsPerProvPerWeek * reinvestmentRate / visitDurationHrs) * 10) / 10 : 0;
+        const annualVisits = derivedVisitsPerWeek * effectiveAccessProviders * 48;
         total += annualVisits * timeDriverInputs.revenuePerVisit;
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {

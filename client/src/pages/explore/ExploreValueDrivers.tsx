@@ -39,22 +39,22 @@ export default function ExploreValueDrivers({
 
   const effectiveAccessProviders = Math.min(timeDriverInputs.accessProviders || state.numberOfProviders, state.numberOfProviders);
 
+  const derivedVisitsPerWeek = useMemo(() => {
+    if (state.numberOfProviders <= 0 || totalHoursSaved <= 0) return 0;
+    const hrsPerProvPerWeek = totalHoursSaved / state.numberOfProviders / 48;
+    const reinvestmentRate = (timeDriverInputs.capacityRealizationPercent || 30) / 100;
+    const visitDurationHrs = (timeDriverInputs.visitDuration || 30) / 60;
+    if (visitDurationHrs <= 0) return 0;
+    return Math.round((hrsPerProvPerWeek * reinvestmentRate / visitDurationHrs) * 10) / 10;
+  }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.capacityRealizationPercent, timeDriverInputs.visitDuration]);
+
   const potentialVisits = useMemo(() => {
-    return timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;
-  }, [timeDriverInputs.additionalVisitsPerWeek, effectiveAccessProviders]);
+    return derivedVisitsPerWeek * effectiveAccessProviders * 48;
+  }, [derivedVisitsPerWeek, effectiveAccessProviders]);
 
   const potentialRevenue = useMemo(() => {
     return potentialVisits * timeDriverInputs.revenuePerVisit;
   }, [potentialVisits, timeDriverInputs.revenuePerVisit]);
-
-  const capacityHoursUsed = useMemo(() => {
-    return Math.round(timeDriverInputs.additionalVisitsPerWeek * (timeDriverInputs.visitDuration / 60) * effectiveAccessProviders * 48);
-  }, [timeDriverInputs.additionalVisitsPerWeek, timeDriverInputs.visitDuration, effectiveAccessProviders]);
-
-  const capacityPctOfSaved = useMemo(() => {
-    if (totalHoursSaved <= 0) return 0;
-    return Math.round((capacityHoursUsed / totalHoursSaved) * 100);
-  }, [capacityHoursUsed, totalHoursSaved]);
 
   const hoursPerProviderPerWeek = useMemo(() => {
     if (state.numberOfProviders <= 0) return '0';
@@ -1019,51 +1019,40 @@ export default function ExploreValueDrivers({
               >
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
-                    If providers had more time, how many additional visits per week could your organization realistically schedule?
+                    What percentage of recovered documentation time could realistically be reinvested into seeing additional patients?
                   </p>
 
                   <div className="space-y-3 mb-6">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm text-[#888888]">Additional visits per provider per week</label>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => updateTimeDriverInputs({ additionalVisitsPerWeek: Math.max(0, Math.round((timeDriverInputs.additionalVisitsPerWeek - 0.5) * 10) / 10) })}
-                          className="w-8 h-8 rounded-lg bg-[#F5F0EB] hover:bg-[#EBE6E1] flex items-center justify-center text-[#666666] transition-colors"
-                          data-testid="button-visits-decrement"
-                        >−</button>
-                        <span className="text-2xl font-bold text-black w-10 text-center" data-testid="text-visits-per-week">{timeDriverInputs.additionalVisitsPerWeek}</span>
-                        <button
-                          onClick={() => updateTimeDriverInputs({ additionalVisitsPerWeek: Math.min(10, Math.round((timeDriverInputs.additionalVisitsPerWeek + 0.5) * 10) / 10) })}
-                          className="w-8 h-8 rounded-lg bg-[#F5F0EB] hover:bg-[#EBE6E1] flex items-center justify-center text-[#666666] transition-colors"
-                          data-testid="button-visits-increment"
-                        >+</button>
-                      </div>
-                    </div>
-
+                    <label className="text-sm text-[#888888]">Time reinvestment rate</label>
                     <div className="flex gap-2">
                       {[
-                        { label: 'Conservative', value: 0.5, desc: 'Minimal scheduling changes' },
-                        { label: 'Moderate', value: 1, desc: 'Intentional template adjustments' },
-                        { label: 'Aggressive', value: 2, desc: 'Active capacity expansion' },
+                        { label: 'Conservative', value: 20, desc: 'Minimal scheduling changes' },
+                        { label: 'Moderate', value: 30, desc: 'Intentional template adjustments' },
+                        { label: 'Aggressive', value: 40, desc: 'Active capacity expansion' },
                       ].map((preset) => (
                         <button
                           key={preset.label}
-                          onClick={() => updateTimeDriverInputs({ additionalVisitsPerWeek: preset.value })}
-                          className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
-                            timeDriverInputs.additionalVisitsPerWeek === preset.value
+                          onClick={() => updateTimeDriverInputs({ capacityRealizationPercent: preset.value })}
+                          className={`flex-1 py-2.5 px-2 rounded-lg text-xs transition-all ${
+                            timeDriverInputs.capacityRealizationPercent === preset.value
                               ? 'bg-[#EA2C00] text-white'
                               : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
                           }`}
-                          data-testid={`button-visits-preset-${preset.label.toLowerCase()}`}
+                          data-testid={`button-reinvestment-preset-${preset.label.toLowerCase()}`}
                         >
                           <span className="font-medium">{preset.label}</span>
-                          <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}/wk</span>
+                          <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}%</span>
                         </button>
                       ))}
                     </div>
 
+                    <div className="bg-[#F5F0EB] rounded-lg px-4 py-3 flex items-center justify-between">
+                      <span className="text-sm text-[#666666]">Derived visits per provider per week</span>
+                      <span className="text-2xl font-bold text-black" data-testid="text-visits-per-week">{derivedVisitsPerWeek}</span>
+                    </div>
+
                     <p className="text-xs text-[#888888]">
-                      Most recovered documentation time is absorbed into quality of life, inbox, and longer patient conversations — not additional visits. Recovered time comes in small increments (5-10 min) spread throughout the day, not as full visit slots. Only a fraction converts to schedulable capacity.
+                      Most recovered documentation time is absorbed into quality of life, inbox, and longer patient conversations — not additional visits. Only a fraction converts to schedulable capacity.
                     </p>
                   </div>
 
@@ -1118,37 +1107,24 @@ export default function ExploreValueDrivers({
                   </div>
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
-                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">How we got here</p>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666]">{timeDriverInputs.additionalVisitsPerWeek} visits/wk × {effectiveAccessProviders} providers × 48 wks</span>
-                        <span className="font-semibold text-black flex-shrink-0">= {formatNumber(potentialVisits)} visits</span>
+                        <span className="text-[#666666]">Time saved per provider</span>
+                        <span className="font-semibold text-black flex-shrink-0">{hoursPerProviderPerWeek} hrs/wk</span>
                       </div>
-                      {effectiveAccessProviders < state.numberOfProviders && (
-                        <div className="flex justify-between gap-2">
-                          <span className="text-[#888888] text-xs">{effectiveAccessProviders} of {state.numberOfProviders} providers</span>
-                        </div>
-                      )}
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">× {timeDriverInputs.capacityRealizationPercent}% reinvested ÷ {timeDriverInputs.visitDuration} min/visit</span>
+                        <span className="font-semibold text-black flex-shrink-0">= {derivedVisitsPerWeek} visits/wk</span>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666]">{derivedVisitsPerWeek} visits/wk × {effectiveAccessProviders} providers × 48 wks</span>
+                        <span className="font-semibold text-black flex-shrink-0">= {formatNumber(potentialVisits)} visits/yr</span>
+                      </div>
                       <div className="flex justify-between gap-2">
                         <span className="text-[#666666]">× {formatCurrency(timeDriverInputs.revenuePerVisit)} per visit</span>
-                        <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(potentialRevenue)}</span>
+                        <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(potentialRevenue)}/yr</span>
                       </div>
-                    </div>
-
-                    <div className="h-px bg-[#E5E5E5] my-3" />
-
-                    <div className="text-xs text-[#666666]">
-                      <p>
-                        {effectiveAccessProviders < state.numberOfProviders
-                          ? <>{effectiveAccessProviders} of your {state.numberOfProviders} providers</>
-                          : <>Your providers</>
-                        } save ~<span className="font-semibold text-black">{hoursPerProviderPerWeek}</span> hrs/wk each.
-                        At {timeDriverInputs.additionalVisitsPerWeek} extra visits ({timeDriverInputs.visitDuration} min each), you're using <span className="font-semibold text-black">{Math.round(timeDriverInputs.additionalVisitsPerWeek * timeDriverInputs.visitDuration / 60 * 10) / 10} hrs/wk</span> per provider — about <span className="font-semibold text-black">{capacityPctOfSaved > 100 ? '>100' : capacityPctOfSaved}%</span> of saved time.
-                        {capacityPctOfSaved <= 30 && ' The rest flows into documentation quality and work-life balance.'}
-                        {capacityPctOfSaved > 30 && capacityPctOfSaved <= 60 && ' A significant portion of saved time goes to capacity — consider whether this is realistic for your organization.'}
-                        {capacityPctOfSaved > 60 && capacityPctOfSaved <= 100 && ' This assumes most recovered time converts to visits — an aggressive target that requires intentional scheduling redesign.'}
-                        {capacityPctOfSaved > 100 && ' Warning: this exceeds the time saved. Consider reducing visits or confirming your time savings estimate.'}
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -2135,7 +2111,7 @@ export default function ExploreValueDrivers({
                         </span>
                       </div>
                       {timeDriverInputs.patientAccessEnabled && (
-                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.additionalVisitsPerWeek} visit{timeDriverInputs.additionalVisitsPerWeek !== 1 ? 's' : ''}/wk × {effectiveAccessProviders}{effectiveAccessProviders < state.numberOfProviders ? ` of ${state.numberOfProviders}` : ''} providers)</p>
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({derivedVisitsPerWeek} visit{derivedVisitsPerWeek !== 1 ? 's' : ''}/wk × {effectiveAccessProviders}{effectiveAccessProviders < state.numberOfProviders ? ` of ${state.numberOfProviders}` : ''} providers)</p>
                       )}
                     </div>
 
