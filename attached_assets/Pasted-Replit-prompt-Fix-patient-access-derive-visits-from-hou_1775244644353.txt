@@ -1,0 +1,129 @@
+Replit prompt — Fix patient access: derive visits from hours saved                                                                                                                                           
+                                                                                                                                                                                                               
+  In the Explore ROI calculator, the patient access driver currently uses a manual "additional visits per week" picker (0.5/1/2) that is disconnected from the hours saved calculation on the previous screen. 
+  Fix this so visits per week is derived from hours saved, with the user controlling what % of recovered time gets reinvested into scheduling.
+                                                                                                                                                                                                               
+  ---                                                                                                     
+                                                                                                                                                                                                               
+  ### FILE 1: client/src/pages/explore/ExploreModel.tsx
+                                                                                                                                                                                                               
+  Find:                                                                                                   
+    const patientAccessValue = useMemo(() => {                                                                                                                                                                 
+      if (!timeDriverInputs.patientAccessEnabled) return 0;
+      const annualVisits = timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;                                                                                                           
+      return Math.round(annualVisits * timeDriverInputs.revenuePerVisit);                                 
+    }, [timeDriverInputs, effectiveAccessProviders]);                                                                                                                                                          
+                                                                                                                                                                                                               
+  Replace with these two blocks:                                                                                                                                                                               
+                                                                                                                                                                                                               
+    const derivedVisitsPerWeek = useMemo(() => {                                                                                                                                                               
+      if (state.numberOfProviders <= 0 || totalHoursSaved <= 0) return 0;                                 
+      const weeksPerYear = isOutpatientSetting ? 52 : 48;                                                                                                                                                      
+      const hoursPerProvPerWeek = totalHoursSaved / state.numberOfProviders / weeksPerYear;                                                                                                                    
+      return hoursPerProvPerWeek * (timeDriverInputs.capacityRealizationPercent / 100) / (timeDriverInputs.visitDuration / 60);
+    }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.capacityRealizationPercent, timeDriverInputs.visitDuration, isOutpatientSetting]);                                                          
+                                                                                                                                                                                                               
+    const patientAccessValue = useMemo(() => {                                                                                                                                                                 
+      if (!timeDriverInputs.patientAccessEnabled) return 0;                                                                                                                                                    
+      const weeksPerYear = isOutpatientSetting ? 52 : 48;                                                                                                                                                      
+      const annualVisits = derivedVisitsPerWeek * effectiveAccessProviders * weeksPerYear;                                                                                                                     
+      return Math.round(annualVisits * timeDriverInputs.revenuePerVisit);                                                                                                                                      
+    }, [timeDriverInputs, effectiveAccessProviders, derivedVisitsPerWeek, isOutpatientSetting]);                                                                                                               
+                                                                                                          
+  ---                                                                                                                                                                                                          
+   
+  ### FILE 2: client/src/pages/explore/ExploreValueDrivers.tsx                                                                                                                                                 
+                                                                                                          
+  **A. Replace the derived calculations near the top of the component.**
+
+  Find and replace the potentialVisits, capacityHoursUsed, and capacityPctOfSaved useMemo blocks with:
+                                          
+    const derivedVisitsPerWeek = useMemo(() => {
+      if (state.numberOfProviders <= 0 || totalHoursSaved <= 0) return 0;                                                                                                                                      
+      const weeksPerYear = isOutpatientSetting ? 52 : 48;
+      const hoursPerProvPerWeek = totalHoursSaved / state.numberOfProviders / weeksPerYear;                                                                                                                    
+      return hoursPerProvPerWeek * (timeDriverInputs.capacityRealizationPercent / 100) / (timeDriverInputs.visitDuration / 60);
+    }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.capacityRealizationPercent, timeDriverInputs.visitDuration, isOutpatientSetting]);                                                          
+                                                                                                                                                                                                               
+    const potentialVisits = useMemo(() => {   
+      const weeksPerYear = isOutpatientSetting ? 52 : 48;                                                                                                                                                      
+      return derivedVisitsPerWeek * effectiveAccessProviders * weeksPerYear;                              
+    }, [derivedVisitsPerWeek, effectiveAccessProviders, isOutpatientSetting]);                                                                                                                                 
+                                                                                                          
+    const potentialRevenue = useMemo(() => {                                                                                                                                                                   
+      return potentialVisits * timeDriverInputs.revenuePerVisit;                                          
+    }, [potentialVisits, timeDriverInputs.revenuePerVisit]);                                                                                                                                                   
+                                          
+  **B. Replace the visits input UI inside the expanded patient access panel.**                                                                                                                                 
+                                                                                                                                                                                                               
+  Find and remove everything from:            
+    <p className="text-sm text-black mb-4">                                                                                                                                                                    
+      If providers had more time, how many additional visits per week...                                  
+                                                                                                                                                                                                               
+  ...through the end of the closing </div> of that space-y-3 block (including the disclaimer paragraph about "Most recovered documentation time is absorbed...").
+                                                                                                                                                                                                               
+  Replace with:                                                                                                                                                                                                
+                                                                                                                                                                                                               
+    <div className="mb-6">                                                                                                                                                                                     
+      <p className="text-sm text-[#888888] mb-3">                                                                                                                                                              
+        What percentage of recovered time gets reinvested into scheduling additional patients?            
+      </p>                                
+      <div className="flex gap-2 mb-3">
+        {[                                                                                                                                                                                                     
+          { label: 'Conservative', value: 20, desc: 'Most time → quality of life' },
+          { label: 'Moderate', value: 30, desc: 'Some intentional rescheduling' },                                                                                                                             
+          { label: 'Aggressive', value: 40, desc: 'Active capacity expansion' },                                                                                                                               
+        ].map((preset) => (                   
+          <button                                                                                                                                                                                              
+            key={preset.label}                                                                                                                                                                                 
+            onClick={() => updateTimeDriverInputs({ capacityRealizationPercent: preset.value })}                                                                                                               
+            className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${                                                                                                                                  
+              timeDriverInputs.capacityRealizationPercent === preset.value                                                                                                                                     
+                ? 'bg-[#EA2C00] text-white'                                                               
+                : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'                                                                                                                                             
+            }`}                                                                                                                                                                                                
+          >                                                                                                                                                                                                    
+            <span className="font-medium">{preset.label}</span>                                                                                                                                                
+            <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}%</span>                                                                                                                       
+          </button>                           
+        ))}                                                                                                                                                                                                    
+      </div>                                                                                              
+      <div className="bg-[#F5F0EB] rounded-lg px-4 py-3 flex items-center justify-between">                                                                                                                    
+        <span className="text-sm text-[#666666]">Additional patients per provider per week</span>
+        <span className="text-xl font-bold text-black" data-testid="text-visits-per-week">                                                                                                                     
+          {derivedVisitsPerWeek < 0.1 ? '<0.1' : derivedVisitsPerWeek.toFixed(1)}                         
+        </span>                                                                                                                                                                                                
+      </div>                                                                                                                                                                                                   
+      <p className="text-xs text-[#AAAAAA] mt-2">                                                                                                                                                              
+        Calculated from your hours saved — not a manual assumption.                                                                                                                                            
+      </p>                                                                                                
+    </div>                                                                                                                                                                                                     
+                                                                                                          
+  **C. Replace the calculation box content** (the bg-[#F5F0EB] rounded-lg p-4 block at the bottom of the expanded section). Replace everything inside it with:                                                 
+                                          
+    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">How we got here</p>                                                                                                      
+    <div className="space-y-1.5 text-sm">                                                                                                                                                                      
+      <div className="flex justify-between gap-2">
+        <span className="text-[#666666]">{hoursPerProviderPerWeek} hrs/wk saved × {timeDriverInputs.capacityRealizationPercent}% reinvested ÷ {timeDriverInputs.visitDuration} min visits</span>               
+        <span className="font-semibold text-black flex-shrink-0">= {derivedVisitsPerWeek.toFixed(1)} visits/wk</span>
+      </div>                                                                                                                                                                                                   
+      <div className="flex justify-between gap-2">                                                        
+        <span className="text-[#666666]">{derivedVisitsPerWeek.toFixed(1)} visits/wk × {effectiveAccessProviders} providers × {isOutpatientSetting ? 52 : 48} wks</span>                                       
+        <span className="font-semibold text-black flex-shrink-0">= {formatNumber(Math.round(potentialVisits))} visits/yr</span>                                                                                
+      </div>                                                                                                                                                                                                   
+      <div className="flex justify-between gap-2">                                                                                                                                                             
+        <span className="text-[#666666]">× {formatCurrency(timeDriverInputs.revenuePerVisit)} per visit</span>                                                                                                 
+        <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(potentialRevenue)}</span>
+      </div>                                                                                                                                                                                                   
+    </div>                                                                                                
+    {effectiveAccessProviders < state.numberOfProviders && (                                                                                                                                                   
+      <p className="text-xs text-[#AAAAAA] mt-3">
+        {effectiveAccessProviders} of {state.numberOfProviders} providers have scheduling capacity.                                                                                                            
+      </p>                                                                                                
+    )}                                        
+                                                                                                                                                                                                               
+  ---
+                                                                                                                                                                                                               
+  ### FILE 3: client/src/pages/explore/ExploreFlow.tsx                                                    
+                                                                                                                                                                                                               
+  Find the default value for capacityRealizationPercent in the initial TimeDriverInputs state (currently 25). Change it to 30.
