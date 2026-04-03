@@ -42,8 +42,8 @@ export default function ExploreValueDrivers({
   const derivedVisitsPerWeek = useMemo(() => {
     if (state.numberOfProviders <= 0 || totalHoursSaved <= 0) return 0;
     const hrsPerProvPerWeek = totalHoursSaved / state.numberOfProviders / 48;
-    const reinvestmentRate = (timeDriverInputs.capacityRealizationPercent || 30) / 100;
-    const visitDurationHrs = (timeDriverInputs.visitDuration || 30) / 60;
+    const reinvestmentRate = (timeDriverInputs.capacityRealizationPercent ?? 30) / 100;
+    const visitDurationHrs = (timeDriverInputs.visitDuration ?? 30) / 60;
     if (visitDurationHrs <= 0) return 0;
     return Math.round((hrsPerProvPerWeek * reinvestmentRate / visitDurationHrs) * 10) / 10;
   }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.capacityRealizationPercent, timeDriverInputs.visitDuration]);
