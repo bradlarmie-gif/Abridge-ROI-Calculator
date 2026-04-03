@@ -1,0 +1,172 @@
+ Replit prompt — Clean headers + sticky save bar for both intake forms
+
+  Make the following changes across 4 files.
+
+  ---
+
+  ### FILE 1: client/src/lib/dataRequestUrlState.ts
+
+  Find:
+    export interface DataFormPreseed {
+      settings: MeasureCareSetting[];
+      setting?: MeasureCareSetting;
+      preSelectedIds?: string[];
+    }
+
+  Replace with:
+    export interface DataFormPreseed {
+      settings: MeasureCareSetting[];
+      setting?: MeasureCareSetting;
+      preSelectedIds?: string[];
+      repName?: string;
+      orgName?: string;
+    }
+
+  ---
+
+  ### FILE 2: client/src/lib/intakeUrlState.ts
+
+  Find:
+    export interface IntakeFormPreseed {
+      preSelectedSettings?: ExploreCareSetting[];
+    }
+
+  Replace with:
+    export interface IntakeFormPreseed {
+      preSelectedSettings?: ExploreCareSetting[];
+      repName?: string;
+      orgName?: string;
+    }
+
+  ---
+
+  ### FILE 3: client/src/pages/intake/MeasureDataRequest.tsx
+
+  **A. Add Download to the imports from lucide-react** (it may already be there — confirm `Download` and `Loader2` are imported).
+
+  **B. Replace the entire header block** — find the opening `<div className="w-full max-w-2xl mb-8">` and everything inside it up to and including its closing `</div>` (before `<div className="w-full
+  max-w-2xl space-y-6">`). Replace with:
+
+        <div className="w-full max-w-2xl mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <img src={abridgeLogo} alt="Abridge" className="h-6" />
+          </div>
+
+          {(preseed?.repName || preseed?.orgName) && (
+            <p className="text-center text-sm text-[#888888] mb-4">
+              {preseed.repName && preseed.orgName
+                ? `${preseed.repName} at Abridge sent this form for ${preseed.orgName}.`
+                : preseed.repName
+                ? `${preseed.repName} at Abridge sent you this form.`
+                : `This form was prepared for ${preseed.orgName}.`}
+            </p>
+          )}
+
+          <div className="flex justify-center gap-2 flex-wrap mb-5">
+            {settings.map(s => (
+              <div key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
+                {SETTING_LABELS[s]}
+              </div>
+            ))}
+          </div>
+
+          <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2 text-center" data-testid="text-data-request-title">
+            Help us tell your story
+          </h1>
+          <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto">
+            Select the metrics you track and enter what you have. Before only or after only is fine — partial data is useful. Takes about 10 minutes.
+          </p>
+        </div>
+
+  **C. Add a sticky bottom bar.** Find the outermost return div:
+    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4">
+
+  Change it to add bottom padding:
+    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4 pb-24">
+
+  Then just before the final closing `</div>` of the whole return, add:
+
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0D9D0] shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <p className="text-xs text-[#EA2C00] leading-snug">
+              This form doesn't save — download the PDF before closing this tab.
+            </p>
+            <button
+              onClick={handleDownloadMeasurementPDF}
+              disabled={!hasAnyData || isGeneratingPDF}
+              className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                hasAnyData && !isGeneratingPDF
+                  ? "bg-[#EA2C00] hover:bg-[#D42800] text-white"
+                  : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+              }`}
+            >
+              <Download className="w-4 h-4" />
+              {isGeneratingPDF ? "Generating…" : "Download PDF"}
+            </button>
+          </div>
+        </div>
+
+  ---
+
+  ### FILE 4: client/src/pages/intake/ExploreIntakeForm.tsx
+
+  **A. Replace the entire header block** — find the opening `<div className="w-full max-w-2xl mb-10 text-center">` and everything inside it up to and including its closing `</div>` (before `<div
+  className="w-full max-w-2xl space-y-4">`). Replace with:
+
+        <div className="w-full max-w-2xl mb-8 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <img src={abridgeLogo} alt="Abridge" className="h-7" />
+          </div>
+
+          {(preseed?.repName || preseed?.orgName) && (
+            <p className="text-center text-sm text-[#888888] mb-4">
+              {preseed.repName && preseed.orgName
+                ? `${preseed.repName} at Abridge sent this to model your ROI potential at ${preseed.orgName}.`
+                : preseed.repName
+                ? `${preseed.repName} at Abridge sent you this form.`
+                : `This form was prepared for ${preseed.orgName}.`}
+            </p>
+          )}
+
+          <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2" data-testid="text-intake-title">
+            Help us prepare for our call
+          </h1>
+          <p className="text-sm text-[#666666] leading-relaxed max-w-md mx-auto">
+            Share what you know about your organization. You don't need every number — fill in what you have. Takes about 10 minutes.
+          </p>
+        </div>
+
+  **B. Add the sticky bottom bar.** Find the outermost return div:
+    <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4">
+
+  Change to:
+    <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center py-12 px-4 pb-24">
+
+  Then just before the final closing `</div>` of the whole return, add:
+
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0D9D0] shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <p className="text-xs text-[#EA2C00] leading-snug">
+              This form doesn't save — download the PDF before closing this tab.
+            </p>
+            <button
+              onClick={handleDownloadPDF}
+              disabled={!hasMinimum || pdfLoading}
+              className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                hasMinimum && !pdfLoading
+                  ? "bg-[#EA2C00] hover:bg-[#D42800] text-white"
+                  : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+              }`}
+            >
+              <Download className="w-4 h-4" />
+              {pdfLoading ? "Generating…" : "Download PDF"}
+            </button>
+          </div>
+        </div>
+
+  ---
+  The result on both forms:
+  - Clean logo → context line → badges/title → subtitle (no walls of instruction text)
+  - Sticky red bar at the bottom at all times: "This form doesn't save" on the left, Download PDF button on the right
+  - Download button is disabled until they have enough data to generate a PDF, enabled otherwise
+  - No instruction card, no amber warning banner, no steps list

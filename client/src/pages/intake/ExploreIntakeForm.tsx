@@ -263,48 +263,28 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
   const hasAnyData = Object.entries(formState).some(([k, v]) => k !== 'selectedSettings' && v != null);
 
   return (
-    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-12 px-4">
-      <div className="w-full max-w-2xl mb-10 text-center">
-        <div className="flex items-center justify-center mb-8">
+    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-12 px-4 pb-24">
+      <div className="w-full max-w-2xl mb-8 text-center">
+        <div className="flex items-center justify-center mb-4">
           <img src={abridgeLogo} alt="Abridge" className="h-7" />
         </div>
+
         {(preseed?.repName || preseed?.orgName) && (
-          <p className="text-sm text-[#666666] mb-4" data-testid="text-intake-context">
-            {preseed.repName ? `${preseed.repName} at Abridge` : 'Your Abridge team'} sent this form
-            {preseed.orgName ? ` for ${preseed.orgName}` : ''}.
+          <p className="text-center text-sm text-[#888888] mb-4">
+            {preseed.repName && preseed.orgName
+              ? `${preseed.repName} at Abridge sent this to model your ROI potential at ${preseed.orgName}.`
+              : preseed.repName
+              ? `${preseed.repName} at Abridge sent you this form.`
+              : `This form was prepared for ${preseed.orgName}.`}
           </p>
         )}
-        <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Pre-Call Intake</p>
-        <h1 className="text-3xl font-bold text-black mb-3 uppercase tracking-tight" data-testid="text-intake-title">Help us prepare for our call</h1>
-        <p className="text-[#666666] text-base leading-relaxed max-w-md mx-auto mb-5">
-          Share what you know about your organization before we connect. You don't need every number — fill in what you have.
-        </p>
 
-        <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 max-w-md mx-auto space-y-3 text-left">
-          <div className="flex items-start gap-3 min-h-[48px]">
-            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
-            <div>
-              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Select your care settings</p>
-              <p className="text-xs text-[#888888] mt-0.5">Only pick the ones Abridge is deployed — or being considered — in your org.</p>
-            </div>
-          </div>
-          <div className="h-px bg-[#F0EBE3]" />
-          <div className="flex items-start gap-3 min-h-[48px]">
-            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
-            <div>
-              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
-              <p className="text-xs text-[#888888] mt-0.5">Estimates are fine. Skip anything you're unsure about — blank is better than a guess.</p>
-            </div>
-          </div>
-          <div className="h-px bg-[#F0EBE3]" />
-          <div className="flex items-start gap-3 min-h-[48px]">
-            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
-            <div>
-              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download before the call</p>
-              <p className="text-xs text-[#888888] mt-0.5">Your answers stay in this browser tab. Download the PDF and share it with your Abridge team so we can prepare.</p>
-            </div>
-          </div>
-        </div>
+        <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2" data-testid="text-intake-title">
+          Help us prepare for our call
+        </h1>
+        <p className="text-sm text-[#666666] leading-relaxed max-w-md mx-auto">
+          Share what you know about your organization. You don't need every number — fill in what you have. Takes about 10 minutes.
+        </p>
       </div>
 
       <div className="w-full max-w-2xl space-y-4">
@@ -600,6 +580,26 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
         <p className="text-center text-[11px] text-[#CCCCCC] pb-8 mt-4 max-w-sm mx-auto leading-relaxed">
           No account required. Your answers are saved in this browser tab only — nothing is stored on any server. Download the PDF before closing.
         </p>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0D9D0] shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <p className="text-xs text-[#EA2C00] leading-snug">
+            This form doesn't save — download the PDF before closing this tab.
+          </p>
+          <button
+            onClick={handleDownloadPDF}
+            disabled={!hasMinimum || pdfLoading}
+            className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              hasMinimum && !pdfLoading
+                ? "bg-[#EA2C00] hover:bg-[#D42800] text-white"
+                : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+            }`}
+          >
+            <Download className="w-4 h-4" />
+            {pdfLoading ? "Generating…" : "Download PDF"}
+          </button>
+        </div>
       </div>
     </div>
   );

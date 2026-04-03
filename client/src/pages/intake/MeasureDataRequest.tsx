@@ -360,20 +360,23 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   const hasAnyData = hasAnyMetricData;
 
   return (
-    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4">
+    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4 pb-24">
       <div className="w-full max-w-2xl mb-8">
-        <div className="flex items-center justify-center mb-6">
+        <div className="flex items-center justify-center mb-4">
           <img src={abridgeLogo} alt="Abridge" className="h-6" />
         </div>
 
         {(preseed?.repName || preseed?.orgName) && (
-          <p className="text-center text-sm text-[#666666] mb-4" data-testid="text-data-request-context">
-            {preseed.repName ? `${preseed.repName} at Abridge` : 'Your Abridge team'} sent this form
-            {preseed.orgName ? ` for ${preseed.orgName}` : ''}.
+          <p className="text-center text-sm text-[#888888] mb-4">
+            {preseed.repName && preseed.orgName
+              ? `${preseed.repName} at Abridge sent this form for ${preseed.orgName}.`
+              : preseed.repName
+              ? `${preseed.repName} at Abridge sent you this form.`
+              : `This form was prepared for ${preseed.orgName}.`}
           </p>
         )}
 
-        <div className="flex justify-center gap-2 flex-wrap mb-4">
+        <div className="flex justify-center gap-2 flex-wrap mb-5">
           {settings.map(s => (
             <div key={s} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#E0D9D0] rounded-full text-xs font-semibold text-[#EA2C00] uppercase tracking-wide shadow-sm">
               {SETTING_LABELS[s]}
@@ -381,67 +384,12 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           ))}
         </div>
 
-        <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2 text-center font-abridge uppercase tracking-tight" data-testid="text-data-request-title">
-          Help Us Tell Your Story
+        <h1 className="text-xl font-semibold text-[#1A1A1A] mb-2 text-center" data-testid="text-data-request-title">
+          Help us tell your story
         </h1>
-
-        <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto mb-4">
-          Select the metrics you track and enter what you have. You don't need both before and after — partial data is useful too.
+        <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto">
+          Select the metrics you track and enter what you have. Before only or after only is fine — partial data is useful. Takes about 10 minutes.
         </p>
-
-        <div className="bg-[#FFF8F0] border border-[#F5DFC8] rounded-lg px-4 py-3 max-w-md mx-auto mb-4">
-          <p className="text-xs text-[#8B6914] leading-relaxed text-center">
-            This form doesn't save — download the PDF before closing the tab.
-          </p>
-        </div>
-
-        <div className="bg-white border border-[#E0D9D0] rounded-xl px-5 py-4 mb-6 max-w-md mx-auto space-y-3">
-          <div className="flex items-start gap-3 min-h-[48px]">
-            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">1</span>
-            <div>
-              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Fill in what you know</p>
-              <p className="text-xs text-[#888888] mt-0.5">Before only is fine. After only is fine. Add context notes if a number needs explanation.</p>
-            </div>
-          </div>
-          <div className="h-px bg-[#F0EBE3]" />
-          <div className="flex items-start gap-3 min-h-[48px]">
-            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">2</span>
-            <div>
-              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Download the PDF when done</p>
-              <p className="text-xs text-[#888888] mt-0.5">This form doesn't save. When you're finished, hit Download — that's what gets shared with your Abridge team.</p>
-            </div>
-          </div>
-          <div className="h-px bg-[#F0EBE3]" />
-          <div className="flex items-start gap-3 min-h-[48px]">
-            <span className="text-[#EA2C00] font-bold text-base leading-none mt-0.5 shrink-0">3</span>
-            <div>
-              <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">Skip anything you don't track</p>
-              <p className="text-xs text-[#888888] mt-0.5">Only check the metrics your team actually measures. Incomplete is better than estimated.</p>
-            </div>
-          </div>
-        </div>
-
-        {(() => {
-          const totalChecked = checkedIds.size;
-          const totalFilled = Array.from(checkedIds).filter(id => {
-            const e = entries[id];
-            return e && (e.before !== null || e.after !== null);
-          }).length;
-          if (totalChecked === 0) return null;
-          return (
-            <div className="flex items-center justify-center gap-3">
-              <div className="flex-1 max-w-xs bg-[#E8E2DA] rounded-full h-1.5">
-                <div
-                  className="bg-[#EA2C00] h-1.5 rounded-full transition-all duration-300"
-                  style={{ width: totalChecked > 0 ? `${(totalFilled / totalChecked) * 100}%` : '0%' }}
-                />
-              </div>
-              <span className="text-xs text-[#999999] flex-shrink-0">
-                {totalFilled} of {totalChecked} filled
-              </span>
-            </div>
-          );
-        })()}
       </div>
 
       <div className="w-full max-w-2xl space-y-6">
@@ -708,6 +656,26 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
         <p className="text-center text-xs text-[#BBBBBB] pb-8">
           No account required. Your answers stay in this browser — nothing is stored on any server.
         </p>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0D9D0] shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <p className="text-xs text-[#EA2C00] leading-snug">
+            This form doesn't save — download the PDF before closing this tab.
+          </p>
+          <button
+            onClick={handleDownloadMeasurementPDF}
+            disabled={!hasAnyData || isGeneratingPDF}
+            className={`flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              hasAnyData && !isGeneratingPDF
+                ? "bg-[#EA2C00] hover:bg-[#D42800] text-white"
+                : "bg-[#F0EBE5] text-[#C4BDB6] cursor-not-allowed"
+            }`}
+          >
+            <Download className="w-4 h-4" />
+            {isGeneratingPDF ? "Generating…" : "Download PDF"}
+          </button>
+        </div>
       </div>
     </div>
   );
