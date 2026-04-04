@@ -42,7 +42,7 @@ export default function ExploreValueDrivers({
   const derivedVisitsPerWeek = useMemo(() => {
     if (state.numberOfProviders <= 0 || totalHoursSaved <= 0) return 0;
     const hrsPerProvPerWeek = totalHoursSaved / state.numberOfProviders / 48;
-    const reinvestmentRate = (timeDriverInputs.capacityRealizationPercent ?? 30) / 100;
+    const reinvestmentRate = (timeDriverInputs.capacityRealizationPercent ?? 25) / 100;
     const visitDurationHrs = (timeDriverInputs.visitDuration ?? 30) / 60;
     if (visitDurationHrs <= 0) return 0;
     return Math.round((hrsPerProvPerWeek * reinvestmentRate / visitDurationHrs) * 10) / 10;
@@ -1023,27 +1023,57 @@ export default function ExploreValueDrivers({
 
                   <div className="space-y-3 mb-6">
                     <label className="text-sm text-[#888888]">Time reinvestment rate</label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mb-3">
                       {[
-                        { label: 'Conservative', value: 20, desc: 'Minimal scheduling changes' },
-                        { label: 'Moderate', value: 30, desc: 'Intentional template adjustments' },
-                        { label: 'Aggressive', value: 40, desc: 'Active capacity expansion' },
-                      ].map((preset) => (
-                        <button
-                          key={preset.label}
-                          onClick={() => updateTimeDriverInputs({ capacityRealizationPercent: preset.value })}
-                          className={`flex-1 py-2.5 px-2 rounded-lg text-xs transition-all ${
-                            timeDriverInputs.capacityRealizationPercent === preset.value
-                              ? 'bg-[#EA2C00] text-white'
-                              : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
-                          }`}
-                          data-testid={`button-reinvestment-preset-${preset.label.toLowerCase()}`}
-                        >
-                          <span className="font-medium">{preset.label}</span>
-                          <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}%</span>
-                        </button>
-                      ))}
+                        { label: 'Conservative', value: 15 as number | null },
+                        { label: 'Moderate', value: 25 as number | null },
+                        { label: 'Aggressive', value: 35 as number | null },
+                        { label: 'Custom', value: null as number | null },
+                      ].map((preset) => {
+                        const isCustom = preset.value === null;
+                        const isActive = isCustom
+                          ? ![15, 25, 35].includes(timeDriverInputs.capacityRealizationPercent)
+                          : timeDriverInputs.capacityRealizationPercent === preset.value;
+                        return (
+                          <button
+                            key={preset.label}
+                            onClick={() => {
+                              if (!isCustom) updateTimeDriverInputs({ capacityRealizationPercent: preset.value! });
+                            }}
+                            className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+                              isActive
+                                ? 'bg-[#EA2C00] text-white'
+                                : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+                            }`}
+                            data-testid={`button-reinvestment-preset-${preset.label.toLowerCase()}`}
+                          >
+                            <span className="font-medium">{preset.label}</span>
+                            {!isCustom && <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}%</span>}
+                          </button>
+                        );
+                      })}
                     </div>
+
+                    {![15, 25, 35].includes(timeDriverInputs.capacityRealizationPercent) && (
+                      <div className="flex items-center gap-3 mb-3">
+                        <label className="text-sm text-[#666666] flex-shrink-0">Custom reinvestment rate</label>
+                        <div className="relative flex-1">
+                          <input
+                            type="number"
+                            min={1}
+                            max={100}
+                            value={timeDriverInputs.capacityRealizationPercent}
+                            onChange={(e) => {
+                              const v = Math.max(1, Math.min(100, parseInt(e.target.value) || 1));
+                              updateTimeDriverInputs({ capacityRealizationPercent: v });
+                            }}
+                            className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black"
+                            data-testid="input-custom-reinvestment"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="bg-[#F5F0EB] rounded-lg px-4 py-3 flex items-center justify-between">
                       <span className="text-sm text-[#666666]">Derived visits per provider per week</span>

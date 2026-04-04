@@ -1,0 +1,58 @@
+Small targeted update — just change the presets section in the prompt. Replace the preset buttons block in FILE 2, section B with this:                                                                      
+                                                                                                                                                                                                               
+  <div className="flex gap-2 mb-3">                                                                                                                                                                            
+    {[                                                                                                                                                                                                         
+      { label: 'Conservative', value: 15 },
+      { label: 'Moderate', value: 25 },                                                                                                                                                                        
+      { label: 'Aggressive', value: 35 }, 
+      { label: 'Custom', value: null },                                                                                                                                                                        
+    ].map((preset) => {                                                                                                                                                                                        
+      const isCustom = preset.value === null;
+      const isActive = isCustom                                                                                                                                                                                
+        ? ![15, 25, 35].includes(timeDriverInputs.capacityRealizationPercent)                                                                                                                                  
+        : timeDriverInputs.capacityRealizationPercent === preset.value;
+      return (                                                                                                                                                                                                 
+        <button                                                                                                                                                                                                
+          key={preset.label}
+          onClick={() => {                                                                                                                                                                                     
+            if (!isCustom) updateTimeDriverInputs({ capacityRealizationPercent: preset.value! });         
+          }}                                                                                                                                                                                                   
+          className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${                               
+            isActive
+              ? 'bg-[#EA2C00] text-white'                                                                                                                                                                      
+              : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+          }`}                                                                                                                                                                                                  
+        >                                                                                                 
+          <span className="font-medium">{preset.label}</span>
+          {!isCustom && <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}%</span>}                                                                                                          
+        </button>                             
+      );                                                                                                                                                                                                       
+    })}                                                                                                   
+  </div>                                                                                                                                                                                                       
+                                              
+  {![15, 25, 35].includes(timeDriverInputs.capacityRealizationPercent) && (                                                                                                                                    
+    <div className="flex items-center gap-3 mb-3">                                                        
+      <label className="text-sm text-[#666666] flex-shrink-0">Custom reinvestment rate</label>                                                                                                                 
+      <div className="relative flex-1">       
+        <input                                                                                                                                                                                                 
+          type="number"                                                                                                                                                                                        
+          min={1}                                                                                                                                                                                              
+          max={100}                                                                                                                                                                                            
+          value={timeDriverInputs.capacityRealizationPercent}                                                                                                                                                  
+          onChange={(e) => {                                                                              
+            const v = Math.max(1, Math.min(100, parseInt(e.target.value) || 1));
+            updateTimeDriverInputs({ capacityRealizationPercent: v });                                                                                                                                         
+          }}                              
+          className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black"                                                                                       
+        />                                                                                                                                                                                                     
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+      </div>                                                                                                                                                                                                   
+    </div>                                                                                                                                                                                                     
+  )}
+                                                                                                                                                                                                               
+  What this does:                                                                                         
+  - Presets are now 15/25/35                                                                                                                                                                                   
+  - Custom button highlights automatically if the current value isn't one of the three presets                                                                                                                 
+  - Clicking Custom doesn't change the value — it just signals intent; the input appears below
+  - The custom input appears whenever the value isn't 15/25/35 — so clicking Conservative/Moderate/Aggressive hides it again instantly                                                                         
+  - The accessProviders input below is unchanged — that's already the "how many providers" lever
