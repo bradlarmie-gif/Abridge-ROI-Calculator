@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Trash2, Download, Loader2 } from "lucide-react";
 import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequestMetricEntry, type DeploymentSnapshot } from "@/lib/dataRequestUrlState";
@@ -56,6 +56,83 @@ const defaultDeployment: DeploymentSnapshot = {
   totalEncounters: 0,
   abridgeEncounters: 0,
 };
+
+function MetricInput({
+  value,
+  onCommit,
+  placeholder = "—",
+  className = "",
+  "data-testid": testId,
+}: {
+  value: number | null;
+  onCommit: (v: number | null) => void;
+  placeholder?: string;
+  className?: string;
+  "data-testid"?: string;
+}) {
+  const [display, setDisplay] = useState(() => {
+    if (value === null || value === undefined) return '';
+    return value.toLocaleString('en-US');
+  });
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (!focused) {
+      if (value === null || value === undefined) {
+        setDisplay('');
+      } else {
+        setDisplay(value.toLocaleString('en-US'));
+      }
+    }
+  }, [value, focused]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setDisplay(raw);
+    const cleaned = raw.replace(/,/g, '');
+    if (cleaned === '' || cleaned === '-' || cleaned === '.') {
+      onCommit(null);
+    } else {
+      const n = parseFloat(cleaned);
+      if (!isNaN(n)) onCommit(n);
+    }
+  };
+
+  const handleBlur = () => {
+    setFocused(false);
+    const cleaned = display.replace(/,/g, '');
+    if (cleaned === '') {
+      setDisplay('');
+      onCommit(null);
+    } else {
+      const n = parseFloat(cleaned);
+      if (!isNaN(n)) {
+        setDisplay(n.toLocaleString('en-US'));
+        onCommit(n);
+      } else {
+        setDisplay('');
+        onCommit(null);
+      }
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      value={focused ? display : (value === null ? '' : value.toLocaleString('en-US'))}
+      placeholder={placeholder}
+      onChange={handleChange}
+      onFocus={() => {
+        setFocused(true);
+        setDisplay(value === null ? '' : String(value));
+      }}
+      onBlur={handleBlur}
+      className={className}
+      data-testid={testId}
+    />
+  );
+}
 
 function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
   metric: MetricDefinition; checked: boolean; entry: DataRequestMetricEntry | undefined;
@@ -118,15 +195,10 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
         <div className="flex items-end gap-2 sm:gap-3">
           <div className="flex-1 min-w-0">
             <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">Before</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={formatWithCommas(entry?.before)}
+            <MetricInput
+              value={entry?.before ?? null}
+              onCommit={(v) => onUpdate({ before: v })}
               placeholder="—"
-              onChange={(e) => {
-                const raw = e.target.value.replace(/[^0-9.]/g, '');
-                onUpdate({ before: raw === '' ? null : Number(raw) });
-              }}
               className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors"
               data-testid={`input-before-${metric.id}`}
             />
@@ -145,15 +217,10 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
 
           <div className="flex-1 min-w-0">
             <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">With Abridge</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={formatWithCommas(entry?.after)}
+            <MetricInput
+              value={entry?.after ?? null}
+              onCommit={(v) => onUpdate({ after: v })}
               placeholder="—"
-              onChange={(e) => {
-                const raw = e.target.value.replace(/[^0-9.]/g, '');
-                onUpdate({ after: raw === '' ? null : Number(raw) });
-              }}
               className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#EA2C00] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors"
               data-testid={`input-after-${metric.id}`}
             />
