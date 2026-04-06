@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ArrowRight, AlertTriangle, ChevronDown, Check, Plus, Trash2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +26,7 @@ export default function ExploreValueDrivers({
   onHome,
 }: ExploreValueDriversProps) {
   const { timeDriverInputs } = state;
+  const [customReinvestMode, setCustomReinvestMode] = useState(false);
   
   const updateTimeDriverInputs = (updates: Partial<typeof timeDriverInputs>) => {
     updateState({
@@ -1025,38 +1026,43 @@ export default function ExploreValueDrivers({
                     <label className="text-sm text-[#888888]">Time reinvestment rate</label>
                     <div className="flex gap-2 mb-3">
                       {[
-                        { label: 'Conservative', value: 15 as number | null },
-                        { label: 'Moderate', value: 25 as number | null },
-                        { label: 'Aggressive', value: 35 as number | null },
-                        { label: 'Custom', value: null as number | null },
-                      ].map((preset) => {
-                        const isCustom = preset.value === null;
-                        const isActive = isCustom
-                          ? ![15, 25, 35].includes(timeDriverInputs.capacityRealizationPercent)
-                          : timeDriverInputs.capacityRealizationPercent === preset.value;
-                        return (
-                          <button
-                            key={preset.label}
-                            onClick={() => {
-                              if (!isCustom) updateTimeDriverInputs({ capacityRealizationPercent: preset.value! });
-                            }}
-                            className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
-                              isActive
-                                ? 'bg-[#EA2C00] text-white'
-                                : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
-                            }`}
-                            data-testid={`button-reinvestment-preset-${preset.label.toLowerCase()}`}
-                          >
-                            <span className="font-medium">{preset.label}</span>
-                            {!isCustom && <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}%</span>}
-                          </button>
-                        );
-                      })}
+                        { label: 'Conservative', value: 15 },
+                        { label: 'Moderate', value: 25 },
+                        { label: 'Aggressive', value: 35 },
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          onClick={() => {
+                            setCustomReinvestMode(false);
+                            updateTimeDriverInputs({ capacityRealizationPercent: preset.value });
+                          }}
+                          className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+                            !customReinvestMode && timeDriverInputs.capacityRealizationPercent === preset.value
+                              ? 'bg-[#EA2C00] text-white'
+                              : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+                          }`}
+                          data-testid={`button-reinvestment-preset-${preset.label.toLowerCase()}`}
+                        >
+                          <span className="font-medium">{preset.label}</span>
+                          <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}%</span>
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setCustomReinvestMode(true)}
+                        className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+                          customReinvestMode
+                            ? 'bg-[#EA2C00] text-white'
+                            : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+                        }`}
+                        data-testid="button-reinvestment-preset-custom"
+                      >
+                        <span className="font-medium">Custom</span>
+                      </button>
                     </div>
 
-                    {![15, 25, 35].includes(timeDriverInputs.capacityRealizationPercent) && (
+                    {customReinvestMode && (
                       <div className="flex items-center gap-3 mb-3">
-                        <label className="text-sm text-[#666666] flex-shrink-0">Custom reinvestment rate</label>
+                        <label className="text-sm text-[#666666] flex-shrink-0">Reinvestment rate</label>
                         <div className="relative flex-1">
                           <input
                             type="number"
@@ -1067,7 +1073,8 @@ export default function ExploreValueDrivers({
                               const v = Math.max(1, Math.min(100, parseInt(e.target.value) || 1));
                               updateTimeDriverInputs({ capacityRealizationPercent: v });
                             }}
-                            className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black"
+                            className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                            autoFocus
                             data-testid="input-custom-reinvestment"
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
