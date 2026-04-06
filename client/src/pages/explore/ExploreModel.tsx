@@ -230,11 +230,9 @@ export default function ExploreModel({
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
-    ? (isOutpatientSetting 
-        ? (totalHoursSaved / state.numberOfProviders / 52)
-        : isED
-          ? (totalHoursSaved * ((timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) / 100) / state.numberOfProviders / 48)
-          : (totalHoursSaved / state.numberOfProviders / 48)
+    ? (isED
+        ? (totalHoursSaved * ((timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) / 100) / state.numberOfProviders / 48)
+        : (totalHoursSaved / state.numberOfProviders / 48)
       ).toFixed(1)
     : '0';
 
@@ -784,7 +782,7 @@ export default function ExploreModel({
       const docQualHrs = Math.round(remainingHrs * 0.4);
       const susHrs = remainingHrs - docQualHrs;
       const burdenReliefHrs = docQualHrs + susHrs;
-      const hrsPerWkBack = state.numberOfProviders > 0 ? burdenReliefHrs / state.numberOfProviders / 52 : 0;
+      const hrsPerWkBack = state.numberOfProviders > 0 ? burdenReliefHrs / state.numberOfProviders / 48 : 0;
       const capPctDerived = totalHoursSaved > 0 ? Math.min(100, Math.round((capHrsRaw / totalHoursSaved) * 100)) : 0;
 
       const pdfData: ExplorePDFData = {
@@ -894,7 +892,7 @@ export default function ExploreModel({
           const ipRoundingHrsTotal = Math.round(totalHoursSaved * (ipDirectPct / 100));
           const ipRoundingHrsPerProv = state.numberOfProviders > 0 ? Math.round(ipRoundingHrsTotal / state.numberOfProviders) : 0;
           const ipHrsPerProvPerYear = state.numberOfProviders > 0 ? Math.round(totalHoursSaved / state.numberOfProviders) : 0;
-          const ipHrsPerWk = state.numberOfProviders > 0 ? parseFloat((totalHoursSaved / state.numberOfProviders / 52).toFixed(1)) : 0;
+          const ipHrsPerWk = state.numberOfProviders > 0 ? parseFloat((totalHoursSaved / state.numberOfProviders / 48).toFixed(1)) : 0;
           const ipMinPerDay = parseFloat((ipHrsPerWk * 60 / 5).toFixed(0));
           const ipProvLeaving = state.numberOfProviders * (timeDriverInputs.annualTurnoverRate / 100);
           const ipBurnoutDep = ipProvLeaving * (timeDriverInputs.burnoutRelatedTurnover / 100);

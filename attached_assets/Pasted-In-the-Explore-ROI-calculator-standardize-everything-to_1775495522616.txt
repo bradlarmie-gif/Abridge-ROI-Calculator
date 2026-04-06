@@ -1,0 +1,54 @@
+In the Explore ROI calculator, standardize everything to 48 weeks. Remove all conditional week logic.                                                                                                        
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ### FILE 1: client/src/pages/explore/ExploreModel.tsx                                                                                                                                                        
+                                                                                                                                                                                                               
+  In derivedVisitsPerWeek useMemo, replace:                                                                                                                                                                    
+    const weeksPerYear = isOutpatientSetting ? 52 : 48;                                                                                                                                                      
+  With:
+    const weeksPerYear = 48;                                                                                                                                                                                   
+                                              
+  In patientAccessValue useMemo, replace:                                                                                                                                                                      
+    const weeksPerYear = isOutpatientSetting ? 52 : 48;                                                                                                                                                      
+  With:                                                                                                                                                                                                        
+    const weeksPerYear = 48;
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+                                          
+  ### FILE 2: client/src/pages/explore/ExploreValueDrivers.tsx
+                                                                                                                                                                                                               
+  In derivedVisitsPerWeek useMemo, replace:
+    const weeksPerYear = isOutpatientSetting ? 52 : 48;                                                                                                                                                        
+  With:                                                                                                                                                                                                      
+    const weeksPerYear = 48;
+                                              
+  In potentialVisits useMemo, replace:    
+    const weeksPerYear = isOutpatientSetting ? 52 : 48;
+  With:                                                                                                                                                                                                        
+    const weeksPerYear = 48;
+                                                                                                                                                                                                               
+  In hoursPerProviderPerWeek useMemo, replace:                                                                                                                                                               
+    const weeksPerYear = isOutpatientSetting ? 52 : 48;
+  With:
+    const weeksPerYear = 48;                                                                                                                                                                                   
+   
+  In the calculation box display, replace:                                                                                                                                                                     
+    {isOutpatientSetting ? 52 : 48} wks                                                                                                                                                                      
+  With:
+    48 wks                                                                                                                                                                                                     
+   
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                             
+  ### FILE 3: wherever "~220 working days" appears (likely ExploreOpportunity.tsx or ExploreDocDrivers.tsx)
+                                          
+  Find the text:                              
+    Based on ~220 working days per year.                                                                                                                                                                       
+   
+  Change to:                                                                                                                                                                                                   
+    Based on ~240 working days per year.                                                                                                                                                                     
+                                                                                                                                                                                                               
+  (48 weeks × 5 days = 240 days)                                                                                                                                                                             
+                                          
+  ---
+  Clean, simple, one number everywhere. 48 weeks = 240 working days. Done.

@@ -350,10 +350,10 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
                   <p className="text-xs text-[#888888] mt-3">
                     {isED
-                      ? "Based on ~220 working days. Typical reflects blended community ED."
+                      ? "Based on ~240 working days. Typical reflects blended community ED."
                       : isInpatient
                         ? "Annual admissions per hospitalist."
-                        : "Based on ~220 working days per year."
+                        : "Based on ~240 working days per year."
                     }
                   </p>
                 </div>
