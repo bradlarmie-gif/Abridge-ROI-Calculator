@@ -862,7 +862,7 @@ export default function ExploreValueDrivers({
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
                   <p className="text-sm text-black mb-6">
-                    Nurses regularly stay after their shift ends to finish charting. Abridge reduces that post-shift documentation burden by enabling real-time capture during the encounter — so nurses leave closer to on time.
+                    Nurses who can't finish charting during their shift stay late — that's overtime. It's work outside of work driven by documentation spillover. This driver asks how much of that after-hours charting burden Abridge and real-time flowsheet documentation can absorb, so nurses leave when their shift ends.
                   </p>
 
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
