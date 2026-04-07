@@ -862,7 +862,7 @@ export default function ExploreValueDrivers({
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
                   <p className="text-sm text-black mb-6">
-                    Nurses regularly stay after their shift ends to finish charting. Abridge eliminates most of that post-shift documentation by enabling real-time charting during encounters — so nurses chart as they go and leave when their shift ends.
+                    Nurses regularly stay after their shift ends to finish charting. Abridge reduces that post-shift documentation burden by enabling real-time capture during the encounter — so nurses leave closer to on time.
                   </p>
 
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
@@ -875,16 +875,16 @@ export default function ExploreValueDrivers({
                         className="h-12 bg-white"
                         data-testid="input-nursing-ot-hours-per-week"
                       />
-                      <p className="text-xs text-[#888888]">How long do your nurses typically stay after their shift to finish charting? On a 3-shift week, 20–30 min/shift = roughly 1–1.5 hrs/week.</p>
+                      <p className="text-xs text-[#888888]">How many hours per week does a typical nurse stay after their shift specifically to finish charting? On a 3-shift week, 20–30 min/shift = roughly 1–1.5 hrs/week.</p>
                     </div>
 
                     <div className="space-y-2.5">
-                      <label className="text-sm text-[#888888]">% of post-shift charting Abridge eliminates</label>
+                      <label className="text-sm text-[#888888]">How much can Abridge impact those post-shift hours?</label>
                       <div className="flex items-center gap-3">
                         <input
                           type="range"
-                          min={25}
-                          max={95}
+                          min={10}
+                          max={70}
                           step={5}
                           value={timeDriverInputs.nursingOtReductionPercent}
                           onChange={(e) => updateTimeDriverInputs({ nursingOtReductionPercent: Number(e.target.value) })}
@@ -893,11 +893,11 @@ export default function ExploreValueDrivers({
                         />
                         <span className="text-sm font-semibold text-black w-12 text-right">{timeDriverInputs.nursingOtReductionPercent}%</span>
                       </div>
-                      <div className="flex gap-2 mt-1">
+                      <div className="flex gap-2 mt-1 flex-wrap">
                         {[
-                          { label: 'Conservative', value: 50 },
-                          { label: 'Moderate', value: 70 },
-                          { label: 'Aggressive', value: 85 },
+                          { label: 'Conservative', value: 30 },
+                          { label: 'Moderate', value: 40 },
+                          { label: 'Aggressive', value: 50 },
                         ].map((preset) => (
                           <button
                             key={preset.label}
@@ -907,13 +907,12 @@ export default function ExploreValueDrivers({
                                 ? 'bg-[#EA2C00] text-white border-[#EA2C00]'
                                 : 'border-[#E5E5E5] text-[#888888] hover:border-[#D1D5DB]'
                             }`}
-                            data-testid={`button-ot-preset-${preset.label.toLowerCase()}`}
                           >
                             {preset.label} ({preset.value}%)
                           </button>
                         ))}
                       </div>
-                      <p className="text-xs text-[#888888]">Nurses using Abridge chart in real time during the encounter. By end of shift, most documentation is already complete.</p>
+                      <p className="text-xs text-[#888888]">Not all post-shift OT is charting-related — some is handoffs, patient events, or admin. This is your estimate of what Abridge can realistically impact.</p>
                     </div>
 
                     <div className="space-y-2.5">
@@ -938,8 +937,8 @@ export default function ExploreValueDrivers({
                         <span className="font-semibold text-black">{formatNumber(Math.round(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52))} hrs/yr</span>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">× {timeDriverInputs.nursingOtReductionPercent}% eliminated by Abridge</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingOtHoursEliminated)} hrs/yr</span>
+                        <span className="text-[#666666] min-w-0">× {timeDriverInputs.nursingOtReductionPercent}% Abridge can impact</span>
+                        <span className="font-semibold text-black">{formatNumber(nursingOtHoursEliminated)} hrs/yr eliminated</span>
                       </div>
                       <div className="flex justify-between gap-2">
                         <span className="text-[#666666] min-w-0">× ${timeDriverInputs.nursingOtHourlyRate}/hr OT rate</span>
@@ -951,11 +950,6 @@ export default function ExploreValueDrivers({
                         <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(nursingOtValue)}</span>
                       </div>
                     </div>
-                  </div>
-                  <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">
-                    <p className="text-xs text-[#888888]">
-                      <span className="font-medium">One-liner:</span> Your nurses stay {timeDriverInputs.nursingOtHoursPerNurseWeek} hrs/week after shift to chart. Abridge eliminates {timeDriverInputs.nursingOtReductionPercent}% of that. The rest accounts for non-documentation reasons nurses stay late.
-                    </p>
                   </div>
                 </div>
               </motion.div>

@@ -389,7 +389,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingOtEnabled: false,
     nursingOtExpanded: false,
     nursingOtHoursPerNurseWeek: 1.0,
-    nursingOtReductionPercent: 70,
+    nursingOtReductionPercent: 40,
     nursingOtHourlyRate: 75,
     nursingRetentionEnabled: false,
     nursingRetentionExpanded: false,
