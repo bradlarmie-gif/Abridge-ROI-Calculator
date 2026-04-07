@@ -1,0 +1,143 @@
+File 1: client/src/pages/explore/ExploreFlow.tsx
+
+  Step A — In DEFAULT_EXPLORE_STATE, find the nursing OT defaults and change:
+  nursingOtHoursPerNurseWeek: 4,       // change to: 1.0
+  nursingOtReductionPercent: 25,        // change to: 70
+
+  Step B — In the timeValue useMemo, find the nursing OT block and replace it entirely with:
+  if (timeDriverInputs.nursingOtEnabled) {
+    const otHoursEliminated = Math.round(
+      timeDriverInputs.nursingOtHoursPerNurseWeek *
+      (timeDriverInputs.nursingOtReductionPercent / 100) *
+      numberOfProviders *
+      52
+    );
+    total += otHoursEliminated * timeDriverInputs.nursingOtHourlyRate;
+  }
+
+  ---
+  File 2: client/src/pages/explore/ExploreValueDrivers.tsx
+
+  Step A — Find and remove the nursingHoursSavedPerNursePerWeek useMemo (no longer needed).
+
+  Step B — Replace the nursingCurrentOtHoursPerYear and nursingOtHoursEliminated useMemos with:
+  const nursingOtHoursEliminated = useMemo(() => {
+    if (!timeDriverInputs.nursingOtEnabled) return 0;
+    return Math.round(
+      timeDriverInputs.nursingOtHoursPerNurseWeek *
+      (timeDriverInputs.nursingOtReductionPercent / 100) *
+      state.numberOfProviders *
+      52
+    );
+  }, [timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, state.numberOfProviders]);
+
+  Step C — Replace the entire OT expansion panel content with:
+
+  <div className="bg-white rounded-b-lg p-5">
+    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
+    <p className="text-sm text-black mb-6">
+      Nurses regularly stay after their shift ends to finish charting. Abridge eliminates most of that post-shift documentation by enabling real-time charting during encounters — so nurses chart as they go
+  and leave when their shift ends.
+    </p>
+
+    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
+    <div className="space-y-4 mb-6">
+      <div className="space-y-2.5">
+        <label className="text-sm text-[#888888]">Post-shift charting hours per nurse per week</label>
+        <FormattedNumberInput
+          value={timeDriverInputs.nursingOtHoursPerNurseWeek}
+          onChange={(v: number) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v })}
+          className="h-12 bg-white"
+          data-testid="input-nursing-ot-hours-per-week"
+        />
+        <p className="text-xs text-[#888888]">How long do your nurses typically stay after their shift to finish charting? On a 3-shift week, 20–30 min/shift = roughly 1–1.5 hrs/week.</p>
+      </div>
+
+      <div className="space-y-2.5">
+        <label className="text-sm text-[#888888]">% of post-shift charting Abridge eliminates</label>
+        <div className="flex items-center gap-3">
+          <input
+            type="range"
+            min={25}
+            max={95}
+            step={5}
+            value={timeDriverInputs.nursingOtReductionPercent}
+            onChange={(e) => updateTimeDriverInputs({ nursingOtReductionPercent: Number(e.target.value) })}
+            className="flex-1 accent-[#EA2C00]"
+            data-testid="slider-nursing-ot-reduction"
+          />
+          <span className="text-sm font-semibold text-black w-12 text-right">{timeDriverInputs.nursingOtReductionPercent}%</span>
+        </div>
+        <div className="flex gap-2 mt-1">
+          {[
+            { label: 'Conservative', value: 50 },
+            { label: 'Moderate', value: 70 },
+            { label: 'Aggressive', value: 85 },
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              onClick={() => updateTimeDriverInputs({ nursingOtReductionPercent: preset.value })}
+              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                timeDriverInputs.nursingOtReductionPercent === preset.value
+                  ? 'bg-[#EA2C00] text-white border-[#EA2C00]'
+                  : 'border-[#E5E5E5] text-[#888888] hover:border-[#D1D5DB]'
+              }`}
+              data-testid={`button-ot-preset-${preset.label.toLowerCase()}`}
+            >
+              {preset.label} ({preset.value}%)
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-[#888888]">Nurses using Abridge chart in real time during the encounter. By end of shift, most documentation is already complete.</p>
+      </div>
+
+      <div className="space-y-2.5">
+        <label className="text-sm text-[#888888]">Average OT hourly rate</label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+          <FormattedNumberInput
+            value={timeDriverInputs.nursingOtHourlyRate}
+            onChange={(v: number) => updateTimeDriverInputs({ nursingOtHourlyRate: v })}
+            className="h-12 bg-white pl-7"
+          />
+        </div>
+        <p className="text-xs text-[#888888]">1.5x base rate is typical. Adjust based on your blended OT rate.</p>
+      </div>
+    </div>
+
+    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
+    <div className="bg-[#F5F0EB] rounded-lg p-4">
+      <div className="space-y-2 text-sm">     
+        <div className="flex justify-between gap-2">
+          <span className="text-[#666666] min-w-0">{state.numberOfProviders} nurses × {timeDriverInputs.nursingOtHoursPerNurseWeek} post-shift hrs/week × 52 weeks</span>
+          <span className="font-semibold text-black">{formatNumber(Math.round(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52))} hrs/yr</span>                                      
+        </div>                                
+        <div className="flex justify-between gap-2">                                                                                                                                                           
+          <span className="text-[#666666] min-w-0">× {timeDriverInputs.nursingOtReductionPercent}% eliminated by Abridge</span>                                                                                
+          <span className="font-semibold text-black">{formatNumber(nursingOtHoursEliminated)} hrs/yr</span>                                                                                                    
+        </div>                                                                                                                                                                                                 
+        <div className="flex justify-between gap-2">                                                                                                                                                           
+          <span className="text-[#666666] min-w-0">× ${timeDriverInputs.nursingOtHourlyRate}/hr OT rate</span>                                                                                                 
+          <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingOtHourlyRate)}</span>                                                                                             
+        </div>                                                                                                                                                                                                 
+        <div className="h-px bg-[#E5E5E5] my-2" />                                                        
+        <div className="flex justify-between gap-2">                                                                                                                                                           
+          <span className="text-[#666666] font-medium">Annual OT Savings</span>                           
+          <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(nursingOtValue)}</span>                                                                                                     
+        </div>                                                                                                                                                                                                 
+      </div>                              
+    </div>                                                                                                                                                                                                     
+    <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">                                                                                                                                                      
+      <p className="text-xs text-[#888888]">                                                                                                                                                                   
+        <span className="font-medium">One-liner:</span> Your nurses stay {timeDriverInputs.nursingOtHoursPerNurseWeek} hrs/week after shift to chart. Abridge eliminates                                       
+  {timeDriverInputs.nursingOtReductionPercent}% of that. The rest accounts for non-documentation reasons nurses stay late.
+      </p>                                                                                                                                                                                                     
+    </div>                                                                                                                                                                                                     
+  </div>                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  After this fix, at defaults (300 nurses, 1 hr/week post-shift, 70% reduction, $75/hr):                  
+  - 300 × 1.0 × 52 × 70% × $75 = $819,000                                               
+                                          
+  The story: "Your nurses stay about an hour after shift to finish charting. Abridge eliminates 70% of that because they're documenting in real time. The 30% we don't claim accounts for shift handoffs and 
+  non-documentation reasons people stay late." 

@@ -3018,7 +3018,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(otVal)}</Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Your team estimates {otPct}% of the documentation time Abridge saves will translate to nurses clocking out on time. That converts to roughly {fmtNum(otHrsElim)} hours of overtime eliminated per year. At ${safe(data.nursingOtHourlyRate)}/hour, that{"\u2019"}s {fmtCurrency(otVal)} annually in avoided overtime spend.
+                      Your nurses stay approximately {otHrsPerWk} hours per week after shift to finish charting. Abridge eliminates {otPct}% of that post-shift documentation by enabling real-time charting during encounters. That{"\u2019"}s roughly {fmtNum(otHrsElim)} hours of overtime eliminated per year. At ${safe(data.nursingOtHourlyRate)}/hour, that{"\u2019"}s {fmtCurrency(otVal)} annually in avoided overtime spend.
                     </Text>
                     <Text style={{ fontSize: 8.5, color: colors.tertiary }}>
                       Validation: Check this against your current OT spend. If this exceeds your total nursing OT budget, the conversion rate may need adjustment.

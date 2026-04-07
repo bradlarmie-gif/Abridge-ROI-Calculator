@@ -238,10 +238,14 @@ export default function ExploreModel({
 
   const nursingOtValue = useMemo(() => {
     if (!isNursing || !state.timeDriverInputs.nursingOtEnabled) return 0;
-    const hoursPerNursePerWeek = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 52 : 0;
-    const otHoursEliminated = Math.round(hoursPerNursePerWeek * (state.timeDriverInputs.nursingOtReductionPercent / 100) * state.numberOfProviders * 52);
+    const otHoursEliminated = Math.round(
+      state.timeDriverInputs.nursingOtHoursPerNurseWeek *
+      (state.timeDriverInputs.nursingOtReductionPercent / 100) *
+      state.numberOfProviders *
+      52
+    );
     return Math.round(otHoursEliminated * state.timeDriverInputs.nursingOtHourlyRate);
-  }, [isNursing, state.numberOfProviders, state.timeDriverInputs, totalHoursSaved]);
+  }, [isNursing, state.numberOfProviders, state.timeDriverInputs]);
 
   const nursingRetentionImpactRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
 
@@ -683,15 +687,13 @@ export default function ExploreModel({
         }
       } else if (state.careSetting === 'nursing') {
         if (timeDriverInputs.nursingOtEnabled && nursingOtValue > 0) {
-          const hrsPerNurseWk = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 52 : 0;
-          const otReductionPerNurseWk = hrsPerNurseWk * (timeDriverInputs.nursingOtReductionPercent / 100);
-          const otHoursElim = Math.round(otReductionPerNurseWk * state.numberOfProviders * 52);
+          const totalPostShiftHrs = Math.round(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52);
+          const otHoursElim = Math.round(totalPostShiftHrs * (timeDriverInputs.nursingOtReductionPercent / 100));
           drivers.push({
             id: 'nursingOT', name: 'OT Reduction', value: nursingOtValue, category: 'time',
             calcSteps: [
-              `Abridge saves ${hrsPerNurseWk.toFixed(2)} hrs/nurse/week`,
-              `\u00D7 ${timeDriverInputs.nursingOtReductionPercent}% translates to OT reduction = ${otReductionPerNurseWk.toFixed(2)} hrs/nurse/week`,
-              `\u00D7 ${state.numberOfProviders} nurses \u00D7 52 weeks = ${otHoursElim.toLocaleString()} hrs eliminated/yr`,
+              `${state.numberOfProviders} nurses \u00D7 ${timeDriverInputs.nursingOtHoursPerNurseWeek} post-shift hrs/wk \u00D7 52 wks = ${totalPostShiftHrs.toLocaleString()} hrs/yr`,
+              `\u00D7 ${timeDriverInputs.nursingOtReductionPercent}% eliminated by Abridge = ${otHoursElim.toLocaleString()} hrs/yr`,
               `\u00D7 $${timeDriverInputs.nursingOtHourlyRate}/hr = ${fmtK(nursingOtValue)}/year`,
             ],
           });
@@ -1037,9 +1039,8 @@ export default function ExploreModel({
           const enabledShifts = Math.round(ftes * state.nursingShiftsPerNurseYear * (adoptRate / 100));
           const minsPerShift = state.minutesSavedPerEncounter;
           const otPct = timeDriverInputs.nursingOtReductionPercent;
-          const hrsPerNurseWk = ftes > 0 ? totalHoursSaved / ftes / 52 : 0;
           const currentOtPerYear = ftes * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
-          const otHrsElim = Math.round(hrsPerNurseWk * (otPct / 100) * ftes * 52);
+          const otHrsElim = Math.round(currentOtPerYear * (otPct / 100));
           const hrsPerNurse = ftes > 0 ? Math.round(totalHoursSaved / ftes) : 0;
           const hrsPerWk = ftes > 0 ? parseFloat((totalHoursSaved / ftes / 52).toFixed(1)) : 0;
 

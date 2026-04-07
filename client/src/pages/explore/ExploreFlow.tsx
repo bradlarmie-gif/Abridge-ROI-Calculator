@@ -388,8 +388,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     // Nursing-specific defaults
     nursingOtEnabled: false,
     nursingOtExpanded: false,
-    nursingOtHoursPerNurseWeek: 4,
-    nursingOtReductionPercent: 40,
+    nursingOtHoursPerNurseWeek: 1.0,
+    nursingOtReductionPercent: 70,
     nursingOtHourlyRate: 75,
     nursingRetentionEnabled: false,
     nursingRetentionExpanded: false,
@@ -732,8 +732,12 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       }
     } else if (isNursing) {
       if (timeDriverInputs.nursingOtEnabled) {
-        const hoursPerNursePerWeek = numberOfProviders > 0 ? totalHoursSaved / numberOfProviders / 52 : 0;
-        const otHoursEliminated = Math.round(hoursPerNursePerWeek * (timeDriverInputs.nursingOtReductionPercent / 100) * numberOfProviders * 52);
+        const otHoursEliminated = Math.round(
+          timeDriverInputs.nursingOtHoursPerNurseWeek *
+          (timeDriverInputs.nursingOtReductionPercent / 100) *
+          numberOfProviders *
+          52
+        );
         total += otHoursEliminated * timeDriverInputs.nursingOtHourlyRate;
       }
       // Nursing: Retention (40% burnout-related × impact scenario 10/15/25%)
