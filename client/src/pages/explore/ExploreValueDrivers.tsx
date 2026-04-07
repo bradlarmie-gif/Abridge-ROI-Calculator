@@ -127,10 +127,8 @@ export default function ExploreValueDrivers({
 
   const nursingOtHoursEliminated = useMemo(() => {
     if (!timeDriverInputs.nursingOtEnabled) return 0;
-    const docRelatedOtPerNurseWeek = timeDriverInputs.nursingOtHoursPerNurseWeek * (timeDriverInputs.nursingOtReductionPercent / 100);
-    const effectivePerNurseWeek = Math.min(nursingHoursSavedPerNursePerWeek, docRelatedOtPerNurseWeek);
-    return Math.round(state.numberOfProviders * effectivePerNurseWeek * 52);
-  }, [nursingHoursSavedPerNursePerWeek, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, state.numberOfProviders]);
+    return Math.round(nursingHoursSavedPerNursePerWeek * (timeDriverInputs.nursingOtReductionPercent / 100) * state.numberOfProviders * 52);
+  }, [nursingHoursSavedPerNursePerWeek, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtReductionPercent, state.numberOfProviders]);
 
   const nursingOtValue = useMemo(() => {
     if (!timeDriverInputs.nursingOtEnabled) return 0;
@@ -868,30 +866,27 @@ export default function ExploreValueDrivers({
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
                   <p className="text-sm text-black mb-6">
-                    When nurses spend less time documenting, they're more likely to finish their shift on time. 
-                    This driver is grounded in your actual overtime situation — how much OT your nurses work today and how much you believe better documentation can reduce it.
+                    When nurses spend less time documenting, they're more likely to finish their shift on time — reducing the OT hours the organization pays for. This driver starts from the documentation time Abridge actually saves and asks what portion of that converts to nurses clocking out on time.
                   </p>
 
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">FROM YOUR TIME SAVINGS</p>
+                  <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-[#666666]">Abridge saves per nurse per week</span>
+                      <span className="text-sm font-bold text-black">{nursingHoursSavedPerNursePerWeek.toFixed(2)} hrs</span>
+                    </div>
+                    <p className="text-xs text-[#888888] mt-1">Derived from your time savings selection above. Adjust minutes/shift there to change this.</p>
+                  </div>
+
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ESTIMATE</p>
                   <div className="space-y-4 mb-6">
                     <div className="space-y-2.5">
-                      <label className="text-sm text-[#888888]">Current OT hours per nurse per week</label>
-                      <FormattedNumberInput
-                        value={timeDriverInputs.nursingOtHoursPerNurseWeek}
-                        onChange={(v: number) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v })}
-                        className="h-12 bg-white"
-                        data-testid="input-nursing-ot-hours-per-week"
-                      />
-                      <p className="text-xs text-[#888888]">National average is 3-5 hrs/week. Enter your organization's average.</p>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      <label className="text-sm text-[#888888]">% of your OT hours that are documentation-related</label>
+                      <label className="text-sm text-[#888888]">% of saved hours that translate to OT reduction</label>
                       <div className="flex items-center gap-3">
                         <input
                           type="range"
                           min={10}
-                          max={75}
+                          max={80}
                           step={5}
                           value={timeDriverInputs.nursingOtReductionPercent}
                           onChange={(e) => updateTimeDriverInputs({ nursingOtReductionPercent: Number(e.target.value) })}
@@ -902,9 +897,9 @@ export default function ExploreValueDrivers({
                       </div>
                       <div className="flex gap-2 mt-1">
                         {[
-                          { label: 'Conservative', value: 15 },
-                          { label: 'Moderate', value: 25 },
-                          { label: 'Aggressive', value: 40 },
+                          { label: 'Conservative', value: 25 },
+                          { label: 'Moderate', value: 40 },
+                          { label: 'Aggressive', value: 60 },
                         ].map((preset) => (
                           <button
                             key={preset.label}
@@ -920,7 +915,7 @@ export default function ExploreValueDrivers({
                           </button>
                         ))}
                       </div>
-                      <p className="text-xs text-[#888888]">Not all OT is documentation-related. This is the share you believe Abridge can impact.</p>
+                      <p className="text-xs text-[#888888]">Not every saved minute shows up as OT reduction — some gets absorbed back into the shift. This is how much you believe will actually reduce clock-out time.</p>
                     </div>
 
                     <div className="space-y-2.5">
@@ -941,19 +936,15 @@ export default function ExploreValueDrivers({
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">Abridge saves per nurse/week (from Time Savings)</span>
+                        <span className="text-[#666666] min-w-0">Abridge saves per nurse/week</span>
                         <span className="font-semibold text-black">{nursingHoursSavedPerNursePerWeek.toFixed(2)} hrs</span>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">Doc-related OT per nurse/week ({timeDriverInputs.nursingOtHoursPerNurseWeek} hrs × {timeDriverInputs.nursingOtReductionPercent}%)</span>
-                        <span className="font-semibold text-black">{(timeDriverInputs.nursingOtHoursPerNurseWeek * timeDriverInputs.nursingOtReductionPercent / 100).toFixed(2)} hrs</span>
+                        <span className="text-[#666666] min-w-0">× {timeDriverInputs.nursingOtReductionPercent}% translates to OT reduction</span>
+                        <span className="font-semibold text-black">{(nursingHoursSavedPerNursePerWeek * timeDriverInputs.nursingOtReductionPercent / 100).toFixed(2)} hrs/nurse/week</span>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">Effective reduction (lower of the two)</span>
-                        <span className="font-semibold text-black">{Math.min(nursingHoursSavedPerNursePerWeek, timeDriverInputs.nursingOtHoursPerNurseWeek * timeDriverInputs.nursingOtReductionPercent / 100).toFixed(2)} hrs/nurse/week</span>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">{state.numberOfProviders} nurses × effective hrs × 52 weeks</span>
+                        <span className="text-[#666666] min-w-0">× {state.numberOfProviders} nurses × 52 weeks</span>
                         <span className="font-semibold text-black">{formatNumber(nursingOtHoursEliminated)} hrs/yr</span>
                       </div>
                       <div className="flex justify-between gap-2">
@@ -966,11 +957,6 @@ export default function ExploreValueDrivers({
                         <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(nursingOtValue)}</span>
                       </div>
                     </div>
-                  </div>
-                  <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">
-                    <p className="text-xs text-[#888888]">
-                      <span className="font-medium">Why it's capped:</span> Abridge can only reduce OT equal to the documentation time it actually saves. The cap keeps this number defensible in the room.
-                    </p>
                   </div>
                 </div>
               </motion.div>
