@@ -27,6 +27,7 @@ export default function ExploreValueDrivers({
 }: ExploreValueDriversProps) {
   const { timeDriverInputs } = state;
   const [customReinvestMode, setCustomReinvestMode] = useState(false);
+  const [customReinvestDisplay, setCustomReinvestDisplay] = useState(String(timeDriverInputs.capacityRealizationPercent));
   
   const updateTimeDriverInputs = (updates: Partial<typeof timeDriverInputs>) => {
     updateState({
@@ -1065,13 +1066,28 @@ export default function ExploreValueDrivers({
                         <label className="text-sm text-[#666666] flex-shrink-0">Reinvestment rate</label>
                         <div className="relative flex-1">
                           <input
-                            type="number"
-                            min={1}
-                            max={100}
-                            value={timeDriverInputs.capacityRealizationPercent}
+                            type="text"
+                            inputMode="numeric"
+                            value={customReinvestDisplay}
                             onChange={(e) => {
-                              const v = Math.max(1, Math.min(100, parseInt(e.target.value) || 1));
-                              updateTimeDriverInputs({ capacityRealizationPercent: v });
+                              const raw = e.target.value.replace(/[^0-9]/g, '');
+                              setCustomReinvestDisplay(raw);
+                              const n = parseInt(raw);
+                              if (!isNaN(n) && n >= 1 && n <= 100) {
+                                updateTimeDriverInputs({ capacityRealizationPercent: n });
+                              }
+                            }}
+                            onFocus={() => setCustomReinvestDisplay(String(timeDriverInputs.capacityRealizationPercent))}
+                            onBlur={() => {
+                              const n = parseInt(customReinvestDisplay);
+                              if (isNaN(n) || n < 1) {
+                                updateTimeDriverInputs({ capacityRealizationPercent: 25 });
+                                setCustomReinvestDisplay('25');
+                              } else {
+                                const clamped = Math.min(100, n);
+                                updateTimeDriverInputs({ capacityRealizationPercent: clamped });
+                                setCustomReinvestDisplay(String(clamped));
+                              }
                             }}
                             className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                             autoFocus
