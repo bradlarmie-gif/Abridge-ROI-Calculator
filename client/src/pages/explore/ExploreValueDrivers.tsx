@@ -120,10 +120,17 @@ export default function ExploreValueDrivers({
     return state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
   }, [state.numberOfProviders, timeDriverInputs.nursingOtHoursPerNurseWeek]);
 
+  const nursingHoursSavedPerNursePerWeek = useMemo(() => {
+    if (state.numberOfProviders <= 0) return 0;
+    return totalHoursSaved / state.numberOfProviders / 52;
+  }, [totalHoursSaved, state.numberOfProviders]);
+
   const nursingOtHoursEliminated = useMemo(() => {
     if (!timeDriverInputs.nursingOtEnabled) return 0;
-    return Math.round(nursingCurrentOtHoursPerYear * (timeDriverInputs.nursingOtReductionPercent / 100));
-  }, [nursingCurrentOtHoursPerYear, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtReductionPercent]);
+    const docRelatedOtPerNurseWeek = timeDriverInputs.nursingOtHoursPerNurseWeek * (timeDriverInputs.nursingOtReductionPercent / 100);
+    const effectivePerNurseWeek = Math.min(nursingHoursSavedPerNursePerWeek, docRelatedOtPerNurseWeek);
+    return Math.round(state.numberOfProviders * effectivePerNurseWeek * 52);
+  }, [nursingHoursSavedPerNursePerWeek, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, state.numberOfProviders]);
 
   const nursingOtValue = useMemo(() => {
     if (!timeDriverInputs.nursingOtEnabled) return 0;
@@ -879,7 +886,7 @@ export default function ExploreValueDrivers({
                     </div>
 
                     <div className="space-y-2.5">
-                      <label className="text-sm text-[#888888]">Expected OT reduction from better documentation</label>
+                      <label className="text-sm text-[#888888]">% of your OT hours that are documentation-related</label>
                       <div className="flex items-center gap-3">
                         <input
                           type="range"
@@ -934,12 +941,20 @@ export default function ExploreValueDrivers({
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">{state.numberOfProviders} nurses × {timeDriverInputs.nursingOtHoursPerNurseWeek} OT hrs/wk × 52 weeks</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingCurrentOtHoursPerYear)} hrs/yr</span>
+                        <span className="text-[#666666] min-w-0">Abridge saves per nurse/week (from Time Savings)</span>
+                        <span className="font-semibold text-black">{nursingHoursSavedPerNursePerWeek.toFixed(2)} hrs</span>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666] min-w-0">× {timeDriverInputs.nursingOtReductionPercent}% expected reduction</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingOtHoursEliminated)} hrs</span>
+                        <span className="text-[#666666] min-w-0">Doc-related OT per nurse/week ({timeDriverInputs.nursingOtHoursPerNurseWeek} hrs × {timeDriverInputs.nursingOtReductionPercent}%)</span>
+                        <span className="font-semibold text-black">{(timeDriverInputs.nursingOtHoursPerNurseWeek * timeDriverInputs.nursingOtReductionPercent / 100).toFixed(2)} hrs</span>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">Effective reduction (lower of the two)</span>
+                        <span className="font-semibold text-black">{Math.min(nursingHoursSavedPerNursePerWeek, timeDriverInputs.nursingOtHoursPerNurseWeek * timeDriverInputs.nursingOtReductionPercent / 100).toFixed(2)} hrs/nurse/week</span>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-[#666666] min-w-0">{state.numberOfProviders} nurses × effective hrs × 52 weeks</span>
+                        <span className="font-semibold text-black">{formatNumber(nursingOtHoursEliminated)} hrs/yr</span>
                       </div>
                       <div className="flex justify-between gap-2">
                         <span className="text-[#666666] min-w-0">× ${timeDriverInputs.nursingOtHourlyRate}/hr OT rate</span>
@@ -952,10 +967,9 @@ export default function ExploreValueDrivers({
                       </div>
                     </div>
                   </div>
-
                   <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">
                     <p className="text-xs text-[#888888]">
-                      <span className="font-medium">Validation tip:</span> Your current annual OT spend is ~{formatCurrency(nursingCurrentOtHoursPerYear * timeDriverInputs.nursingOtHourlyRate)}. This model saves {formatCurrency(nursingOtValue)} ({timeDriverInputs.nursingOtReductionPercent}% of that).
+                      <span className="font-medium">Why it's capped:</span> Abridge can only reduce OT equal to the documentation time it actually saves. The cap keeps this number defensible in the room.
                     </p>
                   </div>
                 </div>

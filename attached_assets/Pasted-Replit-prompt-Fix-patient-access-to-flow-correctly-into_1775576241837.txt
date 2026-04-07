@@ -1,0 +1,25 @@
+Replit prompt — Fix patient access to flow correctly into ROI and payback                                                                                                                                  
+                                                                                                                                                                                                               
+  In client/src/pages/explore/ExploreFlow.tsx, find the timeValue useMemo (around line 687).                                                                                                                 
+                                                                                                                                                                                                               
+  Inside it, find the outpatient patient access block:                                                                                                    
+                                                                                                                                                                                                               
+    if (timeDriverInputs.patientAccessEnabled) {                                                                                                                                                             
+      const effectiveAccessProviders = Math.min(timeDriverInputs.accessProviders || numberOfProviders, numberOfProviders);                                                                                     
+      const annualVisits = timeDriverInputs.additionalVisitsPerWeek * effectiveAccessProviders * 48;                                                                                                           
+      total += annualVisits * timeDriverInputs.revenuePerVisit;                                                                                           
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Replace with:                                                                                                                                           
+                                                                                                                                                                                                               
+    if (timeDriverInputs.patientAccessEnabled) {                                                                                                                                                               
+      const effectiveAccessProviders = Math.min(timeDriverInputs.accessProviders || numberOfProviders, numberOfProviders);                                
+      const weeksPerYear = 48;                                                                                                                                                                                 
+      const hoursPerProvPerWeek = numberOfProviders > 0 ? totalHoursSaved / numberOfProviders / weeksPerYear : 0;                                                                                            
+      const derivedVisitsPerWeek = hoursPerProvPerWeek * (timeDriverInputs.capacityRealizationPercent / 100) / (timeDriverInputs.visitDuration / 60);
+      const annualVisits = derivedVisitsPerWeek * effectiveAccessProviders * weeksPerYear;                                                                                                                     
+      total += annualVisits * timeDriverInputs.revenuePerVisit;                                                                                           
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  This ensures the value driving ROI and payback uses the same derived formula shown in the UI — hours saved flowing through reinvestment rate and visit duration — rather than the old manual                 
+  additionalVisitsPerWeek input.    

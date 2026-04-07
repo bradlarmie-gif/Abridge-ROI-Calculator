@@ -732,9 +732,11 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       }
     } else if (isNursing) {
       if (timeDriverInputs.nursingOtEnabled) {
-        const currentOtHoursPerYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
-        const otHoursEliminated = currentOtHoursPerYear * (timeDriverInputs.nursingOtReductionPercent / 100);
-        total += Math.round(otHoursEliminated * timeDriverInputs.nursingOtHourlyRate);
+        const hoursPerNursePerWeek = numberOfProviders > 0 ? totalHoursSaved / numberOfProviders / 52 : 0;
+        const docRelatedOtPerNurseWeek = timeDriverInputs.nursingOtHoursPerNurseWeek * (timeDriverInputs.nursingOtReductionPercent / 100);
+        const effectivePerNurseWeek = Math.min(hoursPerNursePerWeek, docRelatedOtPerNurseWeek);
+        const otHoursEliminated = Math.round(numberOfProviders * effectivePerNurseWeek * 52);
+        total += otHoursEliminated * timeDriverInputs.nursingOtHourlyRate;
       }
       // Nursing: Retention (40% burnout-related × impact scenario 10/15/25%)
       if (timeDriverInputs.nursingRetentionEnabled) {
