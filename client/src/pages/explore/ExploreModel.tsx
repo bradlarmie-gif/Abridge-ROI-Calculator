@@ -352,11 +352,11 @@ export default function ExploreModel({
     if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", onset: "immediate" as const });
     if (ipConcurrentValue > 0) drivers.push({ id: "ipConcurrent", name: "Concurrent Review Defense", value: ipConcurrentValue, category: "documentation", onset: "immediate" as const });
     if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", onset: "immediate" as const });
-    if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk: Documentation Impact", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
-    if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility Gap", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
-    if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", onset: "immediate" as const });
-    if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", onset: "immediate" as const });
-    if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", onset: "immediate" as const });
+    if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk Reduction", value: nursingHapiValue, category: "documentation", onset: "delayed" as const });
+    if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility", value: nursingFallsValue, category: "documentation", onset: "delayed" as const });
+    if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", onset: "delayed" as const });
+    if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", onset: "delayed" as const });
+    if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", onset: "delayed" as const });
 
     for (const item of state.timeDriverInputs.nursingAdditionalCostSavings) {
       if (item.amount > 0 && item.label) {

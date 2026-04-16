@@ -1,0 +1,44 @@
+ Here's the prompt:
+
+  ---
+  Fix nursing quality drivers in proforma: rename + correct onset
+
+  File 1: client/src/pages/explore/ExploreModel.tsx
+
+  Find the section that pushes nursing care quality drivers into the drivers array (lines ~344-348):
+  if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk: Documentation Impact", value: nursingHapiValue, category: "documentation", onset: "immediate" as const });
+  if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility Gap", value: nursingFallsValue, category: "documentation", onset: "immediate" as const });
+  if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", onset: "immediate" as const });
+  if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", onset: "immediate" as const });
+  if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", onset: "immediate" as const });
+
+  Replace with onset: "delayed" for all five:
+  if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk Reduction", value: nursingHapiValue, category: "documentation", onset: "delayed" as const });
+  if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility", value: nursingFallsValue, category: "documentation", onset: "delayed" as const });
+  if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", onset: "delayed" as const });
+  if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", onset: "delayed" as const });
+  if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", onset: "delayed" as const });
+
+  ---
+  File 2: client/src/pages/proforma/ProformaView.tsx
+
+  There are several places that display "Doc Quality" as a label. Each needs to conditionally show "Quality" when the setting is nursing. Make the following changes:
+
+  A) Find the chart <Area name="Doc Quality" ... and make it conditional:
+  name={snapshot.careSetting === "nursing" ? "Quality" : "Doc Quality"}
+
+  B) Find the legend line that reads <span className="text-neutral-600">Doc Quality</span> (appears twice — in the chart legend and in the summary). For both, wrap with a conditional. The snapshot in scope
+  at that point determines the setting. If you're in a loop over all settings, use:
+  {snapshot.careSetting === "nursing" ? "Quality" : "Doc Quality"}
+  If it's a summary across mixed settings, use "Quality" only when ALL settings are nursing, otherwise keep "Doc Quality".
+
+  C) Find the methodology table row that reads:
+  <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.doc }}>Doc Quality (immediate)</td>
+  Change to:
+  <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.doc }}>
+    {snapshot?.careSetting === "nursing" ? "Quality (delayed)" : "Doc Quality (immediate)"}
+  </td>
+
+  D) In the methodology expandable text, find the line that describes the "Documentation quality" onset. Add a nursing-specific sentence after it:
+  "For nursing care quality drivers (HAPI, falls, bundle compliance), value onset begins at month 5 — clinical outcomes require a full quarter of consistent real-time documentation before measurable
+  improvement occurs in HAPI and fall rates."

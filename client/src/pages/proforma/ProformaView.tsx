@@ -1052,7 +1052,7 @@ export default function ProformaView({
                     fill="url(#grad-doc)"
                     stroke={CHART_COLORS.doc}
                     strokeWidth={isMobile ? 1.5 : 2.5}
-                    name="Doc Quality"
+                    name={settings.length > 0 && settings.every(s => s.careSetting === "nursing") ? "Quality" : "Doc Quality"}
                   />
                 )}
 
@@ -1093,7 +1093,7 @@ export default function ProformaView({
               {legendTotals.doc > 0 && (
                 <span className="flex items-center gap-1.5">
                   <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.doc }} />
-                  <span className="text-neutral-600">Doc Quality</span>
+                  <span className="text-neutral-600">{settings.length > 0 && settings.every(s => s.careSetting === "nursing") ? "Quality" : "Doc Quality"}</span>
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.doc)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.doc / legendTotals.total) * 100)}%)` : ""}</span>
                 </span>
               )}
@@ -1751,7 +1751,9 @@ export default function ProformaView({
                 {!isMobile && (
                   <>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.doc }}>Doc Quality (immediate)</td>
+                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.doc }}>
+                        {settings.length > 0 && settings.every(s => s.careSetting === "nursing") ? "Quality (delayed)" : "Doc Quality (immediate)"}
+                      </td>
                       {yearlyData.map(y => (
                         <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.docValue)}</td>
                       ))}
@@ -2017,7 +2019,7 @@ export default function ProformaView({
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
               <p><strong className="text-neutral-900">Implementation Ramp:</strong> A {config.implementationRampMonths}-month gradual implementation ramp is applied as providers are onboarded. During this period, value scales gradually (e.g. ~33%/67%/100% for a 3-month ramp) while full subscription costs are incurred. This accounts for training, EHR integration, and workflow adjustment.</p>
               <p><strong className="text-neutral-900">Utilization Ramp:</strong> Utilization increases over the contract period: Year 1 target {config.yearlyUtilization.year1}%, Year 2 target {config.yearlyUtilization.year2}%, Year 3 target {config.yearlyUtilization.year3}%.{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` Nursing uses separate targets: ${config.nursingYearlyUtilization.year1}%/${config.nursingYearlyUtilization.year2}%/${config.nursingYearlyUtilization.year3}%.` : ""} These targets reflect realistic organizational adoption curves.</p>
-              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) have a {ONSET_DELAY_MONTHS.immediate}-month billing cycle lag before value appears, then ramp over 3 months. <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) onset at month {ONSET_DELAY_MONTHS.delayed} as organizations operationalize freed-up capacity, then ramp over 3 months. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing ({config.retentionPhasing.year1Pct}% Y1 / {config.retentionPhasing.year2Pct}% Y2 / {config.retentionPhasing.year3Pct}% Y3{config.nursingRetentionPhasing && settings.some(s => s.careSetting === "nursing") && (config.nursingRetentionPhasing.year1Pct !== config.retentionPhasing.year1Pct || config.nursingRetentionPhasing.year2Pct !== config.retentionPhasing.year2Pct) ? `; Nursing: ${config.nursingRetentionPhasing.year1Pct}% Y1 / ${config.nursingRetentionPhasing.year2Pct}% Y2 / ${config.nursingRetentionPhasing.year3Pct}% Y3` : ""}).</p>
+              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) have a {ONSET_DELAY_MONTHS.immediate}-month billing cycle lag before value appears, then ramp over 3 months.{settings.some(s => s.careSetting === "nursing") ? " For nursing care quality drivers (HAPI, falls, bundle compliance), value onset begins at month 5 — clinical outcomes require a full quarter of consistent real-time documentation before measurable improvement occurs in HAPI and fall rates." : ""} <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) onset at month {ONSET_DELAY_MONTHS.delayed} as organizations operationalize freed-up capacity, then ramp over 3 months. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing ({config.retentionPhasing.year1Pct}% Y1 / {config.retentionPhasing.year2Pct}% Y2 / {config.retentionPhasing.year3Pct}% Y3{config.nursingRetentionPhasing && settings.some(s => s.careSetting === "nursing") && (config.nursingRetentionPhasing.year1Pct !== config.retentionPhasing.year1Pct || config.nursingRetentionPhasing.year2Pct !== config.retentionPhasing.year2Pct) ? `; Nursing: ${config.nursingRetentionPhasing.year1Pct}% Y1 / ${config.nursingRetentionPhasing.year2Pct}% Y2 / ${config.nursingRetentionPhasing.year3Pct}% Y3` : ""}).</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means for every $1 of Abridge investment, you generate ${summary.simpleROI.toFixed(2)} in net value above the cost.</p>
               <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive, accounting for the implementation ramp and subscription costs from day one.</p>
