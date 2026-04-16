@@ -1,0 +1,73 @@
+Replit prompt — Fix nursing summary card: HCAHPS visibility + bundle compliance line items + OT formula
+
+  File: client/src/pages/explore/ExploreModel.tsx
+
+  Fix 1 — OT formula still uses old model. Find the nursingOtValue useMemo (around line 232):
+  const currentOtHoursPerYear = state.numberOfProviders * state.timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
+  const otHoursEliminated = currentOtHoursPerYear * (state.timeDriverInputs.nursingOtReductionPercent / 100);
+  Replace the body with:
+  const otHoursEliminated = Math.round(
+    state.timeDriverInputs.nursingOtHoursPerNurseWeek *
+    (state.timeDriverInputs.nursingOtReductionPercent / 100) *
+    state.numberOfProviders *
+    52
+  );
+  return Math.round(otHoursEliminated * state.timeDriverInputs.nursingOtHourlyRate);
+
+  Fix 2 — Bundle compliance missing from card + HCAHPS always showing. Find the nursing section of the Care Quality card (the isNursing branch inside the doc card, lines ~1742-1770). Replace the entire
+  <>...</> block with:
+
+  <>
+    <div className="flex justify-between">
+      <span className="text-[#666666]">• HAPI Risk Reduction</span>
+      <span className="font-semibold text-black">{state.docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '—'}</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-[#666666]">• Fall Risk Visibility Gap</span>
+      <span className="font-semibold text-black">{state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-[#666666]">• HAC Penalty Exposure</span>
+      <span className="font-semibold text-[#666666]">{state.docQualityInputs.nursingHacEnabled && nursingHacPenalty > 0 ? formatCurrency(nursingHacPenalty) : '—'}</span>
+    </div>
+    {state.docQualityInputs.nursingHacEnabled && nursingHacPenalty > 0 && (
+      <p className="text-xs text-[#888888] pl-4 italic">risk only — not in total</p>
+    )}
+    {state.docQualityInputs.nursingCautiEnabled && (
+      <div className="flex justify-between">
+        <span className="text-[#666666]">• CAUTI Bundle Compliance</span>
+        <span className="font-semibold text-black">{formatCurrency(nursingCautiValue)}</span>
+      </div>
+    )}
+    {state.docQualityInputs.nursingClabsiEnabled && (
+      <div className="flex justify-between">
+        <span className="text-[#666666]">• CLABSI Bundle Compliance</span>
+        <span className="font-semibold text-black">{formatCurrency(nursingClabsiValue)}</span>
+      </div>
+    )}
+    {state.docQualityInputs.nursingSepsisEnabled && (
+      <div className="flex justify-between">
+        <span className="text-[#666666]">• Sepsis SEP-1 Bundle</span>
+        <span className="font-semibold text-black">{formatCurrency(nursingSepsisValue)}</span>
+      </div>
+    )}
+    {state.docQualityInputs.nursingHcahpsEnabled && (
+      <div className="flex justify-between">
+        <span className="text-[#666666]">• HCAHPS Improvement</span>
+        <span className="font-semibold text-black">—</span>
+      </div>
+    )}
+    {state.docQualityInputs.nursingHcahpsEnabled && (
+      <p className="text-xs text-[#888888] pl-4">(qualitative — not in total)</p>
+    )}
+    <div className="h-px bg-[#E5E5E5] mt-3 mb-2" />
+    <p className="text-xs text-[#888888] italic">
+      This is potential value — requires clinical practice, not just documentation.
+    </p>
+    <p className="text-sm text-[#666666] mt-2">
+      Time saved per nurse: <span className="font-semibold text-black">{hoursPerProviderPerWeek} hrs/wk</span> — available for direct patient care
+    </p>
+  </>
+
+  ---
+  After this: CAUTI/CLABSI/Sepsis show when enabled, HCAHPS only appears when toggled on and is clearly labeled qualitative, and OT savings matches what was built on the Value Drivers screen.

@@ -1766,14 +1766,36 @@ export default function ExploreModel({
                     {state.docQualityInputs.nursingHacEnabled && nursingHacPenalty > 0 && (
                       <p className="text-xs text-[#888888] pl-4 italic">risk only — not in total</p>
                     )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• HCAHPS</span>
-                      <span className="font-semibold text-black">—</span>
-                    </div>
-                    <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
+                    {state.docQualityInputs.nursingCautiEnabled && (
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">• CAUTI Bundle Compliance</span>
+                        <span className="font-semibold text-black">{formatCurrency(nursingCautiValue)}</span>
+                      </div>
+                    )}
+                    {state.docQualityInputs.nursingClabsiEnabled && (
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">• CLABSI Bundle Compliance</span>
+                        <span className="font-semibold text-black">{formatCurrency(nursingClabsiValue)}</span>
+                      </div>
+                    )}
+                    {state.docQualityInputs.nursingSepsisEnabled && (
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">• Sepsis SEP-1 Bundle</span>
+                        <span className="font-semibold text-black">{formatCurrency(nursingSepsisValue)}</span>
+                      </div>
+                    )}
+                    {state.docQualityInputs.nursingHcahpsEnabled && (
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">• HCAHPS Improvement</span>
+                        <span className="font-semibold text-black">—</span>
+                      </div>
+                    )}
+                    {state.docQualityInputs.nursingHcahpsEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">(qualitative — not in total)</p>
+                    )}
                     <div className="h-px bg-[#E5E5E5] mt-3 mb-2" />
                     <p className="text-xs text-[#888888] italic">
-                      This is potential value—requires clinical practice, not just docs.
+                      This is potential value — requires clinical practice, not just documentation.
                     </p>
                     <p className="text-sm text-[#666666] mt-2">
                       Time saved per nurse: <span className="font-semibold text-black">{hoursPerProviderPerWeek} hrs/wk</span> — available for direct patient care
