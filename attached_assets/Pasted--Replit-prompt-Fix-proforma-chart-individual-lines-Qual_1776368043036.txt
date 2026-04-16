@@ -1,0 +1,65 @@
+ Replit prompt — Fix proforma chart: individual lines + Quality label
+
+  File: client/src/pages/proforma/ProformaView.tsx
+
+  Step 1 — Add isNursingOnly near the other computed values (anywhere before the chart JSX):
+  const isNursingOnly = settings.every(s => s.careSetting === 'nursing');
+  const docQualityLabel = isNursingOnly ? "Quality" : "Doc Quality";
+
+  Step 2 — Replace the three <Area> components inside the main <ComposedChart> with <Line> components. Find the current Areas:
+
+  {legendTotals.retention > 0 && (
+    <Area type="monotone" dataKey="cumRetentionValue" stackId="value" fill="url(#grad-retention)" stroke={CHART_COLORS.retention} strokeWidth={isMobile ? 1.5 : 2.5} name="Retention" />
+  )}
+  {legendTotals.time > 0 && (
+    <Area type="monotone" dataKey="cumTimeValue" stackId="value" fill="url(#grad-time)" stroke={CHART_COLORS.time} strokeWidth={isMobile ? 1.5 : 2.5} name="Capacity & Efficiency" />
+  )}
+  {legendTotals.doc > 0 && (
+    <Area type="monotone" dataKey="cumDocValue" stackId="value" fill="url(#grad-doc)" stroke={CHART_COLORS.doc} strokeWidth={isMobile ? 1.5 : 2.5} name="Doc Quality" />
+  )}
+
+  Replace with:
+  {legendTotals.retention > 0 && (
+    <Line type="monotone" dataKey="cumRetentionValue" stroke={CHART_COLORS.retention} strokeWidth={isMobile ? 1.5 : 2} dot={false} name="Retention" />
+  )}
+  {legendTotals.time > 0 && (
+    <Line type="monotone" dataKey="cumTimeValue" stroke={CHART_COLORS.time} strokeWidth={isMobile ? 1.5 : 2} dot={false} name="Capacity & Efficiency" />
+  )}
+  {legendTotals.doc > 0 && (
+    <Line type="monotone" dataKey="cumDocValue" stroke={CHART_COLORS.doc} strokeWidth={isMobile ? 1.5 : 2} dot={false} name={docQualityLabel} />
+  )}
+  <Line type="monotone" dataKey="cumulativeValue" stroke="#1A1A1A" strokeWidth={isMobile ? 2 : 3} dot={false} name="Total Value" />
+
+  Step 3 — Update the endpoint ReferenceDot for total value label. Find:
+  fill: CHART_COLORS.time,
+  Change to:
+  fill: "#1A1A1A",
+
+  Step 4 — Update the chart subtitle. Find:
+  Cumulative value realized by driver — onset delays and adoption ramp visible in the early curve. Investment line shows total spend to date.
+  Replace with:
+  Each line shows cumulative value by driver — the bold line is total. Onset delays and ramps visible in early months. Dashed line is cumulative investment.
+
+  Step 5 — Update the legend swatches from area squares to line swatches. Find all instances of:
+  <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.doc }} />
+  <span className="text-neutral-600">Doc Quality</span>
+  Replace with:
+  <span className="w-5 h-0.5 inline-block rounded-full" style={{ backgroundColor: CHART_COLORS.doc }} />
+  <span className="text-neutral-600">{docQualityLabel}</span>
+
+  Do the same for the other two driver legend entries (time/retention) — change w-3.5 h-2.5 rounded-sm to w-5 h-0.5 rounded-full for each. Also add a Total legend entry:
+  <span className="flex items-center gap-1.5">
+    <span className="w-5 h-0.5 inline-block rounded-full bg-[#1A1A1A]" />
+    <span className="text-neutral-600 font-medium">Total</span>
+    {legendTotals.total > 0 && <span className="text-neutral-400 font-medium">{fmt(legendTotals.total)}</span>}
+  </span>
+
+  Step 6 — Update the methodology table row that says "Doc Quality (immediate)":
+  {isNursingOnly ? "Quality (delayed)" : "Doc Quality (immediate)"}
+
+  Step 7 — Update the second legend occurrence (around line 2097-2101 in the driver summary section) — find <span className="text-neutral-600">Doc Quality</span> and change to <span
+  className="text-neutral-600">{docQualityLabel}</span>.
+
+  ---
+  After this, each driver shows as its own line reaching its own terminal value. The bold black Total line is the hero number. The story in the room: "Each colored line is one value stream. The black line is
+   your total. You can literally see the retention line kick in later than the others."

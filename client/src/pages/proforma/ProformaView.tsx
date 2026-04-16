@@ -435,6 +435,9 @@ export default function ProformaView({
     return { doc, time, retention, inv, total };
   }, [cashFlows]);
 
+  const isNursingOnly = settings.length > 0 && settings.every(s => s.careSetting === "nursing");
+  const docQualityLabel = isNursingOnly ? "Quality" : "Doc Quality";
+
   const lastChartPoint = useMemo(() => {
     if (monthlyChartData.length === 0) return null;
     const last = monthlyChartData[monthlyChartData.length - 1];
@@ -935,7 +938,7 @@ export default function ProformaView({
               ? "Annual value by driver type"
               : isMobile
                 ? "Cumulative value realized by driver type"
-                : `Cumulative value realized by driver — onset delays and adoption ramp visible in the early curve. Investment line shows total spend to date.`}
+                : `Each line shows cumulative value by driver — the bold line is total. Onset delays and ramps visible in early months. Dashed line is cumulative investment.`}
           </p>
           <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="chart-ramp-up">
             <ResponsiveContainer width="100%" height={isMobile ? 300 : 420}>
@@ -1023,38 +1026,43 @@ export default function ProformaView({
                 />
 
                 {legendTotals.retention > 0 && (
-                  <Area
+                  <Line
                     type="monotone"
                     dataKey="cumRetentionValue"
-                    stackId="value"
-                    fill="url(#grad-retention)"
                     stroke={CHART_COLORS.retention}
-                    strokeWidth={isMobile ? 1.5 : 2.5}
+                    strokeWidth={isMobile ? 1.5 : 2}
+                    dot={false}
                     name="Retention"
                   />
                 )}
                 {legendTotals.time > 0 && (
-                  <Area
+                  <Line
                     type="monotone"
                     dataKey="cumTimeValue"
-                    stackId="value"
-                    fill="url(#grad-time)"
                     stroke={CHART_COLORS.time}
-                    strokeWidth={isMobile ? 1.5 : 2.5}
+                    strokeWidth={isMobile ? 1.5 : 2}
+                    dot={false}
                     name="Capacity & Efficiency"
                   />
                 )}
                 {legendTotals.doc > 0 && (
-                  <Area
+                  <Line
                     type="monotone"
                     dataKey="cumDocValue"
-                    stackId="value"
-                    fill="url(#grad-doc)"
                     stroke={CHART_COLORS.doc}
-                    strokeWidth={isMobile ? 1.5 : 2.5}
-                    name={settings.length > 0 && settings.every(s => s.careSetting === "nursing") ? "Quality" : "Doc Quality"}
+                    strokeWidth={isMobile ? 1.5 : 2}
+                    dot={false}
+                    name={docQualityLabel}
                   />
                 )}
+                <Line
+                  type="monotone"
+                  dataKey="cumulativeValue"
+                  stroke="#1A1A1A"
+                  strokeWidth={isMobile ? 2 : 3}
+                  dot={false}
+                  name="Total Value"
+                />
 
                 {!isMobile && lastChartPoint && lastChartPoint.totalValue > 0 && (
                   <ReferenceDot
@@ -1066,7 +1074,7 @@ export default function ProformaView({
                       position: "right",
                       fontSize: 11,
                       fontWeight: 700,
-                      fill: CHART_COLORS.time,
+                      fill: "#1A1A1A",
                       dx: 4,
                     }}
                   />
@@ -1092,25 +1100,30 @@ export default function ProformaView({
             <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-x-4 gap-y-2 sm:gap-6 mt-4 text-xs sm:text-xs">
               {legendTotals.doc > 0 && (
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.doc }} />
-                  <span className="text-neutral-600">{settings.length > 0 && settings.every(s => s.careSetting === "nursing") ? "Quality" : "Doc Quality"}</span>
+                  <span className="w-5 h-0.5 inline-block rounded-full" style={{ backgroundColor: CHART_COLORS.doc }} />
+                  <span className="text-neutral-600">{docQualityLabel}</span>
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.doc)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.doc / legendTotals.total) * 100)}%)` : ""}</span>
                 </span>
               )}
               {legendTotals.time > 0 && (
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.time }} />
+                  <span className="w-5 h-0.5 inline-block rounded-full" style={{ backgroundColor: CHART_COLORS.time }} />
                   <span className="text-neutral-600">Capacity & Efficiency</span>
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.time)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.time / legendTotals.total) * 100)}%)` : ""}</span>
                 </span>
               )}
               {legendTotals.retention > 0 && (
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3.5 h-2.5 rounded-sm inline-block opacity-80" style={{ backgroundColor: CHART_COLORS.retention }} />
+                  <span className="w-5 h-0.5 inline-block rounded-full" style={{ backgroundColor: CHART_COLORS.retention }} />
                   <span className="text-neutral-600">Retention</span>
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.retention)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.retention / legendTotals.total) * 100)}%)` : ""}</span>
                 </span>
               )}
+              <span className="flex items-center gap-1.5">
+                <span className="w-5 h-0.5 inline-block rounded-full bg-[#1A1A1A]" />
+                <span className="text-neutral-600 font-medium">Total</span>
+                {legendTotals.total > 0 && <span className="text-neutral-400 font-medium">{fmt(legendTotals.total)}</span>}
+              </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3.5 h-0.5 rounded-full inline-block" style={{ borderTop: `2px dashed ${CHART_COLORS.investment}` }} />
                 <span className="text-neutral-600">Investment</span>
@@ -1752,7 +1765,7 @@ export default function ProformaView({
                   <>
                     <tr className="border-b border-neutral-100">
                       <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.doc }}>
-                        {settings.length > 0 && settings.every(s => s.careSetting === "nursing") ? "Quality (delayed)" : "Doc Quality (immediate)"}
+                        {isNursingOnly ? "Quality (delayed)" : "Doc Quality (immediate)"}
                       </td>
                       {yearlyData.map(y => (
                         <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.docValue)}</td>
@@ -2099,7 +2112,7 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
         <div className="flex justify-between gap-3 mb-1">
           <span className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.doc }} />
-            <span className="text-neutral-600">Doc Quality</span>
+            <span className="text-neutral-600">{settings && settings.length > 0 && settings.every((s: any) => s.careSetting === "nursing") ? "Quality" : "Doc Quality"}</span>
           </span>
           <span className="font-medium text-neutral-900">{fmt(docItem.value)}</span>
         </div>
