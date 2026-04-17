@@ -1717,6 +1717,110 @@ export default function ExploreModel({
                 <p className="text-xs text-[#888888]">Sepsis & stroke documentation, obs/admit status defense, and readmission prevention — reported at 90 days post-deployment.</p>
               </div>
             </div>
+          ) : isOutpatientSetting ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" data-testid="outpatient-four-bucket-grid">
+              {/* ACCESS Card */}
+              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-op-access">
+                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Access</p>
+                <div className="flex items-center gap-2 mb-3">
+                  {timeDriverInputs.patientAccessEnabled && patientAccessValue > 0 ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-op-access-value">{formatCurrency(patientAccessValue)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                      <p className="text-base font-medium text-[#888888]" data-testid="text-op-access-value">Not modeled</p>
+                    </>
+                  )}
+                </div>
+                <div className="h-px bg-[#E5E5E5] mb-3" />
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">Patient Access</span>
+                    <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
+                  </div>
+                  {timeDriverInputs.patientAccessEnabled && (
+                    <p className="text-[10px] text-[#888888]">{derivedVisitsPerWeek} visits/wk · {effectiveAccessProviders} providers</p>
+                  )}
+                </div>
+              </div>
+
+              {/* REVENUE Card */}
+              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-op-revenue">
+                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Revenue</p>
+                <div className="flex items-center gap-2 mb-3">
+                  {docValue > 0 ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-op-revenue-value">{formatCurrency(docValue)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                      <p className="text-base font-medium text-[#888888]" data-testid="text-op-revenue-value">Not modeled</p>
+                    </>
+                  )}
+                </div>
+                <div className="h-px bg-[#E5E5E5] mb-3" />
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">wRVU Improvement</span>
+                    <span className="font-semibold text-black">{docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'}</span>
+                  </div>
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">HCC Capture</span>
+                    <span className="font-semibold text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
+                  </div>
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">Denial Prevention</span>
+                    <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* WORKFORCE Card */}
+              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-op-workforce">
+                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Workforce</p>
+                <div className="flex items-center gap-2 mb-3">
+                  {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0 ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-op-workforce-value">{formatCurrency(clinicianRetentionValue)}</p>
+                    </>
+                  ) : timeDriverInputs.wellbeingEnabled ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-op-workforce-value">{hoursPerProviderPerWeek} hrs/wk</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                      <p className="text-base font-medium text-[#888888]" data-testid="text-op-workforce-value">Not modeled</p>
+                    </>
+                  )}
+                </div>
+                <div className="h-px bg-[#E5E5E5] mb-3" />
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">Clinician Sustainability</span>
+                    <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* DOWNSTREAM Card */}
+              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-op-downstream">
+                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Downstream</p>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                  <p className="text-base font-medium text-[#888888]" data-testid="text-op-downstream-value">Connected value</p>
+                </div>
+                <div className="h-px bg-[#E5E5E5] mb-3" />
+                <p className="text-xs text-[#888888]">Specialist referral quality, ancillary revenue, and downstream care setting impact — not double-counted. Organization-specific sizing.</p>
+              </div>
+            </div>
           ) : (
           <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
             {/* Time/Efficiency Card */}
@@ -1975,65 +2079,6 @@ export default function ExploreModel({
           </div>
           )}
         </motion.div>
-
-        {/* Outpatient-specific Connected Value section */}
-        {isOutpatientSetting && (
-          <motion.div
-            className="mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12 }}
-          >
-            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
-                  <Link className="w-5 h-5 text-[#EA2C00]" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
-                  <p className="text-sm text-[#888888] italic">Outpatient documentation creates downstream value across the organization</p>
-                </div>
-              </div>
-              
-              <p className="text-sm text-[#666666] mb-5">
-                Complete outpatient documentation doesn't stop at the visit. What's captured in the encounter ripples forward — into specialist context, downstream care settings, and organizational revenue.
-              </p>
-
-              <div className="space-y-3 mb-5">
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Users className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">Specialist Referrals</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">When primary care documentation is complete, specialists receive full clinical context — fewer repeat tests, faster diagnoses, and better care continuity for shared patients.</p>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <TrendingUp className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">Downstream Impact</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">Additional patient access in outpatient generates downstream revenue across the organization — from follow-up labs and imaging to ED diversion through better-managed chronic conditions and stronger inpatient transitions of care.</p>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Building2 className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">Organizational Revenue</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">Every additional outpatient visit creates referral and ancillary revenue that flows through the health system — supporting ED volumes, inpatient admissions, and procedural throughput.</p>
-                </div>
-              </div>
-              
-              <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
-                <div className="flex items-start gap-3">
-                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm opacity-90">HCC value from your MA population is already quantified above. Specialist referral quality and downstream organizational impact are not double-counted — they require your organization's data to size precisely.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* ED-specific Downstream Value narrative section */}
         {state.careSetting === 'ed' && (

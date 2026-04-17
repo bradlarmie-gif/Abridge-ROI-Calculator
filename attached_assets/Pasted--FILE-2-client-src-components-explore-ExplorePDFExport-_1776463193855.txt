@@ -1,0 +1,187 @@
+ FILE 2: client/src/components/explore/ExplorePDFExport.tsx                                                                                                                                                   
+                                                                                                                                                                                                               
+  What to find                                              
+                                              
+  The outpatient PDF block. Search for const isOutpatient = data.careSetting === "outpatient" and then find the large {isOutpatient && (...)} rendering block. It currently renders 5 or 6 pages depending on
+  whether opHasDocQuality is true.        
+                                                                                                                                                                                                               
+  Current outpatient PDF page structure:                                                                                                                                                                       
+  - Page 1: THE THESIS (TWO SOURCES OF VALUE — Time Recaptured + Revenue Optimized)                                                                                                                            
+  - Page 2: THE WORKFORCE BEHIND THE NUMBERS                                                                                                                                                                   
+  - Page 3: YOUR VALUE DRIVERS (Patient Access + Clinician Sustainability)                                                                                                                                     
+  - Page 4 (conditional opHasDocQuality): DOCUMENTATION QUALITY (wRVU + HCC + Denial)
+  - Page 5/4: THE INVESTMENT CASE                                                                                                                                                                              
+  - Page 6/5: YOUR ASSESSMENT                               
+                                          
+  New page structure (always 6 pages — remove the conditional)                                                                                                                                                 
+                                                                                                                                                                                                               
+  Change opHasDocQuality ? 6 : 5 to always 6.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  PAGE 1: THE THESIS — 4 buckets                                                                                                                                                                               
+                                                                                                                                                                                                               
+  Keep all existing content ABOVE the "TWO SOURCES OF VALUE" text (the cover card with providers/encounters, the hero net value number, the 4-stat box).                                                       
+                                                                                                                                                                                                               
+  Replace the "TWO SOURCES OF VALUE" section with "FOUR DRIVERS OF VALUE".
+                                                                                                                                                                                                               
+  Replace the two-column card layout (TIME RECAPTURED + REVENUE OPTIMIZED) with a 2×2 grid of four cards:
+                                                                                                                                                                                                               
+  - ACCESS card: Label "ACCESS". Value: data.patientAccessValue > 0 ? fmtCurrency(data.patientAccessValue) : "Not Measured". Copy: "Time recaptured from documentation, reinvested into patient capacity. Each
+  additional visit creates immediate revenue and reduces access wait times."                                                                                                                                   
+  - REVENUE card: Label "REVENUE" (use the primary/accent color like the current REVENUE OPTIMIZED card). Value: docQualVal > 0 ? fmtCurrency(docQualVal) : "Not Modeled". Copy: "Documentation completeness
+  translates directly to coding accuracy — wRVU lift, HCC recapture, and denial prevention are all documentation stories."                                                                                     
+  - WORKFORCE card: Label "WORKFORCE". Value: data.retentionValueEnabled && (data.retentionValue ?? 0) > 0 ? fmtCurrency(data.retentionValue) : data.sustainabilityEnabled ? fmtCurrency(0) : "Not Measured".
+  Actually, look at how the existing code handles sustainabilityEnabled and retentionValueEnabled to show the correct value. Copy: "Burnout is a documentation problem. Time returned to providers reduces the 
+  pressure that drives turnover in primary care and specialty practices."                                                                                                                                      
+  - DOWNSTREAM card: Label "DOWNSTREAM". Value: "Org-Level". Copy: "Complete outpatient documentation creates downstream value across the health system — specialist context, ancillary revenue, and care
+  continuity. Sized with your data, not this model."                                                                                                                                                           
+                                                            
+  Keep getOutpatientObservation(data) in the "WHAT YOUR CHOICES REVEAL" callout at the bottom of page 1 — it's still applicable.                                                                               
+                                                                                                                                                                                                               
+  PAGE 2: ACCESS & WORKFORCE (combined drivers page)
+                                                                                                                                                                                                               
+  Replace "THE WORKFORCE BEHIND THE NUMBERS" page with a combined ACCESS & WORKFORCE page.
+                                                                                                                                                                                                               
+  ACCESS section (top half):                                
+                                                                                                                                                                                                               
+  Section header: "ACCESS"                                  
+                                                                                                                                                                                                               
+  Patient Access driver block:                              
+  - Headline value: if data.patientAccessEnabled && (data.patientAccessValue ?? 0) > 0, show fmtCurrency(data.patientAccessValue); else show "Not Selected"                                                    
+  - Copy: "Time saved on documentation is only valuable if it's reinvested. At a {data.accessConversionPct ?? 25}% reinvestment rate — meaning {data.accessConversionPct ?? 25}% of recovered documentation 
+  time goes back into patient scheduling — that generates {data.additionalVisitsPerWeek ?? 0} additional visit{} per provider per week. Across {data.accessProviders ?? data.providers} providers seeing       
+  {data.projectedAdditionalVisits?.toLocaleString() ?? 0} additional patients annually at ${data.revenuePerVisit ?? 200} per visit: {fmtCurrency(data.patientAccessValue ?? 0)}."                        
+  - Methodology note: "Reinvestment rate reflects the portion of recovered documentation time realistically converted to schedule capacity. The remainder is absorbed into documentation quality, inbox        
+  management, and care transitions."
+                                                                                                                                                                                                               
+  WORKFORCE section (bottom half):                          
+                                                                                                                                                                                                               
+  Section header: "WORKFORCE"                                                                                                                                                                                  
+  
+  Clinician Sustainability driver block:                                                                                                                                                                       
+  - Headline value: if data.retentionValueEnabled && (data.retentionValue ?? 0) > 0, show fmtCurrency(data.retentionValue); else if data.sustainabilityEnabled, show {(data.hoursPerProviderPerWeekBack ?? 
+  0).toFixed(1)} hrs/week per provider; else show "Not Selected"                                                                                                                                           
+  - Copy (if retention quantified): "Primary care and specialty medicine have among the highest burnout rates in medicine — and documentation burden is the most-cited driver. Abridge returns                 
+  {(data.hoursPerProviderPerWeekBack ?? 0).toFixed(1)} hours per week per provider. At {data.annualTurnoverRate ?? 6}% annual turnover, {data.burnoutRelatedTurnoverPct ?? 40}% burnout-related, and 
+  ${(data.replacementCostPerProvider ?? 400000).toLocaleString()} to replace a departing physician, a {data.abridgeRetentionImpactPct ?? 10}% reduction in burnout-driven departures retains                   
+  {(data.providersRetained ?? 0).toFixed(1)} providers annually: {fmtCurrency(data.retentionValue ?? 0)}."                                                                                   
+  - Copy (if hours only): "Abridge returns {(data.hoursPerProviderPerWeekBack ?? 0).toFixed(1)} hours per week per provider — time that currently comes from the end of the clinical day. Whether that time    
+  goes back to patients, to administrative catch-up, or to simply leaving on time, it changes the experience of practicing medicine."                                                                          
+  - Methodology note: "Retention impact is modeled at the selected scenario. Validate using exit interview data to confirm burnout-related attribution."
+  - Source citation: "AMA National Physician Burnout Survey, 2024."                                                                                                                                            
+                                                                   
+  Keep PageFooter at bottom with correct page number.                                                                                                                                                          
+                                              
+  PAGE 3: REVENUE                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Replace "YOUR VALUE DRIVERS" page with a REVENUE page.                                                                                                                                                       
+                                                                                                                                                                                                               
+  Section header: "REVENUE"                                                                                                                                                                                    
+  Headline: "The notes were already earning this.\nThey just weren't capturing it."                                                                                                                            
+  Subheading: "Documentation completeness — not upcoding — is what changes here. The clinical complexity was delivered. The note needs to reflect it."
+                                              
+  Render three driver blocks (show each only if enabled, otherwise show a "not selected" placeholder):
+                                                                                                                                                                                                               
+  wRVU Improvement driver block (if data.wrvuEnabled && (data.annualWrvuValue ?? 0) > 0):                                                                                                                      
+  - Label: "wRVU IMPROVEMENT"                                                                                                                                                                                  
+  - Value: fmtCurrency(data.annualWrvuValue)                                                                                                                                                                   
+  - Copy: "At a {data.wrvuScenario} documentation improvement rate of {data.wrvuImprovementPct}% — the conservative range seen in ambulatory settings — that's {(data.wrvuLiftPerVisit ?? 0).toFixed(3)}       
+  additional wRVUs per visit, {Math.round(data.totalAdditionalWrvus ?? 0).toLocaleString()} total additional wRVUs at ${data.wrvuConversionFactor ?? 33}/wRVU and {data.wrvuRealizationRate ?? 75}%      
+  realization: {fmtCurrency(data.annualWrvuValue)}."                                                                                                                                                           
+  - Current baseline note: "Current average: {data.currentAvgWrvuPerVisit?.toFixed(1) ?? 1.8} wRVU per visit"
+                                                                                                                                                                                                               
+  HCC Capture driver block (if data.hccEnabled && (data.annualHccValue ?? 0) > 0):                                                                                                                             
+  - Label: "HCC CAPTURE"                                                                                                                                                                                       
+  - Value: fmtCurrency(data.annualHccValue)                                                                                                                                                                    
+  - Copy: "Medicare Advantage plans pay based on documented risk — and HCC gaps are common even in well-run practices. Your {data.medicareAdvantagePct ?? 20}% MA panel of {(data.maPatientPanel ??            
+  0).toLocaleString()} patients has an estimated {data.documentationGapRate ?? 12}% gap rate — {(data.patientsWithGaps ?? 0).toLocaleString()} patients with unrecaptured conditions. At            
+  {data.hccRecaptureTargetPct}% recapture of {data.avgMissedHccsPerPatient ?? 0.5} HCCs per patient, that's {Math.round(data.hccsDocumented ?? 0)} HCCs documented, each carrying a {data.rafImpactPerHcc ??   
+  0.15} RAF impact at ${(data.annualPaymentPerRaf ?? 10000).toLocaleString()}/RAF unit. At {data.hccRealizationRate ?? 40}% realization: {fmtCurrency(data.annualHccValue)}."                                
+  - Note: "HCC documentation reflects conditions that were clinically present but not captured in the note. This is a documentation completeness story."                                                       
+                                                                                                                                                                                                               
+  Denial Prevention driver block (if data.denialEnabled && (data.annualDenialValue ?? 0) > 0):                                                                                                                 
+  - Label: "DENIAL PREVENTION"                                                                                                                                                                                 
+  - Value: fmtCurrency(data.annualDenialValue)              
+  - Copy: "Your {data.baselineDenialRate ?? 8}% baseline denial rate generates {(data.totalDenials ?? 0).toLocaleString()} denied claims annually, of which {(data.unrecoverableDenials ?? 0).toLocaleString()}
+   ({data.unappealableDenialRate ?? 30}%) are unappealable due to documentation gaps. At a {data.preventionTargetPct}% reduction in documentation-related denials — the {data.denialPreventionScenario}        
+  scenario — that's {(data.denialsPrevented ?? 0).toLocaleString()} claims recovered at ${data.avgDeniedClaimValue ?? 200} each. At {data.denialRealizationRate ?? 60}% realization:                           
+  {fmtCurrency(data.annualDenialValue)}."                                                                                                                                                                      
+                                                            
+  Add a "NOT MODELED" callout at the bottom listing any disabled drivers (same pattern as the existing "WHAT WASN'T MODELED" section).                                                                         
+                                              
+  Keep PageFooter at bottom.                                                                                                                                                                                   
+                                                            
+  PAGE 4: DOWNSTREAM                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Add a new page (always rendered for outpatient) with section label "DOWNSTREAM".                                                                                                                             
+                                                                                                                                                                                                               
+  Headline: "Value that flows through the organization,\nnot just the visit."
+                                                                                                                                                                                                               
+  Subheading: "Complete outpatient documentation creates value that extends beyond the encounter — into specialist relationships, downstream care settings, and health system revenue. These outcomes are real 
+  but require your organization's data to size precisely. We don't model them. We name them so you can track them."                                                                                            
+                                                            
+  Show four downstream value blocks (no dollar figures):                                                                                                                                                       
+                                                            
+  1. Specialist Referral Quality                                                                                                                                                                               
+    - "When primary care documentation captures the full clinical picture, specialists receive context that reduces redundant testing and accelerates diagnosis. The documentation that follows the patient is 
+  the care handoff."                          
+  2. Ancillary and Lab Revenue                                                                                                                                                                                 
+    - "Additional outpatient visits create downstream ancillary revenue — labs, imaging, and procedures ordered at or following the encounter. A conservative estimate is $80–$150 in ancillary revenue per
+  incremental visit, though this varies by payer mix and service line."                                                                                                                                        
+  3. ED Diversion Through Chronic Disease Management
+    - "Better-documented primary care improves chronic disease management — reducing ED visits for ambulatory-sensitive conditions. Organizations with higher primary care documentation completeness show     
+  measurable reductions in preventable ED utilization."                                                                                                                                                        
+  4. Inpatient Transition Support                                                                                                                                                                              
+    - "Complete outpatient documentation reduces information gaps at hospital admission and supports care transitions — reducing the readmission risk that comes from missing chronic condition context."      
+                                                                                                                                                                                                               
+  End with a callout box: "HCC value from your MA population is already quantified in the Revenue section. Specialist referral quality and downstream organizational impact are not double-counted — they      
+  require your organization's data to size precisely. Ask your Abridge team for network-level outcome data from comparable deployments."                                                                       
+                                                                                                                                                                                                               
+  Keep PageFooter at bottom.                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  PAGE 5: THE INVESTMENT CASE                                                                                                                                                                                  
+                                                            
+  Keep existing investment case page content unchanged. Update page number to 5.
+                                                                                                                                                                                                               
+  PAGE 6: YOUR ASSESSMENT
+                                                                                                                                                                                                               
+  Keep existing assessment page content but update the value summary section to use the 4-bucket structure:
+                                                                                                                                                                                                               
+  Replace the existing TIME RECAPTURED / REVENUE OPTIMIZED rows with:
+  - ACCESS — data.patientAccessValue > 0 ? fmtCurrency(data.patientAccessValue) : "—" (Patient Access)                                                                                                         
+  - REVENUE — docQualVal > 0 ? fmtCurrency(docQualVal) : "—" (wRVU + HCC + Denials)                   
+  - WORKFORCE — show retention value if enabled, else hours per week, else "—"                                                                                                                                 
+  - DOWNSTREAM — "Org-level — not modeled"                                    
+                                                                                                                                                                                                               
+  Add a methodology box at the bottom:        
+                                                                                                                                                                                                               
+  METHODOLOGY                                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  Patient Access: Reinvestment rate ({data.accessConversionPct ?? 25}%) applied to recovered documentation time. Additional visits modeled at {data.revenuePerVisit ?? 200}/visit net new revenue with         
+  conservative capacity bounds. The reinvestment rate reflects partial conversion — not all recovered time returns to schedule capacity.                                                                       
+                                                                                                                                                                                                               
+  wRVU Improvement: {data.wrvuScenario} scenario applies a {data.wrvuImprovementPct}% documentation improvement rate to {data.totalWrvuEligibleEncounters?.toLocaleString() ?? 0} eligible encounters.         
+  Conservative range based on ambulatory documentation improvement studies. CMS conversion factor ${data.wrvuConversionFactor ?? 33} with {data.wrvuRealizationRate ?? 75}% realization.
+                                                                                                                                                                                                               
+  HCC Capture: Medicare Advantage documentation gap recapture. {data.hccRecaptureScenario} scenario at {data.hccRecaptureTargetPct}% recapture. RAF impact {data.rafImpactPerHcc ?? 0.15} per HCC at           
+  ${(data.annualPaymentPerRaf ?? 10000).toLocaleString()}/RAF unit. {data.hccRealizationRate ?? 40}% realization reflects contracting and coding lag.
+                                                                                                                                                                                                               
+  Denial Prevention: Documentation-related denials only. {data.denialPreventionScenario} scenario at {data.preventionTargetPct}% prevention. Unappealable subset ({data.unappealableDenialRate ?? 30}%) is the 
+  addressable opportunity. {data.denialRealizationRate ?? 60}% realization applied.
+                                                                                                                                                                                                               
+  Clinician Retention: AMA burnout data applied to {data.annualTurnoverRate ?? 6}% turnover rate, {data.burnoutRelatedTurnoverPct ?? 40}% burnout-related. Replacement cost ${(data.replacementCostPerProvider 
+  ?? 400000).toLocaleString()}. Retention impact at {data.abridgeRetentionImpactLabel ?? "typical"} scenario. Validate via exit interview data.
+                                                                                                                                                                                                               
+  Downstream: Not modeled. Named for tracking.                                                                                                                                                                 
+                                          
+  Keep PageFooter at bottom.                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  ---
+  IMPORTANT NOTES                                                                                                                                                                                              
+                                                            
+  1. Always 6 pages for outpatient. Remove the opHasDocQuality ? 6 : 5 conditional — outpatient always renders 6 pages now. Update totalPages accordingly.
+  2. The opHasDocQuality variable can remain for other conditional logic (like showing "not selected" placeholders vs. hiding driver blocks), but it no longer controls page count.
+  3. Keep all existing helper functions — getOutpatientObservation(), getOutpatientClosingQuote(), fmtCurrency(), fmtPct(), PageFooter — all reused unchanged.
+  4. Keep all existing styles — styles.page, styles.pageWrapper, styles.sectionLabel, styles.cardBg, styles.calloutBox, styles.divider, styles.thickDivider — no new styles needed.
+  5. Match the existing code style exactly — inline styles as objects, JSX with react-pdf primitives (<Page>, <View>, <Text>), Unicode escapes for em-dashes (\u2014) and apostrophes (\u2019).                
+  6. The non-outpatient PDF pages are untouched — only modify the {isOutpatient && (...)} block.                                                                                                               
+  7. ExploreModel.tsx only — do not touch ExploreFlow.tsx, ExploreValueDrivers.tsx, or any other file besides these two. 

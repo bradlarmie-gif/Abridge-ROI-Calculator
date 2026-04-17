@@ -1,0 +1,96 @@
+---                                         
+  I need you to restructure the outpatient care setting in this React/TypeScript ROI calculator to go from a 2-bucket model ("Efficiency Value" + "Documentation Quality") to a 4-bucket model: ACCESS,        
+  REVENUE, WORKFORCE, and DOWNSTREAM. This affects two files.                                                                                                                                                  
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ## BACKGROUND                                                                                                                                                                                                
+                                                                                                                                                                                                               
+  Current outpatient structure has two value buckets:                                                                                                                                                          
+  - **Efficiency Value**: Patient Access + Clinician Sustainability                                                                                                                                            
+  - **Documentation Quality**: wRVU Improvement + HCC Capture + Denial Prevention                                                                                                                              
+                                                                                 
+  New 4-bucket structure:                                                                                                                                                                                      
+  | Bucket | What it is | Drivers |                         
+  |--------|-----------|---------|                                                                                                                                                                             
+  | **ACCESS** | Time reinvested into patient capacity | Patient Access |
+  | **REVENUE** | Documentation completeness → reimbursement | wRVU + HCC + Denial Prevention |                                                                                                                
+  | **WORKFORCE** | Clinician sustainability and retention | Clinician Sustainability |        
+  | **DOWNSTREAM** | Connected organizational value (qualitative) | Specialist referrals, downstream volume, system revenue |                                                                                  
+                                                                                                                             
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ## FILE 1: client/src/pages/explore/ExploreModel.tsx                                                                                                                                                         
+                                                                                                                                                                                                               
+  ### What to find                                          
+  The "WHERE THE VALUE COMES FROM" section (search for the comment `{/* WHERE THE VALUE COMES FROM */}`). Inside the motion.div, there's a two-card grid for all care settings:                                
+                                                                                                                                                                                                               
+  ```tsx                                      
+  <div className="grid md:grid-cols-2 gap-4 sm:gap-6">                                                                                                                                                         
+    {/* Time/Efficiency Card */}                            
+    ...                                                                                                                                                                                                        
+    {/* Documentation Quality Card */}    
+    ...                                                                                                                                                                                                        
+  </div>                                                                                                                                                                                                       
+                                          
+  What to change                                                                                                                                                                                               
+                                                                                                                                                                                                               
+  Wrap this entire <div className="grid md:grid-cols-2 ...">...</div> block in a ternary. When isOutpatientSetting is true, render 4 cards. Otherwise render the unchanged 2-card grid.
+                                                                                                                                                                                                               
+  isOutpatientSetting is already defined near the top of the component.
+                                                                                                                                                                                                               
+  The following individual value variables are already computed as useMemos in the component and are in scope:
+  - patientAccessValue — Patient Access value                                                                                                                                                                  
+  - clinicianRetentionValue — Clinician Retention value     
+  - wrvuValue — wRVU improvement value                                                                                                                                                                         
+  - hccValue — HCC Capture value                            
+  - denialsValue — Denial Prevention value                                                                                                                                                                     
+  - docValue — sum of wrvuValue + hccValue + denialsValue   
+  - timeValue — sum of patientAccessValue + clinicianRetentionValue                                                                                                                                            
+  - hoursPerProviderPerWeek — hours saved per provider per week    
+  - derivedVisitsPerWeek — additional visits per week per provider                                                                                                                                             
+  - effectiveAccessProviders — number of providers with capacity                                                                                                                                               
+                                                                                                                                                                                                               
+  Also in scope: timeDriverInputs (from state.timeDriverInputs), docQualityInputs (from state.docQualityInputs).                                                                                               
+                                                                                                                                                                                                               
+  The 4-card grid to render when isOutpatientSetting                                                                                                                                                           
+                                                                                                                                                                                                               
+  Use className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4". Each card uses className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5".                                                                               
+                                                                                                                                                                                                               
+  Card 1 — ACCESS                                                                                                                                                                                              
+  - Label (text-xs font-bold uppercase): "Access"                                                                                                                                                              
+  - Hero value: if timeDriverInputs.patientAccessEnabled && patientAccessValue > 0, show formatCurrency(patientAccessValue) in text-lg font-bold text-[#EA2C00] with a red bar accent (<div className="w-1 h-6 
+  bg-[#EA2C00] rounded-full" />); else show "Not modeled" in text-base font-medium text-[#888888] with a gray bar (bg-[#888888])                                                                               
+  - Divider: <div className="h-px bg-[#E5E5E5] mb-3" />                                                                         
+  - Line items (text-xs space-y-1.5):                                                                                                                                                                          
+    - "Patient Access" → timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'
+    - Sub-detail (text-[10px] text-[#888888] pl-0): if enabled, show {derivedVisitsPerWeek} visits/wk · {effectiveAccessProviders} providers                                                                   
+                                                            
+  Card 2 — REVENUE                                                                                                                                                                                             
+  - Label: "Revenue"                                                                                                                                                                                           
+  - Hero value: if docValue > 0, show formatCurrency(docValue) with red bar; else show "Not modeled" with gray bar                                                                                             
+  - Divider                                                                                                                                                                                                    
+  - Line items:                                                                                                                                                                                                
+    - "wRVU Improvement" → docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'                                                                                                                      
+    - "HCC Capture" → docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'       
+    - "Denial Prevention" → docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'                                                                                                               
+                                              
+  Card 3 — WORKFORCE                                                                                                                                                                                           
+  - Label: "Workforce"                                                                                                                                                                                         
+  - Hero value:                                                                                                                                                                                                
+    - If timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0: formatCurrency(clinicianRetentionValue) with red bar                                    
+    - Else if timeDriverInputs.wellbeingEnabled: {hoursPerProviderPerWeek} hrs/wk with red bar                                                                                                                 
+    - Else: "Not modeled" with gray bar                                                                                                                                                                        
+  - Divider                                                 
+  - Line item:                            
+    - "Clinician Sustainability" → if wellbeingEnabled and calculateRetentionValue: formatCurrency(clinicianRetentionValue); else if wellbeingEnabled: {hoursPerProviderPerWeek} hrs/wk; else '—'              
+                                                                                                                                                                                                               
+  Card 4 — DOWNSTREAM                                                                                                                                                                                          
+  - Label: "Downstream"                                                                                                                                                                                        
+  - Hero value: "Connected value" in text-base font-medium text-[#888888] with gray bar
+  - Divider                                                                                                                                                                                                    
+  - Body text (text-xs text-[#888888]): "Specialist referral quality, ancillary revenue, and downstream care setting impact — not double-counted. Organization-specific sizing."
+                                                                                                                                                                                                               
+  Also: remove the "Connected Value" section that currently renders below the 2-card grid for outpatient only (it's inside {isOutpatientSetting && (<motion.div ...>)} and contains the "Connected Value"
+  heading with three driver cards about Specialist Referrals, Downstream Impact, and Organizational Revenue). This content is now represented by the Downstream card and the PDF, so the separate section below
+   the cards should be removed entirely for outpatient.

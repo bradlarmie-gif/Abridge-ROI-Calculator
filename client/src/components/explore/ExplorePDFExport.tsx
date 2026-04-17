@@ -798,7 +798,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
     }));
 
   const opHasDocQuality = isOutpatient && !!(data.wrvuEnabled || data.hccEnabled || data.denialEnabled);
-  const totalPages = isOutpatient ? (opHasDocQuality ? 6 : 5) : 5;
+  const totalPages = isOutpatient ? 6 : 5;
 
   const investmentDisplay = data.annualInvestment >= 1000 ? `$${Math.round(data.annualInvestment / 1000)}K/yr` : `$${Math.round(data.annualInvestment)}/yr`;
 
@@ -831,8 +831,8 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
     if (data.hccEnabled && safe(data.annualHccValue) > 0) activatedDocDriversList.push(`HCC capture (${fmtCurrency(safe(data.annualHccValue))})`);
     if (data.denialEnabled && safe(data.annualDenialValue) > 0) activatedDocDriversList.push(`denial prevention (${fmtCurrency(safe(data.annualDenialValue))})`);
 
-    let investmentPageNum = opHasDocQuality ? 5 : 4;
-    let assessmentPageNum = opHasDocQuality ? 6 : 5;
+    let investmentPageNum = 5;
+    let assessmentPageNum = 6;
 
     return (
       <Document>
@@ -889,43 +889,65 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={styles.thickDivider} />
 
-            <Text style={styles.sectionLabel}>TWO SOURCES OF VALUE</Text>
+            <Text style={styles.sectionLabel}>FOUR DRIVERS OF VALUE</Text>
             <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 8, lineHeight: 1.5 }}>
-              Ambient documentation creates value in two distinct ways. The first is time: when providers spend less time on notes, that time can flow back to patients, to breathing room, or to both. The second is documentation quality: when notes fully capture the complexity of what happened in the room, the revenue that was already earned gets properly coded and collected.
+              Outpatient value compounds across four connected dimensions. Access reinvests recovered time into patient capacity. Revenue captures the documentation completeness that turns delivered care into appropriate reimbursement. Workforce protects the providers doing the work. Downstream effects ripple through specialist referrals, ancillary revenue, and care continuity.
             </Text>
 
             <View style={styles.divider} />
 
-            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
               <View style={[styles.cardBg, { flex: 1 }]}>
                 <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                  TIME RECAPTURED
+                  ACCESS
                 </Text>
-                <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
-                  {effVal > 0 ? fmtCurrency(effVal) : "Not Measured"}
+                <Text style={{ fontSize: 22, fontWeight: "bold", color: safe(data.patientAccessValue) > 0 ? colors.primaryText : colors.secondary, marginBottom: 4 }}>
+                  {safe(data.patientAccessValue) > 0 ? fmtCurrency(safe(data.patientAccessValue)) : "Not Measured"}
                 </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>
-                  {timeRecapturedCopy}
-                </Text>
-                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
-                  The constraint is time. This is what changes when documentation gets faster.
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  Time recaptured from documentation, reinvested into patient capacity. Each additional visit creates immediate revenue and reduces access wait times.
                 </Text>
               </View>
 
               <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
                 <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                  REVENUE OPTIMIZED
+                  REVENUE
                 </Text>
-                <Text style={{ fontSize: 24, fontWeight: "bold", color: opHasDocQuality ? colors.primary : colors.secondary, marginBottom: 4 }}>
+                <Text style={{ fontSize: 22, fontWeight: "bold", color: docQualVal > 0 ? colors.primary : colors.secondary, marginBottom: 4 }}>
                   {docQualVal > 0 ? fmtCurrency(docQualVal) : "Not Modeled"}
                 </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>
-                  {opHasDocQuality
-                    ? `Better notes capture the complexity that\u2019s already there. ${activatedDocDriversList.join(", ")}. The notes drive the revenue.`
-                    : `No documentation quality drivers were selected for this assessment. wRVU improvement, HCC capture, and denial prevention are available to model \u2014 most organizations explore these at their 90-day review once baseline adoption is established.`}
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  Documentation completeness translates directly to coding accuracy {"\u2014"} wRVU lift, HCC recapture, and denial prevention are all documentation stories.
                 </Text>
-                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
-                  {opHasDocQuality ? "The notes drive the revenue." : ""}
+              </View>
+            </View>
+
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  WORKFORCE
+                </Text>
+                <Text style={{ fontSize: 22, fontWeight: "bold", color: (data.retentionValueEnabled && safe(data.retentionValue) > 0) || data.sustainabilityEnabled ? colors.primaryText : colors.secondary, marginBottom: 4 }}>
+                  {data.retentionValueEnabled && safe(data.retentionValue) > 0
+                    ? fmtCurrency(safe(data.retentionValue))
+                    : data.sustainabilityEnabled
+                      ? `${hrsPerWkBack.toFixed(1)} hrs/wk`
+                      : "Not Measured"}
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  Burnout is a documentation problem. Time returned to providers reduces the pressure that drives turnover in primary care and specialty practices.
+                </Text>
+              </View>
+
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  DOWNSTREAM
+                </Text>
+                <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.secondary, marginBottom: 4 }}>
+                  Org-Level
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  Complete outpatient documentation creates downstream value across the health system {"\u2014"} specialist context, ancillary revenue, and care continuity. Sized with your data, not this model.
                 </Text>
               </View>
             </View>
@@ -943,7 +965,90 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           </View>
         </Page>
 
-        {/* OUTPATIENT PAGE 2: THE WORKFORCE BEHIND THE NUMBERS */}
+        {/* OUTPATIENT PAGE 2: ACCESS & WORKFORCE */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>ACCESS</Text>
+            <Text style={styles.sectionHeadline}>Time recaptured becomes capacity.</Text>
+            <Text style={styles.body}>
+              Time saved on documentation is only valuable if it{"\u2019"}s reinvested. The reinvestment rate reflects the share of recovered documentation time that flows back into the schedule {"\u2014"} the rest is absorbed into documentation quality, inbox management, and care transitions.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                <View style={{ width: 3, backgroundColor: data.patientAccessEnabled && safe(data.patientAccessValue) > 0 ? colors.primary : colors.border, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Patient Access</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: data.patientAccessEnabled && safe(data.patientAccessValue) > 0 ? colors.primary : colors.secondary }}>
+                      {data.patientAccessEnabled && safe(data.patientAccessValue) > 0 ? fmtCurrency(safe(data.patientAccessValue)) : "Not Selected"}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                    At a {safe(data.accessConversionPct) || 25}% reinvestment rate {"\u2014"} meaning {safe(data.accessConversionPct) || 25}% of recovered documentation time goes back into patient scheduling {"\u2014"} that generates {safe(data.additionalVisitsPerWeek)} additional visit{safe(data.additionalVisitsPerWeek) === 1 ? "" : "s"} per provider per week. Across {fmtNum(safe(data.accessProviders) || data.providers)} providers seeing {fmtNum(safe(data.projectedAdditionalVisits))} additional patients annually at ${safe(data.revenuePerVisit) || 200} per visit: {fmtCurrency(safe(data.patientAccessValue))}.
+                  </Text>
+                  <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5, fontStyle: "italic" }}>
+                    Methodology: Reinvestment rate reflects the portion of recovered documentation time realistically converted to schedule capacity. The remainder is absorbed into documentation quality, inbox management, and care transitions.
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.thickDivider} />
+
+            <Text style={styles.sectionLabel}>WORKFORCE</Text>
+            <Text style={styles.sectionHeadline}>Burnout is a documentation problem.</Text>
+            <Text style={styles.body}>
+              Primary care and specialty medicine carry some of the highest burnout rates in medicine {"\u2014"} and documentation burden is the most-cited driver. Time returned to providers reduces the pressure that drives turnover.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                <View style={{ width: 3, backgroundColor: data.sustainabilityEnabled ? colors.primary : colors.border, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinician Sustainability</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: data.retentionValueEnabled && safe(data.retentionValue) > 0 ? colors.primary : data.sustainabilityEnabled ? colors.secondary : colors.tertiary }}>
+                      {data.retentionValueEnabled && safe(data.retentionValue) > 0
+                        ? fmtCurrency(safe(data.retentionValue))
+                        : data.sustainabilityEnabled
+                          ? `${hrsPerWkBack.toFixed(1)} hrs/wk per provider`
+                          : "Not Selected"}
+                    </Text>
+                  </View>
+                  {data.retentionValueEnabled && safe(data.retentionValue) > 0 ? (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      Abridge returns {hrsPerWkBack.toFixed(1)} hours per week per provider. At {safe(data.annualTurnoverRate) || 6}% annual turnover, {safe(data.burnoutRelatedTurnoverPct) || 40}% burnout-related, and ${(safe(data.replacementCostPerProvider) || 400000).toLocaleString()} to replace a departing physician, a {safe(data.abridgeRetentionImpactPct) || 10}% reduction in burnout-driven departures retains {(safe(data.providersRetained) || 0).toFixed(1)} providers annually: {fmtCurrency(safe(data.retentionValue))}.
+                    </Text>
+                  ) : data.sustainabilityEnabled ? (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      Abridge returns {hrsPerWkBack.toFixed(1)} hours per week per provider {"\u2014"} time that currently comes from the end of the clinical day. Whether it goes back to patients, to administrative catch-up, or to simply leaving on time, it changes the experience of practicing medicine.
+                    </Text>
+                  ) : (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      Sustainability was not selected for this assessment. Quantifying retention impact requires turnover and replacement-cost inputs from your workforce team.
+                    </Text>
+                  )}
+                  <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5, fontStyle: "italic", marginBottom: 2 }}>
+                    Methodology: Retention impact is modeled at the selected scenario. Validate using exit interview data to confirm burnout-related attribution.
+                  </Text>
+                  <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.4 }}>
+                    Source: AMA National Physician Burnout Survey, 2024.
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <PageFooter pageNum={2} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+          </View>
+        </Page>
+
+        {/* LEGACY OUTPATIENT PAGE 2 (REMOVED) — placeholder to preserve diff scope */}
+        {false && (
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>THE WORKFORCE BEHIND THE NUMBERS</Text>
@@ -1006,8 +1111,160 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
             <PageFooter pageNum={2} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
           </View>
         </Page>
+        )}
 
-        {/* OUTPATIENT PAGE 3: YOUR VALUE DRIVERS */}
+        {/* OUTPATIENT PAGE 3: REVENUE */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>REVENUE</Text>
+            <Text style={styles.sectionHeadline}>The notes were already earning this.{"\n"}They just weren{"\u2019"}t capturing it.</Text>
+            <Text style={styles.body}>
+              Documentation completeness {"\u2014"} not upcoding {"\u2014"} is what changes here. The clinical complexity was delivered. The note needs to reflect it.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>REVENUE DRIVERS</Text>
+
+            {data.wrvuEnabled && safe(data.annualWrvuValue) > 0 ? (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>wRVU IMPROVEMENT</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualWrvuValue))}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      At a {data.wrvuScenario || "typical"} documentation improvement rate of {safe(data.wrvuImprovementPct)}% {"\u2014"} the conservative range seen in ambulatory settings {"\u2014"} that{"\u2019"}s {(safe(data.wrvuLiftPerVisit) || 0).toFixed(3)} additional wRVUs per visit, {Math.round(safe(data.totalAdditionalWrvus) || 0).toLocaleString()} total additional wRVUs at ${safe(data.wrvuConversionFactor) || 33}/wRVU and {safe(data.wrvuRealizationRate) || 75}% realization: {fmtCurrency(safe(data.annualWrvuValue))}.
+                    </Text>
+                    <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5, fontStyle: "italic" }}>
+                      Current average: {(safe(data.currentAvgWrvuPerVisit) || 1.8).toFixed(1)} wRVU per visit
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.tertiary }}>wRVU IMPROVEMENT {"\u2014"} Not Selected</Text>
+                <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.5, marginTop: 4 }}>
+                  Requires baseline wRVU data per provider. Available to model once baseline data is established.
+                </Text>
+              </View>
+            )}
+
+            {data.hccEnabled && safe(data.annualHccValue) > 0 ? (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>HCC CAPTURE</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualHccValue))}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      Medicare Advantage plans pay based on documented risk {"\u2014"} and HCC gaps are common even in well-run practices. Your {safe(data.medicareAdvantagePct) || 20}% MA panel of {(safe(data.maPatientPanel) || 0).toLocaleString()} patients has an estimated {safe(data.documentationGapRate) || 12}% gap rate {"\u2014"} {(safe(data.patientsWithGaps) || 0).toLocaleString()} patients with unrecaptured conditions. At {safe(data.hccRecaptureTargetPct)}% recapture of {safe(data.avgMissedHccsPerPatient) || 0.5} HCCs per patient, that{"\u2019"}s {Math.round(safe(data.hccsDocumented) || 0)} HCCs documented, each carrying a {safe(data.rafImpactPerHcc) || 0.15} RAF impact at ${(safe(data.annualPaymentPerRaf) || 10000).toLocaleString()}/RAF unit. At {safe(data.hccRealizationRate) || 40}% realization: {fmtCurrency(safe(data.annualHccValue))}.
+                    </Text>
+                    <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5, fontStyle: "italic" }}>
+                      HCC documentation reflects conditions that were clinically present but not captured in the note. This is a documentation completeness story.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.tertiary }}>HCC CAPTURE {"\u2014"} Not Selected</Text>
+                <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.5, marginTop: 4 }}>
+                  Requires Medicare Advantage population size and current HCC capture rate to size accurately.
+                </Text>
+              </View>
+            )}
+
+            {data.denialEnabled && safe(data.annualDenialValue) > 0 ? (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>DENIAL PREVENTION</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualDenialValue))}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      Your {safe(data.baselineDenialRate) || 8}% baseline denial rate generates {(safe(data.totalDenials) || 0).toLocaleString()} denied claims annually, of which {(safe(data.unrecoverableDenials) || 0).toLocaleString()} ({safe(data.unappealableDenialRate) || 30}%) are unappealable due to documentation gaps. At a {safe(data.preventionTargetPct)}% reduction in documentation-related denials {"\u2014"} the {data.denialPreventionScenario || "typical"} scenario {"\u2014"} that{"\u2019"}s {(safe(data.denialsPrevented) || 0).toLocaleString()} claims recovered at ${safe(data.avgDeniedClaimValue) || 200} each. At {safe(data.denialRealizationRate) || 60}% realization: {fmtCurrency(safe(data.annualDenialValue))}.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.tertiary }}>DENIAL PREVENTION {"\u2014"} Not Selected</Text>
+                <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.5, marginTop: 4 }}>
+                  Requires current denial rate and average claim value from your revenue cycle team.
+                </Text>
+              </View>
+            )}
+
+            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>REVENUE SUBTOTAL</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{docQualVal > 0 ? fmtCurrency(docQualVal) : "Not Modeled"}</Text>
+            </View>
+
+            <PageFooter pageNum={3} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+          </View>
+        </Page>
+
+        {/* OUTPATIENT PAGE 4: DOWNSTREAM */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>DOWNSTREAM</Text>
+            <Text style={styles.sectionHeadline}>Value that flows through the organization,{"\n"}not just the visit.</Text>
+            <Text style={styles.body}>
+              Complete outpatient documentation creates value that extends beyond the encounter {"\u2014"} into specialist relationships, downstream care settings, and health system revenue. These outcomes are real but require your organization{"\u2019"}s data to size precisely. We don{"\u2019"}t model them. We name them so you can track them.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Specialist Referral Quality</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                When primary care documentation captures the full clinical picture, specialists receive context that reduces redundant testing and accelerates diagnosis. The documentation that follows the patient is the care handoff.
+              </Text>
+            </View>
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Ancillary and Lab Revenue</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                Additional outpatient visits create downstream ancillary revenue {"\u2014"} labs, imaging, and procedures ordered at or following the encounter. A conservative estimate is $80{"\u2013"}$150 in ancillary revenue per incremental visit, though this varies by payer mix and service line.
+              </Text>
+            </View>
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>ED Diversion Through Chronic Disease Management</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                Better-documented primary care improves chronic disease management {"\u2014"} reducing ED visits for ambulatory-sensitive conditions. Organizations with higher primary care documentation completeness show measurable reductions in preventable ED utilization.
+              </Text>
+            </View>
+
+            <View style={[styles.cardBg, { marginBottom: 10 }]}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Inpatient Transition Support</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                Complete outpatient documentation reduces information gaps at hospital admission and supports care transitions {"\u2014"} reducing the readmission risk that comes from missing chronic condition context.
+              </Text>
+            </View>
+
+            <View style={styles.calloutBox}>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
+                HCC value from your MA population is already quantified in the Revenue section. Specialist referral quality and downstream organizational impact are not double-counted {"\u2014"} they require your organization{"\u2019"}s data to size precisely. Ask your Abridge team for network-level outcome data from comparable deployments.
+              </Text>
+            </View>
+
+            <PageFooter pageNum={4} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
+          </View>
+        </Page>
+
+        {/* LEGACY OUTPATIENT VALUE DRIVERS / DOC QUALITY PAGES (REMOVED) */}
+        {false && (
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
@@ -1098,9 +1355,10 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
             <PageFooter pageNum={3} orgName={orgName} settingLabel="Outpatient" totalPages={totalPages} />
           </View>
         </Page>
+        )}
 
-        {/* OUTPATIENT PAGE 4 (conditional): DOCUMENTATION QUALITY */}
-        {opHasDocQuality && (
+        {/* OUTPATIENT PAGE 4 (conditional): DOCUMENTATION QUALITY — LEGACY, REPLACED BY REVENUE PAGE */}
+        {false && opHasDocQuality && (
           <Page size="LETTER" style={styles.page} wrap={false}>
             <View style={styles.pageWrapper}>
               <Text style={styles.sectionLabel}>DOCUMENTATION QUALITY</Text>
@@ -1357,20 +1615,14 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   VALUE SUMMARY
                 </Text>
                 <View style={{ marginBottom: 4 }}>
-                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>TIME RECAPTURED</Text>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>ACCESS</Text>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>Patient Access</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.patientAccessEnabled ? fmtCurrency(safe(data.patientAccessValue)) : "Not modeled"}</Text>
                   </View>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Clinician Wellbeing</Text>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
-                      {data.retentionValueEnabled ? fmtCurrency(safe(data.retentionValue)) : data.sustainabilityEnabled ? `${hrsPerWkBack.toFixed(1)} hrs/wk` : "Not modeled"}
-                    </Text>
-                  </View>
                 </View>
                 <View style={{ marginBottom: 4 }}>
-                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>REVENUE OPTIMIZED</Text>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>REVENUE</Text>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>wRVU Improvement</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.wrvuEnabled ? fmtCurrency(safe(data.annualWrvuValue)) : "Not modeled"}</Text>
@@ -1382,6 +1634,22 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>Denial Prevention</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.denialEnabled ? fmtCurrency(safe(data.annualDenialValue)) : "Not modeled"}</Text>
+                  </View>
+                </View>
+                <View style={{ marginBottom: 4 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>WORKFORCE</Text>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Clinician Sustainability</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
+                      {data.retentionValueEnabled ? fmtCurrency(safe(data.retentionValue)) : data.sustainabilityEnabled ? `${hrsPerWkBack.toFixed(1)} hrs/wk` : "Not modeled"}
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ marginBottom: 4 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>DOWNSTREAM</Text>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary, fontStyle: "italic" }}>Org-level outcomes</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary, fontStyle: "italic" }}>Not modeled</Text>
                   </View>
                 </View>
                 <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
