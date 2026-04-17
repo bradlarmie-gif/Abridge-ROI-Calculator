@@ -1642,11 +1642,11 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={[styles.calloutBox, { marginBottom: 0 }]}>
               <Text style={{ fontSize: 10, color: colors.primaryText, lineHeight: 1.5 }}>
-                Emergency medicine has one of the highest burnout rates in medicine {"\u2014"} not because the clinical work is unsustainable, but because the documentation load that follows it is. The same AMA data that shows office-based physicians spending more than 5 hours in the EHR for every 8 patient hours applies with equal force in the ED {"\u2014"} where the pace is faster, the documentation windows are shorter, and the cost of a slow note can be a patient who left without being seen. Time reclaimed from documentation in an ED doesn{"\u2019"}t stay abstract. It moves through the department in real time.
+                Emergency physicians face documentation burden comparable to any setting in medicine {"\u2014"} and with less tolerance for it. Faster pace, shorter windows between patients, and no scheduled time to chart: every minute spent at a terminal is a minute the next patient waits. The cost of slow documentation in an ED is immediate and visible in a way it isn{"\u2019"}t anywhere else.
               </Text>
               <View style={{ borderTopWidth: 0.5, borderTopColor: colors.border, paddingTop: 6, marginTop: 8 }}>
                 <Text style={{ fontSize: 8, color: "#888888" }}>
-                  Source: AMA National Physician Burnout Survey, 2024. EHR documentation time: Arndt et al., JAMIA, as cited by the American Medical Association, October 2024.
+                  Source: AMA National Physician Burnout Survey, 2024; ACEP emergency physician burnout survey data.
                 </Text>
               </View>
             </View>
@@ -1663,15 +1663,15 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               </View>
               <View style={{ width: 0.5, backgroundColor: colors.border }} />
               <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
-                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.minutesSavedPerEncounter} min/shift</Text>
-                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per physician, every shift.</Text>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.minutesSavedPerEncounter} min/encounter</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per physician, per encounter.</Text>
                 <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>The documentation window that closes before the next patient opens.</Text>
               </View>
               <View style={{ width: 0.5, backgroundColor: colors.border }} />
               <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
-                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.providers > 0 ? (data.hoursReturned / data.providers / 8).toFixed(1) : "0"} shifts/year</Text>
-                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per physician, returned.</Text>
-                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Full shifts of documentation time given back {"\u2014"} per physician, per year.</Text>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.providers > 0 ? Math.round(data.hoursReturned / data.providers) : 0} hrs/physician</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Documentation hours returned per physician.</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Across every Abridge-enabled encounter, all year.</Text>
               </View>
             </View>
 
@@ -2041,6 +2041,9 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>Admission Capture</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.admissionCaptureEnabled ? fmtCurrency(safe(data.annualAdmissionCaptureValue)) : "Not modeled"}</Text>
                   </View>
+                </View>
+                <View style={{ marginBottom: 4 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>WORKFORCE VALUE</Text>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>Clinician Wellbeing</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>

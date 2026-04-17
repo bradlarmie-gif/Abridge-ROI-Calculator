@@ -30,7 +30,7 @@ export default function ExploreTimeSavings({
   }, [state.annualEncounters, state.utilizationPercent]);
 
   const scenarioMinutes: Record<string, number> = isED 
-    ? { conservative: 2, typical: 3, aggressive: 4 }
+    ? { conservative: 5, typical: 7, aggressive: 9 }
     : isInpatient
       ? { conservative: 15, typical: 30, aggressive: 40 }  // Per admission for hospitalists
       : isNursing
