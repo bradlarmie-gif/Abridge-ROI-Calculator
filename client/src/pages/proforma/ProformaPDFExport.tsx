@@ -719,36 +719,27 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{s.label}</Text>
                     <Text style={{ fontSize: 8, color: colors.secondary }}>
-                      {s.pricingModel === "perEncounter"
-                        ? (() => {
-                            const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
-                            return [
-                              `Y1: ${fmtNum(ye.year1)}`,
-                              contractYears >= 2 ? `Y2: ${fmtNum(ye.year2)}` : null,
-                              contractYears >= 3 ? `Y3: ${fmtNum(ye.year3)}` : null,
-                            ].filter(Boolean).join(" \u2192 ") + " encounters";
-                          })()
-                        : s.yearlyProviders
-                        ? [
-                            `Y1: ${s.yearlyProviders.year1}`,
-                            contractYears >= 2 ? `Y2: ${s.yearlyProviders.year2}` : null,
-                            contractYears >= 3 ? `Y3: ${s.yearlyProviders.year3}` : null,
-                          ].filter(Boolean).join(" \u2192 ") + ` ${unitLabel(s.careSetting)}`
-                        : `${s.providerCount} \u2192 ${s.fullScaleProviders || s.providerCount} ${unitLabel(s.careSetting)}`} {"\u00B7"} {s.pricingModel === "perEncounter" && s.yearlyUtilization
-                        ? [
-                            `Y1: ${s.yearlyUtilization.year1}%`,
-                            contractYears >= 2 ? `Y2: ${s.yearlyUtilization.year2}%` : null,
-                            contractYears >= 3 ? `Y3: ${s.yearlyUtilization.year3}%` : null,
-                          ].filter(Boolean).join(" \u2192 ") + " util"
-                        : `${s.utilizationPercent}% utilization`} {"\u00B7"} {(() => {
+                      {(() => {
+                        const finalYearKey = (contractYears >= 3 ? "year3" : contractYears >= 2 ? "year2" : "year1") as "year1" | "year2" | "year3";
+                        const countPart = s.pricingModel === "perEncounter"
+                          ? (() => {
+                              const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
+                              return `${fmtNum(ye[finalYearKey])} encounters`;
+                            })()
+                          : s.yearlyProviders
+                          ? `${fmtNum(s.yearlyProviders[finalYearKey])} ${unitLabel(s.careSetting)}`
+                          : `${fmtNum(s.fullScaleProviders || s.providerCount)} ${unitLabel(s.careSetting)}`;
+                        const utilPart = s.pricingModel === "perEncounter" && s.yearlyUtilization
+                          ? `${s.yearlyUtilization[finalYearKey]}% util`
+                          : `${s.utilizationPercent}% utilization`;
                         const yp = s.yearlyPricing;
                         const price = s.pricingModel === "annualFlat"
-                          ? (yp?.year1 ?? s.annualLicenseFee ?? 0)
+                          ? (yp?.[finalYearKey] ?? s.annualLicenseFee ?? 0)
                           : s.pricingModel === "perEncounter"
-                          ? (yp?.year1 ?? s.costPerEncounter ?? 0)
-                          : (yp?.year1 ?? s.costPerUnit);
+                          ? (yp?.[finalYearKey] ?? s.costPerEncounter ?? 0)
+                          : (yp?.[finalYearKey] ?? s.costPerUnit);
                         const suffix = s.pricingModel === "annualFlat" ? "/yr flat" : s.pricingModel === "perEncounter" ? "/encounter" : `/${unitLabel(s.careSetting, false)}/mo`;
-                        return `${fmtPrice(price)}${suffix}`;
+                        return `${countPart} \u00B7 ${utilPart} \u00B7 ${fmtPrice(price)}${suffix}`;
                       })()}
                     </Text>
                   </View>
