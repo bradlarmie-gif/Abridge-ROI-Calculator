@@ -1635,12 +1635,62 @@ export default function ExploreModel({
 
           {isED ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" data-testid="ed-four-bucket-grid">
+              {/* QUALITY Card */}
+              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ed-quality">
+                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Quality</p>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                  <p className="text-base font-medium text-[#888888]" data-testid="text-quality-value">Measured, not modeled</p>
+                </div>
+                <div className="h-px bg-[#E5E5E5] mb-3" />
+                <p className="text-xs text-[#888888]">Sepsis & stroke documentation, obs/admit status defense, and readmission prevention — reported at 90 days post-deployment.</p>
+              </div>
+
+              {/* WORKFORCE Card */}
+              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ed-workforce">
+                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Workforce</p>
+                <div className="flex items-center gap-2 mb-3">
+                  {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0 ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-workforce-value">{formatCurrency(clinicianRetentionValue)}</p>
+                    </>
+                  ) : timeDriverInputs.wellbeingEnabled ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-workforce-value">{hoursPerProviderPerWeek} hrs/wk</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                      <p className="text-base font-medium text-[#888888]" data-testid="text-workforce-value">Not modeled</p>
+                    </>
+                  )}
+                </div>
+                <div className="h-px bg-[#E5E5E5] mb-3" />
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">Clinician Wellbeing</span>
+                    <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
+                  </div>
+                </div>
+              </div>
+
               {/* CAPACITY Card */}
               <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ed-capacity">
                 <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Capacity</p>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                  <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-capacity-value">{formatCurrency(edLwbsValue + edAdmissionCaptureValue)}</p>
+                  {(edLwbsValue + edAdmissionCaptureValue) > 0 ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-capacity-value">{formatCurrency(edLwbsValue + edAdmissionCaptureValue)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                      <p className="text-base font-medium text-[#888888]" data-testid="text-capacity-value">Not modeled</p>
+                    </>
+                  )}
                 </div>
                 <div className="h-px bg-[#E5E5E5] mb-3" />
                 <div className="space-y-1.5 text-xs">
@@ -1682,47 +1732,6 @@ export default function ExploreModel({
                     <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
                   </div>
                 </div>
-              </div>
-
-              {/* WORKFORCE Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ed-workforce">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Workforce</p>
-                <div className="flex items-center gap-2 mb-3">
-                  {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0 ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-workforce-value">{formatCurrency(clinicianRetentionValue)}</p>
-                    </>
-                  ) : timeDriverInputs.wellbeingEnabled ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-workforce-value">{hoursPerProviderPerWeek} hrs/wk</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-workforce-value">Not modeled</p>
-                    </>
-                  )}
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Clinician Wellbeing</span>
-                    <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* QUALITY Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ed-quality">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Quality</p>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                  <p className="text-base font-medium text-[#888888]" data-testid="text-quality-value">Measured, not modeled</p>
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <p className="text-xs text-[#888888]">Sepsis & stroke documentation, obs/admit status defense, and readmission prevention — reported at 90 days post-deployment.</p>
               </div>
             </div>
           ) : isOutpatientSetting ? (

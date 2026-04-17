@@ -1860,43 +1860,8 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={styles.divider} />
 
-            {/* 2x2 grid */}
+            {/* 2x2 grid: QUALITY / WORKFORCE on top, CAPACITY / REVENUE on bottom */}
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-              <View style={[styles.cardBg, { flex: 1 }]}>
-                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                  REVENUE
-                </Text>
-                <Text style={{ fontSize: 22, fontWeight: "bold", color: edHasDocQuality && docQualVal > 0 ? colors.primary : colors.secondary, marginBottom: 4 }}>
-                  {docQualVal > 0 ? fmtCurrency(docQualVal) : "Not Modeled"}
-                </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                  E&M level accuracy and denial prevention {"\u2014"} documentation completeness translates directly to reimbursement.
-                </Text>
-              </View>
-              <View style={[styles.cardBg, { flex: 1 }]}>
-                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                  CAPACITY
-                </Text>
-                <Text style={{ fontSize: 22, fontWeight: "bold", color: edCapacityVal > 0 ? colors.primary : colors.secondary, marginBottom: 4 }}>
-                  {edCapacityVal > 0 ? fmtCurrency(edCapacityVal) : "Not Modeled"}
-                </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                  LWBS recovery and admission capture {"\u2014"} faster documentation cycles mean fewer patients leave before being seen.
-                </Text>
-              </View>
-            </View>
-            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
-              <View style={[styles.cardBg, { flex: 1 }]}>
-                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                  WORKFORCE
-                </Text>
-                <Text style={{ fontSize: 22, fontWeight: "bold", color: edWorkforceVal > 0 ? colors.primary : colors.secondary, marginBottom: 4 }}>
-                  {edWorkforceVal > 0 ? fmtCurrency(edWorkforceVal) : data.sustainabilityEnabled ? `${hrsPerWkBack.toFixed(1)} hrs/wk` : "Not Modeled"}
-                </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                  Physician retention {"\u2014"} documentation burden is the most-cited driver of emergency medicine burnout and departures.
-                </Text>
-              </View>
               <View style={[styles.cardBg, { flex: 1 }]}>
                 <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
                   QUALITY
@@ -1905,7 +1870,44 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   Measured, Not Modeled
                 </Text>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                  Documentation completeness, sepsis/stroke protocol adherence, and CDI query reduction {"\u2014"} outcomes reported at 90 days.
+                  Sepsis and stroke protocol documentation, observation vs. admission status defense, and readmission prevention. Outcomes reported at 90 days {"\u2014"} not estimated upfront.
+                </Text>
+              </View>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  WORKFORCE
+                </Text>
+                <Text style={{ fontSize: 22, fontWeight: "bold", color: edWorkforceVal > 0 ? colors.primary : colors.secondary, marginBottom: 4 }}>
+                  {edWorkforceVal > 0 ? fmtCurrency(edWorkforceVal) : data.sustainabilityEnabled ? "Qualitative" : "Not Modeled"}
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  Emergency medicine has the highest burnout rate in medicine. Documentation burden is the most-cited driver. Time returned from charting changes what it feels like to practice in an ED.
+                </Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  CAPACITY
+                </Text>
+                <Text style={{ fontSize: 22, fontWeight: "bold", color: edCapacityVal > 0 ? colors.primary : colors.secondary, marginBottom: 4 }}>
+                  {edCapacityVal > 0 ? fmtCurrency(edCapacityVal) : "Not Measured"}
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  When physicians spend less time charting between patients, they are available to see the next patient sooner. That shortens wait time {"\u2014"} the primary driver of LWBS.
+                </Text>
+              </View>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  REVENUE
+                </Text>
+                <Text style={{ fontSize: 22, fontWeight: "bold", color: edHasDocQuality && docQualVal > 0 ? colors.primary : colors.secondary, marginBottom: 4 }}>
+                  {docQualVal > 0 ? fmtCurrency(docQualVal) : "Not Modeled"}
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  {edHasDocQuality
+                    ? "E&M level accuracy and denial prevention \u2014 documentation completeness translates directly to reimbursement."
+                    : "No documentation quality drivers were selected. E&M level accuracy and denial prevention are available to model \u2014 both are high-impact in ED settings."}
                 </Text>
               </View>
             </View>
@@ -1923,7 +1925,69 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           </View>
         </Page>
 
-        {/* ED PAGE 2: CAPACITY & REVENUE */}
+        {/* ED PAGE 2: WORKFORCE */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>WORKFORCE</Text>
+            <Text style={styles.sectionHeadline}>The Department That Holds Onto Its People.</Text>
+            <Text style={styles.body}>
+              ED physician burnout is not a soft cost. It is a documented driver of turnover, and turnover in emergency medicine is among the most expensive in healthcare. Returning hours of cognitive work to physicians {"\u2014"} reliably, every shift {"\u2014"} is the lever that moves retention.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>WORKFORCE</Text>
+
+            {data.sustainabilityEnabled && (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinician Retention</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: data.retentionValueEnabled ? colors.primary : colors.secondary }}>
+                        {data.retentionValueEnabled ? fmtCurrency(safe(data.retentionValue)) : `${hrsPerWkBack.toFixed(1)} hrs/wk per physician`}
+                      </Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      Abridge returns {hrsPerWkBack.toFixed(1)} hours per week to each physician {"\u2014"} time previously spent at a terminal, now available for patient care, recovery between shifts, or the cognitive reset that makes the next shift sustainable. Across {fmtNum(data.providers)} physicians, that is {fmtNum(data.hoursReturned)} hours returned annually.
+                    </Text>
+                    {data.retentionValueEnabled ? (
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                        At your {safe(data.annualTurnoverRate)}% annual turnover rate and {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution {"\u2014"} the {data.abridgeRetentionImpactLabel || "typical"} scenario in the AMA/MGMA literature {"\u2014"} Abridge{"\u2019"}s estimated retention impact is {Math.round(safe(data.providersRetained) ?? 0)} physicians retained per year. At {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost per departing physician, that is {fmtCurrency(safe(data.retentionValue))} in avoided turnover annually.
+                      </Text>
+                    ) : (
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                        Emergency medicine has among the highest burnout rates in medicine. Documentation burden is consistently cited as the primary driver. {hrsPerWkBack.toFixed(1)} hours per week is not a large number in isolation {"\u2014"} but multiplied across {fmtNum(data.providers)} physicians and compounded over three years of shifts, it is the difference between a department that loses physicians and one that keeps them.
+                      </Text>
+                    )}
+                    <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.4 }}>
+                      Source: AMA National Physician Burnout Survey 2024; MGMA emergency physician replacement cost benchmarks. Documentation burden cited as the leading modifiable driver of ED burnout.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>WORKFORCE SUBTOTAL</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>
+                {edWorkforceVal > 0 ? fmtCurrency(edWorkforceVal) : data.sustainabilityEnabled ? `${hrsPerWkBack.toFixed(1)} hrs/wk per physician` : "Not modeled"}
+              </Text>
+            </View>
+
+            <View style={[styles.calloutBox]}>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
+                Retention is the longest-tail value Abridge produces in an ED. The financial impact compounds: the physician you don{"\u2019"}t lose this year is the physician who isn{"\u2019"}t a $300K{"\u2013"}$500K replacement cost next year, and isn{"\u2019"}t a 9{"\u2013"}12 month vacancy gap absorbed by your remaining team.
+              </Text>
+            </View>
+
+            <PageFooter pageNum={2} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
+          </View>
+        </Page>
+
+        {/* ED PAGE 3: CAPACITY & REVENUE */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>CAPACITY & REVENUE</Text>
@@ -2034,68 +2098,6 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 </View>
               </>
             )}
-
-            <PageFooter pageNum={2} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
-          </View>
-        </Page>
-
-        {/* ED PAGE 3: WORKFORCE */}
-        <Page size="LETTER" style={styles.page} wrap={false}>
-          <View style={styles.pageWrapper}>
-            <Text style={styles.sectionLabel}>WORKFORCE</Text>
-            <Text style={styles.sectionHeadline}>The Department That Holds Onto Its People.</Text>
-            <Text style={styles.body}>
-              ED physician burnout is not a soft cost. It is a documented driver of turnover, and turnover in emergency medicine is among the most expensive in healthcare. Returning hours of cognitive work to physicians {"\u2014"} reliably, every shift {"\u2014"} is the lever that moves retention.
-            </Text>
-
-            <View style={styles.divider} />
-
-            <Text style={styles.sectionLabelGray}>WORKFORCE</Text>
-
-            {data.sustainabilityEnabled && (
-              <View style={[styles.cardBg, { marginBottom: 8 }]}>
-                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinician Retention</Text>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: data.retentionValueEnabled ? colors.primary : colors.secondary }}>
-                        {data.retentionValueEnabled ? fmtCurrency(safe(data.retentionValue)) : `${hrsPerWkBack.toFixed(1)} hrs/wk per physician`}
-                      </Text>
-                    </View>
-                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Abridge returns {hrsPerWkBack.toFixed(1)} hours per week to each physician {"\u2014"} time previously spent at a terminal, now available for patient care, recovery between shifts, or the cognitive reset that makes the next shift sustainable. Across {fmtNum(data.providers)} physicians, that is {fmtNum(data.hoursReturned)} hours returned annually.
-                    </Text>
-                    {data.retentionValueEnabled ? (
-                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                        At your {safe(data.annualTurnoverRate)}% annual turnover rate and {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution {"\u2014"} the {data.abridgeRetentionImpactLabel || "typical"} scenario in the AMA/MGMA literature {"\u2014"} Abridge{"\u2019"}s estimated retention impact is {Math.round(safe(data.providersRetained) ?? 0)} physicians retained per year. At {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost per departing physician, that is {fmtCurrency(safe(data.retentionValue))} in avoided turnover annually.
-                      </Text>
-                    ) : (
-                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                        Emergency medicine has among the highest burnout rates in medicine. Documentation burden is consistently cited as the primary driver. {hrsPerWkBack.toFixed(1)} hours per week is not a large number in isolation {"\u2014"} but multiplied across {fmtNum(data.providers)} physicians and compounded over three years of shifts, it is the difference between a department that loses physicians and one that keeps them.
-                      </Text>
-                    )}
-                    <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.4 }}>
-                      Source: AMA National Physician Burnout Survey 2024; MGMA emergency physician replacement cost benchmarks. Documentation burden cited as the leading modifiable driver of ED burnout.
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
-
-            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>WORKFORCE SUBTOTAL</Text>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>
-                {edWorkforceVal > 0 ? fmtCurrency(edWorkforceVal) : data.sustainabilityEnabled ? `${hrsPerWkBack.toFixed(1)} hrs/wk per physician` : "Not modeled"}
-              </Text>
-            </View>
-
-            <View style={[styles.calloutBox]}>
-              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
-                Retention is the longest-tail value Abridge produces in an ED. The financial impact compounds: the physician you don{"\u2019"}t lose this year is the physician who isn{"\u2019"}t a $300K{"\u2013"}$500K replacement cost next year, and isn{"\u2019"}t a 9{"\u2013"}12 month vacancy gap absorbed by your remaining team.
-              </Text>
-            </View>
 
             <PageFooter pageNum={3} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
           </View>
@@ -2404,11 +2406,23 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
                   HOW WE CALCULATED THIS
                 </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  All figures are built from your inputs {"\u2014"} not industry averages applied generically. Where assumptions were required (LWBS reduction rates, realization rates, admission conversion), we used the conservative end of observed Abridge deployment data.
+                <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 3 }}>
+                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>LWBS Recovery:</Text> ACEP/AHRQ literature. Mechanism: documentation speed {"\u2192"} physician availability {"\u2192"} wait time {"\u2192"} LWBS rate. Reduction scenario applied to annual walkout volume at selected realization rate.
                 </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginTop: 4 }}>
-                  LWBS recovery uses a 75% realization (not all recovered patients complete visits) and 40% for Admission Capture (bed availability and payer mix constraints). The goal is a defensible starting point, not a ceiling.
+                <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 3 }}>
+                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>Admission Capture:</Text> 15{"\u2013"}20% of LWBS patients meet inpatient admission criteria per published literature. Revenue reflects ED-to-admission contribution, not full hospitalization value. Realization rate applied for payer mix and bed availability.
+                </Text>
+                <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 3 }}>
+                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>E&M Level Accuracy:</Text> ED improvement range 1{"\u2013"}4% (acute care settings). Default wRVU baseline 1.6 (unselected ED population). CMS conversion factor with realization adjustment.
+                </Text>
+                <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 3 }}>
+                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>Denial Prevention:</Text> Conservative 15% / Typical 30% / Aggressive 50% reduction in documentation-related denials. Root cause: medical necessity language, physical exam documentation, admission/discharge rationale.
+                </Text>
+                <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 3 }}>
+                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>Clinician Retention:</Text> Emergency medicine burnout rate per AMA. Documentation burden cited as primary driver. Replacement cost per MGMA. Retention impact at selected scenario {"\u2014"} validate via exit interview data.
+                </Text>
+                <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
+                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>Quality:</Text> Not modeled. Measured at 90+ days post-deployment.
                 </Text>
               </View>
             </View>
