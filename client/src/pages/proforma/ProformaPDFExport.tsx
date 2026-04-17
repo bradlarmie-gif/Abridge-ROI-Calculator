@@ -1214,7 +1214,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                     <Text style={{ fontSize: 10, fontWeight: "bold" }}>{fmtNum(totalActive)}</Text>
                   </View>
                   <View>
-                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Adoption Rate</Text>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase" }}>Active Coverage</Text>
                     <Text style={{ fontSize: 10, fontWeight: "bold" }}>{allPerEncounter ? encUtilPct : adoptionPct}%</Text>
                   </View>
                   <View>
@@ -1231,6 +1231,10 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               </View>
             );
           })}
+
+          <Text style={{ fontSize: 7, color: colors.tertiary, fontStyle: "italic", marginTop: 2, marginBottom: 4, lineHeight: 1.4 }}>
+            Active Coverage = average share of {allPerEncounter ? "encounters covered" : `${unitLabel(settings[0]?.careSetting || "outpatient")} actively documenting`} over the year, after the implementation ramp and any mid-year expansion. It converges to your steady-state utilization assumption ({allPerEncounter ? `${(settings[0]?.yearlyUtilization?.year1 ?? 0)}–${(settings[0]?.yearlyUtilization?.[(contractYears >= 3 ? "year3" : contractYears >= 2 ? "year2" : "year1") as "year1" | "year2" | "year3"] ?? 0)}%` : `${settings[0]?.utilizationPercent ?? 0}%`}) once everyone is fully onboarded.
+          </Text>
 
           {totalAllValue > 0 && (
             <>
