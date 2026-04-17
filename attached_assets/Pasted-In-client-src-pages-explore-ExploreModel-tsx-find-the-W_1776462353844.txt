@@ -1,0 +1,64 @@
+In `client/src/pages/explore/ExploreModel.tsx`, find the "WHERE THE VALUE COMES FROM" section (search for the comment `{/* WHERE THE VALUE COMES FROM */}`). Inside the motion.div that follows it, there is
+  a two-card grid that renders for all care settings:                                                                                                                                                         
+                                                                                                                                                                                                               
+  ```tsx                                  
+  <div className="grid md:grid-cols-2 gap-4 sm:gap-6">                                                                                                                                                         
+    {/* Time/Efficiency Card */}                                                                                                                                                                               
+    ...                         
+    {/* Documentation Quality Card */}                                                                                                                                                                         
+    ...                                                     
+  </div>
+                                                                                                                                                                                                               
+  Wrap this entire <div className="grid md:grid-cols-2 ...">...</div> block in a ternary so that when isED is true, 4 cards render instead of 2. When isED is false, the existing 2-card grid renders
+  unchanged.                                                                                                                                                                                                   
+                                                            
+  The isED variable is already defined at the top of the component as const isED = state.careSetting === 'ed'.
+                                                                                                                                                                                                               
+  The following individual value variables are already computed as useMemos in the component and are in scope:
+  - edLwbsValue — LWBS Recovery value                                                                                                                                                                          
+  - edAdmissionCaptureValue — Admission Capture value       
+  - clinicianRetentionValue — Clinician Retention value                                                                                                                                                        
+  - wrvuValue — E&M level accuracy value                    
+  - denialsValue — Denial Prevention value                                                                                                                                                                     
+  - docValue — sum of documentation quality values (wrvuValue + denialsValue)
+  - hoursPerProviderPerWeek — hours saved per provider per week                                                                                                                                                
+                                                               
+  Also in scope: timeDriverInputs (from state.timeDriverInputs), docQualityInputs (from state.docQualityInputs).                                                                                               
+                                                                                                                                                                                                               
+  The new ED 4-card layout should use className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" and contain these four cards, each using className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5":                      
+                                                                                                                                                                                                               
+  Card 1 — CAPACITY                                                                                                                                                                                            
+  - Label: "Capacity" (uppercase, text-xs font-bold)                                                                                                                                                           
+  - Hero value: formatCurrency(edLwbsValue + edAdmissionCaptureValue) in text-lg font-bold text-[#EA2C00] with the red bar accent (w-1 h-6 bg-[#EA2C00] rounded-full)                                          
+  - Divider (h-px bg-[#E5E5E5])                                                                                                                                                                                
+  - Two line items (text-xs, flex justify-between gap-1):   
+    - "LWBS Recovery" → timeDriverInputs.edLwbsEnabled ? formatCurrency(edLwbsValue) : '—'                                                                                                                     
+    - "Admission Capture" → timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled ? formatCurrency(edAdmissionCaptureValue) : '—'
+                                                                                                                                                                                                               
+  Card 2 — REVENUE                                                                                                                                                                                             
+  - Label: "Revenue"                                                                                                                                                                                           
+  - Hero value: if docValue > 0 show formatCurrency(docValue) in text-lg font-bold text-[#EA2C00]; else show "Not modeled" in text-base font-medium text-[#888888] (no red bar, use a gray bar bg-[#888888]    
+  instead when not modeled)                                                                                                                                                                                    
+  - Divider                                                                                                                                                                                                    
+  - Two line items:                                                                                                                                                                                            
+    - "E&M Accuracy" → docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'
+    - "Denial Prevention" → docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'                                                                                                               
+                                              
+  Card 3 — WORKFORCE                                                                                                                                                                                           
+  - Label: "Workforce"                                      
+  - Hero value:                                                                                                                                                                                                
+    - If timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0: show formatCurrency(clinicianRetentionValue) in text-lg font-bold text-[#EA2C00] with   
+  red bar                                                                                                                                                                                                      
+    - Else if timeDriverInputs.wellbeingEnabled: show {hoursPerProviderPerWeek} hrs/wk in text-lg font-bold text-[#EA2C00] with red bar                                                                        
+    - Else: show "Not modeled" in text-base font-medium text-[#888888] with gray bar                                                   
+  - Divider                                                                         
+  - One line item:                                                                                                                                                                                             
+    - "Clinician Wellbeing" → if wellbeingEnabled and calculateRetentionValue: formatCurrency(clinicianRetentionValue); else if wellbeingEnabled: {hoursPerProviderPerWeek} hrs/wk; else '—'
+                                                                                                                                                                                                               
+  Card 4 — QUALITY                                                                                                                                                                                             
+  - Label: "Quality"                                                                                                                                                                                           
+  - Hero value: "Measured, not modeled" in text-base font-medium text-[#888888] with gray bar (w-1 h-6 bg-[#888888] rounded-full)                                                                              
+  - Divider                                                                                                                                                                                                    
+  - Body text (text-xs text-[#888888]): "Sepsis & stroke documentation, obs/admit status defense, and readmission prevention — reported at 90 days post-deployment."
+                                                                                                                                                                                                               
+  The existing 2-card grid (for non-ED care settings) should remain completely unchanged.

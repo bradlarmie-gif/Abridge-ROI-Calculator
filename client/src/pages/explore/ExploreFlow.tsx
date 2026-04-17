@@ -584,7 +584,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         if (newCareSetting === 'ed') {
           fresh.docQualityInputs = {
             ...fresh.docQualityInputs,
-            currentWrvu: 2.5,
+            currentWrvu: 1.6,
             denialRate: 10,
             avgClaimValue: 300,
           };
@@ -788,11 +788,16 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
   const docValue = useMemo(() => {
     const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
     const { docQualityInputs } = state;
+    const isEDLocal = state.careSetting === 'ed';
     let total = 0;
     
-    const wrvuScenarios: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
+    const wrvuScenarios: Record<string, number> = isEDLocal
+      ? { conservative: 1, typical: 2.5, aggressive: 4 }
+      : { conservative: 2, typical: 5, aggressive: 7 };
     const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
-    const denialsScenarios: Record<string, number> = { conservative: 25, typical: 50, aggressive: 75 };
+    const denialsScenarios: Record<string, number> = isEDLocal
+      ? { conservative: 15, typical: 30, aggressive: 50 }
+      : { conservative: 25, typical: 50, aggressive: 75 };
 
     // wRVU
     if (docQualityInputs.wrvuEnabled) {

@@ -141,9 +141,14 @@ export default function ExploreModel({
 
   // Doc value breakdown
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
-  const wrvuScenarios: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
+  const isEDForScenarios = state.careSetting === 'ed';
+  const wrvuScenarios: Record<string, number> = isEDForScenarios
+    ? { conservative: 1, typical: 2.5, aggressive: 4 }
+    : { conservative: 2, typical: 5, aggressive: 7 };
   const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
-  const denialsScenarios: Record<string, number> = { conservative: 25, typical: 50, aggressive: 75 };
+  const denialsScenarios: Record<string, number> = isEDForScenarios
+    ? { conservative: 15, typical: 30, aggressive: 50 }
+    : { conservative: 25, typical: 50, aggressive: 75 };
 
   const wrvuValue = useMemo(() => {
     if (!docQualityInputs.wrvuEnabled) return 0;
@@ -983,7 +988,8 @@ export default function ExploreModel({
           const admittedPatients = lwbsRecovered * (timeDriverInputs.edAdmissionRate / 100);
           const admissionGross = admittedPatients * timeDriverInputs.edAdmissionRevenue;
           const admissionNet = Math.round(admissionGross * (timeDriverInputs.edAdmissionRealization / 100));
-          const edThroughputVal = edLwbsValue + edAdmissionCaptureValue + clinicianRetentionValue;
+          const edCapacityVal = edLwbsValue + edAdmissionCaptureValue;
+          const edWorkforceVal = clinicianRetentionValue;
 
           return {
             throughputAllocationPct: edThroughputPct,
@@ -995,8 +1001,10 @@ export default function ExploreModel({
             hoursPerProviderPerWeekBack: edHrsPerWkBack,
             sustainabilityEnabled: timeDriverInputs.wellbeingEnabled,
             retentionValueEnabled: timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue,
-            throughputValue: edThroughputVal,
-            efficiencyValue: edThroughputVal,
+            throughputValue: edCapacityVal,
+            efficiencyValue: edCapacityVal,
+            edCapacityValue: edCapacityVal,
+            edWorkforceValue: edWorkforceVal,
             documentationQualityValue: docValue,
 
             lwbsEnabled: timeDriverInputs.edLwbsEnabled,

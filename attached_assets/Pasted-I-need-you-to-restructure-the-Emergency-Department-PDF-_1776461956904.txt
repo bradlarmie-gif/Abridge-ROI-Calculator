@@ -1,0 +1,264 @@
+I need you to restructure the Emergency Department PDF export in this React/TypeScript ROI calculator app. The goal is two things: (1) restructure from a 2-bucket framework to a 4-bucket framework, and (2)
+   fix calculation defensibility. Here is the complete specification.
+
+  ## OVERVIEW
+
+  The app is a React/TypeScript ROI calculator that generates PDFs via react-pdf (@react-pdf/renderer). For the Emergency Department care setting, the current PDF has two value buckets: "Throughput Value"
+  and "Revenue Optimized." We're replacing this with four buckets: **Revenue**, **Capacity**, **Workforce**, and **Quality**.
+
+  ---
+
+  ## FILE 1: client/src/pages/explore/ExploreFlow.tsx
+
+  ### Change 1: ED currentWrvu default
+  Find the block where the app resets inputs when the user switches to ED care setting (look for `currentWrvu: 2.5` in a condition that's ED-specific). Change:
+  currentWrvu: 2.5
+  to:
+  currentWrvu: 1.6
+
+  ### Change 2: wRVU improvement scenarios — make ED-specific
+  Find the `wrvuScenarios` object (inside a useMemo that calculates documentation value — `docValue`). Currently it's a flat object:
+  ```typescript
+  const wrvuScenarios = { conservative: 2, typical: 5, aggressive: 7 };
+  Replace with a care-setting-aware version. You need access to the current care setting (it should be available in scope as something like settings.careSetting or careSettings or data.setting — check what's
+   in scope in that useMemo). Change to:
+  const wrvuScenarios = isED
+    ? { conservative: 1, typical: 2.5, aggressive: 4 }
+    : { conservative: 2, typical: 5, aggressive: 7 };
+  Where isED checks the active care setting equals "ed" or "emergency" (match whatever string is used in the codebase).
+
+  Change 3: Denial prevention scenarios — make ED-specific
+
+  In the same docValue useMemo, find denialsScenarios:
+  const denialsScenarios = { conservative: 25, typical: 50, aggressive: 75 };
+  Replace with:
+  const denialsScenarios = isED
+    ? { conservative: 15, typical: 30, aggressive: 50 }
+    : { conservative: 25, typical: 50, aggressive: 75 };
+
+  ---
+  FILE 2: client/src/pages/explore/ExploreModel.tsx
+
+  Change 1: wRVU and denial scenarios — make ED-specific
+
+  Find where wrvuScenarios and denialsScenarios are defined at the component body level (outside useMemos, around the top of the component). Currently flat objects like:
+  const wrvuScenarios = { conservative: 2, typical: 5, aggressive: 7 };
+  const denialsScenarios = { conservative: 25, typical: 50, aggressive: 75 };
+  Make them care-setting-aware. Find the variable that holds the current care setting (likely settings.careSetting or similar). Add const isED = [careSetting variable] === "ed" (or whatever string the
+  codebase uses), then:
+  const wrvuScenarios = isED
+    ? { conservative: 1, typical: 2.5, aggressive: 4 }
+    : { conservative: 2, typical: 5, aggressive: 7 };
+  const denialsScenarios = isED
+    ? { conservative: 15, typical: 30, aggressive: 50 }
+    : { conservative: 25, typical: 50, aggressive: 75 };
+
+  Change 2: Separate retention from throughput into distinct buckets
+
+  Find this line (around line 986):
+  const edThroughputVal = edLwbsValue + edAdmissionCaptureValue + clinicianRetentionValue;
+  Replace with:
+  const edCapacityVal = edLwbsValue + edAdmissionCaptureValue;
+  const edWorkforceVal = clinicianRetentionValue;
+
+  Change 3: Update the returned object / state that uses edThroughputVal
+
+  Find where edThroughputVal is used in the returned model values (around lines 998–999), something like:
+  throughputValue: edThroughputVal,
+  efficiencyValue: edThroughputVal,
+  Replace with:
+  throughputValue: edCapacityVal,
+  efficiencyValue: edCapacityVal,
+  edCapacityValue: edCapacityVal,
+  edWorkforceValue: edWorkforceVal,
+
+  ---
+  FILE 3: client/src/components/explore/ExplorePDFExport.tsx
+
+  Change 1: Add new fields to ExplorePDFData interface
+
+  Find the ExplorePDFData interface (or interface ExplorePDFData). Find the existing ED-specific fields (look for throughputValue?: number or similar ED fields). Add these two fields alongside them:
+  edCapacityValue?: number;
+  edWorkforceValue?: number;
+
+  Change 2: Fix "min/shift" label
+
+  Find the label that reads "min/shift" (around line 1666). Change it to "min/encounter".
+
+  Change 3: Fix shifts/year divisor
+
+  Find where hours math divides by 8 in the ED workforce/wellbeing section (around line 1672), something computing hours per year using / 8. Change / 8 to / 10 (ED average shift length is 10 hours, not 8).
+
+  Change 4: Full restructure of the ED PDF section
+
+  Find the large {isED && (...)} block in the PDF render. It currently renders these pages:
+  - Page 1: THE THESIS (TWO SOURCES OF VALUE)
+  - Page 2: THE WORKFORCE BEHIND THE NUMBERS
+  - Page 3: YOUR VALUE DRIVERS (LWBS, Admission Capture, Clinician Wellbeing)
+  - Page 4 (conditional): DOCUMENTATION QUALITY (E&M + Denial)
+  - Page 5/4: THE INVESTMENT CASE
+  - Page 6/5: YOUR ASSESSMENT
+
+  Restructure to 6 fixed pages:
+
+  PAGE 1: THE THESIS — 4 buckets
+
+  Replace the "TWO SOURCES OF VALUE" section with "FOUR DRIVERS OF VALUE". Replace the two value cards (THROUGHPUT VALUE and REVENUE OPTIMIZED) with four cards in a 2×2 grid:
+
+  REVENUE | CAPACITY
+  WORKFORCE | QUALITY
+
+  - REVENUE card: Shows edEmValue + edDenialValue (sum of E&M and denial values, or docQualVal which already has this). Label: "REVENUE". Copy: "E&M level accuracy and denial prevention — documentation
+  completeness translates directly to reimbursement."
+  - CAPACITY card: Shows edCapacityValue (or edLwbsValue + edAdmissionCaptureValue). Label: "CAPACITY". Copy: "LWBS recovery and admission capture — faster documentation cycles mean fewer patients leave
+  before being seen."
+  - WORKFORCE card: Shows edWorkforceValue (or clinicianRetentionValue). Label: "WORKFORCE". Copy: "Physician retention — documentation burden is the most-cited driver of emergency medicine burnout and
+  departures."
+  - QUALITY card: Shows "Measured, Not Modeled". Label: "QUALITY". Copy: "Documentation completeness, sepsis/stroke protocol adherence, and CDI query reduction — outcomes reported at 90 days."
+
+  Replace the existing WHAT YOUR CHOICES REVEAL callout with the same getEdObservation(data) content but update the heading if needed.
+
+  Keep PageFooter at the bottom with pageNum={1}.
+
+  PAGE 2: CAPACITY & REVENUE (combined drivers page)
+
+  Replace "THE WORKFORCE BEHIND THE NUMBERS" page with a combined CAPACITY & REVENUE drivers page.
+
+  CAPACITY section (top half):
+
+  LWBS Recovery driver block:
+  - Header: "LWBS RECOVERY"
+  - Copy: "When physicians spend less time charting between patients, they are available to see the next patient sooner. That shortens wait time — the primary driver of LWBS. Your current LWBS rate of
+  {lwbsRate}% generates {lwbsAnnual} walkouts annually. At a {lwbsPct}% reduction — consistent with ED operations literature on wait time sensitivity — that's {lwbsRecovered} patients recovered."
+  - Subtext: "These patients were already in your department. The encounter was already initiated. The only variable was time."
+  - Source citation: "Source: ACEP/AHRQ data — LWBS rates are highly sensitive to wait times exceeding 30–45 minutes. Mechanism: documentation speed → physician availability → wait time → LWBS."
+  - Show the calculated LWBS value
+
+  Admission Capture driver block:
+  - Header: "ADMISSION CAPTURE"
+  - Copy: "Of patients who leave before being seen in high-acuity EDs, published literature suggests 15–20% would have met inpatient admission criteria. These are not speculative admissions — they are
+  patients whose clinical trajectory would have led to an admit decision. The {admissionN} additional admissions at ${admissionRevenue} each, at a {realization}% realization rate for payer mix and bed
+  availability, generates {admissionValue} annually."
+  - Methodology note: "Admission revenue reflects incremental ED-to-admission revenue contribution, not full hospitalization value."
+  - Show the calculated admission capture value
+
+  REVENUE section (bottom half, only if edHasDocQuality):
+
+  E&M Level Accuracy driver block:
+  - Header: "E&M LEVEL ACCURACY"
+  - Copy: "Emergency department documentation frequently understates visit complexity — not because the care wasn't delivered, but because documentation at speed omits specificity. E/M level accuracy
+  improves when notes capture the decision complexity that was already there. At a {emPct}% documentation improvement across {emEncounters} eligible encounters — the conservative range seen in acute care
+  settings — that's {emWrvus} additional wRVUs at ${conversionFactor}/wRVU and {realization}% realization: {emValue} annually."
+  - Show the calculated E&M value
+
+  Denial Prevention driver block:
+  - Header: "DENIAL PREVENTION"
+  - Copy: "ED claim denials most often trace to three documentation failures: absent medical necessity language, incomplete physical exam documentation, and missing decision rationale for admission vs.
+  discharge. Abridge addresses all three by capturing clinical reasoning in real time. Your {denialRate}% baseline denial rate generates {denialN} unappealable claims annually. At a {denialPct}% reduction in
+   documentation-related denials — the {scenario} scenario based on ED denial root cause data — that's {denialValue} in annual recovery."
+  - Replace any copy that says "Payers know this." with: "Documentation-related denials are among the most preventable in the revenue cycle."
+  - Show the calculated denial value
+
+  Keep PageFooter at bottom.
+
+  PAGE 3: WORKFORCE
+
+  Keep mostly the same content as the current "YOUR VALUE DRIVERS" page for the Clinician Wellbeing section, but:
+  - Change the page/section label to "WORKFORCE"
+  - Move all clinician wellbeing/retention content here
+  - Remove LWBS and Admission Capture from this page (they're now on page 2)
+  - Update the framing copy to: "Emergency medicine has the highest burnout rate in medicine. Documentation burden is the single most-cited driver in physician surveys. Abridge returns {hrsPerWk} hours per
+  week per physician — time that currently comes from post-shift charting and between-patient documentation. At {turnover}% annual turnover, {burnoutPct}% burnout-related, and ${replacementCost} to replace a
+   departing physician, even a {impactPct}% reduction in burnout-driven departures generates {retentionValue} annually."
+  - Add methodology callout box: "Retention impact is modeled at the {scenario} scenario. Validate quarterly using exit interview data to confirm burnout-related attribution."
+
+  Keep PageFooter at bottom.
+
+  PAGE 4: QUALITY
+
+  Add a new page (always rendered for ED, no conditional) with section label "QUALITY".
+
+  Headline: "What gets measured gets managed.\nWhat gets documented gets defended."
+
+  Subheading: "These outcomes are measured — not modeled. Dollar figures are not assigned because the causal chain from documentation to quality outcome requires 90+ days of post-deployment data to
+  establish."
+
+  Show four quality outcome blocks (no dollar figures):
+
+  1. Documentation Completeness Rate
+    - "The percentage of notes containing all required clinical elements. Measured at baseline and 30/60/90 days post-deployment. Abridge structured capture consistently improves completeness rates in acute
+  care settings."
+  2. Sepsis and Stroke Protocol Documentation
+    - "Structured notes improve time-to-recognition for protocol-eligible patients. Sepsis bundle documentation and stroke alert documentation are particularly sensitive to real-time capture of clinical
+  decision-making."
+  3. Observation vs. Admission Documentation
+    - "Proper observation status documentation reduces CDI queries and audit exposure. Real-time documentation of the clinical rationale for obs vs. admission is among the highest-value downstream quality
+  outcomes."
+  4. Readmission Prevention
+    - "Complete ED discharge documentation reduces gaps in care continuity that contribute to 30-day returns. Handoff quality is a function of documentation completeness at the time of disposition."
+
+  End with a callout box: "These outcomes are measured 90+ days post-deployment. Baseline data collected during implementation. Ask your Abridge team for outcome data from comparable ED deployments."
+
+  Keep PageFooter at bottom.
+
+  PAGE 5: THE INVESTMENT CASE
+
+  Keep the existing investment case page content but update the 90-day KPI section. Replace vague qualitative targets with quantitative ranges:
+
+  ┌────────────────────────┬─────────────────────────────────────────────────────────────────┐
+  │          KPI           │                         New target copy                         │
+  ├────────────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ Door-to-provider time  │ "Target: 4–8 min reduction from documentation baseline"         │
+  ├────────────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ LWBS rate              │ "Target: 0.3–0.8% absolute reduction from current rate"         │
+  ├────────────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ E&M level distribution │ "Target: 1–3% shift toward higher complexity levels"            │
+  ├────────────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ Physician EHR time     │ "Target: 15–25% reduction in post-encounter documentation time" │
+  └────────────────────────┴─────────────────────────────────────────────────────────────────┘
+
+  Keep PageFooter at bottom with correct page number.
+
+  PAGE 6: YOUR ASSESSMENT
+
+  Keep the existing assessment page content but update the value summary section to use the 4-bucket structure:
+
+  Replace the existing THROUGHPUT VALUE / REVENUE OPTIMIZED rows with:
+  - CAPACITY — {edCapacityValue} (LWBS Recovery + Admission Capture)
+  - REVENUE — {docQualVal} (E&M + Denial Prevention)
+  - WORKFORCE — {edWorkforceValue} (Clinician Retention)
+  - QUALITY — "Measured 90+ days post-deployment"
+
+  Add a methodology box at the bottom:
+  METHODOLOGY
+
+  LWBS Recovery: ACEP/AHRQ literature; mechanism is documentation speed → physician availability → wait time → LWBS rate. Conservative/Typical/Aggressive reduction scenarios applied to annual walkout volume.
+
+  Admission Capture: 15–20% of LWBS patients meet inpatient admission criteria per published literature. Realization rate applied for payer mix and bed availability. Revenue reflects ED-to-admission
+  contribution, not full hospitalization value.
+
+  E&M Level Accuracy: ED improvement range 1–4% (acute care settings). Default wRVU baseline 1.6 (unselected ED population). CMS conversion factor applied with realization adjustment.
+
+  Denial Prevention: Conservative 15% / Typical 30% / Aggressive 50% reduction in documentation-related denials. Root cause: medical necessity language, physical exam documentation, admission/discharge
+  rationale.
+
+  Clinician Retention: Emergency medicine burnout rate per AMA. Documentation burden cited as primary driver. Replacement cost per MGMA. Retention impact modeled at selected scenario; validate via exit
+  interview data.
+
+  Quality: Not modeled. Measured at 90+ days post-deployment.
+
+  Keep PageFooter at bottom with correct page number.
+
+  ---
+  IMPORTANT NOTES
+
+  1. Do not change any page footer logic — the edTotalPages variable should still be calculated correctly based on what pages are shown. With this restructure, the ED PDF is always 6 pages (Quality is always
+   shown; no conditional pages). Update edTotalPages to always equal 6.
+  2. All existing variable names for calculated values should still work — edLwbsValue, edAdmissionCaptureValue, edEmValue, edDenialValue, clinicianRetentionValue, docQualVal, thrVal — use these from
+  props/data as they already exist. The new edCapacityValue and edWorkforceValue are derived from them.
+  3. Keep all existing helper functions — getEdObservation(), getEdClosingQuote(), fmtCurrency(), fmtPct(), etc. — unchanged.
+  4. Keep the existing page styles — styles.page, styles.pageWrapper, styles.sectionLabel, styles.cardBg, styles.calloutBox, styles.divider, styles.thickDivider, PageFooter — all reused, no new styles
+  needed.
+  5. The non-ED PDF pages are untouched — only modify the {isED && (...)} block and the ED-specific code.
+  6. Match the existing code style exactly — inline styles as objects, JSX with react-pdf primitives (<Page>, <View>, <Text>), Unicode escapes for em-dashes (\u2014) and apostrophes (\u2019), template
+  literals for dynamic values.
