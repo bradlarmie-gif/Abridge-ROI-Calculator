@@ -60,7 +60,8 @@ function getPricingTag(settings: ProformaSettingSnapshot[]): string {
   const model = models.values().next().value;
   if (model === "annualFlat") return "Annual License";
   if (model === "perEncounter") return "Per Encounter";
-  return "Per Provider";
+  const allNursing = settings.length > 0 && settings.every(s => s.careSetting === "nursing");
+  return allNursing ? "Per Bed" : "Per Provider";
 }
 
 function getPricingLabel(settings: ProformaSettingSnapshot[]): string {
@@ -78,7 +79,8 @@ function getPricingLabel(settings: ProformaSettingSnapshot[]): string {
       return varied ? `Per Encounter @ ${fmt(yp!.year1)}→${fmt(yp!.year3)}` : `Per Encounter @ ${fmt(p)}`;
     }
     const p = yp?.year1 ?? s.costPerUnit;
-    return varied ? `Per Provider @ ${fmt(yp!.year1)}→${fmt(yp!.year3)}/mo` : `Per Provider @ ${fmt(p)}/mo`;
+    const unitWord = s.careSetting === "nursing" ? "Per Bed" : "Per Provider";
+    return varied ? `${unitWord} @ ${fmt(yp!.year1)}→${fmt(yp!.year3)}/mo` : `${unitWord} @ ${fmt(p)}/mo`;
   });
   const unique = [...new Set(parts)];
   return unique.join("; ");

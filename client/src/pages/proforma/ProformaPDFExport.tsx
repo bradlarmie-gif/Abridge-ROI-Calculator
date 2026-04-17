@@ -200,7 +200,8 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   const util = snapshot.utilizationPercent ?? s.utilizationPercent ?? 0;
 
   if (cs === "nursing") {
-    lines.push(`${s.nursingStaffedBeds ?? 0} staffed beds \u00B7 ${providers} nurse FTEs`);
+    const nurseFtes = s.numberOfProviders ?? 0;
+    lines.push(`${s.nursingStaffedBeds ?? 0} staffed beds \u00B7 ${nurseFtes} nurse FTEs`);
   } else {
     lines.push(`${providers} ${unitLabel(cs)} \u00B7 ${encounters.toLocaleString()} encounters/yr`);
   }
@@ -579,6 +580,10 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
     return s + (contractYears >= 3 ? ye.year3 : contractYears >= 2 ? ye.year2 : ye.year1);
   }, 0);
   const totalHoursSaved = settings.reduce((s, v) => s + v.totalHoursSaved, 0);
+  const fullScaleHoursSaved = totalInitial > 0
+    ? totalHoursSaved * (totalFullScale / totalInitial)
+    : totalHoursSaved;
+  const nursingOnly = settings.length > 0 && settings.every(s => s.careSetting === "nursing");
 
   const settingNames = settings.map(s => SETTING_LABELS[s.careSetting] || s.label).join(", ");
 
@@ -736,7 +741,12 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                       })()}
                     </Text>
                   </View>
-                  <Text style={{ fontSize: 14, fontWeight: "bold", color: settingColor }}>{fmt(s.annualValue)}</Text>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text style={{ fontSize: 14, fontWeight: "bold", color: settingColor }}>
+                      {fmt(yearlyData.length > 0 ? (yearlyData[yearlyData.length - 1]?.bySettings[s.id]?.value ?? s.annualValue) : s.annualValue)}
+                    </Text>
+                    <Text style={{ fontSize: 6.5, color: colors.tertiary, marginTop: 1 }}>Y{Math.max(1, yearlyData.length)} run-rate</Text>
+                  </View>
                 </View>
               );
             })}
@@ -778,7 +788,13 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             const es = s.fullExploreState;
             const yp = s.yearlyProviders;
             const ye = s.yearlyEncounters;
-            const priceLbl = s.pricingModel === "annualFlat" ? "Annual Fixed Fee" : isPerEnc ? "Per Encounter" : "Per Provider/Month";
+            const priceLbl = s.pricingModel === "annualFlat"
+              ? "Annual Fixed Fee"
+              : isPerEnc
+              ? "Per Encounter"
+              : s.careSetting === "nursing"
+              ? "Per Staffed Bed/Month"
+              : "Per Provider/Month";
             const priceVal = s.pricingModel === "annualFlat"
               ? (s.yearlyPricing?.year1 ?? s.annualLicenseFee ?? 0)
               : isPerEnc
@@ -799,7 +815,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                     <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>SCALE</Text>
                     {s.careSetting === "nursing" ? (
                       <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
-                        {es?.nursingStaffedBeds ?? 0} staffed beds{"\n"}{s.providerCount} nurse FTEs
+                        {es?.nursingStaffedBeds ?? s.providerCount ?? 0} staffed beds{"\n"}{es?.numberOfProviders ?? 0} nurse FTEs
                       </Text>
                     ) : isPerEnc ? (
                       <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
@@ -905,7 +921,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           <Text style={styles.sectionLabel}>VALUE DRIVERS</Text>
           <Text style={styles.sectionHeadline}>How the Value Breaks Down</Text>
           <Text style={styles.body}>
-            Each driver below represents a specific, measurable improvement. Together, they form the basis of the projected return.
+            Each driver below represents a specific, measurable improvement. Driver values shown are <Text style={{ fontWeight: "bold" }}>annual run-rate at full scale</Text> (before adoption ramp and phasing). Category subtotals at the bottom of this page show <Text style={{ fontWeight: "bold" }}>cumulative value over the {termLabel.toLowerCase()}</Text> after ramp, phasing, and expansion are applied.
           </Text>
 
           {settings.map(s => {
@@ -989,20 +1005,20 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             )}
           </View>
 
-          <Text style={styles.sectionLabelGray}>WORKFORCE IMPACT</Text>
+          <Text style={styles.sectionLabelGray}>WORKFORCE IMPACT (AT FULL SCALE)</Text>
           <View style={[styles.cardBg, { padding: 0, flexDirection: "row" }]}>
             <View style={{ flex: 1, padding: 10, alignItems: "center" }}>
-              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(totalHoursSaved))}</Text>
+              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(fullScaleHoursSaved))}</Text>
               <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>hours/year returned{"\n"}to clinical care</Text>
             </View>
             <View style={{ width: 0.5, backgroundColor: colors.border }} />
             <View style={{ flex: 1, padding: 10, alignItems: "center" }}>
-              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{totalInitial > 0 ? (totalHoursSaved / totalInitial / 52).toFixed(1) : "0"}</Text>
+              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{totalFullScale > 0 ? (fullScaleHoursSaved / totalFullScale / 52).toFixed(1) : "0"}</Text>
               <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>hours/week{"\n"}per {unitLabel(settings[0]?.careSetting || "outpatient", false)}</Text>
             </View>
             <View style={{ width: 0.5, backgroundColor: colors.border }} />
             <View style={{ flex: 1, padding: 10, alignItems: "center" }}>
-              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{totalInitial > 0 ? (totalHoursSaved / totalInitial / 8).toFixed(0) : "0"}</Text>
+              <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{totalFullScale > 0 ? (fullScaleHoursSaved / totalFullScale / 8).toFixed(0) : "0"}</Text>
               <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>days/year not{"\n"}at a keyboard</Text>
             </View>
           </View>
@@ -1289,20 +1305,20 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           <View style={[styles.cardBg, { padding: 12, marginBottom: 10 }]}>
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 6 }}>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(totalHoursSaved / 12))}</Text>
-                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>provider hours freed monthly</Text>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(fullScaleHoursSaved / 12))}</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>{nursingOnly ? "nurse" : "provider"} hours freed monthly</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmt(Math.round(summary.runRateValue / 12))}</Text>
                 <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>estimated monthly value deferred</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 10, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(totalHoursSaved))}</Text>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(Math.round(fullScaleHoursSaved))}</Text>
                 <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2, textAlign: "center" }}>annual hours returned to care</Text>
               </View>
             </View>
             <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
-              Every month without implementation, {allPerEncounter ? "your organization defers" : `your ${(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()} spend`} {fmtNum(Math.round(totalHoursSaved / 12))} hours {allPerEncounter ? "of documentation time" : "on documentation"} that could be redirected to patient care {"\u2014"} representing {fmt(Math.round(summary.runRateValue / 12))} in deferred organizational value.
+              Every month without implementation, {allPerEncounter ? "your organization defers" : `your ${(() => { const labels = Array.from(new Set(settings.map(s => unitLabel(s.careSetting)))); return labels.join(" and "); })()} spend`} {fmtNum(Math.round(fullScaleHoursSaved / 12))} hours {allPerEncounter ? "of documentation time" : "on documentation"} that could be redirected to patient care {"\u2014"} representing {fmt(Math.round(summary.runRateValue / 12))} in deferred organizational value at full scale.
             </Text>
           </View>
 
@@ -1411,6 +1427,17 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                       return `${s.label}: ${s.utilizationPercent}%`;
                     }).join("; ");
                   }
+                  if (nursingOnly) {
+                    const ns = settings[0];
+                    const yu = ns.yearlyUtilization
+                      ?? config.nursingYearlyUtilization
+                      ?? config.yearlyUtilization;
+                    return [
+                      `${yu.year1}% Y1`,
+                      contractYears >= 2 ? `${yu.year2}% Y2` : null,
+                      contractYears >= 3 ? `${yu.year3}% Y3` : null,
+                    ].filter(Boolean).join(", ");
+                  }
                   const base = [
                     `${config.yearlyUtilization.year1}% Y1`,
                     contractYears >= 2 ? `${config.yearlyUtilization.year2}% Y2` : null,
@@ -1421,7 +1448,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                     : "";
                   return base + nursingNote;
                 })()}{"\n"}
-                {allPerEncounter ? "Encounter expansion" : "Provider expansion"}: Per-year allocation{"\n"}
+                {allPerEncounter ? "Encounter expansion" : nursingOnly ? "Bed expansion" : "Provider expansion"}: Per-year allocation{"\n"}
                 Onset timing: Immediate / {ONSET_DELAY_MONTHS.delayed}mo delay / phased{"\n"}
                 Retention phasing: {[
                   `${config.retentionPhasing.year1Pct}% Y1`,
