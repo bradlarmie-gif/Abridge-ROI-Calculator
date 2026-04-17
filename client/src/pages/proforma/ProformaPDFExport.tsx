@@ -570,6 +570,17 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
   const timePct = totalAllValue > 0 ? Math.round((totalTimeValue / totalAllValue) * 100) : 0;
   const retPct = totalAllValue > 0 ? Math.round((totalRetentionValue / totalAllValue) * 100) : 0;
 
+  const driverDocTotal = settings.reduce((acc, s) =>
+    acc + s.drivers.filter(d => d.category === "documentation" && d.value > 0).reduce((sum, d) => sum + d.value, 0), 0);
+  const driverTimeTotal = settings.reduce((acc, s) =>
+    acc + s.drivers.filter(d => d.category === "time" && d.onset !== "phased" && d.value > 0).reduce((sum, d) => sum + d.value, 0), 0);
+  const driverRetentionTotal = settings.reduce((acc, s) =>
+    acc + s.drivers.filter(d => d.onset === "phased" && d.value > 0).reduce((sum, d) => sum + d.value, 0), 0);
+  const driverAllTotal = driverDocTotal + driverTimeTotal + driverRetentionTotal;
+  const driverDocPct = driverAllTotal > 0 ? Math.round((driverDocTotal / driverAllTotal) * 100) : 0;
+  const driverTimePct = driverAllTotal > 0 ? Math.round((driverTimeTotal / driverAllTotal) * 100) : 0;
+  const driverRetPct = driverAllTotal > 0 ? Math.round((driverRetentionTotal / driverAllTotal) * 100) : 0;
+
   const totalInitial = settings.reduce((s, v) => s + (v.yearlyProviders?.year1 || v.providerCount), 0);
   const totalFullScale = settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0);
 
@@ -921,7 +932,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           <Text style={styles.sectionLabel}>VALUE DRIVERS</Text>
           <Text style={styles.sectionHeadline}>How the Value Breaks Down</Text>
           <Text style={styles.body}>
-            Each driver below represents a specific, measurable improvement. Driver values shown are <Text style={{ fontWeight: "bold" }}>annual run-rate at full scale</Text> (before adoption ramp and phasing). Category subtotals at the bottom of this page show <Text style={{ fontWeight: "bold" }}>cumulative value over the {termLabel.toLowerCase()}</Text> after ramp, phasing, and expansion are applied.
+            Each driver below represents a specific, measurable improvement. All values on this page — both per-driver bars and the category subtotals — are <Text style={{ fontWeight: "bold" }}>annual run-rate at full scale</Text> (before adoption ramp and phasing). The year-by-year projection on page 5 shows how these full-scale amounts ramp into the {termLabel.toLowerCase()} contract.
           </Text>
 
           {settings.map(s => {
@@ -977,30 +988,30 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
 
           <View style={styles.thickDivider} />
 
-          <Text style={styles.sectionLabelGray}>CATEGORY SUBTOTALS</Text>
+          <Text style={styles.sectionLabelGray}>CATEGORY SUBTOTALS (ANNUAL RUN-RATE AT FULL SCALE)</Text>
           <View style={{ flexDirection: "row", gap: 6, marginBottom: 10 }}>
-            {totalDocValue > 0 && (
+            {driverDocTotal > 0 && (
               <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 10 }]}>
                 <View style={{ width: 20, height: 3, backgroundColor: colors.docBlue, borderRadius: 1, marginBottom: 6 }} />
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmt(totalDocValue)}</Text>
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmt(driverDocTotal)}</Text>
                 <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2 }}>Documentation Quality</Text>
-                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.docBlue, marginTop: 2 }}>{docPct}%</Text>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.docBlue, marginTop: 2 }}>{driverDocPct}%</Text>
               </View>
             )}
-            {totalTimeValue > 0 && (
+            {driverTimeTotal > 0 && (
               <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 10 }]}>
                 <View style={{ width: 20, height: 3, backgroundColor: colors.timeRed, borderRadius: 1, marginBottom: 6 }} />
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmt(totalTimeValue)}</Text>
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmt(driverTimeTotal)}</Text>
                 <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2 }}>Capacity & Efficiency</Text>
-                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.timeRed, marginTop: 2 }}>{timePct}%</Text>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.timeRed, marginTop: 2 }}>{driverTimePct}%</Text>
               </View>
             )}
-            {totalRetentionValue > 0 && (
+            {driverRetentionTotal > 0 && (
               <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 10 }]}>
                 <View style={{ width: 20, height: 3, backgroundColor: colors.retentionAmber, borderRadius: 1, marginBottom: 6 }} />
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmt(totalRetentionValue)}</Text>
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmt(driverRetentionTotal)}</Text>
                 <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2 }}>Retention</Text>
-                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.retentionAmber, marginTop: 2 }}>{retPct}%</Text>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.retentionAmber, marginTop: 2 }}>{driverRetPct}%</Text>
               </View>
             )}
           </View>
