@@ -460,7 +460,7 @@ export default function ProformaHub({
                                           const qp = setting.quarterlyProviders;
                                           if (qp) {
                                             const annual = quarterlyToAnnualProviders(qp);
-                                            onUpdateSetting(setting.id, { yearlyProviders: annual, providerCount: annual.year1, fullScaleProviders: annual.year3, quarterlyProviders: undefined });
+                                            onUpdateSetting(setting.id, { yearlyProviders: annual, providerCount: annual.year1, fullScaleProviders: annual.year3 });
                                           }
                                         }
                                         onConfigChange({ ...config, granularity: "annual" });
@@ -715,7 +715,7 @@ export default function ProformaHub({
                                   <label className="block text-[12px] text-[#8C7E6E] mb-1">Utilization %</label>
                                   <FormattedNumberInput
                                     value={setting.utilizationPercent}
-                                    onChange={(v) => onUpdateSetting(setting.id, { utilizationPercent: Math.min(Math.max(v, 1), 100) })}
+                                    onChange={(v) => onUpdateSetting(setting.id, { utilizationPercent: Math.min(Math.max(v, 1), 100), quarterlyUtilization: undefined })}
                                     className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg px-2"
                                     data-testid={`input-util-${setting.careSetting}`}
                                   />

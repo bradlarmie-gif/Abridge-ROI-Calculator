@@ -1,0 +1,39 @@
+Fix two bugs in `client/src/pages/proforma/ProformaHub.tsx` related to the quarterly/annual granularity toggle.                                                                                              
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ## Bug 1 — Custom quarterly ramp is lost when toggling Annual → Quarterly                                                                                                                                    
+                                                                                                                                                                                                               
+  In the Annual button's onClick handler, find this block:
+                                                                                                                                                                                                               
+  ```typescript                                                                                           
+  if (config.granularity === "quarterly") {                                                                                                                                                                    
+    const qp = setting.quarterlyProviders;                                                                
+    if (qp) {                                                                                                                                                                                                  
+      const annual = quarterlyToAnnualProviders(qp);                                                      
+      onUpdateSetting(setting.id, { yearlyProviders: annual, providerCount: annual.year1, fullScaleProviders: annual.year3, quarterlyProviders: undefined });
+    }                                                                                                                                                                                                          
+  }                                       
+                                                                                                                                                                                                               
+  Remove quarterlyProviders: undefined from the update — change to:                                                                                                                                            
+                                          
+  if (config.granularity === "quarterly") {                                                                                                                                                                    
+    const qp = setting.quarterlyProviders;                                                                                                                                                                     
+    if (qp) {
+      const annual = quarterlyToAnnualProviders(qp);                                                                                                                                                           
+      // Keep quarterlyProviders alive so switching back to Quarterly restores the custom ramp.           
+      // The annual year inputs (year1/year2/year3) will clear it if the user actively edits them.
+      onUpdateSetting(setting.id, { yearlyProviders: annual, providerCount: annual.year1, fullScaleProviders: annual.year3 });
+    }                                         
+  }                                                                                                                                                                                                            
+  
+  ---                                                                                                                                                                                                          
+  Bug 2 — Stale quarterly utilization shadows Annual mode changes                                         
+                                                                                                                                                                                                               
+  Find the Annual mode utilization input onChange (inside the block that only renders when config.granularity !== "quarterly"):
+                                              
+  onChange={(v) => onUpdateSetting(setting.id, { utilizationPercent: Math.min(Math.max(v, 1), 100) })}                                                                                                         
+                                              
+  Add quarterlyUtilization: undefined so editing utilization in Annual mode clears the stale quarterly values:                                                                                                 
+                                                                                                          
+  onChange={(v) => onUpdateSetting(setting.id, { utilizationPercent: Math.min(Math.max(v, 1), 100), quarterlyUtilization: undefined })}    
