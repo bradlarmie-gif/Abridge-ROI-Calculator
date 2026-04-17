@@ -1,0 +1,237 @@
+---                                                       
+  REPLIT AGENT PROMPT — Methodology PDF: Nursing Four-Domain Framework                                                                                                                                         
+                                              
+  In the file `client/src/lib/methodology-pdf-export.tsx`, update the nursing section of the methodology PDF to use the four-domain framework: QUALITY, WORKFORCE, CAPACITY, and REVENUE — in that exact order.
+                                              
+  Note: ED, Outpatient, and Inpatient sections were already updated in prior prompts. The `DomainCard` interface and the conditional `domains` rendering in `Page1Content` should already be in place. This    
+  prompt only modifies the `nursing` entry in `settingData`.
+                                                                                                                                                                                                               
+  Important framing constraint: Nurses don't bill. The REVENUE domain for nursing is explicitly "Not Applicable" — this is intentional and honest. Do not manufacture a revenue story. The QUALITY domain      
+  carries the most weight in nursing and should reflect that.                                                                                                                                                  
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+   
+  ## Replace the entire `nursing` entry in `settingData` with the following:                                                                                                                                   
+                                                            
+  ```typescript
+  nursing: {                                                                                                                                                                                                   
+    settingLabel: "Nursing",
+    settingLabelLower: "nursing",                                                                                                                                                                              
+    coverSubtitle: "A transparent framework for understanding where\nvalue lives when there's no billing relationship",
+    contextHeadline: "Nursing is the hardest setting to model ROI—and the most important to get right.",
+    contextBody: "In outpatient medicine, a physician saves 3 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. Nurses don't bill. They don't generate wRVUs. And yet nursing
+  documentation burden is massive—25–35% of every shift spent on flowsheets, assessments, handoffs, and charting. The four-domain framework applies here—but one domain is intentionally empty. Nurses have no 
+  direct revenue story, and we're not going to invent one. What they do have is the largest quality footprint in the building: HAPI, falls, CAUTI, CLABSI, sepsis SEP-1, HAC penalties, and HCAHPS scores all  
+  run through nursing documentation. That's where the value lives.",                                                                                                                                           
+    contextQuestion: "Three active domains, one honest absence.",                                                                                                                                              
+    // Legacy fields kept for interface compatibility                                                                                                                                                          
+    cat1Label: "WORKFORCE",                                                                                                                                                                                    
+    cat1Description: "Retention and agency reduction.",     
+    cat1Footer: "Measurable",                                                                                                                                                                                  
+    cat2Label: "QUALITY",                     
+    cat2Description: "HAPI, falls, CAUTI, CLABSI, sepsis, HCAHPS.",                                                                                                                                            
+    cat2Footer: "Potential",                                
+    domains: [                                                                                                                                                                                                 
+      {                                                     
+        label: "QUALITY",                                                                                                                                                                                      
+        description: "Nursing documentation drives the largest quality footprint in the hospital: HAPI prevention, falls, CAUTI, CLABSI, sepsis SEP-1 bundle compliance, HAC penalty exposure, and HCAHPS      
+  scores. When documentation is real-time and complete, assessments are captured when they happen—not reconstructed hours later. Documentation creates the visibility that enables prevention. Clinical teams
+  act on it.",                                                                                                                                                                                                 
+        footer: "Potential — documentation enables, clinical practice realizes",
+        accentColor: colors.primary,                                                                                                                                                                           
+      },                                  
+      {                                                                                                                                                                                                        
+        label: "WORKFORCE",                                                                                                                                                                                    
+        description: "Nursing turnover is 18–25% annually. Documentation burden is among the top cited reasons nurses leave. When nurses document faster, they finish shifts on time, experience less
+  end-of-shift stress, and are less likely to attribute their departure to administrative load. Retention savings and reduced agency dependency are the direct financial outcomes. Agency nurses cost 2–3× the 
+  labor of permanent staff.",                               
+        footer: "Measurable — retention and agency spend tracked",                                                                                                                                             
+        accentColor: colors.secondary,                                                                                                                                                                         
+      },
+      {                                                                                                                                                                                                        
+        label: "CAPACITY",                                  
+        description: "When nurses spend less time documenting, they finish shifts on time. That directly reduces overtime hours—a real, trackable budget line. Not all time saved becomes OT reduction; some
+  goes to additional bedside care. We apply a realistic conversion rate (15–40%) and are explicit about it. OT reduction is the most immediately defensible dollar in nursing ROI.",
+        footer: "Measurable — OT hours visible within 2–3 months",
+        accentColor: colors.primary,                                                                                                                                                                           
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "REVENUE",                                                                                                                                                                                      
+        description: "Not applicable. Nurses don't bill. There is no direct revenue generation mechanism tied to nursing documentation in the way that wRVUs, DRG weight, or E/M accuracy create revenue for
+  physicians. We don't manufacture a revenue story here. The indirect connection to inpatient DRG accuracy (nursing assessments capture CC/MCC indicators) is real—but it's quantified in the Inpatient        
+  methodology to avoid double-counting.",                   
+        footer: "Intentionally absent — honesty is the defensibility",
+        accentColor: colors.tertiary,                                                                                                                                                                          
+      },                                      
+    ],                                                                                                                                                                                                         
+    frameworkCallout: "Three domains are active in nursing. One is intentionally empty—and that's a feature, not a gap. The willingness to say 'nurses don't have a revenue story' is exactly what makes the
+  Quality, Workforce, and Capacity stories credible. We model what we can defend. Everything else we name and explain.",                                                                                       
+    categories: [                         
+      {                                                                                                                                                                                                        
+        label: "QUALITY",                                                                                                                                                                                      
+        labelColor: colors.primary,
+        mechanisms: [                                                                                                                                                                                          
+          {                                                 
+            name: "HAPI Prevention",
+            attribution: "Potential",                                                                                                                                                                          
+            description: "Real-time documentation ensures skin assessments and risk factors are captured when they're observed—not reconstructed at end of shift when the picture has already changed. Complete
+   risk documentation enables earlier intervention for pressure injuries. CMS does not reimburse for hospital-acquired pressure injuries; each HAPI represents both a clinical failure and a financial         
+  penalty.",                                                
+            formula: "Current HAPIs × Doc-preventable % (3–8%) × Cost per HAPI ($10–50K, avg $26K AHRQ)",                                                                                                      
+          },                                                                                                                                                                                                   
+          {                                                                                                                                                                                                    
+            name: "Falls Prevention",                                                                                                                                                                          
+            attribution: "Potential",                                                                                                                                                                          
+            description: "Real-time fall risk scores and mobility status documentation enable earlier preventive action. When risk assessments are completed and documented at the right intervals, fall
+  prevention protocols can be activated before an event occurs. CMS does not reimburse for hospital-acquired fall injuries.",                                                                                  
+            formula: "Current falls × Doc-preventable % (3–8%) × Cost per fall ($3–30K, avg $6.5K CMS)",                                                                                                       
+          },                                  
+          {                                                                                                                                                                                                    
+            name: "CAUTI & CLABSI Prevention",              
+            attribution: "Potential",                                                                                                                                                                          
+            description: "Device-associated infection prevention depends on insertion documentation, daily necessity assessments, and removal timing. When nursing documentation captures device placement
+  dates, indication reviews, and care bundle compliance in real time, infection prevention teams have the data to act. CMS penalizes HAI rates through the HAC Reduction Program.",                            
+            formula: "CAUTI/CLABSI rates × Doc-preventable % (3–8%) × Cost per event × HAC penalty exposure",
+          },                                  
+          {                                                                                                                                                                                                    
+            name: "Sepsis SEP-1 Bundle Compliance",
+            attribution: "Potential",                                                                                                                                                                          
+            description: "Sepsis SEP-1 bundle compliance requires timely documentation of screening, assessment, and intervention—across nursing and physician notes. When nursing documentation captures vital
+   sign changes, mental status shifts, and suspected infection in real time, the clinical picture that triggers sepsis recognition is clearer and faster. Earlier recognition improves outcomes and supports   
+  bundle compliance rates reported to CMS.",                                                                                                                                                                   
+            formula: "Measured: SEP-1 bundle compliance rate, time-to-recognition for sepsis alerts — not monetized directly",
+            formulaColor: colors.tertiary,                                                                                                                                                                     
+          },                                                
+          {                                                                                                                                                                                                    
+            name: "HCAHPS & Patient Experience",                                                                                                                                                               
+            attribution: "Directional",       
+            description: "More bedside time correlates with higher patient experience scores. When documentation is faster, nurses spend more time at the bedside—which is where responsiveness, communication,
+   and care perception are shaped. HCAHPS scores affect VBP reimbursement by approximately 2% for top-quartile performers. We treat this as a directional indicator, not a direct attribution.",
+            formula: "Top quartile HCAHPS ≈ 2% higher VBP reimbursement — tracked as indicator, not outcome",                                                                                                  
+            formulaColor: colors.tertiary,    
+          },                                                                                                                                                                                                   
+        ],                                                  
+      },                                                                                                                                                                                                       
+      {                                                     
+        label: "WORKFORCE",                                                                                                                                                                                    
+        labelColor: colors.secondary,                       
+        mechanisms: [
+          {                                   
+            name: "Nurse Retention Savings",
+            attribution: "Influenceable",
+            description: "Documentation burden is among the top drivers of nursing burnout and departure. When nurses finish shifts on time and spend less time on administrative documentation, the friction  
+  that precedes burnout decreases. At $40K–$65K per nurse replacement (NSI 2024), even modest retention improvement compounds significantly across a large nursing staff. We use conservative impact rates
+  (10–25%) because documentation is one of many burnout factors.",                                                                                                                                             
+            formula: "Nurses × Turnover (15–25%) × Burnout % (30–50%) × Abridge impact (10–25%) × Replacement cost ($40–65K)",
+          },                                                                                                                                                                                                   
+          {                               
+            name: "Agency Labor Reduction",                                                                                                                                                                    
+            attribution: "Tied to retention",                                                                                                                                                                  
+            description: "When nurses leave, hospitals fill coverage gaps with agency and travel nurses at 2–3× the cost of permanent staff. Better retention directly reduces agency dependency. This is the
+  highest-dollar workforce outcome in nursing—agency premiums of $2,000–$4,000 per week per nurse add up quickly across a unit with persistent vacancies.",                                                    
+            formula: "Nurses retained × Coverage weeks needed (8–16 wks) × Weekly agency premium ($2–4K)",
+          },                                                                                                                                                                                                   
+        ],                                                                                                                                                                                                     
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "CAPACITY",                                  
+        labelColor: colors.primary,                                                                                                                                                                            
+        mechanisms: [                                       
+          {
+            name: "Overtime Reduction",                                                                                                                                                                        
+            attribution: "Measurable",
+            description: "When nurses document faster, they finish their shift workload on time. Not all time saved reduces overtime—some returns to patient care, which is the right use of it. But a         
+  measurable portion of time saved does convert to shift completion, reducing mandatory and voluntary overtime hours. This is the most immediately trackable financial outcome in nursing ROI, visible in
+  payroll data within 2–3 months.",       
+            formula: "Nurses × Shifts/year × Time saved/shift × OT conversion rate (15–40%) × OT rate (1.5× base hourly)",
+          },                                                                                                                                                                                                   
+        ],                                
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    careQualityCallout: "The link between documentation and care quality is indirect. We don't cause fewer falls—we enable the visibility that helps prevent them. Clinical practice matters more than
+  documentation. We model Quality outcomes separately from Labor Economics for exactly this reason: the causal chain is real but longer, and conflating them overstates confidence.",                          
+    honestLimits: {                                         
+      measure: [                              
+        "OT hours per unit per month — payroll data, 2–3 months",                                                                                                                                              
+        "Documentation time per shift — EHR session data, weeks",
+        "Shift completion rate — scheduling data",                                                                                                                                                             
+        "Agency utilization hours and cost",                
+      ],                                                                                                                                                                                                       
+      influence: [                                                                                                                                                                                             
+        "Turnover rates — 12–18 months to measure",                                                                                                                                                            
+        "HAPI and falls rates — clinical practice dependent",                                                                                                                                                  
+        "SEP-1 bundle compliance — multi-disciplinary",                                                                                                                                                        
+        "HCAHPS scores — many factors beyond documentation",                                                                                                                                                   
+      ],                                      
+      enable: [                                                                                                                                                                                                
+        "HAC penalty reduction — payer and CMS timing dependent",
+        "VBP reimbursement improvement — annual settlement",                                                                                                                                                   
+        "Care coordination quality — downstream",           
+        "Inpatient DRG accuracy — quantified in Inpatient model",                                                                                                                                              
+      ],                                                                                                                                                                                                       
+    },                                                                                                                                                                                                         
+    connectedValueLabel: "CONNECTED VALUE",                                                                                                                                                                    
+    connectedValue: "When nurses document thoroughly and in real time, it directly impacts inpatient revenue. Nursing assessments capture clinical indicators—skin integrity, nutritional status, fall risk,   
+  mental status—that CDI teams use to support CC/MCC coding and DRG accuracy. Complete nursing documentation also strengthens the inpatient record for payer audit defense. These benefits are quantified in
+  the Inpatient methodology to avoid double-counting.",                                                                                                                                                        
+    mechanismsSubtitle: "How Each Domain Creates Value in Nursing",
+    assumptions: [                                                                                                                                                                                             
+      { assumption: "Time saved/shift", range: "15–30 min", defaultVal: "20 min", source: "Customer data" },
+      { assumption: "OT conversion rate", range: "15–40%", defaultVal: "25%", source: "Studies" },                                                                                                             
+      { assumption: "Nurse base hourly rate", range: "$35–55/hr", defaultVal: "$42/hr", source: "BLS 2024" },                                                                                                  
+      { assumption: "Nurse turnover", range: "15–25%", defaultVal: "18%", source: "NSI 2024" },
+      { assumption: "Burnout-related %", range: "30–50%", defaultVal: "40%", source: "ANA" },                                                                                                                  
+      { assumption: "Retention impact", range: "10–25%", defaultVal: "15%", source: "Conservative" },                                                                                                          
+      { assumption: "Replacement cost", range: "$40–65K", defaultVal: "$52K", source: "NSI 2024" },                                                                                                            
+      { assumption: "Agency coverage weeks", range: "8–16 wks", defaultVal: "12 wks", source: "Industry avg" },                                                                                                
+      { assumption: "Agency weekly premium", range: "$2–4K/wk", defaultVal: "$2,500", source: "Travel nursing" },                                                                                              
+      { assumption: "Doc-preventable HAPI %", range: "3–8%", defaultVal: "5%", source: "Conservative" },                                                                                                       
+      { assumption: "Cost per HAPI", range: "$10–50K", defaultVal: "$26K", source: "AHRQ" },                                                                                                                   
+      { assumption: "Doc-preventable falls %", range: "3–8%", defaultVal: "5%", source: "Conservative" },                                                                                                      
+      { assumption: "Cost per fall", range: "$3–30K", defaultVal: "$6.5K", source: "CMS" },                                                                                                                    
+    ],                                                                                                                                                                                                         
+    conservativeCallout: "We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny. Quality outcomes are shown separately from Labor Economics because the causal 
+  chain is longer and the attribution is indirect. We'd rather be honest about that than bundle everything into a single inflated number.",                                                                    
+    validation: [                                                                                                                                                                                              
+      {                                                     
+        name: "CAPACITY (OVERTIME)",                                                                                                                                                                           
+        before: ["OT hours per unit per month — baseline by season", "Shift completion rate — mandatory vs. voluntary OT split"],
+        after: ["Track OT hours — Abridge vs. control units", "Compare shift completion rate pre/post"],                                                                                                       
+        timeline: "2–3 months",                             
+      },                                  
+      {                                                                                                                                                                                                        
+        name: "QUALITY (HAPI + FALLS)",                                                                                                                                                                        
+        before: ["HAPI and falls rates per unit — 12-month baseline", "Bundle compliance rates (SEP-1, CAUTI, CLABSI)"],                                                                                       
+        after: ["Track event rates — Abridge vs. control units", "Be cautious on attribution — use as indicator, not proof"],                                                                                  
+        timeline: "6–12 months — treat as bonus, not promise",
+      },                                  
+      {                                                                                                                                                                                                        
+        name: "WORKFORCE (RETENTION + AGENCY)",                                                                                                                                                                
+        before: ["Turnover by unit — baseline and exit interview data", "Agency hours and spend per unit per month"],                                                                                          
+        after: ["Track turnover Abridge vs. control units", "Track agency utilization monthly"],                                                                                                               
+        timeline: "12–18 months",                                                                                                                                                                              
+      },                                  
+      {                                                                                                                                                                                                        
+        name: "REVENUE",                                                                                                                                                                                       
+        before: ["No direct nursing revenue metrics to baseline"],                                                                                                                                             
+        after: ["See Inpatient methodology for DRG accuracy impact of nursing documentation"],                                                                                                                 
+        timeline: "Not applicable — tracked in Inpatient model",
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    closingNote: "This methodology reflects Abridge's approach to modeling nursing ROI across four domains: Quality, Workforce, Capacity, and Revenue. Three domains are active. Revenue is intentionally      
+  absent—nurses don't bill, and we don't manufacture a story where one doesn't exist. That honesty is what makes the Quality, Workforce, and Capacity stories defensible. All defaults are conservative and    
+  editable. The goal is a framework you can walk into a CFO conversation with—not a number that falls apart under the first question.",
+  },                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---                                     
+  Verify                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  After making this change:
+  1. Open the app → home page → "Learn the Methodology" → Nursing                                                                                                                                              
+  2. Download the Nursing methodology PDF                        
+  3. Page 1 should show "FOUR VALUE DOMAINS" with 4 cards in a 2×2 grid: QUALITY (top-left), WORKFORCE (top-right), CAPACITY (bottom-left), REVENUE (bottom-right)
+  4. The REVENUE card should display the "Not Applicable — nurses don't bill" message with the honest explanation and colors.tertiary accent — visually distinct from the other three active domains
+  5. Page 2 VALUE MECHANISMS should have 3 labeled sections (QUALITY, WORKFORCE, CAPACITY) — no REVENUE section since there are no mechanisms to list                                               
+  6. QUALITY section should include: HAPI Prevention, Falls Prevention, CAUTI & CLABSI, Sepsis SEP-1, HCAHPS — all marked as "Potential" or "Directional"
+  7. Page 3 validation cards: CAPACITY (Overtime), QUALITY (HAPI + Falls), WORKFORCE (Retention + Agency), REVENUE (shows "not applicable, see Inpatient")
+  8. ED, Outpatient, and Inpatient methodology PDFs should remain unchanged    

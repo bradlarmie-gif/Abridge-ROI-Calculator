@@ -156,6 +156,13 @@ interface ValidationCard {
   timeline: string;
 }
 
+interface DomainCard {
+  label: string;
+  description: string;
+  footer: string;
+  accentColor: string;
+}
+
 interface SettingData {
   settingLabel: string;
   settingLabelLower: string;
@@ -169,6 +176,7 @@ interface SettingData {
   cat2Label: string;
   cat2Description: string;
   cat2Footer: string;
+  domains?: DomainCard[];
   frameworkCallout: string;
   categories: CategoryData[];
   honestLimits: HonestLimitsData;
@@ -345,66 +353,180 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
   ed: {
     settingLabel: "Emergency",
     settingLabelLower: "emergency",
-    coverSubtitle: "A transparent framework for understanding where\nspeed matters and every minute counts differently",
-    contextHeadline: "In the ED, you can\u2019t schedule value\u2014it shows up in the patients you keep and the complexity you capture.",
-    contextBody: "Time savings per encounter are smaller here\u20142\u20134 minutes vs. 2\u20134 in outpatient\u2014because ED documentation is already faster-paced with more templated workflows. But the ED is a volume engine. At 40,000\u201380,000 visits per year, those minutes compound: three minutes across 50,000 visits is 2,500 hours of physician time. The ED\u2019s unique challenge is that notes get worse when volume gets high. During surges, documentation quality drops\u2014E/M levels understate complexity, medical necessity gets under-documented, and for admitted patients, the ED note becomes the foundation of the entire inpatient DRG. Ambient AI doesn\u2019t get tired during a surge.",
-    contextQuestion: "Three value paths\u2014each with different measurement challenges.",
-    cat1Label: "THROUGHPUT & LWBS",
-    cat1Description: "Every patient who leaves without being seen is lost revenue\u2014$300\u2013$500+ per visit, gone permanently. Faster documentation contributes to faster throughput, which can recover some of these patients.",
-    cat1Footer: "Trackable, attribution is the challenge",
-    cat2Label: "DOCUMENTATION QUALITY",
-    cat2Description: "E/M accuracy during surges, medical necessity capture, and the ED-to-inpatient connection. When notes reflect what actually happened, coding is accurate and denials are preventable.",
-    cat2Footer: "Measurable and auditable",
-    frameworkCallout: "We model throughput, documentation quality, and clinician sustainability\u2014but we\u2019re honest about measurement timelines. LWBS recovery is trackable in weeks. E/M accuracy is auditable from claims data. Retention takes 12\u201318 months. We explicitly note that throughput depends on staffing, triage, and bed management\u2014documentation speed is one lever, not the only one.",
+    coverSubtitle: "A transparent framework for understanding where\nvalue lives across four domains in the ED",
+    contextHeadline: "In the ED, you can\u2019t schedule value\u2014it shows up in the patients you keep, the complexity you capture, and the physicians who stay.",
+    contextBody: "Time savings per encounter are smaller here\u20142\u20134 minutes vs. outpatient\u2014because ED documentation is already faster-paced with more templated workflows. But the ED is a volume engine. At 40,000\u201380,000 visits per year, those minutes compound: three minutes across 50,000 visits is 2,500 hours of physician time. The ED\u2019s unique challenge is that notes get worse when volume gets high. During surges, documentation quality drops\u2014E/M levels understate complexity, medical necessity gets under-documented, and for admitted patients, the ED note becomes the foundation of the entire inpatient DRG. Ambient AI doesn\u2019t get tired during a surge.",
+    contextQuestion: "Four value domains \u2014 each with a different measurement timeline.",
+    cat1Label: "CAPACITY",
+    cat1Description: "LWBS recovery and throughput improvement.",
+    cat1Footer: "Trackable",
+    cat2Label: "REVENUE",
+    cat2Description: "E/M accuracy and denial prevention.",
+    cat2Footer: "Auditable",
+    domains: [
+      {
+        label: "QUALITY",
+        description: "ED documentation quality drives clinical decisions and downstream inpatient coding. Sepsis recognition, stroke protocol documentation, and CDI completeness all depend on what gets captured during the encounter\u2014in real time, not reconstructed hours later.",
+        footer: "Strategic \u2014 qualitative, with measurable CDI impact",
+        accentColor: colors.primary,
+      },
+      {
+        label: "WORKFORCE",
+        description: "Emergency medicine has the highest physician burnout rate in medicine. Documentation burden is consistently cited as the leading driver. Time returned to physicians\u2014away from after-shift charting and between-patient documentation\u2014directly reduces the friction that precedes burnout and departure.",
+        footer: "Influenceable \u2014 retention impact at 12\u201318 months",
+        accentColor: colors.secondary,
+      },
+      {
+        label: "CAPACITY",
+        description: "When physicians spend less time documenting between patients, they are available to see the next patient sooner. Shorter wait times reduce LWBS\u2014patients who were already in your department and left only because of wait time. Each recovered LWBS patient is revenue that was walking out the door.",
+        footer: "Measurable \u2014 LWBS rate tracks weekly",
+        accentColor: colors.primary,
+      },
+      {
+        label: "REVENUE",
+        description: "During surges, ED notes understate what actually happened\u2014E/M levels drop, medical necessity goes under-documented, and denials accumulate silently. Accurate documentation reflects care delivered. That\u2019s E/M accuracy and denial prevention\u2014the most directly auditable revenue drivers in the ED.",
+        footer: "Auditable \u2014 claims data within 90 days",
+        accentColor: colors.secondary,
+      },
+    ],
+    frameworkCallout: "We model all four domains\u2014but we\u2019re transparent about what each requires to measure. Capacity (LWBS) is trackable in weeks. Revenue (E/M accuracy, denials) is auditable from claims data. Workforce (retention) takes 12\u201318 months. Quality drives clinical outcomes that we measure but don\u2019t monetize\u2014because doing so honestly is harder than making up a number.",
     categories: [
       {
-        label: "THROUGHPUT & LWBS",
-        labelColor: colors.secondary,
+        label: "QUALITY",
+        labelColor: colors.primary,
         mechanisms: [
-          { name: "LWBS Recovery", attribution: "Measurable", description: "When physicians spend less time documenting, they move through patients faster. Faster throughput means shorter wait times, and shorter wait times mean fewer patients leave before being seen. Each recovered LWBS patient is revenue that was walking out the door. Documentation speed is one factor among many\u2014staffing, triage, bed availability all matter\u2014so we use conservative recovery rates (5\u201315%).", formula: "Annual visits \u00D7 LWBS rate (2\u20134%) \u00D7 Recovery % (5\u201315%) \u00D7 Avg ED visit revenue ($300\u2013500)" },
+          {
+            name: "Clinical Documentation Completeness",
+            attribution: "Strategic",
+            description: "Real-time capture during the encounter prevents the reconstruction problem\u2014physicians documenting hours later miss specificity that was present in the room. For time-sensitive conditions (sepsis, stroke, STEMI), documentation captured at the point of care enables faster protocol activation and cleaner clinical records. For admitted patients, a complete ED note is where the inpatient stay begins\u2014and where the CDI opportunity lives.",
+            formula: "Measured: note completeness rates, CDI query volume on admitted patients, sepsis/stroke bundle documentation compliance",
+          },
+          {
+            name: "CDI & Inpatient Connection",
+            attribution: "Connected",
+            description: "For admitted patients (15\u201325% of ED visits), the ED note is the foundation of DRG assignment. When ED notes capture presenting conditions, comorbidities, and clinical reasoning, inpatient CDI teams have a stronger starting point\u2014fewer queries, fewer missed CCs/MCCs. We quantify this in the Inpatient methodology to avoid double-counting.",
+            formula: "ED admissions \u00D7 DRG improvement rate \u00D7 Avg DRG value increase ($6\u20138K) \u00D7 Realization \u2014 quantified in Inpatient model",
+            formulaColor: colors.tertiary,
+          },
         ],
       },
       {
-        label: "DOCUMENTATION QUALITY",
+        label: "WORKFORCE",
+        labelColor: colors.secondary,
+        mechanisms: [
+          {
+            name: "Clinician Sustainability & Retention",
+            attribution: "Influenceable",
+            description: "ED physician burnout isn\u2019t a trend\u2014it\u2019s a workforce crisis. Documentation burden is consistently cited as a top contributor. Abridge returns hours per week per physician\u2014time that currently comes from post-shift charting and between-patient documentation. At $400K\u2013$700K per physician replacement (including locum coverage at $250\u2013$400/hour, recruitment, and onboarding), even a modest reduction in burnout-driven departures generates significant avoided cost.",
+            formula: "ED physicians \u00D7 Turnover (8\u201315%) \u00D7 Burnout % (40\u201360%) \u00D7 Abridge impact (10\u201320%) \u00D7 Replacement cost ($400\u2013700K)",
+          },
+        ],
+      },
+      {
+        label: "CAPACITY",
         labelColor: colors.primary,
         mechanisms: [
-          { name: "E/M Level Accuracy", attribution: "Measurable", description: "During surges, ED notes understate what actually happened. A physician manages a complex patient\u2014multiple differentials, medication adjustments, procedure decisions\u2014but the note reflects a simpler encounter because there wasn\u2019t time to document the full decision-making. ED wRVU lift is typically lower than outpatient (2\u20134% vs 3\u20137%) because ED workflows are already more templated. We account for this.", formula: "Encounters \u00D7 Baseline wRVU (2.0\u20133.0) \u00D7 Lift % (2\u20134%) \u00D7 Conversion factor \u00D7 Realization" },
-          { name: "Medical Necessity & Denials", attribution: "Measurable", description: "Medical necessity is the ED\u2019s denial vulnerability. When a note doesn\u2019t capture why a test was ordered, why a patient was admitted, or why observation wasn\u2019t sufficient\u2014that\u2019s a denial waiting to happen. Many ED denials are unappealable because the documentation gap existed at the time of service. Your RCM team can categorize denials by root cause\u2014documentation-related denials are identifiable.", formula: "Claims \u00D7 Denial rate \u00D7 Doc-related % \u00D7 Prevention rate \u00D7 Avg claim value" },
-          { name: "CDI & Inpatient Connection", attribution: "Connected", description: "For admitted patients (15\u201325% of ED visits), the ED note is where the inpatient stay begins. A complete ED note captures presenting conditions, comorbidities, and clinical reasoning that CDI teams need for accurate DRG assignment. When ED notes are thin, CDI teams spend time querying\u2014and some opportunities are missed entirely. We quantify this in the Inpatient methodology to avoid double-counting.", formula: "ED admissions \u00D7 DRG improvement rate \u00D7 Avg DRG value increase ($6\u20138K) \u00D7 Realization" },
-          { name: "Clinician Sustainability", attribution: "Influenceable", description: "ED physician burnout isn\u2019t a trend\u2014it\u2019s a workforce crisis. Documentation burden is consistently cited as a top contributor. At $400K\u2013$700K per physician replacement, the cost isn\u2019t just recruiting\u2014it\u2019s locum coverage at $250\u2013$400/hour, coverage gaps affecting throughput, and institutional knowledge that walks out the door. We use conservative impact rates (10\u201320%) because documentation is one of many burnout drivers.", formula: "ED physicians \u00D7 Turnover (8\u201315%) \u00D7 Burnout % \u00D7 Impact (10\u201320%) \u00D7 Replacement cost ($400\u2013700K)" },
+          {
+            name: "LWBS Recovery",
+            attribution: "Measurable",
+            description: "The mechanism is documentation speed \u2192 physician availability \u2192 shorter wait times \u2192 fewer walkouts. These patients were already in your department. The encounter was already initiated. The only variable was time. Documentation speed is one factor among many\u2014staffing, triage, bed availability all matter\u2014so we use conservative recovery rates (5\u201315%) and are explicit about attribution.",
+            formula: "Annual visits \u00D7 LWBS rate (2\u20134%) \u00D7 Recovery % (5\u201315%) \u00D7 Avg ED visit revenue ($300\u2013500)",
+          },
+          {
+            name: "Admission Capture",
+            attribution: "Connected",
+            description: "Of patients who leave before being seen in high-acuity EDs, published literature suggests 15\u201320% would have met inpatient admission criteria. Faster throughput that recovers LWBS patients also recovers the admission revenue downstream. We model this separately from LWBS visit revenue to avoid bundling\u2014the admission is a different financial event.",
+            formula: "LWBS recovered \u00D7 Admission rate (15\u201320%) \u00D7 Avg admission revenue \u00D7 Realization",
+          },
+        ],
+      },
+      {
+        label: "REVENUE",
+        labelColor: colors.secondary,
+        mechanisms: [
+          {
+            name: "E/M Level Accuracy",
+            attribution: "Measurable",
+            description: "During high-volume shifts, ED notes understate visit complexity\u2014not because the care wasn\u2019t delivered, but because documentation at speed omits decision-making specificity. E/M accuracy improves when notes capture the complexity that was already there. ED wRVU lift is typically lower than outpatient (1\u20134% vs 2\u20137%) because ED workflows are already more templated. We use conservative defaults.",
+            formula: "Encounters \u00D7 Baseline wRVU (1.6) \u00D7 Lift % (1\u20134%) \u00D7 Conversion factor ($33\u201336) \u00D7 Realization (75%)",
+          },
+          {
+            name: "Denial Prevention",
+            attribution: "Measurable",
+            description: "ED claim denials most often trace to three documentation failures: absent medical necessity language, incomplete physical exam documentation, and missing decision rationale for admission vs. discharge. Abridge captures clinical reasoning in real time. Documentation-related denials are among the most preventable in the revenue cycle\u2014and your RCM team can identify them by root cause.",
+            formula: "Claims \u00D7 Denial rate \u00D7 Doc-related % \u00D7 Prevention rate (15\u201330%) \u00D7 Avg claim value",
+          },
         ],
       },
     ],
-    careQualityCallout: "ED throughput depends on staffing, patient flow, and bed management\u2014documentation speed is one lever, not the only one. E/M accuracy is auditable from claims data: compare high-volume vs. low-volume shifts for similar patient populations. If high-volume shifts show lower E/M levels, that gap is documentation-driven, not clinical.",
+    careQualityCallout: "Quality outcomes in the ED are real but indirect\u2014we capture the documentation, clinical teams act on it. E/M accuracy is auditable from claims data: compare high-volume vs. low-volume shifts for similar patient populations. If high-volume shifts show lower E/M levels, that gap is documentation-driven, not clinical.",
     honestLimits: {
-      measure: ["Doc time per encounter (EHR timestamps, weeks)", "E/M level distribution (claims data, auditable)", "Denial rates by category (RCM data)", "LWBS rate (every ED tracks this)"],
-      influence: ["Throughput (staffing, triage, bed management)", "Door-to-doc time (multi-factorial)", "CDI queries on admitted patients", "Provider satisfaction surveys"],
-      enable: ["DRG impact on admits (indirect, see Inpatient)", "Retention (12\u201318 months to measure)", "Care continuity (downstream)", "Patient experience"],
+      measure: [
+        "E/M level distribution by shift volume (claims data, 90 days)",
+        "Denial rates by root cause \u2014 RCM data",
+        "LWBS rate \u2014 every ED tracks this weekly",
+        "CDI query volume on admitted patients",
+      ],
+      influence: [
+        "Throughput / door-to-doc time (staffing, triage, bed management)",
+        "Retention (12\u201318 months to measure)",
+        "Sepsis/stroke bundle compliance (clinical practice dependent)",
+        "DRG accuracy on admits (team-produced, quantified in Inpatient model)",
+      ],
+      enable: [
+        "Care continuity (downstream \u2014 outpatient follow-up quality)",
+        "Patient experience (multi-factorial)",
+        "Readmission reduction (too indirect to model)",
+        "Coding accuracy (coder-dependent downstream step)",
+      ],
     },
     connectedValueLabel: "CONNECTED VALUE",
     connectedValue: "ED documentation drives downstream inpatient revenue\u2014when ED notes capture presenting conditions and comorbidities, inpatient CDI has a stronger foundation for DRG accuracy. For admitted patients, the ED note is where the inpatient stay begins. ED nursing notes also feed into inpatient handoff quality. We quantify this connection in the Inpatient methodology to avoid double-counting across settings.",
-    mechanismsSubtitle: "How Time Saved Becomes Value in the ED",
+    mechanismsSubtitle: "How Each Domain Creates Value in the ED",
     assumptions: [
       { assumption: "Time saved/encounter", range: "2\u20134 min", defaultVal: "3 min", source: "Abridge data" },
-      { assumption: "ED wRVU baseline", range: "2.0\u20133.0", defaultVal: "2.5", source: "ACEP benchmarks" },
-      { assumption: "wRVU lift %", range: "2\u20134%", defaultVal: "3%", source: "Abridge data" },
+      { assumption: "ED wRVU baseline", range: "1.4\u20132.0", defaultVal: "1.6", source: "ACEP benchmarks" },
+      { assumption: "wRVU lift % (ED)", range: "1\u20134%", defaultVal: "2.5%", source: "Abridge data" },
       { assumption: "LWBS rate", range: "2\u20134%", defaultVal: "3%", source: "National benchmark" },
       { assumption: "LWBS recovery rate", range: "5\u201315%", defaultVal: "10%", source: "Conservative" },
       { assumption: "Avg ED visit revenue", range: "$300\u2013500", defaultVal: "$400", source: "Blended avg" },
-      { assumption: "ED admission rate", range: "15\u201325%", defaultVal: "20%", source: "Acuity-dependent" },
-      { assumption: "Avg DRG value increase", range: "$6\u20138K", defaultVal: "$7K", source: "DRG avg" },
-      { assumption: "Denial reduction", range: "5\u201315%", defaultVal: "8%", source: "Conservative" },
+      { assumption: "LWBS admission rate", range: "15\u201320%", defaultVal: "18%", source: "Literature" },
+      { assumption: "Avg admission revenue", range: "$7\u201310K", defaultVal: "$8,000", source: "ED-to-IP contribution" },
+      { assumption: "Denial reduction (Conservative)", range: "15\u201320%", defaultVal: "15%", source: "RCM benchmarks" },
+      { assumption: "Denial reduction (Typical)", range: "25\u201335%", defaultVal: "30%", source: "RCM benchmarks" },
       { assumption: "Physician turnover", range: "8\u201315%", defaultVal: "10%", source: "ACEP surveys" },
+      { assumption: "Burnout-related %", range: "40\u201360%", defaultVal: "50%", source: "Emergency medicine research" },
+      { assumption: "Retention impact", range: "10\u201320%", defaultVal: "15%", source: "Conservative" },
       { assumption: "Replacement cost", range: "$400\u2013700K", defaultVal: "$500K", source: "Merritt Hawkins" },
     ],
     conservativeCallout: "We\u2019d rather show a smaller number you can defend than a larger number that falls apart under scrutiny. If your LWBS rate is already below 2%, that lever is smaller. If your E/M distribution looks consistent across shift volumes, the documentation gap may be minimal. We let you adjust based on your reality.",
     validation: [
-      { name: "LWBS RECOVERY", before: ["Current LWBS rate by shift", "Door-to-disposition time"], after: ["Track LWBS rate changes weekly", "Measure wait time impact"], timeline: "1\u20132 months" },
-      { name: "E/M ACCURACY", before: ["E/M level distribution by shift volume", "Coding accuracy audit"], after: ["Compare level mix pre/post", "Compare high vs. low volume shifts"], timeline: "3\u20136 months" },
-      { name: "DENIALS", before: ["Denial rate by reason code", "Medical necessity denial rates"], after: ["Track denial trends on Abridge shifts", "Compare appeal success rates"], timeline: "6\u201312 months" },
-      { name: "RETENTION", before: ["Baseline turnover rate", "Exit interview data on burnout"], after: ["Track turnover Abridge vs. pre-impl", "Survey on documentation satisfaction"], timeline: "12\u201318 months" },
+      {
+        name: "CAPACITY (LWBS)",
+        before: ["Current LWBS rate by shift", "Door-to-disposition time by hour"],
+        after: ["Track LWBS rate weekly \u2014 Abridge vs. control shifts", "Measure wait time delta"],
+        timeline: "4\u20138 weeks",
+      },
+      {
+        name: "REVENUE (E/M + DENIALS)",
+        before: ["E/M level distribution by shift volume", "Denial rate by root cause code"],
+        after: ["Compare E/M level mix pre/post \u2014 high vs. low volume shifts", "Track documentation-related denial rate quarterly"],
+        timeline: "3\u20136 months",
+      },
+      {
+        name: "QUALITY (CDI)",
+        before: ["CDI query volume on ED-admitted patients", "Sepsis/stroke bundle documentation compliance %"],
+        after: ["Track CDI queries on Abridge-documented admits vs. control", "Compare bundle compliance rates"],
+        timeline: "2\u20133 months",
+      },
+      {
+        name: "WORKFORCE (RETENTION)",
+        before: ["Baseline turnover rate", "Exit interview data \u2014 documentation burnout attribution"],
+        after: ["Track turnover on Abridge vs. pre-implementation", "Survey on documentation satisfaction at 6 and 12 months"],
+        timeline: "12\u201318 months",
+      },
     ],
-    closingNote: "This methodology reflects Abridge\u2019s approach to modeling ED ROI. We lead with what\u2019s measurable (LWBS, E/M accuracy) and are transparent about what takes longer to prove (retention). All defaults are conservative and editable. The goal is a defensible framework, not a predetermined answer.",
+    closingNote: "This methodology reflects Abridge\u2019s approach to modeling ED ROI across four domains: Quality, Workforce, Capacity, and Revenue. We lead with what\u2019s measurable (LWBS, E/M accuracy) and are transparent about what takes longer to prove (retention) and what we influence but don\u2019t monetize (clinical quality outcomes). All defaults are conservative and editable. The goal is a defensible framework, not a predetermined answer.",
   },
   inpatient: {
     settingLabel: "Inpatient",
@@ -527,23 +649,57 @@ function Page1Content({ setting }: { setting: MethodologyCareSetting }) {
 
         <View style={styles.thickDivider} />
 
-        <Text style={styles.sectionLabel}>TWO VALUE CATEGORIES</Text>
-        <View style={[styles.twoColRow, { marginBottom: 10 }]}>
-          <View style={[styles.col, styles.cardBg]}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>{data.cat1Label}</Text>
-            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>{data.cat1Description}</Text>
-            <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
-              <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>{data.cat1Footer}</Text>
+        {data.domains ? (
+          <>
+            <Text style={styles.sectionLabel}>FOUR VALUE DOMAINS</Text>
+            <View style={{ flexDirection: "row", gap: 10, marginBottom: 6 }}>
+              {data.domains.slice(0, 2).map((d, i) => (
+                <View key={i} style={[styles.col, { backgroundColor: colors.cards, padding: 12, borderRadius: 4 }]}>
+                  <View style={{ borderLeftWidth: 3, borderLeftColor: d.accentColor, paddingLeft: 8, marginBottom: 6 }}>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, letterSpacing: 1, textTransform: "uppercase" }}>{d.label}</Text>
+                  </View>
+                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>{d.description}</Text>
+                  <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
+                    <Text style={{ fontSize: 8.5, fontWeight: "bold", color: d.accentColor }}>{d.footer}</Text>
+                  </View>
+                </View>
+              ))}
             </View>
-          </View>
-          <View style={[styles.col, { backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary, paddingLeft: 12, paddingVertical: 10 }]}>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>{data.cat2Label}</Text>
-            <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>{data.cat2Description}</Text>
-            <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
-              <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>{data.cat2Footer}</Text>
+            <View style={{ flexDirection: "row", gap: 10, marginBottom: 10 }}>
+              {data.domains.slice(2, 4).map((d, i) => (
+                <View key={i} style={[styles.col, { backgroundColor: colors.cards, padding: 12, borderRadius: 4 }]}>
+                  <View style={{ borderLeftWidth: 3, borderLeftColor: d.accentColor, paddingLeft: 8, marginBottom: 6 }}>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, letterSpacing: 1, textTransform: "uppercase" }}>{d.label}</Text>
+                  </View>
+                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>{d.description}</Text>
+                  <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
+                    <Text style={{ fontSize: 8.5, fontWeight: "bold", color: d.accentColor }}>{d.footer}</Text>
+                  </View>
+                </View>
+              ))}
             </View>
-          </View>
-        </View>
+          </>
+        ) : (
+          <>
+            <Text style={styles.sectionLabel}>TWO VALUE CATEGORIES</Text>
+            <View style={[styles.twoColRow, { marginBottom: 10 }]}>
+              <View style={[styles.col, styles.cardBg]}>
+                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>{data.cat1Label}</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>{data.cat1Description}</Text>
+                <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>{data.cat1Footer}</Text>
+                </View>
+              </View>
+              <View style={[styles.col, { backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary, paddingLeft: 12, paddingVertical: 10 }]}>
+                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>{data.cat2Label}</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>{data.cat2Description}</Text>
+                <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>{data.cat2Footer}</Text>
+                </View>
+              </View>
+            </View>
+          </>
+        )}
 
         <View style={[styles.calloutBox, { marginBottom: 10 }]}>
           <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>{data.frameworkCallout}</Text>
