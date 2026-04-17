@@ -308,6 +308,14 @@ export interface ExplorePDFData {
   ipCostPerQuery?: number;
   ipCdiValue?: number;
   ipCdiEnabled?: boolean;
+  ipCdiScenario?: string;
+  ipDrgScenario?: string;
+  ipObsDefenseEnabled?: boolean;
+  ipObsDefenseValue?: number;
+  ipObsDefenseRealization?: number;
+  ipConcurrentReviewEnabled?: boolean;
+  ipConcurrentValue?: number;
+  ipConcurrentRealization?: number;
   ipCostReductionValue?: number;
   ipCostReductionEnabled?: boolean;
   ipWellbeingHoursPerWeek?: number;
@@ -2422,15 +2430,14 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
   if (isInpatient) {
     const retVal = safe(data.retentionValue);
     const costRedVal = safe(data.ipCostReductionValue);
-    const clinOpsTotal = retVal + costRedVal;
     const drgVal = safe(data.ipDrgValue);
     const cdiQueryVal = safe(data.ipCdiValue);
-    const revenueTotal = drgVal + cdiQueryVal;
-    const ipHasDocQuality = !!(data.ipDrgEnabled || data.ipCdiEnabled);
-    const ipTotalPages = ipHasDocQuality ? 6 : 5;
-    const investmentPageNum = 4;
-    const connectedPageNum = 5;
-    const assessmentPageNum = ipHasDocQuality ? 6 : 5;
+    const obsDefVal = safe(data.ipObsDefenseValue);
+    const concurrentVal = safe(data.ipConcurrentValue);
+    const revenueTotal = drgVal + obsDefVal + concurrentVal;
+    const ipTotalPages = 6;
+    const investmentPageNum = 5;
+    const assessmentPageNum = 6;
     const investmentDisplay = data.annualInvestment >= 1000 ? `$${Math.round(data.annualInvestment / 1000)}K/yr` : `$${Math.round(data.annualInvestment)}/yr`;
     const hrsPerWk = safe(data.ipHoursPerWeek);
     const roundingHrsTotal = safe(data.ipRoundingHoursTotal);
@@ -2466,62 +2473,79 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           preparedBy={data.preparedBy}
         />
 
-        {/* INPATIENT PAGE 1: THE THESIS */}
+        {/* INPATIENT PAGE 1: THE THESIS \u2014 4 BUCKETS */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
             <Text style={styles.sectionLabel}>THE THESIS</Text>
-            <Text style={styles.sectionHeadline}>Two Sources of Value, One Strategic Choice</Text>
+            <Text style={styles.sectionHeadline}>Four Drivers of Value, One Integrated Platform</Text>
             <Text style={styles.body}>
-              Ambient documentation creates value through two distinct mechanisms: time returned and documentation improved. Most analyses conflate these. We separate them {"\u2014"} because the strategic implications are different.
+              Ambient documentation creates value across four mechanisms {"\u2014"} not two. Quality, Workforce, Capacity, and Revenue each operate on a different timescale and address a different organizational priority.
             </Text>
             <Text style={styles.body}>
-              Time returned is a resource. You decide how to deploy it. Documentation improved is a capture. It happens automatically.
+              The four drivers are integrated. Time returned makes documentation completeness possible; documentation completeness drives both query reduction and revenue capture. The platform is one. The value shows up in four places.
             </Text>
 
-            <View style={[styles.cardBg, { marginBottom: 10 }]}>
-              <Text style={{ fontSize: 12, color: colors.primaryText, marginBottom: 6 }}>
-                If we give hospitalists time back, what happens to your hospital?
-              </Text>
-              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-                The answer reveals your strategy. There are two fundamental ways inpatient documentation time creates value:
-              </Text>
-            </View>
-
-            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
               <View style={[styles.cardBg, { flex: 1 }]}>
                 <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                  CAPACITY UNLOCKED
+                  QUALITY
                 </Text>
-                <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
-                  {clinOpsTotal > 0 ? fmtCurrency(clinOpsTotal) : "Qualitative"}
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: cdiQueryVal > 0 ? colors.primaryText : colors.secondary, marginBottom: 4 }}>
+                  {cdiQueryVal > 0 ? fmtCurrency(cdiQueryVal) : "Not Modeled"}
                 </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>
-                  Hours returned to rounding, patient care, and throughput. Beds freed by earlier discharges. Admits processed faster.
-                </Text>
-                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
-                  The constraint is time. Remove it.
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  Complete real-time documentation eliminates the CDI query before it{"\u2019"}s needed. Documentation completeness is the upstream intervention {"\u2014"} query reduction is how you measure it.
                 </Text>
               </View>
 
               <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
                 <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
-                  REVENUE OPTIMIZED
+                  WORKFORCE
                 </Text>
-                <Text style={{ fontSize: 24, fontWeight: "bold", color: revenueTotal > 0 ? colors.primary : colors.secondary, marginBottom: 4 }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: (data.retentionValueEnabled && retVal > 0) || data.sustainabilityEnabled ? colors.primary : colors.secondary, marginBottom: 4 }}>
+                  {data.retentionValueEnabled && retVal > 0
+                    ? fmtCurrency(retVal)
+                    : data.sustainabilityEnabled
+                      ? `${safe(data.ipWellbeingHoursPerWeek).toFixed(1)} hrs/wk`
+                      : "Not Modeled"}
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  After-hours charting is the documentation burden that drives hospitalist turnover. Time returned from documentation is the mechanism behind every other value driver in this model.
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  CAPACITY
+                </Text>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
+                  {costRedVal > 0
+                    ? fmtCurrency(costRedVal)
+                    : `${(safe(data.hoursReturned) / (data.providers || 1) / 52).toFixed(1)} hrs/wk`}
+                </Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  Documentation removed from rounding returns hospitalists to the bedside. More time for complex case management, teaching, and care transitions {"\u2014"} the work that doesn{"\u2019"}t fit in a note.
+                </Text>
+              </View>
+
+              <View style={[styles.cardBg, { flex: 1 }]}>
+                <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>
+                  REVENUE
+                </Text>
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: revenueTotal > 0 ? colors.primaryText : colors.secondary, marginBottom: 4 }}>
                   {revenueTotal > 0 ? fmtCurrency(revenueTotal) : "Not Modeled"}
                 </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>
-                  Better documentation, higher CMI, reduced denials. Every encounter captured completely, coded correctly.
-                </Text>
-                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
-                  The notes drive the revenue.
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                  DRG accuracy, observation/inpatient status defense, and concurrent review protection. The clinical conversation that happens at the bedside drives the payer relationship downstream.
                 </Text>
               </View>
             </View>
 
             <View style={styles.calloutBox}>
               <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
-                STRATEGIC OBSERVATION
+                WHAT YOUR CHOICES REVEAL
               </Text>
               <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
                 {getInpatientObservation(data)}
@@ -2532,82 +2556,141 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           </View>
         </Page>
 
-        {/* INPATIENT PAGE 2: THE WORKFORCE BEHIND THE NUMBERS */}
+        {/* INPATIENT PAGE 2: QUALITY */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
-            <Text style={styles.sectionLabel}>THE WORKFORCE BEHIND THE NUMBERS</Text>
-            <Text style={{ fontSize: 26, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.15, marginBottom: 4 }}>
-              The hospitalist carries a documentation load{"\n"}disproportionate to their billable output.
+            <Text style={styles.sectionLabel}>QUALITY</Text>
+            <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.2, marginBottom: 6 }}>
+              When documentation is complete at the bedside,{"\n"}the CDI query never needs to happen.
             </Text>
-            <Text style={{ fontSize: 10, color: "#888888", lineHeight: 1.4, marginBottom: 16 }}>
-              Every admission generates a history, a plan, an attestation, orders.{"\n"}Most of it happens after the patient interaction is over.{"\n"}Often after hours.
+            <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 10, lineHeight: 1.5 }}>
+              CDI queries are a downstream symptom of upstream documentation gaps. Abridge doesn{"\u2019"}t reduce queries by streamlining the query process {"\u2014"} it makes the query unnecessary by capturing the clinical conversation that would have answered it.
             </Text>
 
             <View style={styles.divider} />
 
-            <View style={[styles.calloutBox, { marginBottom: 0 }]}>
-              <Text style={{ fontSize: 10, color: colors.primaryText, lineHeight: 1.5 }}>
-                Hospital medicine is one of the most demanding documentation environments in the building {"\u2014"} and one of the hardest specialties to retain. KLAS data on ambient speech implementations documents consistent reductions in after-hours charting time and measurable improvements in provider satisfaction scores across health systems. The time this model returns to your hospitalists isn{"\u2019"}t a benefit in the traditional ROI sense. It{"\u2019"}s a workforce protection strategy {"\u2014"} one that also happens to drive capacity, DRG accuracy, and downstream revenue. The two are not mutually exclusive.
-              </Text>
-              <View style={{ borderTopWidth: 0.5, borderTopColor: colors.border, paddingTop: 6, marginTop: 8 }}>
-                <Text style={{ fontSize: 8, color: "#888888" }}>
-                  Source: AMA National Physician Burnout Survey, 2024. KLAS Ambient Speech Outcomes, 2025.
+            {data.ipCdiEnabled && cdiQueryVal > 0 ? (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>CDI QUERY REDUCTION</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(cdiQueryVal)}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      At a {ipCdiQRate}% query rate, your CDI team manages roughly {fmtNum(ipTotalQ)} queries per year. When Abridge captures the clinical conversation completely, many become unnecessary {"\u2014"} the answer is already in the note. At a {data.ipCdiScenario ?? "typical"} scenario reduction of {ipQAvoidRate}%, {fmtNum(ipQAvoided)} queries avoided at {fmtCurrency(ipQCost)} each: {fmtCurrency(cdiQueryVal)} annually in CDI team capacity freed for complex cases.
+                    </Text>
+                    <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
+                      CDI query cost reflects fully-loaded CDI team time: query generation, clinical review, response tracking, and physician follow-up. Queries avoided free CDI capacity for higher-complexity case optimization {"\u2014"} not headcount reduction.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.secondary, marginBottom: 4 }}>CDI Query Reduction {"\u2014"} Not Selected</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                  Available to model when your CDI director is ready to size the opportunity.
                 </Text>
               </View>
+            )}
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>CONNECTED VALUE</Text>
+
+            <View style={[styles.calloutBox, { marginBottom: 8 }]}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>WHEN ED AND INPATIENT BOTH USE ABRIDGE</Text>
+              <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>
+                Inpatient documentation doesn{"\u2019"}t start at admission. The ED note that precedes it sets the documentation trajectory for the entire encounter. When both care settings use Abridge, documentation completeness compounds.
+              </Text>
             </View>
 
-            <View style={styles.divider} />
-
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>YOUR NUMBERS AT HUMAN SCALE</Text>
-
-            <View style={[styles.cardBg, { padding: 0, flexDirection: "row", marginBottom: 0 }]}>
-              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
-                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(data.hoursReturned)} hours/year</Text>
-                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Returned to your {fmtNum(data.providers)} hospitalists.</Text>
-                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Built from your admission volume, your utilization, your time savings scenario.</Text>
-              </View>
-              <View style={{ width: 0.5, backgroundColor: colors.border }} />
-              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
-                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.providers > 0 ? (data.hoursReturned / data.providers / 52).toFixed(1) : "0"} hrs/week</Text>
-                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per hospitalist, every week.</Text>
-                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Including the hours they were finishing notes at home. Especially those.</Text>
-              </View>
-              <View style={{ width: 0.5, backgroundColor: colors.border }} />
-              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
-                <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{data.providers > 0 ? (data.hoursReturned / data.providers / 8).toFixed(1) : "0"} days/year</Text>
-                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Per hospitalist, not at a keyboard.</Text>
-                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4 }}>Returned to the rounding list, the patient family, or the end of a shift that actually ends.</Text>
-              </View>
+            <View style={[styles.cardBg, { marginBottom: 6 }]}>
+              <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>DRG CAPTURE</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                CCs/MCCs documented in the ED carry forward into inpatient coding. Your case mix starts stronger from the moment of admission {"\u2014"} before the hospitalist writes a word.
+              </Text>
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.cardBg, { marginBottom: 6 }]}>
+              <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>CDI EFFICIENCY</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                When the ED note is complete, CDI teams encounter fewer gaps on day one. Query volume drops before the inpatient note is even written.
+              </Text>
+            </View>
 
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>VALUE DRIVERS AT A GLANCE</Text>
+            <View style={[styles.cardBg, { marginBottom: 6 }]}>
+              <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>DENIAL PREVENTION</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                Medical necessity documented at the point of the admission decision {"\u2014"} in real time, in the ED {"\u2014"} is your first line of defense against retrospective payer audit.
+              </Text>
+            </View>
 
-            <ValueDriversGlanceBlock drivers={data.drivers} formatValue={fmtCurrency} />
-
-            <View style={styles.divider} />
-
-            <Text style={{ fontSize: 10, color: colors.primaryText, textAlign: "center", marginTop: 4, marginBottom: 4 }}>
-              {"\u201C"}The pages that follow detail how each driver works{"\n"}and what it produces for your organization.{"\u201D"}
+            <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5, marginTop: 4 }}>
+              These connected benefits are not included in the primary model above. They require both care settings to be in scope and are available to quantify separately.
             </Text>
 
             <PageFooter pageNum={2} orgName={orgName} settingLabel="Inpatient" totalPages={ipTotalPages} />
           </View>
         </Page>
 
-        {/* INPATIENT PAGE 3: YOUR VALUE DRIVERS */}
+        {/* INPATIENT PAGE 3: WORKFORCE & CAPACITY */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
-            <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
-            <Text style={styles.sectionHeadline}>How Time Becomes Value</Text>
-            <Text style={styles.body}>
-              {fmtNum(data.hoursReturned)} hours returned to your hospitalists. Here{"\u2019"}s how each driver works.
+            <Text style={styles.sectionLabel}>WORKFORCE & CAPACITY</Text>
+            <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.2, marginBottom: 6 }}>
+              The hospitalist carries a documentation load{"\n"}disproportionate to their time at the bedside.
+            </Text>
+            <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 10, lineHeight: 1.5 }}>
+              Time returned from documentation doesn{"\u2019"}t stay abstract. It goes back to rounding, to complex cases, to leaving on time {"\u2014"} and over time, to staying.
             </Text>
 
             <View style={styles.divider} />
 
-            <Text style={styles.sectionLabelGray}>CLINICAL OPERATIONS</Text>
+            <Text style={styles.sectionLabelGray}>WORKFORCE</Text>
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                <View style={{ width: 3, backgroundColor: (data.retentionValueEnabled && retVal > 0) || data.sustainabilityEnabled ? colors.primary : colors.secondary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinician Wellbeing</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: (data.retentionValueEnabled && retVal > 0) || data.sustainabilityEnabled ? colors.primary : colors.secondary }}>
+                      {data.retentionValueEnabled && retVal > 0
+                        ? fmtCurrency(retVal)
+                        : data.sustainabilityEnabled
+                          ? `${safe(data.ipWellbeingHoursPerWeek).toFixed(1)} hrs/wk per hospitalist`
+                          : "Not Selected"}
+                    </Text>
+                  </View>
+                  {data.retentionValueEnabled && retVal > 0 ? (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      After-hours charting is the piece of hospitalist burnout that organizations underestimate {"\u2014"} not because it{"\u2019"}s invisible, but because its cost only becomes visible when someone leaves. At a {safe(data.annualTurnoverRate)}% annual turnover rate, with {safe(data.burnoutRelatedTurnoverPct)}% of departures burnout-related, your program loses an estimated {safe(data.ipBurnoutDepartures)?.toFixed(1)} hospitalists per year to documentation burden. At a {safe(data.abridgeRetentionImpactPct)}% retention impact and {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost: {fmtCurrency(retVal)}.
+                    </Text>
+                  ) : data.sustainabilityEnabled ? (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      Abridge returns roughly {safe(data.ipWellbeingHoursPerWeek).toFixed(1)} hours per week per hospitalist {"\u2014"} time that currently comes from after-shift charting. Whether that goes back to complex case review, teaching, or simply leaving on time, it changes what it feels like to practice hospital medicine.
+                    </Text>
+                  ) : (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                      Wellbeing is available to model when your team is ready to size shift sustainability or quantify retention.
+                    </Text>
+                  )}
+                  <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
+                    Source: AMA National Physician Burnout Survey, 2024.
+                    {data.retentionValueEnabled && retVal > 0
+                      ? ` Retention impact modeled at the ${data.abridgeRetentionImpactLabel ?? "typical"} scenario. Validate using exit interview data to confirm burnout-related attribution.`
+                      : ""}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>CAPACITY</Text>
 
             <View style={[styles.cardBg, { marginBottom: 8 }]}>
               <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
@@ -2615,127 +2698,167 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
                     <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Rounding Efficiency</Text>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.secondary }}>Qualitative</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.secondary }}>
+                      {`${(roundingHrsTotal / (data.providers || 1) / 52).toFixed(1)} hrs/wk per hospitalist`}
+                    </Text>
                   </View>
-                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    You allocated {directPct}% of reclaimed time to direct patient care {"\u2014"} {fmtNum(roundingHrsTotal)} hours per year across your program, or {fmtNum(roundingHrsPerProv)} hours per hospitalist. That time returns to rounding, bedside presence, teaching, and managing complex census loads. Its value appears in care quality, hospitalist satisfaction, and the capacity to absorb growth without adding FTEs.
+                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                    Hospitalists spend a disproportionate share of documentation time on notes that follow rounds rather than driving them. Abridge returns {roundingHrsPerProv?.toFixed(0) ?? 0} hours per hospitalist per year to direct patient care. At the bedside. In the room. In the conversation that actually informs the note {"\u2014"} because the note is writing itself.
+                  </Text>
+                  <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
+                    Rounding Efficiency is qualitative. It is the mechanism {"\u2014"} the freed time that makes every other value driver in this model possible.
                   </Text>
                 </View>
               </View>
             </View>
 
-            <View style={[styles.cardBg, { marginBottom: 8 }]}>
-              <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                <View style={{ width: 3, backgroundColor: data.retentionValueEnabled ? colors.primary : colors.secondary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
-                <View style={{ flex: 1 }}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinician Wellbeing</Text>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: data.retentionValueEnabled ? colors.primary : colors.secondary }}>
-                      {data.retentionValueEnabled ? fmtCurrency(retVal) : `${hrsPerWk.toFixed(1)} hrs/wk`}
-                    </Text>
-                  </View>
-                  {data.retentionValueEnabled ? (
-                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      After-hours charting is the piece of physician burnout that organizations underestimate {"\u2014"} not because it{"\u2019"}s invisible, but because its cost only becomes visible when someone leaves. At a {safe(data.annualTurnoverRate)}% annual turnover rate, with {safe(data.burnoutRelatedTurnoverPct)}% of departures burnout-related, your program loses an estimated {safe(data.ipBurnoutDepartures)?.toFixed(1)} hospitalists per year to documentation burden. Modeled at a {safe(data.abridgeRetentionImpactPct)}% retention impact {"\u2014"} conservative {"\u2014"} and a {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost, the projected annual value is {fmtCurrency(retVal)}.
-                    </Text>
-                  ) : (
-                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      Your {shiftPct}% shift sustainability allocation returns roughly {hrsPerWk.toFixed(1)} hours per week to each hospitalist {"\u2014"} time that would otherwise be spent charting after shifts. When retention is a concern, the retention model is available to quantify this further.
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </View>
-
-            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinical Operations Subtotal</Text>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>
-                {clinOpsTotal > 0 ? fmtCurrency(clinOpsTotal) : "Qualitative \u2014 see notes above"}
-              </Text>
-            </View>
-
-            <View style={styles.divider} />
-
-            <Text style={styles.sectionLabelGray}>DOCUMENTATION QUALITY</Text>
-
-            {ipHasDocQuality ? (
-              <>
-                {data.ipDrgEnabled && drgVal > 0 && (
-                  <View style={[styles.cardBg, { marginBottom: 8 }]}>
-                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                      <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>DRG Accuracy</Text>
-                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(drgVal)}</Text>
-                        </View>
-                        <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                          Your hospitalists discuss clinical complexity that doesn{"\u2019"}t always make it into the final note. CDI teams identify documentation opportunities in roughly {ipDrgOpRate}% of admissions {"\u2014"} {fmtNum(ipAdmGaps)} admissions per year carrying a documentation gap. Abridge is modeled to close {ipCapRate}% of those gaps {"\u2014"} the portion where clinical detail was spoken but not written. Each captured case carries an average DRG weight lift of {ipWeightLift}, worth roughly {fmtCurrency(ipBasePayment)} in base payment. After a conservative {ipDrgRealize}% realization rate, the modeled annual value is {fmtCurrency(drgVal)}.
-                        </Text>
-                        <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
-                          Common missed conditions: acute respiratory failure, sepsis, malnutrition, acute encephalopathy, acute kidney injury. Validate gap rates with your CDI team.
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                )}
-                {!data.ipDrgEnabled && (
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 4 }}>
-                    <Text style={{ fontSize: 9, color: colors.secondary }}>DRG Accuracy</Text>
-                    <Text style={{ fontSize: 9, color: colors.secondary }}>Not Modeled</Text>
-                  </View>
-                )}
-
-                {data.ipCdiEnabled && cdiQueryVal > 0 && (
-                  <View style={[styles.cardBg, { marginBottom: 8 }]}>
-                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                      <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>CDI Query Reduction</Text>
-                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(cdiQueryVal)}</Text>
-                        </View>
-                        <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                          CDI queries are a symptom of incomplete upstream documentation. At a {ipCdiQRate}% query rate, your team manages roughly {fmtNum(ipTotalQ)} queries per year. When Abridge captures the clinical conversation completely, many become unnecessary {"\u2014"} the answer is already in the note. At a typical {ipQAvoidRate}% reduction, {fmtNum(ipQAvoided)} queries avoided at {fmtCurrency(ipQCost)} each yields {fmtCurrency(cdiQueryVal)} annually in CDI team capacity.
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                )}
-                {!data.ipCdiEnabled && (
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 4 }}>
-                    <Text style={{ fontSize: 9, color: colors.secondary }}>CDI Query Reduction</Text>
-                    <Text style={{ fontSize: 9, color: colors.secondary }}>Not Modeled</Text>
-                  </View>
-                )}
-              </>
-            ) : (
+            {data.ipCostReductionEnabled && costRedVal > 0 && (
               <View style={[styles.cardBg, { marginBottom: 8 }]}>
-                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.secondary, marginBottom: 4 }}>Documentation Quality: Not Modeled</Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  No documentation quality drivers were selected. The DRG accuracy and CDI opportunity is available to model when your program is ready.
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Cost Reduction</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(costRedVal)}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      Your organization has identified {fmtCurrency(costRedVal)} in annual operational cost reduction attributable to improved documentation velocity and reduced administrative overhead. This figure was entered directly by your team and is not modeled by Abridge.
+                    </Text>
+                  </View>
+                </View>
               </View>
             )}
 
-            <View style={[styles.cardBg, { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 6 }]}>
-              <View>
-                <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
-                  PROJECTED ANNUAL VALUE
-                </Text>
-                <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primary }}>
-                  {fmtCurrency(derivedNetValue)}
-                </Text>
-                <Text style={{ fontSize: 10, color: colors.secondary, marginTop: 2 }}>
-                  Per hospitalist: ~{fmtCurrency(perUnit)}/year
-                </Text>
+            <View style={styles.divider} />
+
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>YOUR NUMBERS AT HUMAN SCALE</Text>
+
+            <View style={[styles.cardBg, { padding: 0, flexDirection: "row", marginBottom: 0 }]}>
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(data.hoursReturned)} hrs/year</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4, textAlign: "center" }}>Returned to your {fmtNum(data.providers)} hospitalists.</Text>
+              </View>
+              <View style={{ width: 0.5, backgroundColor: colors.border }} />
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{(safe(data.hoursReturned) / (data.providers || 1) / 52).toFixed(1)} hrs/week</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4, textAlign: "center" }}>Per hospitalist, every week.</Text>
+              </View>
+              <View style={{ width: 0.5, backgroundColor: colors.border }} />
+              <View style={{ flex: 1, padding: 12, alignItems: "center" }}>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{(safe(data.hoursReturned) / (data.providers || 1) / 8).toFixed(0)} days/year</Text>
+                <Text style={{ fontSize: 8, color: "#888888", marginTop: 4, textAlign: "center" }}>Per hospitalist, not at a keyboard.</Text>
               </View>
             </View>
 
             <PageFooter pageNum={3} orgName={orgName} settingLabel="Inpatient" totalPages={ipTotalPages} />
           </View>
         </Page>
+
+        {/* INPATIENT PAGE 4: REVENUE */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>REVENUE</Text>
+            <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.2, marginBottom: 6 }}>
+              The documentation that drives DRG accuracy{"\n"}is written during the encounter {"\u2014"} or not at all.
+            </Text>
+            <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 10, lineHeight: 1.5 }}>
+              Payer challenges target the same documentation gaps every time: incomplete complication and comorbidity capture, missing medical necessity language, and absent continued-stay rationale. Abridge addresses all three by capturing the clinical conversation in real time.
+            </Text>
+
+            <View style={styles.divider} />
+
+            {(data.ipDrgEnabled && drgVal > 0) || (data.ipObsDefenseEnabled && obsDefVal > 0) || (data.ipConcurrentReviewEnabled && concurrentVal > 0) ? (
+              <>
+                {data.ipDrgEnabled && drgVal > 0 ? (
+                  <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                      <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>DRG ACCURACY</Text>
+                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(drgVal)}</Text>
+                        </View>
+                        <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                          Your hospitalists discuss clinical complexity that doesn{"\u2019"}t always make it into the final note. CDI teams identify documentation opportunities in roughly {ipDrgOpRate}% of admissions {"\u2014"} {fmtNum(ipAdmGaps)} admissions per year carrying a documentation gap. Abridge is modeled to close {ipCapRate}% of those gaps {"\u2014"} the portion where clinical detail was spoken but not captured. Each closed gap carries an average DRG weight lift of {ipWeightLift} at {fmtCurrency(ipBasePayment)} base payment. After a {ipDrgRealize}% realization rate for RAC and PEPPER audit exposure: {fmtCurrency(drgVal)}.
+                        </Text>
+                        <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
+                          Common missed conditions: acute respiratory failure, sepsis, malnutrition, acute encephalopathy, acute kidney injury. Validate gap rates with your CDI team before presenting.
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 6 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>DRG Accuracy</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Not Selected</Text>
+                  </View>
+                )}
+
+                {data.ipObsDefenseEnabled && obsDefVal > 0 ? (
+                  <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                      <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>OBS/IP STATUS DEFENSE</Text>
+                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(obsDefVal)}</Text>
+                        </View>
+                        <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                          Observation vs. inpatient status determinations are among the most contested payer decisions {"\u2014"} and the most documentation-sensitive. Real-time documentation of the clinical rationale for inpatient admission, written at the moment of the decision, is your strongest defense against retrospective challenge. At a {safe(data.ipObsDefenseRealization)}% realization rate: {fmtCurrency(obsDefVal)}.
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 6 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Obs/IP Status Defense</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Not Selected</Text>
+                  </View>
+                )}
+
+                {data.ipConcurrentReviewEnabled && concurrentVal > 0 ? (
+                  <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                      <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>CONCURRENT REVIEW DEFENSE</Text>
+                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(concurrentVal)}</Text>
+                        </View>
+                        <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                          Payer concurrent review targets cases where continued-stay medical necessity isn{"\u2019"}t documented clearly in real time. Abridge captures the daily clinical rationale {"\u2014"} the progression of illness, the decision to maintain inpatient status {"\u2014"} as it{"\u2019"}s spoken. When the case manager needs to respond to a payer, the note is already there. At a {safe(data.ipConcurrentRealization)}% realization rate: {fmtCurrency(concurrentVal)}.
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 6 }}>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Concurrent Review Defense</Text>
+                    <Text style={{ fontSize: 9, color: colors.secondary }}>Not Selected</Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.secondary, marginBottom: 4 }}>Revenue Drivers {"\u2014"} Not Selected</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                  Revenue drivers were not selected for this model. DRG Accuracy, Obs/IP Status Defense, and Concurrent Review Defense are available to model when your revenue cycle team is ready.
+                </Text>
+              </View>
+            )}
+
+            <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>Revenue Subtotal</Text>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: revenueTotal > 0 ? colors.primary : colors.secondary }}>
+                {revenueTotal > 0 ? fmtCurrency(revenueTotal) : "Not Modeled"}
+              </Text>
+            </View>
+
+            <PageFooter pageNum={4} orgName={orgName} settingLabel="Inpatient" totalPages={ipTotalPages} />
+          </View>
+        </Page>
+
 
         {/* INPATIENT PAGE 4: THE INVESTMENT CASE */}
         <Page size="LETTER" style={styles.page} wrap={false}>
@@ -2833,56 +2956,6 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           </View>
         </Page>
 
-        {/* INPATIENT PAGE 4: CONNECTED VALUE (only if doc quality drivers active) */}
-        {ipHasDocQuality && (
-          <Page size="LETTER" style={styles.page} wrap={false}>
-            <View style={styles.pageWrapper}>
-              <Text style={styles.sectionLabel}>CONNECTED VALUE</Text>
-              <Text style={styles.sectionHeadline}>Inpatient Documentation Doesn{"\u2019"}t Start at Admission</Text>
-              <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 8, lineHeight: 1.5 }}>
-                The note that matters most to DRG accuracy is often written before the patient reaches the floor.
-              </Text>
-              <Text style={styles.body}>
-                When both ED and Inpatient use Abridge, the value compounds. The admission documentation that starts in ED flows directly into inpatient coding, CDI workflows, and denial defense.
-              </Text>
-
-              <View style={styles.divider} />
-
-              <View style={[styles.calloutBox, { marginBottom: 8 }]}>
-                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>DRG CAPTURE</Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  CCs/MCCs documented in ED carry forward {"\u2014"} your case mix starts stronger from admission.
-                </Text>
-              </View>
-
-              <View style={[styles.calloutBox, { marginBottom: 8 }]}>
-                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>CDI EFFICIENCY</Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  When the ED note is complete, CDI teams query less and focus on complex cases.
-                </Text>
-              </View>
-
-              <View style={[styles.calloutBox, { marginBottom: 10 }]}>
-                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>DENIAL PREVENTION</Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  Medical necessity documented at admission is your first line of defense against payer audits.
-                </Text>
-              </View>
-
-              <View style={[styles.cardBg, { marginBottom: 8 }]}>
-                <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
-                  ADDITIONAL OPPORTUNITY {"\u2014"} NOT YET MODELED
-                </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  Your wizard inputs support an additional value scenario not included in the primary model: Medical Necessity Appeal Support (documentation completeness supporting retrospective denial defense). This is available to model when your team is ready to quantify it.
-                </Text>
-              </View>
-
-              <PageFooter pageNum={connectedPageNum} orgName={orgName} settingLabel="Inpatient" totalPages={6} />
-            </View>
-          </Page>
-        )}
-
         {/* INPATIENT LAST PAGE: YOUR ASSESSMENT */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
@@ -2920,20 +2993,46 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 </Text>
                 <View style={{ marginBottom: 4 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
-                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>CLINICAL OPERATIONS</Text>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>QUALITY</Text>
                     <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
-                      {clinOpsTotal > 0 ? fmtCurrency(clinOpsTotal) : "Qualitative"}
+                      {cdiQueryVal > 0 ? fmtCurrency(cdiQueryVal) : "Not Modeled"}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>CDI Query Reduction</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
+                      {data.ipCdiEnabled ? fmtCurrency(cdiQueryVal) : "Not Modeled"}
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ marginBottom: 4 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>WORKFORCE</Text>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
+                      {data.retentionValueEnabled && retVal > 0 ? fmtCurrency(retVal) : "Qualitative"}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Clinician Wellbeing</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
+                      {data.retentionValueEnabled && retVal > 0
+                        ? fmtCurrency(retVal)
+                        : data.sustainabilityEnabled
+                          ? `${safe(data.ipWellbeingHoursPerWeek).toFixed(1)} hrs/wk`
+                          : "Not Selected"}
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ marginBottom: 4 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>CAPACITY</Text>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
+                      {costRedVal > 0 ? fmtCurrency(costRedVal) : "Qualitative"}
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>Rounding Efficiency</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>Qualitative</Text>
-                  </View>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Clinician Wellbeing</Text>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
-                      {data.retentionValueEnabled ? fmtCurrency(retVal) : "Qualitative"}
-                    </Text>
                   </View>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>Cost Reduction</Text>
@@ -2944,7 +3043,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 </View>
                 <View style={{ marginBottom: 4 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
-                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>DOCUMENTATION QUALITY</Text>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>REVENUE</Text>
                     <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>
                       {revenueTotal > 0 ? fmtCurrency(revenueTotal) : "Not Modeled"}
                     </Text>
@@ -2956,9 +3055,15 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>CDI Query Reduction</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Obs/IP Status Defense</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>
-                      {data.ipCdiEnabled ? fmtCurrency(cdiQueryVal) : "Not Modeled"}
+                      {data.ipObsDefenseEnabled ? fmtCurrency(obsDefVal) : "Not Modeled"}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Concurrent Review Defense</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
+                      {data.ipConcurrentReviewEnabled ? fmtCurrency(concurrentVal) : "Not Modeled"}
                     </Text>
                   </View>
                 </View>
@@ -3014,28 +3119,25 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <Text style={styles.sectionLabel}>METHODOLOGY</Text>
 
-            <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-              <View style={[styles.cardBg, { flex: 1 }]}>
-                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
-                  YOUR INPUTS
-                </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
-                  {fmtNum(data.providers)} hospitalists{"\n"}
-                  {fmtNum(safe(data.eligibleEncounters))} admissions{"\n"}
-                  {data.utilizationPercent}% utilization{"\n"}
-                  {data.minutesSavedPerEncounter} min saved/admission{"\n"}
-                  {fmtCurrency(data.annualInvestment)} investment{"\n"}
-                  {fmtNum(data.hoursReturned)} hrs returned
-                </Text>
-              </View>
-              <View style={[styles.cardBg, { flex: 1 }]}>
-                <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
-                  REALIZATION RATES
-                </Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  Values use conservative realization rates based on observed implementations. Conservative by design. Based on observed implementations.
-                </Text>
-              </View>
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6, marginBottom: 4 }}>
+                <Text style={{ fontWeight: "bold", color: colors.primaryText }}>CDI Query Reduction:</Text> {data.ipCdiScenario ?? "typical"} scenario {"\u2014"} {ipQAvoidRate}% of queries avoided. Cost per query {fmtCurrency(ipQCost)} (fully-loaded CDI team time: generation, review, tracking, physician follow-up). Mechanism: upstream documentation completeness eliminates the need for the query.
+              </Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6, marginBottom: 4 }}>
+                <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Clinician Retention:</Text> AMA burnout data applied to {safe(data.annualTurnoverRate)}% turnover, {safe(data.burnoutRelatedTurnoverPct)}% burnout-related. Replacement cost {fmtCurrency(safe(data.replacementCostPerProvider))}. Modeled at {data.abridgeRetentionImpactLabel ?? "typical"} scenario. Validate via exit interview data.
+              </Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6, marginBottom: 4 }}>
+                <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Rounding Efficiency:</Text> Qualitative. Time returned from documentation to direct patient care. Mechanism: documentation during the encounter, not after it.
+              </Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6, marginBottom: 4 }}>
+                <Text style={{ fontWeight: "bold", color: colors.primaryText }}>DRG Accuracy:</Text> {data.ipDrgScenario ?? "typical"} scenario {"\u2014"} {ipDrgOpRate}% of admissions carry a gap; Abridge closes {ipCapRate}% of those gaps. DRG weight lift {ipWeightLift} at {fmtCurrency(ipBasePayment)} base payment. {ipDrgRealize}% realization for RAC/PEPPER exposure.
+              </Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6, marginBottom: 4 }}>
+                <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Obs/IP Defense:</Text> Documentation-sensitive observation denials. {safe(data.ipObsDefenseRealization)}% realization applied.
+              </Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
+                <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Concurrent Review:</Text> Continued-stay medical necessity documentation. {safe(data.ipConcurrentRealization)}% realization applied.
+              </Text>
             </View>
 
             <View style={styles.divider} />

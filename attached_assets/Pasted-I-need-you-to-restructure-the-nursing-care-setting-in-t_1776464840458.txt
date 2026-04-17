@@ -1,0 +1,358 @@
+I need you to restructure the nursing care setting in this React/TypeScript ROI calculator from a 2-bucket model ("Labor Economics" / "Care Quality Enablement") to a 4-bucket model with these exact names  
+  in this exact order: QUALITY, WORKFORCE, CAPACITY, REVENUE. This affects two files.                                                                                                                          
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ## BACKGROUND                                                                                                                                                                                                
+                                                                                                                                                                                                               
+  Current nursing structure has two value buckets:                                                                                                                                                             
+  - **LABOR ECONOMICS**: OT Reduction + Retention Savings + Agency Cost Avoidance                                                                                                                            
+  - **CARE QUALITY ENABLEMENT**: HAPI + Falls + CAUTI + CLABSI + Sepsis + HAC Penalty + HCAHPS
+                                                                                                                                                                                                               
+  New 4-bucket structure:                 
+  | Bucket | Drivers |                                                                                                                                                                                         
+  |--------|---------|                                                                                                                                                                                         
+  | **QUALITY** | HAPI + Falls + CAUTI + CLABSI + Sepsis SEP-1 + HAC Penalty Exposure + HCAHPS |                                                                                                               
+  | **WORKFORCE** | Retention Savings + Agency Cost Avoidance |                                                                                                                                                
+  | **CAPACITY** | OT Reduction |                                                                                                                                                                            
+  | **REVENUE** | Not applicable — nurses don't bill. Card shown grayed out with honest explanation. |
+                                                                                                                                                                                                               
+  ---
+                                                                                                                                                                                                               
+  ## FILE 1: client/src/pages/explore/ExploreModel.tsx                                                                                                                                                       
+                                                                                                                                                                                                               
+  ### What to find                                                                                                                                                                                           
+  The "WHERE THE VALUE COMES FROM" section (`{/* WHERE THE VALUE COMES FROM */}`). Inside its motion.div there is a two-card grid:                                                                             
+                                              
+  ```tsx                                                                                                                                                                                                       
+  <div className="grid md:grid-cols-2 gap-4 sm:gap-6">                                                                                                                                                       
+                                                                                                                                                                                                               
+  Wrap the entire <div className="grid md:grid-cols-2 ...">...</div> in a ternary. When isNursing is true, render 4 cards. Otherwise render the unchanged 2-card grid.
+                                                                                                                                                                                                               
+  Individual value variables already computed as useMemos and in scope:                                                                                                                                      
+  - nursingHapiValue — HAPI value                                                                                                                                                                              
+  - nursingFallsValue — Falls value           
+  - nursingCautiValue — CAUTI value                                                                                                                                                                            
+  - nursingClabsiValue — CLABSI value                                                                                                                                                                        
+  - nursingSepsisValue — Sepsis SEP-1 value                                                                                                                                                                    
+  - nursingHacPenalty — HAC penalty (risk display only, not in totals)                                                                                                                                       
+  - nursingRetentionValue — Retention value                                                                                                                                                                    
+  - nursingRetainedCount — nurses retained count                                                                                                                                                               
+  - nursingAgencyValue — Agency cost avoidance  
+  - nursingOtValue — OT reduction value                                                                                                                                                                        
+  - hoursPerProviderPerWeek — hours saved per nurse per week                                                                                                                                                   
+                                                            
+  Also in scope: state.timeDriverInputs, state.docQualityInputs.                                                                                                                                               
+                                                                                                                                                                                                             
+  The 4-card grid when isNursing                                                                                                                                                                               
+                                                                                                                                                                                                             
+  Use className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4". Each card: className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5".                                                                                   
+                                                                                                                                                                                                             
+  Red bar: <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />                                                                                                                                               
+  Gray bar: <div className="w-1 h-6 bg-[#888888] rounded-full" />                                                                                                                                              
+  Divider: <div className="h-px bg-[#E5E5E5] mb-3" />
+  Label: text-xs font-bold uppercase tracking-wide mb-2                                                                                                                                                        
+  Line items: text-xs, space-y-1.5, flex justify-between gap-1                                                                                                                                               
+                                                                                                                                                                                                               
+  Card 1 — QUALITY                                                                                                                                                                                             
+  - Label: "Quality"                                                                                                                                                                                           
+  - Compute: const qualityTotal = nursingHapiValue + nursingFallsValue + nursingCautiValue + nursingClabsiValue + nursingSepsisValue                                                                           
+  - Hero: if qualityTotal > 0 → formatCurrency(qualityTotal) in text-lg font-bold text-[#EA2C00] with red bar, followed by " (potential)" in text-[10px] text-[#888888]; else "Not modeled" in text-base       
+  font-medium text-[#888888] with gray bar                                                                                                                                                                     
+  - Divider                                                                                                                                                                                                  
+  - Line items:                           
+    - "HAPI Risk Reduction" → state.docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '—'                                                                                               
+    - "Fall Risk Visibility" → state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'                                                                                            
+    - "CAUTI Compliance" → state.docQualityInputs.nursingCautiEnabled ? formatCurrency(nursingCautiValue) : '—'                                                                                                
+    - "CLABSI Compliance" → state.docQualityInputs.nursingClabsiEnabled ? formatCurrency(nursingClabsiValue) : '—'                                                                                             
+    - "Sepsis SEP-1" → state.docQualityInputs.nursingSepsisEnabled ? formatCurrency(nursingSepsisValue) : '—'                                                                                                
+    - "HAC Penalty" → state.docQualityInputs.nursingHacEnabled && state.docQualityInputs.nursingHacBottomQuartile ? formatCurrency(nursingHacPenalty) : '—' with sub-note text-[10px] text-[#888888]: "(risk   
+  only)"                                                                                                                                                                                                       
+    - "HCAHPS" → always '—' with sub-note text-[10px] text-[#888888]: "(qualitative)"                                                                                                                          
+                                                                                                                                                                                                               
+  Card 2 — WORKFORCE                                                                                                                                                                                           
+  - Label: "Workforce"                                                                                                                                                                                         
+  - Compute: const workforceTotal = nursingRetentionValue + nursingAgencyValue                                                                                                                                 
+  - Hero: if workforceTotal > 0 → formatCurrency(workforceTotal) with red bar; else if state.timeDriverInputs.nursingRetentionEnabled → "{nursingRetainedCount.toFixed(1)} nurses retained" with red bar; else 
+  "Not modeled" with gray bar                                                                                                                                                                                 
+  - Divider                                                                                                                                                                                                    
+  - Line items:                                                                                                                                                                                              
+    - "Retention Savings" → state.timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingRetentionValue) : '—'
+    - "Agency Cost Avoidance" → state.timeDriverInputs.nursingAgencyEnabled && state.timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingAgencyValue) : '—'                                       
+                                              
+  Card 3 — CAPACITY                                                                                                                                                                                            
+  - Label: "Capacity"                                                                                                                                                                                        
+  - Hero: if nursingOtValue > 0 → formatCurrency(nursingOtValue) with red bar; else if state.timeDriverInputs.nursingOtEnabled → "{hoursPerProviderPerWeek} hrs/wk" with red bar; else "Not modeled" with gray 
+  bar                                                                                                                                                                                                          
+  - Divider                                                                                                                                                                                                    
+  - Line items:                                                                                                                                                                                                
+    - "OT Reduction" → state.timeDriverInputs.nursingOtEnabled ? formatCurrency(nursingOtValue) : '—'                                                                                                        
+    - Sub-detail if enabled (text-[10px] text-[#888888]): "({state.timeDriverInputs.nursingOtHoursPerNurseWeek} OT hrs/wk · {state.timeDriverInputs.nursingOtReductionPercent}% reduction)"                    
+                                              
+  Card 4 — REVENUE                                                                                                                                                                                             
+  - Label: "Revenue"                                                                                                                                                                                         
+  - Hero: "Not Applicable" in text-base font-medium text-[#888888] with gray bar                                                                                                                               
+  - Divider                                                                                                                                                                                                    
+  - Body text (text-xs text-[#888888], no line items): "Nursing documentation doesn't generate billing revenue. The value lives in labor economics and care quality — which is where we've modeled it."        
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+  FILE 2: client/src/components/explore/ExplorePDFExport.tsx                                                                                                                                                   
+                                                            
+  What to find                                                                                                                                                                                                 
+                                                                                                                                                                                                             
+  The nursing PDF block — search for isNursing or data.careSetting === 'nursing' and find the large {isNursing && (...)} rendering block. Set whatever the nursing total pages variable is to 6 directly.      
+  Remove all conditional page count logic.                                                                                                                                                                   
+                                                                                                                                                                                                               
+  New sequence:                                                                                                                                                                                                
+  1. THE THESIS (4 buckets)                                                                                                                                                                                    
+  2. QUALITY (all clinical outcomes)                                                                                                                                                                           
+  3. WORKFORCE & CAPACITY (Retention + Agency + OT)                                                                                                                                                            
+  4. REVENUE (honest N/A page — reframed as strategic positioning)
+  5. THE INVESTMENT CASE                                                                                                                                                                                       
+  6. YOUR ASSESSMENT                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  Reuse all existing computed variables inside the nursing block:
+  - safe(data.nursingHapiValue), safe(data.nursingFallsValue), safe(data.nursingCautiValue), safe(data.nursingClabsiValue), safe(data.nursingSepsisValue), safe(data.nursingHacPenalty)                        
+  - safe(data.nursingRetentionValue), safe(data.nursingAgencyValue), safe(data.nursingOtValue)                                                                                                                 
+  - fmtCurrency, fmtNum, fmtPct, safe, colors, styles, PageFooter — all unchanged                                                                                                                              
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PAGE 1: THE THESIS — 4 buckets                                                                                                                                                                               
+                                                                                                                                                                                                               
+  Keep all existing content above the current two-source layout (cover card with beds/FTEs, thesis question "Nurses don't bill. So where does the value live?", body paragraph, stats box).                    
+                                                                                                                                                                                                               
+  Replace the two-column layout with a 2×2 grid of four cards in order: QUALITY, WORKFORCE, CAPACITY, REVENUE.                                                                                                 
+                                                                                                                                                                                                             
+  Compute:                                                                                                                                                                                                     
+  const qualityTotal = safe(data.nursingHapiValue) + safe(data.nursingFallsValue) + safe(data.nursingCautiValue) + safe(data.nursingClabsiValue) + safe(data.nursingSepsisValue);                              
+  const workforceTotal = safe(data.nursingRetentionValue) + safe(data.nursingAgencyValue);                                                                                                                     
+                                                                                                                                                                                                               
+  QUALITY card (beige/cardBg):                                                                                                                                                                               
+  - Label: "QUALITY"                          
+  - Value: qualityTotal > 0 ? fmtCurrency(qualityTotal) : "Not Modeled" + if > 0 add small "(potential)" text                                                                                                  
+  - Copy: "Preventable harm events — HAPIs, falls, CAUTI, CLABSI — and sepsis bundle compliance are sensitive to documentation timing. Real-time flowsheet capture creates the visibility layer that enables   
+  earlier intervention."                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  WORKFORCE card (beige/cardBg):                                                                                                                                                                               
+  - Label: "WORKFORCE"                                                                                                                                                                                         
+  - Value: workforceTotal > 0 ? fmtCurrency(workforceTotal) : "Not Modeled"                                                                                                                                    
+  - Copy: "Documentation burden is among the top drivers of nurse turnover. Reducing end-of-shift charting changes retention — and the agency spend that follows every vacancy."                               
+                                                                                                                                                                                                               
+  CAPACITY card (beige/cardBg):                                                                                                                                                                              
+  - Label: "CAPACITY"                     
+  - Value: safe(data.nursingOtValue) > 0 ? fmtCurrency(safe(data.nursingOtValue)) : "Not Modeled"                                                                                                              
+  - Copy: "When nurses finish charting before the end of their shift, they leave on time. Overtime reduction is the most direct, measurable labor cost savings in this model."                                 
+                                                                                                                                                                                                               
+  REVENUE card (gray/muted — no accent border, no primary color):                                                                                                                                              
+  - Label: "REVENUE"                                                                                                                                                                                         
+  - Value: "Not Applicable" (gray, same text-secondary color as "Not Modeled" in other settings)                                                                                                               
+  - Copy: "Nursing documentation doesn't generate billing revenue. The value lives in labor economics and care quality — which is where we've modeled it."                                                     
+                                                                                                                                                                                                               
+  Keep getNursingObservation(data) in the "WHAT YOUR CHOICES REVEAL" callout.                                                                                                                                  
+  Keep PageFooter pageNum={1} totalPages={6}.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  ---                                     
+  PAGE 2: QUALITY                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Section label: "QUALITY"                                                                                                                                                                                     
+  Headline: "Real-time documentation is the visibility layer\nthat makes early intervention possible."                                                                                                         
+  Subheading: "Preventable harm events don\u2019t happen because nurses don\u2019t care \u2014 they happen when risk signals are missed or delayed. Real-time flowsheet capture surfaces those signals when  
+  there\u2019s still time to act."            
+                                                                                                                                                                                                               
+  Important disclaimer callout at top of page: "The values below are potential \u2014 they require clinical practice change alongside documentation improvement. Documentation creates the visibility; the care
+   team creates the outcome. Validate baseline rates with your infection control and quality teams before presenting."                                                                                         
+                                                                                                                                                                                                               
+  HAPI Risk Reduction block (if data.nursingHapiEnabled && safe(data.nursingHapiValue) > 0):                                                                                                                   
+  - Label: "HAPI RISK REDUCTION"                                                                                                                                                                             
+  - Value: fmtCurrency(data.nursingHapiValue) + "(potential)" small text                                                                                                                                       
+  - Copy: "At {data.nursingHapiRatePer1000 ?? 2.5} HAPIs per 1,000 patient days across {(data.nursingPatientDays ?? 0).toLocaleString()} patient days, your program sees approximately                         
+  {(data.nursingHapiPerYear ?? 0).toFixed(1)} HAPIs per year. Real-time skin assessment documentation \u2014 captured at the point of care rather than reconstructed at shift end \u2014 enables earlier 
+  intervention for at-risk patients. At a {data.nursingHapiPreventionRate ?? 6.5}% documentation-attributable prevention rate and ${(data.nursingHapiCostPer ?? 25000).toLocaleString()} per event:            
+  {fmtCurrency(data.nursingHapiValue)}."                                                                                                                                                                     
+  - Source: "Dowding et al., JAMIA 2012."                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Fall Risk Visibility block (if data.nursingFallsEnabled && safe(data.nursingFallsValue) > 0):                                                                                                                
+  - Label: "FALL RISK VISIBILITY"                                                                                                                                                                              
+  - Value: fmtCurrency(data.nursingFallsValue) + "(potential)"                                                                                                                                               
+  - Copy: "At {data.nursingFallsRatePer1000 ?? 3.5} falls per 1,000 patient days, your program sees approximately {(data.nursingFallsPerYear ?? 0).toFixed(1)} falls per year. Morse Fall Scale assessments    
+  completed in real time \u2014 rather than deferred to end of shift \u2014 ensure risk escalations are visible to the care team when they matter. At a {data.nursingFallsDocGapRate ?? 10}%                   
+  documentation-attributable prevention rate and ${(data.nursingFallsCostPer ?? 6500).toLocaleString()} per event: {fmtCurrency(data.nursingFallsValue)}."                                                     
+                                                                                                                                                                                                               
+  CAUTI Bundle Compliance block (if data.nursingCautiEnabled && safe(data.nursingCautiValue) > 0):                                                                                                           
+  - Label: "CAUTI BUNDLE COMPLIANCE"                                                                                                                                                                           
+  - Value: fmtCurrency(data.nursingCautiValue) + "(potential)"
+  - Copy: "Nurse-driven catheter stop orders and daily necessity assessments reduce CAUTI rates significantly when documented in real time. Across {(data.nursingCautiDaysPerYear ?? 0).toLocaleString()}      
+  catheter days at {data.nursingCautiRatePer1000 ?? 1.8}/1,000, {(data.nursingCautiPrevented ?? 0).toFixed(1)} infections prevented at ${(data.nursingCautiCostPer ?? 13000).toLocaleString()} each:           
+  {fmtCurrency(data.nursingCautiValue)}."                                                                                                                                                            
+  - Source: "Meddings et al., 2014 JAMA Internal Medicine."                                                                                                                                                    
+                                                                                                                                                                                                               
+  CLABSI Bundle Compliance block (if data.nursingClabsiEnabled && safe(data.nursingClabsiValue) > 0):                                                                                                          
+  - Label: "CLABSI BUNDLE COMPLIANCE"                                                                                                                                                                          
+  - Value: fmtCurrency(data.nursingClabsiValue) + "(potential)"                                                                                                                                                
+  - Copy: "IHI bundle compliance literature shows 30\u201366% CLABSI reduction with full adherence. Across {(data.nursingClabsiDaysPerYear ?? 0).toLocaleString()} central line days at                        
+  {data.nursingClabsiRatePer1000 ?? 0.8}/1,000, {(data.nursingClabsiPrevented ?? 0).toFixed(1)} infections prevented at ${(data.nursingClabsiCostPer ?? 20000).toLocaleString()} each:                         
+  {fmtCurrency(data.nursingClabsiValue)}."                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Sepsis SEP-1 Bundle Compliance block (if data.nursingSepsisEnabled && safe(data.nursingSepsisValue) > 0):                                                                                                  
+  - Label: "SEPSIS SEP-1 BUNDLE COMPLIANCE"                                                                                                                                                                    
+  - Value: fmtCurrency(data.nursingSepsisValue) + "(potential)"
+  - Copy: "SEP-1 compliance requires timely documentation of sepsis recognition, lactate ordering, cultures, and antibiotic administration. Of your {(data.nursingSepsisPerYear ?? 0).toFixed(0)} annual sepsis
+   cases, {(100 - (data.nursingSepsisCurrentCompliance ?? 75)).toFixed(0)}% are currently non-compliant \u2014 and {data.nursingSepsisDocLagPercent ?? 30}% of those involve a documentation lag rather than a 
+  care delivery gap. At ${(data.nursingSepsisExcessCostPerCase ?? 3500).toLocaleString()} excess cost per delayed case and {data.nursingSepsisRealization ?? 60}% realization:                                 
+  {fmtCurrency(data.nursingSepsisValue)}."                                                                                                                                                                     
+                                                                                                                                                                                                             
+  HAC Penalty Exposure block (if data.nursingHacEnabled):                                                                                                                                                      
+  - Label: "HAC PENALTY EXPOSURE"             
+  - Value: if data.nursingHacBottomQuartile → fmtCurrency(data.nursingHacPenalty ?? 0) + " (risk only)"; else "Risk Monitored" — both in gray/secondary color                                                  
+  - Copy: if bottom quartile → "Hospitals in the bottom HAC quartile receive a 1% reduction in all Medicare inpatient payments \u2014 ${fmtCurrency(data.nursingHacPenalty ?? 0)} annually on                
+  ${(data.nursingHacMedicareRevenue ?? 50000000).toLocaleString()} in Medicare revenue. Documentation completeness is a direct input to AHRQ PSI measures that drive HAC scoring. This is financial risk \u2014
+   improving documentation trajectory reduces your probability of remaining in the bottom quartile." else → "Your program is not currently in the bottom HAC quartile. Documentation completeness is a         
+  protective factor that affects AHRQ PSI measures and HAC scoring trajectory. Monitor annually."                                                                                                              
+  - Note in both cases: "HAC penalty is not included in the primary ROI total."                                                                                                                                
+                                                                                                                                                                                                               
+  HCAHPS block (if data.nursingHcahpsEnabled, always qualitative):                                                                                                                                             
+  - Label: "HCAHPS / PATIENT EXPERIENCE"                                                                                                                                                                       
+  - Value: "Qualitative" in gray                                                                                                                                                                             
+  - Copy: "Patient experience scores are sensitive to nursing presence and communication \u2014 both of which improve when nurses spend less time at the workstation. HCAHPS performance affects Value-Based   
+  Purchasing scores and thus Medicare reimbursement, but the causal chain is indirect and organization-specific to size precisely."
+                                                                                                                                                                                                               
+  Keep PageFooter pageNum={2} totalPages={6}.                                                                                                                                                                
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PAGE 3: WORKFORCE & CAPACITY
+                                                                                                                                                                                                               
+  Section label: "WORKFORCE & CAPACITY"                                                                                                                                                                      
+  Headline: "Documentation burden is the reason\nnurses leave. And the reason they stay late."
+  Subheading: "These are two distinct budget lines \u2014 turnover cost and overtime cost \u2014 both directly driven by how long it takes to finish charting at the end of a shift."                          
+                                              
+  WORKFORCE section header row.                                                                                                                                                                                
+                                                                                                                                                                                                               
+  Retention Savings block:                                                                                                                                                                                     
+  - Headline value: if data.nursingRetentionEnabled && safe(data.nursingRetentionValue) > 0 → fmtCurrency(data.nursingRetentionValue) with red bar; else "Not Selected" with gray bar                          
+  - Copy (if enabled): "At {data.nursingTurnoverRate ?? 18}% annual turnover across {fmtNum(data.nursingFTEs ?? data.providers)} nurse FTEs, your program loses approximately {(data.nursingNursesLeaving ??   
+  0).toFixed(1)} nurses per year. Of those, an estimated {data.nursingBurnoutPct ?? 40}% leave for burnout-related reasons \u2014 documentation burden among the most cited. At a                              
+  {data.nursingRetentionImpactPct ?? 15}% impact on burnout-driven departures, {(data.nursingNursesRetained ?? 0).toFixed(1)} nurses retained at ${(data.nursingReplacementCost ?? 56300).toLocaleString()}  
+  replacement cost: {fmtCurrency(data.nursingRetentionValue)}."                                                                                                                                                
+  - Source: "NSI Nursing Solutions, 2023 National Health Care Retention Report."
+  - Methodology note: "Replacement cost includes recruitment, onboarding, and productivity ramp to full effectiveness."                                                                                        
+                                                                                                                                                                                                             
+  Agency Cost Avoidance block (if data.nursingAgencyEnabled && safe(data.nursingAgencyValue) > 0):                                                                                                             
+  - Headline value: fmtCurrency(data.nursingAgencyValue) with red bar                                                                                                                                        
+  - Copy: "Every nurse retained avoids a vacancy filled with agency staff. At {data.nursingAgencyWeeks ?? 12} weeks of agency coverage per vacancy at ${(data.nursingAgencyPremium ??                          
+  2500).toLocaleString()}/week premium, {(data.nursingNursesRetained ?? 0).toFixed(1)} retained nurses avoids {fmtCurrency(data.nursingAgencyValue)} in agency premium spend annually."                        
+                                                                                                                                                                                                               
+  Workforce subtotal line: fmtCurrency(safe(data.nursingRetentionValue) + safe(data.nursingAgencyValue))                                                                                                       
+                                                                                                                                                                                                               
+  CAPACITY section header row (with divider above).                                                                                                                                                            
+                                                                                                                                                                                                             
+  OT Reduction block:                                                                                                                                                                                          
+  - Headline value: if data.nursingOtEnabled && safe(data.nursingOtValue) > 0 → fmtCurrency(data.nursingOtValue) with red bar; else "Not Selected" with gray bar                                               
+  - Copy (if enabled): "When nurses complete their documentation before the end of shift rather than after it, they leave on time. At {data.nursingOtHoursPerNurseWeek ?? 1.0} overtime hours per nurse per    
+  week, a {data.nursingOtReductionPercent ?? 40}% reduction across {fmtNum(data.nursingFTEs ?? data.providers)} nurses eliminates {(data.nursingOtHoursEliminated ?? 0).toLocaleString()} overtime hours per   
+  year at ${data.nursingOtHourlyRate ?? 75}/hour: {fmtCurrency(data.nursingOtValue)}."                                                                                                                       
+  - Note: "Overtime reduction is the most direct, immediately measurable labor cost savings in this model. It does not depend on clinical practice change \u2014 only documentation speed."                    
+   
+  Three-stat summary block:                                                                                                                                                                                    
+  - {fmtNum(data.nursingPatientDays ?? 0)} patient days/year                                                                                                                                                 
+  - {((data.hoursReturned ?? 0) / (data.nursingFTEs ?? data.providers || 1) / 52).toFixed(1)} hrs/week per nurse                                                                                               
+  - {fmtNum(data.nursingStaffedBeds ?? 0)} staffed beds                                                                                                                                                        
+                                              
+  Keep PageFooter pageNum={3} totalPages={6}.                                                                                                                                                                  
+                                                                                                                                                                                                             
+  ---                                                                                                                                                                                                          
+  PAGE 4: REVENUE                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Section label: "REVENUE"                                                                                                                                                                                     
+  Headline: "Nursing documentation doesn\u2019t generate billing revenue.\nThat\u2019s by design \u2014 and it\u2019s worth saying directly."                                                                
+                                              
+  Body: "Every other care setting in this model has a revenue optimization story \u2014 wRVU lift, DRG accuracy, denial prevention. Nursing doesn\u2019t. Nurses don\u2019t bill. Their documentation drives 
+  care quality and labor economics, not the revenue cycle.\n\nWe\u2019ve modeled the value where it actually lives: in the QUALITY bucket (preventable harm events, sepsis bundle compliance) and the WORKFORCE
+   and CAPACITY buckets (retention, agency cost avoidance, overtime reduction). Presenting a nursing revenue story that doesn\u2019t exist would undermine the credibility of the model that does."            
+                                                                                                                                                                                                               
+  Strategic callout box:                                                                                                                                                                                       
+  - Title: "WHAT THIS MEANS FOR YOUR PRESENTATION"                                                                                                                                                             
+  - Body: "When a CFO asks where the nursing revenue story is, the answer is: there isn\u2019t one \u2014 and that\u2019s the point. The ROI case for nursing ambient AI is a labor economics and care quality 
+  story. It stands on its own. You don\u2019t need to manufacture a billing narrative to make it compelling."
+                                              
+  Second callout box — the downstream connection:                                                                                                                                                              
+  - Title: "THE INDIRECT CONNECTION"
+  - Body: "Complete nursing documentation does create downstream organizational value: HCAHPS performance affects Value-Based Purchasing scores. HAC scores affect Medicare payment rates. Sepsis SEP-1        
+  compliance affects public reporting and payer relationships. These are real \u2014 they\u2019re just not direct billing revenue, and we\u2019ve modeled them as quality outcomes rather than revenue line  
+  items, which is the more defensible framing."                                                                                                                                                                
+                                                                                                                                                                                                               
+  Keep PageFooter pageNum={4} totalPages={6}.
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+  PAGE 5: THE INVESTMENT CASE                                                                                                                                                                                  
+                                                                                                                                                                                                             
+  Keep all existing investment case page content completely unchanged. Update page number to 5.
+                                              
+  Keep PageFooter pageNum={5} totalPages={6}. 
+                                          
+  ---                                                                                                                                                                                                          
+  PAGE 6: YOUR ASSESSMENT                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Keep existing assessment structure but update the value summary to 4-bucket layout in order: QUALITY, WORKFORCE, CAPACITY, REVENUE.                                                                          
+                                                                                                                                                                                                             
+  QUALITY                                 
+  - HAPI Risk Reduction: data.nursingHapiEnabled ? fmtCurrency(safe(data.nursingHapiValue)) + " (potential)" : "\u2014"
+  - Fall Risk Visibility: data.nursingFallsEnabled ? fmtCurrency(safe(data.nursingFallsValue)) + " (potential)" : "\u2014"                                                                                     
+  - CAUTI Compliance: data.nursingCautiEnabled ? fmtCurrency(safe(data.nursingCautiValue)) + " (potential)" : "\u2014"    
+  - CLABSI Compliance: data.nursingClabsiEnabled ? fmtCurrency(safe(data.nursingClabsiValue)) + " (potential)" : "\u2014"                                                                                      
+  - Sepsis SEP-1: data.nursingSepsisEnabled ? fmtCurrency(safe(data.nursingSepsisValue)) + " (potential)" : "\u2014"                                                                                           
+  - HAC Penalty: data.nursingHacEnabled && data.nursingHacBottomQuartile ? fmtCurrency(safe(data.nursingHacPenalty ?? 0)) + " (risk only)" : "\u2014"
+  - HCAHPS: "Qualitative"                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  WORKFORCE                                                                                                                                                                                                    
+  - Retention Savings: data.nursingRetentionEnabled ? fmtCurrency(safe(data.nursingRetentionValue)) : "\u2014"                                                                                                 
+  - Agency Cost Avoidance: data.nursingAgencyEnabled && data.nursingRetentionEnabled ? fmtCurrency(safe(data.nursingAgencyValue)) : "\u2014"                                                                   
+                                                                                                                                                                                                               
+  CAPACITY                                                                                                                                                                                                     
+  - OT Reduction: data.nursingOtEnabled ? fmtCurrency(safe(data.nursingOtValue)) : "\u2014"                                                                                                                    
+                                              
+  REVENUE                                                                                                                                                                                                      
+  - Single line: "Not Applicable \u2014 nursing documentation does not generate billing revenue."                                                                                                            
+                                                                                                                                                                                                               
+  NET ANNUAL VALUE: unchanged (existing total calculation)                                                                                                                                                   
+                                                                                                                                                                                                               
+  Add methodology box:                                                                                                                                                                                       
+
+  METHODOLOGY                                                                                                                                                                                                  
+   
+  HAPI: {data.nursingHapiRatePer1000 ?? 2.5}/1,000 patient days. {data.nursingHapiPreventionRate ?? 6.5}% documentation-attributable prevention rate. ${data.nursingHapiCostPer ?? 25000}/event. Source:       
+  Dowding et al., JAMIA 2012. Potential value — requires clinical practice change.                                                                                                                           
+
+  Falls: {data.nursingFallsRatePer1000 ?? 3.5}/1,000 patient days. {data.nursingFallsDocGapRate ?? 10}% documentation-attributable prevention rate. ${data.nursingFallsCostPer ?? 6500}/event. Potential value
+  — requires clinical practice change.
+
+  CAUTI: {data.nursingCautiPreventionRate ?? 12}% documentation-timing contribution to bundle compliance. ${data.nursingCautiCostPer ?? 13000}/infection. Source: Meddings et al., 2014 JAMA IM.
+                                          
+  CLABSI: {data.nursingClabsiPreventionRate ?? 8}% documentation-timing contribution. ${data.nursingClabsiCostPer ?? 20000}/infection.
+                                                                                                                                                                                                               
+  Sepsis SEP-1: Documentation-lag cases only. {data.nursingSepsisDocLagPercent ?? 30}% of non-compliant cases have documentation lag as root cause. ${data.nursingSepsisExcessCostPerCase ?? 3500} excess
+  cost/case. {data.nursingSepsisRealization ?? 60}% realization.                                                                                                                                               
+                                                                                                                                                                                                             
+  HAC Penalty: 1% of Medicare revenue if in bottom quartile. Risk display only — not included in ROI total.                                                                                                    
+                                                                                                                                                                                                             
+  Retention: {data.nursingTurnoverRate ?? 18}% annual turnover, {data.nursingBurnoutPct ?? 40}% burnout-related. {data.nursingRetentionImpactPct ?? 15}% impact scenario. ${data.nursingReplacementCost ??     
+  56300} replacement cost. Source: NSI Nursing Solutions 2023.                                                                                                                                                 
+   
+  Agency Cost Avoidance: {data.nursingAgencyWeeks ?? 12} weeks coverage per vacancy at ${data.nursingAgencyPremium ?? 2500}/week premium.                                                                      
+                                                                                                                                                                                                             
+  OT Reduction: {data.nursingOtHoursPerNurseWeek ?? 1.0} OT hrs/nurse/week at {data.nursingOtReductionPercent ?? 40}% reduction. ${data.nursingOtHourlyRate ?? 75}/hour.                                       
+                                                                                                                                                                                                               
+  Revenue: Not applicable. Nursing documentation does not generate billing revenue.
+                                                                                                                                                                                                               
+  Keep PageFooter pageNum={6} totalPages={6}.                                                                                                                                                                
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+  IMPORTANT NOTES                                                                                                                                                                                              
+                                                                                                                                                                                                             
+  1. Always 6 pages. Set nursing total pages to 6 directly.
+  2. Quality values are potential, not guaranteed. Add "(potential)" wherever quality dollar figures appear. Maintain the existing convention already in the codebase.
+  3. nursingHacPenalty is risk-only. Do NOT add it to any running totals or the net annual value. Display for context only.
+  4. REVENUE page is intentionally honest. Page 4 explains directly that nursing doesn't have a billing revenue story. This is a feature, not a limitation — it builds credibility for the rest of the model.
+  5. Keep all existing helpers — getNursingObservation(), fmtCurrency(), fmtNum(), fmtPct(), safe(), PageFooter — unchanged.                                                                                   
+  6. Keep all existing styles — no new styles needed.                                                                                                                                                          
+  7. Match existing code style exactly — inline styles, react-pdf primitives, Unicode escapes for em-dashes (\u2014) and apostrophes (\u2019).                                                                 
+  8. Only modify the {isNursing && (...)} PDF block and the isNursing card section in ExploreModel.tsx. All other care settings untouched.   

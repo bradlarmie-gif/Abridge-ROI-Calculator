@@ -958,6 +958,14 @@ export default function ExploreModel({
             ipCostPerQuery: docQualityInputs.ipCdiCostPerQuery,
             ipCdiValue: ipCdiValue,
             ipCdiEnabled: docQualityInputs.ipCdiEnabled,
+            ipCdiScenario: docQualityInputs.ipCdiScenario,
+            ipDrgScenario: docQualityInputs.ipDrgScenario,
+            ipObsDefenseEnabled: docQualityInputs.ipObsDefenseEnabled,
+            ipObsDefenseValue: ipObsDefenseValue,
+            ipObsDefenseRealization: docQualityInputs.ipObsDefenseRealization,
+            ipConcurrentReviewEnabled: docQualityInputs.ipConcurrentReviewEnabled,
+            ipConcurrentValue: ipConcurrentValue,
+            ipConcurrentRealization: docQualityInputs.ipConcurrentRealization,
             ipCostReductionValue: costReductionValue,
             ipCostReductionEnabled: timeDriverInputs.costReductionEnabled,
             ipWellbeingHoursPerWeek: ipHrsPerWk,
@@ -1819,6 +1827,119 @@ export default function ExploreModel({
                 </div>
                 <div className="h-px bg-[#E5E5E5] mb-3" />
                 <p className="text-xs text-[#888888]">Specialist referral quality, ancillary revenue, and downstream care setting impact — not double-counted. Organization-specific sizing.</p>
+              </div>
+            </div>
+          ) : isInpatient ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" data-testid="inpatient-four-bucket-grid">
+              {/* QUALITY Card */}
+              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ip-quality">
+                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Quality</p>
+                <div className="flex items-center gap-2 mb-3">
+                  {docQualityInputs.ipCdiEnabled && ipCdiValue > 0 ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-quality-value">{formatCurrency(ipCdiValue)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                      <p className="text-base font-medium text-[#888888]" data-testid="text-ip-quality-value">Not modeled</p>
+                    </>
+                  )}
+                </div>
+                <div className="h-px bg-[#E5E5E5] mb-3" />
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">CDI Query Reduction</span>
+                    <span className="font-semibold text-black">{docQualityInputs.ipCdiEnabled ? formatCurrency(ipCdiValue) : '—'}</span>
+                  </div>
+                  {docQualityInputs.ipCdiEnabled && (
+                    <p className="text-[10px] text-[#888888]">({docQualityInputs.ipCdiQueryRate}% query rate · {docQualityInputs.ipCdiScenario})</p>
+                  )}
+                </div>
+              </div>
+
+              {/* WORKFORCE Card */}
+              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ip-workforce">
+                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Workforce</p>
+                <div className="flex items-center gap-2 mb-3">
+                  {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && ipWellbeingRetentionValue > 0 ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-workforce-value">{formatCurrency(ipWellbeingRetentionValue)}</p>
+                    </>
+                  ) : timeDriverInputs.wellbeingEnabled ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-workforce-value">{hoursPerProviderPerWeek} hrs/wk</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                      <p className="text-base font-medium text-[#888888]" data-testid="text-ip-workforce-value">Not modeled</p>
+                    </>
+                  )}
+                </div>
+                <div className="h-px bg-[#E5E5E5] mb-3" />
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">Clinician Wellbeing</span>
+                    <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(ipWellbeingRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* CAPACITY Card */}
+              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ip-capacity">
+                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Capacity</p>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                  <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-capacity-value">{costReductionValue > 0 ? formatCurrency(costReductionValue) : `${hoursPerProviderPerWeek} hrs/wk`}</p>
+                </div>
+                <div className="h-px bg-[#E5E5E5] mb-3" />
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">Rounding Efficiency</span>
+                    <span className="font-semibold text-black">{`${hoursPerProviderPerWeek} hrs/wk`}</span>
+                  </div>
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">Cost Reduction</span>
+                    <span className="font-semibold text-black">{timeDriverInputs.costReductionEnabled && costReductionValue > 0 ? formatCurrency(costReductionValue) : '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* REVENUE Card */}
+              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ip-revenue">
+                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Revenue</p>
+                <div className="flex items-center gap-2 mb-3">
+                  {(ipDrgValue + ipObsDefenseValue + ipConcurrentValue) > 0 ? (
+                    <>
+                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-revenue-value">{formatCurrency(ipDrgValue + ipObsDefenseValue + ipConcurrentValue)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                      <p className="text-base font-medium text-[#888888]" data-testid="text-ip-revenue-value">Not modeled</p>
+                    </>
+                  )}
+                </div>
+                <div className="h-px bg-[#E5E5E5] mb-3" />
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">DRG Accuracy</span>
+                    <span className="font-semibold text-black">{docQualityInputs.ipDrgEnabled ? formatCurrency(ipDrgValue) : '—'}</span>
+                  </div>
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">Obs/IP Defense</span>
+                    <span className="font-semibold text-black">{docQualityInputs.ipObsDefenseEnabled ? formatCurrency(ipObsDefenseValue) : '—'}</span>
+                  </div>
+                  <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">Concurrent Review</span>
+                    <span className="font-semibold text-black">{docQualityInputs.ipConcurrentReviewEnabled ? formatCurrency(ipConcurrentValue) : '—'}</span>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (

@@ -1,0 +1,344 @@
+ I need you to restructure the inpatient care setting in this React/TypeScript ROI calculator from a 2-bucket model ("Capacity Unlocked" / "Revenue Optimized") to a 4-bucket model with these exact names in 
+  this exact order: QUALITY, WORKFORCE, CAPACITY, REVENUE. This affects two files.                                                                                                                             
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ## BACKGROUND                                                                                                                                                                                                
+                                                                                                                                                                                                               
+  Current inpatient structure has two value buckets:                                                                                                                                                           
+  - **CAPACITY UNLOCKED**: Rounding Efficiency (qualitative) + Clinician Wellbeing/Retention + Cost Reduction
+  - **REVENUE OPTIMIZED**: DRG Accuracy + CDI Query Reduction + Obs/IP Status Defense + Concurrent Review Defense
+                                                                                                                                                                                                               
+  New 4-bucket structure:                 
+  | Bucket | Drivers |                                                                                                                                                                                         
+  |--------|---------|                                                                                                                                                                                         
+  | **QUALITY** | CDI Query Reduction |                                                                                                                                                                        
+  | **WORKFORCE** | Clinician Wellbeing/Retention |                                                                                                                                                            
+  | **CAPACITY** | Rounding Efficiency + Cost Reduction |                                                                                                                                                      
+  | **REVENUE** | DRG Accuracy + Obs/IP Status Defense + Concurrent Review Defense |
+                                                                                                                                                                                                               
+  ---                                                       
+                                                                                                                                                                                                               
+  ## FILE 1: client/src/pages/explore/ExploreModel.tsx
+                                                                                                                                                                                                               
+  ### What to find                                          
+  The "WHERE THE VALUE COMES FROM" section (search for `{/* WHERE THE VALUE COMES FROM */}`). Inside its motion.div, there is a two-card grid:                                                                 
+                                              
+  ```tsx                                                                                                                                                                                                       
+  <div className="grid md:grid-cols-2 gap-4 sm:gap-6">      
+    {/* Time/Efficiency Card */}                                                                                                                                                                               
+    ...                                                                                                                                                                                                        
+    {/* Documentation Quality Card */}                                                                                                                                                                         
+    ...                                                                                                                                                                                                        
+  </div>                                                                                                                                                                                                       
+   
+  What to change                                                                                                                                                                                               
+                                                            
+  Wrap the entire <div className="grid md:grid-cols-2 ...">...</div> in a ternary. When isInpatient is true, render 4 cards. Otherwise render the unchanged 2-card grid.
+                                                                                                                                                                                                               
+  isInpatient is already defined near the top of the component.
+                                                                                                                                                                                                               
+  Individual value variables already in scope as useMemos:  
+  - ipCdiValue — CDI Query Reduction value                                                                                                                                                                     
+  - ipWellbeingRetentionValue — Retention value (aliased from clinicianRetentionValue)
+  - costReductionValue — Cost Reduction value (user-entered)                                                                                                                                                   
+  - hoursPerProviderPerWeek — hours saved per provider per week
+  - ipDrgValue — DRG Accuracy value                                                                                                                                                                            
+  - ipObsDefenseValue — Obs/IP Status Defense value         
+  - ipConcurrentValue — Concurrent Review Defense value                                                                                                                                                        
+                                                                                                                                                                                                               
+  Also in scope: timeDriverInputs, docQualityInputs.                                                                                                                                                           
+                                                                                                                                                                                                               
+  The 4-card grid when isInpatient                          
+                                                                                                                                                                                                               
+  Use className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4". Each card: className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5".                                                                                   
+                                          
+  Red bar accent: <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />                                                                                                                                        
+  Gray bar (not modeled): <div className="w-1 h-6 bg-[#888888] rounded-full" />                                                                                                                                
+  Divider: <div className="h-px bg-[#E5E5E5] mb-3" />
+                                                                                                                                                                                                               
+  Card 1 — QUALITY                                          
+  - Label (text-xs font-bold uppercase tracking-wide): "Quality"                                                                                                                                               
+  - Hero: if docQualityInputs.ipCdiEnabled && ipCdiValue > 0 → formatCurrency(ipCdiValue) with red bar; else "Not modeled" in text-base font-medium text-[#888888] with gray bar                               
+  - Divider                                                                                                                                                                                                    
+  - Line items (text-xs space-y-1.5 flex justify-between gap-1):                                                                                                                                               
+    - "CDI Query Reduction" → docQualityInputs.ipCdiEnabled ? formatCurrency(ipCdiValue) : '—'                                                                                                                 
+    - Sub-detail if enabled (text-[10px] text-[#888888]): "({docQualityInputs.ipCdiQueryRate}% query rate · {docQualityInputs.ipCdiScenario})"
+                                                                                                                                                                                                               
+  Card 2 — WORKFORCE                                                                                                                                                                                           
+  - Label: "Workforce"                                                                                                                                                                                         
+  - Hero:                                                                                                                                                                                                      
+    - If timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && ipWellbeingRetentionValue > 0 → formatCurrency(ipWellbeingRetentionValue) with red bar                               
+    - Else if timeDriverInputs.wellbeingEnabled → "{hoursPerProviderPerWeek} hrs/wk" with red bar                                                                                                              
+    - Else → "Not modeled" with gray bar                                                                                                                                                                       
+  - Divider                                                 
+  - Line item:                            
+    - "Clinician Wellbeing" → if both enabled: formatCurrency(ipWellbeingRetentionValue); else if wellbeingEnabled: "{hoursPerProviderPerWeek} hrs/wk"; else '—'                                               
+                                                                                                                                                                                                               
+  Card 3 — CAPACITY                                                                                                                                                                                            
+  - Label: "Capacity"                                                                                                                                                                                          
+  - Hero:                                                                                                                                                                                                      
+    - If costReductionValue > 0 → formatCurrency(costReductionValue) with red bar                                                                                                                              
+    - Else → "{hoursPerProviderPerWeek} hrs/wk" with red bar                                                                                                                                                   
+  - Divider                                                                                                                                                                                                    
+  - Line items:                                             
+    - "Rounding Efficiency" → always "{hoursPerProviderPerWeek} hrs/wk" (always qualitative)
+    - "Cost Reduction" → timeDriverInputs.costReductionEnabled && costReductionValue > 0 ? formatCurrency(costReductionValue) : '—'
+                                                                                                                                                                                                               
+  Card 4 — REVENUE                        
+  - Label: "Revenue"                                                                                                                                                                                           
+  - Hero: if (ipDrgValue + ipObsDefenseValue + ipConcurrentValue) > 0 → formatCurrency(ipDrgValue + ipObsDefenseValue + ipConcurrentValue) with red bar; else "Not modeled" with gray bar                      
+  - Divider                                                                                                                                                                              
+  - Line items:                                                                                                                                                                                                
+    - "DRG Accuracy" → docQualityInputs.ipDrgEnabled ? formatCurrency(ipDrgValue) : '—'
+    - "Obs/IP Defense" → docQualityInputs.ipObsDefenseEnabled ? formatCurrency(ipObsDefenseValue) : '—'                                                                                                        
+    - "Concurrent Review" → docQualityInputs.ipConcurrentReviewEnabled ? formatCurrency(ipConcurrentValue) : '—'                                                                                               
+                                              
+  ---                                                                                                                                                                                                          
+  FILE 2: client/src/components/explore/ExplorePDFExport.tsx                                                                                                                                                   
+                                                                                                                                                                                                               
+  What to find                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  The inpatient PDF block — search for isInpatient or data.careSetting === 'inpatient' and find the large {isInpatient && (...)} block. It currently renders 5 or 6 pages depending on ipHasDocQuality.        
+                                                            
+  Current page structure:                                                                                                                                                                                      
+  - Page 1: THE THESIS (Two Sources of Value)                                                                                                                                                                  
+  - Page 2: THE WORKFORCE BEHIND THE NUMBERS  
+  - Page 3: YOUR VALUE DRIVERS                                                                                                                                                                                 
+  - Page 4: THE INVESTMENT CASE                             
+  - Page 5 (conditional): CONNECTED VALUE                                                                                                                                                                      
+  - Page 5 or 6: YOUR ASSESSMENT              
+                                                                                                                                                                                                               
+  New page structure — always 6 pages                       
+                                                                                                                                                                                                               
+  Set ipTotalPages = 6 directly. Remove ipHasDocQuality ? 6 : 5.
+                                                                                                                                                                                                               
+  Update page numbers:                                                                                                                                                                                         
+  - investmentPageNum = 5                                                                                                                                                                                      
+  - assessmentPageNum = 6                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  New sequence:                                             
+  1. THE THESIS                                                                                                                                                                                                
+  2. QUALITY                              
+  3. WORKFORCE & CAPACITY                                                                                                                                                                                      
+  4. REVENUE                                                                                                                                                                                                   
+  5. THE INVESTMENT CASE
+  6. YOUR ASSESSMENT                                                                                                                                                                                           
+                                                            
+  ---
+  PAGE 1: THE THESIS — 4 buckets
+                                              
+  Keep everything above the current "Two Sources of Value" section (cover card, thesis headline "Two Sources of Value, One Strategic Choice", body paragraph, 4-stat box).
+                                              
+  Change the headline to: "Four Drivers of Value, One Integrated Platform"                                                                                                                                     
+                                          
+  Replace the two-column card layout (CAPACITY UNLOCKED + REVENUE OPTIMIZED) with a 2×2 grid of four cards in order: QUALITY, WORKFORCE, CAPACITY, REVENUE.                                                    
+                                                                                                                                                                                                               
+  QUALITY card (beige background styles.cardBg or equivalent):                                                                                                                                                 
+  - Label: "QUALITY"                                                                                                                                                                                           
+  - Value: safe(data.ipCdiValue) > 0 ? fmtCurrency(safe(data.ipCdiValue)) : "Not Modeled"
+  - Copy: "Complete real-time documentation eliminates the CDI query before it's needed. Documentation completeness is the upstream intervention — query reduction is how you measure it."                     
+                                                                                                                                                                                          
+  WORKFORCE card (accent border, primary color like the current REVENUE OPTIMIZED card):                                                                                                                       
+  - Label: "WORKFORCE"                                      
+  - Value: show fmtCurrency(retVal) if data.retentionValueEnabled && retVal > 0, else show "${(data.ipWellbeingHoursPerWeek ?? 0).toFixed(1)} hrs/wk" if data.sustainabilityEnabled, else "Not Modeled"        
+  - Copy: "After-hours charting is the documentation burden that drives hospitalist turnover. Time returned from documentation is the mechanism behind every other value driver in this model."                
+                                                                                                                                                                                                               
+  CAPACITY card (beige background):                                                                                                                                                                            
+  - Label: "CAPACITY"                                                                                                                                                                                          
+  - Value: safe(data.ipCostReductionValue) > 0 ? fmtCurrency(safe(data.ipCostReductionValue)) : "${((data.hoursReturned ?? 0) / (data.providers || 1) / 52).toFixed(1)} hrs/wk"                                
+  - Copy: "Documentation removed from rounding returns hospitalists to the bedside. More time for complex case management, teaching, and care transitions — the work that doesn't fit in a note."              
+                                                                                                                                                                                                               
+  REVENUE card (beige background):                                                                                                                                                                             
+  - Label: "REVENUE"                                        
+  - Compute: const revenueTotal = safe(data.ipDrgValue) + safe(data.ipObsDefenseValue ?? 0) + safe(data.ipConcurrentValue ?? 0)                                                                                
+  - Value: revenueTotal > 0 ? fmtCurrency(revenueTotal) : "Not Modeled"                                                                                                                                        
+  - Copy: "DRG accuracy, observation/inpatient status defense, and concurrent review protection. The clinical conversation that happens at the bedside drives the payer relationship downstream."              
+                                                                                                                                                                                                               
+  Keep getInpatientObservation(data) in the "WHAT YOUR CHOICES REVEAL" callout below the four cards.
+                                                                                                                                                                                                               
+  Keep PageFooter with pageNum={1} totalPages={6}.
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PAGE 2: QUALITY                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Section label: "QUALITY"                                                                                                                                                                                     
+  Headline: "When documentation is complete at the bedside,\nthe CDI query never needs to happen."
+  Subheading: "CDI queries are a downstream symptom of upstream documentation gaps. Abridge doesn't reduce queries by streamlining the query process — it makes the query unnecessary by capturing the clinical
+   conversation that would have answered it." 
+                                          
+  CDI Query Reduction driver block:                                                                                                                                                                            
+  - If data.ipCdiEnabled && safe(data.ipCdiValue) > 0:                                                                                                                                                         
+    - Label: "CDI QUERY REDUCTION"                                                                                                                                                                             
+    - Value: fmtCurrency(data.ipCdiValue)                                                                                                                                                                      
+    - Copy: "At a {data.ipCdiQueryRate ?? 30}% query rate, your CDI team manages roughly {(data.ipTotalCDIQueries ?? 0).toLocaleString()} queries per year. When Abridge captures the clinical conversation 
+  completely, many become unnecessary — the answer is already in the note. At a {data.ipCdiScenario} scenario reduction of {data.ipQueriesAvoidedRate ?? 25}%, {(data.ipQueriesAvoided ?? 0).toLocaleString()} 
+  queries avoided at ${data.ipCostPerQuery ?? 50} each: {fmtCurrency(data.ipCdiValue)} annually in CDI team capacity freed for complex cases."                                                                 
+    - Methodology note: "CDI query cost reflects fully-loaded CDI team time: query generation, clinical review, response tracking, and physician follow-up. Queries avoided free CDI capacity for              
+  higher-complexity case optimization — not headcount reduction."                                                                                                                                
+  - If not enabled:                                                                                                                                                                                            
+    - Placeholder: "CDI Query Reduction — Not Selected. Available to model when your CDI director is ready to size the opportunity."
+                                                                                                                                                                                                               
+  Connected Value section below the driver block:                                                                                                                                                              
+                                          
+  Callout box title: "WHEN ED AND INPATIENT BOTH USE ABRIDGE"                                                                                                                                                  
+                                                                                                                                                                                                               
+  Body: "Inpatient documentation doesn't start at admission. The ED note that precedes it sets the documentation trajectory for the entire encounter. When both care settings use Abridge, documentation       
+  completeness compounds."                                                                                                                                                                                     
+                                                            
+  Three sub-points (small cards or rows):                                                                                                                                                                      
+  1. DRG CAPTURE — "CCs/MCCs documented in the ED carry forward into inpatient coding. Your case mix starts stronger from the moment of admission — before the hospitalist writes a word."
+  2. CDI EFFICIENCY — "When the ED note is complete, CDI teams encounter fewer gaps on day one. Query volume drops before the inpatient note is even written."                                                 
+  3. DENIAL PREVENTION — "Medical necessity documented at the point of the admission decision — in real time, in the ED — is your first line of defense against retrospective payer audit."                    
+                                                                                                                                                                                           
+  Closing note: "These connected benefits are not included in the primary model above. They require both care settings to be in scope and are available to quantify separately."                               
+                                                            
+  Keep PageFooter pageNum={2} totalPages={6}.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PAGE 3: WORKFORCE & CAPACITY                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  Section label: "WORKFORCE & CAPACITY"                                                                                                                                                                        
+  Headline: "The hospitalist carries a documentation load\ndisproportionate to their time at the bedside."
+  Subheading: "Time returned from documentation doesn't stay abstract. It goes back to rounding, to complex cases, to leaving on time — and over time, to staying."
+                                              
+  WORKFORCE section:                          
+                                                                                                                                                                                                               
+  Header row: "WORKFORCE"                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Clinician Wellbeing driver block:                                                                                                                                                                            
+  - Headline value:                                                                                                                                                                                            
+    - If data.retentionValueEnabled && safe(data.retentionValue) > 0: fmtCurrency(data.retentionValue) (red bar)
+    - Else if data.sustainabilityEnabled: "${(data.ipWellbeingHoursPerWeek ?? 0).toFixed(1)} hrs/wk per hospitalist" (red bar)                                                                                 
+    - Else: "Not Selected" (gray bar)                                                                                         
+  - Copy (if retention quantified): "After-hours charting is the piece of hospitalist burnout that organizations underestimate — not because it's invisible, but because its cost only becomes visible when    
+  someone leaves. At a {data.annualTurnoverRate ?? 8}% annual turnover rate, with {data.burnoutRelatedTurnoverPct ?? 45}% of departures burnout-related, your program loses an estimated                    
+  {data.ipBurnoutDepartures ?? 0} hospitalists per year to documentation burden. At a {data.abridgeRetentionImpactPct ?? 10}% retention impact and ${(data.replacementCostPerProvider ??                       
+  300000).toLocaleString()} replacement cost: {fmtCurrency(data.retentionValue ?? 0)}."                                                                                                                        
+  - Copy (if hours only): "Abridge returns roughly {(data.ipWellbeingHoursPerWeek ?? 0).toFixed(1)} hours per week per hospitalist — time that currently comes from after-shift charting. Whether that goes    
+  back to complex case review, teaching, or simply leaving on time, it changes what it feels like to practice hospital medicine."                                                                              
+  - Source: "AMA National Physician Burnout Survey, 2024."                                                                                                                                                     
+  - Methodology note if retention shown: "Retention impact modeled at the {data.abridgeRetentionImpactLabel ?? 'typical'} scenario. Validate using exit interview data to confirm burnout-related attribution."
+                                                            
+  CAPACITY section:                                                                                                                                                                                            
+                                          
+  Header row: "CAPACITY"                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Rounding Efficiency driver block:                                                                                                                                                                            
+  - Headline value: "${((data.ipRoundingHoursTotal ?? 0) / (data.providers || 1) / 52).toFixed(1)} hrs/wk per hospitalist" (gray bar — always qualitative)                                                     
+  - Copy: "Hospitalists spend a disproportionate share of documentation time on notes that follow rounds rather than driving them. Abridge returns {data.ipRoundingHoursPerProvider?.toFixed(0) ?? 0} hours per
+   hospitalist per year to direct patient care. At the bedside. In the room. In the conversation that actually informs the note — because the note is writing itself."                                         
+  - Note: "Rounding Efficiency is qualitative. It is the mechanism — the freed time that makes every other value driver in this model possible."                      
+                                                                                                                                                                                                               
+  Cost Reduction driver block (only if data.ipCostReductionEnabled && safe(data.ipCostReductionValue) > 0):
+  - Headline value: fmtCurrency(data.ipCostReductionValue) (red bar)                                                                                                                                           
+  - Copy: "Your organization has identified ${fmtCurrency(data.ipCostReductionValue ?? 0)} in annual operational cost reduction attributable to improved documentation velocity and reduced administrative 
+  overhead. This figure was entered directly by your team and is not modeled by Abridge."                                                                                                                      
+                                                                                                                                                                                                               
+  Three-stat summary block (same style as existing "YOUR NUMBERS AT HUMAN SCALE"):                                                                                                                             
+  - {data.hoursReturned?.toLocaleString() ?? 0} hours/year returned                                                                                                                                            
+  - {((data.hoursReturned ?? 0) / (data.providers || 1) / 52).toFixed(1)} hrs/week per hospitalist                                                                                                             
+  - {((data.hoursReturned ?? 0) / (data.providers || 1) / 8).toFixed(0)} days/year per hospitalist
+                                                                                                                                                                                                               
+  Keep PageFooter pageNum={3} totalPages={6}.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PAGE 4: REVENUE                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Section label: "REVENUE"                                                                                                                                                                                     
+  Headline: "The documentation that drives DRG accuracy\nis written during the encounter — or not at all."
+  Subheading: "Payer challenges target the same documentation gaps every time: incomplete complication and comorbidity capture, missing medical necessity language, and absent continued-stay rationale. 
+  Abridge addresses all three by capturing the clinical conversation in real time."
+                                          
+  Render three driver blocks. Show each if enabled; show a "not selected" placeholder if disabled.                                                                                                             
+                                                                                                                                                                                                               
+  DRG Accuracy driver block (if data.ipDrgEnabled && safe(data.ipDrgValue) > 0):                                                                                                                               
+  - Label: "DRG ACCURACY"                                                                                                                                                                                      
+  - Value: fmtCurrency(data.ipDrgValue)                     
+  - Copy: "Your hospitalists discuss clinical complexity that doesn't always make it into the final note. CDI teams identify documentation opportunities in roughly {data.ipDrgOpportunityRate ?? 18}% of      
+  admissions — {(data.ipAdmissionsWithGaps ?? 0).toLocaleString()} admissions per year carrying a documentation gap. Abridge is modeled to close {data.ipAbridgeCaptureRate ?? 20}% of those gaps — the portion
+   where clinical detail was spoken but not captured. Each closed gap carries an average DRG weight lift of {data.ipAvgDRGWeightLift ?? 0.4} at ${(data.ipBaseDRGPayment ?? 6000).toLocaleString()} base       
+  payment. After a {data.ipDrgRealizationRate ?? 33}% realization rate for RAC and PEPPER audit exposure: {fmtCurrency(data.ipDrgValue)}."                                                               
+  - Note: "Common missed conditions: acute respiratory failure, sepsis, malnutrition, acute encephalopathy, acute kidney injury. Validate gap rates with your CDI team before presenting."                     
+                                                                                                                                                                                                               
+  Obs/IP Status Defense driver block (if (data.ipObsDefenseEnabled ?? false) && safe(data.ipObsDefenseValue ?? 0) > 0):                                                                                        
+  - Label: "OBS/IP STATUS DEFENSE"                                                                                                                                                                             
+  - Value: fmtCurrency(data.ipObsDefenseValue ?? 0)         
+  - Copy: "Observation vs. inpatient status determinations are among the most contested payer decisions — and the most documentation-sensitive. Real-time documentation of the clinical rationale for inpatient
+   admission, written at the moment of the decision, is your strongest defense against retrospective challenge. At a {data.ipObsDefenseRealization ?? 25}% realization rate:                                   
+  {fmtCurrency(data.ipObsDefenseValue ?? 0)}."                                                                                                                                                                 
+                                                                                                                                                                                                               
+  Concurrent Review Defense driver block (if (data.ipConcurrentReviewEnabled ?? false) && safe(data.ipConcurrentValue ?? 0) > 0):
+  - Label: "CONCURRENT REVIEW DEFENSE"                                                                                                                                                                         
+  - Value: fmtCurrency(data.ipConcurrentValue ?? 0)
+  - Copy: "Payer concurrent review targets cases where continued-stay medical necessity isn't documented clearly in real time. Abridge captures the daily clinical rationale — the progression of illness, the 
+  decision to maintain inpatient status — as it's spoken. When the case manager needs to respond to a payer, the note is already there. At a {data.ipConcurrentRealization ?? 30}% realization rate:           
+  {fmtCurrency(data.ipConcurrentValue ?? 0)}."                                                                                                                                                       
+                                                                                                                                                                                                               
+  If none of the three are enabled, show: "Revenue drivers were not selected for this model. DRG Accuracy, Obs/IP Status Defense, and Concurrent Review Defense are available to model when your revenue cycle 
+  team is ready."                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Revenue subtotal line: fmtCurrency(safe(data.ipDrgValue) + safe(data.ipObsDefenseValue ?? 0) + safe(data.ipConcurrentValue ?? 0))                                                                            
+                                                                                                                                                                                                               
+  Keep PageFooter pageNum={4} totalPages={6}. 
+                                                                                                                                                                                                               
+  ---                                                       
+  PAGE 5: THE INVESTMENT CASE                                                                                                                                                                                  
+                                                            
+  Keep existing investment case page content completely unchanged. Update investmentPageNum = 5.                                                                                                               
+                                                            
+  Keep PageFooter pageNum={5} totalPages={6}. 
+                                          
+  ---                                                                                                                                                                                                          
+  PAGE 6: YOUR ASSESSMENT                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Keep existing assessment page structure but update the value summary to the 4-bucket layout in order: QUALITY, WORKFORCE, CAPACITY, REVENUE.                                                                 
+                                                            
+  QUALITY                                     
+  - CDI Query Reduction: data.ipCdiEnabled ? fmtCurrency(safe(data.ipCdiValue)) : "Not Modeled"
+                                                                                                                                                                                                               
+  WORKFORCE                                                                                                                                                                                                    
+  - Clinician Wellbeing: if retentionValueEnabled and retVal > 0: fmtCurrency(retVal); else if sustainabilityEnabled: "${(data.ipWellbeingHoursPerWeek ?? 0).toFixed(1)} hrs/wk"; else "—"                     
+                                                                                                                                                                                                               
+  CAPACITY                                                  
+  - Rounding Efficiency: "Qualitative"                                                                                                                                                                         
+  - Cost Reduction: safe(data.ipCostReductionValue) > 0 ? fmtCurrency(data.ipCostReductionValue) : "—"                                                                                                         
+   
+  REVENUE                                                                                                                                                                                                      
+  - DRG Accuracy: data.ipDrgEnabled ? fmtCurrency(safe(data.ipDrgValue)) : "—"
+  - Obs/IP Defense: (data.ipObsDefenseEnabled ?? false) ? fmtCurrency(safe(data.ipObsDefenseValue ?? 0)) : "—"
+  - Concurrent Review: (data.ipConcurrentReviewEnabled ?? false) ? fmtCurrency(safe(data.ipConcurrentValue ?? 0)) : "—"                                                                                        
+                                                                                                                       
+  NET ANNUAL VALUE: unchanged                                                                                                                                                                                  
+                                                            
+  Add a methodology box:                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  METHODOLOGY                                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  CDI Query Reduction: {data.ipCdiScenario} scenario — {data.ipQueriesAvoidedRate ?? 25}% of queries avoided. Cost per query ${data.ipCostPerQuery ?? 50} (fully-loaded CDI team time: generation, review,     
+  tracking, physician follow-up). Mechanism: upstream documentation completeness eliminates the need for the query.
+
+  Clinician Retention: AMA burnout data applied to {data.annualTurnoverRate ?? 8}% turnover, {data.burnoutRelatedTurnoverPct ?? 45}% burnout-related. Replacement cost ${(data.replacementCostPerProvider ??   
+  300000).toLocaleString()}. Modeled at {data.abridgeRetentionImpactLabel ?? "typical"} scenario. Validate via exit interview data.
+                                                                                                                                                                                                               
+  Rounding Efficiency: Qualitative. Time returned from documentation to direct patient care. Mechanism: documentation during the encounter, not after it.                                                      
+                                          
+  DRG Accuracy: {data.ipDrgScenario} scenario — {data.ipDrgOpportunityRate ?? 18}% of admissions carry a gap; Abridge closes {data.ipAbridgeCaptureRate ?? 20}% of those gaps. DRG weight lift                 
+  {data.ipAvgDRGWeightLift ?? 0.4} at ${(data.ipBaseDRGPayment ?? 6000).toLocaleString()} base payment. {data.ipDrgRealizationRate ?? 33}% realization for RAC/PEPPER exposure.                                
+   
+  Obs/IP Defense: Documentation-sensitive observation denials. {data.ipObsDefenseRealization ?? 25}% realization applied.                                                                                      
+                                                            
+  Concurrent Review: Continued-stay medical necessity documentation. {data.ipConcurrentRealization ?? 30}% realization applied.                                                                                
+                                                                                                                                                                                                               
+  Keep PageFooter pageNum={6} totalPages={6}.
+                                                                                                                                                                                                               
+  ---                                                       
+  IMPORTANT NOTES                                                                                                                                                                                              
+                                                            
+  1. Always 6 pages. Set ipTotalPages = 6 directly. Remove all ipHasDocQuality ? 6 : 5 conditionals from page count logic.
+  2. Interface fields. Check whether ipObsDefenseValue and ipConcurrentValue exist in the ExplorePDFData interface. If not, add them. Also verify these values are being passed in the handleExportPDF data
+  object in ExploreModel.tsx.                 
+  3. Keep all existing helpers — getInpatientObservation(), fmtCurrency(), fmtPct(), safe(), PageFooter — unchanged.
+  4. Keep all existing styles — styles.page, styles.pageWrapper, styles.sectionLabel, styles.cardBg, styles.calloutBox, styles.divider, styles.thickDivider — no new styles.                                   
+  5. Match existing code style exactly — inline styles, react-pdf primitives, Unicode escapes for em-dashes (\u2014) and apostrophes (\u2019).                                                                 
+  6. Only modify the {isInpatient && (...)} block and ExploreModel.tsx inpatient card section. All other care settings untouched. 

@@ -1,0 +1,362 @@
+I need you to restructure the Emergency Department care setting in this React/TypeScript ROI calculator from a 2-bucket model ("Throughput Value" / "Revenue Optimized") to a 4-bucket model with these exact
+   names in this exact order: QUALITY, WORKFORCE, CAPACITY, REVENUE. This affects three files.                                                                                                                 
+                                                                                              
+  ---                                                                                                                                                                                                          
+                                                            
+  ## BACKGROUND                                                                                                                                                                                                
+               
+  Current ED structure has two value buckets:                                                                                                                                                                  
+  - **THROUGHPUT VALUE**: LWBS Recovery + Admission Capture + Clinician Wellbeing
+  - **REVENUE OPTIMIZED**: E&M Level Accuracy + Denial Prevention                
+                                                                 
+  New 4-bucket structure:                 
+  | Bucket | Drivers |                        
+  |--------|---------|                                                                                                                                                                                         
+  | **QUALITY** | Sepsis/stroke documentation, obs/admit status, readmission prevention (qualitative — no $ figure) |
+  | **WORKFORCE** | Clinician Wellbeing/Retention |                                                                                                                                                            
+  | **CAPACITY** | LWBS Recovery + Admission Capture |      
+  | **REVENUE** | E&M Level Accuracy + Denial Prevention |                                                                                                                                                     
+                                                            
+  ---                                                                                                                                                                                                          
+                                          
+  ## FILE 1: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                          
+                                                                                                                                                                                                               
+  ### Change 1: ED currentWrvu default
+  Find where the app resets inputs when switching to ED (look for `currentWrvu: 2.5` in an ED-specific condition). Change:                                                                                     
+  currentWrvu: 2.5                                          
+  to:                                         
+  currentWrvu: 1.6                                                                                                                                                                                             
+                  
+  ### Change 2: wRVU improvement scenarios — ED-specific                                                                                                                                                       
+  Find the `wrvuScenarios` object inside the `docValue` useMemo. Currently:
+  ```typescript                                                                                                                                                                                                
+  const wrvuScenarios = { conservative: 2, typical: 5, aggressive: 7 };
+  Make it care-setting-aware (find how the current care setting is accessed in that useMemo scope):
+  const wrvuScenarios = isED                                                                                                                                                                                   
+    ? { conservative: 1, typical: 2.5, aggressive: 4 }
+    : { conservative: 2, typical: 5, aggressive: 7 };                                                                                                                                                          
+                                                                                                                                                                                                               
+  Change 3: Denial prevention scenarios — ED-specific                                                                                                                                                          
+                                                                                                                                                                                                               
+  In the same docValue useMemo, find denialsScenarios:                                                                                                                                                         
+  const denialsScenarios = { conservative: 25, typical: 50, aggressive: 75 };
+  Change to:                                                                                                                                                                                                   
+  const denialsScenarios = isED                             
+    ? { conservative: 15, typical: 30, aggressive: 50 }                                                                                                                                                        
+    : { conservative: 25, typical: 50, aggressive: 75 };    
+                                                                                                                                                                                                               
+  ---                                     
+  FILE 2: client/src/pages/explore/ExploreModel.tsx                                                                                                                                                            
+                                                                                                                                                                                                               
+  Change 1: wRVU and denial scenarios — ED-specific
+                                                                                                                                                                                                               
+  Find where wrvuScenarios and denialsScenarios are defined at the component body level (not inside a useMemo). Make them ED-conditional using the same isED check available in that scope:
+  const wrvuScenarios = isED              
+    ? { conservative: 1, typical: 2.5, aggressive: 4 }                                                                                                                                                         
+    : { conservative: 2, typical: 5, aggressive: 7 };                                                                                                                                                          
+  const denialsScenarios = isED                                                                                                                                                                                
+    ? { conservative: 15, typical: 30, aggressive: 50 }                                                                                                                                                        
+    : { conservative: 25, typical: 50, aggressive: 75 };    
+                                                                                                                                                                                                               
+  Change 2: Separate retention from throughput
+                                                                                                                                                                                                               
+  Find this line:                                                                                                                                                                                              
+  const edThroughputVal = edLwbsValue + edAdmissionCaptureValue + clinicianRetentionValue;
+  Replace with:                                                                                                                                                                                                
+  const edCapacityVal = edLwbsValue + edAdmissionCaptureValue;
+  const edWorkforceVal = clinicianRetentionValue;                                                                                                                                                              
+                                                            
+  Change 3: Update the returned model values                                                                                                                                                                   
+                                          
+  Find where edThroughputVal is used in the returned object, something like:                                                                                                                                   
+  throughputValue: edThroughputVal,                                                                                                                                                                            
+  efficiencyValue: edThroughputVal,
+  Replace with:                                                                                                                                                                                                
+  throughputValue: edCapacityVal,                           
+  efficiencyValue: edCapacityVal,                                                                                                                                                                              
+  edCapacityValue: edCapacityVal,                                                                                                                                                                              
+  edWorkforceValue: edWorkforceVal,           
+                                                                                                                                                                                                               
+  Change 4: Fix "min/shift" label                           
+                                                                                                                                                                                                               
+  Find the label that reads "min/shift" in the ED section. Change it to "min/encounter".
+                                                                                                                                                                                                               
+  Change 5: Fix shifts/year divisor                                                                                                                                                                            
+                                                                                                                                                                                                               
+  Find where ED workforce/wellbeing hours math divides by 8. Change / 8 to / 10 (ED shifts are 10 hours, not 8).                                                                                               
+                                                                                                                                                                                                               
+  Change 6: 4-card UI — QUALITY / WORKFORCE / CAPACITY / REVENUE
+                                                                                                                                                                                                               
+  Find the "WHERE THE VALUE COMES FROM" section ({/* WHERE THE VALUE COMES FROM */}). Inside its motion.div there is a two-card grid:
+  <div className="grid md:grid-cols-2 gap-4 sm:gap-6">                                                                                                                                                         
+                                                            
+  Wrap the entire <div className="grid md:grid-cols-2 ...">...</div> block in a ternary. When isED is true, render 4 cards in order: QUALITY, WORKFORCE, CAPACITY, REVENUE. Otherwise render the unchanged     
+  2-card grid.                                              
+                                                                                                                                                                                                               
+  Individual values in scope:                                                                                                                                                                                  
+  - edLwbsValue — LWBS Recovery                                                                                                                                                                                
+  - edAdmissionCaptureValue — Admission Capture                                                                                                                                                                
+  - clinicianRetentionValue — Clinician Retention                                                                                                                                                              
+  - wrvuValue — E&M Level Accuracy                          
+  - denialsValue — Denial Prevention                                                                                                                                                                           
+  - docValue — E&M + Denial sum                             
+  - hoursPerProviderPerWeek — hours saved per provider per week
+  - timeDriverInputs, docQualityInputs                                                                                                                                                                         
+                                          
+  Use className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4". Each card: className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5".                                                                                   
+                                                                                                                                                                                                               
+  Red bar: <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+  Gray bar: <div className="w-1 h-6 bg-[#888888] rounded-full" />                                                                                                                                              
+  Divider: <div className="h-px bg-[#E5E5E5] mb-3" />                                                                                                                                                          
+  Label style: text-xs font-bold uppercase tracking-wide mb-2                                                                                                                                                  
+  Line items: text-xs space-y-1.5, flex justify-between gap-1                                                                                                                                                  
+                                                                                                                                                                                                               
+  Card 1 — QUALITY                                                                                                                                                                                             
+  - Label: "Quality"                                                                                                                                                                                           
+  - Hero: "Measured, not modeled" in text-base font-medium text-[#888888] with gray bar                                                                                                                        
+  - Divider                                                                                                                                                                                                    
+  - Body text (text-xs text-[#888888]): "Sepsis & stroke documentation, obs/admit status defense, readmission prevention — reported 90 days post-deployment."                                                  
+                                                                                                                                                                                                               
+  Card 2 — WORKFORCE                          
+  - Label: "Workforce"                                                                                                                                                                                         
+  - Hero:                                                   
+    - If timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0 → formatCurrency(clinicianRetentionValue) with red bar                                   
+    - Else if timeDriverInputs.wellbeingEnabled → "{hoursPerProviderPerWeek} hrs/wk" with red bar                                                                           
+    - Else → "Not modeled" in text-base font-medium text-[#888888] with gray bar                                                                                                                               
+  - Divider                                                                     
+  - Line item: "Clinician Wellbeing" → if both enabled: formatCurrency(clinicianRetentionValue); else if wellbeingEnabled: "{hoursPerProviderPerWeek} hrs/wk"; else '—'                                        
+                                                                                                                                                                                                               
+  Card 3 — CAPACITY                                                                                                                                                                                            
+  - Label: "Capacity"                                                                                                                                                                                          
+  - Hero: if (edLwbsValue + edAdmissionCaptureValue) > 0 → formatCurrency(edLwbsValue + edAdmissionCaptureValue) with red bar; else "Not modeled" with gray bar                                                
+  - Divider                                                                                                                                                                                                    
+  - Line items:                                             
+    - "LWBS Recovery" → timeDriverInputs.edLwbsEnabled ? formatCurrency(edLwbsValue) : '—'                                                                                                                     
+    - "Admission Capture" → timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled ? formatCurrency(edAdmissionCaptureValue) : '—'
+                                                                                                                                                                                                               
+  Card 4 — REVENUE                            
+  - Label: "Revenue"                                                                                                                                                                                           
+  - Hero: if docValue > 0 → formatCurrency(docValue) with red bar; else "Not modeled" with gray bar
+  - Divider                                                                                                                                                                                                    
+  - Line items:                                             
+    - "E&M Accuracy" → docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'                                                                                                                          
+    - "Denial Prevention" → docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'
+                                                                                                                                                                                                               
+  ---                                         
+  FILE 3: client/src/components/explore/ExplorePDFExport.tsx                                                                                                                                                   
+                                                                                                                                                                                                               
+  Change 1: Add fields to ExplorePDFData interface                                                                                                                                                             
+                                                                                                                                                                                                               
+  Find the ExplorePDFData interface. Locate the existing ED-specific fields (look for throughputValue?: number). Add alongside them:                                                                           
+  edCapacityValue?: number;                                 
+  edWorkforceValue?: number;                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  Change 2: Full restructure of the ED PDF block                                                                                                                                                               
+                                                                                                                                                                                                               
+  Find the large {isED && (...)} block. It currently renders 5 or 6 pages. Replace with 6 fixed pages (always 6 — remove any conditional page count). Set edTotalPages = 6 directly.                           
+                                          
+  Find the existing variables declared inside this block that you will reuse:                                                                                                                                  
+  - thrVal or equivalent — the existing throughput value variable. Replace its usage with edCapacityVal = safe(data.edCapacityValue ?? data.throughputValue)                                                   
+  - docQualVal — E&M + denial sum (keep as-is)                                                                                                              
+  - edWorkforceVal = safe(data.edWorkforceValue ?? 0)                                                                                                                                                          
+  - All other existing variables (fmtCurrency, fmtPct, safe, colors, styles, etc.) — keep unchanged
+                                                                                                                                                                                                               
+  ---                                                       
+  PAGE 1: THE THESIS — 4 buckets                                                                                                                                                                               
+                                                                                                                                                                                                               
+  Keep all existing content above the current "TWO SOURCES OF VALUE" text (the cover card with org/providers/encounters, the hero net value, the 4-stat box).                                                  
+                                                                                                                                                                                                               
+  Change the section label from "TWO SOURCES OF VALUE" to "FOUR DRIVERS OF VALUE".                                                                                                                             
+                                                            
+  Replace the two-column card layout with a 2×2 grid in order: QUALITY, WORKFORCE, CAPACITY, REVENUE.                                                                                                          
+                                                                                                                                                                                                               
+  QUALITY card (beige/cardBg background):                                                                                                                                                                      
+  - Label: "QUALITY"                                                                                                                                                                                           
+  - Value: "Measured, Not Modeled" (text-xl font-bold color: colors.secondary)
+  - Copy: "Sepsis and stroke protocol documentation, observation vs. admission status defense, and readmission prevention. Outcomes reported at 90 days — not estimated upfront."                              
+  - No closing bold line needed                                                                                                                                                  
+                                                                                                                                                                                                               
+  WORKFORCE card (same beige/cardBg):                       
+  - Label: "WORKFORCE"                                                                                                                                                                                         
+  - Value: edWorkforceVal > 0 ? fmtCurrency(edWorkforceVal) : data.sustainabilityEnabled ? "Qualitative" : "Not Modeled"                                                                                       
+  - Copy: "Emergency medicine has the highest burnout rate in medicine. Documentation burden is the most-cited driver. Time returned from charting changes what it feels like to practice in an ED."           
+                                                                                                                                                                                                               
+  CAPACITY card (beige/cardBg):                                                                                                                                                                                
+  - Label: "CAPACITY"                                       
+  - Value: edCapacityVal > 0 ? fmtCurrency(edCapacityVal) : "Not Measured"                                                                                                                                     
+  - Copy: "When physicians spend less time charting between patients, they are available to see the next patient sooner. That shortens wait time — the primary driver of LWBS."                                
+                                                                                                                                                                                                               
+  REVENUE card (accent border style, like the existing REVENUE OPTIMIZED card):                                                                                                                                
+  - Label: "REVENUE"                                        
+  - Value: docQualVal > 0 ? fmtCurrency(docQualVal) : "Not Modeled"                                                                                                                                            
+  - Copy: data.edHasDocQuality ? "E&M level accuracy and denial prevention — documentation completeness translates directly to reimbursement." : "No documentation quality drivers were selected. E&M level    
+  accuracy and denial prevention are available to model — both are high-impact in ED settings."                                                                                                                
+                                                                                                                                                                                                               
+  Keep getEdObservation(data) in the "WHAT YOUR CHOICES REVEAL" callout.                                                                                                                                       
+  Keep PageFooter pageNum={1} totalPages={6}.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PAGE 2: WORKFORCE                                                                                                                                                                                            
+                                                            
+  Section label: "WORKFORCE"                                                                                                                                                                                   
+  Headline: "Every minute at a terminal\nis a minute away from a patient."
+  Subtext: "In an emergency department, documentation speed\nisn\u2019t a convenience. It\u2019s a flow variable."
+                                              
+  Keep the existing burnout callout box (AMA data, EHR time citation). Keep the existing stats display. Keep the existing ValueDriversGlanceBlock if present.                                                  
+                                                                                                                                                                                                               
+  Clinician Wellbeing driver block:                                                                                                                                                                            
+  - Headline value: if data.retentionValueEnabled && edWorkforceVal > 0 → fmtCurrency(edWorkforceVal) (orange/primary bar); else if data.sustainabilityEnabled → "${(data.hoursPerProviderPerWeekBack ??       
+  0).toFixed(1)} hrs/wk" (orange bar); else show qualitative placeholder                                                                                                                                       
+  - Copy: "Emergency medicine has the highest burnout rate in medicine. Documentation burden is the single most-cited driver in physician surveys. Abridge returns {(data.hoursPerProviderPerWeekBack ??       
+  0).toFixed(1)} hours per week per physician — time that currently comes from post-shift charting and between-patient documentation. At {data.annualTurnoverRate ?? 8}% annual turnover,                
+  {data.burnoutRelatedTurnoverPct ?? 40}% burnout-related, and $${(data.replacementCostPerProvider ?? 400000).toLocaleString()} to replace a departing physician, even a {data.abridgeRetentionImpactPct ??    
+  10}% reduction in burnout-driven departures generates {fmtCurrency(edWorkforceVal)} annually."                                                                                                            
+  - Methodology note: "Retention impact modeled at the selected scenario. Validate quarterly using exit interview data to confirm burnout-related attribution."                                                
+  - Source: "AMA National Physician Burnout Survey, 2024."                                                                                                                                                     
+                                              
+  Keep PageFooter pageNum={2} totalPages={6}.                                                                                                                                                                  
+                                                            
+  ---                                                                                                                                                                                                          
+  PAGE 3: CAPACITY & REVENUE                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  Section label: "CAPACITY & REVENUE"                                                                                                                                                                          
+  Headline: "Faster documentation means\nthe next patient doesn\u2019t wait."
+  Subheading: "In the ED, time is the unit of currency. Every minute recovered from documentation is a minute available to the next patient in queue."                                                         
+                                              
+  CAPACITY section header row.                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  LWBS Recovery driver block:                                                                                                                                                                                  
+  - Label: "LWBS RECOVERY"                                                                                                                                                                                     
+  - Value: data.lwbsEnabled ? fmtCurrency(safe(data.netLwbsValue)) : "Not Selected"                                                                                                                            
+  - Copy: "When physicians spend less time charting between patients, they are available to see the next patient sooner. That shortens wait time \u2014 the primary driver of LWBS. Your current LWBS rate of  
+  {data.currentLwbsRatePct ?? 2}% generates {(data.annualLwbsPatients ?? 0).toLocaleString()} walkouts annually. At a {data.expectedLwbsReductionPct ?? 15}% reduction \u2014 consistent with ED operations   
+  literature on wait time sensitivity \u2014 that\u2019s {(data.patientsRecovered ?? 0).toLocaleString()} patients recovered at {data.lwbsRealizationRate ?? 60}% realization:                                 
+  {fmtCurrency(safe(data.netLwbsValue))}."                                                                                                                                     
+  - Subtext: "These patients were already in your department. The encounter was already initiated. The only variable was time."                                                                                
+  - Source: "ACEP/AHRQ data — LWBS rates are highly sensitive to wait times exceeding 30\u201345 minutes."                                                                                                     
+                                                                                                                                                                                                               
+  Admission Capture driver block:                                                                                                                                                                              
+  - Label: "ADMISSION CAPTURE"                              
+  - Value: data.admissionCaptureEnabled && data.lwbsEnabled ? fmtCurrency(safe(data.annualAdmissionCaptureValue)) : "Not Selected"                                                                             
+  - Copy: "Of patients who leave before being seen in high-acuity EDs, published literature suggests 15\u201320% would have met inpatient admission criteria. These are not speculative admissions \u2014 they 
+  are patients whose clinical trajectory would have led to an admit decision. The {(data.potentialAdmissions ?? 0).toFixed(0)} additional admissions at $${(data.avgAdmissionRevenue ?? 8000).toLocaleString()}
+   each, at a {data.admissionRealizationRate ?? 50}% realization rate: {fmtCurrency(safe(data.annualAdmissionCaptureValue))} annually."                                                                        
+  - Methodology note: "Admission revenue reflects incremental ED-to-admission revenue contribution, not full hospitalization value."                                                                           
+                                                                                                                                                                                                               
+  Capacity subtotal line: fmtCurrency(edCapacityVal)                                                                                                                                                           
+                                                                                                                                                                                                               
+  REVENUE section header row (with divider above).                                                                                                                                                             
+                                                                                                                                                                                                               
+  E&M Level Accuracy driver block (if data.emAccuracyEnabled):                                                                                                                                                 
+  - Label: "E&M LEVEL ACCURACY"                                                                                                                                                                                
+  - Value: fmtCurrency(safe(data.annualWrvuValue ?? data.emValue))                                                                                                                                             
+  - Copy: "Emergency department documentation frequently understates visit complexity \u2014 not because the care wasn\u2019t delivered, but because documentation at speed omits specificity. E/M level       
+  accuracy improves when notes capture the decision complexity that was already there. At a {data.wrvuImprovementPct ?? 2.5}% documentation improvement across eligible encounters \u2014 the conservative 
+  range seen in acute care settings \u2014 that\u2019s additional wRVUs at $${data.wrvuConversionFactor ?? 33}/wRVU and {data.wrvuRealizationRate ?? 75}% realization: {fmtCurrency(safe(data.annualWrvuValue  
+  ?? data.emValue))}."                    
+                                                                                                                                                                                                               
+  Denial Prevention driver block (if data.denialEnabled):                                                                                                                                                      
+  - Label: "DENIAL PREVENTION"                                                                                                                                                                                 
+  - Value: fmtCurrency(safe(data.annualDenialValue))                                                                                                                                                           
+  - Copy: "ED claim denials most often trace to three documentation failures: absent medical necessity language, incomplete physical exam documentation, and missing decision rationale for admission vs. 
+  discharge. Abridge addresses all three by capturing clinical reasoning in real time. Your {data.baselineDenialRate ?? 5}% baseline denial rate generates unappealable claims annually. At a             
+  {data.preventionTargetPct ?? 30}% reduction in documentation-related denials \u2014 the {data.denialPreventionScenario ?? 'typical'} scenario: {fmtCurrency(safe(data.annualDenialValue))}."
+  - Note: "Documentation-related denials are among the most preventable in the revenue cycle."                                                                                                
+                                                                                                                                                                                                               
+  If neither E&M nor Denial is enabled: show "Revenue drivers were not selected. E&M level accuracy and denial prevention are available to model — both are particularly high-impact in ED settings."          
+                                                                                                                                                                                                               
+  Revenue subtotal line: docQualVal > 0 ? fmtCurrency(docQualVal) : "\u2014"                                                                                                                                   
+                                                                                                                                                                                                               
+  Keep PageFooter pageNum={3} totalPages={6}.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PAGE 4: QUALITY                                                                                                                                                                                              
+                                                            
+  Section label: "QUALITY"                
+  Headline: "What gets documented gets defended.\nWhat gets captured gets measured."
+  Subheading: "We don\u2019t assign a dollar figure to quality outcomes. We measure them and report them back to you. That\u2019s more honest \u2014 and more defensible \u2014 than a number we\u2019d have to
+   explain in the room."                      
+                                                                                                                                                                                                               
+  Four quality outcome blocks (no dollar figures — use gray bars, not orange):                                                                                                                                 
+                                                                                                                                                                                                               
+  1. DOCUMENTATION COMPLETENESS RATE                                                                                                                                                                           
+  "The percentage of notes containing all required clinical elements. Measured at baseline and 30/60/90 days post-deployment. Abridge structured capture consistently improves completeness rates in acute care
+   settings."                                               
+  2. SEPSIS AND STROKE PROTOCOL DOCUMENTATION                                                                                                                                                                  
+  "Structured real-time notes improve time-to-recognition for protocol-eligible patients. Sepsis bundle documentation and stroke alert documentation are particularly sensitive to real-time capture of
+  clinical decision-making — where seconds between recognition and action matter."                                                                                                                             
+  3. OBSERVATION VS. ADMISSION DOCUMENTATION                
+  "Proper observation status documentation reduces CDI queries and audit exposure. Real-time documentation of the clinical rationale for obs vs. admission is among the highest-value downstream quality       
+  outcomes in the ED."                                                                                                                                                                                         
+  4. READMISSION PREVENTION                                                                                                                                                                                    
+  "Complete ED discharge documentation reduces gaps in care continuity that contribute to 30-day returns. Handoff quality is a function of documentation completeness at the time of disposition."             
+                                                                                                                                                                                                               
+  Closing callout box: "These outcomes are measured 90+ days post-deployment. Baseline data collected during implementation. Ask your Abridge team for outcome data from comparable ED deployments."           
+                                                                                                                                                                                                               
+  Keep PageFooter pageNum={4} totalPages={6}.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PAGE 5: THE INVESTMENT CASE                                                                                                                                                                                  
+                                                            
+  Keep all existing investment case page content completely unchanged. Update page number to 5.                                                                                                                
+                                                            
+  Update the 90-day KPI section — replace vague qualitative targets with quantitative ranges:
+  - Door-to-provider time → "Target: 4\u20138 min reduction from documentation baseline"
+  - LWBS rate → "Target: 0.3\u20130.8% absolute reduction from current rate"                                                                                                                                   
+  - E&M level distribution → "Target: 1\u20133% shift toward higher complexity levels"                                                                                                                         
+  - Add: Physician EHR time → "Target: 15\u201325% reduction in post-encounter documentation time"                                                                                                             
+                                                                                                                                                                                                               
+  Keep PageFooter pageNum={5} totalPages={6}.               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PAGE 6: YOUR ASSESSMENT                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Keep existing assessment page structure but update the value summary to 4-bucket layout in order: QUALITY, WORKFORCE, CAPACITY, REVENUE.                                                                     
+                                                            
+  QUALITY                                     
+  - Documentation completeness, sepsis/stroke, readmission: "Measured 90+ days post-deployment"
+                                                                                                                                                                                                               
+  WORKFORCE                                                                                                                                                                                                    
+  - Clinician Wellbeing: data.retentionValueEnabled && edWorkforceVal > 0 ? fmtCurrency(edWorkforceVal) : data.sustainabilityEnabled ? "Qualitative" : "\u2014"                                                
+                                                                                                                                                                                                               
+  CAPACITY                                                  
+  - LWBS Recovery: data.lwbsEnabled ? fmtCurrency(safe(data.netLwbsValue)) : "\u2014"                                                                                                                          
+  - Admission Capture: data.admissionCaptureEnabled && data.lwbsEnabled ? fmtCurrency(safe(data.annualAdmissionCaptureValue)) : "\u2014"                                                                       
+                                          
+  REVENUE                                                                                                                                                                                                      
+  - E&M Level Accuracy: data.emAccuracyEnabled ? fmtCurrency(safe(data.annualWrvuValue ?? data.emValue)) : "\u2014"                                                                                            
+  - Denial Prevention: data.denialEnabled ? fmtCurrency(safe(data.annualDenialValue)) : "\u2014"                   
+                                                                                                                                                                                                               
+  NET ANNUAL VALUE: unchanged                               
+                                                                                                                                                                                                               
+  Add methodology box:                                      
+                                                                                                                                                                                                               
+  METHODOLOGY                                               
+                                                                                                                                                                                                               
+  LWBS Recovery: ACEP/AHRQ literature. Mechanism: documentation speed \u2192 physician availability \u2192 wait time \u2192 LWBS rate. Reduction scenario applied to annual walkout volume at selected
+  realization rate.                                                                                                                                                                                            
+                                                            
+  Admission Capture: 15\u201320% of LWBS patients meet inpatient admission criteria per published literature. Revenue reflects ED-to-admission contribution, not full hospitalization value. Realization rate  
+  applied for payer mix and bed availability.
+                                                                                                                                                                                                               
+  E&M Level Accuracy: ED improvement range 1\u20134% (acute care settings). Default wRVU baseline 1.6 (unselected ED population). CMS conversion factor with realization adjustment.                           
+                                          
+  Denial Prevention: Conservative 15% / Typical 30% / Aggressive 50% reduction in documentation-related denials. Root cause: medical necessity language, physical exam documentation, admission/discharge      
+  rationale.                                                                                                                                                                                                   
+   
+  Clinician Retention: Emergency medicine burnout rate per AMA. Documentation burden cited as primary driver. Replacement cost per MGMA. Retention impact at selected scenario — validate via exit interview   
+  data.                                                     
+                                                                                                                                                                                                               
+  Quality: Not modeled. Measured at 90+ days post-deployment.                                                                                                                                                  
+                                          
+  Keep PageFooter pageNum={6} totalPages={6}.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  ---
+  IMPORTANT NOTES                                                                                                                                                                                              
+                                                            
+  1. Always 6 pages. Set edTotalPages = 6 directly. Remove all conditional page count logic for ED.
+  2. edCapacityValue and edWorkforceValue must be added to the ExplorePDFData interface and passed in the handleExportPDF data object in ExploreModel.tsx.
+  3. Keep all existing helpers — getEdObservation(), getEdClosingQuote(), fmtCurrency(), fmtPct(), safe(), PageFooter — unchanged.
+  4. Keep all existing styles — no new styles needed.
+  5. Match existing code style exactly — inline styles, react-pdf primitives, Unicode escapes for em-dashes (\u2014) and apostrophes (\u2019).                                                                 
+  6. Only modify the {isED && (...)} PDF block and the ED-specific sections in ExploreModel.tsx and ExploreFlow.tsx.     
