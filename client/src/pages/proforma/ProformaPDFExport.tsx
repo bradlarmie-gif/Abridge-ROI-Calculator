@@ -1445,8 +1445,13 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
                     contractYears >= 2 ? `${config.yearlyUtilization.year2}% Y2` : null,
                     contractYears >= 3 ? `${config.yearlyUtilization.year3}% Y3` : null,
                   ].filter(Boolean).join(", ");
-                  const nursingNote = config.nursingYearlyUtilization && hasNursing
-                    ? ` (Nursing: ${[config.nursingYearlyUtilization.year1, contractYears >= 2 ? config.nursingYearlyUtilization.year2 : null, contractYears >= 3 ? config.nursingYearlyUtilization.year3 : null].filter(v => v != null).join("/")}%)`
+                  const nursingDiffers = config.nursingYearlyUtilization && hasNursing && (
+                    config.nursingYearlyUtilization.year1 !== config.yearlyUtilization.year1 ||
+                    (contractYears >= 2 && config.nursingYearlyUtilization.year2 !== config.yearlyUtilization.year2) ||
+                    (contractYears >= 3 && config.nursingYearlyUtilization.year3 !== config.yearlyUtilization.year3)
+                  );
+                  const nursingNote = nursingDiffers
+                    ? ` (Nursing: ${[config.nursingYearlyUtilization!.year1, contractYears >= 2 ? config.nursingYearlyUtilization!.year2 : null, contractYears >= 3 ? config.nursingYearlyUtilization!.year3 : null].filter(v => v != null).join("/")}%)`
                     : "";
                   return base + nursingNote;
                 })()}{"\n"}
