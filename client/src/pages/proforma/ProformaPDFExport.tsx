@@ -471,7 +471,7 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
       <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginTop: 10, paddingLeft: 48 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <View style={{ width: 10, height: 6, backgroundColor: colors.docBlue, borderRadius: 1, opacity: 0.8 }} />
-          <Text style={{ fontSize: 7, color: "#666666" }}>Doc Quality</Text>
+          <Text style={{ fontSize: 7, color: "#666666" }}>Quality</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <View style={{ width: 10, height: 6, backgroundColor: colors.timeRed, borderRadius: 1, opacity: 0.75 }} />
@@ -515,7 +515,7 @@ function PDFProportionBar({ docPct, timePct, retPct }: { docPct: number; timePct
       <View style={{ flexDirection: "row", marginTop: 3 }}>
         {docPct >= 8 && (
           <View style={{ flex: docPct, alignItems: docPct > 12 ? "center" : "flex-start" }}>
-            <Text style={{ fontSize: 6.5, color: colors.docBlue }}>{docPct}% Doc Quality</Text>
+            <Text style={{ fontSize: 6.5, color: colors.docBlue }}>{docPct}% Quality</Text>
           </View>
         )}
         {timePct >= 8 && (
@@ -757,7 +757,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             <View style={{ flexDirection: "row", gap: 16 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.docBlue }} />
-                <Text style={{ fontSize: 7.5, color: colors.secondary }}>Immediate {"\u2014"} Doc quality</Text>
+                <Text style={{ fontSize: 7.5, color: colors.secondary }}>Immediate {"\u2014"} Quality</Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.timeRed }} />
@@ -905,7 +905,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>VALUE ONSET</Text>
                 <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
-                  Doc quality: immediate after ramp{"\n"}
+                  Quality: immediate after ramp{"\n"}
                   Capacity & efficiency: +{delayedOnsetMonths}mo delay{"\n"}
                   Retention: phased per schedule above
                 </Text>
@@ -985,7 +985,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
               <View style={[styles.cardBg, { flex: 1, alignItems: "center", paddingVertical: 10 }]}>
                 <View style={{ width: 20, height: 3, backgroundColor: colors.docBlue, borderRadius: 1, marginBottom: 6 }} />
                 <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmt(driverDocTotal)}</Text>
-                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2 }}>Documentation Quality</Text>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginTop: 2 }}>Quality</Text>
                 <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.docBlue, marginTop: 2 }}>{driverDocPct}%</Text>
               </View>
             )}
@@ -1035,7 +1035,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           <Text style={styles.sectionLabel}>{termLabel.toUpperCase()} PROJECTION</Text>
           <Text style={styles.sectionHeadline}>How Value Builds Over Time</Text>
           <Text style={styles.body}>
-            Value builds progressively as the deployment matures. Documentation quality gains (navy) appear first, capacity and efficiency improvements (red) follow after a {delayedOnsetMonths}-month operational lag, and retention value (gold) compounds over the contract term.
+            Value builds progressively as the deployment matures. {nursingOnly ? "Quality" : "Documentation quality"} gains (navy) appear first, capacity and efficiency improvements (red) follow after a {delayedOnsetMonths}-month operational lag, and retention value (gold) compounds over the contract term.
           </Text>
 
           <View style={[styles.cardBg, { padding: 16, marginBottom: 10 }]}>
@@ -1074,7 +1074,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
             </View>
 
             <View style={{ flexDirection: "row", marginBottom: 1, paddingLeft: 8 }}>
-              <Text style={{ flex: 2, fontSize: 7.5, color: colors.docBlue }}>Doc Quality (immediate)</Text>
+              <Text style={{ flex: 2, fontSize: 7.5, color: colors.docBlue }}>Quality (immediate)</Text>
               {yearlyData.map(y => (
                 <Text key={y.label} style={{ flex: 1, fontSize: 7.5, color: colors.tertiary, textAlign: "right" }}>{fmt(y.docValue)}</Text>
               ))}
@@ -1329,7 +1329,7 @@ function ProformaPDFDocument({ settings, config, summary, yearlyData, chartData,
           <Text style={styles.sectionLabelGray}>MODEL CONFIDENCE</Text>
           {(() => {
             const strongItems: string[] = [];
-            if (totalDocValue > 0) strongItems.push("Documentation quality");
+            if (totalDocValue > 0) strongItems.push(nursingOnly ? "Quality" : "Documentation quality");
             if (totalTimeValue > 0) strongItems.push("Capacity & efficiency");
             if (totalRetentionValue > 0) strongItems.push("Retention value");
             strongItems.push("Cost structure");
