@@ -1,0 +1,227 @@
+ REPLIT AGENT PROMPT — Methodology PDF: Outpatient Four-Domain Framework                                                                                                                                      
+                                                                                                                                                                                                               
+  In the file `client/src/lib/methodology-pdf-export.tsx`, update the outpatient section of the methodology PDF to use the four-domain framework: QUALITY, WORKFORCE, CAPACITY, and REVENUE — in that exact    
+  order.                                      
+                                                                                                                                                                                                               
+  Note: The ED section was already updated in a prior prompt. The `DomainCard` interface and the conditional `domains` rendering in `Page1Content` should already be in place. If for any reason they are not,
+  refer to the ED prompt for those changes. This prompt only modifies the `outpatient` entry in `settingData`.                                                                                                 
+                                                            
+  ---                                                                                                                                                                                                          
+                                                            
+  ## Replace the entire `outpatient` entry in `settingData` with the following:                                                                                                                                
+                                                                                                                                                                                                               
+  ```typescript
+  outpatient: {                                                                                                                                                                                                
+    settingLabel: "Outpatient",                             
+    settingLabelLower: "outpatient",      
+    coverSubtitle: "A transparent framework for understanding where\ntime saved becomes measurable value across four domains",
+    contextHeadline: "Outpatient has the clearest path from time saved to dollars—which is exactly why the assumptions matter most here.",                                                                     
+    contextBody: "A physician saves 2–4 minutes per visit. That time can become more patients, less pajama-time charting, or better documentation quality. Billing creates traceability, but traceability isn't
+   the same as simplicity. Every conversion step has a realization rate, and we model each one honestly. The four-domain framework keeps the story organized: Quality is about what gets documented. Workforce 
+  is about who stays. Capacity is about throughput. Revenue is about what coding and billing recover.",                                                                                                        
+    contextQuestion: "Four value domains — each with a different measurement timeline.",                                                                                                                       
+    // Legacy fields kept for interface compatibility                                                                                                                                                          
+    cat1Label: "CAPACITY",                                                                                                                                                                                     
+    cat1Description: "More patients seen, less after-hours work.",                                                                                                                                             
+    cat1Footer: "Measurable",                                                                                                                                                                                  
+    cat2Label: "REVENUE",                 
+    cat2Description: "wRVU accuracy, HCC capture, denial prevention.",                                                                                                                                         
+    cat2Footer: "Auditable",                                                                                                                                                                                   
+    domains: [                                                                                                                                                                                                 
+      {                                                                                                                                                                                                        
+        label: "QUALITY",                                                                                                                                                                                      
+        description: "When documentation is complete, downstream care improves. Specialist referrals arrive with context. Chronic conditions get captured for value-based contracts. Pre-authorization notes
+  survive scrutiny. Quality outcomes are the hardest to monetize—so we measure them and report them rather than manufacture a dollar figure.",                                                                 
+        footer: "Strategic — qualitative, tracked not monetized",
+        accentColor: colors.primary,          
+      },                                                                                                                                                                                                       
+      {
+        label: "WORKFORCE",                                                                                                                                                                                    
+        description: "Physician burnout in outpatient medicine is driven more by documentation burden than by patient volume. After-hours charting—pajama time—is the most cited frustration. When
+  documentation is faster, physicians leave work on time, feel less administrative burden, and are more likely to stay. At $250K–$500K per replacement, every physician retained is a significant avoided      
+  cost.",                                                   
+        footer: "Influenceable — retention impact at 12–18 months",                                                                                                                                            
+        accentColor: colors.secondary,                                                                                                                                                                         
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "CAPACITY",                                                                                                                                                                                     
+        description: "Freed documentation time can become additional patient visits—increasing throughput and practice revenue. It can also reduce after-hours charting without adding volume. The conversion
+  rate from documentation time saved to capacity gained depends on scheduling patterns, demand, and practice model. We model it honestly with adjustable levers.",                                             
+        footer: "Measurable — visit volume and schedule utilization",
+        accentColor: colors.primary,          
+      },                                                                                                                                                                                                       
+      {
+        label: "REVENUE",                                                                                                                                                                                      
+        description: "Better documentation supports accurate coding. Notes that capture full clinical complexity yield higher wRVUs. Complete documentation of chronic conditions improves risk adjustment for
+  Medicare Advantage populations. Documentation gaps drive unappealable denials—real-time capture prevents permanent revenue loss. All three are measurable from existing billing and claims data.",           
+        footer: "Auditable — billing data within 90 days",  
+        accentColor: colors.secondary,
+      },                                                                                                                                                                                                       
+    ],                                    
+    frameworkCallout: "We model all four domains—but we're transparent about what each requires to measure. Capacity is visible in weeks. Revenue (wRVU, denials) is auditable from claims data within 90 days.
+   Workforce (retention) takes 12–18 months. Quality drives downstream outcomes we track and report—because honest measurement is more defensible than a made-up number.",                                     
+    categories: [                         
+      {                                                                                                                                                                                                        
+        label: "QUALITY",                                                                                                                                                                                      
+        labelColor: colors.primary,
+        mechanisms: [                                                                                                                                                                                          
+          {                                                 
+            name: "Referral & Downstream Documentation",
+            attribution: "Strategic",
+            description: "When outpatient notes capture full clinical context—differential reasoning, exam findings, medication rationale—specialist referrals arrive with the information needed to act. Thin 
+  referral notes create redundant workups, delays, and patient frustration. Documentation quality is the upstream input to care coordination quality.",
+            formula: "Measured: referral note completeness rate, prior auth approval rate, specialist query volume on incoming referrals",                                                                     
+          },                                                
+          {                                                                                                                                                                                                    
+            name: "HCC Accuracy (Medicare Advantage)",
+            attribution: "Potential",                                                                                                                                                                          
+            description: "Medicare Advantage populations require annual documentation of active chronic conditions to maintain RAF scores. When documentation is complete and specific—using the right ICD-10
+  codes, capturing status and treatment—risk adjustment payments follow. When conditions are documented inconsistently year-over-year, RAF scores drift downward and per-member payments fall.",               
+            formula: "MA patients × Condition gap rate × Recapture % (20–35%) × RAF impact × Per-member payment",                                                                                              
+          },                                  
+        ],                                                                                                                                                                                                     
+      },                                                    
+      {                                                                                                                                                                                                        
+        label: "WORKFORCE",                                 
+        labelColor: colors.secondary,                                                                                                                                                                          
+        mechanisms: [                                       
+          {
+            name: "Provider Retention Savings",                                                                                                                                                                
+            attribution: "Influenceable",
+            description: "Documentation burden is the single most-cited driver of physician burnout in outpatient medicine. Abridge reduces after-hours charting—pajama time—and between-patient documentation 
+  time. At $250K–$500K per physician replacement (recruiting, onboarding, productivity ramp, and coverage), even a modest reduction in burnout-driven departures generates significant avoided cost. We use
+  conservative impact rates because documentation is one of many burnout factors.",
+            formula: "Providers × Turnover (4–8%) × Burnout % (30–50%) × Abridge impact (10–20%) × Replacement cost ($250–500K)",
+          },                                                                                                                                                                                                   
+        ],                                
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "CAPACITY",
+        labelColor: colors.primary,                                                                                                                                                                            
+        mechanisms: [                                       
+          {
+            name: "Patient Access Expansion",
+            attribution: "Measurable",        
+            description: "When documentation per encounter takes less time, that time can be reallocated to additional patient visits. The conversion rate is not 100%—scheduling, demand, and practice model
+  constrain it. We apply a realistic conversion rate (15–30%) and let you adjust based on your scheduling patterns. Practices with open access models and unmet demand see higher capacity conversion than
+  fully booked panels.",                                                                                                                                                                                       
+            formula: "Hours saved × % to capacity (15–30%) × Revenue per visit × Realization (70–85%)",
+          },                                                                                                                                                                                                   
+          {                                                 
+            name: "Operational Time Recovery",                                                                                                                                                                 
+            attribution: "Measurable",                                                                                                                                                                         
+            description: "Time saved that doesn't convert to additional patients still has value—it reduces after-hours overtime, lowers per-encounter labor cost, and improves the economics of the practice
+  day. We show this as a floor scenario: even if zero additional patients are seen, documentation time has a dollar value based on the hourly cost of physician time.",                                        
+            formula: "Providers × Encounters × Time saved (2–4 min) × Conversion (15–30%) × Physician hourly rate ($100–250)",                                                                                 
+          },                                  
+        ],                                                                                                                                                                                                     
+      },                                                    
+      {                                                                                                                                                                                                        
+        label: "REVENUE",                                   
+        labelColor: colors.secondary,                                                                                                                                                                          
+        mechanisms: [                                       
+          {
+            name: "wRVU Capture",                                                                                                                                                                              
+            attribution: "Measurable",
+            description: "Better documentation supports accurate coding. Notes that capture full clinical complexity—multiple diagnoses addressed, medical decision-making detail, time-based billing          
+  eligibility—yield higher wRVUs. The mechanism is documentation of complexity that was already delivered, not upcoding. wRVU lift is auditable from billing data by comparing level mix before and after
+  implementation.",                       
+            formula: "Encounters × Avg wRVU (specialty-specific) × Lift % (2–7%) × Conversion factor ($33–36) × Realization (75–85%)",
+          },                                                                                                                                                                                                   
+          {                               
+            name: "Denial Prevention",                                                                                                                                                                         
+            attribution: "Potential",                                                                                                                                                                          
+            description: "Documentation gaps drive unappealable denials—revenue that is permanently lost, not just delayed. The most common outpatient denial root causes are missing medical necessity
+  language, incomplete exam documentation, and absent clinical rationale for ordered services. Real-time capture prevents these gaps at the point of care. Your RCM team can identify documentation-related    
+  denials by root cause code.",                                                                                                                                                                                
+            formula: "Encounters × Denial rate × Doc-related % × Prevention rate (25–50%) × Avg claim value",
+          },                                                                                                                                                                                                   
+        ],                                                  
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    careQualityCallout: "Revenue optimization depends on coding workflows, payer mix, and practice patterns. We provide the framework—your data determines the magnitude. HCC accuracy is most valuable for
+  MA-heavy practices; wRVU lift matters most in fee-for-service contexts. The model lets you weight each lever based on your payer mix.",                                                                      
+    honestLimits: {                                         
+      measure: [                              
+        "Time per encounter — EHR timestamps, visible in weeks",                                                                                                                                               
+        "wRVU per visit — claims data, auditable at 90 days",
+        "Same-day note closure rate",                                                                                                                                                                          
+        "After-hours charting volume (EHR session data)",   
+      ],                                                                                                                                                                                                       
+      influence: [                                                                                                                                                                                             
+        "Patient capacity — requires demand + scheduling alignment",                                                                                                                                           
+        "HCC recapture — MA-dependent, requires coding workflow",                                                                                                                                              
+        "Denial prevention — multi-factorial, RCM team dependent",
+        "Provider satisfaction — survey-based, directional",                                                                                                                                                   
+      ],                                                                                                                                                                                                       
+      enable: [                                                                                                                                                                                                
+        "Retention — 12–18 months to measure",                                                                                                                                                                 
+        "Referral quality — downstream, hard to attribute",                                                                                                                                                    
+        "Patient satisfaction (CAHPS) — multi-factorial",   
+        "Quality metrics — clinical practice dependent",                                                                                                                                                       
+      ],                                                                                                                                                                                                       
+    },                                    
+    connectedValueLabel: "CONNECTED VALUE",                                                                                                                                                                    
+    connectedValue: "Outpatient documentation quality impacts downstream referrals (specialists receive better context), HCC accuracy for value-based contracts (RAF scores depend on annual documentation),   
+  and pre-authorization efficiency (complete clinical notes reduce prior auth denials). When outpatient notes are strong, the entire care continuum benefits.",                                                
+    mechanismsSubtitle: "How Each Domain Creates Value in Outpatient",                                                                                                                                         
+    assumptions: [                                          
+      { assumption: "Time saved/encounter", range: "2–4 min", defaultVal: "3 min", source: "Abridge data" },                                                                                                   
+      { assumption: "Time conversion rate", range: "15–30%", defaultVal: "25%", source: "Impl. data" },
+      { assumption: "Physician hourly rate", range: "$100–250", defaultVal: "$150", source: "MGMA" },                                                                                                          
+      { assumption: "Visit duration", range: "15–30 min", defaultVal: "20 min", source: "Specialty avg" },
+      { assumption: "Revenue per visit", range: "$150–350", defaultVal: "$200", source: "Practice data" },                                                                                                     
+      { assumption: "wRVU value", range: "$30–40", defaultVal: "$33", source: "CMS" },                                                                                                                         
+      { assumption: "wRVU lift %", range: "2–7%", defaultVal: "5.5%", source: "Abridge data" },                                                                                                                
+      { assumption: "HCC gap rate (MA)", range: "15–30%", defaultVal: "20%", source: "MA benchmarks" },                                                                                                        
+      { assumption: "HCC recapture %", range: "20–35%", defaultVal: "25%", source: "Conservative" },                                                                                                           
+      { assumption: "Denial prevention rate", range: "25–50%", defaultVal: "35%", source: "RCM benchmarks" },                                                                                                  
+      { assumption: "Physician turnover", range: "4–8%", defaultVal: "6%", source: "AAMC" },                                                                                                                   
+      { assumption: "Burnout-related %", range: "30–50%", defaultVal: "40%", source: "AMA research" },                                                                                                         
+      { assumption: "Retention impact", range: "10–20%", defaultVal: "15%", source: "Conservative" },                                                                                                          
+      { assumption: "Replacement cost", range: "$250–500K", defaultVal: "$400K", source: "Merritt Hawkins" },                                                                                                  
+    ],                                                                                                                                                                                                         
+    conservativeCallout: "We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny. The answer depends on your practice—payer mix, scheduling model, and specialty
+   all move the levers. We give you the framework; you supply the data that determines the magnitude.",                                                                                                        
+    validation: [                                                                                                                                                                                              
+      {                                                                                                                                                                                                        
+        name: "CAPACITY (TIME SAVINGS)",                                                                                                                                                                       
+        before: ["EHR session data — time per encounter, after-hours charting", "Schedule utilization and open slot rate"],
+        after: ["Repeat EHR session data — Abridge vs. control providers", "Track encounter volume changes"],                                                                                                  
+        timeline: "2–4 weeks",                              
+      },                                  
+      {                                                                                                                                                                                                        
+        name: "REVENUE (wRVU + DENIALS)",                                                                                                                                                                      
+        before: ["wRVU distribution by provider and E/M level mix", "Denial rate by reason code — documentation-related"],                                                                                     
+        after: ["Compare wRVU distribution pre/post — Abridge vs. control", "Track denial rate trend quarterly"],                                                                                              
+        timeline: "3–6 months",                             
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        name: "QUALITY (HCC + REFERRALS)",                                                                                                                                                                     
+        before: ["HCC capture rate for MA population", "Prior auth approval rate, referral note completeness"],                                                                                                
+        after: ["Track HCC recapture on Abridge providers vs. control", "Survey specialist partners on referral note quality"],                                                                                
+        timeline: "3–6 months",                                                                                                                                                                                
+      },                                                    
+      {                                                                                                                                                                                                        
+        name: "WORKFORCE (RETENTION)",                                                                                                                                                                         
+        before: ["Baseline turnover rate by provider group", "Exit interview data — documentation burnout attribution"],                                                                                       
+        after: ["Track turnover Abridge vs. pre-implementation", "Survey on documentation satisfaction at 6 and 12 months"],                                                                                   
+        timeline: "12–18 months",                           
+      },                                                                                                                                                                                                       
+    ],
+    closingNote: "This methodology reflects Abridge's approach to modeling outpatient ROI across four domains: Quality, Workforce, Capacity, and Revenue. We lead with what's measurable (time savings, wRVU   
+  accuracy) and are transparent about what takes longer to prove (retention) and what we track without monetizing (referral quality, care coordination). All defaults are conservative and editable. The goal
+  is a defensible framework, not a predetermined answer.",                                                                                                                                                     
+  },                                                        
+                                                                                                                                                                                                               
+  ---
+  Verify                                                                                                                                                                                                       
+                                                            
+  After making this change:               
+  1. Open the app → home page → "Learn the Methodology" → Outpatient
+  2. Download the Outpatient methodology PDF                                                                                                                                                                   
+  3. Page 1 should show "FOUR VALUE DOMAINS" with 4 cards in a 2×2 grid: QUALITY (top-left), WORKFORCE (top-right), CAPACITY (bottom-left), REVENUE (bottom-right)
+  4. Page 2 VALUE MECHANISMS should have 4 labeled sections: QUALITY (referrals + HCC), WORKFORCE (retention), CAPACITY (access expansion + operational recovery), REVENUE (wRVU + denials)                    
+  5. Page 3 validation cards should show 4 items: CAPACITY, REVENUE, QUALITY, WORKFORCE                                                                                                    
+  6. ED methodology PDF should remain unchanged from the previous update               
+  7. Inpatient and Nursing methodology PDFs should remain unchanged  

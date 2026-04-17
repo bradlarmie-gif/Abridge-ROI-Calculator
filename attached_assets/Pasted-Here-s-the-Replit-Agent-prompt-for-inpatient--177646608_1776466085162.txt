@@ -1,0 +1,251 @@
+Here's the Replit Agent prompt for inpatient:             
+                                                                                                                                                                                                               
+  ---                                                       
+  REPLIT AGENT PROMPT — Methodology PDF: Inpatient Four-Domain Framework                                                                                                                                       
+                                              
+  In the file `client/src/lib/methodology-pdf-export.tsx`, update the inpatient section of the methodology PDF to use the four-domain framework: QUALITY, WORKFORCE, CAPACITY, and REVENUE — in that exact     
+  order.                                      
+                                                                                                                                                                                                               
+  Note: The ED and Outpatient sections were already updated in prior prompts. The `DomainCard` interface and the conditional `domains` rendering in `Page1Content` should already be in place. This prompt only
+   modifies the `inpatient` entry in `settingData`.                                                                                                                                                            
+                                                            
+  ---                                                                                                                                                                                                          
+                                                            
+  ## Replace the entire `inpatient` entry in `settingData` with the following:                                                                                                                                 
+                                                            
+  ```typescript
+  inpatient: {                                                                                                                                                                                                 
+    settingLabel: "Inpatient",
+    settingLabelLower: "inpatient",                                                                                                                                                                            
+    coverSubtitle: "A transparent framework for understanding where\ndocumentation accuracy drives DRG economics across four domains",
+    contextHeadline: "Inpatient is where documentation has the highest per-note financial impact in healthcare—and the most complex attribution chain.",
+    contextBody: "A single admission note that captures an additional CC/MCC can shift DRG weight by 0.3–0.5—worth $2,000–$4,000 in reimbursement. But inpatient revenue is team-produced: the hospitalist     
+  documents, CDI reviews, coders assign, and the DRG determines payment. Ambient AI improves step one—and when step one is better, every downstream step benefits. Unlike outpatient, hospitalists can't 'see
+  more patients' with saved time. They have an assigned census. That's why Capacity in the inpatient setting means rounding efficiency and time returned to clinical care—not throughput expansion.",          
+    contextQuestion: "Four value domains — each with a different attribution timeline.",                                                                                                                       
+    // Legacy fields kept for interface compatibility                                                                                                                                                          
+    cat1Label: "QUALITY",                                                                                                                                                                                      
+    cat1Description: "CDI query reduction and documentation completeness.",                                                                                                                                    
+    cat1Footer: "Measurable",                                                                                                                                                                                  
+    cat2Label: "REVENUE",                                                                                                                                                                                      
+    cat2Description: "DRG accuracy, obs/IP defense, concurrent review.",                                                                                                                                       
+    cat2Footer: "Auditable",                                                                                                                                                                                   
+    domains: [                                              
+      {                                                                                                                                                                                                        
+        label: "QUALITY",                                                                                                                                                                                      
+        description: "CDI query reduction is the cleanest quality metric in inpatient medicine. Every query represents a documentation gap—something that should have been in the note. When hospitalists
+  capture clinical specificity at point of care, CDI teams need fewer queries, and the notes that drive DRG assignment are stronger from the start. CDI departments track query volume daily; this is one of   
+  the most measurable outcomes in the building.",           
+        footer: "Measurable — CDI query data tracked daily",
+        accentColor: colors.primary,                                                                                                                                                                           
+      },                                      
+      {                                                                                                                                                                                                        
+        label: "WORKFORCE",                                 
+        description: "Hospitalist medicine has some of the highest turnover in healthcare. Documentation burden during overnight admits, weekend shifts, and high-census periods is a major driver. At         
+  $350K–$500K per replacement—including locum coverage, recruiting, and onboarding—every hospitalist retained is significant avoided cost. We use conservative impact rates because documentation is one of
+  many burnout factors.",                                                                                                                                                                                      
+        footer: "Influenceable — retention impact at 12–18 months",
+        accentColor: colors.secondary,                                                                                                                                                                         
+      },                                  
+      {                                                                                                                                                                                                        
+        label: "CAPACITY",                                                                                                                                                                                     
+        description: "Inpatient capacity is not about seeing more patients—hospitalists have an assigned census. It's about what happens to the time saved. Documentation that previously extended
+  post-rounding hours now completes during rounds. That time returns to clinical care: more thorough rounding, earlier discharge planning, better handoffs. We show hours returned rather than dollar value for
+   time savings—because that's the honest story.",          
+        footer: "Honest — hours returned to clinical care, not throughput",                                                                                                                                    
+        accentColor: colors.primary,                                                                                                                                                                           
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "REVENUE",                                   
+        description: "DRG accuracy is the core revenue story in inpatient. When notes capture CC/MCC specificity—AKI, malnutrition, respiratory failure, sepsis—DRG weight increases follow. Observation vs.
+  inpatient defense and concurrent review protection are downstream of the same documentation quality. Complete notes support appropriate status determinations and withstand payer audits.",
+        footer: "Auditable — CMI and DRG data in claims within 90 days",
+        accentColor: colors.secondary,                                                                                                                                                                         
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    frameworkCallout: "We model all four domains—but we lead with Quality (CDI queries) because that's the most defensible, most measurable outcome in the building. Revenue (DRG accuracy) is auditable from  
+  claims data. Capacity is honest: we show time returned to clinical care, not throughput expansion. Workforce (retention) takes 12–18 months to measure. We explicitly do not claim LOS reduction, readmission
+   reduction, or capacity expansion—the causal chains are too long.",                                                                                                                                          
+    categories: [                                                                                                                                                                                              
+      {                                                                                                                                                                                                        
+        label: "QUALITY",
+        labelColor: colors.primary,                                                                                                                                                                            
+        mechanisms: [                                       
+          {                                   
+            name: "CDI Query Reduction",  
+            attribution: "Measurable",
+            description: "Every CDI query represents a documentation gap—something that should have been in the note but wasn't. Each query costs $40–$60 in CDI labor (creation, tracking, follow-up,         
+  physician response time). When documentation captures clinical detail at the point of care, fewer queries are needed. CDI departments track query volume daily—this is one of the cleanest metrics to measure
+   pre/post implementation.",                                                                                                                                                                                  
+            formula: "Admissions × Query rate (25–35%) × Reduction % (15–35%) × Cost per query ($40–$60)",
+          },                                                                                                                                                                                                   
+          {                               
+            name: "Documentation Completeness",                                                                                                                                                                
+            attribution: "Strategic",                                                                                                                                                                          
+            description: "Complete documentation at the point of care means fewer CDI queries, more accurate DRG assignment, and stronger payer audit defense—all from the same root cause. When hospitalists
+  discuss AKI, malnutrition, or respiratory failure at bedside and the note reflects it in real time, every downstream step benefits: CDI, coding, billing, and appeals. This is the mechanism that connects   
+  Quality to Revenue.",                                     
+            formula: "Measured: note completeness rate (CDI audit), CC/MCC capture rate, same-day note closure rate",
+          },                                                                                                                                                                                                   
+        ],                                
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "WORKFORCE",
+        labelColor: colors.secondary,                                                                                                                                                                          
+        mechanisms: [                                       
+          {                                   
+            name: "Hospitalist Retention Savings",
+            attribution: "Influenceable",
+            description: "Documentation burden during overnight admits and weekend shifts is a leading driver of hospitalist burnout and turnover. Abridge reduces documentation time per admission—H&Ps, daily
+   progress notes, and discharge summaries that previously took 15–40 minutes. At $350K–$500K per replacement (recruiting, locum coverage during gap, and months of onboarding), every hospitalist retained
+  represents significant avoided cost. The financial impact extends far beyond recruitment fees.",                                                                                                             
+            formula: "Hospitalists × Turnover (8–12%) × Burnout % (40–50%) × Abridge impact (15%) × Replacement cost ($350–500K)",
+          },                                                                                                                                                                                                   
+        ],                                
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "CAPACITY",
+        labelColor: colors.primary,                                                                                                                                                                            
+        mechanisms: [                                       
+          {                                   
+            name: "Rounding Efficiency",  
+            attribution: "Measurable",
+            description: "Documentation that previously extended the post-rounding workday now completes during or immediately after rounds. We measure this as hours returned per physician per week—not as   
+  additional patient capacity, because hospitalists have an assigned census. Hours returned go to clinical care: more thorough rounding conversations, earlier discharge planning, better handoffs to the next
+  shift. We show this as time value, not revenue.",                                                                                                                                                            
+            formula: "Hospitalists × Time saved/admission (15–30 min) × Admissions/month × Physician hourly rate — shown as hours returned",
+          },                                                                                                                                                                                                   
+          {                               
+            name: "Discharge Planning Timeliness",                                                                                                                                                             
+            attribution: "Connected",                                                                                                                                                                          
+            description: "When documentation completes earlier in the day, discharge summaries are available sooner, post-acute placement requests can go earlier, and case management has more lead time.
+  Earlier discharges free beds earlier—a capacity benefit that accrues to the institution rather than to the hospitalist directly. We note this connection without assigning a dollar value, because the       
+  attribution chain runs through bed management and case management, not documentation alone.",                                                                                                                
+            formula: "Noted as downstream benefit — not monetized to avoid attribution overreach",
+            formulaColor: colors.tertiary,                                                                                                                                                                     
+          },                                                
+        ],                                                                                                                                                                                                     
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "REVENUE",                                                                                                                                                                                      
+        labelColor: colors.secondary,                                                                                                                                                                          
+        mechanisms: [                                       
+          {
+            name: "DRG Accuracy (CC/MCC Capture)",
+            attribution: "Measurable",        
+            description: "When hospitalists discuss AKI, malnutrition, or respiratory failure at bedside but the note says 'renal function stable,' that missing specificity costs $2,000–$4,000 in DRG weight.
+   Ambient AI captures the clinical conversation so the note reflects what actually happened—ensuring documentation reflects care delivered. This is the highest-value mechanism in inpatient medicine,
+  auditable from CMI trend data.",                                                                                                                                                                             
+            formula: "Admissions at risk (20–30%) × Protection rate (20%) × DRG weight increase (0.4) × Base payment ($6K) × Realization (50%)",
+          },                                                                                                                                                                                                   
+          {                                                 
+            name: "Observation vs. Inpatient Defense",                                                                                                                                                         
+            attribution: "Connected",                                                                                                                                                                          
+            description: "Appropriate inpatient admission status requires documentation that supports medical necessity—acuity, complexity, and the clinical reasoning for why outpatient or observation care
+  was insufficient. When documentation captures this at point of care, status determinations hold up to payer review. When it doesn't, downgrades from IP to observation are common and expensive. We include  
+  this within DRG accuracy to avoid double-counting.",                                                                                                                                                         
+            formula: "Combined with DRG accuracy — documentation quality supports both appropriate DRG assignment and status defense",
+            formulaColor: colors.tertiary,                                                                                                                                                                     
+          },                                                
+          {                                                                                                                                                                                                    
+            name: "Concurrent Review & Denial Prevention",                                                                                                                                                     
+            attribution: "Measurable",
+            description: "Inpatient denials are the most expensive in healthcare—average claim values of $8,000–$15,000. Medical necessity denials, DRG downgrade audits, and concurrent review failures all   
+  stem from documentation gaps. Complete notes that capture clinical reasoning for continued stay, discharge barriers, and comorbidity burden support concurrent review and reduce unappealable denials.",
+            formula: "Claims × Documentation-related denial rate × Prevention rate (15–25%) × Avg claim value ($8–15K)",
+          },                                  
+        ],                                                                                                                                                                                                     
+      },
+    ],                                                                                                                                                                                                         
+    careQualityCallout: "Documentation value in inpatient is about accuracy, not speed. We capture what was discussed—that's where the DRG value lives. Unlike outpatient, time savings in inpatient don't
+  convert to additional visits. They return to clinical care: more thorough rounds, earlier discharge planning, better handoffs. We show hours returned rather than dollar value for time savings—because      
+  that's the honest story.",                                
+    honestLimits: {
+      measure: [                                                                                                                                                                                               
+        "CDI query rates — tracked daily by CDI department",
+        "Documentation time per note type — EHR timestamps, weeks",                                                                                                                                            
+        "CMI trends — claims data, quarterly",                                                                                                                                                                 
+        "Note completeness — CDI audit",  
+      ],                                                                                                                                                                                                       
+      influence: [                                                                                                                                                                                             
+        "DRG accuracy — team-produced revenue (CDI + coding)",                                                                                                                                                 
+        "Denial rates — payer-dependent, 6+ months",                                                                                                                                                           
+        "DRG finalization speed",                           
+        "Coder productivity downstream",                                                                                                                                                                       
+      ],                                                                                                                                                                                                       
+      enable: [                                                                                                                                                                                                
+        "Length of stay — not defensible as direct attribution",                                                                                                                                               
+        "Readmission reduction — too indirect to model",                                                                                                                                                       
+        "Capacity expansion — not applicable in inpatient",                                                                                                                                                    
+        "Rounding efficiency (hours, not $)",               
+      ],                                                                                                                                                                                                       
+    },
+    connectedValueLabel: "CONNECTED VALUE",                                                                                                                                                                    
+    connectedValue: "Inpatient sits at the center of the hospital value chain. ED documentation feeds in (stronger admission notes, comorbidity capture from ED). Nursing documentation supports CC/MCC coding
+  (skin assessments, fall risk, nutritional status). Complete discharge summaries improve outpatient follow-up and reduce readmissions. We don't sum cross-setting values—attribution gets complex—but when    
+  building a system-level business case, these connections matter.",                                                                                                                                           
+    mechanismsSubtitle: "How Each Domain Creates Value in Inpatient",
+    assumptions: [                                                                                                                                                                                             
+      { assumption: "Time saved/admission", range: "15–45 min", defaultVal: "30 min", source: "Customer data" },
+      { assumption: "At-risk admissions", range: "20–30%", defaultVal: "25%", source: "CDI benchmarks" },                                                                                                      
+      { assumption: "DRG protection rate", range: "15–25%", defaultVal: "20%", source: "Conservative" },                                                                                                       
+      { assumption: "DRG weight increase", range: "0.3–0.5", defaultVal: "0.4", source: "CMS differentials" },
+      { assumption: "Base DRG payment", range: "$5.5–7.5K", defaultVal: "$6,000", source: "CMS base rate" },                                                                                                   
+      { assumption: "CDI query rate", range: "25–35%", defaultVal: "30%", source: "ACDIS benchmarks" },                                                                                                        
+      { assumption: "Query reduction %", range: "15–35%", defaultVal: "25%", source: "Impl. data" },                                                                                                           
+      { assumption: "Cost per CDI query", range: "$40–60", defaultVal: "$50", source: "ACDIS productivity" },                                                                                                  
+      { assumption: "Concurrent review denial rate", range: "3–6%", defaultVal: "4%", source: "Inpatient RCM" },                                                                                               
+      { assumption: "Denial prevention rate", range: "15–25%", defaultVal: "20%", source: "Conservative" },                                                                                                    
+      { assumption: "Hospitalist turnover", range: "8–12%", defaultVal: "8%", source: "SHM benchmarks" },                                                                                                      
+      { assumption: "Burnout-related %", range: "40–50%", defaultVal: "45%", source: "Research" },                                                                                                             
+      { assumption: "Retention impact", range: "10–20%", defaultVal: "15%", source: "Conservative" },                                                                                                          
+      { assumption: "Replacement cost", range: "$350–500K", defaultVal: "$400K", source: "Merritt Hawkins" },                                                                                                  
+      { assumption: "Realization rate", range: "40–60%", defaultVal: "50%", source: "Conservative" },                                                                                                          
+    ],                                                                                                                                                                                                         
+    conservativeCallout: "We'd rather show a defensible DRG improvement number based on CDI data than a speculative LOS reduction based on assumptions. Every variable in our model is editable—because your   
+  CDI team knows your gaps better than any default can. We do not model LOS, readmissions, or capacity expansion.",                                                                                            
+    validation: [                                                                                                                                                                                              
+      {                                                                                                                                                                                                        
+        name: "QUALITY (CDI QUERIES)",                                                                                                                                                                         
+        before: ["Query volume by physician — current baseline", "Query types (specificity, POA, status) and resolution time"],
+        after: ["Track query rates — Abridge vs. control physicians", "Measure CDI productivity: queries per admission"],                                                                                      
+        timeline: "2–3 months",                             
+      },                                  
+      {                                                                                                                                                                                                        
+        name: "REVENUE (DRG / CMI)",                                                                                                                                                                           
+        before: ["12 months CMI by hospitalist", "CC/MCC capture rates by provider and service line"],                                                                                                         
+        after: ["Compare CMI — Abridge vs. control group", "Track CC/MCC rate changes quarterly"],                                                                                                             
+        timeline: "3–6 months",                             
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        name: "CAPACITY (ROUNDING TIME)",                                                                                                                                                                      
+        before: ["EHR session data — documentation time per admission type", "Post-rounding charting hours per physician"],                                                                                    
+        after: ["Repeat EHR session data — Abridge vs. control", "Survey hospitalists on time-of-note-completion"],                                                                                            
+        timeline: "2–4 weeks",                              
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        name: "WORKFORCE (RETENTION)",                                                                                                                                                                         
+        before: ["Baseline turnover by program", "Exit interview data — documentation burnout attribution"],                                                                                                   
+        after: ["Track turnover Abridge vs. pre-implementation", "Survey on documentation satisfaction at 6 and 12 months"],                                                                                   
+        timeline: "12–18 months",                           
+      },                                                                                                                                                                                                       
+    ],
+    closingNote: "This methodology reflects Abridge's approach to modeling inpatient ROI across four domains: Quality, Workforce, Capacity, and Revenue. We lead with Quality (CDI queries) because that's the 
+  most measurable outcome and the one your CDI department can validate fastest. Revenue (DRG accuracy) is auditable from claims data. Capacity is honest: hours returned to clinical care, not throughput
+  expansion. All defaults are conservative and editable. The goal is a defensible framework—not a predetermined answer.",                                                                                      
+  },                                                        
+                                                                                                                                                                                                               
+  ---
+  Verify                                                                                                                                                                                                       
+                                                            
+  After making this change:
+  1. Open the app → home page → "Learn the Methodology" → Inpatient
+  2. Download the Inpatient methodology PDF                        
+  3. Page 1 should show "FOUR VALUE DOMAINS" with 4 cards in a 2×2 grid: QUALITY (top-left), WORKFORCE (top-right), CAPACITY (bottom-left), REVENUE (bottom-right)
+  4. Page 2 VALUE MECHANISMS should have 4 labeled sections: QUALITY (CDI Query Reduction + Documentation Completeness), WORKFORCE (Hospitalist Retention), CAPACITY (Rounding Efficiency + Discharge
+  Planning), REVENUE (DRG Accuracy + Obs/IP Defense + Concurrent Review)                                                                                                                                       
+  5. CAPACITY card language on page 1 should be explicitly honest: "hours returned to clinical care, not throughput"
+  6. Page 3 validation cards should show: QUALITY (CDI Queries), REVENUE (DRG/CMI), CAPACITY (Rounding Time), WORKFORCE (Retention)                                                                            
+  7. ED and Outpatient methodology PDFs should remain unchanged                                                                                                                                                
+  8. Nursing methodology PDF should remain unchanged                                                                                                                                                           
+                                                       

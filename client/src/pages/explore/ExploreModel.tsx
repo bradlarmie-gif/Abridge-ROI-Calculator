@@ -1951,6 +1951,146 @@ export default function ExploreModel({
                 </div>
               </div>
             </div>
+          ) : isNursing ? (
+            (() => {
+              const nursingQualityTotal = nursingHapiValue + nursingFallsValue + nursingCautiValue + nursingClabsiValue + nursingSepsisValue;
+              const nursingWorkforceTotal = nursingRetentionValue + nursingAgencyValue;
+              return (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" data-testid="nursing-four-bucket-grid">
+                  {/* QUALITY Card */}
+                  <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-nursing-quality">
+                    <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Quality</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      {nursingQualityTotal > 0 ? (
+                        <>
+                          <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                          <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-nursing-quality-value">{formatCurrency(nursingQualityTotal)}</p>
+                          <span className="text-[10px] text-[#888888]">(potential)</span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                          <p className="text-base font-medium text-[#888888]" data-testid="text-nursing-quality-value">Not modeled</p>
+                        </>
+                      )}
+                    </div>
+                    <div className="h-px bg-[#E5E5E5] mb-3" />
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex justify-between gap-1">
+                        <span className="text-[#666666]">HAPI Risk Reduction</span>
+                        <span className="font-semibold text-black">{state.docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '\u2014'}</span>
+                      </div>
+                      <div className="flex justify-between gap-1">
+                        <span className="text-[#666666]">Fall Risk Visibility</span>
+                        <span className="font-semibold text-black">{state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '\u2014'}</span>
+                      </div>
+                      <div className="flex justify-between gap-1">
+                        <span className="text-[#666666]">CAUTI Compliance</span>
+                        <span className="font-semibold text-black">{state.docQualityInputs.nursingCautiEnabled ? formatCurrency(nursingCautiValue) : '\u2014'}</span>
+                      </div>
+                      <div className="flex justify-between gap-1">
+                        <span className="text-[#666666]">CLABSI Compliance</span>
+                        <span className="font-semibold text-black">{state.docQualityInputs.nursingClabsiEnabled ? formatCurrency(nursingClabsiValue) : '\u2014'}</span>
+                      </div>
+                      <div className="flex justify-between gap-1">
+                        <span className="text-[#666666]">Sepsis SEP-1</span>
+                        <span className="font-semibold text-black">{state.docQualityInputs.nursingSepsisEnabled ? formatCurrency(nursingSepsisValue) : '\u2014'}</span>
+                      </div>
+                      <div className="flex justify-between gap-1">
+                        <span className="text-[#666666]">HAC Penalty</span>
+                        <span className="font-semibold text-black">{state.docQualityInputs.nursingHacEnabled && state.docQualityInputs.nursingHacBottomQuartile ? formatCurrency(nursingHacPenalty) : '\u2014'}</span>
+                      </div>
+                      {state.docQualityInputs.nursingHacEnabled && state.docQualityInputs.nursingHacBottomQuartile && (
+                        <p className="text-[10px] text-[#888888]">(risk only)</p>
+                      )}
+                      <div className="flex justify-between gap-1">
+                        <span className="text-[#666666]">HCAHPS</span>
+                        <span className="font-semibold text-black">{"\u2014"}</span>
+                      </div>
+                      <p className="text-[10px] text-[#888888]">(qualitative)</p>
+                    </div>
+                  </div>
+
+                  {/* WORKFORCE Card */}
+                  <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-nursing-workforce">
+                    <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Workforce</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      {nursingWorkforceTotal > 0 ? (
+                        <>
+                          <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                          <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-nursing-workforce-value">{formatCurrency(nursingWorkforceTotal)}</p>
+                        </>
+                      ) : state.timeDriverInputs.nursingRetentionEnabled ? (
+                        <>
+                          <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                          <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-nursing-workforce-value">{nursingRetainedCount.toFixed(1)} nurses retained</p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                          <p className="text-base font-medium text-[#888888]" data-testid="text-nursing-workforce-value">Not modeled</p>
+                        </>
+                      )}
+                    </div>
+                    <div className="h-px bg-[#E5E5E5] mb-3" />
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex justify-between gap-1">
+                        <span className="text-[#666666]">Retention Savings</span>
+                        <span className="font-semibold text-black">{state.timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingRetentionValue) : '\u2014'}</span>
+                      </div>
+                      <div className="flex justify-between gap-1">
+                        <span className="text-[#666666]">Agency Cost Avoidance</span>
+                        <span className="font-semibold text-black">{state.timeDriverInputs.nursingAgencyEnabled && state.timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingAgencyValue) : '\u2014'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CAPACITY Card */}
+                  <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-nursing-capacity">
+                    <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Capacity</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      {nursingOtValue > 0 ? (
+                        <>
+                          <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                          <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-nursing-capacity-value">{formatCurrency(nursingOtValue)}</p>
+                        </>
+                      ) : state.timeDriverInputs.nursingOtEnabled ? (
+                        <>
+                          <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
+                          <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-nursing-capacity-value">{hoursPerProviderPerWeek} hrs/wk</p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                          <p className="text-base font-medium text-[#888888]" data-testid="text-nursing-capacity-value">Not modeled</p>
+                        </>
+                      )}
+                    </div>
+                    <div className="h-px bg-[#E5E5E5] mb-3" />
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex justify-between gap-1">
+                        <span className="text-[#666666]">OT Reduction</span>
+                        <span className="font-semibold text-black">{state.timeDriverInputs.nursingOtEnabled ? formatCurrency(nursingOtValue) : '\u2014'}</span>
+                      </div>
+                      {state.timeDriverInputs.nursingOtEnabled && (
+                        <p className="text-[10px] text-[#888888]">({state.timeDriverInputs.nursingOtHoursPerNurseWeek} OT hrs/wk {"\u00b7"} {state.timeDriverInputs.nursingOtReductionPercent}% reduction)</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* REVENUE Card */}
+                  <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-nursing-revenue">
+                    <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Revenue</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
+                      <p className="text-base font-medium text-[#888888]" data-testid="text-nursing-revenue-value">Not Applicable</p>
+                    </div>
+                    <div className="h-px bg-[#E5E5E5] mb-3" />
+                    <p className="text-xs text-[#888888]">Nursing documentation doesn't generate billing revenue. The value lives in labor economics and care quality {"\u2014"} which is where we've modeled it.</p>
+                  </div>
+                </div>
+              );
+            })()
           ) : (
           <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
             {/* Time/Efficiency Card */}
