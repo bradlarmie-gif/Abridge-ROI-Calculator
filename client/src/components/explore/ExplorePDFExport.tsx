@@ -1763,61 +1763,18 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           </View>
         </Page>
 
-        {/* ED PAGE 3: YOUR VALUE DRIVERS */}
+        {/* ED PAGE 3: WORKFORCE */}
         <Page size="LETTER" style={styles.page} wrap={false}>
           <View style={styles.pageWrapper}>
-            <Text style={styles.sectionLabel}>YOUR VALUE DRIVERS</Text>
-            <Text style={styles.sectionHeadline}>How Time Drives ED Revenue</Text>
+            <Text style={styles.sectionLabel}>WORKFORCE</Text>
+            <Text style={styles.sectionHeadline}>The Department That Holds Onto Its People.</Text>
             <Text style={styles.body}>
-              {fmtNum(data.hoursReturned)} hours returned to your {fmtNum(data.providers)} emergency physicians. Here{"\u2019"}s how each driver works.
+              ED physician burnout is not a soft cost. It is a documented driver of turnover, and turnover in emergency medicine is among the most expensive in healthcare. Returning hours of cognitive work to physicians {"\u2014"} reliably, every shift {"\u2014"} is the lever that moves retention.
             </Text>
 
             <View style={styles.divider} />
 
-            <Text style={styles.sectionLabelGray}>THROUGHPUT VALUE</Text>
-
-            {data.lwbsEnabled && safe(data.netLwbsValue) > 0 && (
-              <View style={[styles.cardBg, { marginBottom: 8 }]}>
-                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>LWBS Recovery</Text>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.netLwbsValue))}</Text>
-                    </View>
-                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      You directed {thrPct}% of reclaimed time {"\u2014"} {fmtNum(thrHrs)} hours {"\u2014"} toward patient throughput. Faster documentation reduces door-to-doc time. Shorter wait times mean fewer patients leave without being seen.
-                    </Text>
-                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Your current LWBS rate of {safe(data.currentLwbsRatePct)}% generates {fmtNum(safe(data.annualLwbsPatients))} walkouts annually. At a {safe(data.expectedLwbsReductionPct)}% reduction {"\u2014"} the expected impact of faster documentation on wait times {"\u2014"} that{"\u2019"}s {fmtNum(safe(data.patientsRecovered))} patients recovered. At ${safe(data.revenuePerEdVisit)} per visit and a {safe(data.lwbsRealizationRate)}% realization rate, the annual recovery is {fmtCurrency(safe(data.netLwbsValue))}.
-                    </Text>
-                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      LWBS is one of the most undercounted losses in emergency medicine. These patients were already in the department. The visit was already scheduled. The only thing missing was time.
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
-
-            {data.admissionCaptureEnabled && safe(data.annualAdmissionCaptureValue) > 0 && (
-              <View style={[styles.cardBg, { marginBottom: 8 }]}>
-                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                  <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Admission Capture</Text>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualAdmissionCaptureValue))}</Text>
-                    </View>
-                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Of the {fmtNum(safe(data.recoveredEdPatients))} patients recovered through LWBS reduction, {safe(data.admissionRate)}% require inpatient admission. That{"\u2019"}s {Math.round(safe(data.potentialAdmissions) ?? 0)} additional admissions {"\u2014"} each one generating {fmtCurrency(safe(data.avgAdmissionRevenue))} in admission revenue. At a {safe(data.admissionRealizationRate)}% realization rate accounting for bed availability and payer mix, the annual value is {fmtCurrency(safe(data.annualAdmissionCaptureValue))}.
-                    </Text>
-                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                      These are not speculative admissions. They are patients who were already sick enough to admit {"\u2014"} they just left before the decision was made.
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
+            <Text style={styles.sectionLabelGray}>WORKFORCE</Text>
 
             {data.sustainabilityEnabled && (
               <View style={[styles.cardBg, { marginBottom: 8 }]}>
@@ -1825,23 +1782,26 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinician Wellbeing</Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinician Retention</Text>
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: data.retentionValueEnabled ? colors.primary : colors.secondary }}>
                         {data.retentionValueEnabled ? fmtCurrency(safe(data.retentionValue)) : `${hrsPerWkBack.toFixed(1)} hrs/wk per physician`}
                       </Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      {burdenReliefPct}% of reclaimed time goes back to your physicians {"\u2014"} through documentation quality ({docQualPct}%) and wellbeing ({wellPct}%). That returns {hrsPerWkBack.toFixed(1)} hours per week to each emergency physician. Only throughput time is reinvested into patient flow.
+                      Abridge returns {hrsPerWkBack.toFixed(1)} hours per week to each physician {"\u2014"} time previously spent at a terminal, now available for patient care, recovery between shifts, or the cognitive reset that makes the next shift sustainable. Across {fmtNum(data.providers)} physicians, that is {fmtNum(data.hoursReturned)} hours returned annually.
                     </Text>
                     {data.retentionValueEnabled ? (
-                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                        At {safe(data.annualTurnoverRate)}% annual turnover, {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution, and {fmtCurrency(safe(data.replacementCostPerProvider))} to replace a departing physician, Abridge{"\u2019"}s estimated retention impact is {fmtCurrency(safe(data.retentionValue))} annually {"\u2014"} {Math.round(safe(data.providersRetained) ?? 0)} physicians retained at the {data.abridgeRetentionImpactLabel || "typical"} scenario.
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                        At your {safe(data.annualTurnoverRate)}% annual turnover rate and {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution {"\u2014"} the {data.abridgeRetentionImpactLabel || "typical"} scenario in the AMA/MGMA literature {"\u2014"} Abridge{"\u2019"}s estimated retention impact is {Math.round(safe(data.providersRetained) ?? 0)} physicians retained per year. At {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost per departing physician, that is {fmtCurrency(safe(data.retentionValue))} in avoided turnover annually.
                       </Text>
                     ) : (
-                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
                         Emergency medicine has among the highest burnout rates in medicine. Documentation burden is consistently cited as the primary driver. {hrsPerWkBack.toFixed(1)} hours per week is not a large number in isolation {"\u2014"} but multiplied across {fmtNum(data.providers)} physicians and compounded over three years of shifts, it is the difference between a department that loses physicians and one that keeps them.
                       </Text>
                     )}
+                    <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.4 }}>
+                      Source: AMA National Physician Burnout Survey 2024; MGMA emergency physician replacement cost benchmarks. Documentation burden cited as the leading modifiable driver of ED burnout.
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -1849,118 +1809,69 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>THROUGHPUT VALUE SUBTOTAL</Text>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{fmtCurrency(thrVal)}</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>WORKFORCE SUBTOTAL</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>
+                {edWorkforceVal > 0 ? fmtCurrency(edWorkforceVal) : data.sustainabilityEnabled ? `${hrsPerWkBack.toFixed(1)} hrs/wk per physician` : "Not modeled"}
+              </Text>
             </View>
 
-            <View style={[styles.cardBg, { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }]}>
-              <View>
-                <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
-                  PROJECTED ANNUAL VALUE
-                </Text>
-                <Text style={{ fontSize: 28, fontWeight: "bold", color: colors.primary }}>
-                  {fmtCurrency(derivedNetValue)}
-                </Text>
-                <Text style={{ fontSize: 10, color: colors.secondary, marginTop: 2 }}>
-                  Per physician: ~{fmtCurrency(perUnit)}/year
-                </Text>
-              </View>
-              <View style={{ maxWidth: 180 }}>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, textAlign: "right" }}>
-                  {docQualVal > 0
-                    ? `This reflects throughput value only. Documentation quality adds ${fmtCurrency(docQualVal)} \u2014 detailed on the next page.`
-                    : `This is year one, before documentation quality drivers are measured. E&M accuracy and denial prevention are available to model when you\u2019re ready.`}
-                </Text>
-              </View>
+            <View style={[styles.calloutBox]}>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
+                Retention is the longest-tail value Abridge produces in an ED. The financial impact compounds: the physician you don{"\u2019"}t lose this year is the physician who isn{"\u2019"}t a $300K{"\u2013"}$500K replacement cost next year, and isn{"\u2019"}t a 9{"\u2013"}12 month vacancy gap absorbed by your remaining team.
+              </Text>
             </View>
 
             <PageFooter pageNum={3} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
           </View>
         </Page>
 
-        {/* ED PAGE 4 (conditional): DOCUMENTATION QUALITY */}
-        {edHasDocQuality && (
-          <Page size="LETTER" style={styles.page} wrap={false}>
-            <View style={styles.pageWrapper}>
-              <Text style={styles.sectionLabel}>DOCUMENTATION QUALITY</Text>
-              <Text style={styles.sectionHeadline}>The Acuity Was Always There. The Notes Just Didn{"\u2019"}t Show It.</Text>
-              <Text style={styles.body}>
-                In high-volume ED settings, documentation often understates clinical complexity {"\u2014"} not because the care wasn{"\u2019"}t delivered, but because there wasn{"\u2019"}t time to capture it fully. Abridge closes that gap in real time, during the encounter, before the physician moves to the next patient.
+        {/* ED PAGE 4: QUALITY */}
+        <Page size="LETTER" style={styles.page} wrap={false}>
+          <View style={styles.pageWrapper}>
+            <Text style={styles.sectionLabel}>QUALITY</Text>
+            <Text style={styles.sectionHeadline}>What Better Documentation Protects {"\u2014"} Measured, Not Modeled.</Text>
+            <Text style={styles.body}>
+              Quality outcomes follow from better documentation, but they are not modeled here. The mechanisms are well-established in the ED literature; the magnitudes are department-specific and require post-deployment measurement.
+            </Text>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.sectionLabelGray}>WHAT WE TRACK AT 90 DAYS</Text>
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 3 }}>Sepsis & Stroke Documentation Completeness</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                Time-stamped documentation of sepsis bundle elements and stroke door-to-needle decision points. Direct CMS/Joint Commission quality measure exposure. Tracked as completeness rate against bundle elements.
               </Text>
-
-              <View style={styles.divider} />
-
-              <Text style={styles.sectionLabelGray}>REVENUE DRIVERS</Text>
-
-              {data.emAccuracyEnabled && safe(data.annualEmValue) > 0 && (
-                <View style={[styles.cardBg, { marginBottom: 8 }]}>
-                  <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                    <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>E&M Level Accuracy</Text>
-                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualEmValue))}</Text>
-                      </View>
-                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                        When ED notes fully reflect visit complexity, E/M levels code higher. The current average of {safe(data.currentAvgWrvuPerVisit)} wRVU per visit has room to move. At a {safe(data.emImprovementPct)}% documentation improvement {"\u2014"} the {data.emScenario} scenario in a range where industry data shows 2{"\u2013"}7% is achievable {"\u2014"} that{"\u2019"}s {safe(data.emWrvuLiftPerVisit)?.toFixed(3)} additional wRVU per visit, {fmtNum(safe(data.totalAdditionalWrvus))} across your {fmtNum(safe(data.eligibleEncounters))} eligible encounters. At a ${safe(data.emConversionFactor)} conversion factor and {safe(data.emRealizationRate)}% realization, the annual value is {fmtCurrency(safe(data.annualEmValue))}.
-                      </Text>
-                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                        This is accurate coding of complexity that was delivered and documented {"\u2014"} just documented completely.
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              )}
-
-              {data.denialEnabled && safe(data.annualDenialValue) > 0 && (
-                <View style={[styles.cardBg, { marginBottom: 8 }]}>
-                  <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                    <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Denial Prevention</Text>
-                        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualDenialValue))}</Text>
-                      </View>
-                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                        ED denial rates run above average for a specific reason: high-volume documentation pressure leads to notes that lack explicit medical necessity language. Payers know this. Your {safe(data.baselineDenialRate)}% baseline denial rate generates {fmtNum(safe(data.totalDenials))} annual denials, of which {fmtNum(safe(data.unrecoverableDenials))} are unappealable. At the {data.denialPreventionScenario} prevention target of {safe(data.preventionTargetPct)}%, Abridge prevents {fmtNum(safe(data.denialsPrevented))} of those claims from being denied in the first place. At ${safe(data.avgDeniedClaimValue)} per claim and a {safe(data.denialRealizationRate)}% realization rate, that{"\u2019"}s {fmtCurrency(safe(data.annualDenialValue))} annually.
-                      </Text>
-                      <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                        The window to prevent a denial is during the encounter. After the claim is submitted, that {fmtNum(safe(data.unrecoverableDenials))} unappealable share is gone permanently.
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              )}
-
-              <View style={{ borderBottomWidth: 2, borderBottomColor: colors.border, marginVertical: 8 }} />
-              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>DOCUMENTATION QUALITY SUBTOTAL</Text>
-                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{fmtCurrency(docQualVal)}</Text>
-              </View>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>
-                All figures use conservative realization rates based on observed Abridge deployments. The full opportunity is larger {"\u2014"} and measurable once baseline data is established.
-              </Text>
-
-              {(!data.emAccuracyEnabled || !data.denialEnabled) && (
-                <View style={{ marginTop: 4 }}>
-                  <Text style={{ ...styles.sectionLabelGray, marginBottom: 6 }}>WHAT WASN{"\u2019"}T MODELED</Text>
-                  {!data.emAccuracyEnabled && (
-                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      E&M Level Accuracy {"\u2014"} Not modeled. Requires baseline wRVU data per physician and current E/M level distribution to size accurately.
-                    </Text>
-                  )}
-                  {!data.denialEnabled && (
-                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Denial Prevention {"\u2014"} Not modeled. Requires current denial rate and average denied claim value from your revenue cycle team. In ED settings, this is typically the faster driver to activate because the baseline data is readily available.
-                    </Text>
-                  )}
-                </View>
-              )}
-
-              <PageFooter pageNum={4} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
             </View>
-          </Page>
-        )}
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 3 }}>Observation vs. Admission Status Defense</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                Documentation that supports inpatient admission criteria when warranted. Reduces RAC audit exposure and protects against Medicare status downgrades. Tracked as defended status decisions per quarter.
+              </Text>
+            </View>
+
+            <View style={[styles.cardBg, { marginBottom: 8 }]}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 3 }}>72-Hour ED Readmission Prevention</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                Discharge instructions and follow-up documentation that reduce avoidable bouncebacks. Tracked as readmission rate trend post-deployment, controlled for case mix.
+              </Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={[styles.calloutBox]}>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
+                These outcomes are not included in the projected value on this report. They are measured at 90 days post-deployment using your ED{"\u2019"}s own data {"\u2014"} and reported alongside the financial drivers, not in place of them.
+              </Text>
+            </View>
+
+            <PageFooter pageNum={4} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
+          </View>
+        </Page>
+
+        {/* OLD ED PAGE 4 (conditional): DOCUMENTATION QUALITY - REMOVED, content moved to Page 2 */}
 
         {/* ED PAGE 3/4: THE INVESTMENT CASE */}
         <Page size="LETTER" style={styles.page} wrap={false}>
@@ -2046,22 +1957,25 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
             <View style={styles.divider} />
 
             <Text style={styles.sectionLabelGray}>WHAT TO MEASURE AT 90 DAYS</Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 2 }}>
-              These are the signals that confirm the model is working in your specific department.
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 6 }}>
+              These are the signals that confirm the model is working in your specific department. Quantitative ranges reflect what published deployments have measured at the 90-day mark.
             </Text>
             <View style={[styles.cardBg, { marginBottom: 6 }]}>
               <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.7 }}>
-                {"\u2022"} Door-to-provider time trend (target: measurable reduction from documentation baseline)
+                {"\u2022"} Door-to-provider time {"\u2014"} target reduction of 4{"\u2013"}8 minutes from documentation baseline
               </Text>
               <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.7 }}>
-                {"\u2022"} LWBS rate (target: reduction proportional to wait time improvement)
+                {"\u2022"} LWBS rate {"\u2014"} target absolute reduction of 0.3{"\u2013"}0.8 percentage points
               </Text>
               <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.7 }}>
-                {"\u2022"} E&M level distribution shift (target: upward movement in level 4{"\u2013"}5 frequency if E&M driver relevant)
+                {"\u2022"} E&M level distribution {"\u2014"} target 1{"\u2013"}3 percentage point upward shift in level 4{"\u2013"}5 frequency
+              </Text>
+              <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.7 }}>
+                {"\u2022"} EHR time-in-notes {"\u2014"} target reduction of 15{"\u2013"}25% per physician
               </Text>
             </View>
             <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
-              Tracking these at 90 days gives you the data to validate this model and activate any drivers that weren{"\u2019"}t modeled in this initial assessment.
+              Tracking these at 90 days validates the financial model with your own data and surfaces any drivers that weren{"\u2019"}t modeled in this initial assessment.
             </Text>
 
             <PageFooter pageNum={investmentPageNum} orgName={orgName} settingLabel="Emergency Department" totalPages={edTotalPages} />
@@ -2104,7 +2018,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   VALUE SUMMARY
                 </Text>
                 <View style={{ marginBottom: 4 }}>
-                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>THROUGHPUT VALUE</Text>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>CAPACITY</Text>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>LWBS Recovery</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.lwbsEnabled ? fmtCurrency(safe(data.netLwbsValue)) : "Not modeled"}</Text>
@@ -2115,16 +2029,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   </View>
                 </View>
                 <View style={{ marginBottom: 4 }}>
-                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>WORKFORCE VALUE</Text>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Clinician Wellbeing</Text>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
-                      {data.retentionValueEnabled ? fmtCurrency(safe(data.retentionValue)) : data.sustainabilityEnabled ? `${hrsPerWkBack.toFixed(1)} hrs/wk` : "Not modeled"}
-                    </Text>
-                  </View>
-                </View>
-                <View style={{ marginBottom: 4 }}>
-                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>REVENUE OPTIMIZED</Text>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>REVENUE</Text>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>E&M Level Accuracy</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.emAccuracyEnabled ? fmtCurrency(safe(data.annualEmValue)) : "Not modeled"}</Text>
@@ -2132,6 +2037,22 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>Denial Prevention</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>{data.denialEnabled ? fmtCurrency(safe(data.annualDenialValue)) : "Not modeled"}</Text>
+                  </View>
+                </View>
+                <View style={{ marginBottom: 4 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>WORKFORCE</Text>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Clinician Retention</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
+                      {data.retentionValueEnabled ? fmtCurrency(safe(data.retentionValue)) : data.sustainabilityEnabled ? `${hrsPerWkBack.toFixed(1)} hrs/wk` : "Not modeled"}
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ marginBottom: 4 }}>
+                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>QUALITY</Text>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Sepsis/Stroke, Status, Readmit</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Measured at 90 days</Text>
                   </View>
                 </View>
                 <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
