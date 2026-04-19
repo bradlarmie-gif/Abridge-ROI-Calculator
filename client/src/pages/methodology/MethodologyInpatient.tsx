@@ -21,7 +21,7 @@ interface MethodologyInpatientProps {
 const overviewCards: DomainCardData[] = [
   {
     domain: "QUALITY",
-    description: "CDI query reduction and CC/MCC capture are daily, trackable signals of documentation improvement.",
+    description: "CDI query reduction and CC/MCC capture are daily, trackable signals of documentation improvement. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "CDI query reduction (tracked daily)", badge: "Demonstrated" },
       { label: "CC/MCC documentation completeness", badge: "Demonstrated" },
@@ -29,14 +29,14 @@ const overviewCards: DomainCardData[] = [
   },
   {
     domain: "WORKFORCE",
-    description: "Hospitalist burnout from documentation burden is real and expensive. Turnover drives operational and financial risk.",
+    description: "Hospitalist burnout from documentation burden is real and expensive. Turnover drives operational and financial risk. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "Hospitalist retention savings", badge: "Emerging" },
     ],
   },
   {
     domain: "CAPACITY",
-    description: "Time returned from documentation becomes rounding time, discharge planning time, or clinical headroom.",
+    description: "Time returned from documentation becomes rounding time, discharge planning time, or clinical headroom. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "Time returned to clinical care (EHR)", badge: "Demonstrated" },
       { label: "Discharge planning timeliness", badge: "Strategic" },
@@ -44,7 +44,7 @@ const overviewCards: DomainCardData[] = [
   },
   {
     domain: "REVENUE",
-    description: "DRG accuracy and concurrent review are the core inpatient revenue levers — both tied directly to documentation quality.",
+    description: "DRG accuracy and concurrent review are the core inpatient revenue levers — both tied directly to documentation quality. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "DRG accuracy / CMI improvement", badge: "Demonstrated" },
       { label: "Concurrent review & denial prevention", badge: "Emerging" },
@@ -96,8 +96,8 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "Time Returned to Clinical Care (EHR)",
         badge: "Demonstrated",
-        explanation: "EHR session data for H&Ps, progress notes, and discharge summaries shows documentation time directly. In inpatient, time savings are larger per encounter than outpatient — 15–45 minutes across all note types for a typical admission. That time returns to rounding, patient conversations, or discharge coordination. Visible in weeks. This is the clearest early signal across all inpatient metrics.",
-        formula: "Minutes saved per admission × annual admissions / 60 = physician hours returned annually",
+        explanation: "EHR session data for H&Ps, progress notes, and discharge summaries shows documentation time directly. In inpatient, time savings are larger per encounter than outpatient — 15–45 minutes across all note types for a typical admission. That time can return to rounding, patient conversations, or discharge coordination. Early signals are often visible within weeks in deployment data — and this is often among the earliest signals organizations observe across inpatient metrics.",
+        formula: "Minutes saved per admission × annual admissions / 60 = estimated physician hours potentially returned annually",
       },
       {
         label: "Discharge Planning Timeliness",
@@ -117,7 +117,7 @@ const domainDetails: DomainDetailData[] = [
         label: "DRG Accuracy / CMI Improvement",
         badge: "Demonstrated",
         explanation: "Case Mix Index (CMI) is the clearest inpatient revenue signal — it reflects the average DRG weight of your patient population. When documentation captures clinical complexity completely, CMI improves where appropriate. Claims data tracks this quarterly. CDI teams compare Abridge-enabled providers vs. a control group. This is the inpatient equivalent of wRVU lift — trackable, auditable, and defensible.",
-        formula: "CMI delta × annual discharges × $6,800 (CMS IPPS base rate)\n\nNote: CMI improvement of 0.01 across 5,000 discharges × $6,800 = $340,000",
+        formula: "CMI delta × annual discharges × $6,800 (CMS IPPS base rate)\n\nIllustrative model input: CMI improvement of 0.01 across 5,000 discharges × $6,800 ≈ $340,000",
       },
       {
         label: "Concurrent Review & Denial Prevention",
@@ -370,7 +370,7 @@ building a system-level business case, these connections matter.</p>
           </button>
         </motion.div>
 
-        <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
+        <p className="text-xs text-[#888888] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
 experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial
 outcomes.</p>
 

@@ -21,7 +21,7 @@ interface MethodologyOutpatientProps {
 const overviewCards: DomainCardData[] = [
   {
     domain: "QUALITY",
-    description: "Documentation completeness drives referral quality and risk adjustment accuracy for value-based contracts.",
+    description: "Documentation completeness drives referral quality and risk adjustment accuracy for value-based contracts. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "Referral note completeness", badge: "Strategic" },
       { label: "HCC/risk adjustment for MA populations", badge: "Emerging" },
@@ -29,14 +29,14 @@ const overviewCards: DomainCardData[] = [
   },
   {
     domain: "WORKFORCE",
-    description: "Physician burnout and turnover represent the largest hidden cost in outpatient practices.",
+    description: "Physician burnout and turnover represent the largest hidden cost in outpatient practices. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "Physician retention savings", badge: "Emerging" },
     ],
   },
   {
     domain: "CAPACITY",
-    description: "Time saved per encounter is the outpatient multiplier — translates directly into capacity or clinical headroom.",
+    description: "Time saved per encounter is the outpatient multiplier — translates directly into capacity or clinical headroom. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "Time per encounter (EHR timestamps)", badge: "Demonstrated" },
       { label: "Patient access / capacity expansion", badge: "Emerging" },
@@ -44,7 +44,7 @@ const overviewCards: DomainCardData[] = [
   },
   {
     domain: "REVENUE",
-    description: "wRVU accuracy and denial prevention are the most directly attributable revenue drivers in outpatient.",
+    description: "wRVU accuracy and denial prevention are the most directly attributable revenue drivers in outpatient. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "wRVU accuracy (billing data)", badge: "Demonstrated" },
       { label: "Denial prevention", badge: "Emerging" },
@@ -97,8 +97,8 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "Time Per Encounter (EHR Timestamps)",
         badge: "Demonstrated",
-        explanation: "EHR session data shows exactly when documentation happens and how long it takes. This is the most immediate and unambiguous signal after deployment. In outpatient, time savings typically run 2–4 minutes per encounter — with same-day note closure showing the most dramatic change. At 20 patients/day × 240 working days, 3 minutes/encounter = 240 hours of physician time annually per provider.",
-        formula: "Minutes saved × daily encounters × working days = annual physician hours returned",
+        explanation: "EHR session data shows exactly when documentation happens and how long it takes. This is the most immediate and unambiguous signal after deployment. In outpatient, deployment observations suggest time savings often run 2–4 minutes per encounter — with same-day note closure among the earliest signals organizations report. Illustratively, 20 patients/day × 240 working days × 3 minutes/encounter ≈ 240 hours of physician time annually per provider (model input — your data will tell the real story).",
+        formula: "Minutes saved × daily encounters × working days = estimated annual physician hours potentially returned",
       },
       {
         label: "Patient Access / Capacity Expansion",
@@ -118,13 +118,13 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "wRVU Accuracy (Billing Data)",
         badge: "Demonstrated",
-        explanation: "Better documentation captures visit complexity more accurately, supporting appropriate E/M level coding. Claims data shows wRVU distribution shifts before and after. Outpatient wRVU lift typically runs 2–7% depending on specialty and baseline documentation quality. MGMA data shows that documentation-related undercoding is common, particularly in primary care where visit complexity is often under-documented.",
+        explanation: "Better documentation captures visit complexity more accurately, supporting appropriate E/M level coding. Claims data shows wRVU distribution shifts before and after. Published studies and deployment observations suggest wRVU lift may range 2–7% depending on baseline documentation quality and specialty. MGMA data shows that documentation-related undercoding is common, particularly in primary care where visit complexity is often under-documented.",
         formula: "wRVU delta per encounter × adopted encounters × $33/wRVU (CMS MPFS conversion factor)\n\nNote: commercial payers often pay higher than Medicare conversion factor — blended rate depends on payer mix",
       },
       {
         label: "Denial Prevention",
         badge: "Emerging",
-        explanation: "30–40% of claim denials are unappealable — permanent revenue loss because the documentation gap existed at time of service. Abridge captures clinical reasoning in real-time, preventing medical necessity gaps before they become denials. Outpatient denial rates typically run 5–12% (MGMA). Documentation-related denials are an identifiable subset that your RCM team can isolate as a root cause category.",
+        explanation: "30–40% of claim denials are unappealable — permanent revenue loss because the documentation gap existed at time of service. Ambient AI documentation can capture clinical reasoning in real-time, helping surface medical necessity gaps before they become denials. Outpatient denial rates typically run 5–12% (MGMA). Documentation-related denials are an identifiable subset that your RCM team can isolate as a root cause category.",
         formula: "(denial rate before − after, in pp) × annual encounters × $350/encounter × attribution %",
         limit: "Denial rates reflect many process factors beyond documentation. Work with your RCM team to isolate documentation-related denials before claiming full attribution.",
       },
@@ -378,7 +378,7 @@ documentation quality that goes beyond the numbers.</p>
           </button>
         </motion.div>
 
-        <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
+        <p className="text-xs text-[#888888] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
 experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial
 outcomes.</p>
 

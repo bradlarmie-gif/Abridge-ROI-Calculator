@@ -21,7 +21,7 @@ interface MethodologyNursingProps {
 const overviewCards: DomainCardData[] = [
   {
     domain: "QUALITY",
-    description: "Documentation completeness enables earlier intervention, better care continuity, and regulatory compliance.",
+    description: "Documentation completeness enables earlier intervention, better care continuity, and regulatory compliance. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "HAPI and falls prevention", badge: "Emerging" },
       { label: "CAUTI / CLABSI / Sepsis SEP-1 compliance", badge: "Strategic" },
@@ -30,7 +30,7 @@ const overviewCards: DomainCardData[] = [
   },
   {
     domain: "WORKFORCE",
-    description: "Nursing turnover is the most expensive workforce problem in healthcare. Documentation burden is a measurable driver.",
+    description: "Nursing turnover is the most expensive workforce problem in healthcare. Documentation burden is a measurable driver. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "Retention savings", badge: "Emerging" },
       { label: "Agency labor reduction", badge: "Emerging" },
@@ -38,14 +38,14 @@ const overviewCards: DomainCardData[] = [
   },
   {
     domain: "CAPACITY",
-    description: "Overtime reduction is the most direct, payroll-verified financial driver in nursing — uniquely monetizable.",
+    description: "Overtime reduction is the most direct, payroll-verified financial driver in nursing — uniquely monetizable. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "Overtime reduction (payroll data)", badge: "Demonstrated" },
     ],
   },
   {
     domain: "REVENUE",
-    description: "Nurses don't bill directly. Revenue impact flows through quality, safety, and workforce stability — not billing.",
+    description: "Nurses don't bill directly. Revenue impact flows through quality, safety, and workforce stability — not billing. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "Not applicable — nurses don't bill", badge: "Strategic" },
     ],
@@ -384,7 +384,7 @@ system-level business case, these connections are part of the story.</p>
           </button>
         </motion.div>
 
-        <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
+        <p className="text-xs text-[#888888] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
 experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial
 outcomes.</p>
 

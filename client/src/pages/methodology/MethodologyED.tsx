@@ -21,7 +21,7 @@ interface MethodologyEDProps {
 const overviewCards: DomainCardData[] = [
   {
     domain: "QUALITY",
-    description: "Documentation accuracy under pressure — capturing complexity that determines DRG, E/M level, and clinical defensibility.",
+    description: "Documentation accuracy under pressure — capturing complexity that determines DRG, E/M level, and clinical defensibility. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "CDI query volume on admits", badge: "Demonstrated" },
       { label: "Note completeness rate", badge: "Demonstrated" },
@@ -30,14 +30,14 @@ const overviewCards: DomainCardData[] = [
   },
   {
     domain: "WORKFORCE",
-    description: "Physician burnout and turnover are the ED's slow bleed — documentation burden is a measurable contributor.",
+    description: "Physician burnout and turnover are the ED's slow bleed — documentation burden is a measurable contributor. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "Physician retention savings", badge: "Emerging" },
     ],
   },
   {
     domain: "CAPACITY",
-    description: "Throughput is the ED's operating system. Faster documentation is one lever — not the only one.",
+    description: "Throughput is the ED's operating system. Faster documentation is one lever — not the only one. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "Documentation time per encounter (EHR)", badge: "Demonstrated" },
       { label: "LWBS recovery (wait time sensitivity)", badge: "Emerging" },
@@ -46,7 +46,7 @@ const overviewCards: DomainCardData[] = [
   },
   {
     domain: "REVENUE",
-    description: "ED coding is the most audit-vulnerable setting. Every surge creates under-documented complexity.",
+    description: "ED coding is the most audit-vulnerable setting. Every surge creates under-documented complexity. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "E/M level accuracy (claims data)", badge: "Demonstrated" },
       { label: "Denial prevention (RCM root cause)", badge: "Demonstrated" },
@@ -70,7 +70,7 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "Note Completeness Rate",
         badge: "Demonstrated",
-        explanation: "EHR timestamp data shows exactly when notes are completed and how long they take. During surges, note quality drops — key elements get abbreviated or omitted. Ambient AI maintains completeness regardless of patient volume. This is an auditable metric that CDI and compliance teams can assess directly.",
+        explanation: "EHR timestamp data shows exactly when notes are completed and how long they take. During surges, note quality drops — key elements get abbreviated or omitted. Organizations using ambient AI documentation have observed more consistent completeness across patient volume. This is an auditable metric that CDI and compliance teams can assess directly.",
         formula: "EHR session data: note completion time, completeness scores (CDI audit-based)",
       },
       {
@@ -89,7 +89,7 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "Physician Retention Savings",
         badge: "Emerging",
-        explanation: "ED burnout is a workforce crisis. Documentation burden is consistently cited in ACEP surveys and Medscape reports as a top contributor. At $250K–$500K per physician replacement (AMGA Physician Retention Survey), retaining even one additional physician covers a significant portion of implementation cost. The link is attributable; the measurement takes 12–18 months.",
+        explanation: "ED burnout is a workforce crisis. Documentation burden is consistently cited in ACEP surveys and Medscape reports as a top contributor. At $250K–$500K per physician replacement (AMGA Physician Retention Survey), retaining even one additional physician could offset a significant portion of implementation cost. The link is attributable; the measurement takes 12–18 months.",
         formula: "ED physicians × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefaults: replacement cost $250K–$500K, turnover 8–15%, burnout attribution 10–20%",
         limit: "Documentation is one of many burnout drivers in the ED. Don't attribute all turnover change to documentation.",
       },
@@ -104,8 +104,8 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "Documentation Time Per Encounter (EHR)",
         badge: "Demonstrated",
-        explanation: "EHR timestamps show exactly when charting begins and ends. In the ED, time savings are smaller per encounter (2–4 minutes) vs. outpatient — but the ED is a volume engine. At 40,000–80,000 visits/year, 3 minutes × 50,000 visits = 2,500 hours of physician time annually. This is visible within weeks of deployment.",
-        formula: "Minutes saved × annual ED visits / 60 = physician hours returned",
+        explanation: "EHR timestamps show exactly when charting begins and ends. In the ED, time savings are smaller per encounter (2–4 minutes) vs. outpatient — but the ED is a volume engine. At 40,000–80,000 visits/year, 3 minutes × 50,000 visits = ~2,500 hours of physician time annually (illustrative). Early signals are often visible within weeks in deployment data.",
+        formula: "Minutes saved × annual ED visits / 60 = estimated physician hours potentially returned",
       },
       {
         label: "LWBS Recovery (Wait Time Sensitivity)",
@@ -333,7 +333,7 @@ before/after comparison despite the noise.</p>
                     <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 90 Days</h4><span className="text-xs text-[#888888] font-medium">Early signal</span></div>
                     <p className="text-sm text-[#666666] mb-3">Documentation improvements show fast. Throughput takes longer. Be patient with LWBS.</p>
                     <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                      <li>Documentation time per encounter — this will be the most dramatic early metric</li>
+                      <li>Documentation time per encounter — this is often among the earliest signals organizations observe</li>
                       <li>E/M level trends (compare same providers, same shift types)</li>
                       <li>LWBS rate monitoring — but caveat for seasonality and staffing changes</li>
                       <li>Physician satisfaction surveys — qualitative signal matters in the ED</li>
@@ -388,7 +388,7 @@ comprehensive documentation that goes beyond the ED's own P&L.</p>
           </button>
         </motion.div>
 
-        <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
+        <p className="text-xs text-[#888888] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
 experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial
 outcomes.</p>
 

@@ -1,0 +1,31 @@
+  Legal/Compliance Copy Audit Prompt                                                                                                                                                                           
+                                              
+  Review the four methodology pages (client/src/pages/methodology/MethodologyED.tsx, MethodologyOutpatient.tsx, MethodologyInpatient.tsx, MethodologyNursing.tsx) and make the following copy adjustments      
+  throughout. Do NOT change structure, layout, or code — only text content.
+                                                                                                                                                                                                               
+  The goal: Every impact claim should read as how we think about and model value — not as a promise or guarantee of outcomes. The evidence badge system (Demonstrated / Emerging / Strategic) is our primary
+  credibility mechanism. The copy should reinforce that taxonomy.                                                                                                                                              
+                                                            
+  Specific changes to make:                                                                                                                                                                                    
+                                                            
+  1. Formulas — Any formula that says "= $X" or implies a specific outcome should be framed as a model input, not a result. Change language like "= physician hours returned" to "= estimated physician hours  
+  potentially returned." Add "model input" or "illustrative" where formulas cite specific dollar benchmarks.
+  2. Wording patterns to find and soften:
+    - "retaining even one additional physician covers..." → "retaining even one additional physician could offset a significant portion..."                                                                    
+    - "this is visible within weeks" → "early signals are often visible within weeks in deployment data"
+    - "this will be the most dramatic early metric" → "this is often among the earliest signals organizations observe"                                                                                         
+    - Any sentence where Abridge is the subject doing something definitive ("Abridge captures...", "Abridge maintains...") → soften to "ambient AI documentation can capture..." or "organizations using       
+  ambient AI have observed..."                                                                                                                                                                                 
+    - "wRVU lift typically runs 2–7%" → "published studies and deployment observations suggest wRVU lift may range 2–7% depending on baseline documentation quality and specialty"                             
+  3. Add one sentence to each domain overview card description that frames it as a lens, not a claim. Something like: "We model this domain to help surface where your data could tell the story — not to set a
+   number before you've looked."                                                                                                                                                                               
+  4. The badge legend (Demonstrated / Emerging / Strategic) — add a one-line clarifier beneath it: "These reflect evidence level for the category, not a guarantee of outcomes at your organization."          
+  5. Each "Honest Limit" callout box — these are good. Make sure they lead the framing rather than feel like fine print. If any honest limit sounds apologetic, rewrite it to sound confident: "We don't model 
+  X because the attribution isn't clean enough to defend — and we'd rather you have a smaller number you can prove than a larger one you can't."                                                               
+  6. The existing disclaimer at the bottom of each page is good and should stay. Consider making it slightly more visible by removing the text-[#AAAAAA] color and using text-[#888888] so it reads more like  
+  part of the content than fine print.                                                                                                                                                                         
+                                                                                                                                                                                                               
+  Tone to aim for throughout: Confident and credible, not hedged and nervous. The message is: "We're not overpromising — we're showing you how to think about this rigorously. That's the point." Language like
+   "we model" / "organizations have observed" / "your data will tell the real story" reinforces that without making it sound like a legal disclaimer.                                                          
+                                                            
+  Do not add any new sections, components, or structural elements. Only modify string content within existing JSX.                                                                                             

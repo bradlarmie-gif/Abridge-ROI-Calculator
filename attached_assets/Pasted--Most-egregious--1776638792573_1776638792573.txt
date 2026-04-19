@@ -1,0 +1,18 @@
+  Most egregious:                                                                                                                                                                                              
+  - "Abridge captures clinical reasoning in real-time, preventing medical necessity gaps before they become denials" — in both ED and Outpatient. That's a direct causal promise.                              
+  - "Ambient AI maintains completeness regardless of patient volume" — in ED. Sounds like a product guarantee.                                                                   
+  - "When documentation burden is reduced, shift completion on time improves — and overtime hours decrease" — Nursing. Presented as fact not hypothesis.                                                       
+  - "When documentation captures clinical complexity completely, CMI improves where appropriate" — Inpatient. Same issue.                               
+                                                                                                                                                                                                               
+  The underlying problem you're describing is the causal chain structure: Abridge → documentation improves → outcome happens. What you actually want is: documentation burden is a known factor in X outcome → 
+  here's the evidence that links them → here's how you'd test whether it's happening at your org.                                                                                                              
+                                                                                                                                                                                                               
+  So the reframe is less "Abridge causes" and more "the hypothesis is that reduced documentation burden affects X — here's the evidence base, here's how you'd validate it with your own data."                
+                                                                                                                                                                                                               
+  Worth adding to your Replit prompt something like:                                                                                                                                                           
+                                                                                                                                                                                                               
+  Wherever a sentence implies direct causation between Abridge/ambient AI and a financial or clinical outcome, reframe it as a hypothesis or proposed mechanism. Use framing like: "The hypothesis is that...",
+   "The mechanism we're modeling is...", "Organizations have observed that when documentation burden decreases, [outcome] tends to follow — your data would confirm or adjust that." The goal is confident     
+  intellectual honesty, not hedged disclaimers.             
+                                                                                                                                                                                                               
+  That one addition would catch what your legal instincts are picking up on.

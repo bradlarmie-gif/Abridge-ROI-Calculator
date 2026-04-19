@@ -97,6 +97,7 @@ export function DomainOverviewGrid({
           </div>
         </div>
       </div>
+      <p className="mt-2 text-[10px] text-[#888888] leading-relaxed">These reflect evidence level for the category, not a guarantee of outcomes at your organization.</p>
     </div>
   );
 }
