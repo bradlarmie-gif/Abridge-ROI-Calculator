@@ -1,0 +1,2959 @@
+  ---
+  Prompt 1 — Create shared component + update ED page
+
+  Create a new file at `client/src/components/methodology/MethodologyShared.tsx` with this exact content:
+
+  ```tsx
+  import { motion } from "framer-motion";
+  import { ChevronDown, ChevronUp } from "lucide-react";
+  import { useState } from "react";
+
+  // ─── Evidence Badge ───────────────────────────────────────────────────────────
+
+  export type BadgeType = "Demonstrated" | "Emerging" | "Strategic";
+
+  const badgeStyles: Record<BadgeType, string> = {
+    Demonstrated: "bg-[#1A1A1A] text-white",
+    Emerging: "border border-[#666] text-[#666] bg-transparent",
+    Strategic: "bg-[#F5F0EB] text-[#888]",
+  };
+
+  export function ImpactBadge({ type }: { type: BadgeType }) {
+    return (
+      <span
+        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${badgeStyles[type]}`}
+      >
+        {type}
+      </span>
+    );
+  }
+
+  // ─── Domain Colors ────────────────────────────────────────────────────────────
+
+  export type DomainName = "QUALITY" | "WORKFORCE" | "CAPACITY" | "REVENUE";
+
+  export const domainColors: Record<DomainName, string> = {
+    QUALITY:   "#4F46E5",
+    WORKFORCE: "#16A34A",
+    CAPACITY:  "#D97706",
+    REVENUE:   "#EA2C00",
+  };
+
+  // ─── Domain Overview Card ─────────────────────────────────────────────────────
+
+  export interface ImpactItem {
+    label: string;
+    badge: BadgeType;
+  }
+
+  export interface DomainCardData {
+    domain: DomainName;
+    description: string;
+    items: ImpactItem[];
+  }
+
+  export function DomainOverviewCard({ data, onClick }: { data: DomainCardData; onClick?: () => void }) {
+    const color = domainColors[data.domain];
+    return (
+      <button
+        onClick={onClick}
+        className="w-full text-left bg-white rounded-lg border border-[#E5E5E5] p-5 hover:border-[#D1D5DB] hover:shadow-sm transition-all cursor-pointer"
+        style={{ borderLeftWidth: 3, borderLeftColor: color }}
+      >
+        <p
+          className="text-xs font-bold uppercase tracking-[1.5px] mb-1"
+          style={{ color }}
+        >
+          {data.domain}
+        </p>
+        <p className="text-sm text-[#666666] mb-4 leading-snug">{data.description}</p>
+        <div className="space-y-2">
+          {data.items.map((item) => (
+            <div key={item.label} className="flex items-center justify-between gap-3">
+              <span className="text-xs text-[#444444] leading-tight">{item.label}</span>
+              <ImpactBadge type={item.badge} />
+            </div>
+          ))}
+        </div>
+      </button>
+    );
+  }
+
+  // ─── Domain Overview Grid ─────────────────────────────────────────────────────
+
+  export function DomainOverviewGrid({
+    cards,
+    onDomainClick,
+  }: {
+    cards: DomainCardData[];
+    onDomainClick?: (domain: DomainName) => void;
+  }) {
+    return (
+      <div className="mb-10">
+        <div className="mb-5">
+          <h2 className="text-sm font-bold text-black uppercase tracking-tight mb-1">
+            Four Domains of Value
+          </h2>
+          <p className="text-sm text-[#888888]">
+            Click a domain to explore the evidence and calculation detail below.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {cards.map((card) => (
+            <DomainOverviewCard
+              key={card.domain}
+              data={card}
+              onClick={() => onDomainClick?.(card.domain)}
+            />
+          ))}
+        </div>
+        {/* Badge legend */}
+        <div className="mt-5 flex flex-wrap gap-4 items-center">
+          <span className="text-[10px] text-[#888888] uppercase tracking-wide font-medium">Evidence level:</span>
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="flex items-center gap-1.5">
+              <ImpactBadge type="Demonstrated" />
+              <span className="text-[10px] text-[#666666]">trackable from EHR/claims/payroll</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <ImpactBadge type="Emerging" />
+              <span className="text-[10px] text-[#666666]">attributable with confidence over 6–18 mo</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <ImpactBadge type="Strategic" />
+              <span className="text-[10px] text-[#666666]">directional, real but not easily monetized</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Collapsible Section ──────────────────────────────────────────────────────
+
+  interface SectionProps {
+    title: string;
+    subtitle: string;
+    children: React.ReactNode;
+    defaultOpen?: boolean;
+    sectionId: string;
+    accentColor?: string;
+  }
+
+  export function CollapsibleSection({
+    title,
+    subtitle,
+    children,
+    defaultOpen = false,
+    sectionId,
+    accentColor,
+  }: SectionProps) {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+
+    return (
+      <div className="border-b border-[#E5E5E5] last:border-b-0">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full py-6 flex items-start justify-between text-left"
+          data-testid={`button-section-${sectionId}`}
+        >
+          <div>
+            <h2
+              className="text-lg font-bold text-black uppercase tracking-tight"
+              style={accentColor ? { borderLeft: `3px solid ${accentColor}`, paddingLeft: 10 } : undefined}
+            >
+              {title}
+            </h2>
+            <p className="text-sm text-[#888888] mt-1">{subtitle}</p>
+          </div>
+          <div className="ml-4 mt-1">
+            {isOpen ? (
+              <ChevronUp className="w-5 h-5 text-[#888888]" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-[#888888]" />
+            )}
+          </div>
+        </button>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="pb-8"
+          >
+            {children}
+          </motion.div>
+        )}
+      </div>
+    );
+  }
+
+  // ─── Domain Detail Section ────────────────────────────────────────────────────
+
+  export interface DomainImpactItem {
+    label: string;
+    badge: BadgeType;
+    explanation: string;
+    formula?: string;
+    limit?: string;
+  }
+
+  export interface DomainDetailData {
+    domain: DomainName;
+    sectionTitle: string;
+    sectionSubtitle: string;
+    items: DomainImpactItem[];
+    honestLimit?: string;
+  }
+
+  export function DomainDetailSection({
+    data,
+    sectionRef,
+  }: {
+    data: DomainDetailData;
+    sectionRef?: React.RefObject<HTMLDivElement>;
+  }) {
+    const color = domainColors[data.domain];
+
+    return (
+      <CollapsibleSection
+        sectionId={`domain-${data.domain.toLowerCase()}`}
+        title={data.sectionTitle}
+        subtitle={data.sectionSubtitle}
+        accentColor={color}
+      >
+        <div ref={sectionRef} className="space-y-4">
+          {data.items.map((item) => (
+            <DomainImpactCard key={item.label} item={item} color={color} />
+          ))}
+          {data.honestLimit && (
+            <div className="mt-2 bg-[#F5F0EB] rounded-lg p-4 text-sm text-[#666666] leading-relaxed">
+              <strong className="text-black">Honest limit: </strong>
+              {data.honestLimit}
+            </div>
+          )}
+        </div>
+      </CollapsibleSection>
+    );
+  }
+
+  function DomainImpactCard({
+    item,
+    color,
+  }: {
+    item: DomainImpactItem;
+    color: string;
+  }) {
+    const [showFormula, setShowFormula] = useState(false);
+
+    return (
+      <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h4 className="font-semibold text-black text-sm">{item.label}</h4>
+          <ImpactBadge type={item.badge} />
+        </div>
+        <p className="text-sm text-[#666666] leading-relaxed">{item.explanation}</p>
+        {item.formula && (
+          <div className="mt-3">
+            <button
+              onClick={() => setShowFormula(!showFormula)}
+              className="text-xs font-medium uppercase tracking-wide flex items-center gap-1 transition-colors"
+              style={{ color }}
+            >
+              {showFormula ? "Hide formula" : "Show formula"}
+              {showFormula ? (
+                <ChevronUp className="w-3 h-3" />
+              ) : (
+                <ChevronDown className="w-3 h-3" />
+              )}
+            </button>
+            {showFormula && (
+              <div className="mt-2 bg-[#F5F0EB] rounded-lg p-3">
+                <p className="font-mono text-xs text-black">{item.formula}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  Then completely replace the contents of client/src/pages/methodology/MethodologyED.tsx with this:
+
+  import { motion } from "framer-motion";
+  import { ArrowLeft, Download, ArrowRight, Stethoscope, Building2, Heart, Loader2 } from "lucide-react";
+  import { useRef, useState } from "react";
+  import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+  import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
+  import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
+  import {
+    DomainOverviewGrid,
+    DomainDetailSection,
+    CollapsibleSection,
+    type DomainCardData,
+    type DomainDetailData,
+    type DomainName,
+  } from "@/components/methodology/MethodologyShared";
+
+  interface MethodologyEDProps {
+    onBack: () => void;
+    onNavigateToSetting?: (setting: string) => void;
+  }
+
+  const overviewCards: DomainCardData[] = [
+    {
+      domain: "QUALITY",
+      description: "Documentation accuracy under pressure — capturing complexity that determines DRG, E/M level, and clinical defensibility.",
+      items: [
+        { label: "CDI query volume on admits", badge: "Demonstrated" },
+        { label: "Note completeness rate", badge: "Demonstrated" },
+        { label: "Sepsis/stroke protocol documentation", badge: "Strategic" },
+      ],
+    },
+    {
+      domain: "WORKFORCE",
+      description: "Physician burnout and turnover are the ED's slow bleed — documentation burden is a measurable contributor.",
+      items: [
+        { label: "Physician retention savings", badge: "Emerging" },
+      ],
+    },
+    {
+      domain: "CAPACITY",
+      description: "Throughput is the ED's operating system. Faster documentation is one lever — not the only one.",
+      items: [
+        { label: "Documentation time per encounter (EHR)", badge: "Demonstrated" },
+        { label: "LWBS recovery (wait time sensitivity)", badge: "Emerging" },
+        { label: "Admission capture (downstream of LWBS)", badge: "Emerging" },
+      ],
+    },
+    {
+      domain: "REVENUE",
+      description: "ED coding is the most audit-vulnerable setting. Every surge creates under-documented complexity.",
+      items: [
+        { label: "E/M level accuracy (claims data)", badge: "Demonstrated" },
+        { label: "Denial prevention (RCM root cause)", badge: "Demonstrated" },
+      ],
+    },
+  ];
+
+  const domainDetails: DomainDetailData[] = [
+    {
+      domain: "QUALITY",
+      sectionTitle: "Quality",
+      sectionSubtitle: "Documentation accuracy under surge — capturing clinical complexity that determines downstream outcomes",
+      items: [
+        {
+          label: "CDI Query Volume on Admits",
+          badge: "Demonstrated",
+          explanation:
+            "When ED documentation captures presenting conditions and comorbidities completely, CDI specialists receive fewer queries to clarify the clinical picture. This is tracked daily by most CDI
+  departments — before/after comparison is fast and clean. Better ED notes also form the foundation of inpatient DRG accuracy for admitted patients.",
+          formula: "Admissions × query rate × reduction % — tracked by CDI department",
+          limit: "ED notes influence but don't fully determine inpatient DRG. Attribution requires CDI tracking both ED and inpatient documentation quality together.",
+        },
+        {
+          label: "Note Completeness Rate",
+          badge: "Demonstrated",
+          explanation:
+            "EHR timestamp data shows exactly when notes are completed and how long they take. During surges, note quality drops — key elements get abbreviated or omitted. Ambient AI maintains completeness
+  regardless of patient volume. This is an auditable metric that CDI and compliance teams can assess directly.",
+          formula: "EHR session data: note completion time, completeness scores (CDI audit-based)",
+        },
+        {
+          label: "Sepsis / Stroke Protocol Documentation",
+          badge: "Strategic",
+          explanation:
+            "Proper documentation of sepsis and stroke presentations affects both regulatory compliance (CMS sepsis bundle measures) and downstream coding accuracy. The documentation is real and the clinical
+   stakes are high — but direct financial attribution is indirect and multi-factorial. Track as a quality signal, not a revenue line.",
+        },
+      ],
+      honestLimit: "CDI query reduction shows up quickly. DRG impact on admitted patients is captured in the Inpatient methodology to avoid double-counting.",
+    },
+    {
+      domain: "WORKFORCE",
+      sectionTitle: "Workforce",
+      sectionSubtitle: "Physician retention — the ED's most expensive and least discussed cost driver",
+      items: [
+        {
+          label: "Physician Retention Savings",
+          badge: "Emerging",
+          explanation:
+            "ED burnout is a workforce crisis. Documentation burden is consistently cited in ACEP surveys and Medscape reports as a top contributor. At $250K–$500K per physician replacement (AMGA Physician
+  Retention Survey), retaining even one additional physician covers a significant portion of implementation cost. The link is attributable; the measurement takes 12–18 months.",
+          formula:
+            "ED physicians × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefaults: replacement cost $250K–$500K, turnover 8–15%, burnout attribution 10–20%",
+          limit: "Documentation is one of many burnout drivers in the ED. Locum coverage costs during vacancy are tracked separately as agency spend. Don't attribute all turnover change to documentation.",
+        },
+      ],
+      honestLimit: "Retention impact takes 12–18 months to observe. Track exit interviews and satisfaction surveys to build the attribution case over time.",
+    },
+    {
+      domain: "CAPACITY",
+      sectionTitle: "Capacity",
+      sectionSubtitle: "Throughput and time — documentation speed is one input to the ED's operational throughput",
+      items: [
+        {
+          label: "Documentation Time Per Encounter (EHR)",
+          badge: "Demonstrated",
+          explanation:
+            "EHR timestamps show exactly when charting begins and ends. In the ED, time savings are smaller per encounter (2–4 minutes) vs. outpatient — but the ED is a volume engine. At 40,000–80,000
+  visits/year, 3 minutes × 50,000 visits = 2,500 hours of physician time annually. This is visible within weeks of deployment.",
+          formula: "Minutes saved × annual ED visits / 60 = physician hours returned",
+        },
+        {
+          label: "LWBS Recovery (Wait Time Sensitivity)",
+          badge: "Emerging",
+          explanation:
+            "Each patient who leaves without being seen represents $300–$500+ in lost revenue. Faster documentation contributes to faster throughput, which can reduce wait times and recover some LWBS
+  patients. Attribution is the challenge — documentation is one lever among staffing, bed management, triage protocol, and acuity mix. We model the contribution honestly with adjustable attribution rates.",
+          formula:
+            "(LWBS rate before − LWBS rate after, in pp) × annual ED visits × $480/visit × attribution %",
+          limit: "If your LWBS rate is already below 2%, this lever is smaller. We let you adjust based on your reality.",
+        },
+        {
+          label: "Admission Capture (Downstream of LWBS)",
+          badge: "Emerging",
+          explanation:
+            "Of patients recovered from LWBS, some require inpatient admission — converting a lost ED visit into DRG-based inpatient revenue. This driver only activates when LWBS recovery is calculated
+  first; the recovered patient population is the base. Without real LWBS data, don't estimate this — compounding two estimates produces a number that won't survive scrutiny.",
+          formula:
+            "Recovered LWBS patients × admission rate % × avg admission revenue × realization rate",
+        },
+      ],
+      honestLimit: "Documentation is one input to throughput. Staffing, triage protocols, and bed management all matter. We model the documentation contribution — not the whole throughput picture.",
+    },
+    {
+      domain: "REVENUE",
+      sectionTitle: "Revenue",
+      sectionSubtitle: "Coding accuracy and denial prevention — the ED's most auditable, defensible revenue domain",
+      items: [
+        {
+          label: "E/M Level Accuracy (Claims Data)",
+          badge: "Demonstrated",
+          explanation:
+            "During surges, ED notes understate what actually happened — a physician manages complex differentials and procedure decisions but the note reflects a simpler encounter because time was short.
+  Claims data shows E/M level distribution shifts before and after. ED wRVU lift is typically 2–4% (lower than outpatient because ED workflows are more structured), but your actual observed delta drives the
+  calculation.",
+          formula:
+            "(wRVU per encounter after − before) × adopted encounters × $33/wRVU × attribution % × realization %",
+        },
+        {
+          label: "Denial Prevention (RCM Root Cause)",
+          badge: "Demonstrated",
+          explanation:
+            "Medical necessity is the ED's denial vulnerability. When a note doesn't capture why a test was ordered or why admission was necessary, that's a denial waiting to happen — and many ED denials are
+   unappealable because the documentation gap existed at time of service. RCM teams track documentation-related denials as a specific root cause category. Track before/after denial rates by category.",
+          formula:
+            "(denial rate before − after, in pp) × annual encounters × avg denial cost per encounter × attribution %\n\nED default: $500 per encounter (higher than outpatient due to higher acuity claims)",
+        },
+      ],
+      honestLimit: "ED wRVU lift is lower than outpatient because ED documentation workflows are already more structured. We use your observed delta, not an assumed percentage.",
+    },
+  ];
+
+  export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProps) {
+    const [isExporting, setIsExporting] = useState(false);
+    const domainRefs = useRef<Partial<Record<DomainName, HTMLDivElement | null>>>({});
+
+    const handleExportPDF = async () => {
+      setIsExporting(true);
+      try {
+        await generateMethodologyPDF("ed");
+      } catch (error) {
+        console.error('PDF export failed:', error);
+        alert('PDF export failed. Please try again or check your browser settings.');
+      } finally {
+        setIsExporting(false);
+      }
+    };
+
+    const scrollToDomain = (domain: DomainName) => {
+      const el = domainRefs.current[domain];
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-white">
+        {/* Header */}
+        <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
+          <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={onBack}
+                className="flex items-center cursor-pointer bg-transparent border-none p-0"
+                data-testid="link-home-logo"
+              >
+                <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
+              </button>
+              <span className="text-[#E5E5E5]">|</span>
+              <button
+                onClick={onBack}
+                className="flex items-center gap-1 text-[#666666] hover:text-black transition-colors"
+                data-testid="button-back"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                <span className="text-xs font-medium uppercase tracking-wide">Methodology</span>
+              </button>
+            </div>
+            <button
+              onClick={handleExportPDF}
+              disabled={isExporting}
+              className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50"
+              data-testid="button-export-pdf"
+            >
+              <Download className="w-4 h-4" />
+              <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
+            </button>
+          </div>
+        </header>
+
+        <div className="max-w-[800px] mx-auto px-6 py-12">
+          {/* Hero Section */}
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">
+              Emergency: How We Think About Value
+            </h1>
+            <p className="text-base text-[#666666]">
+              Where speed matters and every minute counts differently
+            </p>
+          </motion.div>
+
+          {/* Domain Overview Grid — always visible */}
+          <DomainOverviewGrid cards={overviewCards} onDomainClick={scrollToDomain} />
+
+          {/* Domain Detail Sections */}
+          <div className="bg-[#F5F0EB] rounded-lg">
+            <div className="px-6">
+              {domainDetails.map((detail) => (
+                <DomainDetailSection
+                  key={detail.domain}
+                  data={detail}
+                  sectionRef={{ current: domainRefs.current[detail.domain] ?? null } as React.RefObject<HTMLDivElement>}
+                />
+              ))}
+
+              {/* What Goes Into the Number */}
+              <CollapsibleSection
+                sectionId="what-goes-in"
+                title="What Goes Into the Number"
+                subtitle="Exactly what the calculator uses — and what it doesn't"
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#D1D5DB]">
+                        <th className="text-left py-3 font-semibold text-black">Value Driver</th>
+                        <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
+                        <th className="text-left py-3 font-semibold text-black">Formula</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-[#666666]">
+                      <tr className="border-b border-[#E5E5E5]">
+                        <td className="py-3">LWBS reduction</td>
+                        <td className="py-3">✅ Yes</td>
+                        <td className="py-3">LWBS pp delta × annual visits × $480/visit</td>
+                      </tr>
+                      <tr className="border-b border-[#E5E5E5]">
+                        <td className="py-3">wRVU / E/M lift</td>
+                        <td className="py-3">✅ Yes</td>
+                        <td className="py-3">wRVU delta × adopted encounters × $33/wRVU</td>
+                      </tr>
+                      <tr className="border-b border-[#E5E5E5]">
+                        <td className="py-3">Denial rate reduction</td>
+                        <td className="py-3">✅ Yes</td>
+                        <td className="py-3">Denial pp delta × encounters × $500/encounter</td>
+                      </tr>
+                      <tr className="border-b border-[#E5E5E5]">
+                        <td className="py-3">CDI / DRG impact on admitted patients</td>
+                        <td className="py-3 text-[#F59E0B] font-medium">Not here — see Inpatient</td>
+                        <td className="py-3">Captured in CMI delta calculation</td>
+                      </tr>
+                      <tr className="border-b border-[#E5E5E5]">
+                        <td className="py-3">Admission capture from LWBS recovery</td>
+                        <td className="py-3">✅ Yes (if LWBS data provided)</td>
+                        <td className="py-3">Recovered patients × admission rate × avg DRG revenue</td>
+                      </tr>
+                      <tr className="border-b border-[#E5E5E5]">
+                        <td className="py-3">ED physician retention</td>
+                        <td className="py-3">✅ Yes (if survey data provided)</td>
+                        <td className="py-3">Turnovers avoided × $250K–$500K</td>
+                      </tr>
+                      <tr className="border-b border-[#E5E5E5]">
+                        <td className="py-3">After-hours time savings</td>
+                        <td className="py-3 text-[#F59E0B] font-medium">Signal only — not monetized</td>
+                        <td className="py-3">Tracked as hours (salaried providers)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CollapsibleSection>
+
+              {/* The Assumptions */}
+              <CollapsibleSection
+                sectionId="assumptions"
+                title="The Assumptions"
+                subtitle="ED-specific defaults and ranges"
+              >
+                <div className="space-y-6">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[#D1D5DB]">
+                          <th className="text-left py-3 font-semibold text-black">Assumption</th>
+                          <th className="text-left py-3 font-semibold text-black">Range</th>
+                          <th className="text-left py-3 font-semibold text-black">Our Default</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[#666666]">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                              <td className="py-3">Time saved per encounter</td>
+                              <td className="py-3">2-4 minutes</td>
+                              <td className="py-3">3 minutes</td>
+                            </tr>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p className="text-xs">ED documentation is faster-paced with more templated workflows. Time savings are smaller per encounter but high volume amplifies impact.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                              <td className="py-3">ED wRVU baseline</td>
+                              <td className="py-3">2.0-3.0</td>
+                              <td className="py-3">2.5</td>
+                            </tr>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p className="text-xs">ACEP benchmarks for ED encounters. Higher than outpatient due to acuity and complexity of ED visits.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                              <td className="py-3">wRVU lift %</td>
+                              <td className="py-3">2-4%</td>
+                              <td className="py-3">3%</td>
+                            </tr>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p className="text-xs">ED coding often under-captures complexity. Better documentation supports higher E&M levels when clinically appropriate.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                              <td className="py-3">LWBS rate</td>
+                              <td className="py-3">2-4%</td>
+                              <td className="py-3">3%</td>
+                            </tr>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p className="text-xs">Left Without Being Seen rate. National benchmark is ~2-3%. High-volume urban EDs may see 4-5%+.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                              <td className="py-3">LWBS recovery rate</td>
+                              <td className="py-3">5-15%</td>
+                              <td className="py-3">10%</td>
+                            </tr>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p className="text-xs">Percentage of LWBS patients recovered through reduced wait times. Conservative estimate—actual recovery depends on throughput improvement.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                              <td className="py-3">Avg ED visit revenue</td>
+                              <td className="py-3">$400-$600</td>
+                              <td className="py-3">$480</td>
+                            </tr>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p className="text-xs">Blended average across facility and professional fees. Varies significantly by payer mix and acuity.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                              <td className="py-3">ED admission rate</td>
+                              <td className="py-3">15-25%</td>
+                              <td className="py-3">20%</td>
+                            </tr>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p className="text-xs">Percentage of ED visits resulting in inpatient admission. Higher rates correlate with higher acuity patient population.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              {/* The Honest Limits */}
+              <CollapsibleSection
+                sectionId="honest-limits"
+                title="The Honest Limits"
+                subtitle="What we can prove, what we can support, and what we can only enable in the ED"
+              >
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">
+                    The ED is operationally complex. Many factors drive throughput, revenue, and retention.
+                    We're transparent about exactly how much of each outcome we can credibly attribute to
+                    documentation improvement.
+                  </p>
+                  <div className="grid gap-4">
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-3 h-3 bg-[#22C55E] rounded-full" />
+                        <h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Measure This</h4>
+                      </div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Documentation time per encounter:</strong> EHR timestamps show exactly when charting happens and how long it takes. Visible in weeks.</li>
+                        <li><strong>E/M level distribution:</strong> Claims data shows coding accuracy shifts. Compare high-volume vs. low-volume shifts for proof.</li>
+                        <li><strong>Denial rates by category:</strong> RCM data identifies documentation-related denials specifically. Track before and after.</li>
+                        <li><strong>LWBS rate:</strong> Most EDs track this. The metric is clean — the attribution is the challenge.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-3 h-3 bg-[#F59E0B] rounded-full" />
+                        <h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Influence This</h4>
+                      </div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Throughput improvement:</strong> Documentation is one input to throughput. Staffing, bed management, triage protocols all matter. We contribute, we don't control.</li>
+                        <li><strong>Door-to-doc time:</strong> Influenced by staffing, space, acuity mix, and workflow design. Documentation speed is a factor, not the only factor.</li>
+                        <li><strong>CDI query reduction:</strong> Better ED notes reduce queries, but inpatient documentation matters too. Track ED-specific query rates.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-3 h-3 bg-[#EF4444] rounded-full" />
+                        <h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Only Enable This</h4>
+                      </div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>DRG impact on admitted patients:</strong> ED documentation influences but doesn't determine inpatient DRG. Requires downstream tracking.</li>
+                        <li><strong>Retention:</strong> Documentation burden is one of many ED burnout drivers. Impact takes 12-18 months. Real, but not the whole story.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-5 border-l-2 border-[#EA2C00]">
+                    <p className="text-sm text-[#666666] leading-relaxed">
+                      <strong className="text-black">Our philosophy:</strong> We'd rather show you a smaller number
+                      you can defend in an ED leadership meeting than a larger number that falls apart when your
+                      leadership asks "how did you attribute that?" Key assumptions are editable — because your ED's
+                      data should drive the answer, not our defaults.
+                    </p>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              {/* The Validation Path */}
+              <CollapsibleSection
+                sectionId="validation-path"
+                title="The Validation Path"
+                subtitle="How to prove this with your ED's data — before, during, and after"
+              >
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">
+                    ED metrics move fast but are noisy. Seasonality, staffing changes, and patient mix
+                    all affect outcomes. Here's how to build a credible before/after comparison despite the noise.
+                  </p>
+                  <div className="space-y-4">
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-black text-sm uppercase tracking-wide">Before Implementation</h4>
+                        <span className="text-xs text-[#888888] font-medium">Baseline period</span>
+                      </div>
+                      <p className="text-sm text-[#666666] mb-3">Get 12 months minimum — ED metrics are seasonal and you need to control for that.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>LWBS data by month, day of week, and shift — you need to see the patterns</li>
+                        <li>E/M level distribution by provider and shift volume</li>
+                        <li>CDI query rates specifically for ED-to-inpatient cases</li>
+                        <li>Door-to-doc and door-to-disposition times</li>
+                        <li>Denial rates with root cause categorization</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 90 Days</h4>
+                        <span className="text-xs text-[#888888] font-medium">Early signal</span>
+                      </div>
+                      <p className="text-sm text-[#666666] mb-3">Documentation improvements show fast. Throughput takes longer. Be patient with LWBS.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Documentation time per encounter — this will be the most dramatic early metric</li>
+                        <li>E/M level trends (compare same providers, same shift types)</li>
+                        <li>LWBS rate monitoring — but caveat for seasonality and staffing changes</li>
+                        <li>Physician satisfaction surveys — qualitative signal matters in the ED</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 6-12 Months</h4>
+                        <span className="text-xs text-[#888888] font-medium">Operational validation</span>
+                      </div>
+                      <p className="text-sm text-[#666666] mb-3">Throughput and revenue signals become statistically meaningful with enough volume.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Year-over-year LWBS comparison (same months, controlling for volume)</li>
+                        <li>CDI query rate trends for admitted patients</li>
+                        <li>Denial rate trends by documentation-related categories</li>
+                        <li>Door-to-disposition trends — control for staffing and volume changes</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 18+ Months</h4>
+                        <span className="text-xs text-[#888888] font-medium">Long-term impact</span>
+                      </div>
+                      <p className="text-sm text-[#666666] mb-3">Retention is the long game. Don't rush this measurement.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Physician turnover: Abridge providers vs. non-Abridge (if applicable)</li>
+                        <li>Locum utilization trends</li>
+                        <li>Exit interview data — is documentation still a cited burnout factor?</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              {/* Connected Value */}
+              <CollapsibleSection
+                sectionId="connected-value"
+                title="Connected Value"
+                subtitle="How ED documentation connects to the rest of your organization"
+              >
+                <div className="space-y-4 text-[15px] text-black leading-relaxed">
+                  <p>The ED doesn't operate in isolation. Documentation quality here creates ripple effects across the organization:</p>
+                  <div className="space-y-4 mt-4">
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                      <h4 className="font-bold text-black mb-2 text-sm">ED → Inpatient (DRG impact)</h4>
+                      <p className="text-sm text-[#666666] leading-relaxed">Better ED documentation is the foundation of DRG accuracy for admitted patients — when presenting conditions, comorbidities, and
+  clinical reasoning are captured at the point of care, the inpatient stay begins with a stronger clinical picture. We quantify this in the Inpatient methodology, not here, to prevent double-counting. If
+  you're modeling both settings, do not include DRG value in the ED calculation.</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                      <h4 className="font-bold text-black mb-2 text-sm">ED → Nursing (care continuity)</h4>
+                      <p className="text-sm text-[#666666] leading-relaxed">ED nursing documentation feeds into inpatient handoffs. When assessments are captured in real-time during the ED stay, the
+  transition to floor nursing has better clinical context — reducing missed information at a high-risk transition point.</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                      <h4 className="font-bold text-black mb-2 text-sm">ED → Outpatient (follow-up quality)</h4>
+                      <p className="text-sm text-[#666666] leading-relaxed">Complete ED documentation improves follow-up care. When the PCP gets a comprehensive ED visit note, they can continue care without
+  gaps. Hard to quantify, but real.</p>
+                    </div>
+                  </div>
+                  <p className="text-[#666666] italic mt-4">We don't sum these cross-setting values into the ED model because the attribution gets complex. But they're part of the strategic case for
+  comprehensive documentation that goes beyond the ED's own P&L.</p>
+                </div>
+              </CollapsibleSection>
+            </div>
+          </div>
+
+          {/* Build a Model CTA */}
+          <motion.div
+            className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
+            <p className="text-[#999999] mb-6 text-sm">Use these methodology principles to create a customized ROI model for your emergency department.</p>
+            <button
+              onClick={onBack}
+              className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors"
+              data-testid="button-build-model"
+            >
+              Build an ED Model
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
+
+          <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">
+            Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment experience. Actual results may vary based on implementation approach,
+  provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial outcomes.
+          </p>
+
+          {/* Related Care Settings */}
+          <div className="mt-12 mb-8">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">Related Methodologies</p>
+            <p className="text-sm text-[#666666] mb-6">ED patients often flow to inpatient. Explore how value chains connect across settings.</p>
+            <div className="grid md:grid-cols-3 gap-4">
+              <button onClick={() => onNavigateToSetting?.("inpatient")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-inpatient">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Building2 className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Inpatient</p><p className="text-xs text-[#888888]">ED admissions flow here</p></div>
+              </button>
+              <button onClick={() => onNavigateToSetting?.("outpatient")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-outpatient">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Stethoscope className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Outpatient</p><p className="text-xs text-[#888888]">wRVU & patient access</p></div>
+              </button>
+              <button onClick={() => onNavigateToSetting?.("nursing")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-nursing">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Heart className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Nursing</p><p className="text-xs text-[#888888]">ED nursing documentation</p></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {isExporting && (
+          <div className="fixed bottom-4 right-4 bg-[#EA2C00] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50" 
+  data-testid="toast-pdf-download">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm font-medium">Preparing your PDF...</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  ---
+
+  That's Prompt 1. Once Replit processes it and you can see the ED page renders correctly with the 4-domain grid at the top, let me know and I'll give you Prompt 2 (Outpatient, Inpatient, and Nursing).
+
+✻ Brewed for 2m 58s
+
+❯  i just got confused. i thought we were replacing some files or is this creating new ones in a different section. because i wanted us to replace the file that you find when you click learn the         
+  methodology at the first page and then you choose a care setting and then can download a pdf on that page.. is that what we are talking about here?                                                      
+
+⏺ Yes, that's exactly what we're talking about. Let me confirm by checking the routing so you can see the file paths clearly.
+
+⏺ Searched for 2 patterns (ctrl+o to expand)
+
+⏺ Yes, confirmed — that's exactly what we're doing. The files are:
+
+  - MethodologyHome.tsx — the "Learn the Methodology" landing page where you choose a care setting
+  - MethodologyED.tsx — Emergency (has the PDF export button)
+  - MethodologyOutpatient.tsx — Outpatient (has the PDF export button)
+  - MethodologyInpatient.tsx — Inpatient (has the PDF export button)
+  - MethodologyNursing.tsx — Nursing (has the PDF export button)
+
+  The Replit prompts replace those existing files with the new 4-domain design. One additional file gets created (MethodologyShared.tsx) that holds shared components the 4 care setting pages import from.
+
+  Nothing else changes — the PDF export, the back button, all the existing content below the domain sections (Assumptions, Validation Path, Connected Value) stays intact.
+
+  Ready to give you Prompt 1? Just confirm and I'll paste it.
+
+❯ got it. okay so can you paste that sorry ill update it with that 
+  ⎿  API Error: 500 {"type":"error","error":{"type":"api_error","message":"Internal server error"},"request_id":"req_011CaDtLZok7iD55kzkgosga"}
+
+❯ what happened api error? 
+
+⏺ No worries! Here's Prompt 1 again — paste this into Replit:
+
+  ---
+  Prompt 1 of 2
+
+  Do the following two things:
+
+  1. Create a new file at client/src/components/methodology/MethodologyShared.tsx with this exact content:
+
+  import { motion } from "framer-motion";
+  import { ChevronDown, ChevronUp } from "lucide-react";
+  import { useState } from "react";
+
+  export type BadgeType = "Demonstrated" | "Emerging" | "Strategic";
+
+  const badgeStyles: Record<BadgeType, string> = {
+    Demonstrated: "bg-[#1A1A1A] text-white",
+    Emerging: "border border-[#666] text-[#666] bg-transparent",
+    Strategic: "bg-[#F5F0EB] text-[#888]",
+  };
+
+  export function ImpactBadge({ type }: { type: BadgeType }) {
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${badgeStyles[type]}`}>
+        {type}
+      </span>
+    );
+  }
+
+  export type DomainName = "QUALITY" | "WORKFORCE" | "CAPACITY" | "REVENUE";
+
+  export const domainColors: Record<DomainName, string> = {
+    QUALITY:   "#4F46E5",
+    WORKFORCE: "#16A34A",
+    CAPACITY:  "#D97706",
+    REVENUE:   "#EA2C00",
+  };
+
+  export interface ImpactItem {
+    label: string;
+    badge: BadgeType;
+  }
+
+  export interface DomainCardData {
+    domain: DomainName;
+    description: string;
+    items: ImpactItem[];
+  }
+
+  export function DomainOverviewCard({ data, onClick }: { data: DomainCardData; onClick?: () => void }) {
+    const color = domainColors[data.domain];
+    return (
+      <button
+        onClick={onClick}
+        className="w-full text-left bg-white rounded-lg border border-[#E5E5E5] p-5 hover:border-[#D1D5DB] hover:shadow-sm transition-all cursor-pointer"
+        style={{ borderLeftWidth: 3, borderLeftColor: color }}
+      >
+        <p className="text-xs font-bold uppercase tracking-[1.5px] mb-1" style={{ color }}>
+          {data.domain}
+        </p>
+        <p className="text-sm text-[#666666] mb-4 leading-snug">{data.description}</p>
+        <div className="space-y-2">
+          {data.items.map((item) => (
+            <div key={item.label} className="flex items-center justify-between gap-3">
+              <span className="text-xs text-[#444444] leading-tight">{item.label}</span>
+              <ImpactBadge type={item.badge} />
+            </div>
+          ))}
+        </div>
+      </button>
+    );
+  }
+
+  export function DomainOverviewGrid({
+    cards,
+    onDomainClick,
+  }: {
+    cards: DomainCardData[];
+    onDomainClick?: (domain: DomainName) => void;
+  }) {
+    return (
+      <div className="mb-10">
+        <div className="mb-5">
+          <h2 className="text-sm font-bold text-black uppercase tracking-tight mb-1">Four Domains of Value</h2>
+          <p className="text-sm text-[#888888]">Click a domain to explore the evidence and calculation detail below.</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {cards.map((card) => (
+            <DomainOverviewCard key={card.domain} data={card} onClick={() => onDomainClick?.(card.domain)} />
+          ))}
+        </div>
+        <div className="mt-5 flex flex-wrap gap-4 items-center">
+          <span className="text-[10px] text-[#888888] uppercase tracking-wide font-medium">Evidence level:</span>
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="flex items-center gap-1.5">
+              <ImpactBadge type="Demonstrated" />
+              <span className="text-[10px] text-[#666666]">trackable from EHR/claims/payroll</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <ImpactBadge type="Emerging" />
+              <span className="text-[10px] text-[#666666]">attributable with confidence over 6–18 mo</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <ImpactBadge type="Strategic" />
+              <span className="text-[10px] text-[#666666]">directional, real but not easily monetized</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  interface SectionProps {
+    title: string;
+    subtitle: string;
+    children: React.ReactNode;
+    defaultOpen?: boolean;
+    sectionId: string;
+    accentColor?: string;
+  }
+
+  export function CollapsibleSection({ title, subtitle, children, defaultOpen = false, sectionId, accentColor }: SectionProps) {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+    return (
+      <div className="border-b border-[#E5E5E5] last:border-b-0">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full py-6 flex items-start justify-between text-left"
+          data-testid={`button-section-${sectionId}`}
+        >
+          <div>
+            <h2
+              className="text-lg font-bold text-black uppercase tracking-tight"
+              style={accentColor ? { borderLeft: `3px solid ${accentColor}`, paddingLeft: 10 } : undefined}
+            >
+              {title}
+            </h2>
+            <p className="text-sm text-[#888888] mt-1">{subtitle}</p>
+          </div>
+          <div className="ml-4 mt-1">
+            {isOpen ? <ChevronUp className="w-5 h-5 text-[#888888]" /> : <ChevronDown className="w-5 h-5 text-[#888888]" />}
+          </div>
+        </button>
+        {isOpen && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="pb-8">
+            {children}
+          </motion.div>
+        )}
+      </div>
+    );
+  }
+
+  export interface DomainImpactItem {
+    label: string;
+    badge: BadgeType;
+    explanation: string;
+    formula?: string;
+    limit?: string;
+  }
+
+  export interface DomainDetailData {
+    domain: DomainName;
+    sectionTitle: string;
+    sectionSubtitle: string;
+    items: DomainImpactItem[];
+    honestLimit?: string;
+  }
+
+  export function DomainDetailSection({ data, sectionRef }: { data: DomainDetailData; sectionRef?: React.RefObject<HTMLDivElement> }) {
+    const color = domainColors[data.domain];
+    return (
+      <CollapsibleSection
+        sectionId={`domain-${data.domain.toLowerCase()}`}
+        title={data.sectionTitle}
+        subtitle={data.sectionSubtitle}
+        accentColor={color}
+      >
+        <div ref={sectionRef} className="space-y-4">
+          {data.items.map((item) => (
+            <DomainImpactCard key={item.label} item={item} color={color} />
+          ))}
+          {data.honestLimit && (
+            <div className="mt-2 bg-[#F5F0EB] rounded-lg p-4 text-sm text-[#666666] leading-relaxed">
+              <strong className="text-black">Honest limit: </strong>{data.honestLimit}
+            </div>
+          )}
+        </div>
+      </CollapsibleSection>
+    );
+  }
+
+  function DomainImpactCard({ item, color }: { item: DomainImpactItem; color: string }) {
+    const [showFormula, setShowFormula] = useState(false);
+    return (
+      <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h4 className="font-semibold text-black text-sm">{item.label}</h4>
+          <ImpactBadge type={item.badge} />
+        </div>
+        <p className="text-sm text-[#666666] leading-relaxed">{item.explanation}</p>
+        {item.formula && (
+          <div className="mt-3">
+            <button
+              onClick={() => setShowFormula(!showFormula)}
+              className="text-xs font-medium uppercase tracking-wide flex items-center gap-1 transition-colors"
+              style={{ color }}
+            >
+              {showFormula ? "Hide formula" : "Show formula"}
+              {showFormula ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+            {showFormula && (
+              <div className="mt-2 bg-[#F5F0EB] rounded-lg p-3">
+                <p className="font-mono text-xs text-black">{item.formula}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  2. Completely replace the contents of client/src/pages/methodology/MethodologyED.tsx with this:
+
+  import { motion } from "framer-motion";
+  import { ArrowLeft, Download, ArrowRight, Stethoscope, Building2, Heart, Loader2 } from "lucide-react";
+  import { useRef, useState } from "react";
+  import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+  import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
+  import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
+  import {
+    DomainOverviewGrid,
+    DomainDetailSection,
+    CollapsibleSection,
+    type DomainCardData,
+    type DomainDetailData,
+    type DomainName,
+  } from "@/components/methodology/MethodologyShared";
+
+  interface MethodologyEDProps {
+    onBack: () => void;
+    onNavigateToSetting?: (setting: string) => void;
+  }
+
+  const overviewCards: DomainCardData[] = [
+    {
+      domain: "QUALITY",
+      description: "Documentation accuracy under pressure — capturing complexity that determines DRG, E/M level, and clinical defensibility.",
+      items: [
+        { label: "CDI query volume on admits", badge: "Demonstrated" },
+        { label: "Note completeness rate", badge: "Demonstrated" },
+        { label: "Sepsis/stroke protocol documentation", badge: "Strategic" },
+      ],
+    },
+    {
+      domain: "WORKFORCE",
+      description: "Physician burnout and turnover are the ED's slow bleed — documentation burden is a measurable contributor.",
+      items: [
+        { label: "Physician retention savings", badge: "Emerging" },
+      ],
+    },
+    {
+      domain: "CAPACITY",
+      description: "Throughput is the ED's operating system. Faster documentation is one lever — not the only one.",
+      items: [
+        { label: "Documentation time per encounter (EHR)", badge: "Demonstrated" },
+        { label: "LWBS recovery (wait time sensitivity)", badge: "Emerging" },
+        { label: "Admission capture (downstream of LWBS)", badge: "Emerging" },
+      ],
+    },
+    {
+      domain: "REVENUE",
+      description: "ED coding is the most audit-vulnerable setting. Every surge creates under-documented complexity.",
+      items: [
+        { label: "E/M level accuracy (claims data)", badge: "Demonstrated" },
+        { label: "Denial prevention (RCM root cause)", badge: "Demonstrated" },
+      ],
+    },
+  ];
+
+  const domainDetails: DomainDetailData[] = [
+    {
+      domain: "QUALITY",
+      sectionTitle: "Quality",
+      sectionSubtitle: "Documentation accuracy under surge — capturing clinical complexity that determines downstream outcomes",
+      items: [
+        {
+          label: "CDI Query Volume on Admits",
+          badge: "Demonstrated",
+          explanation: "When ED documentation captures presenting conditions and comorbidities completely, CDI specialists receive fewer queries to clarify the clinical picture. This is tracked daily by most
+   CDI departments — before/after comparison is fast and clean. Better ED notes also form the foundation of inpatient DRG accuracy for admitted patients.",
+          formula: "Admissions × query rate × reduction % — tracked by CDI department",
+          limit: "ED notes influence but don't fully determine inpatient DRG. Attribution requires CDI tracking both ED and inpatient documentation quality together.",
+        },
+        {
+          label: "Note Completeness Rate",
+          badge: "Demonstrated",
+          explanation: "EHR timestamp data shows exactly when notes are completed and how long they take. During surges, note quality drops — key elements get abbreviated or omitted. Ambient AI maintains
+  completeness regardless of patient volume. This is an auditable metric that CDI and compliance teams can assess directly.",
+          formula: "EHR session data: note completion time, completeness scores (CDI audit-based)",
+        },
+        {
+          label: "Sepsis / Stroke Protocol Documentation",
+          badge: "Strategic",
+          explanation: "Proper documentation of sepsis and stroke presentations affects both regulatory compliance (CMS sepsis bundle measures) and downstream coding accuracy. The documentation is real and
+  the clinical stakes are high — but direct financial attribution is indirect and multi-factorial. Track as a quality signal, not a revenue line.",
+        },
+      ],
+      honestLimit: "CDI query reduction shows up quickly. DRG impact on admitted patients is captured in the Inpatient methodology to avoid double-counting.",
+    },
+    {
+      domain: "WORKFORCE",
+      sectionTitle: "Workforce",
+      sectionSubtitle: "Physician retention — the ED's most expensive and least discussed cost driver",
+      items: [
+        {
+          label: "Physician Retention Savings",
+          badge: "Emerging",
+          explanation: "ED burnout is a workforce crisis. Documentation burden is consistently cited in ACEP surveys and Medscape reports as a top contributor. At $250K–$500K per physician replacement (AMGA
+  Physician Retention Survey), retaining even one additional physician covers a significant portion of implementation cost. The link is attributable; the measurement takes 12–18 months.",
+          formula: "ED physicians × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefaults: replacement cost $250K–$500K, turnover 8–15%, burnout attribution 10–20%",
+          limit: "Documentation is one of many burnout drivers in the ED. Don't attribute all turnover change to documentation.",
+        },
+      ],
+      honestLimit: "Retention impact takes 12–18 months to observe. Track exit interviews and satisfaction surveys to build the attribution case over time.",
+    },
+    {
+      domain: "CAPACITY",
+      sectionTitle: "Capacity",
+      sectionSubtitle: "Throughput and time — documentation speed is one input to the ED's operational throughput",
+      items: [
+        {
+          label: "Documentation Time Per Encounter (EHR)",
+          badge: "Demonstrated",
+          explanation: "EHR timestamps show exactly when charting begins and ends. In the ED, time savings are smaller per encounter (2–4 minutes) vs. outpatient — but the ED is a volume engine. At
+  40,000–80,000 visits/year, 3 minutes × 50,000 visits = 2,500 hours of physician time annually. This is visible within weeks of deployment.",
+          formula: "Minutes saved × annual ED visits / 60 = physician hours returned",
+        },
+        {
+          label: "LWBS Recovery (Wait Time Sensitivity)",
+          badge: "Emerging",
+          explanation: "Each patient who leaves without being seen represents $300–$500+ in lost revenue. Faster documentation contributes to faster throughput, which can reduce wait times and recover some
+  LWBS patients. Attribution is the challenge — documentation is one lever among staffing, bed management, triage protocol, and acuity mix.",
+          formula: "(LWBS rate before − LWBS rate after, in pp) × annual ED visits × $480/visit × attribution %",
+          limit: "If your LWBS rate is already below 2%, this lever is smaller. We let you adjust based on your reality.",
+        },
+        {
+          label: "Admission Capture (Downstream of LWBS)",
+          badge: "Emerging",
+          explanation: "Of patients recovered from LWBS, some require inpatient admission — converting a lost ED visit into DRG-based inpatient revenue. This driver only activates when LWBS recovery is
+  calculated first. Without real LWBS data, don't estimate this — compounding two estimates produces a number that won't survive scrutiny.",
+          formula: "Recovered LWBS patients × admission rate % × avg admission revenue × realization rate",
+        },
+      ],
+      honestLimit: "Documentation is one input to throughput. Staffing, triage protocols, and bed management all matter. We model the documentation contribution — not the whole throughput picture.",
+    },
+    {
+      domain: "REVENUE",
+      sectionTitle: "Revenue",
+      sectionSubtitle: "Coding accuracy and denial prevention — the ED's most auditable, defensible revenue domain",
+      items: [
+        {
+          label: "E/M Level Accuracy (Claims Data)",
+          badge: "Demonstrated",
+          explanation: "During surges, ED notes understate what actually happened — a physician manages complex differentials but the note reflects a simpler encounter because time was short. Claims data
+  shows E/M level distribution shifts before and after. ED wRVU lift is typically 2–4% (lower than outpatient because ED workflows are more structured).",
+          formula: "(wRVU per encounter after − before) × adopted encounters × $33/wRVU × attribution % × realization %",
+        },
+        {
+          label: "Denial Prevention (RCM Root Cause)",
+          badge: "Demonstrated",
+          explanation: "Medical necessity is the ED's denial vulnerability. When a note doesn't capture why a test was ordered or why admission was necessary, that's a denial waiting to happen — and many ED
+  denials are unappealable because the documentation gap existed at time of service. RCM teams track documentation-related denials as a specific root cause category.",
+          formula: "(denial rate before − after, in pp) × annual encounters × avg denial cost per encounter × attribution %\n\nED default: $500 per encounter",
+        },
+      ],
+      honestLimit: "ED wRVU lift is lower than outpatient because ED documentation workflows are already more structured. We use your observed delta, not an assumed percentage.",
+    },
+  ];
+
+  export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProps) {
+    const [isExporting, setIsExporting] = useState(false);
+    const domainRefs = useRef<Partial<Record<DomainName, HTMLDivElement | null>>>({});
+
+    const handleExportPDF = async () => {
+      setIsExporting(true);
+      try {
+        await generateMethodologyPDF("ed");
+      } catch (error) {
+        console.error('PDF export failed:', error);
+        alert('PDF export failed. Please try again or check your browser settings.');
+      } finally {
+        setIsExporting(false);
+      }
+    };
+
+    const scrollToDomain = (domain: DomainName) => {
+      const el = domainRefs.current[domain];
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    return (
+      <div className="min-h-screen bg-white">
+        <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
+          <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button onClick={onBack} className="flex items-center cursor-pointer bg-transparent border-none p-0" data-testid="link-home-logo">
+                <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
+              </button>
+              <span className="text-[#E5E5E5]">|</span>
+              <button onClick={onBack} className="flex items-center gap-1 text-[#666666] hover:text-black transition-colors" data-testid="button-back">
+                <ArrowLeft className="w-3 h-3" />
+                <span className="text-xs font-medium uppercase tracking-wide">Methodology</span>
+              </button>
+            </div>
+            <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50" 
+  data-testid="button-export-pdf">
+              <Download className="w-4 h-4" />
+              <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
+            </button>
+          </div>
+        </header>
+
+        <div className="max-w-[800px] mx-auto px-6 py-12">
+          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Emergency: How We Think About Value</h1>
+            <p className="text-base text-[#666666]">Where speed matters and every minute counts differently</p>
+          </motion.div>
+
+          <DomainOverviewGrid cards={overviewCards} onDomainClick={scrollToDomain} />
+
+          <div className="bg-[#F5F0EB] rounded-lg">
+            <div className="px-6">
+              {domainDetails.map((detail) => (
+                <DomainDetailSection
+                  key={detail.domain}
+                  data={detail}
+                  sectionRef={{ current: domainRefs.current[detail.domain] ?? null } as React.RefObject<HTMLDivElement>}
+                />
+              ))}
+
+              <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#D1D5DB]">
+                        <th className="text-left py-3 font-semibold text-black">Value Driver</th>
+                        <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
+                        <th className="text-left py-3 font-semibold text-black">Formula</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-[#666666]">
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">LWBS reduction</td><td className="py-3">✅ Yes</td><td className="py-3">LWBS pp delta × annual visits ×
+  $480/visit</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">wRVU / E/M lift</td><td className="py-3">✅ Yes</td><td className="py-3">wRVU delta × adopted encounters ×
+  $33/wRVU</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Denial rate reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Denial pp delta × encounters ×
+  $500/encounter</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">CDI / DRG impact on admitted patients</td><td className="py-3 text-[#F59E0B] font-medium">Not here — see Inpatient</td><td
+   className="py-3">Captured in CMI delta calculation</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Admission capture from LWBS recovery</td><td className="py-3">✅ Yes (if LWBS data provided)</td><td 
+  className="py-3">Recovered patients × admission rate × avg DRG revenue</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">ED physician retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers
+  avoided × $250K–$500K</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">After-hours time savings</td><td className="py-3 text-[#F59E0B] font-medium">Signal only — not monetized</td><td 
+  className="py-3">Tracked as hours (salaried providers)</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="assumptions" title="The Assumptions" subtitle="ED-specific defaults and ranges">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#D1D5DB]">
+                        <th className="text-left py-3 font-semibold text-black">Assumption</th>
+                        <th className="text-left py-3 font-semibold text-black">Range</th>
+                        <th className="text-left py-3 font-semibold text-black">Our Default</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-[#666666]">
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Time saved per encounter</td><td 
+  className="py-3">2-4 minutes</td><td className="py-3">3 minutes</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">ED documentation is faster-paced with more
+  templated workflows. Time savings are smaller per encounter but high volume amplifies impact.</p></TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">ED wRVU baseline</td><td 
+  className="py-3">2.0-3.0</td><td className="py-3">2.5</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">ACEP benchmarks for ED encounters. Higher than
+  outpatient due to acuity and complexity of ED visits.</p></TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">wRVU lift %</td><td 
+  className="py-3">2-4%</td><td className="py-3">3%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">ED coding often under-captures complexity. Better
+  documentation supports higher E&M levels when clinically appropriate.</p></TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">LWBS rate</td><td 
+  className="py-3">2-4%</td><td className="py-3">3%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Left Without Being Seen rate. National benchmark is ~2-3%.
+   High-volume urban EDs may see 4-5%+.</p></TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">LWBS recovery rate</td><td 
+  className="py-3">5-15%</td><td className="py-3">10%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Percentage of LWBS patients recovered through reduced
+  wait times. Conservative estimate.</p></TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Avg ED visit revenue</td><td 
+  className="py-3">$400-$600</td><td className="py-3">$480</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Blended average across facility and professional
+  fees. Varies significantly by payer mix and acuity.</p></TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">ED admission rate</td><td 
+  className="py-3">15-25%</td><td className="py-3">20%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Percentage of ED visits resulting in inpatient
+  admission. Higher rates correlate with higher acuity patient population.</p></TooltipContent></Tooltip>
+                    </tbody>
+                  </table>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="honest-limits" title="The Honest Limits" subtitle="What we can prove, what we can support, and what we can only enable in the ED">
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">The ED is operationally complex. Many factors drive throughput, revenue, and retention. We're transparent about exactly how much of
+  each outcome we can credibly attribute to documentation improvement.</p>
+                  <div className="grid gap-4">
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#22C55E] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can
+  Measure This</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Documentation time per encounter:</strong> EHR timestamps show exactly when charting happens and how long it takes. Visible in weeks.</li>
+                        <li><strong>E/M level distribution:</strong> Claims data shows coding accuracy shifts. Compare high-volume vs. low-volume shifts for proof.</li>
+                        <li><strong>Denial rates by category:</strong> RCM data identifies documentation-related denials specifically. Track before and after.</li>
+                        <li><strong>LWBS rate:</strong> Most EDs track this. The metric is clean — the attribution is the challenge.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#F59E0B] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can
+  Influence This</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Throughput improvement:</strong> Documentation is one input to throughput. Staffing, bed management, triage protocols all matter. We contribute, we don't control.</li>
+                        <li><strong>Door-to-doc time:</strong> Influenced by staffing, space, acuity mix, and workflow design. Documentation speed is a factor, not the only factor.</li>
+                        <li><strong>CDI query reduction:</strong> Better ED notes reduce queries, but inpatient documentation matters too. Track ED-specific query rates.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#EF4444] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Only
+  Enable This</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>DRG impact on admitted patients:</strong> ED documentation influences but doesn't determine inpatient DRG. Requires downstream tracking.</li>
+                        <li><strong>Retention:</strong> Documentation burden is one of many ED burnout drivers. Impact takes 12-18 months. Real, but not the whole story.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-5 border-l-2 border-[#EA2C00]">
+                    <p className="text-sm text-[#666666] leading-relaxed"><strong className="text-black">Our philosophy:</strong> We'd rather show you a smaller number you can defend in an ED leadership
+  meeting than a larger number that falls apart when your leadership asks "how did you attribute that?" Key assumptions are editable — because your ED's data should drive the answer, not our defaults.</p>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="validation-path" title="The Validation Path" subtitle="How to prove this with your ED's data — before, during, and after">
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">ED metrics move fast but are noisy. Seasonality, staffing changes, and patient mix all affect outcomes. Here's how to build a credible
+  before/after comparison despite the noise.</p>
+                  <div className="space-y-4">
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">Before Implementation</h4><span className="text-xs
+  text-[#888888] font-medium">Baseline period</span></div>
+                      <p className="text-sm text-[#666666] mb-3">Get 12 months minimum — ED metrics are seasonal and you need to control for that.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>LWBS data by month, day of week, and shift — you need to see the patterns</li>
+                        <li>E/M level distribution by provider and shift volume</li>
+                        <li>CDI query rates specifically for ED-to-inpatient cases</li>
+                        <li>Door-to-doc and door-to-disposition times</li>
+                        <li>Denial rates with root cause categorization</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 90 Days</h4><span className="text-xs text-[#888888]
+  font-medium">Early signal</span></div>
+                      <p className="text-sm text-[#666666] mb-3">Documentation improvements show fast. Throughput takes longer. Be patient with LWBS.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Documentation time per encounter — this will be the most dramatic early metric</li>
+                        <li>E/M level trends (compare same providers, same shift types)</li>
+                        <li>LWBS rate monitoring — but caveat for seasonality and staffing changes</li>
+                        <li>Physician satisfaction surveys — qualitative signal matters in the ED</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 6-12 Months</h4><span className="text-xs
+  text-[#888888] font-medium">Operational validation</span></div>
+                      <p className="text-sm text-[#666666] mb-3">Throughput and revenue signals become statistically meaningful with enough volume.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Year-over-year LWBS comparison (same months, controlling for volume)</li>
+                        <li>CDI query rate trends for admitted patients</li>
+                        <li>Denial rate trends by documentation-related categories</li>
+                        <li>Door-to-disposition trends — control for staffing and volume changes</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 18+ Months</h4><span className="text-xs
+  text-[#888888] font-medium">Long-term impact</span></div>
+                      <p className="text-sm text-[#666666] mb-3">Retention is the long game. Don't rush this measurement.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Physician turnover: Abridge providers vs. non-Abridge (if applicable)</li>
+                        <li>Locum utilization trends</li>
+                        <li>Exit interview data — is documentation still a cited burnout factor?</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="connected-value" title="Connected Value" subtitle="How ED documentation connects to the rest of your organization">
+                <div className="space-y-4 text-[15px] text-black leading-relaxed">
+                  <p>The ED doesn't operate in isolation. Documentation quality here creates ripple effects across the organization:</p>
+                  <div className="space-y-4 mt-4">
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">ED → Inpatient (DRG impact)</h4><p className="text-sm text-[#666666]
+  leading-relaxed">Better ED documentation is the foundation of DRG accuracy for admitted patients — when presenting conditions, comorbidities, and clinical reasoning are captured at the point of care, the
+  inpatient stay begins with a stronger clinical picture. We quantify this in the Inpatient methodology, not here, to prevent double-counting.</p></div>
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">ED → Nursing (care continuity)</h4><p className="text-sm text-[#666666]
+  leading-relaxed">ED nursing documentation feeds into inpatient handoffs. When assessments are captured in real-time during the ED stay, the transition to floor nursing has better clinical context —
+  reducing missed information at a high-risk transition point.</p></div>
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">ED → Outpatient (follow-up quality)</h4><p className="text-sm
+  text-[#666666] leading-relaxed">Complete ED documentation improves follow-up care. When the PCP gets a comprehensive ED visit note, they can continue care without gaps. Hard to quantify, but
+  real.</p></div>
+                  </div>
+                  <p className="text-[#666666] italic mt-4">We don't sum these cross-setting values into the ED model because the attribution gets complex. But they're part of the strategic case for
+  comprehensive documentation that goes beyond the ED's own P&L.</p>
+                </div>
+              </CollapsibleSection>
+            </div>
+          </div>
+
+          <motion.div className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
+            <p className="text-[#999999] mb-6 text-sm">Use these methodology principles to create a customized ROI model for your emergency department.</p>
+            <button onClick={onBack} className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors" data-testid="button-build-model">
+              Build an ED Model <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
+
+          <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
+  experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial
+  outcomes.</p>
+
+          <div className="mt-12 mb-8">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">Related Methodologies</p>
+            <p className="text-sm text-[#666666] mb-6">ED patients often flow to inpatient. Explore how value chains connect across settings.</p>
+            <div className="grid md:grid-cols-3 gap-4">
+              <button onClick={() => onNavigateToSetting?.("inpatient")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-inpatient">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Building2 className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Inpatient</p><p className="text-xs text-[#888888]">ED admissions flow here</p></div>
+              </button>
+              <button onClick={() => onNavigateToSetting?.("outpatient")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-outpatient">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Stethoscope className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Outpatient</p><p className="text-xs text-[#888888]">wRVU & patient access</p></div>
+              </button>
+              <button onClick={() => onNavigateToSetting?.("nursing")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-nursing">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Heart className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Nursing</p><p className="text-xs text-[#888888]">ED nursing documentation</p></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {isExporting && (
+          <div className="fixed bottom-4 right-4 bg-[#EA2C00] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50" 
+  data-testid="toast-pdf-download">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm font-medium">Preparing your PDF...</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  ---
+  Once Replit finishes and you can verify the ED page looks right (4-domain grid visible at top, clicking a domain scrolls down to it), say the word and I'll give you Prompt 2 for the other three pages.
+
+✻ Cooked for 3m 0s
+
+❯ yes prompt 2  
+
+⏺ Prompt 2 of 2
+
+  Replace the contents of three files:
+
+  ---
+  File 1: client/src/pages/methodology/MethodologyOutpatient.tsx
+
+  import { motion } from "framer-motion";
+  import { ArrowLeft, Download, ArrowRight, Activity, Building2, Heart, Loader2 } from "lucide-react";
+  import { useRef, useState } from "react";
+  import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+  import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
+  import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
+  import {
+    DomainOverviewGrid,
+    DomainDetailSection,
+    CollapsibleSection,
+    type DomainCardData,
+    type DomainDetailData,
+    type DomainName,
+  } from "@/components/methodology/MethodologyShared";
+
+  interface MethodologyOutpatientProps {
+    onBack: () => void;
+    onNavigateToSetting?: (setting: string) => void;
+  }
+
+  const overviewCards: DomainCardData[] = [
+    {
+      domain: "QUALITY",
+      description: "Documentation completeness drives referral quality and risk adjustment accuracy for value-based contracts.",
+      items: [
+        { label: "Referral note completeness", badge: "Strategic" },
+        { label: "HCC/risk adjustment for MA populations", badge: "Emerging" },
+      ],
+    },
+    {
+      domain: "WORKFORCE",
+      description: "Physician burnout and turnover represent the largest hidden cost in outpatient practices.",
+      items: [
+        { label: "Physician retention savings", badge: "Emerging" },
+      ],
+    },
+    {
+      domain: "CAPACITY",
+      description: "Time saved per encounter is the outpatient multiplier — translates directly into capacity or clinical headroom.",
+      items: [
+        { label: "Time per encounter (EHR timestamps)", badge: "Demonstrated" },
+        { label: "Patient access / capacity expansion", badge: "Emerging" },
+      ],
+    },
+    {
+      domain: "REVENUE",
+      description: "wRVU accuracy and denial prevention are the most directly attributable revenue drivers in outpatient.",
+      items: [
+        { label: "wRVU accuracy (billing data)", badge: "Demonstrated" },
+        { label: "Denial prevention", badge: "Emerging" },
+      ],
+    },
+  ];
+
+  const domainDetails: DomainDetailData[] = [
+    {
+      domain: "QUALITY",
+      sectionTitle: "Quality",
+      sectionSubtitle: "Referral completeness and risk adjustment — documentation quality that flows downstream",
+      items: [
+        {
+          label: "Referral Note Completeness",
+          badge: "Strategic",
+          explanation: "When primary care documentation is complete, specialists receive better clinical context — fewer repeat tests, faster diagnoses, better care continuity. This is real and clinically
+  meaningful, but direct financial attribution is difficult. Track as a quality signal and a differentiator in value-based contract conversations.",
+          limit: "Too many variables to attribute financially. Track as a leading indicator for specialist partnership and patient experience.",
+        },
+        {
+          label: "HCC / Risk Adjustment for MA Populations",
+          badge: "Emerging",
+          explanation: "HCC (Hierarchical Condition Category) accuracy drives risk adjustment in Medicare Advantage plans. Complete documentation of chronic conditions supports accurate RAF (Risk Adjustment
+  Factor) scores, which determine capitated payment levels. With 20–30% chronic condition gap rates in typical practices, this is a meaningful and attributable value driver for practices with significant MA
+  populations.",
+          formula: "MA patients × HCC gap rate × recapture % × RAF point value × capitation rate multiplier",
+          limit: "Requires MA population data and coordination with your risk adjustment team. Gap rate and recapture % should come from your actual coding data, not benchmarks.",
+        },
+      ],
+      honestLimit: "Quality value in outpatient is real but often flows downstream or into value-based contract performance rather than direct revenue. Track it — but don't put it in the primary ROI number
+  unless you have data.",
+    },
+    {
+      domain: "WORKFORCE",
+      sectionTitle: "Workforce",
+      sectionSubtitle: "Physician retention — the largest hidden cost in most outpatient organizations",
+      items: [
+        {
+          label: "Physician Retention Savings",
+          badge: "Emerging",
+          explanation: "Documentation burden is consistently cited as a top burnout driver in outpatient settings. At $250K–$500K per physician replacement (AMGA Physician Retention Survey), retaining one
+  additional physician annually can significantly change the ROI picture. The link between documentation burden and burnout is well-established; the attribution to Abridge specifically takes 12–18 months to
+  observe.",
+          formula: "Physicians × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefault: replacement cost $350K, burnout attribution 10–20%",
+          limit: "Documentation is one of many outpatient burnout drivers. Don't attribute all turnover change to documentation without exit interview data to support it.",
+        },
+      ],
+      honestLimit: "Retention is the long game in outpatient. Track satisfaction surveys and exit interview data from day one so you have the attribution story at 18 months.",
+    },
+    {
+      domain: "CAPACITY",
+      sectionTitle: "Capacity",
+      sectionSubtitle: "Time returned — the outpatient multiplier that unlocks access or reduces after-hours burden",
+      items: [
+        {
+          label: "Time Per Encounter (EHR Timestamps)",
+          badge: "Demonstrated",
+          explanation: "EHR session data shows exactly when documentation happens and how long it takes. This is the most immediate and unambiguous signal after deployment. In outpatient, time savings
+  typically run 2–4 minutes per encounter — with same-day note closure showing the most dramatic change. At 20 patients/day × 240 working days, 3 minutes/encounter = 240 hours of physician time annually per
+  provider.",
+          formula: "Minutes saved × daily encounters × working days = annual physician hours returned",
+        },
+        {
+          label: "Patient Access / Capacity Expansion",
+          badge: "Emerging",
+          explanation: "When physicians spend less time documenting, they have headroom to see more patients — or to stop working after hours. Whether that time converts to capacity depends on patient demand
+   and scheduling decisions your leadership makes. We model the capacity potential; you decide how to use it. For practices with wait lists or access constraints, this driver can be significant.",
+          formula: "Additional patients/provider/month × providers × 12 months × avg revenue per visit",
+          limit: "Requires patient demand to convert time to revenue. If you're not capacity-constrained, this value goes to physician wellbeing, not incremental volume.",
+        },
+      ],
+      honestLimit: "Time savings in outpatient are demonstrated quickly. Whether that time becomes revenue or wellbeing depends on how your organization chooses to redeploy it.",
+    },
+    {
+      domain: "REVENUE",
+      sectionTitle: "Revenue",
+      sectionSubtitle: "wRVU accuracy and denial prevention — the most directly attributable financial drivers in outpatient",
+      items: [
+        {
+          label: "wRVU Accuracy (Billing Data)",
+          badge: "Demonstrated",
+          explanation: "Better documentation captures visit complexity more accurately, supporting appropriate E/M level coding. Claims data shows wRVU distribution shifts before and after. Outpatient wRVU
+  lift typically runs 2–7% depending on specialty and baseline documentation quality. MGMA data shows that documentation-related undercoding is common, particularly in primary care where visit complexity is
+  often under-documented.",
+          formula: "wRVU delta per encounter × adopted encounters × $33/wRVU (CMS MPFS conversion factor)\n\nNote: commercial payers often pay higher than Medicare conversion factor — blended rate depends on
+   payer mix",
+        },
+        {
+          label: "Denial Prevention",
+          badge: "Emerging",
+          explanation: "30–40% of claim denials are unappealable — permanent revenue loss because the documentation gap existed at time of service. Abridge captures clinical reasoning in real-time,
+  preventing medical necessity gaps before they become denials. Outpatient denial rates typically run 5–12% (MGMA). Documentation-related denials are an identifiable subset that your RCM team can isolate as
+  a root cause category.",
+          formula: "(denial rate before − after, in pp) × annual encounters × $350/encounter × attribution %",
+          limit: "Denial rates reflect many process factors beyond documentation. Work with your RCM team to isolate documentation-related denials before claiming full attribution.",
+        },
+      ],
+      honestLimit: "wRVU lift is the most auditable outpatient revenue driver — claims data makes before/after comparison clean. Denial prevention takes 6+ months to show statistically meaningful trends.",
+    },
+  ];
+
+  export function MethodologyOutpatient({ onBack, onNavigateToSetting }: MethodologyOutpatientProps) {
+    const [isExporting, setIsExporting] = useState(false);
+    const domainRefs = useRef<Partial<Record<DomainName, HTMLDivElement | null>>>({});
+
+    const handleExportPDF = async () => {
+      setIsExporting(true);
+      try {
+        await generateMethodologyPDF("outpatient");
+      } catch (error) {
+        console.error('PDF export failed:', error);
+        alert('PDF export failed. Please try again or check your browser settings.');
+      } finally {
+        setIsExporting(false);
+      }
+    };
+
+    const scrollToDomain = (domain: DomainName) => {
+      const el = domainRefs.current[domain];
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    return (
+      <div className="min-h-screen bg-white">
+        <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
+          <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button onClick={onBack} className="flex items-center cursor-pointer bg-transparent border-none p-0" data-testid="link-home-logo">
+                <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
+              </button>
+              <span className="text-[#E5E5E5]">|</span>
+              <button onClick={onBack} className="flex items-center gap-1 text-[#666666] hover:text-black transition-colors" data-testid="button-back">
+                <ArrowLeft className="w-3 h-3" />
+                <span className="text-xs font-medium uppercase tracking-wide">Methodology</span>
+              </button>
+            </div>
+            <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50" 
+  data-testid="button-export-pdf">
+              <Download className="w-4 h-4" />
+              <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
+            </button>
+          </div>
+        </header>
+
+        <div className="max-w-[800px] mx-auto px-6 py-12">
+          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Outpatient: How We Think About Value</h1>
+            <p className="text-base text-[#666666]">Where time saved becomes capacity — and capacity becomes revenue or wellbeing</p>
+          </motion.div>
+
+          <DomainOverviewGrid cards={overviewCards} onDomainClick={scrollToDomain} />
+
+          <div className="bg-[#F5F0EB] rounded-lg">
+            <div className="px-6">
+              {domainDetails.map((detail) => (
+                <DomainDetailSection
+                  key={detail.domain}
+                  data={detail}
+                  sectionRef={{ current: domainRefs.current[detail.domain] ?? null } as React.RefObject<HTMLDivElement>}
+                />
+              ))}
+
+              <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#D1D5DB]">
+                        <th className="text-left py-3 font-semibold text-black">Value Driver</th>
+                        <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
+                        <th className="text-left py-3 font-semibold text-black">Formula</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-[#666666]">
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">wRVU lift</td><td className="py-3">✅ Yes</td><td className="py-3">wRVU delta × adopted encounters × $33/wRVU</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">E/M level improvement</td><td className="py-3">✅ Yes</td><td className="py-3">E/M level delta × adopted encounters ×
+  ~$45/level</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Denial rate reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Denial pp delta × encounters ×
+  $350/encounter</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Patient capacity revenue</td><td className="py-3">✅ Yes (if data provided)</td><td className="py-3">Additional
+  patients/mo × providers × 12 × $200/visit</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">HCC / risk adjustment</td><td className="py-3">✅ Yes (if MA data provided)</td><td className="py-3">MA patients × gap
+  rate × recapture % × RAF point value</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Physician retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers avoided ×
+   $250K–$500K replacement cost</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">After-hours time savings</td><td className="py-3 text-[#F59E0B] font-medium">Signal only — not monetized</td><td 
+  className="py-3">Tracked as hours, not dollars (salaried providers)</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="assumptions" title="The Assumptions" subtitle="What we assume to be true, and why">
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">Every model rests on assumptions. Here are ours—with ranges, not point estimates.</p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[#D1D5DB]">
+                          <th className="text-left py-3 font-semibold text-black">Assumption</th>
+                          <th className="text-left py-3 font-semibold text-black">Range</th>
+                          <th className="text-left py-3 font-semibold text-black">Our Default</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[#666666]">
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Time saved per encounter</td><td 
+  className="py-3">2–4 minutes</td><td className="py-3">3 minutes</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Based on aggregated deployment experience
+  across outpatient implementations. Primary care typically 2–4 min, specialists 2–3 min.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">wRVU baseline per visit</td><td 
+  className="py-3">1.5-2.5</td><td className="py-3">1.8</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">MGMA median wRVU per visit. Varies significantly by
+  specialty and payer mix.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">wRVU lift %</td><td 
+  className="py-3">2-7%</td><td className="py-3">4%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Better documentation captures visit complexity more
+  accurately. Studies show 2-7% improvement in E&M level accuracy.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">wRVU conversion factor</td><td 
+  className="py-3">$30-$50</td><td className="py-3">$33</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">CMS MPFS Medicare conversion factor ~$33 (2024).
+  Commercial payers often higher. Blended rate depends on payer mix.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">HCC gap rate</td><td 
+  className="py-3">20-30%</td><td className="py-3">25%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Percentage of chronic conditions not captured in
+  documentation. Industry research shows 25-40% gap rate in typical practices.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Denial rate</td><td 
+  className="py-3">5-12%</td><td className="py-3">8%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">MGMA data shows average denial rates 5-12%.
+  Documentation-related denials are a subset but often preventable.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Physician replacement cost</td><td 
+  className="py-3">$250K–$500K</td><td className="py-3">$350,000</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">AMGA Physician Retention Survey; range
+  reflects recruiting, onboarding, and lost productivity. Excludes lost revenue during vacancy.</p></TooltipContent></Tooltip>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="honest-limits" title="The Honest Limits" subtitle="What we can prove, what we can support, and what we can only enable">
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">Most vendors will tell you their product saves money. We think you deserve to know exactly how confident we are in each claim — and
+  what it takes to verify it.</p>
+                  <div className="grid gap-4">
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#22C55E] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can
+  Measure This</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Documentation time per encounter:</strong> EHR session data, before/after studies. You'll see this in weeks.</li>
+                        <li><strong>wRVU per visit:</strong> Claims data shows E/M distribution shifts. Measurable at 90 days.</li>
+                        <li><strong>Same-day note closure:</strong> EHR timestamps. Immediate and unambiguous.</li>
+                        <li><strong>After-hours documentation:</strong> Session data shows when charting happens. This is the "pajama time" metric.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#F59E0B] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can
+  Influence This</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Capacity expansion:</strong> Requires patient demand and scheduling intent. We provide the time; you decide how to use it.</li>
+                        <li><strong>HCC recapture:</strong> Depends on MA population, baseline gap rate, and coding workflows. Trackable but multi-factorial.</li>
+                        <li><strong>Denial prevention:</strong> Doc-related denials are identifiable, but denial rates reflect many process factors.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#EF4444] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Only
+  Enable This</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Retention:</strong> Documentation burden is one of many burnout drivers. Impact takes 12-18 months to observe. Track it, but don't bet on it alone.</li>
+                        <li><strong>Patient satisfaction:</strong> More present providers may improve experience, but CAHPS is influenced by everything from wait times to parking.</li>
+                        <li><strong>Referral patterns:</strong> Better documentation may improve referral quality, but attribution is indirect.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-5 border-l-2 border-[#EA2C00]">
+                    <p className="text-sm text-[#666666] leading-relaxed"><strong className="text-black">Our philosophy:</strong> We'd rather show you a smaller number you can defend in a board presentation
+  than a larger number that falls apart under scrutiny. Key assumptions in our model are editable — because your data should drive the answer, not ours.</p>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="validation-path" title="The Validation Path" subtitle="How to prove this with your own data — before, during, and after">
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">A model is only as good as its validation. Here's exactly what to measure and when — so you're not relying on our assumptions when you
+  could be relying on your data.</p>
+                  <div className="space-y-4">
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">Before Implementation</h4><span className="text-xs
+  text-[#888888] font-medium">Baseline period</span></div>
+                      <p className="text-sm text-[#666666] mb-3">Lock in your baselines before anything changes. This is what makes before/after credible.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Pull 12 months of wRVU data by provider and specialty — you need enough volume to see patterns</li>
+                        <li>Baseline E/M level distribution (what % at each level, by provider)</li>
+                        <li>Document current denial rates by reason code — isolate documentation-related denials</li>
+                        <li>Survey physicians on documentation burden — you'll want to repeat this</li>
+                        <li>EHR session data: when does charting happen? How much is after-hours?</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 90 Days</h4><span className="text-xs text-[#888888]
+  font-medium">Early signal</span></div>
+                      <p className="text-sm text-[#666666] mb-3">Time savings and documentation quality show up fast. Revenue impact takes longer.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Repeat time studies — compare doc time per encounter, after-hours charting</li>
+                        <li>E/M level comparison: pilot providers vs. baseline (same providers, not just average)</li>
+                        <li>Same-day note closure rate — often the most dramatic early metric</li>
+                        <li>Provider satisfaction survey — qualitative signal matters here</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 6-12 Months</h4><span className="text-xs
+  text-[#888888] font-medium">Revenue validation</span></div>
+                      <p className="text-sm text-[#666666] mb-3">This is where financial impact becomes statistically meaningful.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Year-over-year wRVU comparison — control for patient mix and volume changes</li>
+                        <li>Denial rate trends by category — isolate documentation-related improvement</li>
+                        <li>Capacity utilization: did volumes increase? Were new slots added?</li>
+                        <li>HCC recapture rates for MA populations (if applicable)</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 18+ Months</h4><span className="text-xs
+  text-[#888888] font-medium">Long-term impact</span></div>
+                      <p className="text-sm text-[#666666] mb-3">Retention and culture shifts take time. Don't rush this measurement.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Turnover rates: Abridge providers vs. control group</li>
+                        <li>Exit interview data — is documentation still cited as a burnout driver?</li>
+                        <li>Recruiting pipeline — are candidates asking about AI documentation tools?</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="connected-value" title="Connected Value" subtitle="How outpatient documentation connects to the rest of your organization">
+                <div className="space-y-4 text-[15px] text-black leading-relaxed">
+                  <p>Outpatient documentation doesn't exist in isolation. The quality of what's captured in the office visit ripples across the organization:</p>
+                  <div className="space-y-4 mt-4">
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Downstream referrals</h4><p className="text-sm text-[#666666]
+  leading-relaxed">When primary care documentation is complete, specialists receive better context. Fewer repeat tests, faster diagnoses, better outcomes. Hard to quantify, but real.</p></div>
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Value-based contracts</h4><p className="text-sm text-[#666666]
+  leading-relaxed">HCC accuracy drives risk adjustment in MA plans. Complete documentation supports accurate RAF scores, which determine capitated payments. This is quantified separately in our model for
+  practices with significant MA populations.</p></div>
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Pre-authorization efficiency</h4><p className="text-sm text-[#666666]
+  leading-relaxed">Complete clinical documentation reduces prior auth denials and the back-and-forth that consumes staff time. We don't model this directly, but organizations with high prior auth volumes
+  report meaningful time savings.</p></div>
+                  </div>
+                  <p className="text-[#666666] italic mt-4">We don't sum these into the ROI model because the attribution gets fuzzy. But they're real — and they're part of the strategic case for
+  documentation quality that goes beyond the numbers.</p>
+                </div>
+              </CollapsibleSection>
+            </div>
+          </div>
+
+          <motion.div className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
+            <p className="text-[#999999] mb-6 text-sm">Use these methodology principles to create a customized ROI model for your outpatient practice.</p>
+            <button onClick={onBack} className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors" data-testid="button-build-model">
+              Build an Outpatient Model <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
+
+          <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
+  experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial
+  outcomes.</p>
+
+          <div className="mt-12 mb-8">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">Related Methodologies</p>
+            <p className="text-sm text-[#666666] mb-6">Outpatient documentation connects to other care settings. Explore how value flows in related contexts.</p>
+            <div className="grid md:grid-cols-3 gap-4">
+              <button onClick={() => onNavigateToSetting?.("ed")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-ed">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Activity className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Emergency</p><p className="text-xs text-[#888888]">Throughput & LWBS</p></div>
+              </button>
+              <button onClick={() => onNavigateToSetting?.("inpatient")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-inpatient">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Building2 className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Inpatient</p><p className="text-xs text-[#888888]">DRG & documentation quality</p></div>
+              </button>
+              <button onClick={() => onNavigateToSetting?.("nursing")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-nursing">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Heart className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Nursing</p><p className="text-xs text-[#888888]">OT reduction & retention</p></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {isExporting && (
+          <div className="fixed bottom-4 right-4 bg-[#EA2C00] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50" 
+  data-testid="toast-pdf-download">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm font-medium">Preparing your PDF...</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  ---
+  File 2: client/src/pages/methodology/MethodologyInpatient.tsx
+
+  import { motion } from "framer-motion";
+  import { ArrowLeft, Download, ArrowRight, Activity, Stethoscope, Heart, Loader2 } from "lucide-react";
+  import { useRef, useState } from "react";
+  import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+  import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
+  import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
+  import {
+    DomainOverviewGrid,
+    DomainDetailSection,
+    CollapsibleSection,
+    type DomainCardData,
+    type DomainDetailData,
+    type DomainName,
+  } from "@/components/methodology/MethodologyShared";
+
+  interface MethodologyInpatientProps {
+    onBack: () => void;
+    onNavigateToSetting?: (setting: string) => void;
+  }
+
+  const overviewCards: DomainCardData[] = [
+    {
+      domain: "QUALITY",
+      description: "CDI query reduction and CC/MCC capture are daily, trackable signals of documentation improvement.",
+      items: [
+        { label: "CDI query reduction (tracked daily)", badge: "Demonstrated" },
+        { label: "CC/MCC documentation completeness", badge: "Demonstrated" },
+      ],
+    },
+    {
+      domain: "WORKFORCE",
+      description: "Hospitalist burnout from documentation burden is real and expensive. Turnover drives operational and financial risk.",
+      items: [
+        { label: "Hospitalist retention savings", badge: "Emerging" },
+      ],
+    },
+    {
+      domain: "CAPACITY",
+      description: "Time returned from documentation becomes rounding time, discharge planning time, or clinical headroom.",
+      items: [
+        { label: "Time returned to clinical care (EHR)", badge: "Demonstrated" },
+        { label: "Discharge planning timeliness", badge: "Strategic" },
+      ],
+    },
+    {
+      domain: "REVENUE",
+      description: "DRG accuracy and concurrent review are the core inpatient revenue levers — both tied directly to documentation quality.",
+      items: [
+        { label: "DRG accuracy / CMI improvement", badge: "Demonstrated" },
+        { label: "Concurrent review & denial prevention", badge: "Emerging" },
+      ],
+    },
+  ];
+
+  const domainDetails: DomainDetailData[] = [
+    {
+      domain: "QUALITY",
+      sectionTitle: "Quality",
+      sectionSubtitle: "CDI query reduction and CC/MCC capture — the most trackable quality signals in inpatient",
+      items: [
+        {
+          label: "CDI Query Reduction (Tracked Daily)",
+          badge: "Demonstrated",
+          explanation: "CDI departments track query rates daily. When documentation is more complete at the point of care, CDI specialists receive fewer queries to clarify clinical complexity. This is one of
+   the fastest and cleanest signals after deployment — before/after comparison at the provider or unit level is straightforward. Most CDI teams can pull this data within 90 days of implementation.",
+          formula: "Admissions × CDI query rate × reduction % × $50/query (CDI specialist time cost)\n\nACDIS benchmark: 25–35% query rate, $40–60/query",
+        },
+        {
+          label: "CC/MCC Documentation Completeness",
+          badge: "Demonstrated",
+          explanation: "Complication and Comorbidity (CC) and Major Comorbidity (MCC) capture rates directly affect DRG assignment. When documentation captures qualifying conditions completely and
+  accurately, CC/MCC capture improves — shifting DRG weight upward where clinically appropriate. CDI teams audit this daily. It's the most direct connection between documentation quality and DRG revenue.",
+          formula: "CC/MCC capture rate improvement × discharges × average DRG weight delta × base rate",
+        },
+      ],
+      honestLimit: "CDI query reduction shows immediately. CC/MCC improvement and CMI impact require 6+ months of data to be statistically credible. Track query rates first, then validate CMI movement.",
+    },
+    {
+      domain: "WORKFORCE",
+      sectionTitle: "Workforce",
+      sectionSubtitle: "Hospitalist retention — one of the highest-cost turnover scenarios in hospital medicine",
+      items: [
+        {
+          label: "Hospitalist Retention Savings",
+          badge: "Emerging",
+          explanation: "Hospitalist medicine has some of the highest turnover in healthcare — relentless documentation, overnight admits, and high patient volumes create a unique burnout profile. When a
+  hospitalist leaves, you face coverage gaps, locum costs, and recruiting timelines that stretch months. Documentation burden is consistently cited in exit interviews — but attribution requires tracking it
+  deliberately.",
+          formula: "Hospitalists × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefaults: turnover 8–12%, burnout attribution 40–50%, replacement cost $250K–$500K (AMGA)",
+          limit: "Track exit interview data — is documentation burden cited? Compare turnover in Abridge-enabled programs vs. those without. The measurement takes time, but the signal is usually there within
+   18 months.",
+        },
+      ],
+      honestLimit: "Retention impact is real but takes 12–18 months to observe. Don't claim causation without exit interview data and enough N to be statistically meaningful.",
+    },
+    {
+      domain: "CAPACITY",
+      sectionTitle: "Capacity",
+      sectionSubtitle: "Time returned — from rounding efficiency to discharge planning quality",
+      items: [
+        {
+          label: "Time Returned to Clinical Care (EHR)",
+          badge: "Demonstrated",
+          explanation: "EHR session data for H&Ps, progress notes, and discharge summaries shows documentation time directly. In inpatient, time savings are larger per encounter than outpatient — 15–45
+  minutes across all note types for a typical admission. That time returns to rounding, patient conversations, or discharge coordination. Visible in weeks. This is the clearest early signal across all
+  inpatient metrics.",
+          formula: "Minutes saved per admission × annual admissions / 60 = physician hours returned annually",
+        },
+        {
+          label: "Discharge Planning Timeliness",
+          badge: "Strategic",
+          explanation: "Better discharge summaries — captured in real-time during discharge conversations rather than retrospectively — improve care transition quality and reduce documentation lag. Discharge
+   documentation lag is an EHR-measurable metric. While faster, more complete discharge summaries may reduce readmissions, attribution is indirect and multi-factorial. Track as a quality signal and a care
+  continuity story.",
+          limit: "Readmission attribution is complex. Track discharge documentation lag time as a direct metric. Don't attribute readmission reduction to documentation alone without controlling for multiple
+  other factors.",
+        },
+      ],
+      honestLimit: "Time savings in inpatient are demonstrated quickly and are often the most dramatic early metric. How that time is used — more patient time, faster discharges, or reduced after-hours
+  burden — depends on your hospitalist program's operational decisions.",
+    },
+    {
+      domain: "REVENUE",
+      sectionTitle: "Revenue",
+      sectionSubtitle: "DRG accuracy and denial prevention — where inpatient documentation quality becomes dollars",
+      items: [
+        {
+          label: "DRG Accuracy / CMI Improvement",
+          badge: "Demonstrated",
+          explanation: "Case Mix Index (CMI) is the clearest inpatient revenue signal — it reflects the average DRG weight of your patient population. When documentation captures clinical complexity
+  completely, CMI improves where appropriate. Claims data tracks this quarterly. CDI teams compare Abridge-enabled providers vs. a control group. This is the inpatient equivalent of wRVU lift — trackable,
+  auditable, and defensible.",
+          formula: "CMI delta × annual discharges × $6,800 (CMS IPPS base rate)\n\nNote: CMI improvement of 0.01 across 5,000 discharges × $6,800 = $340,000",
+        },
+        {
+          label: "Concurrent Review & Denial Prevention",
+          badge: "Emerging",
+          explanation: "Observation vs. inpatient status denials are driven by medical necessity documentation. When clinical reasoning for admission, continued stay, and discharge is captured in real-time,
+  concurrent review becomes more defensible. Documentation-related denials are an identifiable RCM root cause. At $3,500+ per inpatient case denial, even small improvements in denial rates represent
+  significant recovery.",
+          formula: "(denial rate before − after, in pp) × annual discharges × $3,500/case × attribution %",
+          limit: "Denial rates reflect many process factors — utilization management workflows, payer behavior, and clinical documentation all contribute. Work with your RCM team to isolate
+  documentation-related denials before claiming full attribution.",
+        },
+      ],
+      honestLimit: "CMI improvement is the crown jewel of inpatient ROI — but it requires 6–12 months of data and CDI collaboration to be credible. Don't present CMI improvement without provider-level data
+  to support it.",
+    },
+  ];
+
+  export function MethodologyInpatient({ onBack, onNavigateToSetting }: MethodologyInpatientProps) {
+    const [isExporting, setIsExporting] = useState(false);
+    const domainRefs = useRef<Partial<Record<DomainName, HTMLDivElement | null>>>({});
+
+    const handleExportPDF = async () => {
+      setIsExporting(true);
+      try {
+        await generateMethodologyPDF("inpatient");
+      } catch (error) {
+        console.error('PDF export failed:', error);
+        alert('PDF export failed. Please try again or check your browser settings.');
+      } finally {
+        setIsExporting(false);
+      }
+    };
+
+    const scrollToDomain = (domain: DomainName) => {
+      const el = domainRefs.current[domain];
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    return (
+      <div className="min-h-screen bg-white">
+        <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
+          <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button onClick={onBack} className="flex items-center cursor-pointer bg-transparent border-none p-0" data-testid="link-home-logo">
+                <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
+              </button>
+              <span className="text-[#E5E5E5]">|</span>
+              <button onClick={onBack} className="flex items-center gap-1 text-[#666666] hover:text-black transition-colors" data-testid="button-back">
+                <ArrowLeft className="w-3 h-3" />
+                <span className="text-xs font-medium uppercase tracking-wide">Methodology</span>
+              </button>
+            </div>
+            <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50" 
+  data-testid="button-export-pdf">
+              <Download className="w-4 h-4" />
+              <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
+            </button>
+          </div>
+        </header>
+
+        <div className="max-w-[800px] mx-auto px-6 py-12">
+          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Inpatient: How We Think About Value</h1>
+            <p className="text-base text-[#666666]">Where documentation quality becomes DRG accuracy — and DRG accuracy becomes revenue</p>
+          </motion.div>
+
+          <DomainOverviewGrid cards={overviewCards} onDomainClick={scrollToDomain} />
+
+          <div className="bg-[#F5F0EB] rounded-lg">
+            <div className="px-6">
+              {domainDetails.map((detail) => (
+                <DomainDetailSection
+                  key={detail.domain}
+                  data={detail}
+                  sectionRef={{ current: domainRefs.current[detail.domain] ?? null } as React.RefObject<HTMLDivElement>}
+                />
+              ))}
+
+              <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#D1D5DB]">
+                        <th className="text-left py-3 font-semibold text-black">Value Driver</th>
+                        <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
+                        <th className="text-left py-3 font-semibold text-black">Formula</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-[#666666]">
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">CMI / DRG accuracy</td><td className="py-3">✅ Yes</td><td className="py-3">CMI delta × discharges × $6,800</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">ALOS reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Days saved × admissions × $2,500/bed day</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Denial rate reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Denial pp delta × encounters ×
+  $3,500/case</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Obs/IP status defense</td><td className="py-3">✅ Yes (if denial data provided)</td><td className="py-3">Admissions at
+  risk × denial rate × avg claim delta × doc-attributable %</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">CDI query reduction</td><td className="py-3 text-[#F59E0B] font-medium">Explore model: ✅ calculated · Measure model:
+  signal only</td><td className="py-3">Admissions × query rate × reduction % × $50/query</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Rounding efficiency</td><td className="py-3 text-[#F59E0B] font-medium">Hours only — not monetized</td><td 
+  className="py-3">Physician time is salaried</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Hospitalist retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers avoided
+   × $250K–$500K</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="assumptions" title="The Assumptions" subtitle="Inpatient-specific defaults and ranges">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#D1D5DB]">
+                        <th className="text-left py-3 font-semibold text-black">Assumption</th>
+                        <th className="text-left py-3 font-semibold text-black">Range</th>
+                        <th className="text-left py-3 font-semibold text-black">Our Default</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-[#666666]">
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Time saved per admission</td><td 
+  className="py-3">15-45 minutes</td><td className="py-3">30 minutes</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Total documentation time saved across
+  H&P, progress notes, and discharge summary. Higher for complex admissions.</p></TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">DRG base rate</td><td 
+  className="py-3">$6,000–$8,000</td><td className="py-3">$6,800</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">CMS IPPS base rate; varies by hospital wage
+  index and DSH adjustment.</p></TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">CDI query rate</td><td 
+  className="py-3">25-35%</td><td className="py-3">30%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">ACDIS benchmark. Shown here as context for the signal —
+   query reduction is not included as a direct financial line in the calculator.</p></TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Query reduction %</td><td 
+  className="py-3">15-35%</td><td className="py-3">25%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Expected reduction in CDI queries when documentation is
+   more complete at point of care.</p></TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Cost per query</td><td 
+  className="py-3">$40-$60</td><td className="py-3">$50</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">CDI specialist time cost per query including creation,
+   tracking, and follow-up. Based on ACDIS productivity benchmarks.</p></TooltipContent></Tooltip>
+                    </tbody>
+                  </table>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="honest-limits" title="The Honest Limits" subtitle="What we can prove, what we can support, and what we can only enable in inpatient">
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">Inpatient revenue is team-produced. Documentation is step one, but CDI, coding, and clinical operations all affect the final outcome.
+  We're honest about what documentation improvement can and can't claim credit for.</p>
+                  <div className="grid gap-4">
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#22C55E] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can
+  Measure This</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Documentation time per note type:</strong> EHR session data for H&Ps, progress notes, discharge summaries. Visible in weeks.</li>
+                        <li><strong>CDI query rates:</strong> CDI departments track this daily. Before/after comparison is clean and fast.</li>
+                        <li><strong>CMI trends:</strong> Claims data, tracked quarterly. Compare Abridge providers vs. control group.</li>
+                        <li><strong>Note completeness:</strong> CDI can assess documentation quality directly. Audit-ready evidence.</li>
+                        <li><strong>Discharge documentation lag:</strong> Time from discharge order to completed discharge summary is an EHR-measurable metric.</li>
+                        <li><strong>Obs/IP status defense:</strong> Medical necessity denial rates by root cause are tracked by revenue cycle.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#F59E0B] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can
+  Influence This</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>DRG accuracy:</strong> Documentation is the input; CDI, coding, and payer response determine the output. Trackable, but multi-factorial.</li>
+                        <li><strong>Denial prevention:</strong> Documentation-related denials are identifiable. Requires 6+ months of data to see trends.</li>
+                        <li><strong>Readmission-related documentation:</strong> Better discharge summaries may reduce readmissions, but many factors contribute.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#EF4444] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Only
+  Enable This</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Length of stay:</strong> Many factors drive LOS — staffing, bed management, discharge planning, social determinants. Documentation is one contributor. Don't
+  over-attribute.</li>
+                        <li><strong>Rounding efficiency:</strong> Real in hours, harder to convert to dollars. We show hours, not revenue.</li>
+                        <li><strong>Retention:</strong> Long-term measurement needed. Track, but don't claim causation prematurely.</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-5 border-l-2 border-[#EA2C00]">
+                    <p className="text-sm text-[#666666] leading-relaxed"><strong className="text-black">Our philosophy:</strong> We'd rather show you a defensible DRG improvement number based on CDI data
+  than a speculative LOS reduction based on assumptions. Key variables in our model are editable — because your CDI team knows your gaps better than any default can.</p>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="validation-path" title="The Validation Path" subtitle="How to prove this with your hospitalist program's data — before, during, and after">
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">Inpatient has an advantage: your CDI department already tracks most of the metrics you need. Here's how to leverage that existing
+  infrastructure for a credible ROI story.</p>
+                  <div className="space-y-4">
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">Before Implementation</h4><span className="text-xs
+  text-[#888888] font-medium">Baseline period</span></div>
+                      <p className="text-sm text-[#666666] mb-3">Work with CDI and coding to establish baselines. Most of this data already exists.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>12 months of CMI data by hospitalist — you need provider-level granularity</li>
+                        <li>CDI query rates by provider and query type</li>
+                        <li>DRG denial rates with documentation-related root cause analysis</li>
+                        <li>Documentation time estimates (if EHR data is available)</li>
+                        <li>CC/MCC capture rates — your CDI team tracks this</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 90 Days</h4><span className="text-xs text-[#888888]
+  font-medium">Early signal</span></div>
+                      <p className="text-sm text-[#666666] mb-3">CDI query reduction shows up fast. CMI takes longer because of claims lag.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Documentation time by note type — H&Ps, progress notes, discharges</li>
+                        <li>CDI query rate trends (this is often the earliest financial signal)</li>
+                        <li>Note quality assessment from CDI perspective</li>
+                        <li>Hospitalist satisfaction surveys — qualitative signal matters</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 6-12 Months</h4><span className="text-xs
+  text-[#888888] font-medium">Revenue validation</span></div>
+                      <p className="text-sm text-[#666666] mb-3">CMI and denial data become statistically meaningful. This is your board presentation window.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Year-over-year CMI comparison by provider cohort</li>
+                        <li>CC/MCC capture rate trends</li>
+                        <li>DRG denial rate trends — isolate documentation-related categories</li>
+                        <li>CDI productivity metrics — are CDI specialists covering more cases?</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 18+ Months</h4><span className="text-xs
+  text-[#888888] font-medium">Long-term impact</span></div>
+                      <p className="text-sm text-[#666666] mb-3">Retention and culture shifts. Don't rush this measurement.</p>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Hospitalist turnover: Abridge-enabled program vs. pre-implementation</li>
+                        <li>LOS trends (with appropriate controls for patient acuity changes)</li>
+                        <li>Exit interview data — is documentation still cited as a burnout factor?</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="connected-value" title="Connected Value" subtitle="How inpatient documentation connects to the rest of your organization">
+                <div className="space-y-4 text-[15px] text-black leading-relaxed">
+                  <p>Inpatient sits at the center of the hospital value chain. Documentation here connects to almost every other care setting:</p>
+                  <div className="space-y-4 mt-4">
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">ED → Inpatient (upstream feed)</h4><p className="text-sm text-[#666666]
+  leading-relaxed">ED documentation quality directly affects the starting point of inpatient care. When ED notes capture presenting conditions and comorbidities completely, CDI teams have a stronger
+  foundation. We quantify this in the ED methodology to avoid double-counting.</p></div>
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Nursing → Inpatient (CC/MCC support)</h4><p className="text-sm
+  text-[#666666] leading-relaxed">Nursing documentation captures clinical observations that support CC/MCC coding — skin assessments, fall risk documentation, nutritional status. When nursing notes are
+  complete, CDI teams have additional evidence to support DRG accuracy.</p></div>
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Inpatient → Outpatient (discharge quality)</h4><p className="text-sm
+  text-[#666666] leading-relaxed">Complete discharge summaries improve post-discharge follow-up care. When the PCP receives a comprehensive discharge note, medication reconciliation, follow-up, and care
+  continuity all improve. This connects to readmission reduction, though attribution is indirect.</p></div>
+                  </div>
+                  <p className="text-[#666666] italic mt-4">We don't sum cross-setting values into the inpatient model — the attribution gets complex when value flows through multiple teams. But when
+  building a system-level business case, these connections matter.</p>
+                </div>
+              </CollapsibleSection>
+            </div>
+          </div>
+
+          <motion.div className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
+            <p className="text-[#999999] mb-6 text-sm">Use these methodology principles to create a customized ROI model for your hospitalist program.</p>
+            <button onClick={onBack} className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors" data-testid="button-build-model">
+              Build an Inpatient Model <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
+
+          <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
+  experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial
+  outcomes.</p>
+
+          <div className="mt-12 mb-8">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">Related Methodologies</p>
+            <p className="text-sm text-[#666666] mb-6">Inpatient connects to ED admissions and nursing care. Explore how value chains connect.</p>
+            <div className="grid md:grid-cols-3 gap-4">
+              <button onClick={() => onNavigateToSetting?.("ed")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-ed">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Activity className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Emergency</p><p className="text-xs text-[#888888]">Admissions originate here</p></div>
+              </button>
+              <button onClick={() => onNavigateToSetting?.("nursing")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-nursing">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Heart className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Nursing</p><p className="text-xs text-[#888888]">Inpatient nursing documentation</p></div>
+              </button>
+              <button onClick={() => onNavigateToSetting?.("outpatient")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-outpatient">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Stethoscope className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Outpatient</p><p className="text-xs text-[#888888]">Post-discharge follow-up</p></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {isExporting && (
+          <div className="fixed bottom-4 right-4 bg-[#EA2C00] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50" 
+  data-testid="toast-pdf-download">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm font-medium">Preparing your PDF...</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  ---
+  File 3: client/src/pages/methodology/MethodologyNursing.tsx
+
+  import { motion } from "framer-motion";
+  import { ArrowLeft, Download, ArrowRight, Activity, Building2, Stethoscope, Loader2 } from "lucide-react";
+  import { useRef, useState } from "react";
+  import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+  import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
+  import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
+  import {
+    DomainOverviewGrid,
+    DomainDetailSection,
+    CollapsibleSection,
+    type DomainCardData,
+    type DomainDetailData,
+    type DomainName,
+  } from "@/components/methodology/MethodologyShared";
+
+  interface MethodologyNursingProps {
+    onBack: () => void;
+    onNavigateToSetting?: (setting: string) => void;
+  }
+
+  const overviewCards: DomainCardData[] = [
+    {
+      domain: "QUALITY",
+      description: "Documentation completeness enables earlier intervention, better care continuity, and regulatory compliance.",
+      items: [
+        { label: "HAPI and falls prevention", badge: "Emerging" },
+        { label: "CAUTI / CLABSI / Sepsis SEP-1 compliance", badge: "Strategic" },
+        { label: "HCAHPS / patient experience", badge: "Strategic" },
+      ],
+    },
+    {
+      domain: "WORKFORCE",
+      description: "Nursing turnover is the most expensive workforce problem in healthcare. Documentation burden is a measurable driver.",
+      items: [
+        { label: "Retention savings", badge: "Emerging" },
+        { label: "Agency labor reduction", badge: "Emerging" },
+      ],
+    },
+    {
+      domain: "CAPACITY",
+      description: "Overtime reduction is the most direct, payroll-verified financial driver in nursing — uniquely monetizable.",
+      items: [
+        { label: "Overtime reduction (payroll data)", badge: "Demonstrated" },
+      ],
+    },
+    {
+      domain: "REVENUE",
+      description: "Nurses don't bill directly. Revenue impact flows through quality, safety, and workforce stability — not billing.",
+      items: [
+        { label: "Not applicable — nurses don't bill", badge: "Strategic" },
+      ],
+    },
+  ];
+
+  const domainDetails: DomainDetailData[] = [
+    {
+      domain: "QUALITY",
+      sectionTitle: "Quality",
+      sectionSubtitle: "Safety events, compliance, and patient experience — where nursing documentation quality has its biggest impact",
+      items: [
+        {
+          label: "HAPI and Falls Prevention",
+          badge: "Emerging",
+          explanation: "Hospital-Acquired Pressure Injuries (HAPIs) and falls are preventable safety events with significant cost and regulatory consequences. Better real-time nursing documentation enables
+  earlier risk identification and intervention. The documentation-to-prevention link is attributable with confidence over time — but requires operational changes alongside documentation improvement. Track
+  HAPI and fall rates on pilot units vs. control as a 12+ month signal.",
+          formula: "Current HAC events × 5% documentation-preventable rate × average cost per event\n\nHAPI: $10K–$100K+ per event depending on severity. Falls: $14K–$35K per event.",
+          limit: "Documentation is one enabler of HAC prevention — not the only factor. Staffing ratios, protocols, and equipment all matter. Don't attribute HAC reduction entirely to documentation.",
+        },
+        {
+          label: "CAUTI / CLABSI / Sepsis SEP-1 Compliance",
+          badge: "Strategic",
+          explanation: "Real-time nursing documentation supports bundle compliance for CAUTI, CLABSI, and Sepsis SEP-1 measures. When assessments, interventions, and clinical observations are captured
+  accurately and promptly, care team coordination improves and documentation gaps that create compliance risk are reduced. This is clinically meaningful and real — but direct financial attribution is
+  multi-factorial and difficult to isolate to documentation alone.",
+          limit: "Track compliance rates as a quality signal after implementation. Financial attribution requires isolating documentation's contribution from protocol adherence, staffing, and other
+  factors.",
+        },
+        {
+          label: "HCAHPS / Patient Experience",
+          badge: "Strategic",
+          explanation: "When nurses spend less time on documentation burden, they spend more time at the bedside. Research consistently shows bedside time correlates with patient satisfaction scores.
+  Hospitals in the top HCAHPS quartile receive ~2% higher reimbursement through Value-Based Purchasing. We don't attribute HCAHPS improvement directly to documentation — too many variables — but it's a
+  directional signal worth tracking as a leading indicator.",
+          limit: "HCAHPS is influenced by everything from wait times to room cleanliness to physician communication. Track as a directional signal, not a direct attribution.",
+        },
+      ],
+      honestLimit: "Quality value in nursing is real but often manifests as risk reduction and safety improvement rather than direct revenue. Track as a strategic story and a VBP conversation.",
+    },
+    {
+      domain: "WORKFORCE",
+      sectionTitle: "Workforce",
+      sectionSubtitle: "Nursing retention and agency reduction — the two most financially significant workforce levers",
+      items: [
+        {
+          label: "Retention Savings",
+          badge: "Emerging",
+          explanation: "Nursing turnover is the most expensive workforce problem in healthcare — NSI 2023 data shows a national average turnover rate of ~22.5%, with replacement costs ranging from
+  $46K–$100K+ per nurse depending on specialty. Documentation burden is cited in ANA surveys as a top contributor to 30–50% of voluntary turnover. Retaining nurses who would otherwise leave due to burnout is
+   a real and attributable financial outcome — but takes 12–18 months to observe.",
+          formula: "Nurses × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefaults: turnover 18%, burnout attribution 40%, Abridge impact 15%, replacement cost $65K",
+          limit: "Documentation burden is one burnout driver among many. Don't attribute all turnover change to documentation without exit interview data and validated burnout surveys to support the
+  attribution.",
+        },
+        {
+          label: "Agency Labor Reduction",
+          badge: "Emerging",
+          explanation: "When documentation burden contributes to turnover, remaining staff absorb heavier loads, burnout accelerates, and agency fill rates increase. The cycle compounds. Reducing
+  documentation burden is one input to breaking the cycle — by improving retention, reducing vacancy rates, and decreasing reliance on agency staffing at premium costs. Agency spend is directly trackable
+  from invoices and budget data.",
+          formula: "Observed agency spend reduction × attribution % (based on retention improvement correlation)",
+          limit: "Agency spend is affected by many factors — market availability, unit census, scheduling decisions. Work with your workforce analytics team to isolate documentation-driven retention
+  improvement.",
+        },
+      ],
+      honestLimit: "Retention and agency reduction are the two biggest nursing financial levers, and both are attributable with confidence over 12–18 months. Start tracking burnout surveys and exit data
+  immediately — you'll need it for the attribution story.",
+    },
+    {
+      domain: "CAPACITY",
+      sectionTitle: "Capacity",
+      sectionSubtitle: "Overtime reduction — the only care setting where time savings convert directly to a payroll dollar",
+      items: [
+        {
+          label: "Overtime Reduction (Payroll Data)",
+          badge: "Demonstrated",
+          explanation: "Nursing is the only care setting in this methodology where we monetize time savings directly through overtime reduction. In physician settings (outpatient, ED, inpatient), physicians
+  are salaried — time savings are modeled as capacity or retention signal. Nurses often work overtime to complete documentation after their shift ends. When documentation burden is reduced, shift completion
+  on time improves — and overtime hours decrease. This is a hard dollar line verifiable from your payroll system within 90 days.",
+          formula: "Hours saved per shift × OT conversion rate × nurses × OT hourly rate × 52 weeks\n\nDefaults: 20 min/shift saved, 25% OT conversion rate, OT rate = 1.5× base hourly",
+          limit: "Not all saved time converts to OT reduction. Accounts for nurses already leaving on time, shift overlap, and other documentation tasks that fill saved time. OT conversion rate of 15–40% is
+  realistic — use your unit-level payroll data to calibrate.",
+        },
+      ],
+      honestLimit: "Overtime reduction is the most defensible financial signal in nursing — payroll data makes it verifiable within 90 days. This is your lead metric for the 90-day validation conversation.",
+    },
+    {
+      domain: "REVENUE",
+      sectionTitle: "Revenue",
+      sectionSubtitle: "Revenue impact flows through quality, safety, and workforce — not direct billing",
+      items: [
+        {
+          label: "Not Applicable — Nurses Don't Bill Directly",
+          badge: "Strategic",
+          explanation: "Unlike physicians in ED, outpatient, or inpatient settings, nurses do not generate direct billing revenue. Nursing's revenue impact flows through three indirect channels: (1) quality
+  and safety outcomes that affect Value-Based Purchasing reimbursement; (2) workforce stability that reduces agency costs and preserves operational capacity; (3) support for physician documentation that
+  enables more accurate DRG and CC/MCC coding. These are real and meaningful — but they belong in the Quality, Workforce, and Capacity domains, not a billing revenue line.",
+          limit: "The ROI case for nursing is strongest when built on overtime reduction (demonstrated, fast) and retention savings (emerging, 12–18 months). Don't try to build a billing revenue case — it
+  doesn't hold up.",
+        },
+      ],
+      honestLimit: "Nursing ROI is a workforce and quality story, not a billing story. The numbers are real and defensible — they just live in different domains than physician ROI.",
+    },
+  ];
+
+  export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyNursingProps) {
+    const [isExporting, setIsExporting] = useState(false);
+    const domainRefs = useRef<Partial<Record<DomainName, HTMLDivElement | null>>>({});
+
+    const handleExportPDF = async () => {
+      setIsExporting(true);
+      try {
+        await generateMethodologyPDF("nursing");
+      } catch (error) {
+        console.error('PDF export failed:', error);
+        alert('PDF export failed. Please try again or check your browser settings.');
+      } finally {
+        setIsExporting(false);
+      }
+    };
+
+    const scrollToDomain = (domain: DomainName) => {
+      const el = domainRefs.current[domain];
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    return (
+      <div className="min-h-screen bg-white">
+        <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
+          <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button onClick={onBack} className="flex items-center cursor-pointer bg-transparent border-none p-0" data-testid="link-home-logo">
+                <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
+              </button>
+              <span className="text-[#E5E5E5]">|</span>
+              <button onClick={onBack} className="flex items-center gap-1 text-[#666666] hover:text-black transition-colors" data-testid="button-back">
+                <ArrowLeft className="w-3 h-3" />
+                <span className="text-xs font-medium uppercase tracking-wide">Methodology</span>
+              </button>
+            </div>
+            <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50" 
+  data-testid="button-export-pdf">
+              <Download className="w-4 h-4" />
+              <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
+            </button>
+          </div>
+        </header>
+
+        <div className="max-w-[800px] mx-auto px-6 py-12">
+          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Nursing: How We Think About Value</h1>
+            <p className="text-base text-[#666666]">Where overtime reduction is the lead metric — and retention is the long game</p>
+          </motion.div>
+
+          <DomainOverviewGrid cards={overviewCards} onDomainClick={scrollToDomain} />
+
+          <div className="bg-[#F5F0EB] rounded-lg">
+            <div className="px-6">
+              {domainDetails.map((detail) => (
+                <DomainDetailSection
+                  key={detail.domain}
+                  data={detail}
+                  sectionRef={{ current: domainRefs.current[detail.domain] ?? null } as React.RefObject<HTMLDivElement>}
+                />
+              ))}
+
+              <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#D1D5DB]">
+                        <th className="text-left py-3 font-semibold text-black">Value Driver</th>
+                        <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
+                        <th className="text-left py-3 font-semibold text-black">Formula</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-[#666666]">
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Overtime reduction</td><td className="py-3">✅ Yes (nursing only)</td><td className="py-3">Hours saved × OT conversion
+  rate × OT hourly rate × 52 weeks</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Nurse retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers avoided ×
+  $50K–$100K replacement cost</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Agency / locum spend</td><td className="py-3">✅ Yes (if data provided)</td><td className="py-3">Observed agency spend
+  reduction × attribution %</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Falls / HAPI prevention</td><td className="py-3 text-[#F59E0B] font-medium">Potential value — shown separately</td><td 
+  className="py-3">Current events × 5% doc-preventable rate × cost/event</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">HCAHPS improvement</td><td className="py-3 text-[#F59E0B] font-medium">Signal only — not calculated</td><td 
+  className="py-3">Too many confounding variables to attribute</td></tr>
+                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">CC/MCC support for inpatient</td><td className="py-3">Not here — see Inpatient</td><td className="py-3">Captured in CMI
+  delta calculation</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="assumptions" title="The Assumptions" subtitle="What we assume to be true, and why">
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">Every model rests on assumptions. Here are ours—with ranges, not point estimates.</p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[#D1D5DB]">
+                          <th className="text-left py-3 font-semibold text-black">Assumption</th>
+                          <th className="text-left py-3 font-semibold text-black">Range</th>
+                          <th className="text-left py-3 font-semibold text-black">Our Default</th>
+                          <th className="text-left py-3 font-semibold text-black">Source</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[#666666]">
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Time saved per shift</td><td 
+  className="py-3">15-30 minutes</td><td className="py-3">20 minutes</td><td className="py-3">Abridge customer data</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p 
+  className="text-xs">Based on time-motion studies across 12+ nursing implementations. Varies by unit type and existing documentation workflows.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">OT conversion rate</td><td 
+  className="py-3">15-40%</td><td className="py-3">25%</td><td className="py-3">Implementation studies</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Not all
+   saved time converts to OT reduction. Accounts for nurses already leaving on time, shift overlap, and other documentation tasks.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Nurse turnover rate</td><td 
+  className="py-3">15-25%</td><td className="py-3">18%</td><td className="py-3">NSI Nursing Solutions</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">NSI 2023
+   National Healthcare Retention & RN Staffing Report. National average ~22.5%, we use conservative 18%.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Burnout-related %</td><td 
+  className="py-3">30-50%</td><td className="py-3">40%</td><td className="py-3">ANA surveys</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">American Nurses
+  Association workplace surveys indicate burnout contributes to 30-50% of voluntary turnover. Documentation burden is a key burnout driver.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Abridge retention impact</td><td 
+  className="py-3">10-25%</td><td className="py-3">15%</td><td className="py-3">Conservative estimate</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p 
+  className="text-xs">Conservative estimate of retention improvement from reduced documentation burden. Actual impact depends on baseline burden and organizational factors.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Replacement cost</td><td 
+  className="py-3">$50K–$100K</td><td className="py-3">$65,000</td><td className="py-3">NSI 2023 Nursing Retention Report</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p 
+  className="text-xs">NSI 2023 Report range: $46K–$52K for standard bedside RN. Specialty and ICU nurses carry higher replacement costs. We use $65K as a conservative midpoint.</p></TooltipContent></Tooltip>
+                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Documentation-preventable HAE</td><td 
+  className="py-3">3-10%</td><td className="py-3">5%</td><td className="py-3">Conservative estimate</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Percentage
+   of hospital-acquired events where better real-time documentation could have enabled earlier intervention. Intentionally conservative.</p></TooltipContent></Tooltip>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                    <p className="text-sm text-[#666666]"><strong className="text-black">Why we default conservative:</strong> It's better to exceed expectations than to fall short. If your organization's
+  data suggests higher impact, adjust the assumptions— but start skeptical.</p>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="honest-limits" title="The Honest Limits" subtitle="What we can measure vs. what we can only influence">
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">Not all value is created equal. Here's our honest assessment of measurability.</p>
+                  <div className="grid gap-4">
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#22C55E] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">Direct &
+  Measurable</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Overtime hours:</strong> payroll data, before/after by unit. This is a hard dollar line — verifiable from your payroll system within 90 days.</li>
+                        <li><strong>Documentation time:</strong> EHR time stamps, time studies</li>
+                        <li><strong>Agency spend:</strong> Invoices, budget line items</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#F59E0B] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">Logical &
+  Attributable</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Retention improvement:</strong> Requires 6-12 months of data, survey correlation</li>
+                        <li><strong>Burnout reduction:</strong> Measurable via validated instruments (MBI, etc.)</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#EF4444] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">Indirect &
+  Harder to Attribute</h4></div>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
+                        <li><strong>Falls/HAPI prevention:</strong> Multiple factors; documentation is one enabler</li>
+                        <li><strong>HCAHPS improvement:</strong> Many variables; can track but not attribute</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="bg-[#F5F0EB] rounded-lg p-4 text-sm text-[#666666] leading-relaxed">
+                    Nursing is the only care setting in this methodology where we monetize time savings directly through overtime. In physician settings (outpatient, ED, inpatient), physicians are salaried —
+   time savings are modeled as capacity or retention signal, not as a payroll line.
+                  </div>
+                  <div className="border-l-2 border-[#EA2C00] pl-4">
+                    <p className="text-[15px] text-[#666666]"><strong className="text-black">Our approach:</strong> We calculate everything, but we label it honestly. Direct value goes in the primary ROI.
+  Indirect value is shown separately as "potential" so you can decide how much weight to give it.</p>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="validation-path" title="The Validation Path" subtitle="How to validate these assumptions with your own data">
+                <div className="space-y-6">
+                  <p className="text-[15px] text-black leading-relaxed">Our defaults are starting points. Here's how to validate them in your organization.</p>
+                  <div className="space-y-4">
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">Before Implementation</h4>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Pull 12 months of overtime data by unit</li>
+                        <li>Review agency spend and fill rates</li>
+                        <li>Survey nurses on documentation burden (use validated tools)</li>
+                        <li>Baseline your HAC rates (falls, HAPIs)</li>
+                        <li>Document current turnover rates by tenure band</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">At 90 Days</h4>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Time studies: documentation time before/after</li>
+                        <li>OT hours on pilot units vs. control</li>
+                        <li>Re-survey nurses on burden (same instrument)</li>
+                        <li>Qualitative: manager observations on shift completion</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">At 12 Months</h4>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Year-over-year OT and agency comparison</li>
+                        <li>Turnover rates on Abridge units vs. system</li>
+                        <li>HAC rate trends (may need longer timeframe)</li>
+                        <li>HCAHPS scores (directional, not attributable)</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                      <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">At 18+ Months</h4>
+                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                        <li>Year-over-year turnover rates on Abridge-enabled units vs. rest of system</li>
+                        <li>Agency spend: compare against 18-month pre-implementation baseline</li>
+                        <li>Exit interview data: is documentation burden still cited as a departure factor?</li>
+                        <li>Retention intent surveys: are nurses in Abridge units reporting higher intent to stay?</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-5">
+                    <p className="text-sm text-[#666666]"><strong className="text-black">The goal isn't to prove our model right.</strong> It's to build your organization's understanding of what ambient
+  documentation actually delivers in your context. Adjust the model based on what you learn.</p>
+                  </div>
+                </div>
+              </CollapsibleSection>
+
+              <CollapsibleSection sectionId="connected-value" title="Connected Value" subtitle="How nursing documentation supports the broader care system">
+                <div className="space-y-4 text-[15px] text-black leading-relaxed">
+                  <p>Nursing is often framed as a cost center. The documentation picture changes that framing.</p>
+                  <div className="space-y-4 mt-4">
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Nursing → Inpatient (CC/MCC support)</h4><p className="text-sm
+  text-[#666666] leading-relaxed">Nursing documentation captures clinical observations that CDI teams use to support CC/MCC coding — skin assessments, fall risk factors, nutritional status, wound care. When
+  nursing notes are complete and real-time, CDI specialists have stronger evidence to defend appropriate DRG assignment. This is quantified in the inpatient methodology rather than here, to avoid
+  double-counting.</p></div>
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Nursing → Patient Experience (HCAHPS signal)</h4><p className="text-sm
+  text-[#666666] leading-relaxed">When nurses spend less time on documentation, they spend more time at the bedside. Research consistently shows bedside time correlates with patient satisfaction scores. We
+  don't attribute HCAHPS improvement directly to documentation — too many variables — but it's a directional signal worth tracking as a leading indicator after implementation.</p></div>
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Nursing → Workforce Stability (system-level)</h4><p className="text-sm
+  text-[#666666] leading-relaxed">Nursing turnover creates ripple effects: remaining staff absorb heavier loads, burnout accelerates, and the cycle continues. When documentation burden is reduced and
+  retention improves even modestly, the stabilization effect compounds. The system-level value of a stable nursing workforce exceeds what any single-unit retention calculation shows.</p></div>
+                  </div>
+                  <p className="text-[#666666] italic mt-4">We don't sum cross-setting values into the nursing model — attribution gets complex when value flows through multiple teams. But when building a
+  system-level business case, these connections are part of the story.</p>
+                </div>
+              </CollapsibleSection>
+            </div>
+          </div>
+
+          <motion.div className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
+            <p className="text-[#999999] mb-6 text-sm">Use these methodology principles to create a customized ROI model for your nursing program.</p>
+            <button onClick={onBack} className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors" data-testid="button-build-model">
+              Build a Nursing Model <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
+
+          <p className="text-xs text-[#AAAAAA] leading-relaxed mt-10 mb-2">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment
+  experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial
+  outcomes.</p>
+
+          <div className="mt-12 mb-8">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">Related Methodologies</p>
+            <p className="text-sm text-[#666666] mb-6">Nursing documentation often connects to broader care settings. Explore how value flows in related contexts.</p>
+            <div className="grid md:grid-cols-3 gap-4">
+              <button onClick={() => onNavigateToSetting?.("inpatient")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-inpatient">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Building2 className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Inpatient</p><p className="text-xs text-[#888888]">DRG & documentation quality</p></div>
+              </button>
+              <button onClick={() => onNavigateToSetting?.("ed")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-ed">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Activity className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Emergency</p><p className="text-xs text-[#888888]">Throughput & LWBS</p></div>
+              </button>
+              <button onClick={() => onNavigateToSetting?.("outpatient")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0]
+  transition-colors text-left" data-testid="link-setting-outpatient">
+                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Stethoscope className="w-5 h-5 text-[#EA2C00]" /></div>
+                <div><p className="font-medium text-black text-sm">Outpatient</p><p className="text-xs text-[#888888]">wRVU & patient access</p></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {isExporting && (
+          <div className="fixed bottom-4 right-4 bg-[#EA2C00] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50" 
+  data-testid="toast-pdf-download">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm font-medium">Preparing your PDF...</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
