@@ -124,7 +124,7 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "Denial Prevention",
         badge: "Emerging",
-        explanation: "30–40% of claim denials are unappealable — permanent revenue loss because the documentation gap existed at time of service. Ambient AI documentation can capture clinical reasoning in real-time, helping surface medical necessity gaps before they become denials. Outpatient denial rates typically run 5–12% (MGMA). Documentation-related denials are an identifiable subset that your RCM team can isolate as a root cause category.",
+        explanation: "30–40% of claim denials are unappealable — permanent revenue loss because the documentation gap existed at time of service. The mechanism we're modeling: capturing clinical reasoning in real time creates an opportunity to close medical-necessity gaps at the point of care rather than after the claim is filed. Outpatient denial rates typically run 5–12% (MGMA), and documentation-related denials are an identifiable subset that your RCM team can isolate as a root cause category — that root-cause data is what would confirm or adjust the model in your setting.",
         formula: "(denial rate before − after, in pp) × annual encounters × $350/encounter × attribution %",
         limit: "Denial rates reflect many process factors beyond documentation. Work with your RCM team to isolate documentation-related denials before claiming full attribution.",
       },

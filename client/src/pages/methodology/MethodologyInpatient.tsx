@@ -116,7 +116,7 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "DRG Accuracy / CMI Improvement",
         badge: "Demonstrated",
-        explanation: "Case Mix Index (CMI) is the clearest inpatient revenue signal — it reflects the average DRG weight of your patient population. When documentation captures clinical complexity completely, CMI improves where appropriate. Claims data tracks this quarterly. CDI teams compare Abridge-enabled providers vs. a control group. This is the inpatient equivalent of wRVU lift — trackable, auditable, and defensible.",
+        explanation: "Case Mix Index (CMI) is the clearest inpatient revenue signal — it reflects the average DRG weight of your patient population. The hypothesis we model: when documentation more completely captures clinical complexity, CMI tends to move upward where clinically appropriate. Claims data tracks this quarterly, and CDI teams can compare ambient-AI-enabled providers against a control cohort to test whether the shift is real in your environment. This is the inpatient equivalent of wRVU lift — trackable, auditable, and defensible when validated with your own data.",
         formula: "CMI delta × annual discharges × $6,800 (CMS IPPS base rate)\n\nIllustrative model input: CMI improvement of 0.01 across 5,000 discharges × $6,800 ≈ $340,000",
       },
       {

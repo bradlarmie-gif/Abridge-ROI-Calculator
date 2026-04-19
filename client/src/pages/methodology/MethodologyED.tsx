@@ -70,7 +70,7 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "Note Completeness Rate",
         badge: "Demonstrated",
-        explanation: "EHR timestamp data shows exactly when notes are completed and how long they take. During surges, note quality drops — key elements get abbreviated or omitted. Organizations using ambient AI documentation have observed more consistent completeness across patient volume. This is an auditable metric that CDI and compliance teams can assess directly.",
+        explanation: "EHR timestamp data shows exactly when notes are completed and how long they take. During surges, note quality often drops — key elements get abbreviated or omitted. The hypothesis we model is that ambient capture, by removing the typing bottleneck, reduces volume-driven completeness loss; organizations have observed this pattern, and it's something CDI and compliance teams can audit directly to confirm whether it holds in your environment.",
         formula: "EHR session data: note completion time, completeness scores (CDI audit-based)",
       },
       {
