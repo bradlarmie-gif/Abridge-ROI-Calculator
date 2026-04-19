@@ -203,18 +203,23 @@ data-testid="button-export-pdf">
                     </tr>
                   </thead>
                   <tbody className="text-[#666666]">
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#EA2C00', borderColor: '#EA2C00' }}>Revenue</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">CMI / DRG accuracy</td><td className="py-3">✅ Yes</td><td className="py-3">CMI delta × discharges × $6,800</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">ALOS reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Days saved × admissions × $2,500/bed day</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Denial rate reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Denial pp delta × encounters ×
 $3,500/case</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Obs/IP status defense</td><td className="py-3">✅ Yes (if denial data provided)</td><td className="py-3">Admissions at
 risk × denial rate × avg claim delta × doc-attributable %</td></tr>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#4F46E5', borderColor: '#4F46E5' }}>Quality</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">CDI query reduction</td><td className="py-3 text-[#F59E0B] font-medium">Explore model: ✅ calculated · Measure model:
 signal only</td><td className="py-3">Admissions × query rate × reduction % × $50/query</td></tr>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#D97706', borderColor: '#D97706' }}>Capacity</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Rounding efficiency</td><td className="py-3 text-[#F59E0B] font-medium">Hours only — not monetized</td><td 
 className="py-3">Physician time is salaried</td></tr>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#16A34A', borderColor: '#16A34A' }}>Workforce</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Hospitalist retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers avoided
  × $250K–$500K</td></tr>
+                  
                   </tbody>
                 </table>
               </div>
@@ -231,12 +236,15 @@ className="py-3">Physician time is salaried</td></tr>
                     </tr>
                   </thead>
                   <tbody className="text-[#666666]">
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#D97706', borderColor: '#D97706' }}>Capacity</span></td></tr>
                     <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Time saved per admission</td><td 
 className="py-3">15-45 minutes</td><td className="py-3">30 minutes</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Total documentation time saved across
 H&P, progress notes, and discharge summary. Higher for complex admissions.</p></TooltipContent></Tooltip>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#EA2C00', borderColor: '#EA2C00' }}>Revenue</span></td></tr>
                     <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">DRG base rate</td><td 
 className="py-3">$6,000–$8,000</td><td className="py-3">$6,800</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">CMS IPPS base rate; varies by hospital wage
 index and DSH adjustment.</p></TooltipContent></Tooltip>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#4F46E5', borderColor: '#4F46E5' }}>Quality</span></td></tr>
                     <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">CDI query rate</td><td 
 className="py-3">25-35%</td><td className="py-3">30%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">ACDIS benchmark. Shown here as context for the signal —
  query reduction is not included as a direct financial line in the calculator.</p></TooltipContent></Tooltip>
@@ -246,6 +254,7 @@ className="py-3">15-35%</td><td className="py-3">25%</td></tr></TooltipTrigger><
                     <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Cost per query</td><td 
 className="py-3">$40-$60</td><td className="py-3">$50</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">CDI specialist time cost per query including creation,
  tracking, and follow-up. Based on ACDIS productivity benchmarks.</p></TooltipContent></Tooltip>
+                  
                   </tbody>
                 </table>
               </div>

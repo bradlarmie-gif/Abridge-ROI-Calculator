@@ -205,19 +205,24 @@ data-testid="button-export-pdf">
                     </tr>
                   </thead>
                   <tbody className="text-[#666666]">
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#EA2C00', borderColor: '#EA2C00' }}>Revenue</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">wRVU lift</td><td className="py-3">✅ Yes</td><td className="py-3">wRVU delta × adopted encounters × $33/wRVU</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">E/M level improvement</td><td className="py-3">✅ Yes</td><td className="py-3">E/M level delta × adopted encounters ×
 ~$45/level</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Denial rate reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Denial pp delta × encounters ×
 $350/encounter</td></tr>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#D97706', borderColor: '#D97706' }}>Capacity</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Patient capacity revenue</td><td className="py-3">✅ Yes (if data provided)</td><td className="py-3">Additional
 patients/mo × providers × 12 × $200/visit</td></tr>
-                    <tr className="border-b border-[#E5E5E5]"><td className="py-3">HCC / risk adjustment</td><td className="py-3">✅ Yes (if MA data provided)</td><td className="py-3">MA patients × gap
-rate × recapture % × RAF point value</td></tr>
-                    <tr className="border-b border-[#E5E5E5]"><td className="py-3">Physician retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers avoided ×
- $250K–$500K replacement cost</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">After-hours time savings</td><td className="py-3 text-[#F59E0B] font-medium">Signal only — not monetized</td><td 
 className="py-3">Tracked as hours, not dollars (salaried providers)</td></tr>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#4F46E5', borderColor: '#4F46E5' }}>Quality</span></td></tr>
+                    <tr className="border-b border-[#E5E5E5]"><td className="py-3">HCC / risk adjustment</td><td className="py-3">✅ Yes (if MA data provided)</td><td className="py-3">MA patients × gap
+rate × recapture % × RAF point value</td></tr>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#16A34A', borderColor: '#16A34A' }}>Workforce</span></td></tr>
+                    <tr className="border-b border-[#E5E5E5]"><td className="py-3">Physician retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers avoided ×
+ $250K–$500K replacement cost</td></tr>
+                  
                   </tbody>
                 </table>
               </div>
@@ -236,9 +241,11 @@ className="py-3">Tracked as hours, not dollars (salaried providers)</td></tr>
                       </tr>
                     </thead>
                     <tbody className="text-[#666666]">
+                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#D97706', borderColor: '#D97706' }}>Capacity</span></td></tr>
                       <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Time saved per encounter</td><td 
 className="py-3">2–4 minutes</td><td className="py-3">3 minutes</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Based on aggregated deployment experience
 across outpatient implementations. Primary care typically 2–4 min, specialists 2–3 min.</p></TooltipContent></Tooltip>
+                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#EA2C00', borderColor: '#EA2C00' }}>Revenue</span></td></tr>
                       <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">wRVU baseline per visit</td><td 
 className="py-3">1.5-2.5</td><td className="py-3">1.8</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">MGMA median wRVU per visit. Varies significantly by
 specialty and payer mix.</p></TooltipContent></Tooltip>
@@ -248,15 +255,18 @@ accurately. Studies show 2-7% improvement in E&M level accuracy.</p></TooltipCon
                       <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">wRVU conversion factor</td><td 
 className="py-3">$30-$50</td><td className="py-3">$33</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">CMS MPFS Medicare conversion factor ~$33 (2024).
 Commercial payers often higher. Blended rate depends on payer mix.</p></TooltipContent></Tooltip>
-                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">HCC gap rate</td><td 
-className="py-3">20-30%</td><td className="py-3">25%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Percentage of chronic conditions not captured in
-documentation. Industry research shows 25-40% gap rate in typical practices.</p></TooltipContent></Tooltip>
                       <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Denial rate</td><td 
 className="py-3">5-12%</td><td className="py-3">8%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">MGMA data shows average denial rates 5-12%.
 Documentation-related denials are a subset but often preventable.</p></TooltipContent></Tooltip>
+                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#4F46E5', borderColor: '#4F46E5' }}>Quality</span></td></tr>
+                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">HCC gap rate</td><td 
+className="py-3">20-30%</td><td className="py-3">25%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Percentage of chronic conditions not captured in
+documentation. Industry research shows 25-40% gap rate in typical practices.</p></TooltipContent></Tooltip>
+                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#16A34A', borderColor: '#16A34A' }}>Workforce</span></td></tr>
                       <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Physician replacement cost</td><td 
 className="py-3">$250K–$500K</td><td className="py-3">$350,000</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">AMGA Physician Retention Survey; range
 reflects recruiting, onboarding, and lost productivity. Excludes lost revenue during vacancy.</p></TooltipContent></Tooltip>
+                  
                     </tbody>
                   </table>
                 </div>

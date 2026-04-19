@@ -1,0 +1,74 @@
+ Domain Grouping — Assumptions & What Goes Into the Number Tables                                                                                                                                             
+                                                                                                                                                                                                               
+  In all four methodology pages (MethodologyED.tsx, MethodologyOutpatient.tsx, MethodologyInpatient.tsx, MethodologyNursing.tsx), update the two collapsed sections — "What Goes Into the Number" and "The     
+  Assumptions" — so their table rows are grouped by domain with a visual domain header row between groups.                                                                                                     
+                                                                                                                                                                                                               
+  Visual pattern for domain header rows: Insert a <tr> row between domain groups that has no data cells — just a single <td colSpan={3} (or 4 for Nursing assumptions) with:
+  - A colored left border matching the domain color                                                                                                                                                            
+  - The domain name in that color, small caps, tracking wide
+  - Light background                                                                                                                                                                                           
+                                                            
+  Example row JSX:                                                                                                                                                                                             
+  <tr>                                                      
+    <td colSpan={3} className="pt-5 pb-1">
+      <span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#4F46E5', borderColor: '#4F46E5' }}>                                                                     
+        Quality                                                                                                                           
+      </span>                                                                                                                                                                                                  
+    </td>                                                   
+  </tr>                                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  Domain colors to use:                                                                                                                                                                                        
+  - QUALITY: #4F46E5                                                                                                                                                                                           
+  - WORKFORCE: #16A34A                                      
+  - CAPACITY: #D97706 
+  - REVENUE: #EA2C00                                                                                                                                                                                           
+  
+  ---                                                                                                                                                                                                          
+  ED — What Goes Into the Number (group rows as follows):   
+  - QUALITY: "CDI / DRG impact on admitted patients"
+  - CAPACITY: "LWBS reduction", "Admission capture from LWBS recovery", "After-hours time savings"                                                                                                             
+  - REVENUE: "wRVU / E/M lift", "Denial rate reduction"
+  - WORKFORCE: "ED physician retention"                                                                                                                                                                        
+                                                            
+  ED — The Assumptions (group rows as follows):                                                                                                                                                                
+  - CAPACITY: "Time saved per encounter", "LWBS rate", "LWBS recovery rate", "Avg ED visit revenue", "ED admission rate"                                                                                       
+  - REVENUE: "ED wRVU baseline", "wRVU lift %"                                                                          
+                                                                                                                                                                                                               
+  ---                                                       
+  Outpatient — What Goes Into the Number (group rows as follows):                                                                                                                                              
+  - REVENUE: "wRVU lift", "E/M level improvement", "Denial rate reduction"
+  - CAPACITY: "Patient capacity revenue", "After-hours time savings"                                                                                                                                           
+  - QUALITY: "HCC / risk adjustment"                        
+  - WORKFORCE: "Physician retention"                                                                                                                                                                           
+                                                            
+  Outpatient — The Assumptions (group rows as follows):
+  - CAPACITY: "Time saved per encounter"                                                                                                                                                                       
+  - REVENUE: "wRVU baseline per visit", "wRVU lift %", "wRVU conversion factor", "Denial rate"
+  - QUALITY: "HCC gap rate"                                                                                                                                                                                    
+  - WORKFORCE: "Physician replacement cost"                 
+                                                                                                                                                                                                               
+  ---                                         
+  Inpatient — What Goes Into the Number (group rows as follows):                                                                                                                                               
+  - REVENUE: "CMI / DRG accuracy", "ALOS reduction", "Denial rate reduction", "Obs/IP status defense"
+  - QUALITY: "CDI query reduction"                                                                                                                                                                             
+  - CAPACITY: "Rounding efficiency"           
+  - WORKFORCE: "Hospitalist retention"                                                                                                                                                                         
+                                                            
+  Inpatient — The Assumptions (group rows as follows):                                                                                                                                                         
+  - CAPACITY: "Time saved per admission"      
+  - REVENUE: "DRG base rate"                                                                                                                                                                                   
+  - QUALITY: "CDI query rate", "Query reduction %", "Cost per query"
+                                                                                                                                                                                                               
+  ---
+  Nursing — What Goes Into the Number (group rows as follows):                                                                                                                                                 
+  - CAPACITY: "Overtime reduction"                          
+  - WORKFORCE: "Nurse retention", "Agency / locum spend"
+  - QUALITY: "Falls / HAPI prevention", "HCAHPS improvement", "CC/MCC support for inpatient"
+                                                                                                                                                                                                               
+  Nursing — The Assumptions (group rows as follows, table has 4 columns so use colSpan={4}):
+  - CAPACITY: "Time saved per shift", "OT conversion rate"                                                                                                                                                     
+  - WORKFORCE: "Nurse turnover rate", "Burnout-related %", "Abridge retention impact", "Replacement cost"
+  - QUALITY: "Documentation-preventable HAE"                                                                                                                                                                   
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Do not change any row content, formulas, tooltips, or other sections. Only insert domain header rows between the existing table rows as specified above.  
