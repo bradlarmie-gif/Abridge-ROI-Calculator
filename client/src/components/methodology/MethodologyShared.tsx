@@ -2,30 +2,37 @@ import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
+// ─── Evidence Badge ───────────────────────────────────────────────────────────
+
 export type BadgeType = "Demonstrated" | "Emerging" | "Strategic";
 
-const badgeStyles: Record<BadgeType, string> = {
-  Demonstrated: "bg-[#1A1A1A] text-white",
-  Emerging: "border border-[#666] text-[#666] bg-transparent",
-  Strategic: "bg-[#F5F0EB] text-[#888]",
+const badgeStyles: Record<BadgeType, { className: string }> = {
+  Demonstrated: { className: "bg-[#1A1A1A] text-white" },
+  Emerging:     { className: "border border-[#999999] text-[#555555] bg-transparent" },
+  Strategic:    { className: "bg-[#F5F0EB] text-[#888888] border border-[#E5E5E5]" },
 };
 
 export function ImpactBadge({ type }: { type: BadgeType }) {
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${badgeStyles[type]}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase tracking-[0.08em] whitespace-nowrap ${badgeStyles[type].className}`}>
       {type}
     </span>
   );
 }
 
+// ─── Domain Colors ────────────────────────────────────────────────────────────
+// Brand-aligned: monochromatic scale with red as the single accent
+
 export type DomainName = "QUALITY" | "WORKFORCE" | "CAPACITY" | "REVENUE";
 
 export const domainColors: Record<DomainName, string> = {
-  QUALITY:   "#4F46E5",
-  WORKFORCE: "#16A34A",
-  CAPACITY:  "#D97706",
+  QUALITY:   "#1A1A1A",
+  WORKFORCE: "#555555",
+  CAPACITY:  "#888888",
   REVENUE:   "#EA2C00",
 };
+
+// ─── Domain Overview Card ─────────────────────────────────────────────────────
 
 export interface ImpactItem {
   label: string;
@@ -43,14 +50,17 @@ export function DomainOverviewCard({ data, onClick }: { data: DomainCardData; on
   return (
     <button
       onClick={onClick}
-      className="w-full text-left bg-white rounded-lg border border-[#E5E5E5] p-5 hover:border-[#D1D5DB] hover:shadow-sm transition-all cursor-pointer"
-      style={{ borderLeftWidth: 3, borderLeftColor: color }}
+      className="w-full text-left bg-white rounded-sm border border-[#E5E5E5] p-5 hover:border-[#CCCCCC] hover:shadow-sm transition-all group"
+      style={{ borderTopWidth: 2, borderTopColor: color }}
     >
-      <p className="text-xs font-bold uppercase tracking-[1.5px] mb-1" style={{ color }}>
+      <p
+        className="text-[10px] font-bold uppercase tracking-[2px] mb-2"
+        style={{ color }}
+      >
         {data.domain}
       </p>
       <p className="text-sm text-[#666666] mb-4 leading-snug">{data.description}</p>
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {data.items.map((item) => (
           <div key={item.label} className="flex items-center justify-between gap-3">
             <span className="text-xs text-[#444444] leading-tight">{item.label}</span>
@@ -58,9 +68,14 @@ export function DomainOverviewCard({ data, onClick }: { data: DomainCardData; on
           </div>
         ))}
       </div>
+      <p className="text-[10px] text-[#EA2C00] mt-4 font-medium uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">
+        Explore ↓
+      </p>
     </button>
   );
 }
+
+// ─── Domain Overview Grid ─────────────────────────────────────────────────────
 
 export function DomainOverviewGrid({
   cards,
@@ -70,37 +85,51 @@ export function DomainOverviewGrid({
   onDomainClick?: (domain: DomainName) => void;
 }) {
   return (
-    <div className="mb-10">
-      <div className="mb-5">
-        <h2 className="text-sm font-bold text-black uppercase tracking-tight mb-1">Four Domains of Value</h2>
-        <p className="text-sm text-[#888888]">Click a domain to explore the evidence and calculation detail below.</p>
+    <div className="mb-12">
+      {/* Section header — matches PDF editorial style */}
+      <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
+        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>
+        <h2 className="text-lg font-bold text-black uppercase tracking-tight">
+          Four Domains of Value
+        </h2>
+        <p className="text-sm text-[#888888] mt-1">
+          Select a domain to explore the evidence and methodology below.
+        </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {cards.map((card) => (
-          <DomainOverviewCard key={card.domain} data={card} onClick={() => onDomainClick?.(card.domain)} />
+          <DomainOverviewCard
+            key={card.domain}
+            data={card}
+            onClick={() => onDomainClick?.(card.domain)}
+          />
         ))}
       </div>
-      <div className="mt-5 flex flex-wrap gap-4 items-center">
-        <span className="text-[10px] text-[#888888] uppercase tracking-wide font-medium">Evidence level:</span>
-        <div className="flex flex-wrap gap-3 items-center">
-          <div className="flex items-center gap-1.5">
+
+      {/* Badge legend */}
+      <div className="mt-6 pt-4 border-t border-[#E5E5E5] flex flex-wrap gap-x-6 gap-y-2 items-center">
+        <span className="text-[10px] text-[#888888] uppercase tracking-[1.5px] font-bold">Evidence level:</span>
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex items-center gap-2">
             <ImpactBadge type="Demonstrated" />
-            <span className="text-[10px] text-[#666666]">trackable from EHR/claims/payroll</span>
+            <span className="text-[10px] text-[#666666]">trackable from EHR / claims / payroll</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <ImpactBadge type="Emerging" />
             <span className="text-[10px] text-[#666666]">attributable with confidence over 6–18 mo</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <ImpactBadge type="Strategic" />
-            <span className="text-[10px] text-[#666666]">directional, real but not easily monetized</span>
+            <span className="text-[10px] text-[#666666]">directional — real but not easily monetized</span>
           </div>
         </div>
       </div>
-      <p className="mt-2 text-[10px] text-[#888888] leading-relaxed">These reflect evidence level for the category, not a guarantee of outcomes at your organization.</p>
     </div>
   );
 }
+
+// ─── Collapsible Section ──────────────────────────────────────────────────────
 
 interface SectionProps {
   title: string;
@@ -111,36 +140,52 @@ interface SectionProps {
   accentColor?: string;
 }
 
-export function CollapsibleSection({ title, subtitle, children, defaultOpen = false, sectionId, accentColor }: SectionProps) {
+export function CollapsibleSection({
+  title,
+  subtitle,
+  children,
+  defaultOpen = false,
+  sectionId,
+  accentColor,
+}: SectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
   return (
-    <div className="border-b border-[#E5E5E5] last:border-b-0">
+    <div className="border-b border-[#D9D4CF] last:border-b-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-6 flex items-start justify-between text-left"
+        className="w-full py-5 flex items-start justify-between text-left"
         data-testid={`button-section-${sectionId}`}
       >
         <div>
           <h2
-            className="text-lg font-bold text-black uppercase tracking-tight"
-            style={accentColor ? { borderLeft: `3px solid ${accentColor}`, paddingLeft: 10 } : undefined}
+            className="text-sm font-bold text-black uppercase tracking-[1.5px]"
+            style={accentColor ? { borderLeft: `2px solid ${accentColor}`, paddingLeft: 10 } : undefined}
           >
             {title}
           </h2>
-          <p className="text-sm text-[#888888] mt-1">{subtitle}</p>
+          <p className="text-xs text-[#888888] mt-1 ml-[14px]">{subtitle}</p>
         </div>
-        <div className="ml-4 mt-1">
-          {isOpen ? <ChevronUp className="w-5 h-5 text-[#888888]" /> : <ChevronDown className="w-5 h-5 text-[#888888]" />}
+        <div className="ml-4 mt-0.5 shrink-0">
+          {isOpen
+            ? <ChevronUp className="w-4 h-4 text-[#888888]" />
+            : <ChevronDown className="w-4 h-4 text-[#888888]" />}
         </div>
       </button>
       {isOpen && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="pb-8">
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="pb-7"
+        >
           {children}
         </motion.div>
       )}
     </div>
   );
 }
+
+// ─── Domain Detail Section ────────────────────────────────────────────────────
 
 export interface DomainImpactItem {
   label: string;
@@ -158,8 +203,15 @@ export interface DomainDetailData {
   honestLimit?: string;
 }
 
-export function DomainDetailSection({ data, sectionRef }: { data: DomainDetailData; sectionRef?: React.RefObject<HTMLDivElement> }) {
+export function DomainDetailSection({
+  data,
+  sectionRef,
+}: {
+  data: DomainDetailData;
+  sectionRef?: React.RefObject<HTMLDivElement>;
+}) {
   const color = domainColors[data.domain];
+
   return (
     <CollapsibleSection
       sectionId={`domain-${data.domain.toLowerCase()}`}
@@ -167,13 +219,14 @@ export function DomainDetailSection({ data, sectionRef }: { data: DomainDetailDa
       subtitle={data.sectionSubtitle}
       accentColor={color}
     >
-      <div ref={sectionRef} className="space-y-4">
+      <div ref={sectionRef} className="space-y-3">
         {data.items.map((item) => (
-          <DomainImpactCard key={item.label} item={item} color={color} />
+          <DomainImpactCard key={item.label} item={item} accentColor={color} />
         ))}
         {data.honestLimit && (
-          <div className="mt-2 bg-[#F5F0EB] rounded-lg p-4 text-sm text-[#666666] leading-relaxed">
-            <strong className="text-black">Honest limit: </strong>{data.honestLimit}
+          <div className="mt-1 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
+            <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>
+            <p className="text-xs text-[#666666] leading-relaxed">{data.honestLimit}</p>
           </div>
         )}
       </div>
@@ -181,12 +234,19 @@ export function DomainDetailSection({ data, sectionRef }: { data: DomainDetailDa
   );
 }
 
-function DomainImpactCard({ item, color }: { item: DomainImpactItem; color: string }) {
+function DomainImpactCard({
+  item,
+  accentColor,
+}: {
+  item: DomainImpactItem;
+  accentColor: string;
+}) {
   const [showFormula, setShowFormula] = useState(false);
+
   return (
-    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <h4 className="font-semibold text-black text-sm">{item.label}</h4>
+    <div className="bg-white border border-[#E5E5E5] rounded-sm p-4">
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <h4 className="font-bold text-black text-xs uppercase tracking-wide leading-snug">{item.label}</h4>
         <ImpactBadge type={item.badge} />
       </div>
       <p className="text-sm text-[#666666] leading-relaxed">{item.explanation}</p>
@@ -194,15 +254,16 @@ function DomainImpactCard({ item, color }: { item: DomainImpactItem; color: stri
         <div className="mt-3">
           <button
             onClick={() => setShowFormula(!showFormula)}
-            className="text-xs font-medium uppercase tracking-wide flex items-center gap-1 transition-colors"
-            style={{ color }}
+            className="text-[10px] font-bold uppercase tracking-[1.5px] flex items-center gap-1 text-[#EA2C00] hover:text-[#C22000] transition-colors"
           >
             {showFormula ? "Hide formula" : "Show formula"}
-            {showFormula ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            {showFormula
+              ? <ChevronUp className="w-3 h-3" />
+              : <ChevronDown className="w-3 h-3" />}
           </button>
           {showFormula && (
-            <div className="mt-2 bg-[#F5F0EB] rounded-lg p-3">
-              <p className="font-mono text-xs text-black">{item.formula}</p>
+            <div className="mt-2 bg-[#F5F0EB] rounded-sm p-3 border-l-2 border-[#EA2C00]">
+              <p className="font-mono text-xs text-[#1A1A1A] leading-relaxed whitespace-pre-line">{item.formula}</p>
             </div>
           )}
         </div>
