@@ -205,15 +205,15 @@ data-testid="button-export-pdf">
                     </tr>
                   </thead>
                   <tbody className="text-[#666666]">
-                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#D97706', borderColor: '#D97706' }}>Capacity</span></td></tr>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#888888', borderColor: '#888888' }}>Capacity</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Overtime reduction</td><td className="py-3">✅ Yes (nursing only)</td><td className="py-3">Hours saved × OT conversion
 rate × OT hourly rate × 52 weeks</td></tr>
-                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#16A34A', borderColor: '#16A34A' }}>Workforce</span></td></tr>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#555555', borderColor: '#555555' }}>Workforce</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Nurse retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers avoided ×
 $50K–$100K replacement cost</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Agency / locum spend</td><td className="py-3">✅ Yes (if data provided)</td><td className="py-3">Observed agency spend
 reduction × attribution %</td></tr>
-                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#4F46E5', borderColor: '#4F46E5' }}>Quality</span></td></tr>
+                    <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#1A1A1A', borderColor: '#1A1A1A' }}>Quality</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Falls / HAPI prevention</td><td className="py-3 text-[#F59E0B] font-medium">Potential value — shown separately</td><td 
 className="py-3">Current events × 5% doc-preventable rate × cost/event</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">HCAHPS improvement</td><td className="py-3 text-[#F59E0B] font-medium">Signal only — not calculated</td><td 
@@ -240,14 +240,14 @@ delta calculation</td></tr>
                       </tr>
                     </thead>
                     <tbody className="text-[#666666]">
-                      <tr><td colSpan={4} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#D97706', borderColor: '#D97706' }}>Capacity</span></td></tr>
+                      <tr><td colSpan={4} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#888888', borderColor: '#888888' }}>Capacity</span></td></tr>
                       <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Time saved per shift</td><td 
 className="py-3">15-30 minutes</td><td className="py-3">20 minutes</td><td className="py-3">Abridge customer data</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p 
 className="text-xs">Based on time-motion studies across 12+ nursing implementations. Varies by unit type and existing documentation workflows.</p></TooltipContent></Tooltip>
                       <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">OT conversion rate</td><td 
 className="py-3">15-40%</td><td className="py-3">25%</td><td className="py-3">Implementation studies</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Not all
  saved time converts to OT reduction. Accounts for nurses already leaving on time, shift overlap, and other documentation tasks.</p></TooltipContent></Tooltip>
-                      <tr><td colSpan={4} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#16A34A', borderColor: '#16A34A' }}>Workforce</span></td></tr>
+                      <tr><td colSpan={4} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#555555', borderColor: '#555555' }}>Workforce</span></td></tr>
                       <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Nurse turnover rate</td><td 
 className="py-3">15-25%</td><td className="py-3">18%</td><td className="py-3">NSI Nursing Solutions</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">NSI 2023
  National Healthcare Retention & RN Staffing Report. National average ~22.5%, we use conservative 18%.</p></TooltipContent></Tooltip>
@@ -260,7 +260,7 @@ className="text-xs">Conservative estimate of retention improvement from reduced 
                       <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Replacement cost</td><td 
 className="py-3">$50K–$100K</td><td className="py-3">$65,000</td><td className="py-3">NSI 2023 Nursing Retention Report</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p 
 className="text-xs">NSI 2023 Report range: $46K–$52K for standard bedside RN. Specialty and ICU nurses carry higher replacement costs. We use $65K as a conservative midpoint.</p></TooltipContent></Tooltip>
-                      <tr><td colSpan={4} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#4F46E5', borderColor: '#4F46E5' }}>Quality</span></td></tr>
+                      <tr><td colSpan={4} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#1A1A1A', borderColor: '#1A1A1A' }}>Quality</span></td></tr>
                       <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Documentation-preventable HAE</td><td 
 className="py-3">3-10%</td><td className="py-3">5%</td><td className="py-3">Conservative estimate</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Percentage
  of hospital-acquired events where better real-time documentation could have enabled earlier intervention. Intentionally conservative.</p></TooltipContent></Tooltip>
