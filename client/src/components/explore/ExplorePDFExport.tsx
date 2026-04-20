@@ -1950,11 +1950,11 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       </Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Abridge returns {hrsPerWkBack.toFixed(1)} hours per week to each physician {"\u2014"} time previously spent at a terminal, now available for patient care, recovery between shifts, or the cognitive reset that makes the next shift sustainable. Across {fmtNum(data.providers)} physicians, that is {fmtNum(data.hoursReturned)} hours returned annually.
+                      The hypothesis we model: ambient documentation returns roughly {hrsPerWkBack.toFixed(1)} hours per week to each physician {"\u2014"} time previously spent at a terminal, now available for patient care, recovery between shifts, or the cognitive reset that makes the next shift sustainable. Across {fmtNum(data.providers)} physicians, that would be {fmtNum(data.hoursReturned)} hours returned annually {"\u2014"} confirm against your own EHR time-in-notes data once deployed.
                     </Text>
                     {data.retentionValueEnabled ? (
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                        At your {safe(data.annualTurnoverRate)}% annual turnover rate and {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution {"\u2014"} the {data.abridgeRetentionImpactLabel || "typical"} scenario in the AMA/MGMA literature {"\u2014"} Abridge{"\u2019"}s estimated retention impact is {Math.round(safe(data.providersRetained) ?? 0)} physicians retained per year. At {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost per departing physician, that is {fmtCurrency(safe(data.retentionValue))} in avoided turnover annually.
+                        At your {safe(data.annualTurnoverRate)}% annual turnover rate and {safe(data.burnoutRelatedTurnoverPct)}% burnout attribution {"\u2014"} the {data.abridgeRetentionImpactLabel || "typical"} scenario in the AMA/MGMA literature {"\u2014"} the modeled retention impact is roughly {Math.round(safe(data.providersRetained) ?? 0)} physicians retained per year. At {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost per departing physician, that points to {fmtCurrency(safe(data.retentionValue))} in avoided turnover annually {"\u2014"} a number to validate against your exit-interview and turnover data over 12{"\u2013"}18 months.
                       </Text>
                     ) : (
                       <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
@@ -1979,7 +1979,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={[styles.calloutBox]}>
               <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
-                Retention is the longest-tail value Abridge produces in an ED. The financial impact compounds: the physician you don{"\u2019"}t lose this year is the physician who isn{"\u2019"}t a $300K{"\u2013"}$500K replacement cost next year, and isn{"\u2019"}t a 9{"\u2013"}12 month vacancy gap absorbed by your remaining team.
+                Retention is the longest-tail outcome in this model {"\u2014"} the hardest to attribute and the most consequential when it lands. The financial logic compounds: the physician you don{"\u2019"}t lose this year is the physician who isn{"\u2019"}t a $250K{"\u2013"}$500K replacement cost next year, and isn{"\u2019"}t a 9{"\u2013"}12 month vacancy gap absorbed by your remaining team.
               </Text>
             </View>
 
@@ -2082,7 +2082,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                           <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.annualDenialValue))}</Text>
                         </View>
                         <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 3 }}>
-                          ED claim denials most often trace to three documentation failures: absent medical necessity language, incomplete physical exam documentation, and missing decision rationale for admission vs. discharge. Abridge addresses all three by capturing clinical reasoning in real time. Your {safe(data.baselineDenialRate)}% baseline denial rate generates {fmtNum(safe(data.totalDenials))} unappealable claims annually. At a {safe(data.preventionTargetPct)}% reduction in documentation-related denials {"\u2014"} the {data.denialPreventionScenario} scenario based on ED denial root cause data {"\u2014"} that{"\u2019"}s {fmtCurrency(safe(data.annualDenialValue))} in annual recovery.
+                          ED claim denials most often trace to three documentation failures: absent medical necessity language, incomplete physical exam documentation, and missing decision rationale for admission vs. discharge. The mechanism we{"\u2019"}re modeling: capturing clinical reasoning at the point of care creates an opportunity to close those gaps before the note is finalized and the claim is sent. Your {safe(data.baselineDenialRate)}% baseline denial rate generates {fmtNum(safe(data.totalDenials))} unappealable claims annually. At a {safe(data.preventionTargetPct)}% reduction in documentation-related denials {"\u2014"} the {data.denialPreventionScenario} scenario based on ED denial root cause data {"\u2014"} that would translate to {fmtCurrency(safe(data.annualDenialValue))} in annual recovery, validated against your RCM team{"\u2019"}s denial root-cause data.
                         </Text>
                         <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, fontStyle: "italic" }}>
                           Documentation-related denials are among the most preventable in the revenue cycle.
@@ -2407,7 +2407,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   HOW WE CALCULATED THIS
                 </Text>
                 <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 3 }}>
-                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>LWBS Recovery:</Text> ACEP/AHRQ literature. Mechanism: documentation speed {"\u2192"} physician availability {"\u2192"} wait time {"\u2192"} LWBS rate. Reduction scenario applied to annual walkout volume at selected realization rate.
+                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>LWBS Recovery:</Text> ACEP/AHRQ literature. Mechanism: documentation speed {"\u2192"} physician availability {"\u2192"} wait time {"\u2192"} LWBS rate. Recovery range 5{"\u2013"}15% applied to annual walkout volume at the selected realization rate.
                 </Text>
                 <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 3 }}>
                   {"\u2022 "}<Text style={{ fontWeight: "bold" }}>Admission Capture:</Text> 15{"\u2013"}20% of LWBS patients meet inpatient admission criteria per published literature. Revenue reflects ED-to-admission contribution, not full hospitalization value. Realization rate applied for payer mix and bed availability.
@@ -2416,10 +2416,10 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   {"\u2022 "}<Text style={{ fontWeight: "bold" }}>E&M Level Accuracy:</Text> ED improvement range 1{"\u2013"}4% (acute care settings). Default wRVU baseline 1.6 (unselected ED population). CMS conversion factor with realization adjustment.
                 </Text>
                 <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 3 }}>
-                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>Denial Prevention:</Text> Conservative 15% / Typical 30% / Aggressive 50% reduction in documentation-related denials. Root cause: medical necessity language, physical exam documentation, admission/discharge rationale.
+                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>Denial Prevention:</Text> Reduction in documentation-related denials at the selected scenario {"\u2014"} Conservative 15{"\u2013"}20%, Typical 25{"\u2013"}35%. Root cause: medical necessity language, physical exam documentation, admission/discharge rationale.
                 </Text>
                 <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 3 }}>
-                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>Clinician Retention:</Text> Emergency medicine burnout rate per AMA. Documentation burden cited as primary driver. Replacement cost per MGMA. Retention impact at selected scenario {"\u2014"} validate via exit interview data.
+                  {"\u2022 "}<Text style={{ fontWeight: "bold" }}>Clinician Retention:</Text> Emergency medicine burnout rate per AMA. Documentation burden cited as primary driver, with burnout attribution in the 10{"\u2013"}20% range. Replacement cost $250{"\u2013"}$500K per MGMA / AMGA. Retention impact at selected scenario {"\u2014"} validate via exit-interview and turnover data over 12{"\u2013"}18 months.
                 </Text>
                 <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
                   {"\u2022 "}<Text style={{ fontWeight: "bold" }}>Quality:</Text> Not modeled. Measured at 90+ days post-deployment.
