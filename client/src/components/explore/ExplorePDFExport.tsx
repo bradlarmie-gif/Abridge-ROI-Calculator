@@ -1030,11 +1030,11 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   </View>
                   {data.retentionValueEnabled && safe(data.retentionValue) > 0 ? (
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Abridge returns {hrsPerWkBack.toFixed(1)} hours per week per provider. At {safe(data.annualTurnoverRate) || 6}% annual turnover, {safe(data.burnoutRelatedTurnoverPct) || 40}% burnout-related, and ${(safe(data.replacementCostPerProvider) || 400000).toLocaleString()} to replace a departing physician, a {safe(data.abridgeRetentionImpactPct) || 10}% reduction in burnout-driven departures retains {(safe(data.providersRetained) || 0).toFixed(1)} providers annually: {fmtCurrency(safe(data.retentionValue))}.
+                      The hypothesis we model: ambient documentation returns roughly {hrsPerWkBack.toFixed(1)} hours per week per provider. At {safe(data.annualTurnoverRate) || 6}% annual turnover, {safe(data.burnoutRelatedTurnoverPct) || 40}% burnout-related, and ${(safe(data.replacementCostPerProvider) || 400000).toLocaleString()} to replace a departing physician, a {safe(data.abridgeRetentionImpactPct) || 10}% reduction in burnout-driven departures would retain roughly {(safe(data.providersRetained) || 0).toFixed(1)} providers annually {"\u2014"} pointing to {fmtCurrency(safe(data.retentionValue))} in avoided turnover, a number to validate against your exit-interview and turnover data over 12{"\u2013"}18 months.
                     </Text>
                   ) : data.sustainabilityEnabled ? (
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Abridge returns {hrsPerWkBack.toFixed(1)} hours per week per provider {"\u2014"} time that currently comes from the end of the clinical day. Whether it goes back to patients, to administrative catch-up, or to simply leaving on time, it changes the experience of practicing medicine.
+                      The hypothesis we model: ambient documentation returns roughly {hrsPerWkBack.toFixed(1)} hours per week per provider {"\u2014"} time that currently comes from the end of the clinical day. Whether it goes back to patients, to administrative catch-up, or to simply leaving on time, it changes the experience of practicing medicine. Confirm against your own EHR time-in-notes data once deployed.
                     </Text>
                   ) : (
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
@@ -2578,7 +2578,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               When documentation is complete at the bedside,{"\n"}the CDI query never needs to happen.
             </Text>
             <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 10, lineHeight: 1.5 }}>
-              CDI queries are a downstream symptom of upstream documentation gaps. Abridge doesn{"\u2019"}t reduce queries by streamlining the query process {"\u2014"} it makes the query unnecessary by capturing the clinical conversation that would have answered it.
+              CDI queries are a downstream symptom of upstream documentation gaps. The hypothesis we model: when ambient capture brings the clinical conversation into the note in real time, many of those queries become unnecessary because the answer is already there {"\u2014"} a signal CDI departments can validate quickly from query-volume trends.
             </Text>
 
             <View style={styles.divider} />
@@ -2593,7 +2593,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(cdiQueryVal)}</Text>
                     </View>
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      At a {ipCdiQRate}% query rate, your CDI team manages roughly {fmtNum(ipTotalQ)} queries per year. When Abridge captures the clinical conversation completely, many become unnecessary {"\u2014"} the answer is already in the note. At a {data.ipCdiScenario ?? "typical"} scenario reduction of {ipQAvoidRate}%, {fmtNum(ipQAvoided)} queries avoided at {fmtCurrency(ipQCost)} each: {fmtCurrency(cdiQueryVal)} annually in CDI team capacity freed for complex cases.
+                      At a {ipCdiQRate}% query rate, your CDI team manages roughly {fmtNum(ipTotalQ)} queries per year. The mechanism we{"\u2019"}re modeling: when ambient capture pulls the clinical conversation into the note completely, many queries become unnecessary because the answer is already there. At a {data.ipCdiScenario ?? "typical"} scenario reduction of {ipQAvoidRate}%, that would translate to {fmtNum(ipQAvoided)} queries avoided at {fmtCurrency(ipQCost)} each {"\u2014"} {fmtCurrency(cdiQueryVal)} annually in CDI capacity freed for complex cases, validated against your CDI team{"\u2019"}s monthly query-volume trend.
                     </Text>
                     <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
                       CDI query cost reflects fully-loaded CDI team time: query generation, clinical review, response tracking, and physician follow-up. Queries avoided free CDI capacity for higher-complexity case optimization {"\u2014"} not headcount reduction.
@@ -2617,7 +2617,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
             <View style={[styles.calloutBox, { marginBottom: 8 }]}>
               <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>WHEN ED AND INPATIENT BOTH USE ABRIDGE</Text>
               <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>
-                Inpatient documentation doesn{"\u2019"}t start at admission. The ED note that precedes it sets the documentation trajectory for the entire encounter. When both care settings use Abridge, documentation completeness compounds.
+                Inpatient documentation doesn{"\u2019"}t start at admission. The ED note that precedes it sets the documentation trajectory for the entire encounter. The hypothesis we model: when both care settings deploy ambient capture, documentation completeness can compound across the handoff {"\u2014"} a downstream effect to validate against your CDI team{"\u2019"}s observed query rates.
               </Text>
             </View>
 
@@ -2681,11 +2681,11 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   </View>
                   {data.retentionValueEnabled && retVal > 0 ? (
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      After-hours charting is the piece of hospitalist burnout that organizations underestimate {"\u2014"} not because it{"\u2019"}s invisible, but because its cost only becomes visible when someone leaves. At a {safe(data.annualTurnoverRate)}% annual turnover rate, with {safe(data.burnoutRelatedTurnoverPct)}% of departures burnout-related, your program loses an estimated {safe(data.ipBurnoutDepartures)?.toFixed(1)} hospitalists per year to documentation burden. At a {safe(data.abridgeRetentionImpactPct)}% retention impact and {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost: {fmtCurrency(retVal)}.
+                      After-hours charting is the piece of hospitalist burnout that organizations underestimate {"\u2014"} not because it{"\u2019"}s invisible, but because its cost only becomes visible when someone leaves. At a {safe(data.annualTurnoverRate)}% annual turnover rate, with {safe(data.burnoutRelatedTurnoverPct)}% of departures burnout-related, roughly {safe(data.ipBurnoutDepartures)?.toFixed(1)} of your hospitalist departures per year are attributable to documentation burden. At a {safe(data.abridgeRetentionImpactPct)}% modeled retention impact and {fmtCurrency(safe(data.replacementCostPerProvider))} replacement cost ($250{"\u2013"}$500K, AMGA), that points to {fmtCurrency(retVal)} in avoided turnover {"\u2014"} a number to validate against your exit-interview and turnover data over 12{"\u2013"}18 months.
                     </Text>
                   ) : data.sustainabilityEnabled ? (
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                      Abridge returns roughly {safe(data.ipWellbeingHoursPerWeek).toFixed(1)} hours per week per hospitalist {"\u2014"} time that currently comes from after-shift charting. Whether that goes back to complex case review, teaching, or simply leaving on time, it changes what it feels like to practice hospital medicine.
+                      The hypothesis we model: ambient documentation returns roughly {safe(data.ipWellbeingHoursPerWeek).toFixed(1)} hours per week per hospitalist {"\u2014"} time that currently comes from after-shift charting. Whether that goes back to complex case review, teaching, or simply leaving on time, it changes what it feels like to practice hospital medicine. Confirm against your own EHR time-in-notes data once deployed.
                     </Text>
                   ) : (
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
@@ -2717,7 +2717,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     </Text>
                   </View>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                    Hospitalists spend a disproportionate share of documentation time on notes that follow rounds rather than driving them. Abridge returns {roundingHrsPerProv?.toFixed(0) ?? 0} hours per hospitalist per year to direct patient care. At the bedside. In the room. In the conversation that actually informs the note {"\u2014"} because the note is writing itself.
+                    Hospitalists spend a disproportionate share of documentation time on notes that follow rounds rather than driving them. The hypothesis we model: ambient capture returns roughly {roundingHrsPerProv?.toFixed(0) ?? 0} hours per hospitalist per year to direct patient care. At the bedside. In the room. In the conversation that actually informs the note {"\u2014"} because the note is writing itself.
                   </Text>
                   <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
                     Rounding Efficiency is qualitative. It is the mechanism {"\u2014"} the freed time that makes every other value driver in this model possible.
@@ -2776,7 +2776,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               The documentation that drives DRG accuracy{"\n"}is written during the encounter {"\u2014"} or not at all.
             </Text>
             <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 10, lineHeight: 1.5 }}>
-              Payer challenges target the same documentation gaps every time: incomplete complication and comorbidity capture, missing medical necessity language, and absent continued-stay rationale. Abridge addresses all three by capturing the clinical conversation in real time.
+              Payer challenges target the same documentation gaps every time: incomplete complication and comorbidity capture, missing medical necessity language, and absent continued-stay rationale. The mechanism we{"\u2019"}re modeling: capturing the clinical conversation at the point of care creates an opportunity to close those gaps before the note is finalized {"\u2014"} a hypothesis your CDI and case management teams can validate by comparing query and audit-exposure rates pre- and post-deployment.
             </Text>
 
             <View style={styles.divider} />
@@ -2793,7 +2793,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                           <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(drgVal)}</Text>
                         </View>
                         <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
-                          Your hospitalists discuss clinical complexity that doesn{"\u2019"}t always make it into the final note. CDI teams identify documentation opportunities in roughly {ipDrgOpRate}% of admissions {"\u2014"} {fmtNum(ipAdmGaps)} admissions per year carrying a documentation gap. Abridge is modeled to close {ipCapRate}% of those gaps {"\u2014"} the portion where clinical detail was spoken but not captured. Each closed gap carries an average DRG weight lift of {ipWeightLift} at {fmtCurrency(ipBasePayment)} base payment. After a {ipDrgRealize}% realization rate for RAC and PEPPER audit exposure: {fmtCurrency(drgVal)}.
+                          Your hospitalists discuss clinical complexity that doesn{"\u2019"}t always make it into the final note. CDI teams identify documentation opportunities in roughly {ipDrgOpRate}% of admissions {"\u2014"} {fmtNum(ipAdmGaps)} admissions per year carrying a documentation gap. The hypothesis we model is that ambient capture closes {ipCapRate}% of those gaps {"\u2014"} the portion where clinical detail was spoken but not captured. Each closed gap carries an average DRG weight lift of {ipWeightLift} at {fmtCurrency(ipBasePayment)} base payment. After a {ipDrgRealize}% realization rate for RAC and PEPPER audit exposure, that would translate to {fmtCurrency(drgVal)} {"\u2014"} validated against your CDI team{"\u2019"}s observed gap-closure rate post-deployment.
                         </Text>
                         <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
                           Common missed conditions: acute respiratory failure, sepsis, malnutrition, acute encephalopathy, acute kidney injury. Validate gap rates with your CDI team before presenting.
@@ -2818,7 +2818,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                           <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(obsDefVal)}</Text>
                         </View>
                         <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                          Observation vs. inpatient status determinations are among the most contested payer decisions {"\u2014"} and the most documentation-sensitive. Real-time documentation of the clinical rationale for inpatient admission, written at the moment of the decision, is your strongest defense against retrospective challenge. At a {safe(data.ipObsDefenseRealization)}% realization rate: {fmtCurrency(obsDefVal)}.
+                          Observation vs. inpatient status determinations are among the most contested payer decisions {"\u2014"} and the most documentation-sensitive. The mechanism we{"\u2019"}re modeling: capturing the clinical rationale for inpatient admission at the moment of the decision creates a stronger position for retrospective defense than reconstructing it later. At a {safe(data.ipObsDefenseRealization)}% realization rate, that would translate to {fmtCurrency(obsDefVal)} {"\u2014"} validated against your utilization-management team{"\u2019"}s reversal-rate data.
                         </Text>
                       </View>
                     </View>
@@ -2840,7 +2840,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                           <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(concurrentVal)}</Text>
                         </View>
                         <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                          Payer concurrent review targets cases where continued-stay medical necessity isn{"\u2019"}t documented clearly in real time. Abridge captures the daily clinical rationale {"\u2014"} the progression of illness, the decision to maintain inpatient status {"\u2014"} as it{"\u2019"}s spoken. When the case manager needs to respond to a payer, the note is already there. At a {safe(data.ipConcurrentRealization)}% realization rate: {fmtCurrency(concurrentVal)}.
+                          Payer concurrent review targets cases where continued-stay medical necessity isn{"\u2019"}t documented clearly in real time. The mechanism we{"\u2019"}re modeling: ambient capture brings the daily clinical rationale into the note as it{"\u2019"}s spoken {"\u2014"} the progression of illness, the decision to maintain inpatient status {"\u2014"} so when the case manager needs to respond to a payer, the note is already there. At a {safe(data.ipConcurrentRealization)}% realization rate, that would translate to {fmtCurrency(concurrentVal)}, validated against your case management team{"\u2019"}s payer-pushback data.
                         </Text>
                       </View>
                     </View>
@@ -3256,7 +3256,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 4 }}>potential</Text>
                 )}
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                  Preventable harm events {"\u2014"} HAPIs, falls, CAUTI, CLABSI {"\u2014"} and sepsis bundle compliance are sensitive to documentation timing. Real-time flowsheet capture creates the visibility layer that enables earlier intervention.
+                  Preventable harm events {"\u2014"} HAPIs, falls, CAUTI, CLABSI {"\u2014"} and sepsis bundle compliance are sensitive to documentation timing. The hypothesis we model: real-time flowsheet capture surfaces the visibility for earlier intervention, with each unit{"\u2019"}s actual outcome shaped by clinical practice.
                 </Text>
               </View>
 
@@ -3268,7 +3268,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   {workforceTotal > 0 ? fmtCurrency(workforceTotal) : "Not Modeled"}
                 </Text>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginTop: qualityTotal > 0 ? 12 : 0 }}>
-                  Documentation burden is among the top drivers of nurse turnover. Reducing end-of-shift charting changes retention {"\u2014"} and the agency spend that follows every vacancy.
+                  Documentation burden is among the top drivers of nurse turnover. The hypothesis we model: reducing end-of-shift charting can move retention {"\u2014"} and the agency spend that follows every vacancy {"\u2014"} a number to validate against your own exit-interview and turnover data.
                 </Text>
               </View>
             </View>
@@ -3282,7 +3282,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   {otVal > 0 ? fmtCurrency(otVal) : "Not Modeled"}
                 </Text>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                  When nurses finish charting before the end of their shift, they leave on time. Overtime reduction is the most direct, measurable labor cost savings in this model.
+                  The hypothesis we model: when nurses finish charting before the end of their shift, more of them leave on time. Overtime reduction is the most direct, measurable labor-cost line in the model {"\u2014"} one to validate against your unit{"\u2019"}s payroll OT trend.
                 </Text>
               </View>
 
@@ -3320,7 +3320,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               Real-time documentation is the visibility layer{"\n"}that makes early intervention possible.
             </Text>
             <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5, marginBottom: 10 }}>
-              Preventable harm events don{"\u2019"}t happen because nurses don{"\u2019"}t care {"\u2014"} they happen when risk signals are missed or delayed. Real-time flowsheet capture surfaces those signals when there{"\u2019"}s still time to act.
+              Preventable harm events don{"\u2019"}t happen because nurses don{"\u2019"}t care {"\u2014"} they happen when risk signals are missed or delayed. The hypothesis we model: real-time flowsheet capture surfaces those signals while there{"\u2019"}s still time to act, with the actual outcome determined by clinical practice on each unit.
             </Text>
 
             <View style={[styles.calloutBox, { marginBottom: 10 }]}>
@@ -3336,7 +3336,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(hapiVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>(potential)</Text></Text>
                 </View>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  At {safe(data.nursingHapiRatePer1000) || 2.5}/1,000 patient days across {fmtNum(patientDays)} patient days, your program sees approximately {(safe(data.nursingHapiPerYear) ?? 0).toFixed(1)} HAPIs per year. Real-time skin assessment documentation {"\u2014"} captured at the point of care rather than reconstructed at shift end {"\u2014"} enables earlier intervention. At a {safe(data.nursingHapiPreventionRate) || 6.5}% documentation-attributable prevention rate and {fmtCurrency(safe(data.nursingHapiCostPer) || 25000)}/event: {fmtCurrency(hapiVal)}.
+                  At {safe(data.nursingHapiRatePer1000) || 2.5}/1,000 patient days across {fmtNum(patientDays)} patient days, your program sees approximately {(safe(data.nursingHapiPerYear) ?? 0).toFixed(1)} HAPIs per year. The hypothesis we model: when skin assessments are captured at the point of care rather than reconstructed at shift end, the visibility for earlier intervention improves. At a {safe(data.nursingHapiPreventionRate) || 6.5}% documentation-attributable prevention rate and {fmtCurrency(safe(data.nursingHapiCostPer) || 25000)}/event, that would translate to {fmtCurrency(hapiVal)} {"\u2014"} a potential to validate against your wound-care team{"\u2019"}s baseline.
                 </Text>
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 3 }}>Source: Dowding et al., JAMIA 2012.</Text>
               </View>
@@ -3349,7 +3349,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(fallsVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>(potential)</Text></Text>
                 </View>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  At {safe(data.nursingFallsRatePer1000) || 3.5}/1,000 patient days, your program sees approximately {(safe(data.nursingFallsPerYear) ?? 0).toFixed(1)} falls per year. Morse Fall Scale assessments completed in real time {"\u2014"} rather than deferred to end of shift {"\u2014"} ensure risk escalations are visible to the care team when they matter. At a {safe(data.nursingFallsDocGapRate) || 10}% documentation-attributable prevention rate and {fmtCurrency(safe(data.nursingFallsCostPer) || 6500)}/event: {fmtCurrency(fallsVal)}.
+                  At {safe(data.nursingFallsRatePer1000) || 3.5}/1,000 patient days, your program sees approximately {(safe(data.nursingFallsPerYear) ?? 0).toFixed(1)} falls per year. The hypothesis we model: when Morse Fall Scale assessments are completed in real time rather than deferred to end of shift, risk escalations become visible to the care team when they matter. At a {safe(data.nursingFallsDocGapRate) || 10}% documentation-attributable prevention rate and {fmtCurrency(safe(data.nursingFallsCostPer) || 6500)}/event, that would translate to {fmtCurrency(fallsVal)} {"\u2014"} a potential to validate against your falls-prevention committee{"\u2019"}s data.
                 </Text>
               </View>
             )}
@@ -3361,7 +3361,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(cautiVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>(potential)</Text></Text>
                 </View>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  Nurse-driven catheter stop orders and daily necessity assessments reduce CAUTI rates significantly when documented in real time. Across {fmtNum(safe(data.nursingCautiDaysPerYear))} catheter days at {safe(data.nursingCautiRatePer1000) || 1.8}/1,000, {(safe(data.nursingCautiPrevented) ?? 0).toFixed(1)} infections prevented at {fmtCurrency(safe(data.nursingCautiCostPer) || 13000)} each: {fmtCurrency(cautiVal)}.
+                  The hypothesis we model: nurse-driven catheter stop orders and daily necessity assessments captured in real time create the visibility for earlier line removal. Across {fmtNum(safe(data.nursingCautiDaysPerYear))} catheter days at {safe(data.nursingCautiRatePer1000) || 1.8}/1,000, {(safe(data.nursingCautiPrevented) ?? 0).toFixed(1)} infections potentially avoided at {fmtCurrency(safe(data.nursingCautiCostPer) || 13000)} each would translate to {fmtCurrency(cautiVal)} {"\u2014"} validated against your infection-prevention team{"\u2019"}s baseline.
                 </Text>
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 3 }}>Source: Meddings et al., 2014 JAMA Internal Medicine.</Text>
               </View>
@@ -3374,7 +3374,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(clabsiVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>(potential)</Text></Text>
                 </View>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  IHI bundle compliance literature shows 30{"\u2013"}66% CLABSI reduction with full adherence. Across {fmtNum(safe(data.nursingClabsiDaysPerYear))} central line days at {safe(data.nursingClabsiRatePer1000) || 0.8}/1,000, {(safe(data.nursingClabsiPrevented) ?? 0).toFixed(1)} infections prevented at {fmtCurrency(safe(data.nursingClabsiCostPer) || 20000)} each: {fmtCurrency(clabsiVal)}.
+                  IHI bundle-compliance literature shows a 30{"\u2013"}66% CLABSI reduction range with full adherence. The hypothesis we model: real-time bundle documentation makes adherence visible at the bedside. Across {fmtNum(safe(data.nursingClabsiDaysPerYear))} central line days at {safe(data.nursingClabsiRatePer1000) || 0.8}/1,000, {(safe(data.nursingClabsiPrevented) ?? 0).toFixed(1)} infections potentially avoided at {fmtCurrency(safe(data.nursingClabsiCostPer) || 20000)} each would translate to {fmtCurrency(clabsiVal)} {"\u2014"} validated against your central-line audit data.
                 </Text>
               </View>
             )}
@@ -3386,7 +3386,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(sepsisVal)} <Text style={{ fontSize: 8, color: colors.tertiary }}>(potential)</Text></Text>
                 </View>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  SEP-1 compliance requires timely documentation of sepsis recognition, lactate ordering, cultures, and antibiotic administration. Of your {(safe(data.nursingSepsisPerYear) ?? 0).toFixed(0)} annual sepsis cases, {(100 - (safe(data.nursingSepsisCurrentCompliance) || 75)).toFixed(0)}% are currently non-compliant {"\u2014"} and {safe(data.nursingSepsisDocLagPercent) || 30}% of those involve a documentation lag rather than a care delivery gap. At {fmtCurrency(safe(data.nursingSepsisExcessCostPerCase) || 3500)} excess cost per delayed case and {safe(data.nursingSepsisRealization) || 60}% realization: {fmtCurrency(sepsisVal)}.
+                  SEP-1 compliance requires timely documentation of sepsis recognition, lactate ordering, cultures, and antibiotic administration. The mechanism we{"\u2019"}re modeling: when those steps are captured as they happen rather than reconstructed later, the documentation lag piece of non-compliance shrinks. Of your {(safe(data.nursingSepsisPerYear) ?? 0).toFixed(0)} annual sepsis cases, {(100 - (safe(data.nursingSepsisCurrentCompliance) || 75)).toFixed(0)}% are currently non-compliant and {safe(data.nursingSepsisDocLagPercent) || 30}% of those involve a documentation lag rather than a care delivery gap. At {fmtCurrency(safe(data.nursingSepsisExcessCostPerCase) || 3500)} excess cost per delayed case and {safe(data.nursingSepsisRealization) || 60}% realization, that would translate to {fmtCurrency(sepsisVal)} {"\u2014"} validated against your sepsis-committee chart audits.
                 </Text>
               </View>
             )}
@@ -3447,7 +3447,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               {data.nursingRetentionEnabled && retVal > 0 && (
                 <>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    At {safe(data.nursingTurnoverRate) || 18}% annual turnover across {fmtNum(safe(data.nursingFTEs) || data.providers)} nurse FTEs, your program loses approximately {(safe(data.nursingNursesLeaving) ?? 0).toFixed(1)} nurses per year. Of those, an estimated {safe(data.nursingBurnoutPct) || 40}% leave for burnout-related reasons {"\u2014"} documentation burden among the most cited. At a {safe(data.nursingRetentionImpactPct) || 15}% impact on burnout-driven departures, {(safe(data.nursingNursesRetained) ?? 0).toFixed(1)} nurses retained at {fmtCurrency(safe(data.nursingReplacementCost) || 56300)} replacement cost: {fmtCurrency(retVal)}.
+                    At {safe(data.nursingTurnoverRate) || 18}% annual turnover across {fmtNum(safe(data.nursingFTEs) || data.providers)} nurse FTEs, your program loses approximately {(safe(data.nursingNursesLeaving) ?? 0).toFixed(1)} nurses per year. Of those, an estimated {safe(data.nursingBurnoutPct) || 40}% leave for burnout-related reasons {"\u2014"} documentation burden among the most cited. The hypothesis we model: at a {safe(data.nursingRetentionImpactPct) || 15}% impact on burnout-driven departures, {(safe(data.nursingNursesRetained) ?? 0).toFixed(1)} nurses would be retained at {fmtCurrency(safe(data.nursingReplacementCost) || 56300)} replacement cost, pointing to {fmtCurrency(retVal)} {"\u2014"} a number to validate against your own exit-interview and turnover data over 12{"\u2013"}18 months.
                   </Text>
                   <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 3 }}>Source: NSI Nursing Solutions, 2023 National Health Care Retention Report. Replacement cost includes recruitment, onboarding, and productivity ramp to full effectiveness.</Text>
                 </>
@@ -3461,7 +3461,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(agencyVal)}</Text>
                 </View>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  Every nurse retained avoids a vacancy filled with agency staff. At {safe(data.nursingAgencyWeeks) || 12} weeks of agency coverage per vacancy at {fmtCurrency(safe(data.nursingAgencyPremium) || 2500)}/week premium, {(safe(data.nursingNursesRetained) ?? 0).toFixed(1)} retained nurses avoids {fmtCurrency(agencyVal)} in agency premium spend annually.
+                  Every nurse retained avoids a vacancy that would otherwise be filled with agency staff. At {safe(data.nursingAgencyWeeks) || 12} weeks of agency coverage per vacancy at {fmtCurrency(safe(data.nursingAgencyPremium) || 2500)}/week premium, the modeled {(safe(data.nursingNursesRetained) ?? 0).toFixed(1)} retained nurses would translate to {fmtCurrency(agencyVal)} in avoided agency premium {"\u2014"} validated against your contract-labor spend trend.
                 </Text>
               </View>
             )}
@@ -3487,7 +3487,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               {data.nursingOtEnabled && otVal > 0 && (
                 <>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    When nurses complete their documentation before the end of shift rather than after it, they leave on time. At {safe(data.nursingOtHoursPerNurseWeek) || 1.0} overtime hours per nurse per week, a {safe(data.nursingOtReductionPercent) || 40}% reduction across {fmtNum(safe(data.nursingFTEs) || data.providers)} nurses eliminates {fmtNum(otHrsElim)} overtime hours per year at {fmtCurrency(safe(data.nursingOtHourlyRate) || 75)}/hour: {fmtCurrency(otVal)}.
+                    The hypothesis we model: when nurses complete their documentation before the end of shift rather than after it, more of them leave on time. At {safe(data.nursingOtHoursPerNurseWeek) || 1.0} overtime hours per nurse per week, a {safe(data.nursingOtReductionPercent) || 40}% reduction across {fmtNum(safe(data.nursingFTEs) || data.providers)} nurses would translate to {fmtNum(otHrsElim)} OT hours per year at {fmtCurrency(safe(data.nursingOtHourlyRate) || 75)}/hour, or {fmtCurrency(otVal)} {"\u2014"} validated against your unit{"\u2019"}s payroll OT trend.
                   </Text>
                   <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 3, fontStyle: "italic" }}>Overtime reduction is the most direct, immediately measurable labor cost savings in this model. It does not depend on clinical practice change {"\u2014"} only documentation speed.</Text>
                 </>
