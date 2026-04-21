@@ -1,0 +1,62 @@
+ Rebuild client/src/pages/forecast/ForecastDashboard.tsx by mirroring the pattern of client/src/pages/measure/MeasureAllocate.tsx + client/src/pages/measure/MeasureOpportunity.tsx.                        
+  ▎
+  ▎ First, read those two files end-to-end. They are the visual and UX reference. Note specifically:                                                                                                           
+  ▎ - Top-down narrative layout (not left-rail accordion), max-w-[800px] to max-w-[960px] centered
+  ▎ - Attribution + Realization sliders with preset chips (Conservative / Standard / Favorable) that rerun calcs live                                                                                          
+  ▎ - Domain groups (Billing Capture / Revenue Recovery / Cost Reduction / Retention / etc.) with editable inputs and auto-computed dollar ranges underneath                                                   
+  ▎ - useCountUp hook (@/hooks/useCountUp) for animated number transitions                                                                                                                                     
+  ▎ - Card styling: rounded-xl p-3.5 md:p-5 bg-[#FAF8F5] border border-[#E8E2DA], no shadow                                                                                                                    
+  ▎ - Title style: text-2xl md:text-3xl font-bold font-abridge uppercase tracking-tight text-[#1A1A1A]                                                                                                         
+  ▎ - Abridge red #EA2C00 for accents, never #E8350A or font-mono                                                                                                                                              
+  ▎ - Dark hero cards for ROI summary: bg-[#1A1A1A] text-white with red accent numbers                                                                                                                         
+  ▎                                                                                                                                                                                                            
+  ▎ Rebuild ForecastDashboard.tsx top-to-bottom as this narrative:                                                                                                                                             
+  ▎                                                                                                                                                                                                            
+  ▎ 1. Sub-header — partner name (inline-editable), contract window ("Apr 2024 → Apr 2027 · 24 mo remaining"), current pricing summary pill. Export button right-aligned.                                      
+  ▎ 2. Hero ROI Card (dark #1A1A1A card) — "Your ROI under current pricing": Net Contract Value, ROI multiple, Fast → Full break-even band. Big numbers with useCountUp. One-sentence narrative below: "At 
+  ▎ [Per-Provider $250/mo] with [85% utilization], your contract is projected to return $X in net value over [remaining term]."                                                                                
+  ▎ 3. Value Drivers — same visual/editing pattern as MeasureAllocate's domain sections. Each driver is a card with: label, editable projected-delta input (h-10 bg-white border-[#E5E5E5] 
+  ▎ focus:ring-[#EA2C00]/20), confidence + realization sliders (styled like MeasureAllocate's), onset dropdown, scaling unit dropdown. Below each input, a live dollar readout: "≈ $X/yr at current adoption"  
+  ▎ that recalcs on change. Domain groups as section dividers.
+  ▎ 4. What if you changed pricing? — NEW section, 4 side-by-side cards: Current (locked, Abridge-red accent), Per Encounter, Annual Flat, Hybrid. Each card shows: pricing mechanic + editable unit price,    
+  ▎ cost over term, net value, ROI, and a savings/cost delta pill vs current (green if savings, red if worse). Clicking "Make this primary" on an alternate swaps it with current.                             
+  ▎ 5. Levers — 4 sliders in a 2×2 grid: Adoption speed, Utilization %, Encounter growth MoM, Abridge encounter share %. Each slider has a current-value readout and a benchmark default hint. Dragging 
+  ▎ recomputes everything above live.                                                                                                                                                                          
+  ▎ 6. Encounter Runway (conditional — only encounter-mode pricing) — reuse the existing EncounterTrajectory chart from ./dashboard/charts/EncounterTrajectory.tsx, inline under this section with runway-month
+  ▎  callout.                                                                                                                                                                                                  
+  ▎ 7. Saved Scenarios — horizontal pill strip: "Save current as scenario" + list of saved scenarios with overlay toggles. Reuse the existing ScenariosSection logic but collapse to a horizontal strip.
+  ▎                                                                                                                                                                                                            
+  ▎ Delete from the old dashboard:                       
+  ▎ - The left-rail accordion structure (lines 134–163 of current ForecastDashboard.tsx)                                                                                                                       
+  ▎ - The SectionStagger wrapper pattern — use staggered framer-motion directly per section                                                                                                                    
+  ▎ - The ChartCard wrapper and the separate "Cost Curves" chart section (cost curves belong inside the pricing-comparison section, not standalone)                                                            
+  ▎ - The max-w-[1600px] width — change to max-w-[960px] mx-auto px-4 sm:px-6                                                                                                                                  
+  ▎                                                                                                                                                                                                            
+  ▎ Keep and reuse:                                                                                                                                                                                            
+  ▎ - calculateForecast from @/lib/forecastCalculator — untouched                                                                                                                                              
+  ▎ - EncounterTrajectory chart component for Section 6                                                                                                                                                        
+  ▎ - AlertsZone component (move to after Section 4 Levers)
+  ▎ - ExportDialog component                                                                                                                                                                                   
+  ▎ - The partner-name editing in the sub-header                                                                                                                                                               
+  ▎                                                                                                                                                                                                            
+  ▎ Also update client/src/pages/forecast/types.ts: In makeEmptyForecastState(), seed valueDrivers with these 3 benchmarks (so the dashboard is never empty):                                                  
+  ▎                                                                                                                                                                                                            
+  ▎ valueDrivers: [                                                                                                                                                                                            
+  ▎   { id: 'seed-wrvu', label: 'wRVU lift per provider/year', domain: 'revenue', category: 'documentation', scalingUnit: 'perActiveUser', projectedDelta: 1200, confidence: 70, realizationPct: 80, onset: 
+  ▎ 'immediate', source: 'manual' },                                                                                                                                                                           
+  ▎   { id: 'seed-doc-time', label: 'Documentation time saved', domain: 'workforce', category: 'time', scalingUnit: 'perEncounter', projectedDelta: 45, confidence: 80, realizationPct: 85, onset: 'immediate',
+  ▎  source: 'manual' },                                                                                                                                                                                       
+  ▎   { id: 'seed-retention', label: 'Clinician retention value', domain: 'workforce', category: 'retention', scalingUnit: 'perActiveUser', projectedDelta: 8000, confidence: 60, realizationPct: 70, onset: 
+  ▎ 'longTerm', source: 'manual' },                                                                                                                                                                            
+  ▎ ],                                                   
+  ▎                                                                                                                                                                                                            
+  ▎ Page background — change from bg-[#FAFAFA] to bg-[#FAFAF8] to match Measure.                                                                                                                               
+  ▎                                                                                                                                                                                                            
+  ▎ Verification after build:                                                                                                                                                                                  
+  ▎ - Land on /forecast → go through setup → arrive on Dashboard
+  ▎ - Dashboard is a single centered narrative column, max-w-[960px], matches the visual language of MeasureAllocate                                                                                           
+  ▎ - Hero ROI card shows real positive numbers (not $0 / -$2M) because 3 seed drivers are present                                                                                                             
+  ▎ - Edit any value driver's projected delta → hero numbers and the "≈ $X/yr" readout update within 150ms                                                                                                     
+  ▎ - Pricing comparison section shows 4 side-by-side cards; toggling changes the cost delta pills                                                                                                             
+  ▎ - Drag any slider → everything recomputes live                                                                                                                                                             
+  ▎ - No font-mono anywhere, no #E8350A, no max-w-[1600px], no left-rail accordion structure     
