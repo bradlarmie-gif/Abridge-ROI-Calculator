@@ -196,20 +196,13 @@ export interface DocQualityInputs {
   ipObsDefenseDocContribution: number;
   ipObsDefenseRealization: number;
   ipObsDefenseExpanded: boolean;
-  ipConcurrentReviewEnabled: boolean;
-  ipConcurrentReviewRate: number;
-  ipConcurrentDenialRate: number;
-  ipConcurrentDocSensitive: number;
-  ipConcurrentAvgDays: number;
-  ipConcurrentDailyRate: number;
-  ipConcurrentRealization: number;
-  ipConcurrentExpanded: boolean;
   
   // Inpatient: CDI Query Reduction
   ipCdiEnabled: boolean;
   ipCdiScenario: 'conservative' | 'typical' | 'aggressive';
   ipCdiQueryRate: number; // % of admissions that generate queries
   ipCdiCostPerQuery: number; // Cost per query
+  ipCdiRealization: number;
   
   // Nursing: HAPI Prevention (potential value)
   nursingHapiEnabled: boolean;
@@ -453,27 +446,20 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipDrgAtRiskRate: 18, // 18% of admissions have documentation gaps
     ipDrgWeightIncrease: 0.4, // Average DRG weight difference
     ipDrgBasePayment: 6000, // $6,000 base DRG payment
-    ipDrgRealization: 33, // 33% realization (RAC/PEPPER audits) - conservative
+    ipDrgRealization: 65, // 65% realization (RAC/PEPPER audits)
     // Inpatient: Obs/IP Status Defense defaults
     ipObsDefenseEnabled: false,
     ipObsDefenseDenialRate: 5,
     ipObsDefenseClaimValue: 10000,
-    ipObsDefenseDocContribution: 20,
+    ipObsDefenseDocContribution: 45,
     ipObsDefenseRealization: 25,
     ipObsDefenseExpanded: false,
-    ipConcurrentReviewEnabled: false,
-    ipConcurrentReviewRate: 45,
-    ipConcurrentDenialRate: 8,
-    ipConcurrentDocSensitive: 20,
-    ipConcurrentAvgDays: 1.5,
-    ipConcurrentDailyRate: 2800,
-    ipConcurrentRealization: 30,
-    ipConcurrentExpanded: false,
     // Inpatient: CDI Query Reduction defaults
     ipCdiEnabled: false,
     ipCdiScenario: 'typical',
     ipCdiQueryRate: 30, // 30% of admissions generate queries
-    ipCdiCostPerQuery: 50, // $50 per query
+    ipCdiCostPerQuery: 150, // $150 per query
+    ipCdiRealization: 75,
     // Nursing: HAPI Prevention defaults
     nursingHapiEnabled: false,
     nursingHapiRate: 2.5, // 2.5 per 1,000 patient days
@@ -844,22 +830,13 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       const reductionPercent = ipCdiReductionScenarios[docQualityInputs.ipCdiScenario];
       const totalQueries = eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100);
       const queriesAvoided = totalQueries * (reductionPercent / 100);
-      total += queriesAvoided * docQualityInputs.ipCdiCostPerQuery;
+      total += queriesAvoided * docQualityInputs.ipCdiCostPerQuery * (docQualityInputs.ipCdiRealization / 100);
     }
 
     // Inpatient: Obs/IP Status Defense
     if (state.careSetting === 'inpatient' && docQualityInputs.ipObsDefenseEnabled) {
       const obsDefenseGross = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100);
       total += obsDefenseGross * (docQualityInputs.ipObsDefenseRealization / 100);
-    }
-
-    // Inpatient: Concurrent Review Defense
-    if (state.careSetting === 'inpatient' && docQualityInputs.ipConcurrentReviewEnabled) {
-      const casesReviewed = eligibleEncounters * (docQualityInputs.ipConcurrentReviewRate / 100);
-      const casesDenied = casesReviewed * (docQualityInputs.ipConcurrentDenialRate / 100);
-      const docSensitiveCases = casesDenied * (docQualityInputs.ipConcurrentDocSensitive / 100);
-      const gross = docSensitiveCases * docQualityInputs.ipConcurrentAvgDays * docQualityInputs.ipConcurrentDailyRate;
-      total += gross * (docQualityInputs.ipConcurrentRealization / 100);
     }
 
     return Math.round(total);

@@ -307,15 +307,13 @@ export interface ExplorePDFData {
   ipQueriesAvoided?: number;
   ipCostPerQuery?: number;
   ipCdiValue?: number;
+  ipCdiRealization?: number;
   ipCdiEnabled?: boolean;
   ipCdiScenario?: string;
   ipDrgScenario?: string;
   ipObsDefenseEnabled?: boolean;
   ipObsDefenseValue?: number;
   ipObsDefenseRealization?: number;
-  ipConcurrentReviewEnabled?: boolean;
-  ipConcurrentValue?: number;
-  ipConcurrentRealization?: number;
   ipCostReductionValue?: number;
   ipCostReductionEnabled?: boolean;
   ipWellbeingHoursPerWeek?: number;
@@ -2447,8 +2445,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
     const drgVal = safe(data.ipDrgValue);
     const cdiQueryVal = safe(data.ipCdiValue);
     const obsDefVal = safe(data.ipObsDefenseValue);
-    const concurrentVal = safe(data.ipConcurrentValue);
-    const revenueTotal = drgVal + obsDefVal + concurrentVal;
+    const revenueTotal = drgVal + obsDefVal;
     const ipTotalPages = 6;
     const investmentPageNum = 5;
     const assessmentPageNum = 6;
@@ -2781,7 +2778,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={styles.divider} />
 
-            {(data.ipDrgEnabled && drgVal > 0) || (data.ipObsDefenseEnabled && obsDefVal > 0) || (data.ipConcurrentReviewEnabled && concurrentVal > 0) ? (
+            {(data.ipDrgEnabled && drgVal > 0) || (data.ipObsDefenseEnabled && obsDefVal > 0) ? (
               <>
                 {data.ipDrgEnabled && drgVal > 0 ? (
                   <View style={[styles.cardBg, { marginBottom: 8 }]}>
@@ -2830,33 +2827,12 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                   </View>
                 )}
 
-                {data.ipConcurrentReviewEnabled && concurrentVal > 0 ? (
-                  <View style={[styles.cardBg, { marginBottom: 8 }]}>
-                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                      <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>CONCURRENT REVIEW DEFENSE</Text>
-                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(concurrentVal)}</Text>
-                        </View>
-                        <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                          Payer concurrent review targets cases where continued-stay medical necessity isn{"\u2019"}t documented clearly in real time. The mechanism we{"\u2019"}re modeling: ambient capture brings the daily clinical rationale into the note as it{"\u2019"}s spoken {"\u2014"} the progression of illness, the decision to maintain inpatient status {"\u2014"} so when the case manager needs to respond to a payer, the note is already there. At a {safe(data.ipConcurrentRealization)}% realization rate, that would translate to {fmtCurrency(concurrentVal)}, validated against your case management team{"\u2019"}s payer-pushback data.
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                ) : (
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 6 }}>
-                    <Text style={{ fontSize: 9, color: colors.secondary }}>Concurrent Review Defense</Text>
-                    <Text style={{ fontSize: 9, color: colors.secondary }}>Not Selected</Text>
-                  </View>
-                )}
               </>
             ) : (
               <View style={[styles.cardBg, { marginBottom: 8 }]}>
                 <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.secondary, marginBottom: 4 }}>Revenue Drivers {"\u2014"} Not Selected</Text>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  Revenue drivers were not selected for this model. DRG Accuracy, Obs/IP Status Defense, and Concurrent Review Defense are available to model when your revenue cycle team is ready.
+                  Revenue drivers were not selected for this model. DRG Accuracy and Obs/IP Status Defense are available to model when your revenue cycle team is ready.
                 </Text>
               </View>
             )}
@@ -3074,12 +3050,6 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                       {data.ipObsDefenseEnabled ? fmtCurrency(obsDefVal) : "Not Modeled"}
                     </Text>
                   </View>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Concurrent Review Defense</Text>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
-                      {data.ipConcurrentReviewEnabled ? fmtCurrency(concurrentVal) : "Not Modeled"}
-                    </Text>
-                  </View>
                 </View>
                 <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
                 <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -3148,9 +3118,6 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               </Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6, marginBottom: 4 }}>
                 <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Obs/IP Defense:</Text> Documentation-sensitive observation denials. {safe(data.ipObsDefenseRealization)}% realization applied.
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
-                <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Concurrent Review:</Text> Continued-stay medical necessity documentation. {safe(data.ipConcurrentRealization)}% realization applied.
               </Text>
             </View>
 

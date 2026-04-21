@@ -216,22 +216,13 @@ export default function ExploreModel({
     const reductionPercent = ipCdiReductionScenarios[docQualityInputs.ipCdiScenario];
     const totalQueries = eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100);
     const queriesAvoided = totalQueries * (reductionPercent / 100);
-    return Math.round(queriesAvoided * docQualityInputs.ipCdiCostPerQuery);
+    return Math.round(queriesAvoided * docQualityInputs.ipCdiCostPerQuery * (docQualityInputs.ipCdiRealization / 100));
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
   const ipObsDefenseValue = useMemo(() => {
     if (!isInpatient || !docQualityInputs.ipObsDefenseEnabled) return 0;
     const gross = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100);
     return Math.round(gross * (docQualityInputs.ipObsDefenseRealization / 100));
-  }, [isInpatient, eligibleEncounters, docQualityInputs]);
-
-  const ipConcurrentValue = useMemo(() => {
-    if (!isInpatient || !docQualityInputs.ipConcurrentReviewEnabled) return 0;
-    const casesReviewed = eligibleEncounters * (docQualityInputs.ipConcurrentReviewRate / 100);
-    const casesDenied = casesReviewed * (docQualityInputs.ipConcurrentDenialRate / 100);
-    const docSensitiveCases = casesDenied * (docQualityInputs.ipConcurrentDocSensitive / 100);
-    const gross = docSensitiveCases * docQualityInputs.ipConcurrentAvgDays * docQualityInputs.ipConcurrentDailyRate;
-    return Math.round(gross * (docQualityInputs.ipConcurrentRealization / 100));
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
@@ -355,7 +346,6 @@ export default function ExploreModel({
     if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", onset: "immediate" as const });
     if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", onset: "immediate" as const });
     if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", onset: "immediate" as const });
-    if (ipConcurrentValue > 0) drivers.push({ id: "ipConcurrent", name: "Concurrent Review Defense", value: ipConcurrentValue, category: "documentation", onset: "immediate" as const });
     if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", onset: "immediate" as const });
     if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk Reduction", value: nursingHapiValue, category: "documentation", onset: "delayed" as const });
     if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility", value: nursingFallsValue, category: "documentation", onset: "delayed" as const });
@@ -686,7 +676,7 @@ export default function ExploreModel({
             id: 'inpatientCDI', name: 'CDI Query Reduction', value: ipCdiValue, category: 'documentation',
             calcSteps: [
               `${eligibleEncounters.toLocaleString()} enc \u00D7 ${docQualityInputs.ipCdiQueryRate}% query rate \u00D7 ${reductionRate}% reduced`,
-              `\u00D7 $${docQualityInputs.ipCdiCostPerQuery}/query = ${fmtK(ipCdiValue)}/year`,
+              `\u00D7 $${docQualityInputs.ipCdiCostPerQuery}/query \u00D7 ${docQualityInputs.ipCdiRealization}% realization = ${fmtK(ipCdiValue)}/year`,
             ],
           });
         }
@@ -922,7 +912,7 @@ export default function ExploreModel({
           const ipFullScaleMult = (ipFullScaleProvs / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
           const ipRetValOnly = clinicianRetentionValue;
           const ipCostRedOnly = costReductionValue;
-          const ipPrimaryTotal = ipRetValOnly + ipCostRedOnly + ipDrgValue + ipCdiValue + ipObsDefenseValue + ipConcurrentValue;
+          const ipPrimaryTotal = ipRetValOnly + ipCostRedOnly + ipDrgValue + ipCdiValue + ipObsDefenseValue;
           const ipPrimaryNet = ipPrimaryTotal - annualInvestment;
           const ipFullScaleNetValue = Math.round(ipPrimaryNet * ipFullScaleMult);
           const ipFullScaleInv = Math.round(annualInvestment * (ipFullScaleProvs / state.numberOfProviders));
@@ -963,9 +953,7 @@ export default function ExploreModel({
             ipObsDefenseEnabled: docQualityInputs.ipObsDefenseEnabled,
             ipObsDefenseValue: ipObsDefenseValue,
             ipObsDefenseRealization: docQualityInputs.ipObsDefenseRealization,
-            ipConcurrentReviewEnabled: docQualityInputs.ipConcurrentReviewEnabled,
-            ipConcurrentValue: ipConcurrentValue,
-            ipConcurrentRealization: docQualityInputs.ipConcurrentRealization,
+            ipCdiRealization: docQualityInputs.ipCdiRealization,
             ipCostReductionValue: costReductionValue,
             ipCostReductionEnabled: timeDriverInputs.costReductionEnabled,
             ipWellbeingHoursPerWeek: ipHrsPerWk,
@@ -1922,10 +1910,10 @@ export default function ExploreModel({
               <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ip-revenue">
                 <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Revenue</p>
                 <div className="flex items-center gap-2 mb-3">
-                  {(ipDrgValue + ipObsDefenseValue + ipConcurrentValue) > 0 ? (
+                  {(ipDrgValue + ipObsDefenseValue) > 0 ? (
                     <>
                       <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-revenue-value">{formatCurrency(ipDrgValue + ipObsDefenseValue + ipConcurrentValue)}</p>
+                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-revenue-value">{formatCurrency(ipDrgValue + ipObsDefenseValue)}</p>
                     </>
                   ) : (
                     <>
@@ -1943,10 +1931,6 @@ export default function ExploreModel({
                   <div className="flex justify-between gap-1">
                     <span className="text-[#666666]">Obs/IP Defense</span>
                     <span className="font-semibold text-black">{docQualityInputs.ipObsDefenseEnabled ? formatCurrency(ipObsDefenseValue) : '—'}</span>
-                  </div>
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Concurrent Review</span>
-                    <span className="font-semibold text-black">{docQualityInputs.ipConcurrentReviewEnabled ? formatCurrency(ipConcurrentValue) : '—'}</span>
                   </div>
                 </div>
               </div>
@@ -2291,13 +2275,6 @@ export default function ExploreModel({
                     </div>
                     {docQualityInputs.ipObsDefenseEnabled && (
                       <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipObsDefenseRealization}% realization)</p>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• Concurrent Review Defense</span>
-                      <span className="font-semibold text-black">{docQualityInputs.ipConcurrentReviewEnabled ? formatCurrency(ipConcurrentValue) : '—'}</span>
-                    </div>
-                    {docQualityInputs.ipConcurrentReviewEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipConcurrentRealization}% realization)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.docDriver2}</span>

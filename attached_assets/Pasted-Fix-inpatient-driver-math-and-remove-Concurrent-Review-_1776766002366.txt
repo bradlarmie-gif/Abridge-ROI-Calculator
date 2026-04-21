@@ -1,0 +1,201 @@
+Fix inpatient driver math and remove Concurrent Review Defense. This touches 4 files. Make every change exactly as specified.                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ ---                                                                                                                                                                                                        
+  ▎ File 1: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                           
+  ▎                                                                                                                                                                                                            
+  ▎ A — Remove Concurrent Review from DocQualityInputs interface
+  ▎                                                                                                                                                                                                            
+  ▎ Delete these 8 lines from the interface:                                                                                                                                                                   
+  ▎ ipConcurrentReviewEnabled: boolean;
+  ▎ ipConcurrentReviewRate: number;                                                                                                                                                                            
+  ▎ ipConcurrentDenialRate: number;                                                                                                                                                                            
+  ▎ ipConcurrentDocSensitive: number;
+  ▎ ipConcurrentAvgDays: number;                                                                                                                                                                               
+  ▎ ipConcurrentDailyRate: number;                                                                                                                                                                             
+  ▎ ipConcurrentRealization: number;
+  ▎ ipConcurrentExpanded: boolean;                                                                                                                                                                             
+  ▎                                                      
+  ▎ B — Add ipCdiRealization to DocQualityInputs interface                                                                                                                                                     
+  ▎
+  ▎ Find ipCdiCostPerQuery: number; and add this line immediately after it:                                                                                                                                    
+  ▎ ipCdiRealization: number;                            
+  ▎                                                                                                                                                                                                            
+  ▎ C — Remove Concurrent Review from DEFAULT_EXPLORE_STATE
+  ▎
+  ▎ Delete these 8 lines from the defaults object:                                                                                                                                                             
+  ▎ ipConcurrentReviewEnabled: false,
+  ▎ ipConcurrentReviewRate: 45,                                                                                                                                                                                
+  ▎ ipConcurrentDenialRate: 8,                           
+  ▎ ipConcurrentDocSensitive: 20,                                                                                                                                                                              
+  ▎ ipConcurrentAvgDays: 1.5,
+  ▎ ipConcurrentDailyRate: 2800,                                                                                                                                                                               
+  ▎ ipConcurrentRealization: 30,                                                                                                                                                                               
+  ▎ ipConcurrentExpanded: false,
+  ▎                                                                                                                                                                                                            
+  ▎ D — Update defaults                                                                                                                                                                                        
+  ▎
+  ▎ Make these exact value changes in DEFAULT_EXPLORE_STATE.docQualityInputs:                                                                                                                                  
+  ▎ - ipDrgRealization: 33 → ipDrgRealization: 65        
+  ▎ - ipObsDefenseDocContribution: 20 → ipObsDefenseDocContribution: 45                                                                                                                                        
+  ▎ - ipCdiCostPerQuery: 50 → ipCdiCostPerQuery: 150                                                                                                                                                           
+  ▎ - After ipCdiCostPerQuery: 150, add: ipCdiRealization: 75,
+  ▎                                                                                                                                                                                                            
+  ▎ E — Update docValue useMemo calculation                                                                                                                                                                    
+  ▎                                                                                                                                                                                                            
+  ▎ Remove the entire Concurrent Review block:                                                                                                                                                                 
+  ▎ // Inpatient: Concurrent Review Defense              
+  ▎ if (state.careSetting === 'inpatient' && docQualityInputs.ipConcurrentReviewEnabled) {
+  ▎   const casesReviewed = eligibleEncounters * (docQualityInputs.ipConcurrentReviewRate / 100);                                                                                                              
+  ▎   const casesDenied = casesReviewed * (docQualityInputs.ipConcurrentDenialRate / 100);                                                                                                                     
+  ▎   const docSensitiveCases = casesDenied * (docQualityInputs.ipConcurrentDocSensitive / 100);                                                                                                               
+  ▎   const gross = docSensitiveCases * docQualityInputs.ipConcurrentAvgDays * docQualityInputs.ipConcurrentDailyRate;                                                                                         
+  ▎   total += gross * (docQualityInputs.ipConcurrentRealization / 100);                                                                                                                                       
+  ▎ }                                                                                                                                                                                                          
+  ▎                                                                                                                                                                                                            
+  ▎ Update the CDI calculation line from:                                                                                                                                                                      
+  ▎ total += queriesAvoided * docQualityInputs.ipCdiCostPerQuery;
+  ▎ to:                                                                                                                                                                                                        
+  ▎ total += queriesAvoided * docQualityInputs.ipCdiCostPerQuery * (docQualityInputs.ipCdiRealization / 100);                                                                                                  
+  ▎
+  ▎ ---                                                                                                                                                                                                        
+  ▎ File 2: client/src/pages/explore/ExploreModel.tsx    
+  ▎                                                                                                                                                                                                            
+  ▎ A — Update ipCdiValue useMemo                        
+  ▎                                                                                                                                                                                                            
+  ▎ Change:                                              
+  ▎ return Math.round(queriesAvoided * docQualityInputs.ipCdiCostPerQuery);
+  ▎ to:
+  ▎ return Math.round(queriesAvoided * docQualityInputs.ipCdiCostPerQuery * (docQualityInputs.ipCdiRealization / 100));                                                                                        
+  ▎
+  ▎ B — Remove ipConcurrentValue useMemo entirely                                                                                                                                                              
+  ▎                                                      
+  ▎ Delete the full useMemo block:                                                                                                                                                                             
+  ▎ const ipConcurrentValue = useMemo(() => {            
+  ▎   if (!isInpatient || !docQualityInputs.ipConcurrentReviewEnabled) return 0;                                                                                                                               
+  ▎   ...                                                                                                                                                                                                      
+  ▎ }, [...]);
+  ▎                                                                                                                                                                                                            
+  ▎ C — Remove Concurrent Review from drivers array push                                                                                                                                                       
+  ▎
+  ▎ Delete this line:                                                                                                                                                                                          
+  ▎ if (ipConcurrentValue > 0) drivers.push({ id: "ipConcurrent", name: "Concurrent Review Defense", value: ipConcurrentValue, category: "documentation", onset: "immediate" as const });
+  ▎
+  ▎ D — Remove Concurrent Review from PDF data object and add CDI realization                                                                                                                                  
+  ▎
+  ▎ In the object passed to the PDF export, remove any lines containing ipConcurrentReviewEnabled, ipConcurrentValue, ipConcurrentRealization.                                                                 
+  ▎ Add this line to the same object (near the other ipCdi* fields):
+  ▎ ipCdiRealization: docQualityInputs.ipCdiRealization,                                                                                                                                                       
+  ▎                                                      
+  ▎ E — Update the PDF export driver calc steps for CDI                                                                                                                                                        
+  ▎                                                      
+  ▎ Find the CDI calcSteps block:                                                                                                                                                                              
+  ▎ calcSteps: [                                         
+  ▎   `${eligibleEncounters.toLocaleString()} enc × ${docQualityInputs.ipCdiQueryRate}% query rate × ${reductionRate}% reduced`,                                                                               
+  ▎   `× $${docQualityInputs.ipCdiCostPerQuery}/query = ${fmtK(ipCdiValue)}/year`,                                                                                                                             
+  ▎ ],                                                                                                                                                                                                         
+  ▎ Replace with:                                                                                                                                                                                              
+  ▎ calcSteps: [                                                                                                                                                                                               
+  ▎   `${eligibleEncounters.toLocaleString()} enc × ${docQualityInputs.ipCdiQueryRate}% query rate × ${reductionRate}% reduced`,
+  ▎   `× $${docQualityInputs.ipCdiCostPerQuery}/query × ${docQualityInputs.ipCdiRealization}% realization = ${fmtK(ipCdiValue)}/year`,                                                                         
+  ▎ ],                                                                                                                                                                                                         
+  ▎                                                                                                                                                                                                            
+  ▎ ---                                                                                                                                                                                                        
+  ▎ File 3: client/src/pages/explore/ExploreDocQuality.tsx
+  ▎                                                                                                                                                                                                            
+  ▎ A — Remove the entire Concurrent Review section                                                                                                                                                            
+  ▎                                                                                                                                                                                                            
+  ▎ Delete the complete JSX block for "Continued Stay Documentation" / Concurrent Review — the outer <div className="space-y-0"> that contains the toggle and the AnimatePresence expanded section. This starts
+  ▎  around line 1439 and ends around line 1694. Remove everything between and including the outer div tags.
+  ▎                                                                                                                                                                                                            
+  ▎ B — Add CDI realization rate input                                                                                                                                                                         
+  ▎
+  ▎ In the CDI expanded section, after the ipCdiCostPerQuery input (Step 3: Savings), add a new step:                                                                                                          
+  ▎ {/* Step 4: Realization Rate */}                     
+  ▎ <div className="mb-8">                                                                                                                                                                                     
+  ▎   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+  ▎     Step 4: Realization Rate                                                                                                                                                                               
+  ▎   </p>                                               
+  ▎   <div className="bg-[#F5F0EB] rounded-lg p-5">                                                                                                                                                            
+  ▎     <div className="flex-1">                                                                                                                                                                               
+  ▎       <label className="text-[13px] text-[#666666] mb-1.5 block">Realization Rate</label>
+  ▎       <div className="relative">                                                                                                                                                                           
+  ▎         <input                                       
+  ▎           type="number"                                                                                                                                                                                    
+  ▎           step="5"                                   
+  ▎           min={50}
+  ▎           max={100}                                                                                                                                                                                        
+  ▎           value={docQualityInputs.ipCdiRealization}
+  ▎           onChange={(e) => updateDocInputs({ ipCdiRealization: parseFloat(e.target.value) || 0 })}                                                                                                         
+  ▎           className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"                                                                                 
+  ▎           data-testid="input-cdi-realization"                                                                                                                                                              
+  ▎         />                                                                                                                                                                                                 
+  ▎         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>                                                                                                                
+  ▎       </div>                                                                                                                                                                                               
+  ▎       <p className="text-[13px] text-[#888888] mt-3">
+  ▎         What portion of the avoided queries translates to realized savings after accounting for partial query resolution and documentation rework? 75% is a conservative default.                          
+  ▎       </p>                                                                                                                                                                                                 
+  ▎     </div>                                                                                                                                                                                                 
+  ▎   </div>                                                                                                                                                                                                   
+  ▎ </div>                                               
+  ▎
+  ▎ C — Update the "Annual CDI Savings" display value                                                                                                                                                          
+  ▎
+  ▎ Find where ipCdiSavingsValue is computed inline in the JSX. Update it to multiply by (docQualityInputs.ipCdiRealization / 100). If it's derived from the ExploreFlow memo (passed as a prop), no change    
+  ▎ needed here — the memo already has the fix from File 1.
+  ▎                                                                                                                                                                                                            
+  ▎ D — Update Obs/IP helper text                                                                                                                                                                              
+  ▎
+  ▎ Find the helper text near the ipObsDefenseDocContribution input that reads something like "15–25% is a defensible starting point." Replace with:                                                           
+  ▎ Of your medical necessity denials, what % do you lose specifically because documentation didn't capture clinical reasoning adequately? For systems using Abridge, 35–55% is appropriate — better notes 
+  ▎ directly reduce these losses.                                                                                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ ---
+  ▎ File 4: client/src/components/explore/ExplorePDFExport.tsx                                                                                                                                                 
+  ▎                                                                                                                                                                                                            
+  ▎ A — Remove Concurrent Review from the data type
+  ▎                                                                                                                                                                                                            
+  ▎ Delete these lines from the data interface/type:                                                                                                                                                           
+  ▎ ipConcurrentReviewEnabled?: boolean;
+  ▎ ipConcurrentValue?: number;                                                                                                                                                                                
+  ▎ ipConcurrentRealization?: number;                                                                                                                                                                          
+  ▎
+  ▎ B — Add CDI realization to data type                                                                                                                                                                       
+  ▎                                                      
+  ▎ After ipCdiValue?: number;, add:                                                                                                                                                                           
+  ▎ ipCdiRealization?: number;
+  ▎                                                                                                                                                                                                            
+  ▎ C — Remove concurrentVal and fix revenueTotal                                                                                                                                                              
+  ▎
+  ▎ Delete: const concurrentVal = safe(data.ipConcurrentValue);                                                                                                                                                
+  ▎                                                      
+  ▎ Change:                                                                                                                                                                                                    
+  ▎ const revenueTotal = drgVal + obsDefVal + concurrentVal;
+  ▎ to:                                                                                                                                                                                                        
+  ▎ const revenueTotal = drgVal + obsDefVal;             
+  ▎
+  ▎ D — Remove Concurrent Review render condition                                                                                                                                                              
+  ▎
+  ▎ Find the condition:                                                                                                                                                                                        
+  ▎ (data.ipDrgEnabled && drgVal > 0) || (data.ipObsDefenseEnabled && obsDefVal > 0) || (data.ipConcurrentReviewEnabled && concurrentVal > 0)
+  ▎ Change to:                                                                                                                                                                                                 
+  ▎ (data.ipDrgEnabled && drgVal > 0) || (data.ipObsDefenseEnabled && obsDefVal > 0)                                                                                                                           
+  ▎                                                                                                                                                                                                            
+  ▎ E — Remove the Concurrent Review PDF card block                                                                                                                                                            
+  ▎                                                      
+  ▎ Delete the entire JSX block that renders CONCURRENT REVIEW DEFENSE — the {data.ipConcurrentReviewEnabled && concurrentVal > 0 ? ( ... ) : null} block.                                                     
+  ▎                                                      
+  ▎ F — Remove any remaining references to concurrentVal or ipConcurrentReviewEnabled                                                                                                                          
+  ▎                                                      
+  ▎ Search for any remaining uses of concurrentVal or ipConcurrentReviewEnabled in this file and remove them.                                                                                                  
+  ▎                                                      
+  ▎ ---                                                                                                                                                                                                        
+  ▎ Verify after building                                
+  ▎
+  ▎ 1. Navigate to Explore → Inpatient → Doc Quality → confirm "Continued Stay Documentation" toggle is gone                                                                                                   
+  ▎ 2. CDI Query Reduction expanded → confirm Step 4 "Realization Rate" input appears, defaults to 75
+  ▎ 3. CDI cost per query defaults to $150 (not $50)                                                                                                                                                           
+  ▎ 4. DRG realization defaults to 65% (not 33%)                                                                                                                                                               
+  ▎ 5. Obs/IP doc contribution defaults to 45% (not 20%)                                                                                                                                                       
+  ▎ 6. Enable all 3 remaining drivers with defaults → numbers are non-trivial (not near-zero)                                                                                                                  
+  ▎ 7. Export PDF → no "Concurrent Review Defense" section appears, CDI calc steps show the realization rate                                                                                                   
+  ▎ 8. TypeScript compiles with no errors  

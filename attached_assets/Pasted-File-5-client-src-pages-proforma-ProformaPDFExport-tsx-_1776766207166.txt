@@ -1,0 +1,21 @@
+File 5: client/src/pages/proforma/ProformaPDFExport.tsx                                                                                                                                                    
+  ▎
+  ▎ Find the ipCdi case in the calc steps function (around line 355):                                                                                                                                          
+  ▎ case "ipCdi": {                                      
+  ▎   const reductionRate = CDI_SCENARIOS[d.ipCdiScenario] || 25;                                                                                                                                              
+  ▎   return [                                                                                                                                                                                                 
+  ▎     `${eligibleEnc.toLocaleString()} enc × ${d.ipCdiQueryRate}% query rate × ${reductionRate}% reduced`,
+  ▎     `× $${d.ipCdiCostPerQuery}/query = ${fmtK(driver.value)}/year`,                                                                                                                                        
+  ▎   ];                                                 
+  ▎ }                                                                                                                                                                                                          
+  ▎ Replace the last line of the return array with:      
+  ▎ `× $${d.ipCdiCostPerQuery}/query × ${d.ipCdiRealization ?? 75}% realization = ${fmtK(driver.value)}/year`,
+  ▎
+  ▎ File 6: client/src/lib/inpatient-methodology-pdf.tsx
+  ▎
+  ▎ This file has hardcoded text strings describing the methodology formulas. Make two text replacements:
+  ▎
+  ▎ 1. Find the CDI formula description that contains "Cost per query ($50)" — change $50 to $150                                                                                                              
+  ▎ 2. Find the DRG formula description that contains "Realization (50%)" — change 50% to 65%
+  ▎                                                                                                                                                                                                            
+  ▎ These are plain text strings inside JSX or template literals — just find and replace the exact values.
