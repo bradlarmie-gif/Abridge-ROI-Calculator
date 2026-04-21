@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import {
@@ -68,6 +68,11 @@ import { ExportDialog } from "./dashboard/ExportDialog";
 import { MeasuredOutcomesPanel } from "./dashboard/MeasuredOutcomesPanel";
 import { useSmoothCountUp } from "./dashboard/useSmoothCountUp";
 import { fmtCurrencyShort } from "./dashboard/charts/shared";
+import {
+  type ForecastNarrative,
+  generateCalibrationChangeSentence,
+  generateForecastNarrative,
+} from "@/lib/forecastNarrative";
 import {
   DOMAIN_BADGE_CLASS,
   ONSET_LABELS,
@@ -373,6 +378,10 @@ export default function ForecastDashboard({
   const [exportOpen, setExportOpen] = useState(false);
 
   const result = useMemo(() => calculateForecast(state), [state]);
+  const narrative = useMemo(
+    () => generateForecastNarrative(state, result),
+    [state, result],
+  );
 
   const isEncounterMode =
     state.currentPricing.model === "perEncounter" ||
@@ -518,6 +527,7 @@ export default function ForecastDashboard({
             Cost comparison active — add value drivers to see ROI
           </p>
         )}
+        <NarrativeBar narrative={narrative} hasDrivers={state.valueDrivers.length > 0} />
         <HeroROI result={result} state={state} />
 
         {/* Measured Outcomes (only when imported from Measure) */}
@@ -535,10 +545,10 @@ export default function ForecastDashboard({
         />
 
         {/* Calibration assumptions — cascade to all drivers */}
-        <CalibrationPanel state={state} updateState={updateState} />
+        <CalibrationPanel state={state} updateState={updateState} result={result} />
 
         {/* Value Drivers */}
-        <ValueDriversBlock state={state} updateState={updateState} />
+        <ValueDriversBlock state={state} updateState={updateState} narrative={narrative} />
 
         {/* Levers */}
         <LeversBlock state={state} updateState={updateState} />
@@ -552,6 +562,8 @@ export default function ForecastDashboard({
             state={state}
           />
         </div>
+
+        <BottomLinePanel narrative={narrative} />
 
         {/* Encounter Runway (conditional) */}
         {isEncounterMode && (
@@ -656,12 +668,63 @@ const DOMAIN_VALUES: ValueDomain[] = ["capacity", "revenue", "workforce", "quali
 const ONSET_VALUES: DriverOnset[] = ["immediate", "delayed", "phased", "longTerm"];
 const SCALING_VALUES: ScalingUnit[] = ["perEncounter", "perActiveUser", "perBed", "annualFlat"];
 
+function NarrativeBar({
+  narrative,
+  hasDrivers,
+}: {
+  narrative: ForecastNarrative;
+  hasDrivers: boolean;
+}) {
+  if (!hasDrivers) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-[#1A1A1A] text-white rounded-xl px-6 py-4 mb-4 flex items-start gap-4"
+      data-testid="narrative-bar"
+    >
+      <TrendingUp className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+      <p className="text-sm leading-relaxed text-white/90">{narrative.heroSummary}</p>
+    </motion.div>
+  );
+}
+
+function BottomLinePanel({ narrative }: { narrative: ForecastNarrative }) {
+  if (!narrative.heroSummary || narrative.heroSummary.includes("Add value")) return null;
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl border-2 border-[#EA2C00]/20 bg-white p-6 mb-8"
+      data-testid="section-bottom-line"
+    >
+      <p className="text-[11px] uppercase tracking-[2px] text-[#EA2C00] font-semibold mb-3">
+        Executive Summary · Ready to share
+      </p>
+      <p className="text-sm text-[#1A1A1A] leading-relaxed mb-4">{narrative.heroSummary}</p>
+      <p className="text-sm text-[#444444] leading-relaxed mb-4">
+        {narrative.breakEvenInsight}
+      </p>
+      <div className="border-t border-neutral-100 pt-4">
+        <p className="text-[11px] uppercase tracking-wide text-[#888888] font-semibold mb-2">
+          Recommended next lever
+        </p>
+        <p className="text-sm text-[#444444] leading-relaxed">
+          {narrative.topLeverRecommendation}
+        </p>
+      </div>
+    </motion.section>
+  );
+}
+
 function ValueDriversBlock({
   state,
   updateState,
+  narrative,
 }: {
   state: ForecastState;
   updateState: (u: Partial<ForecastState>) => void;
+  narrative: ForecastNarrative;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [preset, setPreset] = useState<PresetId>("standard");
@@ -763,6 +826,15 @@ function ValueDriversBlock({
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
+
+            {narrative.driverInsights[d.id] && (
+              <p
+                className="text-[11px] text-[#666666] italic leading-snug bg-white/60 rounded px-3 py-2 mb-3"
+                data-testid={`text-driver-insight-${d.id}`}
+              >
+                {narrative.driverInsights[d.id]}
+              </p>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
               <div className="space-y-1">
@@ -1071,17 +1143,53 @@ function ValueDriversBlock({
 function CalibrationPanel({
   state,
   updateState,
+  result,
 }: {
   state: ForecastState;
   updateState: (u: Partial<ForecastState>) => void;
+  result: ForecastResult;
 }) {
   const [open, setOpen] = useState(false);
+  const [lastChange, setLastChange] = useState<string | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
   const cal = state.calibration;
+
+  useEffect(
+    () => () => {
+      if (toastTimerRef.current != null) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const updateCal = (patch: Partial<ForecastCalibration>) => {
     const next = { ...cal, ...patch };
     const recalcedDrivers = recalculateAllDrivers(state.valueDrivers, next);
+    const oldNet = result.kpis.netContractValue;
+    const nextState: ForecastState = {
+      ...state,
+      calibration: next,
+      valueDrivers: recalcedDrivers,
+    };
+    const newNet = calculateForecast(nextState).kpis.netContractValue;
     updateState({ calibration: next, valueDrivers: recalcedDrivers });
+
+    const [field, newVal] = Object.entries(patch)[0] as [
+      keyof ForecastCalibration,
+      number,
+    ];
+    const oldVal = cal[field];
+    setLastChange(
+      generateCalibrationChangeSentence(field, oldVal, newVal, newNet - oldNet),
+    );
+    if (toastTimerRef.current != null) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = window.setTimeout(() => {
+      setLastChange(null);
+      toastTimerRef.current = null;
+    }, 4000);
   };
 
   return (
@@ -1174,6 +1282,20 @@ function CalibrationPanel({
           <p className="text-[10px] text-neutral-400 mt-4">
             These are shared assumptions. Individual drivers can be fine-tuned by expanding them below.
           </p>
+          <AnimatePresence>
+            {lastChange && (
+              <motion.p
+                key={lastChange}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="text-xs font-medium text-[#EA2C00] mt-3"
+                data-testid="text-calibration-change"
+              >
+                {lastChange}
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </div>
