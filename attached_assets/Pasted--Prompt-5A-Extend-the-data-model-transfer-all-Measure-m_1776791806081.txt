@@ -1,0 +1,116 @@
+ Prompt 5A — Extend the data model + transfer all Measure metrics                                                                                                                                             
+                                                                                                                                                                                                               
+  In the ROI Calculator project, make the following changes to extend how Measure data flows into Forecast. This is a significant but focused change.
+                                                                                                                                                                                                               
+  STEP 1: In client/src/pages/forecast/types.ts, add a new interface and extend ForecastValueDriver:                                                                                                           
+                                                                                                                                                                                                               
+  Add this new interface before ForecastValueDriver:                                                                                                                                                           
+  export interface DriverClinicalInputs {               
+    metricBefore?: number;                                                                                                                                                                                     
+    metricAfter?: number;                               
+    metricUnit?: string; 
+    metricLabel?: string;
+    factor1Value?: number;
+    factor1Label?: string;                                                                                                                                                                                     
+    factor2Value?: number;
+    factor2Label?: string;                                                                                                                                                                                     
+    factor3Value?: number;                              
+    factor3Label?: string;
+    allocationPct?: number;
+    allocationLabel?: string;
+    formulaType?:                                                                                                                                                                                              
+      | 'timeSavingsWorkforce'
+      | 'timeSavingsCapacity'                                                                                                                                                                                  
+      | 'wrvuLift'                                      
+      | 'emLevelLift'
+      | 'cmiLift'                                                                                                                                                                                              
+      | 'retentionLift'
+      | 'hccCapture'                                                                                                                                                                                           
+      | 'denialReduction'                               
+      | 'nursingOvertimeReduction'
+      | 'losReduction'                                                                                                                                                                                         
+      | 'customDollar';
+  }                                                                                                                                                                                                            
+                                                        
+  Add `clinicalInputs?: DriverClinicalInputs;` as a field on ForecastValueDriver (after the existing `measuredDelta` field).
+                                                                                                                                                                                                               
+  STEP 2: Replace the entire content of client/src/lib/measureToForecast.ts with an expanded version that:                                                                                                     
+                                                                                                                                                                                                               
+  Keeps all existing driver conversions (time savings workforce, wRVU lift, throughput, CMI, retention) but:                                                                                                   
+  - Adds `clinicalInputs` to EVERY driver with the source numbers preserved (metricBefore, metricAfter, factor values, allocation%, and formulaType)
+  - Converts additional drivers that are currently lost:                                                                                                                                                       
+                                                                                                                                                                                                               
+  a) Work outside hours reduction — if m.timeEfficiency.workOutsideWithout > m.timeEfficiency.workOutsideWith:                                                                                                 
+     - id: "drv-workforce-workhours"                                                                                                                                                                           
+     - label: "Work-outside-hours reduction"                                                                                                                                                                   
+     - domain: "workforce", scalingUnit: "perActiveUser"
+     - delta = workOutsideWithout - workOutsideWith (hours/week)                                                                                                                                               
+     - projectedDelta = delta * 52 * otHourlyRate / 12 (monthly per active user)                                                                                                                               
+     - clinicalInputs: { metricBefore: workOutsideWithout, metricAfter: workOutsideWith, metricUnit: "hrs/week", metricLabel: "Work outside hours", factor1Value: otHourlyRate, factor1Label: "OT hourly rate  
+  ($/hr)", formulaType: "timeSavingsWorkforce" }                                                                                                                                                               
+     - confidence: 65, realizationPct: 75, onset: "immediate", source: "measure"                                                                                                                               
+                                                                                                                                                                                                               
+  b) E/M level improvement — if emLevelDelta > 0 and !isInpatient:                                                                                                                                             
+     - id: "drv-revenue-em"                                                                                                                                                                                    
+     - label: "E/M level improvement"                                                                                                                                                                          
+     - domain: "revenue", scalingUnit: "perEncounter"   
+     - projectedDelta = emLevelDelta * 15 (dollars per level per encounter)                                                                                                                                    
+     - clinicalInputs: { metricBefore: wrvuWithout, metricAfter: wrvuWith, metricUnit: "avg E/M level", metricLabel: "E/M level", factor1Value: 15, factor1Label: "Value per E/M level ($)", formulaType:      
+  "emLevelLift" }                                                                                                                                                                                              
+     - confidence: 65, realizationPct: 70, onset: "delayed", source: "measure"                                                                                                                                 
+                                                                                                                                                                                                               
+  c) Clean claim / denial reduction — look for cleanClaimRate or initialDenialRate in m.outpatientMetrics, m.edMetrics, m.inpatientMetrics. If before/after exists and shows improvement:                      
+     - id: "drv-revenue-denials"                                                                                                                                                                               
+     - label: "Denial rate reduction"                                                                                                                                                                          
+     - domain: "revenue", scalingUnit: "perEncounter"   
+     - denialDelta = before - after (percentage points improvement)                                                                                                                                            
+     - Use avgClaimValue = 350 as default (dollars per encounter)                                                                                                                                              
+     - projectedDelta = (denialDelta / 100) * avgClaimValue                                                                                                                                                    
+     - clinicalInputs: { metricBefore: before, metricAfter: after, metricUnit: "% denial rate", metricLabel: "Initial denial rate", factor1Value: 350, factor1Label: "Avg claim value ($)", formulaType:       
+  "denialReduction" }                                                                                                                                                                                          
+     - confidence: 60, realizationPct: 70, onset: "phased", source: "measure"                                                                                                                                  
+                                                                                                                                                                                                               
+  d) Nursing overtime reduction — if careSettings includes "nursing" and m.nursingMetrics has overtimeHours with before > after:                                                                               
+     - id: "drv-nursing-overtime"
+     - label: "Nursing overtime reduction"                                                                                                                                                                     
+     - domain: "workforce", scalingUnit: "perBed"       
+     - delta = before - after (hours/month per nurse)                                                                                                                                                          
+     - projectedDelta = delta * otHourlyRate * 1.5 (overtime at 1.5x rate)                                                                                                                                     
+     - clinicalInputs: { metricBefore: before, metricAfter: after, metricUnit: "hrs/month overtime", metricLabel: "Overtime hours per nurse", factor1Value: otHourlyRate, factor1Label: "Nursing hourly rate   
+  ($/hr)", formulaType: "nursingOvertimeReduction" }                                                                                                                                                           
+     - confidence: 65, realizationPct: 75, onset: "immediate", source: "measure"                                                                                                                               
+                                                                                                                                                                                                               
+  For the existing drivers (time savings, wRVU, throughput, CMI, retention), ADD clinicalInputs to each one preserving the source numbers. For time savings workforce driver:                                  
+  - metricBefore: m.timeEfficiency.timeInNotesWithout
+  - metricAfter: m.timeEfficiency.timeInNotesWith                                                                                                                                                              
+  - metricUnit: "min/encounter"                         
+  - metricLabel: "Minutes in note"                                                                                                                                                                             
+  - factor1Value: m.calibration.otHourlyRate            
+  - factor1Label: "OT hourly rate ($/hr)"                                                                                                                                                                      
+  - allocationPct: 50
+  - allocationLabel: "Allocated to cost savings"                                                                                                                                                               
+  - formulaType: "timeSavingsWorkforce"                 
+                                                                                                                                                                                                               
+  For wRVU driver:                                      
+  - metricBefore: m.documentationQuality.wrvuWithout
+  - metricAfter: m.documentationQuality.wrvuWith                                                                                                                                                               
+  - metricUnit: "wRVU/encounter"
+  - metricLabel: "wRVU per encounter"                                                                                                                                                                          
+  - factor1Value: m.calibration.conversionFactor        
+  - factor1Label: "wRVU conversion factor ($/wRVU)"                                                                                                                                                            
+  - formulaType: "wrvuLift"                                                                                                                                                                                    
+  
+  For throughput driver:                                                                                                                                                                                       
+  - metricBefore: m.timeEfficiency.timeInNotesWithout   
+  - metricAfter: m.timeEfficiency.timeInNotesWith
+  - metricUnit: "min/encounter"                                                                                                                                                                                
+  - metricLabel: "Minutes in note"
+  - factor1Value: m.calibration.minutesPerVisit                                                                                                                                                                
+  - factor1Label: "Minutes per visit"                                                                                                                                                                          
+  - factor2Value: m.calibration.revenuePerVisit
+  - factor2Label: "Revenue per visit ($)"                                                                                                                                                                      
+  - allocationPct: 20                                   
+  - allocationLabel: "Allocated to new patient capacity"                                                                                                                                                       
+  - formulaType: "timeSavingsCapacity"
+                                                                                                                                                                                                               
+  Only add a driver if the delta shows genuine improvement (after < before for time metrics, after > before for quality/revenue metrics) and if the resulting projectedDelta > 0.   

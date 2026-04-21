@@ -1,0 +1,201 @@
+ Prompt 5B — Driver Studio UI: editable clinical inputs + live recalculation
+                                                                                                                                                                                                               
+  In client/src/pages/forecast/ForecastDashboard.tsx, enhance the driver expansion panel to show and allow editing of clinical inputs. Also improve the Add Driver dialog with guided templates.
+                                                                                                                                                                                                               
+  PART 1: Live-recalculation helper function                                                                                                                                                                   
+                                                                                                                                                                                                               
+  Add this function near the top of ForecastDashboard.tsx (or in a new file client/src/pages/forecast/dashboard/recalculateDriver.ts):                                                                         
+                                                        
+  ```typescript                                                                                                                                                                                                
+  export function recalculateProjectedDelta(driver: ForecastValueDriver): number {
+    const ci = driver.clinicalInputs;                                                                                                                                                                          
+    if (!ci || !ci.formulaType) return driver.projectedDelta;
+                                                                                                                                                                                                               
+    const delta = (ci.metricAfter ?? 0) - (ci.metricBefore ?? 0);
+    const absDelta = Math.abs(delta);                                                                                                                                                                          
+    const allocPct = (ci.allocationPct ?? 100) / 100;                                                                                                                                                          
+  
+    switch (ci.formulaType) {                                                                                                                                                                                  
+      case 'timeSavingsWorkforce': {                    
+        // (minutesDelta / 60) * hourlyRate * allocationPct                                                                                                                                                    
+        return (absDelta / 60) * (ci.factor1Value ?? 150) * allocPct;                                                                                                                                          
+      }                                                                                                                                                                                                        
+      case 'timeSavingsCapacity': {                                                                                                                                                                            
+        // (minutesDelta / 60 / minutesPerVisit) * revenuePerVisit * allocationPct                                                                                                                             
+        const minPerVisit = Math.max(ci.factor1Value ?? 30, 1);                                                                                                                                                
+        const revPerVisit = ci.factor2Value ?? 200;
+        return (absDelta / 60 / minPerVisit) * revPerVisit * allocPct;                                                                                                                                         
+      }                                                 
+      case 'wrvuLift': {                                                                                                                                                                                       
+        // delta * conversionFactor                                                                                                                                                                            
+        return absDelta * (ci.factor1Value ?? 33);
+      }                                                                                                                                                                                                        
+      case 'emLevelLift': {                             
+        // delta * valuePerLevel                                                                                                                                                                               
+        return absDelta * (ci.factor1Value ?? 15);
+      }                                                                                                                                                                                                        
+      case 'cmiLift': {                                 
+        // delta * valuePerPoint
+        return absDelta * (ci.factor1Value ?? 1500);                                                                                                                                                           
+      }
+      case 'retentionLift': {                                                                                                                                                                                  
+        // fixed formula: 3% * replacementCost / 12 (monthly per user)
+        return 0.03 * (ci.factor1Value ?? 150000) / 12;                                                                                                                                                        
+      }                                                                                                                                                                                                        
+      case 'hccCapture': {                                                                                                                                                                                     
+        // captureRateDelta * rafValue                                                                                                                                                                         
+        return (absDelta / 100) * (ci.factor1Value ?? 1200);                                                                                                                                                   
+      }
+      case 'denialReduction': {                                                                                                                                                                                
+        // denialRateDelta * avgClaimValue                                                                                                                                                                     
+        return (absDelta / 100) * (ci.factor1Value ?? 350);
+      }                                                                                                                                                                                                        
+      case 'nursingOvertimeReduction': {                
+        // hoursReduced * hourlyRate * 1.5                                                                                                                                                                     
+        return absDelta * (ci.factor1Value ?? 50) * 1.5;
+      }                                                                                                                                                                                                        
+      case 'losReduction': {                            
+        // daysReduced * dailyCost                                                                                                                                                                             
+        return absDelta * (ci.factor1Value ?? 2800);    
+      }
+      default:
+        return driver.projectedDelta;
+    }
+  }
+
+  PART 2: Editable clinical inputs in driver expansion panel                                                                                                                                                   
+   
+  In the driver expansion panel in ForecastDashboard.tsx (inside the map over state.valueDrivers), after the existing onset/scaling/confidence/realization controls, add a new section that only renders when  
+  d.clinicalInputs?.formulaType exists:                 
+
+  {/* Clinical inputs — shown when driver has formula-based inputs */}
+  {d.clinicalInputs?.formulaType && d.clinicalInputs.formulaType !== 'customDollar' && (
+    <div className="mt-3 pt-3 border-t border-[#E8E2DA]">
+      <p className="text-[10px] uppercase tracking-widest text-[#999999] font-semibold mb-2">
+        Adjust Inputs · recalculates live
+      </p>
+      <div className="space-y-2">
+        {/* Before/after metric */}
+        {d.clinicalInputs.metricLabel && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-neutral-500 w-32 flex-shrink-0">
+              {d.clinicalInputs.metricLabel} (before)
+            </span>
+            <FormattedNumberInput
+              value={d.clinicalInputs.metricBefore ?? ""}
+              onChange={(v) => {
+                const newCi = { ...d.clinicalInputs!, metricBefore: v };
+                const updated = { ...d, clinicalInputs: newCi, projectedDelta: recalculateProjectedDelta({ ...d, clinicalInputs: newCi }) };
+                updateDriver(d.id, updated);
+              }}
+              className="h-7 text-xs w-24"
+            />
+            <span className="text-[11px] text-neutral-400">{d.clinicalInputs.metricUnit}</span>
+          </div>
+        )}
+        {d.clinicalInputs.metricLabel && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-neutral-500 w-32 flex-shrink-0">
+              {d.clinicalInputs.metricLabel} (after)
+            </span>
+            <FormattedNumberInput
+              value={d.clinicalInputs.metricAfter ?? ""}
+              onChange={(v) => {
+                const newCi = { ...d.clinicalInputs!, metricAfter: v };
+                const updated = { ...d, clinicalInputs: newCi, projectedDelta: recalculateProjectedDelta({ ...d, clinicalInputs: newCi }) };
+                updateDriver(d.id, updated);
+              }}
+              className="h-7 text-xs w-24"
+            />
+            <span className="text-[11px] text-neutral-400">{d.clinicalInputs.metricUnit}</span>
+          </div>
+        )}
+        {/* Factor 1 (e.g. hourly rate, conversion factor) */}
+        {d.clinicalInputs.factor1Label && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-neutral-500 w-32 flex-shrink-0">
+              {d.clinicalInputs.factor1Label}
+            </span>
+            <FormattedNumberInput
+              value={d.clinicalInputs.factor1Value ?? ""}
+              onChange={(v) => {
+                const newCi = { ...d.clinicalInputs!, factor1Value: v };
+                const updated = { ...d, clinicalInputs: newCi, projectedDelta: recalculateProjectedDelta({ ...d, clinicalInputs: newCi }) };
+                updateDriver(d.id, updated);
+              }}
+              className="h-7 text-xs w-24"
+            />
+          </div>
+        )}
+        {/* Factor 2 (e.g. minutes per visit) */}
+        {d.clinicalInputs.factor2Label && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-neutral-500 w-32 flex-shrink-0">
+              {d.clinicalInputs.factor2Label}
+            </span>
+            <FormattedNumberInput
+              value={d.clinicalInputs.factor2Value ?? ""}
+              onChange={(v) => {
+                const newCi = { ...d.clinicalInputs!, factor2Value: v };
+                const updated = { ...d, clinicalInputs: newCi, projectedDelta: recalculateProjectedDelta({ ...d, clinicalInputs: newCi }) };
+                updateDriver(d.id, updated);
+              }}
+              className="h-7 text-xs w-24"
+            />
+          </div>
+        )}
+        {/* Allocation % */}
+        {d.clinicalInputs.allocationLabel && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-neutral-500 w-32 flex-shrink-0">
+              {d.clinicalInputs.allocationLabel}
+            </span>
+            <FormattedNumberInput
+              value={d.clinicalInputs.allocationPct ?? ""}
+              onChange={(v) => {
+                const newCi = { ...d.clinicalInputs!, allocationPct: Math.min(100, Math.max(0, v)) };
+                const updated = { ...d, clinicalInputs: newCi, projectedDelta: recalculateProjectedDelta({ ...d, clinicalInputs: newCi }) };
+                updateDriver(d.id, updated);
+              }}
+              className="h-7 text-xs w-24"
+            />
+            <span className="text-[11px] text-neutral-400">%</span>
+          </div>
+        )}
+        {/* Live result */}
+        <div className="pt-2 border-t border-[#E8E2DA]">
+          <p className="text-[11px] text-neutral-500">
+            Calculated value: <span className="font-semibold text-[#EA2C00]">
+              {fmtCurrencyShort(recalculateProjectedDelta(d))} / {SCALING_UNIT_LABELS[d.scalingUnit]}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  )}
+
+  PART 3: Add guided templates to the Add Driver dialog
+
+  In the AddDriverDialog (inside ForecastDashboard.tsx), add a "Template" selector at the top of the dialog. When a template is selected, it pre-fills all the fields including clinicalInputs:
+
+  Add a state variable: const [template, setTemplate] = useState<string>("custom")
+
+  Add template definitions:
+  const DRIVER_TEMPLATES = [
+    { id: "custom", label: "Custom (enter dollar value directly)" },
+    { id: "timeSavingsWorkforce", label: "Time savings → Cost reduction" },
+    { id: "timeSavingsCapacity", label: "Time savings → Patient access" },
+    { id: "wrvuLift", label: "wRVU improvement → Revenue" },
+    { id: "emLevelLift", label: "E/M level improvement → Revenue" },
+    { id: "cmiLift", label: "CMI improvement → Revenue (inpatient)" },
+    { id: "hccCapture", label: "HCC capture rate → Revenue" },
+    { id: "denialReduction", label: "Denial rate reduction → Revenue" },
+    { id: "retentionLift", label: "Provider retention improvement" },
+    { id: "nursingOvertimeReduction", label: "Nursing overtime reduction" },
+  ];
+
+  When template changes, reset the form fields and set up appropriate clinicalInputs defaults. The dialog should show the clinical input fields (before, after, metric label, factor fields) for non-custom
+  templates and hide them for custom. When the dialog is submitted for a formula-based template, calculate projectedDelta using recalculateProjectedDelta() before saving the driver.
+
+  Keep all existing Add Driver dialog fields (domain, onset, scaling, confidence, realization) but show them after the template section. For formula-based templates, set smart defaults for domain and onset
+  based on the template type.
