@@ -19,8 +19,15 @@ export function decodeStateFromUrl(encoded: string): ForecastState | null {
     const decompressed = LZString.decompressFromEncodedURIComponent(encoded);
     if (!decompressed) return null;
     const parsed = JSON.parse(decompressed);
-    if (parsed && typeof parsed === "object" && "baseScenario" in parsed) {
-      return parsed as ForecastState;
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      "currentPricing" in parsed &&
+      "contractTermMonths" in parsed
+    ) {
+      // Merge into a fresh empty state so missing fields hydrate to defaults
+      const base = makeEmptyForecastState();
+      return { ...base, ...(parsed as Partial<ForecastState>) } as ForecastState;
     }
     return null;
   } catch {

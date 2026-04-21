@@ -1,0 +1,159 @@
+  ▎ Build Phase 3 of the Forecast path for Abridge ROI Studio.                                                                                                                                                 
+  ▎
+  ▎ Context: Phase 2 shipped setup screens (Baseline, Contract/Pricing), the calculation engine, unit tests, and a simple results page. Now we replace the simple results page with the full Dashboard — the   
+  ▎ iteration surface Abridge teams will use live with partners. Everything is reactive; no Calculate button.
+  ▎                                                                                                                                                                                                            
+  ▎ Full spec is in 2026-04-20-forecast-path-design.md — attach it if possible.                                                                                                                                
+  ▎
+  ▎ Scope of this phase:                                                                                                                                                                                       
+  ▎                                                         
+  ▎ 1. Dashboard layout (client/src/pages/forecast/ForecastDashboard.tsx)                                                                                                                                      
+  ▎
+  ▎ Replace ForecastResultsSimple.tsx in the flow. Layout:                                                                                                                                                     
+  ▎                                                         
+  ▎ - Desktop: two-column grid — left rail w-[380px] px-6 (scrollable), right panel flex-1 max-w-7xl (sticky charts stay in view as left rail scrolls)                                                         
+  ▎ - Tablet/mobile: left rail stacks above right panel     
+  ▎ - UnifiedHeader at top with pathType="forecast", title "Dashboard", subtitle showing partner name if set (from imported Measure session)                                                                   
+  ▎ - Sub-header strip: deployment context pills — contract window ("Apr 2024 → Apr 2027"), care settings, current pricing model. Small, muted, Inter text-xs uppercase.                                       
+  ▎                                                                                                                                                                                                            
+  ▎ 2. Left rail — 5 collapsible sections                                                                                                                                                                      
+  ▎                                                                                                                                                                                                            
+  ▎ Each section is a shadcn Collapsible with a chevron, section title, and icon (Lucide). Default-expanded on first load: Contract & Pricing, Value Drivers. Others default-collapsed.                        
+  ▎
+  ▎ Section 1: Contract & Pricing                                                                                                                                                                              
+  ▎ - Inline-editable versions of Screen 3's fields (term, start date, current pricing model + unit price, annual escalators, encounter-mode extras if applicable)
+  ▎ - "Compare against" sub-section (nested, always visible inside the section):                                                                                                                               
+  ▎   - Label "Compare against up to 3 other pricing models"                                                                                                                                                   
+  ▎   - Checkbox list — each row is a pricing model other than the currently selected one:                                                                                                                     
+  ▎       - Per Provider / Month                                                                                                                                                                               
+  ▎     - Per Staffed Bed / Month (only if nursing is a care setting)                                                                                                                                          
+  ▎     - Annual Flat Fee                                                                                                                                                                                      
+  ▎     - Per Encounter                                                                                                                                                                                        
+  ▎     - Hybrid (base + overage)                                                                                                                                                                              
+  ▎   - When a box is checked, reveal below it (framer-motion slide-down):                                                                                                                                     
+  ▎       - Label name input (default "Switch to Per-Encounter" etc.)                                                                                                                                          
+  ▎     - Unit price input                                                                                                                                                                                     
+  ▎     - Mini conditional fields for encounter-mode (limit, capacity, overage) or hybrid (secondary model + price)                                                                                            
+  ▎   - Max 3 checked at once (disable additional checkboxes when 3 active, with tooltip "Max 3 comparisons")                                                                                                  
+  ▎   - When checked/unchecked, add/remove from state.comparisonPricing array → engine re-runs → charts update                                                                                                 
+  ▎                                                                                                                                                                                                            
+  ▎ Section 2: Provisioned vs. Active                                                                                                                                                                          
+  ▎ - Provisioned seats input (editable, drives baseline)                                                                                                                                                      
+  ▎ - Toggle: "Active users are [% of provisioned] / [absolute count]"                                                                                                                                         
+  ▎ - If % mode: utilization slider per year (Y1 / Y2 / … up to contract term), default values [75, 80, 85, 85, 85] sliced to term length. Label each with year. Small live preview below showing "~N active   
+  ▎ users by end of Year N"                                                                                                                                                                                    
+  ▎ - If absolute mode: raw count inputs per year                                                                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ Section 3: Adoption & Growth                            
+  ▎ - Adoption curve type toggle: S-curve / Linear                                                                                                                                                             
+  ▎ - Ramp months slider (1–12)                                                                                                                                                                                
+  ▎ - Start %, End % inputs
+  ▎ - Historical growth MoM % slider (0–15%)                                                                                                                                                                   
+  ▎ - Abridge encounter share % curve — array of sliders (one per year), default from baseline share held constant, user can dial up over time                                                                 
+  ▎ - Live mini preview: "Month 12 projection: X active users, Y encounters"                                                                                                                                   
+  ▎                                                                                                                                                                                                            
+  ▎ Section 4: Value Drivers Forward                                                                                                                                                                           
+  ▎ - For each driver in state.valueDrivers, render a card (see below)                                                                                                                                         
+  ▎ - "Add value driver" button at the bottom → opens a dialog with: label, domain dropdown, projectedDelta, confidence, realization, onset dropdown, scaling unit dropdown. On save → appended to             
+  ▎ state.valueDrivers with source: 'manual'.                                                                                                                                                                  
+  ▎ - Each driver card:                                                                                                                                                                                        
+  ▎   - Label + domain badge (color-coded by domain: billing=green, revenue=blue, cost=orange, quality/retention=purple)                                                                                       
+  ▎   - "From Measure" badge if source === 'measure-import'                                                                                                                                                    
+  ▎   - Measured delta displayed read-only as "Measured: $X.XX"                                                                                                                                                
+  ▎   - Projected delta input — big, editable, Abridge red focus ring. This is where Brad changes the number and sees charts update. Label: "Projected going forward"                                          
+  ▎   - Confidence slider (0–100) — reuse Measure's slider styling, with confidence label ("Benchmark estimate" / "Directional" / "Measured" / "Documented") from CONFIDENCE_LABELS                            
+  ▎   - Realization slider (0–100)                                                                                                                                                                             
+  ▎   - Onset dropdown (immediate / delayed / phased / longTerm)                                                                                                                                               
+  ▎   - Scaling unit dropdown (perEncounter / perActiveUser / perBed / annualFlat)                                                                                                                             
+  ▎   - Remove button (trash icon)                                                                                                                                                                             
+  ▎                                                                                                                                                                                                            
+  ▎ Section 5: Scenarios                                                                                                                                                                                       
+  ▎ - Input: "Scenario name" + "Save current as scenario" button → saves snapshot of state to state.scenarios (max 4)
+  ▎ - List of saved scenarios: each row shows color swatch, name, created time, "Load" button, "Delete" button                                                                                                 
+  ▎ - "Compare on charts" checkbox per scenario → if checked, overlay that scenario's ForecastResult.monthly on Chart 2 as a separate trace (color from SCENARIO_COLORS, dash from SCENARIO_DASHES)            
+  ▎ - Banner: "Comparing N of 4 scenarios" when any are active                                                                                                                                                 
+  ▎                                                                                                                                                                                                            
+  ▎ 3. Right panel — live outputs                                                                                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ Runs calculateForecast(state) on every state change via useMemo. No manual trigger.                                                                                                                        
+  ▎
+  ▎ KPI strip (top, grid of 5 cards, matches Measure's KPI style):                                                                                                                                             
+  ▎ - Total Contract Value — $X,XXX,XXX — sum of projected value over remaining contract
+  ▎ - Net Contract Value — $X,XXX,XXX — with red if negative                                                                                                                                                   
+  ▎ - ROI Multiple — X.XX× — JetBrains Mono                                                                                                                                                                    
+  ▎ - Break-Even Band — "Month A → Month B" (fast → full). If full not reached: "Month A → Not reached within term"                                                                                            
+  ▎ - Runway Month — "Month 19" if encounter-mode and runway within term, hidden otherwise                                                                                                                     
+  ▎                                                                                                                                                                                                            
+  ▎ All KPIs use count-up animation on value change (reuse existing pattern from Measure's hero).                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ Chart 1 — Cost Curves (Recharts LineChart)                                                                                                                                                                 
+  ▎ - X-axis: month (1 to contract months), labeled "Y1 Q1", "Y1 Q2", etc.
+  ▎ - Y-axis: $ (auto-scale)                                                                                                                                                                                   
+  ▎ - Current pricing: solid line, Abridge red #E8350A, thick 3px                                                                                                                                              
+  ▎ - Each active comparison: dashed line, colors from SCENARIO_COLORS[1..3], dashes from SCENARIO_DASHES[1..3]                                                                                                
+  ▎ - Reference lines (encounter-mode only):                                                                                                                                                                   
+  ▎   - Horizontal dashed red at contractEncounterLimit (expressed as $ of cost-if-at-rate) — actually this belongs on Chart 3; skip on Chart 1                                                                
+  ▎ - "Today" marker: vertical dashed line at the month = months-elapsed-since-contract-start, label "Today" above the axis                                                                                    
+  ▎ - Tooltip: show month label, cost per line, delta vs. current                                                                                                                                              
+  ▎ - Above the chart: pill row with per-comparison deltas — "Per Encounter: −$420K over term" — green if savings, red if costs more, JetBrains Mono numbers                                                   
+  ▎                                                                                                                                                                                                            
+  ▎ Chart 2 — Net Value Over Time (Recharts ComposedChart)                                                                                                                                                     
+  ▎ - X-axis: same as Chart 1                                                                                                                                                                                  
+  ▎ - Stacked area: one color per value-driver domain (billing/revenue/cost/quality)                                                                                                                           
+  ▎ - Line on top: cumulative net value (cumulativeNet)                                                                                                                                                        
+  ▎ - Line: cost (inverted, red) — or shown as negative stacked area below zero                                                                                                                                
+  ▎ - Vertical reference lines: fast break-even (solid gray), full break-even (dashed gray), "today" (Abridge red dashed)                                                                                      
+  ▎ - Scenario overlays (if any active comparisons from Section 5): each scenario's cumulativeNet as a dashed line, using SCENARIO_COLORS + SCENARIO_DASHES                                                    
+  ▎ - Legend below chart                                                                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ Chart 3 — Encounter Trajectory (Recharts LineChart, conditional — only renders if current pricing is perEncounter/hybrid OR any comparison is encounter-based)                                             
+  ▎ - X-axis: month                                                                                                                                                                                            
+  ▎ - Line: cumulative encounters, Abridge red, solid                                                                                                                                                          
+  ▎ - Reference line: contractEncounterLimit (red dashed) — labeled "Contract Limit (500K)"
+  ▎ - Reference line: capacityCeiling (red dotted) — labeled "Capacity Ceiling (600K)"                                                                                                                         
+  ▎ - "Today" marker: vertical dashed line                                                                                                                                                                     
+  ▎ - Callout box (top-right of chart): "Runway: hits contract limit in Month 19" or "Projected overage: $XX" or "Capacity breach Month 28"                                                                    
+  ▎                                                                                                                                                                                                            
+  ▎ Alerts zone (below charts, dismissible cards)                                                                                                                                                              
+  ▎ - Reads ForecastResult.alerts                                                                                                                                                                              
+  ▎ - Runway alert: red left-border, Lucide AlertTriangle icon                                                                                                                                                 
+  ▎ - Capacity alert: same                                                                                                                                                                                     
+  ▎ - Pricing savings alert: green left-border, Lucide TrendingDown icon — "Switching to Per Encounter would save $420K — [Apply this swap]" where the button swaps current pricing with the comparison config 
+  ▎ (confirm dialog first)                                                                                                                                                                                     
+  ▎ - Each alert can be dismissed with an X (stored in component state, per-session)
+  ▎                                                                                                                                                                                                            
+  ▎ 4. Reactivity                                                                                                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ Every input in the left rail updates state → useMemo recomputes ForecastResult → charts and KPIs update. No debouncing on slider drag; React 18 batching should keep it smooth. If performance is a problem
+  ▎  on the charts, memoize per-chart data transforms.      
+  ▎                                                                                                                                                                                                            
+  ▎ Use motion.div for entrance animation (stagger children 50ms). Animate KPI value changes with a 300ms count-up.                                                                                            
+  ▎
+  ▎ 5. Session persistence                                                                                                                                                                                     
+  ▎                                                         
+  ▎ On every state change, serialize to URL (lz-string compressed, same pattern as measureUrlState.ts / forecastUrlState.ts). Refresh must restore exact state including scenarios.                            
+  ▎
+  ▎ 6. "Export" button in top-right of Dashboard                                                                                                                                                               
+  ▎                                                         
+  ▎ For this phase, the Export button opens a stub dialog with "PDF export coming in Phase 4 · Short link coming in Phase 4". Real export is Phase 4.                                                          
+  ▎                                                         
+  ▎ Brand alignment:                                                                                                                                                                                           
+  ▎ - Inter + JetBrains Mono + Abridge display font         
+  ▎ - Abridge red #E8350A primary; domain palette for value drivers
+  ▎ - shadcn/ui + Radix                                                                                                                                                                                        
+  ▎ - framer-motion for entrance + collapsible reveals                                                                                                                                                         
+  ▎ - Chart colors must match the existing app's Recharts styling patterns (see WaterfallChart.tsx for reference)                                                                                              
+  ▎ - Sticky right panel on desktop                                                                                                                                                                            
+  ▎                                                                                                                                                                                                            
+  ▎ What I want to see when this is done:                                                                                                                                                                      
+  ▎ - Click "Continue to Dashboard" from Screen 3 → land on full Dashboard                                                                                                                                     
+  ▎ - Left rail: all 5 sections render, collapsible, on-brand                                                                                                                                                  
+  ▎ - Right panel: 5 KPI cards, 2–3 charts (Chart 3 conditional on encounter-mode), alerts below                                                                                                               
+  ▎ - Move any slider or type in any input → charts and KPIs update within ~150ms, smoothly animated                                                                                                           
+  ▎ - Check a "Compare against" box → dashed line appears on Chart 1, delta pill updates above                                                                                                                 
+  ▎ - Edit a value driver's "Projected going forward" number → Chart 2 and KPIs update                                                                                                                         
+  ▎ - Save a scenario → shows in Section 5, can toggle overlay on Chart 2                                                                                                                                      
+  ▎ - Refresh page → state restored, scenarios restored                                                                                                                                                        
+  ▎ - Unit tests still pass (vitest run)                                                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ Do not build yet: PDF export, short-link service wiring, Measure handoff CTA from MeasureOpportunity. Those are Phase 4. 

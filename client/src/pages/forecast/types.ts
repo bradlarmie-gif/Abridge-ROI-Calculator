@@ -1,73 +1,71 @@
-import type {
-  YearlyPricing,
-  YearlyUtilization,
-  DriverOnset,
-} from "@/pages/proforma/proformaTypes";
-
 export type ForecastCareSetting = "outpatient" | "ed" | "inpatient" | "nursing";
 
-export type PricingModel = "perProviderMonth" | "perEncounter" | "annualFixed";
+export type PricingModel =
+  | "perProvider"
+  | "perStaffedBed"
+  | "annualFlat"
+  | "perEncounter"
+  | "hybrid";
+
+export type ScalingUnit = "perEncounter" | "perActiveUser" | "perBed" | "annualFlat";
+
+export type ValueDomain = "capacity" | "revenue" | "workforce" | "quality";
+
+export type DriverOnset = "immediate" | "delayed" | "phased" | "longTerm";
+
+export type GrowthSource = "benchmark" | "historical";
 
 export interface PricingConfig {
   model: PricingModel;
-  perProviderMonth?: number;
-  perEncounter?: number;
-  annualFixed?: number;
-  yearlyPricing?: YearlyPricing;
-  implementationFee?: number;
+  unitPrice: number;
+  /** Per-year escalator percentages (e.g. [0,5,5,5,5] for 0% Y1, 5% Y2+). length up to 5. */
+  yearlyEscalators: number[];
+  // perEncounter / hybrid extras
+  contractEncounterLimit?: number;
+  capacityCeiling?: number;
+  overageRate?: number;
+  // hybrid extras
+  secondaryModel?: PricingModel;
+  secondaryUnitPrice?: number;
 }
 
 export interface AdoptionCurve {
-  year1: number;
-  year2: number;
-  year3: number;
-  year4?: number;
-  year5?: number;
+  type: "s-curve" | "linear" | "manual";
+  rampMonths: number;
+  startPct: number;
+  endPct: number;
+  manualValues?: number[];
 }
 
-export interface UtilizationCurve extends YearlyUtilization {
-  year4?: number;
-  year5?: number;
+export interface QuarterlyCurve {
+  /** Per-quarter values (length should be ceil(contractTermMonths/3)) */
+  values: number[];
 }
 
-export interface EncounterShareCurve {
-  year1: number;
-  year2: number;
-  year3: number;
-  year4?: number;
-  year5?: number;
-}
+export type UtilizationCurve = QuarterlyCurve;
+export type EncounterShareCurve = QuarterlyCurve;
 
 export interface ForecastValueDriver {
   id: string;
-  name: string;
-  category: "time" | "documentation" | "retention" | "quality";
-  enabled: boolean;
-  annualValue: number;
-  onset: DriverOnset;
-  careSetting: ForecastCareSetting;
-}
-
-export interface ForecastSettingConfig {
-  id: string;
-  careSetting: ForecastCareSetting;
   label: string;
-  totalProviders: number;
-  totalEncounters: number;
-  adoption: AdoptionCurve;
-  utilization: UtilizationCurve;
-  encounterShare: EncounterShareCurve;
-  drivers: ForecastValueDriver[];
+  domain: ValueDomain;
+  category: "time" | "documentation" | "retention" | "quality";
+  scalingUnit: ScalingUnit;
+  /** Dollars per scaling-unit-event (e.g. $/encounter, $/user/month, $/bed/month) */
+  projectedDelta: number;
+  /** Confidence 0-100 */
+  confidence: number;
+  /** Realization 0-100 */
+  realizationPct: number;
+  onset: DriverOnset;
+  source?: "measure" | "manual";
+  measuredDelta?: number;
 }
 
-export interface ForecastScenario {
+export interface ComparisonPricing {
   id: string;
-  name: string;
+  label: string;
   pricing: PricingConfig;
-  contractTermMonths: number;
-  settings: ForecastSettingConfig[];
-  notes?: string;
-  color?: string;
 }
 
 export interface ForecastImportSource {
@@ -78,13 +76,38 @@ export interface ForecastImportSource {
 }
 
 export interface ForecastState {
+  // metadata
   partnerName: string;
   partnerNotes: string;
-  baseScenario: ForecastScenario;
-  comparisonScenarios: ForecastScenario[];
   importSource: ForecastImportSource;
   createdAt: number;
   updatedAt: number;
+
+  // baseline
+  activeUsersToday: number;
+  provisionedSeats: number;
+  abridgeEncountersLTM: number;
+  totalOrgEncountersLTM: number;
+  growthSource: GrowthSource;
+  /** When growthSource = 'benchmark' length is 1; when 'historical' length is up to 6 (MoM %s) */
+  historicalGrowthMonthly: number[];
+  careSettings: ForecastCareSetting[];
+  nursingStaffedBeds: number;
+
+  // contract
+  contractTermMonths: number;
+  /** ISO YYYY-MM-DD */
+  contractStartDate: string | null;
+  currentPricing: PricingConfig;
+
+  // projection inputs
+  adoptionCurve: AdoptionCurve;
+  utilizationCurve: UtilizationCurve;
+  encounterShareCurve: EncounterShareCurve;
+  valueDrivers: ForecastValueDriver[];
+
+  // comparisons / scenarios
+  comparisonPricing: ComparisonPricing[];
 }
 
 export interface SavedForecast {
@@ -94,39 +117,34 @@ export interface SavedForecast {
   savedAt: number;
 }
 
+// ---------- defaults ----------
+
+export const BENCHMARK_MOM_GROWTH_PCT = 4;
+
 export const DEFAULT_PRICING_CONFIG: PricingConfig = {
-  model: "perProviderMonth",
-  perProviderMonth: 250,
-  implementationFee: 0,
+  model: "perProvider",
+  unitPrice: 250,
+  yearlyEscalators: [0, 0, 0, 0, 0],
 };
 
 export const DEFAULT_ADOPTION_CURVE: AdoptionCurve = {
-  year1: 60,
-  year2: 90,
-  year3: 100,
+  type: "s-curve",
+  rampMonths: 6,
+  startPct: 40,
+  endPct: 85,
 };
 
-export const DEFAULT_UTILIZATION_CURVE: UtilizationCurve = {
-  year1: 55,
-  year2: 75,
-  year3: 85,
-};
+export function makeDefaultUtilizationCurve(contractTermMonths = 36): UtilizationCurve {
+  const quarters = Math.max(1, Math.ceil(contractTermMonths / 3));
+  return { values: Array.from({ length: quarters }, () => 75) };
+}
 
-export const DEFAULT_ENCOUNTER_SHARE_CURVE: EncounterShareCurve = {
-  year1: 60,
-  year2: 80,
-  year3: 90,
-};
-
-export function makeEmptyScenario(name = "Base scenario"): ForecastScenario {
-  return {
-    id: `scenario-${Date.now().toString(36)}`,
-    name,
-    pricing: { ...DEFAULT_PRICING_CONFIG },
-    contractTermMonths: 36,
-    settings: [],
-    color: "#EA2C00",
-  };
+export function makeDefaultEncounterShareCurve(
+  contractTermMonths = 36,
+  basisSharePct = 60,
+): EncounterShareCurve {
+  const quarters = Math.max(1, Math.ceil(contractTermMonths / 3));
+  return { values: Array.from({ length: quarters }, () => basisSharePct) };
 }
 
 export function makeEmptyForecastState(): ForecastState {
@@ -134,10 +152,65 @@ export function makeEmptyForecastState(): ForecastState {
   return {
     partnerName: "",
     partnerNotes: "",
-    baseScenario: makeEmptyScenario(),
-    comparisonScenarios: [],
     importSource: { type: "scratch" },
     createdAt: now,
     updatedAt: now,
+
+    activeUsersToday: 0,
+    provisionedSeats: 0,
+    abridgeEncountersLTM: 0,
+    totalOrgEncountersLTM: 0,
+    growthSource: "benchmark",
+    historicalGrowthMonthly: [BENCHMARK_MOM_GROWTH_PCT],
+    careSettings: ["outpatient"],
+    nursingStaffedBeds: 0,
+
+    contractTermMonths: 36,
+    contractStartDate: null,
+    currentPricing: { ...DEFAULT_PRICING_CONFIG, yearlyEscalators: [0, 0, 0, 0, 0] },
+
+    adoptionCurve: { ...DEFAULT_ADOPTION_CURVE },
+    utilizationCurve: makeDefaultUtilizationCurve(36),
+    encounterShareCurve: makeDefaultEncounterShareCurve(36, 60),
+    valueDrivers: [],
+
+    comparisonPricing: [],
   };
 }
+
+export const PRICING_MODEL_LABELS: Record<PricingModel, string> = {
+  perProvider: "Per Provider / Month",
+  perStaffedBed: "Per Staffed Bed / Month",
+  annualFlat: "Annual Flat Fee",
+  perEncounter: "Per Encounter",
+  hybrid: "Hybrid",
+};
+
+export const PRICING_UNIT_LABELS: Record<PricingModel, string> = {
+  perProvider: "$ per provider / month",
+  perStaffedBed: "$ per bed / month",
+  annualFlat: "Annual fee",
+  perEncounter: "$ per encounter",
+  hybrid: "Primary unit price",
+};
+
+export const CARE_SETTING_LABELS: Record<ForecastCareSetting, string> = {
+  outpatient: "Outpatient",
+  ed: "Emergency Department",
+  inpatient: "Inpatient",
+  nursing: "Nursing",
+};
+
+export const VALUE_DOMAIN_LABELS: Record<ValueDomain, string> = {
+  capacity: "Capacity",
+  revenue: "Revenue",
+  workforce: "Workforce",
+  quality: "Quality",
+};
+
+export const ONSET_DELAY_MONTHS: Record<DriverOnset, number> = {
+  immediate: 2,
+  delayed: 5,
+  phased: 6,
+  longTerm: 15,
+};

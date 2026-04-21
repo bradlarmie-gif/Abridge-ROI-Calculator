@@ -9,16 +9,16 @@ import {
   persistSession,
 } from "@/lib/forecastUrlState";
 import ForecastStart from "./ForecastStart";
-import ForecastConfigure from "./ForecastConfigure";
-import ForecastBuild from "./ForecastBuild";
-import ForecastDashboard from "./ForecastDashboard";
+import ForecastBaseline from "./ForecastBaseline";
+import ForecastContract from "./ForecastContract";
+import ForecastResultsSimple from "./ForecastResultsSimple";
 
-export type ForecastPhase = "start" | "configure" | "build" | "dashboard" | "output";
+export type ForecastPhase = "start" | "baseline" | "contract" | "results";
 
 export const FORECAST_SETUP_STEPS: Array<{ phase: ForecastPhase; label: string }> = [
   { phase: "start", label: "Start" },
-  { phase: "configure", label: "Configure" },
-  { phase: "build", label: "Build scenarios" },
+  { phase: "baseline", label: "Baseline" },
+  { phase: "contract", label: "Contract & Pricing" },
 ];
 
 interface ForecastFlowProps {
@@ -29,19 +29,16 @@ export default function ForecastFlow({ onBackToJourney }: ForecastFlowProps) {
   const [phase, setPhase] = useState<ForecastPhase>("start");
   const [state, setState] = useState<ForecastState>(() => getInitialForecastState());
 
-  // Hydrate from URL once on mount, then strip the URL param
   useEffect(() => {
     if (window.location.search.includes("f=")) {
       clearUrlState();
     }
   }, []);
 
-  // Persist whenever state changes
   useEffect(() => {
     persistSession(state);
   }, [state]);
 
-  // Scroll to top on phase change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [phase]);
@@ -73,39 +70,38 @@ export default function ForecastFlow({ onBackToJourney }: ForecastFlowProps) {
           updateState={updateState}
           replaceState={replaceState}
           resetState={resetState}
-          onNext={() => navigate("configure")}
+          onNext={() => navigate("baseline")}
           onHome={goHome}
         />
       );
 
-    case "configure":
+    case "baseline":
       return (
-        <ForecastConfigure
+        <ForecastBaseline
           state={state}
           updateState={updateState}
-          onNext={() => navigate("build")}
+          onNext={() => navigate("contract")}
           onBack={() => navigate("start")}
           onHome={goHome}
         />
       );
 
-    case "build":
+    case "contract":
       return (
-        <ForecastBuild
+        <ForecastContract
           state={state}
           updateState={updateState}
-          onNext={() => navigate("dashboard")}
-          onBack={() => navigate("configure")}
+          onNext={() => navigate("results")}
+          onBack={() => navigate("baseline")}
           onHome={goHome}
         />
       );
 
-    case "dashboard":
-    case "output":
+    case "results":
       return (
-        <ForecastDashboard
+        <ForecastResultsSimple
           state={state}
-          onBack={() => navigate("build")}
+          onBack={() => navigate("contract")}
           onHome={goHome}
         />
       );

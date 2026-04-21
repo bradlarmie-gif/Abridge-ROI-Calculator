@@ -1,0 +1,138 @@
+Paste this into Replit:                                                                                                                                                                                      
+   
+  ---                                                                                                                                                                                                          
+                                                            
+  ▎ Build Phase 4 (final phase) of the Forecast path for Abridge ROI Studio.                                                                                                                                   
+  ▎
+  ▎ Context: Phases 1–3 shipped the routing, setup screens, calculation engine, and full reactive dashboard. Now we wire the partner-facing output (PDF + short link), connect the Measure → Forecast handoff, 
+  ▎ and fully hydrate the "Import from Measure" flow that was stubbed in Phase 1.
+  ▎                                                                                                                                                                                                            
+  ▎ Full spec is in 2026-04-20-forecast-path-design.md — attach it if possible.                                                                                                                                
+  ▎
+  ▎ Scope of this phase:                                                                                                                                                                                       
+  ▎                                                         
+  ▎ 1. PDF Export — client/src/components/forecast/ForecastPDFExport.tsx                                                                                                                                       
+  ▎
+  ▎ 9-page PDF using @react-pdf/renderer. Mirrors the existing Measure PDF structure and fonts.                                                                                                                
+  ▎                                                         
+  ▎ Font registration (copy from Measure's PDF export):                                                                                                                                                        
+  ▎ - Manrope (regular + bold) — body text                  
+  ▎ - Abridge display font — titles fontSize 14+                                                                                                                                                               
+  ▎                                                                                                                                                                                                            
+  ▎ Page-by-page:                                                                                                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ | Page                                                                                             | Content                                                                                               
+  ▎                                                                                                                                                                                                            
+  ▎                                                                       |                                                                                                                                    
+  ▎ |--------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------
+  ▎ -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  ▎ ----------------------------------------------------------------------|                                                                                                                                    
+  ▎ | 1 — Cover                                                                                        | Partner name (large, Abridge display font), subtitle "Forecast", contract window ("Apr 2024 → Apr     
+  ▎ 2027"), Abridge logo bottom-right, Abridge red accent bar                                                                                                                                                  
+  ▎                                                                           |
+  ▎ | 2 — Executive Summary                                                                            | KPIs in a 2×3 grid (Total Contract Value, Net Contract Value, ROI Multiple, Fast Break-Even, Full   
+  ▎ Break-Even, Runway Month if encounter-mode). Below: one-paragraph auto-generated narrative e.g., "Based on current trajectory and measured outcomes, [Partner] is projected to realize $X.XM in net value  
+  ▎ over the remaining contract term. Fast break-even is expected in Month N." |
+  ▎ | 3 — Where You Are Today                                                                          | Imported-from-Measure summary: baseline (active users, provisioned, Abridge share %, total            
+  ▎ encounters), measured outcomes table by domain with measured deltas + confidence labels                                                                                                                    
+  ▎                                                                                  |
+  ▎ | 4 — Forward Forecast Assumptions                                                                 | Adoption curve (type, ramp, start/end %), utilization by year, encounter share curve, historical      
+  ▎ growth rate + source (benchmark vs. pasted). Include a small line chart of projected active users over term                                                                                                
+  ▎                                                                            |
+  ▎ | 5 — Value Extrapolation                                                                          | Table of value drivers: label, measured delta, projected delta, confidence, realization, onset,       
+  ▎ scaling unit. Below: domain-total value over contract (stacked bar by year)                                                                                                                                
+  ▎                                                                             |
+  ▎ | 6 — Pricing Scenario Comparison                                                                  | Table: current pricing + each active comparison, total cost over term, delta vs. current (green       
+  ▎ savings / red cost). Below: overlaid cost-curve chart (render Recharts to image OR use @react-pdf/renderer's SVG primitives). "Why this matters" paragraph below                                           
+  ▎                                                                             |
+  ▎ | 7 — Encounter Runway (conditional — only if encounter-mode pricing is current or in comparisons) | Cumulative encounters chart with contract limit + capacity lines + runway callout. Table: projected   
+  ▎ monthly encounters at key points (Month 6, 12, 18, 24). Projected overage dollar amount                                                                                                                    
+  ▎                                                                         |
+  ▎ | 8 — Recommendations                                                                              | Auto-generated bullets from ForecastResult.alerts + derived suggestions: capacity purchase timing,    
+  ▎ pricing switch with $ savings, adoption levers to push break-even earlier. Minimum 3 bullets, maximum 6                                                                                                    
+  ▎                                                                          |
+  ▎ | 9 — Methodology & Assumptions                                                                    | Confidence labels explanation (CONFIDENCE_LABELS), onset definitions                                  
+  ▎ (immediate/delayed/phased/longTerm), growth source, data provenance badges ("From Measure" / "User input" / "Benchmark default")                                                                           
+  ▎                                                                                                        |
+  ▎                                                                                                                                                                                                            
+  ▎ Generation: render via @react-pdf/renderer's pdf().toBlob(), trigger download with file-saver. Filename pattern: {partnerName}-forecast-{yyyy-mm-dd}.pdf.                                                  
+  ▎
+  ▎ Conditional page rendering: Page 7 only renders when state.currentPricing.model === 'perEncounter' OR any state.comparisonPricing has encounter model.                                                     
+  ▎                                                         
+  ▎ 2. Short Link Service                                                                                                                                                                                      
+  ▎                                                         
+  ▎ Backend — extend existing server/ short-link routes if not already supporting this payload:                                                                                                                
+  ▎ - POST /api/shorten — accepts { type: 'forecast-state', state: compressedForecastState }, returns { code, url }. Reuses existing short_links PostgreSQL table with 30-day TTL.
+  ▎ - GET /s/:code — if type === 'forecast-state', 302-redirects to /forecast?state={compressedState} so the receiving client re-hydrates state from URL.                                                      
+  ▎                                                                                                                                                                                                            
+  ▎ Frontend (in ForecastDashboard.tsx):                                                                                                                                                                       
+  ▎ - Replace the Phase 3 stub Export dialog with real options:                                                                                                                                                
+  ▎   - Download PDF — triggers the export above                                                                                                                                                               
+  ▎   - Generate share link — compresses state via lz-string (same encoding as forecastUrlState.ts), POSTs to /api/shorten, shows the returned /s/:code URL in a read-only input with a Copy button, plus "Link
+  ▎  expires in 30 days" note                                                                                                                                                                                  
+  ▎ - Use a shadcn Dialog with two tabs or side-by-side columns
+  ▎                                                                                                                                                                                                            
+  ▎ 3. Measure → Forecast Handoff                                                                                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ In client/src/pages/measure/MeasureOpportunity.tsx (the final Measure screen):                                                                                                                             
+  ▎ - Add a new CTA below the existing actions: "Continue to Forecast →" — primary button styling, Abridge red
+  ▎ - Subtitle under the button: "Model pricing and growth scenarios forward from here"                                                                                                                        
+  ▎ - On click:                                                                                                                                                                                                
+  ▎   a. Serialize the current MeasureState to a measureSessionId (short-link or in-memory session storage key)                                                                                                
+  ▎   b. Navigate to /forecast?source=measure&session={id}                                                                                                                                                     
+  ▎ - ForecastFlow.tsx reads the source=measure + session params on mount and:                                                                                                                                 
+  ▎   - Hydrates ForecastState with care settings, provider/encounter counts, value drivers, confidence/realization sliders from the Measure session                                                           
+  ▎   - Maps Measure's domain structure to Forecast's ForecastValueDriver[] with source: 'measure-import', correct scalingUnit per domain, and sensible default onset (immediate for billing capture and time  
+  ▎ value, delayed for revenue recovery, phased for cost reduction, longTerm for quality/retention)                                                                                                            
+  ▎   - Routes directly to Screen 2 (Baseline) with imported values pre-populated, not to Screen 1 (Start)                                                                                                     
+  ▎                                                                                                                                                                                                            
+  ▎ 4. "Import from Measure" in Start Screen                
+  ▎                                                                                                                                                                                                            
+  ▎ Phase 1 stubbed the Import from Measure session card. Now fully wire it:                                                                                                                                   
+  ▎
+  ▎ - Clicking the card opens a shadcn Dialog with two options:                                                                                                                                                
+  ▎   - Paste a Measure share link — text input, paste a /s/:code URL, click Continue → fetch the short link, resolve the Measure state, hydrate into Forecast as in §3 above
+  ▎   - Pick from recent Measure sessions — lists Measure sessions from browser sessionStorage (they persist across tabs via the URL-state pattern). Each row: partner name (if set), care settings, timestamp.
+  ▎  Click one → hydrate                                                                                                                                                                                       
+  ▎ - If the Measure state is malformed or missing required fields, toast: "Import incomplete — you can continue and fill missing fields on the Baseline screen" and proceed anyway, marking missing fields for
+  ▎  user attention (red asterisk on those specific inputs in Screen 2)                                                                                                                                        
+  ▎                                                         
+  ▎ 5. Dashboard polish                                                                                                                                                                                        
+  ▎                                                         
+  ▎ - Partner name — add an editable inline input in the sub-header strip of the Dashboard. If imported from Measure, defaults to Measure's partner name. This feeds the PDF cover page and filename.          
+  ▎ - Empty states — if no value drivers exist, Chart 2 shows a subtle empty-state overlay with a CTA to the left rail's Value Drivers section ("Add your first value driver →" that scrolls the rail into view
+  ▎  and expands that section)                                                                                                                                                                                 
+  ▎ - Loading states — PDF generation shows a BrandedLoadingOverlay (already in codebase) while the blob is being built
+  ▎                                                                                                                                                                                                            
+  ▎ 6. Validation and edge cases (from spec Section 9)                                                                                                                                                         
+  ▎                                                                                                                                                                                                            
+  ▎ Enforce these across the flow:                                                                                                                                                                             
+  ▎ - Utilization > 100% → clamp to 100, show inline warning
+  ▎ - Contract start date > 5 years ago → error on Screen 3, block Continue                                                                                                                                    
+  ▎ - Contract start date > today → allowed (future-start contracts)                                                                                                                                           
+  ▎ - Encounter-mode selected but no contractEncounterLimit → block Continue to Dashboard with inline error                                                                                                    
+  ▎ - All drivers longTerm onset → full break-even KPI renders as "Not reached within term" in both UI and PDF                                                                                                 
+  ▎ - No drivers → Chart 2 empty state + PDF Page 5 renders "No value drivers added" placeholder                                                                                                               
+  ▎                                                                                                                                                                                                            
+  ▎ 7. Tests                                                                                                                                                                                                   
+  ▎                                                                                                                                                                                                            
+  ▎ Add to client/src/__tests__/forecastCalculator.test.ts:                                                                                                                                                    
+  ▎ - PDF content sanity (if feasible with @react-pdf/renderer test utilities): confirm Page 7 is omitted when no encounter-mode pricing is active
+  ▎ - Measure import mapping: given a sample MeasureState, convertMeasureToForecast(measureState) produces a valid ForecastState with expected driver mappings                                                 
+  ▎                                                                                                                                                                                                            
+  ▎ Brand alignment (same bar as every phase):                                                                                                                                                                 
+  ▎ - Inter + JetBrains Mono + Abridge display font + Manrope (PDF)                                                                                                                                            
+  ▎ - Abridge red #E8350A primary accent                                                                                                                                                                       
+  ▎ - shadcn/ui + Radix                                     
+  ▎ - framer-motion for entrance + dialogs                                                                                                                                                                     
+  ▎                                                                                                                                                                                                            
+  ▎ What I want to see when this is done:
+  ▎ - Finish a Measure session → click Continue to Forecast → → land on Forecast Screen 2 with all drivers and counts imported                                                                                 
+  ▎ - Click Import from Measure on Start screen → paste a Measure share link or pick from recent → state hydrates                                                                                              
+  ▎ - On the Dashboard, click Export → Download PDF → file downloads with partner name in filename, 9 pages, on-brand fonts and colors                                                                         
+  ▎ - Click Export → Generate share link → get a /s/:code URL that, when opened in a new tab, rehydrates the same dashboard state                                                                              
+  ▎ - All validation cases fire cleanly                                                                                                                                                                        
+  ▎ - Unit tests pass                                                                                                                                                                                          
+  ▎ - Phases 1–3 still work, nothing regressed                                                                                                                                                                 
+  ▎                                                                                                                                                                                                            
+  ▎ This is the final phase. When it's clean, you've got a complete, partner-ready Forecast tool.   
