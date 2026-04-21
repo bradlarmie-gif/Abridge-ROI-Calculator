@@ -251,7 +251,7 @@ export default function ForecastStart({
               count={recentMeasureSessions.length}
               onClick={() => setImportOpen(true)}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 auto-rows-fr">
               <EntryCard
                 index={1}
                 icon={<FilePlus className="w-6 h-6 text-[#EA2C00]" />}
@@ -280,7 +280,7 @@ export default function ForecastStart({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 auto-rows-fr">
             <EntryCard
               index={0}
               icon={<Download className="w-6 h-6 text-[#EA2C00]" />}
@@ -566,7 +566,7 @@ function EntryCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.1 + index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
       whileHover={disabled ? undefined : { y: -4 }}
-      className="h-full"
+      className="h-full flex"
     >
       <button
         type="button"
