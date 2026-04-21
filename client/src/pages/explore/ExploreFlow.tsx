@@ -203,6 +203,13 @@ export interface DocQualityInputs {
   ipCdiQueryRate: number; // % of admissions that generate queries
   ipCdiCostPerQuery: number; // Cost per query
   ipCdiRealization: number;
+  // Inpatient: E/M Coding Accuracy
+  ipEmCodingEnabled: boolean;
+  ipEmCodingGapScenario: 'conservative' | 'typical' | 'optimistic';
+  ipEmCodingAvgRevenueLift: number;
+  ipEmCodingRealization: number;
+  ipEmCodingConsultsPerAdmission: number;
+  ipEmCodingExpanded: boolean;
   
   // Nursing: HAPI Prevention (potential value)
   nursingHapiEnabled: boolean;
@@ -268,6 +275,7 @@ export interface ExploreState {
   nursingOccupancyRate: number;
   nursingShiftsPerNurseYear: number;
   nursingMinutesPerShift: number;
+  ipAvgLengthOfStay: number;
   
   timePathScenario: TimePathScenario;
   minutesSavedPerEncounter: number;
@@ -313,6 +321,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   nursingOccupancyRate: 85,
   nursingShiftsPerNurseYear: 156,
   nursingMinutesPerShift: 0,
+  ipAvgLengthOfStay: 4.5,
   timePathScenario: null,
   minutesSavedPerEncounter: 0,
   timeAllocation: {
@@ -460,6 +469,13 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipCdiQueryRate: 30, // 30% of admissions generate queries
     ipCdiCostPerQuery: 150, // $150 per query
     ipCdiRealization: 75,
+    // Inpatient: E/M Coding Accuracy defaults
+    ipEmCodingEnabled: false,
+    ipEmCodingGapScenario: 'typical',
+    ipEmCodingAvgRevenueLift: 50,
+    ipEmCodingRealization: 40,
+    ipEmCodingConsultsPerAdmission: 1.0,
+    ipEmCodingExpanded: false,
     // Nursing: HAPI Prevention defaults
     nursingHapiEnabled: false,
     nursingHapiRate: 2.5, // 2.5 per 1,000 patient days

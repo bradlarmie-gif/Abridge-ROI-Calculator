@@ -425,6 +425,30 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 </div>
               )}
 
+              {/* Inpatient: Avg Length of Stay */}
+              {isInpatient && (
+                <div>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                    AVG LENGTH OF STAY
+                  </p>
+                  <div className="h-px bg-[#D1D5DB] mb-6" />
+                  <div className="space-y-2.5">
+                    <label className="text-sm font-medium text-black">Average Length of Stay (days)</label>
+                    <div className="relative">
+                      <FormattedNumberInput
+                        value={state.ipAvgLengthOfStay}
+                        onChange={(val) => updateState({ ipAvgLengthOfStay: val })}
+                        placeholder="e.g., 4.5"
+                        className="h-12 bg-white border-[#E5E5E5] pr-14"
+                        data-testid="input-ip-los"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm pointer-events-none">days</span>
+                    </div>
+                    <p className="text-xs text-[#888888]">Average inpatient length of stay. National median is ~4.5 days. Used to calculate progress note volume in the E/M coding module.</p>
+                  </div>
+                </div>
+              )}
+
               {/* Section 3: Expected Utilization / Adoption */}
               <div>
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">

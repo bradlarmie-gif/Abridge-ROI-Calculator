@@ -225,6 +225,17 @@ export default function ExploreModel({
     return Math.round(gross * (docQualityInputs.ipObsDefenseRealization / 100));
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
+  const ipEmCodingValue = useMemo(() => {
+    if (!isInpatient || !docQualityInputs.ipEmCodingEnabled) return 0;
+    const los = state.ipAvgLengthOfStay ?? 4.5;
+    const progressPerAdmission = Math.max(los - 2, 1);
+    const totalCharges = eligibleEncounters * (1 + progressPerAdmission + docQualityInputs.ipEmCodingConsultsPerAdmission);
+    const gapScenarios: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };
+    const gapPct = (gapScenarios[docQualityInputs.ipEmCodingGapScenario] ?? 12) / 100;
+    const grossValue = totalCharges * gapPct * docQualityInputs.ipEmCodingAvgRevenueLift;
+    return Math.round(grossValue * (docQualityInputs.ipEmCodingRealization / 100));
+  }, [isInpatient, eligibleEncounters, docQualityInputs, state.ipAvgLengthOfStay]);
+
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (isED
         ? (totalHoursSaved * ((timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) / 100) / state.numberOfProviders / 48)
@@ -647,6 +658,25 @@ export default function ExploreModel({
             ],
           });
         }
+        if (docQualityInputs.ipEmCodingEnabled && ipEmCodingValue > 0) {
+          const los = state.ipAvgLengthOfStay ?? 4.5;
+          const progressPerAdm = Math.max(los - 2, 1);
+          const totalCharges = Math.round(eligibleEncounters * (1 + progressPerAdm + docQualityInputs.ipEmCodingConsultsPerAdmission));
+          const gapPct = docQualityInputs.ipEmCodingGapScenario === 'conservative' ? 8 : docQualityInputs.ipEmCodingGapScenario === 'optimistic' ? 18 : 12;
+          const chargesCaptured = Math.round(totalCharges * (gapPct / 100));
+          drivers.push({
+            id: 'ipEmCoding',
+            name: 'E/M Coding Accuracy',
+            value: ipEmCodingValue,
+            category: 'documentation',
+            calcSteps: [
+              `${eligibleEncounters.toLocaleString()} admissions \u00D7 (1 H&P + ${progressPerAdm.toFixed(1)} progress notes + ${docQualityInputs.ipEmCodingConsultsPerAdmission} consults) = ${totalCharges.toLocaleString()} charges`,
+              `\u00D7 ${gapPct}% coding gap \u00D7 $${docQualityInputs.ipEmCodingAvgRevenueLift}/charge = $${Math.round(chargesCaptured * docQualityInputs.ipEmCodingAvgRevenueLift).toLocaleString()} gross`,
+              `\u00D7 ${docQualityInputs.ipEmCodingRealization}% realization = ${fmtK(ipEmCodingValue)}/year`,
+            ],
+            inputs: { realizationRate: docQualityInputs.ipEmCodingRealization },
+          });
+        }
         if (docQualityInputs.ipDrgEnabled && ipDrgValue > 0) {
           const captureRate = docQualityInputs.ipDrgScenario === 'conservative' ? 15 : docQualityInputs.ipDrgScenario === 'typical' ? 20 : 25;
           drivers.push({
@@ -908,11 +938,20 @@ export default function ExploreModel({
           const ipTotalQueries = Math.round(eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100));
           const ipQueriesAvoided = Math.round(ipTotalQueries * (ipCdiRedRate / 100));
 
+          const ipEmLos = state.ipAvgLengthOfStay ?? 4.5;
+          const ipEmProgressPerAdm = Math.max(ipEmLos - 2, 1);
+          const ipEmHAndPs = Math.round(eligibleEncounters);
+          const ipEmProgressNotes = Math.round(eligibleEncounters * ipEmProgressPerAdm);
+          const ipEmConsults = Math.round(eligibleEncounters * docQualityInputs.ipEmCodingConsultsPerAdmission);
+          const ipEmTotalCharges = ipEmHAndPs + ipEmProgressNotes + ipEmConsults;
+          const ipEmGapPct = docQualityInputs.ipEmCodingGapScenario === 'conservative' ? 8 : docQualityInputs.ipEmCodingGapScenario === 'optimistic' ? 18 : 12;
+          const ipEmChargesCaptured = Math.round(ipEmTotalCharges * (ipEmGapPct / 100));
+
           const ipFullScaleProvs = expandedProviders;
           const ipFullScaleMult = (ipFullScaleProvs / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
           const ipRetValOnly = clinicianRetentionValue;
           const ipCostRedOnly = costReductionValue;
-          const ipPrimaryTotal = ipRetValOnly + ipCostRedOnly + ipDrgValue + ipCdiValue + ipObsDefenseValue;
+          const ipPrimaryTotal = ipRetValOnly + ipCostRedOnly + ipEmCodingValue + ipDrgValue + ipCdiValue + ipObsDefenseValue;
           const ipPrimaryNet = ipPrimaryTotal - annualInvestment;
           const ipFullScaleNetValue = Math.round(ipPrimaryNet * ipFullScaleMult);
           const ipFullScaleInv = Math.round(annualInvestment * (ipFullScaleProvs / state.numberOfProviders));
@@ -940,6 +979,17 @@ export default function ExploreModel({
             ipBaseDRGPayment: docQualityInputs.ipDrgBasePayment,
             ipDrgRealizationRate: docQualityInputs.ipDrgRealization,
             ipDrgValue: ipDrgValue,
+            ipEmCodingEnabled: docQualityInputs.ipEmCodingEnabled,
+            ipEmCodingValue: ipEmCodingValue,
+            ipEmCodingGapScenario: docQualityInputs.ipEmCodingGapScenario,
+            ipEmCodingAvgRevenueLift: docQualityInputs.ipEmCodingAvgRevenueLift,
+            ipEmCodingRealization: docQualityInputs.ipEmCodingRealization,
+            ipEmCodingTotalCharges: ipEmTotalCharges,
+            ipEmCodingChargesCaptured: ipEmChargesCaptured,
+            ipEmCodingHAndPs: ipEmHAndPs,
+            ipEmCodingProgressNotes: ipEmProgressNotes,
+            ipEmCodingConsults: ipEmConsults,
+            ipAvgLengthOfStay: state.ipAvgLengthOfStay,
             ipDrgEnabled: docQualityInputs.ipDrgEnabled,
             ipCdiQueryRate: docQualityInputs.ipCdiQueryRate,
             ipTotalCDIQueries: ipTotalQueries,

@@ -300,6 +300,17 @@ export interface ExplorePDFData {
   ipBaseDRGPayment?: number;
   ipDrgRealizationRate?: number;
   ipDrgValue?: number;
+  ipEmCodingEnabled?: boolean;
+  ipEmCodingValue?: number;
+  ipEmCodingGapScenario?: string;
+  ipEmCodingAvgRevenueLift?: number;
+  ipEmCodingRealization?: number;
+  ipEmCodingTotalCharges?: number;
+  ipEmCodingChargesCaptured?: number;
+  ipEmCodingHAndPs?: number;
+  ipEmCodingProgressNotes?: number;
+  ipEmCodingConsults?: number;
+  ipAvgLengthOfStay?: number;
   ipDrgEnabled?: boolean;
   ipCdiQueryRate?: number;
   ipTotalCDIQueries?: number;
@@ -2778,8 +2789,27 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
             <View style={styles.divider} />
 
-            {(data.ipDrgEnabled && drgVal > 0) || (data.ipObsDefenseEnabled && obsDefVal > 0) ? (
+            {(data.ipDrgEnabled && drgVal > 0) || (data.ipObsDefenseEnabled && obsDefVal > 0) || (data.ipEmCodingEnabled && safe(data.ipEmCodingValue) > 0) ? (
               <>
+                {data.ipEmCodingEnabled && safe(data.ipEmCodingValue) > 0 && (
+                  <View style={[styles.cardBg, { marginBottom: 8 }]}>
+                    <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                      <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>E/M CODING ACCURACY</Text>
+                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(safe(data.ipEmCodingValue))}</Text>
+                        </View>
+                        <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 4 }}>
+                          {`Across ${fmtNum(safe(data.ipEmCodingTotalCharges))} annual chargeable encounters (H&Ps, progress notes, consults \u2014 excluding time-based discharge codes), ${data.ipEmCodingGapScenario ?? "typical"} scenario assumes ${data.ipEmCodingGapScenario === "conservative" ? "8" : data.ipEmCodingGapScenario === "optimistic" ? "18" : "12"}% have a documentation-driven coding gap \u2014 ${fmtNum(safe(data.ipEmCodingChargesCaptured))} encounters where the note didn't fully reflect clinical complexity. At $${safe(data.ipEmCodingAvgRevenueLift)} average lift per charge and ${safe(data.ipEmCodingRealization)}% realization, that translates to ${fmtCurrency(safe(data.ipEmCodingValue))} annually.`}
+                        </Text>
+                        <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
+                          {`${fmtNum(safe(data.ipEmCodingHAndPs))} H&Ps + ${fmtNum(safe(data.ipEmCodingProgressNotes))} progress notes + ${fmtNum(safe(data.ipEmCodingConsults))} consults. Avg LOS: ${safe(data.ipAvgLengthOfStay) || 4.5} days. Validate consult billing against your group's payer contracts.`}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
                 {data.ipDrgEnabled && drgVal > 0 ? (
                   <View style={[styles.cardBg, { marginBottom: 8 }]}>
                     <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
