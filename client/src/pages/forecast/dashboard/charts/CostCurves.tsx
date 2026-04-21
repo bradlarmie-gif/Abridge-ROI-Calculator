@@ -69,7 +69,7 @@ export function CostCurves({ result, comparisons, contractStartDate }: Props) {
                   }}
                 />
                 <span>{cmp.label}:</span>
-                <span className="font-mono font-semibold">
+                <span className="font-sans font-semibold">
                   {savings ? "−" : "+"}
                   {fmtCurrencyShort(Math.abs(delta))} over term
                 </span>

@@ -115,7 +115,7 @@ export function ValueDriversSection({ state, updateState }: Props) {
             </div>
 
             {typeof d.measuredDelta === "number" && (
-              <p className="text-[11px] font-mono text-neutral-500">
+              <p className="text-[11px] font-sans font-semibold text-neutral-500">
                 Measured: ${d.measuredDelta.toLocaleString()}
               </p>
             )}
@@ -136,7 +136,7 @@ export function ValueDriversSection({ state, updateState }: Props) {
             <div className="space-y-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-neutral-700">Confidence</span>
-                <span className="font-mono font-semibold">{d.confidence}%</span>
+                <span className="font-sans font-semibold">{d.confidence}%</span>
               </div>
               <Slider
                 data-testid={`slider-confidence-${d.id}`}
@@ -154,7 +154,7 @@ export function ValueDriversSection({ state, updateState }: Props) {
             <div className="space-y-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-neutral-700">Realization</span>
-                <span className="font-mono font-semibold">{d.realizationPct}%</span>
+                <span className="font-sans font-semibold">{d.realizationPct}%</span>
               </div>
               <Slider
                 data-testid={`slider-realization-${d.id}`}
@@ -335,14 +335,14 @@ function AddDriverDialog({
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span>Confidence</span>
-              <span className="font-mono">{confidence}%</span>
+              <span className="font-sans font-semibold">{confidence}%</span>
             </div>
             <Slider value={[confidence]} min={0} max={100} step={5} onValueChange={(v) => setConfidence(v[0])} />
           </div>
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span>Realization</span>
-              <span className="font-mono">{realization}%</span>
+              <span className="font-sans font-semibold">{realization}%</span>
             </div>
             <Slider value={[realization]} min={0} max={100} step={5} onValueChange={(v) => setRealization(v[0])} />
           </div>

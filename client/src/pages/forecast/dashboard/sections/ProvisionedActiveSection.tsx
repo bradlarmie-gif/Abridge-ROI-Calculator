@@ -113,9 +113,9 @@ export function ProvisionedActiveSection({ state, updateState }: Props) {
             <div className="flex items-center justify-between text-xs">
               <span className="text-neutral-700">Y{idx + 1}</span>
               {mode === "pct" ? (
-                <span className="font-mono font-semibold text-[#1A1A1A]">{pct}%</span>
+                <span className="font-sans font-semibold text-[#1A1A1A]">{pct}%</span>
               ) : (
-                <span className="font-mono font-semibold text-[#1A1A1A]">
+                <span className="font-sans font-semibold text-[#1A1A1A]">
                   {absForYear(idx, pct).toLocaleString()}
                 </span>
               )}
@@ -148,7 +148,7 @@ export function ProvisionedActiveSection({ state, updateState }: Props) {
             className="text-[11px] text-neutral-600"
             data-testid={`preview-active-y${p.year}`}
           >
-            ~<span className="font-mono">{p.activeUsers.toLocaleString()}</span>{" "}
+            ~<span className="font-sans font-semibold">{p.activeUsers.toLocaleString()}</span>{" "}
             active by end of Y{p.year}
           </p>
         ))}

@@ -1,0 +1,97 @@
+  ▎ Fix client/src/pages/forecast/ForecastContract.tsx. The At-a-Glance card is showing computed dollar figures and insights before the user has entered real inputs. That's misleading and looks broken. Gate 
+  ▎ the card behind real data, and fix related issues on this screen.
+  ▎                                                                                                                                                                                                            
+  ▎ 1. At-a-Glance card — proper empty state                                                                                                                                                                   
+  ▎
+  ▎ The At-a-Glance card must only show computed numbers when all four of these are truthy:                                                                                                                    
+  ▎ - state.activeUsers > 0 (from Baseline screen)          
+  ▎ - state.contractStartDate is set (user picked a date)                                                                                                                                                      
+  ▎ - state.currentPricing.unitPrice > 0                    
+  ▎ - state.currentPricing.model is a valid pricing model                                                                                                                                                      
+  ▎                                                                                                                                                                                                            
+  ▎ If any are missing, render the card in empty state mode instead:                                                                                                                                           
+  ▎                                                                                                                                                                                                            
+  ▎ ┌─────────────────────────────┐                                                                                                                                                                            
+  ▎ │  AT A GLANCE                │                         
+  ▎ │                             │                                                                                                                                                                            
+  ▎ │  [ empty-state illustration │                         
+  ▎ │    or subtle calc icon      │                                                                                                                                                                            
+  ▎ │    with opacity-30 ]        │                                                                                                                                                                            
+  ▎ │                             │                                                                                                                                                                            
+  ▎ │  Your contract snapshot     │                                                                                                                                                                            
+  ▎ │  will appear here.          │                                                                                                                                                                            
+  ▎ │                             │
+  ▎ │  To see projections:        │                                                                                                                                                                            
+  ▎ │  · Confirm active users     │                                                                                                                                                                            
+  ▎ │    on Baseline              │
+  ▎ │  · Pick a contract start    │                                                                                                                                                                            
+  ▎ │    date                     │                         
+  ▎ │  · Enter your unit price    │                                                                                                                                                                            
+  ▎ │                             │                         
+  ▎ │  Each item turns into a     │                                                                                                                                                                            
+  ▎ │  green check as you go.     │
+  ▎ └─────────────────────────────┘                                                                                                                                                                            
+  ▎                                                         
+  ▎ Each bullet has a small checkmark icon: gray circle when incomplete, green filled check (Lucide CheckCircle2) when complete. As the user fills things in, items tick off. Once all three are complete, the 
+  ▎ card smoothly transitions (framer-motion) to the full computed view.
+  ▎                                                                                                                                                                                                            
+  ▎ Do NOT show the "Active utilization is below 70% of provisioned…" insight unless we have real Baseline data (both activeUsers > 0 AND provisionedSeats > 0). Right now it's firing against seeded defaults 
+  ▎ and looks like noise.
+  ▎                                                                                                                                                                                                            
+  ▎ 2. Contract Terms card — also gate the timeline                                                                                                                                                            
+  ▎
+  ▎ Currently when no start date is picked, the left side of the card is empty while the right At-a-Glance is oversized. Balance it.                                                                           
+  ▎                                                         
+  ▎ When no contractStartDate is picked:                                                                                                                                                                       
+  ▎ - Don't render the timeline visualization               
+  ▎ - Instead, show a muted placeholder under the Contract Start Date label: "Pick a start date to see your contract timeline." in text-sm text-gray-400 italic                                                
+  ▎ - The "Pick a date" button stays the primary action                                                                                                                                                        
+  ▎                                                                                                                                                                                                            
+  ▎ When a date IS picked:                                                                                                                                                                                     
+  ▎ - Reveal the full timeline visualization with start/today/end dots, Abridge-red fill, and the "X months elapsed · Y remaining" caption                                                                     
+  ▎ - Use framer-motion slide-down reveal                                                                                                                                                                      
+  ▎                                                                                                                                                                                                            
+  ▎ 3. Per Staffed Bed card — actually disable when Nursing isn't selected                                                                                                                                     
+  ▎                                                                                                                                                                                                            
+  ▎ The Per Staffed Bed tile currently looks clickable even though Nursing isn't in state.careSettings. Visibly disable it:                                                                                    
+  ▎ - opacity-40
+  ▎ - cursor-not-allowed                                                                                                                                                                                       
+  ▎ - Tooltip on hover: "Add Nursing as a care setting on Baseline to enable per-bed pricing"
+  ▎ - If user somehow clicks it anyway, no-op (don't change selection)                                                                                                                                         
+  ▎                                                                                                                                                                                                            
+  ▎ 4. Font consistency — verify from the previous typography prompt                                                                                                                                           
+  ▎                                                                                                                                                                                                            
+  ▎ Double-check this file specifically for any remaining font-mono:                                                                                                                                           
+  ▎ - The "$3,000,000" and "$6,000,000" hero numbers in At-a-Glance — must be font-abridge (the Abridge display font used in the page title "YOUR CURRENT CONTRACT"), NOT font-mono. Currently they still look 
+  ▎ monospaced.                                                                                                                                                                                                
+  ▎ - The "$ per provider / month" input value ("250") — should be font-sans font-semibold, not mono
+  ▎ - The "$" prefix on "PRICING MODEL" section header — using a $ character as an icon is odd. Replace with a proper Lucide icon (DollarSign) at the same size/weight as other section header icons. And the $
+  ▎  in "$ per provider / month" is fine as a currency prefix on the label.                                                                                                                                    
+  ▎                                                                                                                                                                                                            
+  ▎ 5. Pricing model card spacing                                                                                                                                                                              
+  ▎                                                         
+  ▎ The 5 pricing-model tiles are spaced evenly but the description text under each ("Monthly fee per active provider" etc.) wraps inconsistently. Constrain each card to a fixed min-height (min-h-32) and use
+  ▎  text-xs text-gray-500 leading-relaxed for the description so they all align vertically.
+  ▎                                                                                                                                                                                                            
+  ▎ 6. Layout on first render                                                                                                                                                                                  
+  ▎
+  ▎ When the user first lands on this screen with no inputs, the Contract Terms card feels empty while the right At-a-Glance is large. After applying the empty states above, both sides should feel balanced —
+  ▎  left card has the segmented term picker + date picker + placeholder text; right card has the checklist empty state. Both should be roughly the same height.
+  ▎                                                                                                                                                                                                            
+  ▎ 7. Continue button gating                                                                                                                                                                                  
+  ▎
+  ▎ The "Continue to Dashboard" button should be disabled (gray, not Abridge red) until all required inputs are provided:                                                                                      
+  ▎ - Contract start date picked                            
+  ▎ - Unit price > 0                                                                                                                                                                                           
+  ▎ - If encounter-mode: contract encounter limit set       
+  ▎                                                                                                                                                                                                            
+  ▎ When disabled, tooltip on hover: "Complete the required fields to continue". When enabled, it animates to the primary Abridge red state with a subtle entrance (framer-motion scale from 0.98 → 1.0).      
+  ▎                                                                                                                                                                                                            
+  ▎ What I want to see when this is done                                                                                                                                                                       
+  ▎                                                         
+  ▎ - Land on Contract & Pricing with no Baseline data filled in → At-a-Glance shows the 3-item checklist empty state, no fake $3M numbers                                                                     
+  ▎ - Go back, fill Baseline, come back → At-a-Glance still empty until start date is picked + unit price > 0
+  ▎ - Pick a start date → timeline appears under the date picker                                                                                                                                               
+  ▎ - All required fields filled → At-a-Glance smoothly transitions to the full computed view with real numbers in the Abridge display font (not mono)                                                         
+  ▎ - Per Staffed Bed tile visibly disabled when Nursing is not a care setting                                                                                                                                 
+  ▎ - Continue button disabled until all required fields complete           

@@ -1,0 +1,64 @@
+ Fix typography across the entire Forecast path. JetBrains Mono is rendering for hero numbers and it breaks visually against the Inter + Abridge-display-font system used everywhere else. Remove it.       
+  ▎                                                                                                                              
+  ▎ The font system — apply this globally across client/src/pages/forecast/*                                                                                                                                   
+  ▎                                                                                                                              
+  ▎ | Use                                                                | Font                                                         | Examples                                  |                          
+  ▎ |--------------------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------|
+  ▎ | Page titles & section hero headings                                | Abridge display font (font-abridge), bold, uppercase         | "WHERE ARE YOU TODAY?"                    |
+  ▎ | Hero display numbers (big %, $, multiples)                         | Abridge display font, bold                                   | 64.3%, $4.8M, 2.4×                        |                          
+  ▎ | Body text, descriptions, labels, helper text                       | Inter (font-sans) regular or medium                          | "Enter encounter counts to derive share." |                          
+  ▎ | Small uppercase section labels                                     | Inter Medium, text-xs uppercase tracking-wider text-gray-500 | "ABRIDGE ENCOUNTER SHARE"                 |                          
+  ▎ | Data readouts / tooltip numbers / chart axis labels / input values | Inter Semibold (font-sans font-semibold)                     | "450,000 of 700,000", "250"               |                          
+  ▎                                                                                                                                                                                                            
+  ▎ Critical rule: stop using font-mono (JetBrains Mono) anywhere in the Forecast path. It reads technical, breaks the editorial brand feel, and is what caused the "0.0%" to look off in the screenshot. Find 
+  ▎ every font-mono class in client/src/pages/forecast/** and client/src/components/forecast/** and replace with:                                                                                              
+  ▎ - font-abridge for hero-scale display numbers (≥ text-5xl)                                                                                                                                                 
+  ▎ - font-sans font-semibold for everything else
+  ▎                                                                                                                                                                                                            
+  ▎ If font-abridge isn't registered in tailwind.config.ts, add it:                                                                                                                                            
+  ▎                                                                                                                                                                                                          
+  ▎ theme: { extend: { fontFamily: {                                                                                                                                                                           
+  ▎   abridge: ['"Abridge"', '"Manrope"', 'system-ui', 'sans-serif'],
+  ▎ }}}                                                                                                                                                                                                        
+  ▎                                                                                                                                                                                                          
+  ▎ Confirm the Abridge web font is loaded via @font-face in client/src/index.css (it should already be — the page title "WHERE ARE YOU TODAY?" is using it). If missing, register it.                         
+  ▎                                                                                                                                                                                                          
+  ▎ Specific fixes, screen by screen                                                                                                                                                                           
+  ▎                                                         
+  ▎ Baseline (ForecastBaseline.tsx)                                                                                                                                                                            
+  ▎ 1. Abridge Encounter Share hero number — change from font-mono to font-abridge, keep Abridge red #E8350A, keep text-7xl bold                                                                             
+  ▎ 2. Empty state — when both abridgeEncountersLTM and totalOrgEncountersLTM are 0/empty, do NOT show "0.0%". Replace with a dimmed "—" in the same font/size/color-muted, and keep the caption "Enter        
+  ▎ encounter counts to derive share." No misleading zero.                                                                                                                                                   
+  ▎ 3. Emergency Department care card — label is wrapping to two lines. Fix by either (a) shortening display to "ED" with "Emergency Department" as a subtitle below it in Inter text-xs muted, or (b) using   
+  ▎ whitespace-nowrap + auto-sizing the icon column. Whichever keeps the card visually balanced with the other three.                                                                                          
+  ▎ 4. Section header labels ("USERS & SEATS", "ENCOUNTERS · LAST 12 MONTHS", "ABRIDGE ENCOUNTER SHARE", "CARE SETTINGS ACTIVE") — unify to text-xs uppercase tracking-wider font-medium text-gray-500 with    
+  ▎ optional Lucide icon aligned left. No mono.                                                                                                                                                                
+  ▎ 5. Input values inside FormattedNumberInput — render typed value in font-sans font-semibold, not mono                                                                                                    
+  ▎ 6. Insight line under the share % (was specified but missing) — add it back:                                                                                                                               
+  ▎   - share ≥ 60%: "Strong penetration — ambient is core to your workflow"                                                                                                                                 
+  ▎   - share 30–60%: "Meaningful footprint — significant room to grow"                                                                                                                                        
+  ▎   - share < 30%: "Early adoption — major expansion opportunity"                                                                                                                                            
+  ▎   - share unset: nothing, show the caption instead                                                                                                                                                         
+  ▎ 7. Background pattern — tone down opacity to 0.08 and increase shape size / reduce count so it reads as subtle texture, not scattered clutter                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ Contract & Pricing (ForecastContract.tsx)                                                                                                                                                                  
+  ▎ - At-a-Glance card's "Annualized spend" and "Total over term" numbers → font-abridge bold, Abridge red                                                                                                     
+  ▎ - Contract timeline labels → font-sans font-semibold, not mono                                                                                                                                             
+  ▎ - Any other numbers → Inter Semibold                                                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ Dashboard (ForecastDashboard.tsx)                                                                                                                                                                          
+  ▎ - All KPI hero numbers (Net Contract Value, ROI Multiple, break-even, etc.) → font-abridge bold                                                                                                            
+  ▎ - Pricing comparison card numbers ($ cost, $ net, ROI ×, ▲ $X savings pill) → font-abridge bold for the main $ amount, Inter Semibold for the delta pill and smaller lines                                 
+  ▎ - Value driver card "≈ $1.2M/yr" preview → font-abridge for the number, Inter for "per year at current adoption"                                                                                         
+  ▎ - Chart axis labels and tooltips → Inter Semibold (smaller, muted)                                                                                                                                         
+  ▎ - Any remaining font-mono → remove                                                                                                                                                                         
+  ▎                                                                                                                                                                                                            
+  ▎ What I want to see when this is done                                                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ - Zero instances of font-mono in the Forecast path (git grep font-mono client/src/pages/forecast returns nothing)                                                                                          
+  ▎ - Hero numbers everywhere — Baseline share %, Contract at-a-glance, Dashboard KPIs, pricing comparison totals — all render in the same Abridge display font as the page titles. Visual consistency with    
+  ▎ "WHERE ARE YOU TODAY?"                                                                                                                                                                                     
+  ▎ - "0.0%" empty state replaced with a clean "—" placeholder; insight line appears once real data is entered                                                                                               
+  ▎ - Emergency Department label no longer wraps awkwardly                                                                                                                                                     
+  ▎ - Section labels across all three screens use one consistent style                                                                                                                                       
+  ▎ - Background pattern is subtle, not scattered sparkles               

@@ -78,7 +78,7 @@ export function AdoptionGrowthSection({ state, updateState }: Props) {
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs">
           <span className="text-neutral-700">Ramp months</span>
-          <span className="font-mono font-semibold">{state.adoptionCurve.rampMonths}</span>
+          <span className="font-sans font-semibold">{state.adoptionCurve.rampMonths}</span>
         </div>
         <Slider
           data-testid="slider-ramp-months"
@@ -120,7 +120,7 @@ export function AdoptionGrowthSection({ state, updateState }: Props) {
       <div className="space-y-1 pt-2 border-t border-neutral-100">
         <div className="flex items-center justify-between text-xs">
           <span className="text-neutral-700">Historical growth (MoM)</span>
-          <span className="font-mono font-semibold">{growth.toFixed(1)}%</span>
+          <span className="font-sans font-semibold">{growth.toFixed(1)}%</span>
         </div>
         <Slider
           data-testid="slider-mom-growth"
@@ -142,7 +142,7 @@ export function AdoptionGrowthSection({ state, updateState }: Props) {
           <div key={idx} className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-neutral-700">Y{idx + 1}</span>
-              <span className="font-mono font-semibold">{pct}%</span>
+              <span className="font-sans font-semibold">{pct}%</span>
             </div>
             <Slider
               data-testid={`slider-share-y${idx + 1}`}
@@ -158,11 +158,11 @@ export function AdoptionGrowthSection({ state, updateState }: Props) {
 
       <div className="rounded bg-neutral-50 p-2 text-[11px] text-neutral-600">
         Month 12 projection:{" "}
-        <span className="font-mono font-semibold text-[#1A1A1A]">
+        <span className="font-sans font-semibold text-[#1A1A1A]">
           {m12.activeUsers.toLocaleString()}
         </span>{" "}
         active users,{" "}
-        <span className="font-mono font-semibold text-[#1A1A1A]">
+        <span className="font-sans font-semibold text-[#1A1A1A]">
           {m12.encounters.toLocaleString()}
         </span>{" "}
         encounters

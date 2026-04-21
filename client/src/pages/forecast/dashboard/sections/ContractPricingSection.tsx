@@ -383,7 +383,7 @@ export function ContractPricingSection({ state, updateState }: Props) {
           <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
             Compare against (max 3)
           </Label>
-          <span className="text-[10px] font-mono text-neutral-500">
+          <span className="text-[10px] font-sans font-semibold text-neutral-500">
             {compareCount}/3
           </span>
         </div>

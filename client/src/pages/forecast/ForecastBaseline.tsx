@@ -19,9 +19,15 @@ import { BackgroundPattern } from "@/components/BackgroundPattern";
 import {
   type ForecastCareSetting,
   type ForecastState,
-  CARE_SETTING_LABELS,
   makeDefaultEncounterShareCurve,
 } from "./types";
+
+const CARE_SETTING_DISPLAY_LABELS: Record<ForecastCareSetting, string> = {
+  outpatient: "Outpatient",
+  ed: "ED",
+  inpatient: "Inpatient",
+  nursing: "Nursing",
+};
 
 interface ForecastBaselineProps {
   state: ForecastState;
@@ -150,7 +156,7 @@ export default function ForecastBaseline({
                 <CareSettingCard
                   key={s}
                   icon={CARE_SETTING_ICONS[s]}
-                  title={CARE_SETTING_LABELS[s]}
+                  title={CARE_SETTING_DISPLAY_LABELS[s]}
                   selected={state.careSettings.includes(s)}
                   onClick={() => toggleCareSetting(s)}
                 />
@@ -225,7 +231,7 @@ export default function ForecastBaseline({
                       value={state.activeUsersToday || ""}
                       onChange={(v) => updateState({ activeUsersToday: v })}
                       placeholder="e.g. 1,200"
-                      className="h-12 font-mono focus-visible:ring-[#EA2C00]/30"
+                      className="h-12 font-sans font-semibold focus-visible:ring-[#EA2C00]/30"
                     />
                   </div>
                   <div className="space-y-2">
@@ -240,7 +246,7 @@ export default function ForecastBaseline({
                       value={state.provisionedSeats || ""}
                       onChange={(v) => updateState({ provisionedSeats: v })}
                       placeholder="e.g. 1,500"
-                      className="h-12 font-mono focus-visible:ring-[#EA2C00]/30"
+                      className="h-12 font-sans font-semibold focus-visible:ring-[#EA2C00]/30"
                     />
                   </div>
                 </div>
@@ -268,7 +274,7 @@ export default function ForecastBaseline({
                       onChange={(v) => updateState({ abridgeEncountersLTM: v })}
                       onBlurValue={onShareDerivationChange}
                       placeholder="e.g. 600,000"
-                      className="h-12 font-mono focus-visible:ring-[#EA2C00]/30"
+                      className="h-12 font-sans font-semibold focus-visible:ring-[#EA2C00]/30"
                     />
                   </div>
                   <div className="space-y-2">
@@ -281,7 +287,7 @@ export default function ForecastBaseline({
                       onChange={(v) => updateState({ totalOrgEncountersLTM: v })}
                       onBlurValue={onShareDerivationChange}
                       placeholder="e.g. 1,000,000"
-                      className="h-12 font-mono focus-visible:ring-[#EA2C00]/30"
+                      className="h-12 font-sans font-semibold focus-visible:ring-[#EA2C00]/30"
                     />
                   </div>
                 </div>
@@ -303,16 +309,35 @@ export default function ForecastBaseline({
                   >
                     Abridge Encounter Share
                   </p>
-                  <p
-                    className="font-mono font-bold text-[#EA2C00] leading-none"
-                    style={{ fontSize: "3.75rem" }}
-                    data-testid="text-encounter-share-pct"
-                  >
-                    {sharePct.toFixed(1)}%
-                  </p>
-                  <p className="text-xs text-neutral-500 leading-relaxed mt-4">
+                  {state.totalOrgEncountersLTM > 0 ? (
+                    <p
+                      className="font-abridge font-bold text-[#EA2C00] leading-none text-7xl"
+                      data-testid="text-encounter-share-pct"
+                    >
+                      {sharePct.toFixed(1)}%
+                    </p>
+                  ) : (
+                    <p
+                      className="font-abridge font-bold text-neutral-300 leading-none text-7xl"
+                      data-testid="text-encounter-share-pct"
+                    >
+                      —
+                    </p>
+                  )}
+                  <p className="text-xs text-neutral-500 leading-relaxed mt-4 font-sans">
                     {state.totalOrgEncountersLTM > 0
-                      ? `${state.abridgeEncountersLTM.toLocaleString()} of ${state.totalOrgEncountersLTM.toLocaleString()} encounters in the last 12 months`
+                      ? (
+                        <>
+                          <span className="font-sans font-semibold text-[#1A1A1A]">
+                            {state.abridgeEncountersLTM.toLocaleString()}
+                          </span>{" "}
+                          of{" "}
+                          <span className="font-sans font-semibold text-[#1A1A1A]">
+                            {state.totalOrgEncountersLTM.toLocaleString()}
+                          </span>{" "}
+                          encounters in the last 12 months
+                        </>
+                      )
                       : "Enter encounter counts to derive share."}
                   </p>
                   {state.totalOrgEncountersLTM > 0 && (

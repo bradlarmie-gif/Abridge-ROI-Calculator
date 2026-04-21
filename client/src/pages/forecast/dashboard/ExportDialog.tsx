@@ -173,7 +173,7 @@ export function ExportDialog({
                   <Input
                     readOnly
                     value={shareUrl}
-                    className="flex-1 font-mono text-xs"
+                    className="flex-1 font-sans text-xs"
                     data-testid="input-share-url"
                     onFocus={(e) => e.currentTarget.select()}
                   />

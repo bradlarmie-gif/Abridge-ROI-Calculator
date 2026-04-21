@@ -296,7 +296,7 @@ function KpiCard({
         {label}
       </p>
       <p
-        className={`mt-1 text-xl font-bold font-mono ${
+        className={`mt-1 text-xl font-bold font-abridge ${
           negative ? "text-red-600" : "text-[#1A1A1A]"
         }`}
       >
@@ -331,7 +331,7 @@ function BreakEvenCard({
       <p className="text-[10px] uppercase tracking-wide text-neutral-500 font-medium">
         Break-Even Band
       </p>
-      <p className="mt-1 text-sm font-semibold font-mono text-[#1A1A1A]">{display}</p>
+      <p className="mt-1 text-sm font-semibold font-sans text-[#1A1A1A]">{display}</p>
       <p className="text-[10px] text-neutral-400 mt-0.5">
         of {contractMonths} months
       </p>

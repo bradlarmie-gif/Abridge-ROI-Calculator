@@ -25,9 +25,9 @@ function generateRandomShapes(count: number, seed: number): ShapeProps[] {
     shapes.push({
       top: `${rand(0) * 100}%`,
       left: `${rand(1) * 100}%`,
-      size: 15 + rand(2) * 35, // 15-50px range with variation
+      size: 60 + rand(2) * 80, // 60-140px — bigger for subtle texture, fewer pieces
       rotation: rand(3) * 360,
-      opacity: 0.04 + rand(4) * 0.08, // 0.04-0.12 opacity range
+      opacity: 0.03 + rand(4) * 0.05, // 0.03-0.08 opacity range, capped subtle
       type: types[Math.floor(rand(5) * types.length)],
     });
   }
@@ -73,8 +73,8 @@ function Shape({ top, left, size, rotation, opacity, type }: ShapeProps) {
 export function BackgroundPattern() {
   // Generate shapes with different densities for mobile vs desktop
   // Using useMemo to prevent regeneration on every render
-  const mobileShapes = useMemo(() => generateRandomShapes(18, 42), []);
-  const desktopShapes = useMemo(() => generateRandomShapes(28, 87), []);
+  const mobileShapes = useMemo(() => generateRandomShapes(8, 42), []);
+  const desktopShapes = useMemo(() => generateRandomShapes(12, 87), []);
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">

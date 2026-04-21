@@ -410,7 +410,7 @@ export default function ForecastContract({
                     <span>Ends {format(endDate, "MMM yyyy")}</span>
                   </div>
                   <p
-                    className="text-xs font-mono text-neutral-500 mt-3 text-center"
+                    className="text-xs font-sans font-semibold text-neutral-600 mt-3 text-center"
                     data-testid="text-contract-elapsed"
                   >
                     {monthsElapsed} months elapsed · {monthsRemaining} months remaining
@@ -452,7 +452,7 @@ export default function ForecastContract({
                       Annualized Spend
                     </p>
                     <p
-                      className="font-mono font-bold text-[#EA2C00] leading-none"
+                      className="font-abridge font-bold text-[#EA2C00] leading-none"
                       style={{ fontSize: "2.5rem" }}
                       data-testid="text-annualized-spend"
                     >
@@ -466,7 +466,7 @@ export default function ForecastContract({
                       Total Over Term
                     </p>
                     <p
-                      className="font-mono font-bold text-[#1A1A1A] leading-none"
+                      className="font-abridge font-bold text-[#1A1A1A] leading-none"
                       style={{ fontSize: "1.75rem" }}
                       data-testid="text-total-over-term"
                     >
@@ -587,7 +587,7 @@ export default function ForecastContract({
                   onChange={(v) => updatePricing({ unitPrice: v })}
                   placeholder="0"
                   step={state.currentPricing.model === "perEncounter" ? 0.01 : 1}
-                  className="h-14 font-mono text-lg focus-visible:ring-[#EA2C00]/30"
+                  className="h-14 font-sans font-semibold text-lg focus-visible:ring-[#EA2C00]/30"
                 />
               </motion.div>
             </AnimatePresence>
@@ -619,7 +619,7 @@ export default function ForecastContract({
                           value={state.currentPricing.contractEncounterLimit ?? ""}
                           onChange={(v) => updatePricing({ contractEncounterLimit: v })}
                           placeholder="e.g. 500,000"
-                          className="h-11 font-mono focus-visible:ring-[#EA2C00]/30"
+                          className="h-11 font-sans font-semibold focus-visible:ring-[#EA2C00]/30"
                         />
                       </div>
                       <div className="space-y-2">
@@ -637,7 +637,7 @@ export default function ForecastContract({
                                 ).toLocaleString()} (default)`
                               : "e.g. 600,000"
                           }
-                          className="h-11 font-mono focus-visible:ring-[#EA2C00]/30"
+                          className="h-11 font-sans font-semibold focus-visible:ring-[#EA2C00]/30"
                         />
                       </div>
                       <div className="space-y-2">
@@ -650,7 +650,7 @@ export default function ForecastContract({
                           onChange={(v) => updatePricing({ overageRate: v })}
                           step={0.01}
                           placeholder="0.00"
-                          className="h-11 font-mono focus-visible:ring-[#EA2C00]/30"
+                          className="h-11 font-sans font-semibold focus-visible:ring-[#EA2C00]/30"
                         />
                       </div>
                     </div>
@@ -719,7 +719,7 @@ export default function ForecastContract({
                           onChange={(v) => updatePricing({ secondaryUnitPrice: v })}
                           step={0.01}
                           placeholder="0.00"
-                          className="h-11 font-mono focus-visible:ring-[#EA2C00]/30"
+                          className="h-11 font-sans font-semibold focus-visible:ring-[#EA2C00]/30"
                         />
                       </div>
                     </div>
@@ -767,7 +767,7 @@ export default function ForecastContract({
                               onChange={(v) => updateEscalator(i, v)}
                               step={0.1}
                               placeholder="0"
-                              className="h-10 font-mono pr-7 focus-visible:ring-[#EA2C00]/30"
+                              className="h-10 font-sans font-semibold pr-7 focus-visible:ring-[#EA2C00]/30"
                             />
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400 pointer-events-none">
                               %
