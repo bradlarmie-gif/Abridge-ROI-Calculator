@@ -2395,6 +2395,27 @@ export default function ExploreDocQuality({
                   </>
                 ) : isInpatient ? (
                   <>
+                    {(() => {
+                      const losVal = state.ipAvgLengthOfStay ?? 4.5;
+                      const progressPerAdm = Math.max(losVal - 2, 1);
+                      const totalCharges = eligibleEncounters * (1 + progressPerAdm + docQualityInputs.ipEmCodingConsultsPerAdmission);
+                      const gapMap: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };
+                      const gapPct = (gapMap[docQualityInputs.ipEmCodingGapScenario] ?? 12) / 100;
+                      const gross = totalCharges * gapPct * docQualityInputs.ipEmCodingAvgRevenueLift;
+                      const ipEmNet = Math.round(gross * (docQualityInputs.ipEmCodingRealization / 100));
+                      return (
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full ${docQualityInputs.ipEmCodingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                            <span className="text-sm text-[#888888]">E/M Coding Accuracy</span>
+                          </div>
+                          <span className={`text-sm font-semibold ${docQualityInputs.ipEmCodingEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                            {docQualityInputs.ipEmCodingEnabled ? formatCurrency(ipEmNet) : '—'}
+                          </span>
+                        </div>
+                      );
+                    })()}
+
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${docQualityInputs.ipDrgEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />

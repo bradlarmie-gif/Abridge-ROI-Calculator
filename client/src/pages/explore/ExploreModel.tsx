@@ -1975,6 +1975,10 @@ export default function ExploreModel({
                 <div className="h-px bg-[#E5E5E5] mb-3" />
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between gap-1">
+                    <span className="text-[#666666]">E/M Coding Accuracy</span>
+                    <span className="font-semibold text-black">{docQualityInputs.ipEmCodingEnabled ? formatCurrency(ipEmCodingValue) : '—'}</span>
+                  </div>
+                  <div className="flex justify-between gap-1">
                     <span className="text-[#666666]">DRG Accuracy</span>
                     <span className="font-semibold text-black">{docQualityInputs.ipDrgEnabled ? formatCurrency(ipDrgValue) : '—'}</span>
                   </div>
