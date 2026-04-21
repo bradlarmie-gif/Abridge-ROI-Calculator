@@ -73,7 +73,7 @@ function Page1() {
           </Text>
           <Text style={[styles.cardLabel, { marginTop: 4 }]}>THE CALCULATION</Text>
           <Text style={styles.mechanismText}>
-            Admissions × At-risk rate (25%) × Protection rate (20%) × DRG weight increase (0.4) × Base payment ($6K) × Realization (50%)
+            Admissions × At-risk rate (25%) × Protection rate (20%) × DRG weight increase (0.4) × Base payment ($6K) × Realization (65%)
           </Text>
         </View>
         
@@ -85,7 +85,7 @@ function Page1() {
           </Text>
           <Text style={[styles.cardLabel, { marginTop: 4 }]}>THE CALCULATION</Text>
           <Text style={styles.mechanismText}>
-            Admissions × Query rate (30%) × Reduction rate (25%) × Cost per query ($50)
+            Admissions × Query rate (30%) × Reduction rate (25%) × Cost per query ($150)
           </Text>
         </View>
       </View>

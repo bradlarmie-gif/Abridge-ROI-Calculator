@@ -356,7 +356,7 @@ function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSna
       const reductionRate = CDI_SCENARIOS[d.ipCdiScenario] || 25;
       return [
         `${eligibleEnc.toLocaleString()} enc \u00D7 ${d.ipCdiQueryRate}% query rate \u00D7 ${reductionRate}% reduced`,
-        `\u00D7 $${d.ipCdiCostPerQuery}/query = ${fmtK(driver.value)}/year`,
+        `\u00D7 $${d.ipCdiCostPerQuery}/query \u00D7 ${d.ipCdiRealization ?? 75}% realization = ${fmtK(driver.value)}/year`,
       ];
     }
     case "costReduction":
