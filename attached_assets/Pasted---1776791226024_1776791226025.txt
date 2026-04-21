@@ -1,0 +1,20 @@
+                                                                                                                                                                                                             
+  In client/src/pages/forecast/ForecastContract.tsx, enhance the "At a Glance" sidebar:
+                                                                                                                                                                                                               
+  1. When value drivers exist in state (state.valueDrivers.length > 0), add a new section below "Total Over Term" showing:                                                                                     
+     - Label: "Estimated Annual Value"                                                                                                                                                                         
+     - Value: calculate as the sum over all drivers of: projectedDelta × (confidence/100) × (realizationPct/100) × annualized scaling factor                                                                   
+       - For perEncounter drivers: projectedDelta × (abridgeEncountersLTM / contractTermMonths * 12)                                                                                                           
+       - For perActiveUser drivers: projectedDelta × activeUsersToday × 12                                                                                                                                     
+       - For perBed drivers: projectedDelta × nursingStaffedBeds × 12                                                                                                                                          
+       - For annualFlat drivers: projectedDelta                                                                                                                                                                
+     - Format with the existing formatCurrency function already in ForecastContract.tsx                                                                                                                        
+     - Below the value, show a ratio: "~{X}x value vs. cost" where X = annualValue / annualizedSpend, rounded to 1 decimal. Color green if > 1.5, neutral if 1-1.5, amber if < 1.                              
+     - Only show this section when annualizedSpend > 0 and the calculated value > 0                                                                                                                            
+                                                                                                                                                                                                               
+  2. Add a small adoption preview chip inside the "At a Glance" sidebar (below the insight text at the bottom):                                                                                                
+     - Show: "Adoption: 40% → 85% over 6 months · adjustable on Dashboard"                                                                                                                                     
+     - Use the actual adoptionCurve values from state: state.adoptionCurve.startPct and state.adoptionCurve.endPct and state.adoptionCurve.rampMonths                                                          
+     - Style as a small neutral chip: text-[11px] text-neutral-500 bg-neutral-50 rounded px-2 py-1 border border-neutral-100                                                                                   
+                                                                                                                                                                                                               
+  Keep all existing brand colors and patterns. Do not change the layout of other sections in ForecastContract.tsx.    

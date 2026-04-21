@@ -1,0 +1,19 @@
+ Prompt 1 — Phase 1: Bug fixes + Baseline improvements
+                                                                                                                                                                                                               
+  In this ROI Calculator project, make the following changes to the Forecast path:                                                                                                                           
+                                                                                                                                                                                                               
+  1. In client/src/pages/forecast/ForecastStart.tsx:                                                                                                                                                           
+     - Find the line that says "FORECAST_STEP_LABELS" near the top and change the array to ["Start", "Baseline", "Contract & Pricing"] (it currently has wrong labels like "Configure" and "Build scenarios")  
+     - In the Import dialog's DialogDescription, remove the sentence that says "Live import wiring lands in Phase 2." Replace the whole description with: "Paste a Measure link or select from a recent session
+   on this device."                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  2. In client/src/pages/forecast/ForecastBaseline.tsx:                                                                                                                                                        
+     - Add a validation guard to the "Continue to Contract & Pricing" button: disable it (with a tooltip saying "Enter active users and encounter counts to continue") when activeUsersToday is 0 or
+  abridgeEncountersLTM is 0                                                                                                                                                                                    
+     - Below the encounter share big number (the large red percentage), add a horizontal progress bar showing current penetration vs 100% potential. Use the same bar pattern already used in
+  ForecastContract.tsx for the contract timeline. Label the left end "Today" and right end "Full org penetration". Below it, show a small stat: "Uncaptured encounters: ~X/month" where X =                    
+  (totalOrgEncountersLTM - abridgeEncountersLTM) / 12, formatted with commas.
+     - Add a "Encounter Growth" section below the Encounters inputs with: a toggle between "Benchmark (4% MoM)" and "Historical". When Historical is selected, show up to 6 monthly percentage inputs. Wire    
+  these to state.growthSource and state.historicalGrowthMonthly which already exist in the ForecastState type.                                                                                                 
+   
+  Keep all existing brand colors: #EA2C00 red, #1A1A1A dark, #F5F0EB warm neutral background cards.          

@@ -17,10 +17,18 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { CareSettingCard } from "@/components/CareSettingCard";
 import { BackgroundPattern } from "@/components/BackgroundPattern";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  BENCHMARK_MOM_GROWTH_PCT,
   type ForecastCareSetting,
   type ForecastState,
   makeDefaultEncounterShareCurve,
 } from "./types";
+import { TrendingUp } from "lucide-react";
 
 const CARE_SETTING_DISPLAY_LABELS: Record<ForecastCareSetting, string> = {
   outpatient: "Outpatient",
@@ -92,6 +100,40 @@ export default function ForecastBaseline({
   };
 
   const nursingActive = state.careSettings.includes("nursing");
+
+  const canContinue =
+    state.activeUsersToday > 0 && state.abridgeEncountersLTM > 0;
+
+  const uncapturedPerMonth = useMemo(() => {
+    const diff = state.totalOrgEncountersLTM - state.abridgeEncountersLTM;
+    if (diff <= 0) return 0;
+    return Math.round(diff / 12);
+  }, [state.totalOrgEncountersLTM, state.abridgeEncountersLTM]);
+
+  const updateHistoricalGrowthAt = (idx: number, val: number) => {
+    const next = [...state.historicalGrowthMonthly];
+    while (next.length <= idx) next.push(BENCHMARK_MOM_GROWTH_PCT);
+    next[idx] = val;
+    updateState({ historicalGrowthMonthly: next.slice(0, 6) });
+  };
+
+  const setGrowthSource = (src: "benchmark" | "historical") => {
+    if (src === "benchmark") {
+      updateState({
+        growthSource: "benchmark",
+        historicalGrowthMonthly: [BENCHMARK_MOM_GROWTH_PCT],
+      });
+    } else {
+      const seeded =
+        state.historicalGrowthMonthly.length > 1
+          ? state.historicalGrowthMonthly
+          : Array(6).fill(BENCHMARK_MOM_GROWTH_PCT);
+      updateState({
+        growthSource: "historical",
+        historicalGrowthMonthly: seeded.slice(0, 6),
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white relative">
@@ -292,6 +334,87 @@ export default function ForecastBaseline({
                   </div>
                 </div>
               </div>
+
+              {/* Encounter Growth */}
+              <div className="border-t border-neutral-100 pt-6 mt-6">
+                <div className="flex items-center gap-2 pb-3 mb-4 border-b border-neutral-100">
+                  <TrendingUp className="w-3.5 h-3.5 text-[#888888]" />
+                  <h3
+                    className="text-xs font-semibold uppercase text-[#888888]"
+                    style={{ letterSpacing: "1.5px" }}
+                  >
+                    Encounter Growth
+                  </h3>
+                </div>
+                <div
+                  className="inline-flex rounded-md border border-neutral-200 bg-[#F5F0EB] p-1 mb-4"
+                  data-testid="toggle-growth-source"
+                >
+                  {(["benchmark", "historical"] as const).map((opt) => {
+                    const isActive = state.growthSource === opt;
+                    const label =
+                      opt === "benchmark"
+                        ? `Benchmark (${BENCHMARK_MOM_GROWTH_PCT}% MoM)`
+                        : "Historical";
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setGrowthSource(opt)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                          isActive
+                            ? "bg-[#1A1A1A] text-white"
+                            : "text-[#666666] hover:text-[#1A1A1A]"
+                        }`}
+                        data-testid={`btn-growth-source-${opt}`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <AnimatePresence initial={false}>
+                  {state.growthSource === "historical" && (
+                    <motion.div
+                      key="historical-inputs"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.22 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-xs text-neutral-500 mb-3">
+                        Enter month-over-month growth % for the last 6 months
+                        (most recent first).
+                      </p>
+                      <div
+                        className="grid grid-cols-3 md:grid-cols-6 gap-3"
+                        data-testid="grid-historical-growth"
+                      >
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <div key={i} className="space-y-1.5">
+                            <Label className="text-[11px] text-neutral-500 font-medium">
+                              M-{i + 1}
+                            </Label>
+                            <div className="relative">
+                              <FormattedNumberInput
+                                data-testid={`input-historical-growth-${i}`}
+                                value={state.historicalGrowthMonthly[i] ?? ""}
+                                onChange={(v) => updateHistoricalGrowthAt(i, v)}
+                                placeholder="4"
+                                className="h-10 pr-7 font-sans font-semibold focus-visible:ring-[#EA2C00]/30"
+                              />
+                              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-neutral-400 pointer-events-none">
+                                %
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.section>
 
             {/* Abridge Encounter Share hero */}
@@ -342,8 +465,33 @@ export default function ForecastBaseline({
                   </p>
                   {state.totalOrgEncountersLTM > 0 && (
                     <div className="mt-4 pt-4 border-t border-neutral-100">
+                      <div
+                        className="relative h-2 rounded-full bg-neutral-100 overflow-visible"
+                        data-testid="bar-encounter-penetration"
+                      >
+                        <div
+                          className="absolute top-0 left-0 h-full rounded-full bg-[#EA2C00] transition-all duration-300"
+                          style={{ width: `${Math.min(sharePct, 100)}%` }}
+                        />
+                        <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#EA2C00] border-2 border-white shadow-sm" />
+                        <div
+                          className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#1A1A1A] border-2 border-white shadow-sm"
+                          style={{ left: `${Math.min(sharePct, 100)}%` }}
+                        />
+                        <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-neutral-300 border-2 border-white shadow-sm" />
+                      </div>
+                      <div className="flex justify-between mt-3 text-[11px] text-neutral-500">
+                        <span className="font-medium text-[#1A1A1A]">Today</span>
+                        <span>Full org penetration</span>
+                      </div>
                       <p
-                        className="text-sm font-medium text-[#1A1A1A] leading-snug"
+                        className="text-xs font-sans font-semibold text-neutral-600 mt-3"
+                        data-testid="text-uncaptured-encounters"
+                      >
+                        Uncaptured encounters: ~{uncapturedPerMonth.toLocaleString()}/month
+                      </p>
+                      <p
+                        className="text-sm font-medium text-[#1A1A1A] leading-snug mt-4 pt-4 border-t border-neutral-100"
                         data-testid="text-encounter-share-insight"
                       >
                         {shareInsight(sharePct)}
@@ -369,14 +517,28 @@ export default function ForecastBaseline({
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </Button>
-            <Button
-              onClick={onNext}
-              data-testid="btn-baseline-continue"
-              className="bg-[#EA2C00] hover:bg-[#C92500] text-white"
-            >
-              Continue to Contract & Pricing
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={canContinue ? -1 : 0}>
+                    <Button
+                      onClick={onNext}
+                      disabled={!canContinue}
+                      data-testid="btn-baseline-continue"
+                      className="bg-[#EA2C00] hover:bg-[#C92500] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Continue to Contract & Pricing
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!canContinue && (
+                  <TooltipContent>
+                    Enter active users and encounter counts to continue
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </motion.div>
         </div>
       </div>

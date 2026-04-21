@@ -1,0 +1,24 @@
+ Prompt 2 — Phase 2: Measure import story + ForecastStart hierarchy
+                                                                                                                                                                                                               
+  In the Forecast path of this ROI Calculator:
+                                                                                                                                                                                                               
+  1. In client/src/pages/forecast/ForecastStart.tsx, restructure the entry cards:                                                                                                                              
+     - When recentMeasureSessions.length > 0, show the "Import from Measure" card as a full-width hero card at the TOP, styled with a dark background (#1A1A1A) and white text, larger padding, and a prominent
+   CTA button. Add a subheadline: "Measure data available — your partner's proven outcomes are ready to import."                                                                                               
+     - Below it, show "Start from scratch" and "Load saved" as smaller secondary cards side by side (2 columns)
+     - When recentMeasureSessions.length === 0, keep the existing 3-column equal layout                                                                                                                        
+                                                                                                                                                                                                               
+  2. In client/src/pages/forecast/ForecastFlow.tsx, add a new phase called "import-summary" between "start" and "baseline":                                                                                    
+     - Add it to the ForecastPhase type                                                                                                                                                                        
+     - After a Measure import succeeds (in handleLoadRecentMeasure and handleResolveShortLink in ForecastStart, and in the useEffect that handles ?source=measure), navigate to "import-summary" instead of    
+  "baseline"                                                                                                                                                                                                   
+     - From import-summary, clicking continue navigates to "baseline"                                                                                                                                          
+                                                                                                                                                                                                               
+  3. Create a new file client/src/pages/forecast/ForecastImportSummary.tsx:
+     - Page title: "What We've Measured" with the partner name below it                                                                                                                                        
+     - Show a table of value drivers that have source === "measure", with columns: Outcome | Before | After | Change | Annual Value (projectedDelta formatted as currency)                                     
+     - Show a summary row for baseline metrics: Active Users, Provisioned Seats, Encounters on Abridge, Total Org Encounters                                                                                   
+     - A hero callout card (dark background #1A1A1A, white text): "These are your proven outcomes. Let's model what they mean over the next [contractTermMonths/12] years."                                    
+     - A single CTA button: "Build the Forecast →" that calls onNext()                                                                                                                                         
+     - Use the same Framer Motion entrance animations as other forecast pages (opacity 0→1, y 12→0)                                                                                                            
+     - Keep brand colors and fonts consistent with other forecast pages (font-abridge for headings, #EA2C00 for accents)  

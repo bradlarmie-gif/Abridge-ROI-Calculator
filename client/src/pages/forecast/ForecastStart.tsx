@@ -46,7 +46,7 @@ interface ForecastStartProps {
   onHome: () => void;
 }
 
-const FORECAST_STEP_LABELS = ["Start", "Configure", "Build scenarios"];
+const FORECAST_STEP_LABELS = ["Start", "Baseline", "Contract & Pricing"];
 
 export default function ForecastStart({
   state,
@@ -312,8 +312,8 @@ export default function ForecastStart({
           <DialogHeader>
             <DialogTitle>Import from Measure</DialogTitle>
             <DialogDescription>
-              Paste a short Measure link or pick from a recent session. Live
-              import wiring lands in Phase 2.
+              Paste a Measure link or select from a recent session on this
+              device.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">

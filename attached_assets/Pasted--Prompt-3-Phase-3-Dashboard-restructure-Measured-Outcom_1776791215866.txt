@@ -1,0 +1,34 @@
+ Prompt 3 — Phase 3: Dashboard restructure + Measured Outcomes panel                                                                                                                                          
+                                                                                                                                                                                                               
+  In client/src/pages/forecast/ForecastDashboard.tsx, make these changes:
+                                                                                                                                                                                                               
+  1. Create a new component file client/src/pages/forecast/dashboard/MeasuredOutcomesPanel.tsx:                                                                                                                
+     - Only renders when state.importSource.type === "measure" AND state.valueDrivers.some(d => d.source === "measure")                                                                                        
+     - Section heading: "What We've Proven" with a small "from Measure" badge                                                                                                                                  
+     - Shows a table/grid of drivers where source === "measure":                                                                                                                                               
+       Columns: Outcome name | Domain badge | Before → After | Annual value (projectedDelta × confidence/100 × realizationPct/100, formatted with fmtCurrencyShort from dashboard/charts/shared.ts)            
+     - Footer row showing total estimated annual value across all measured drivers                                                                                                                             
+     - Use CARD_BG ("bg-[#FAF8F5]") and CARD_BORDER ("border border-[#E8E2DA]") for the card                                                                                                                   
+     - Use DOMAIN_BADGE_CLASS from dashboard/constants.ts for domain badges                                                                                                                                    
+     - Collapsible (open by default, can be collapsed with a chevron)                                                                                                                                          
+                                                                                                                                                                                                               
+  2. In ForecastDashboard.tsx, reorder the main content sections to:                                                                                                                                           
+     a. HeroROI (keep at top)                                                                                                                                                                                  
+     b. MeasuredOutcomesPanel (new, import it and render here)                                                                                                                                                 
+     c. ScenariosStrip (move UP from bottom)                                                                                                                                                                   
+     d. PricingComparisonBlock (move UP)                                                                                                                                                                       
+     e. ValueDriversBlock (move down)                                                                                                                                                                          
+     f. LeversBlock                                                                                                                                                                                            
+     g. AlertsZone                                                                                                                                                                                             
+     h. EncounterTrajectory (encounter runway)
+                                                                                                                                                                                                               
+  3. Update the hero title in HeroROI from the static "What This Forecast Could Mean" to a dynamic string:                                                                                                     
+     - "{termYears}-Year Forecast · {partner}" as the h1                                                                                                                                                       
+     - Subtitle: "Based on {N} measured outcome{s}" when from Measure, or "Exploratory model" when from scratch                                                                                                
+     - The partner and termYears variables are already available in ForecastDashboard scope                                                                                                                    
+                                                                                                                                                                                                               
+  4. Rename the "Pricing Comparison" / "Comparison Pricing" section heading to "What If We Changed The Deal?" and add a one-line explainer: "Model alternate pricing structures and see the impact on your     
+  break-even and net value."                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  5. Move the attribution preset chips (Conservative/Standard/Favorable) to below the driver list in ValueDriversBlock, and disable them when state.valueDrivers.length === 0. Change their label from nothing 
+  to "Apply to all drivers:".
