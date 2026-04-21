@@ -208,7 +208,7 @@ export default function ForecastStart({
           className="bg-[#F5F0EB] rounded-xl p-5 md:p-6 mb-10 grid gap-4 md:grid-cols-2"
           data-testid="forecast-partner-context"
         >
-          <div>
+          <div className="flex flex-col">
             <label
               htmlFor="forecast-partner-name"
               className="block text-[11px] uppercase font-medium text-[#666666] mb-2"
@@ -221,11 +221,11 @@ export default function ForecastStart({
               value={state.partnerName}
               onChange={(e) => updateState({ partnerName: e.target.value })}
               placeholder="e.g. Memorial Health System"
-              className="bg-white border-neutral-200"
+              className="bg-white border-neutral-200 flex-1"
               data-testid="input-forecast-partner-name"
             />
           </div>
-          <div>
+          <div className="flex flex-col">
             <label
               htmlFor="forecast-notes"
               className="block text-[11px] uppercase font-medium text-[#666666] mb-2"
@@ -239,7 +239,7 @@ export default function ForecastStart({
               onChange={(e) => updateState({ partnerNotes: e.target.value })}
               placeholder="Renewal context, pricing pressure, expansion appetite…"
               rows={2}
-              className="bg-white border-neutral-200 resize-none"
+              className="bg-white border-neutral-200 resize-none flex-1"
               data-testid="input-forecast-notes"
             />
           </div>
