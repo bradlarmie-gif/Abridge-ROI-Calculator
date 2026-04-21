@@ -1,0 +1,180 @@
+Fundamentally rebuild client/src/pages/forecast/ForecastDashboard.tsx. This is a redesign, not a polish.                                                                                                   
+  ▎
+  ▎ The mental model — read this before changing code                                                                                                                                                          
+  ▎                                                         
+  ▎ Abridge internal teams use Forecast to answer one question for a partner: "Based on the results you've measured so far, and the dollar assumptions we can make about them, how does your ROI change under  
+  ▎ different pricing structures, adoption speeds, and utilization assumptions?"
+  ▎                                                                                                                                                                                                            
+  ▎ So the dashboard's story arc is:                        
+  ▎ 1. Here are your measured value drivers (from Measure, or manually entered — quantified in dollars)
+  ▎ 2. Here's your ROI under your current contract                                                                                                                                                             
+  ▎ 3. Here's how that changes under alternate pricing models ← the killer moment                                                                                                                              
+  ▎ 4. Pull these levers (adoption, utilization, growth, encounter share) to see what moves                                                                                                                    
+  ▎                                                                                                                                                                                                            
+  ▎ Right now the dashboard loads blank (no value drivers → $0 TCV → -$3.3M net). That's the biggest symptom. Value drivers need to be present by default, editable, prominent — not a collapsible accordion   
+  ▎ the user has to discover.                                                                                                                                                                                  
+  ▎                                                                                                                                                                                                            
+  ▎ New layout (replace everything)                                                                                                                                                                            
+  ▎
+  ▎ Throw away the current left-rail-of-accordions + right-panel-of-charts layout. Replace with a vertical narrative layout, editorial feel, on-brand with Measure/Explore. Single content column max-width    
+  ▎ 1400px, centered, with section-based storytelling.      
+  ▎                                                                                                                                                                                                            
+  ▎ ┌──────────────────────────────────────────────────────────────────┐                                                                                                                                       
+  ▎ │ [Partner Name] · Apr 2024 → Apr 2027 · 24 mo remaining           │
+  ▎ │ Based on your measured results, here's your forward ROI.         │                                                                                                                                       
+  ▎ └──────────────────────────────────────────────────────────────────┘
+  ▎                                                                                                                                                                                                            
+  ▎ SECTION 1 — YOUR MEASURED VALUE DRIVERS                                                                                                                                                                    
+  ▎ ┌──────────────────────────────────────────────────────────────────┐                                                                                                                                       
+  ▎ │ Edit these numbers to reflect what you've actually measured.     │                                                                                                                                       
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │ [ Driver card 1 ] [ Driver card 2 ] [ Driver card 3 ] [ + Add ]  │
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │ Each card shows:                                                 │                                                                                                                                       
+  ▎ │  · Domain badge (billing/revenue/cost/quality+retention)         │                                                                                                                                       
+  ▎ │  · Label (e.g., "wRVU lift per provider/year")                   │                                                                                                                                       
+  ▎ │  · Big editable $ or % value (JetBrains Mono, Abridge red focus) │                                                                                                                                       
+  ▎ │  · Scaling unit dropdown inline (per provider, per encounter…)   │                                                                                                                                       
+  ▎ │  · Confidence + Realization sliders (compact, below value)       │                                                                                                                                       
+  ▎ │  · Onset dropdown                                                │                                                                                                                                       
+  ▎ │  · "From Measure" badge if imported                              │                                                                                                                                       
+  ▎ │  · Annual $ value preview (auto-computed): "≈ $1.2M/yr at        │                                                                                                                                       
+  ▎ │     current adoption"                                            │                                                                                                                                       
+  ▎ └──────────────────────────────────────────────────────────────────┘                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ SECTION 2 — YOUR ROI AT CURRENT PRICING                                                                                                                                                                    
+  ▎ ┌──────────────────────────────────────────────────────────────────┐
+  ▎ │ [ LARGE ANIMATED HERO NUMBERS ]                                  │                                                                                                                                       
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │  Net Contract Value     Value Multiple    Fast BE   Full BE      │
+  ▎ │  $4.8M                  2.4×              M3        M14          │                                                                                                                                       
+  ▎ │  over remaining term    $ returned per $ spent                   │                                                                                                                                       
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │  Narrative under numbers:                                        │                                                                                                                                       
+  ▎ │  "At Per-Provider $250/mo with 85% utilization, your contract    │
+  ▎ │   is projected to return $4.8M in net value over 24 months."    │                                                                                                                                        
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │  [ Cost vs Value chart — single combined chart with:             │                                                                                                                                       
+  ▎ │    · Cumulative value (green area, stacked by domain)            │                                                                                                                                       
+  ▎ │    · Cumulative cost (red line)                                  │                                                                                                                                       
+  ▎ │    · Net value (solid Abridge red line on top)                   │                                                                                                                                       
+  ▎ │    · "Today" vertical marker                                     │                                                                                                                                       
+  ▎ │    · Break-even markers                                          │                                                                                                                                       
+  ▎ │    X-axis: contract months, Y-axis: $                            │                                                                                                                                       
+  ▎ │    ~400px tall, responsive ]                                     │                                                                                                                                       
+  ▎ └──────────────────────────────────────────────────────────────────┘                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ SECTION 3 — WHAT IF YOU CHANGED PRICING?  ← THE KILLER SECTION                                                                                                                                             
+  ▎ ┌──────────────────────────────────────────────────────────────────┐                                                                                                                                       
+  ▎ │ Side-by-side comparison cards. CURRENT is first, locked/         │                                                                                                                                       
+  ▎ │ highlighted. Alternates are editable next to it.                 │                                                                                                                                       
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │                                                                                                                                        
+  ▎ │ │ CURRENT     │ │ PER         │ │ ANNUAL      │ │ HYBRID      │ │                                                                                                                                        
+  ▎ │ │ Per Provider│ │ ENCOUNTER   │ │ FLAT        │ │             │ │                                                                                                                                        
+  ▎ │ │             │ │             │ │             │ │             │ │                                                                                                                                        
+  ▎ │ │ $250/mo     │ │ $12/enc    │ │ $3M/yr      │ │ $150+$6     │ │                                                                                                                                         
+  ▎ │ │             │ │ [editable] │ │ [editable]  │ │ [editable]  │ │                                                                                                                                         
+  ▎ │ │             │ │             │ │             │ │             │ │                                                                                                                                        
+  ▎ │ │ Cost:       │ │ Cost:       │ │ Cost:       │ │ Cost:       │ │                                                                                                                                        
+  ▎ │ │ $7.2M       │ │ $5.8M       │ │ $9.0M       │ │ $6.4M       │ │                                                                                                                                        
+  ▎ │ │             │ │             │ │             │ │             │ │                                                                                                                                        
+  ▎ │ │ Net:        │ │ Net:        │ │ Net:        │ │ Net:        │ │                                                                                                                                        
+  ▎ │ │ $4.8M       │ │ $6.2M       │ │ $3.0M       │ │ $5.6M       │ │                                                                                                                                        
+  ▎ │ │             │ │             │ │             │ │             │ │                                                                                                                                        
+  ▎ │ │ ROI: 2.4×   │ │ ROI: 3.0×   │ │ ROI: 1.5×   │ │ ROI: 2.6×   │ │                                                                                                                                        
+  ▎ │ │             │ │             │ │             │ │             │ │                                                                                                                                        
+  ▎ │ │             │ │ ▲ $1.4M     │ │ ▼ $1.8M     │ │ ▲ $0.8M     │ │                                                                                                                                        
+  ▎ │ │             │ │ vs current  │ │ vs current  │ │ vs current  │ │                                                                                                                                        
+  ▎ │ │             │ │ [ green ]   │ │ [ red ]     │ │ [ green ]   │ │                                                                                                                                        
+  ▎ │ └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘ │                                                                                                                                        
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │ Below cards: single overlaid cost-curve chart showing all        │                                                                                                                                       
+  ▎ │ 4 lines together, with a subtle legend and "Today" marker.      │                                                                                                                                        
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │ Insight callout below: "Switching to Per Encounter would save    │                                                                                                                                       
+  ▎ │ $1.4M over the remaining term while maintaining the same value." │                                                                                                                                       
+  ▎ └──────────────────────────────────────────────────────────────────┘                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ SECTION 4 — LEVERS (pull these to see what moves)                                                                                                                                                          
+  ▎ ┌──────────────────────────────────────────────────────────────────┐
+  ▎ │ 4 large labeled sliders in a 2x2 grid, not buried in accordions:│                                                                                                                                        
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │  ADOPTION SPEED          UTILIZATION (active % of provisioned)  │
+  ▎ │  [ slider ]  6 months    [ slider ]  85%                        │                                                                                                                                        
+  ▎ │  Ramp to full use        How much of the provisioned count is   │                                                                                                                                        
+  ▎ │                          actively using Abridge                 │                                                                                                                                        
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │  ENCOUNTER GROWTH        ABRIDGE ENCOUNTER SHARE                │                                                                                                                                        
+  ▎ │  [ slider ]  4% MoM     [ slider ]  65% (current) → 80% (Y3)   │                                                                                                                                         
+  ▎ │  Monthly org encounter   Abridge % of total org encounters     │                                                                                                                                         
+  ▎ │  volume change                                                  │                                                                                                                                        
+  ▎ │                                                                  │                                                                                                                                       
+  ▎ │ Every slider update → all KPIs and charts above animate live.   │                                                                                                                                        
+  ▎ │ Subtle "Reset to benchmarks" link in top-right of this section. │                                                                                                                                        
+  ▎ └──────────────────────────────────────────────────────────────────┘                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ SECTION 5 — ENCOUNTER RUNWAY (conditional — only encounter-mode)                                                                                                                                           
+  ▎ ┌──────────────────────────────────────────────────────────────────┐
+  ▎ │ Cumulative encounters chart + contract limit + capacity lines   │                                                                                                                                        
+  ▎ │ + runway callout.                                               │                                                                                                                                        
+  ▎ └──────────────────────────────────────────────────────────────────┘                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ SECTION 6 — SAVED SCENARIOS                                                                                                                                                                                
+  ▎ ┌──────────────────────────────────────────────────────────────────┐
+  ▎ │ Horizontal strip of saved scenario pills + "Save current" CTA.  │                                                                                                                                        
+  ▎ │ Click a pill to overlay on charts. Max 4 active.                │                                                                                                                                        
+  ▎ └──────────────────────────────────────────────────────────────────┘                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ [ Export PDF ]  [ Share link ]  ← top-right of the dashboard                                                                                                                                               
+  ▎                                                         
+  ▎ Critical — auto-seed value drivers so the dashboard is NEVER blank                                                                                                                                         
+  ▎                                                         
+  ▎ On dashboard mount, if state.valueDrivers is empty AND the user did not import from Measure, seed with 3 default Abridge benchmark drivers so the numbers make sense immediately:                          
+  ▎                                                         
+  ▎ 1. wRVU lift — domain: billingCapture, projectedDelta: $1,200 per provider/year, scalingUnit: perActiveUser, onset: immediate, confidence: 70, realization: 80                                             
+  ▎ 2. Documentation time saved — domain: costReduction, projectedDelta: $45 per encounter (6 min × $150/hr × 0.5 admin ratio), scalingUnit: perEncounter, onset: immediate, confidence: 80, realization: 85
+  ▎ 3. Clinician retention — domain: qualityRetention, projectedDelta: $8,000 per retained provider/year, scalingUnit: perActiveUser, onset: longTerm, confidence: 60, realization: 70                         
+  ▎                                                                                                                                                                                                            
+  ▎ Mark them all source: 'benchmark-default' (extend the type if needed) and show a small "Using Abridge benchmark defaults — edit to reflect what you've measured" banner at the top of Section 1 until the  
+  ▎ user touches at least one driver.                                                                                                                                                                          
+  ▎                                                                                                                                                                                                            
+  ▎ If the user imported from Measure, skip the seed — use the imported drivers instead, and show the "From Measure" badge.                                                                                    
+  ▎
+  ▎ Visual / brand treatment — match Baseline + Contract redesigns                                                                                                                                             
+  ▎                                                         
+  ▎ - Same card styling: white bg, shadow-md, rounded-xl, p-8, subtle border-gray-100                                                                                                                          
+  ▎ - Inter + JetBrains Mono + Abridge display font for titles; Abridge display uppercase with 2px × 40px red underline accent under section titles
+  ▎ - Abridge red #E8350A primary accent, black pills for selected states                                                                                                                                      
+  ▎ - Subtle BackgroundPattern behind content                                                                                                                                                                  
+  ▎ - framer-motion staggered entrance per section (100ms apart), count-up animations on all hero numbers (300ms, ease-out)                                                                                    
+  ▎ - Pricing-model comparison cards: selected/current gets Abridge red left-border + slight elevation; savings pill green #10B981, cost pill Abridge red                                                      
+  ▎ - Charts: match styling in WaterfallChart.tsx — clean axis, JetBrains Mono axis labels, minimal gridlines, tooltip with Abridge red accent                                                                 
+  ▎                                                                                                                                                                                                            
+  ▎ Delete / move                                                                                                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ - Delete the current left-rail-accordion structure — it's wrong for this tool                                                                                                                              
+  ▎ - Move all existing left-rail controls into the new sections as described above
+  ▎ - Value drivers → Section 1 (hero, editable cards)                                                                                                                                                         
+  ▎ - Pricing comparison → Section 3 (side-by-side cards, the centerpiece)                                                                                                                                     
+  ▎ - Adoption/utilization/growth → Section 4 (sliders, exposed, not hidden)                                                                                                                                   
+  ▎ - Scenarios → Section 6 (bottom strip)                                                                                                                                                                     
+  ▎ - Contract & pricing settings (term, start date, current pricing model/rate) → move into the sub-header strip at the top (small pills showing "3yr · Per Provider $250/mo · Started Apr 2024"). Click to   
+  ▎ open an edit popover. This isn't something the user tweaks constantly; it's context.                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ Don't break                                                                                                                                                                                                
+  ▎                                                         
+  ▎ - Calculation engine stays the same (from Phase 2)                                                                                                                                                         
+  ▎ - State shape mostly the same — only add source: 'benchmark-default' as a value for ForecastValueDriver.source
+  ▎ - URL state persistence, PDF export hook, short-link — untouched                                                                                                                                           
+  ▎ - Screens 1, 2, 3 — untouched (they were fixed separately)                                                                                                                                                 
+  ▎                                                                                                                                                                                                            
+  ▎ What I want to see when this is done                                                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ - Land on Dashboard → immediately see meaningful numbers (Net Contract Value is positive with benchmark drivers, charts are populated, no "0" KPIs)                                                        
+  ▎ - Section 1: 3 value driver cards, each with a big editable dollar amount. Change one → everything updates in 150ms
+  ▎ - Section 2: hero numbers, narrative sentence underneath, one combined cost-vs-value chart                                                                                                                 
+  ▎ - Section 3: 4 side-by-side pricing cards with clear "$X savings vs current" deltas in green/red; insight callout below                                                                                    
+  ▎ - Section 4: 4 big sliders, labeled clearly, no accordions. Dragging any slider animates everything above                                                                                                  
+  ▎ - Premium, on-brand, editorial feel — matches the Baseline + Contract redesigns                                                                                                                            
+  ▎ - Nothing regressed on Screens 1, 2, 3, PDF, short-link    
