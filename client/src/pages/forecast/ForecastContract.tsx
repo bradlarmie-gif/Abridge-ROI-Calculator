@@ -7,9 +7,12 @@ import {
   ArrowLeft,
   ArrowRight,
   BedDouble,
+  Calculator,
   Calendar as CalendarLucide,
   CalendarIcon,
+  CheckCircle2,
   ChevronDown,
+  Circle,
   DollarSign,
   Layers,
   User,
@@ -83,6 +86,21 @@ const DYNAMIC_UNIT_LABELS: Record<PricingModel, string> = {
 function formatCurrency(n: number): string {
   if (!isFinite(n) || n <= 0) return "$0";
   return `$${Math.round(n).toLocaleString()}`;
+}
+
+function ChecklistItem({ done, label }: { done: boolean; label: string }) {
+  return (
+    <div className="flex items-start gap-2.5" data-testid={`checklist-${done ? "done" : "todo"}`}>
+      {done ? (
+        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+      ) : (
+        <Circle className="w-4 h-4 text-neutral-300 flex-shrink-0 mt-0.5" />
+      )}
+      <span className={cn("text-xs leading-snug", done ? "text-neutral-400 line-through" : "text-[#1A1A1A]")}>
+        {label}
+      </span>
+    </div>
+  );
 }
 
 export default function ForecastContract({
@@ -230,6 +248,7 @@ export default function ForecastContract({
     }
     if (
       p.model === "perProvider" &&
+      state.activeUsersToday > 0 &&
       state.provisionedSeats > 0 &&
       state.activeUsersToday < state.provisionedSeats * 0.7
     ) {
@@ -266,6 +285,23 @@ export default function ForecastContract({
 
   const nursingDisabled = !state.careSettings.includes("nursing");
   const unitPriceLabel = DYNAMIC_UNIT_LABELS[state.currentPricing.model];
+
+  // Gating: At-a-Glance shows real numbers only when all required inputs exist
+  const hasActiveUsers = state.activeUsersToday > 0;
+  const hasStartDate = !!startDate;
+  const hasUnitPrice = state.currentPricing.unitPrice > 0;
+  const glanceReady = hasActiveUsers && hasStartDate && hasUnitPrice;
+
+  const requiredMissing: string[] = [];
+  if (!hasStartDate) requiredMissing.push("Pick a contract start date");
+  if (!hasUnitPrice) requiredMissing.push("Enter your unit price");
+  if (
+    isEncounterMode &&
+    (!state.currentPricing.contractEncounterLimit ||
+      state.currentPricing.contractEncounterLimit <= 0)
+  ) {
+    requiredMissing.push("Set the contract encounter limit");
+  }
 
   const sectionHeader = (Icon: LucideIcon, label: string) => (
     <div className="flex items-center gap-2 pb-3 mb-4 border-b border-neutral-100">
@@ -382,41 +418,56 @@ export default function ForecastContract({
                 </Popover>
               </div>
 
-              {/* Timeline visualization */}
-              {startDate && endDate && (
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="pt-4 border-t border-neutral-100"
-                  data-testid="contract-timeline"
-                >
-                  <div className="relative h-2 rounded-full bg-neutral-100 overflow-visible">
-                    <div
-                      className="absolute top-0 left-0 h-full rounded-full bg-[#EA2C00] transition-all duration-300"
-                      style={{ width: `${progressPct}%` }}
-                    />
-                    {/* dots */}
-                    <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#EA2C00] border-2 border-white shadow-sm" />
-                    <div
-                      className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#1A1A1A] border-2 border-white shadow-sm"
-                      style={{ left: `${progressPct}%` }}
-                    />
-                    <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-neutral-300 border-2 border-white shadow-sm" />
-                  </div>
-                  <div className="flex justify-between mt-3 text-[11px] text-neutral-500">
-                    <span>Started {format(startDate, "MMM yyyy")}</span>
-                    <span className="font-medium text-[#1A1A1A]">Today</span>
-                    <span>Ends {format(endDate, "MMM yyyy")}</span>
-                  </div>
-                  <p
-                    className="text-xs font-sans font-semibold text-neutral-600 mt-3 text-center"
-                    data-testid="text-contract-elapsed"
+              {/* Timeline visualization or empty placeholder */}
+              <AnimatePresence mode="wait">
+                {startDate && endDate ? (
+                  <motion.div
+                    key="timeline"
+                    initial={{ opacity: 0, y: 4, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: -4, height: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="pt-4 border-t border-neutral-100 overflow-hidden"
+                    data-testid="contract-timeline"
                   >
-                    {monthsElapsed} months elapsed · {monthsRemaining} months remaining
-                  </p>
-                </motion.div>
-              )}
+                    <div className="relative h-2 rounded-full bg-neutral-100 overflow-visible">
+                      <div
+                        className="absolute top-0 left-0 h-full rounded-full bg-[#EA2C00] transition-all duration-300"
+                        style={{ width: `${progressPct}%` }}
+                      />
+                      <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#EA2C00] border-2 border-white shadow-sm" />
+                      <div
+                        className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#1A1A1A] border-2 border-white shadow-sm"
+                        style={{ left: `${progressPct}%` }}
+                      />
+                      <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-neutral-300 border-2 border-white shadow-sm" />
+                    </div>
+                    <div className="flex justify-between mt-3 text-[11px] text-neutral-500">
+                      <span>Started {format(startDate, "MMM yyyy")}</span>
+                      <span className="font-medium text-[#1A1A1A]">Today</span>
+                      <span>Ends {format(endDate, "MMM yyyy")}</span>
+                    </div>
+                    <p
+                      className="text-xs font-sans font-semibold text-neutral-600 mt-3 text-center"
+                      data-testid="text-contract-elapsed"
+                    >
+                      {monthsElapsed} months elapsed · {monthsRemaining} months remaining
+                    </p>
+                  </motion.div>
+                ) : (
+                  <motion.p
+                    key="timeline-empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.18 }}
+                    className="text-sm text-gray-400 italic"
+                    data-testid="text-timeline-empty"
+                  >
+                    Pick a start date to see your contract timeline.
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </motion.section>
 
             {/* At a glance */}
@@ -429,73 +480,140 @@ export default function ForecastContract({
               <div className="lg:sticky lg:top-24">
                 <div className="bg-white rounded-xl border border-neutral-100 shadow-md border-l-4 border-l-[#EA2C00] p-6">
                   <p
-                    className="text-[11px] font-semibold uppercase text-[#888888] mb-3"
+                    className="text-[11px] font-semibold uppercase text-[#888888] mb-4"
                     style={{ letterSpacing: "1.5px" }}
                   >
                     At a Glance
                   </p>
 
-                  {/* Contract window */}
-                  <div className="mb-5">
-                    <p className="text-base font-semibold text-[#1A1A1A]" data-testid="text-contract-window">
-                      {startDate && endDate
-                        ? `${format(startDate, "MMM yyyy")} → ${format(endDate, "MMM yyyy")}`
-                        : "Pick a start date"}
-                    </p>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      {state.contractTermMonths}-month term
-                    </p>
-                  </div>
+                  <AnimatePresence mode="wait">
+                    {glanceReady ? (
+                      <motion.div
+                        key="ready"
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.25 }}
+                        data-testid="glance-ready"
+                      >
+                        {/* Contract window */}
+                        <div className="mb-5">
+                          <p
+                            className="text-base font-semibold text-[#1A1A1A]"
+                            data-testid="text-contract-window"
+                          >
+                            {endDate
+                              ? `${format(startDate!, "MMM yyyy")} → ${format(endDate, "MMM yyyy")}`
+                              : ""}
+                          </p>
+                          <p className="text-xs text-neutral-500 mt-0.5">
+                            {state.contractTermMonths}-month term
+                          </p>
+                        </div>
 
-                  <div className="border-t border-neutral-100 pt-4 mb-4">
-                    <p className="text-[10px] uppercase text-neutral-500 mb-1.5" style={{ letterSpacing: "1.2px" }}>
-                      Annualized Spend
-                    </p>
-                    <p
-                      className="font-abridge font-bold text-[#EA2C00] leading-none"
-                      style={{ fontSize: "2.5rem" }}
-                      data-testid="text-annualized-spend"
-                    >
-                      {formatCurrency(annualizedSpend)}
-                    </p>
-                    <p className="text-[11px] text-neutral-500 mt-1.5">at current pricing</p>
-                  </div>
+                        <div className="border-t border-neutral-100 pt-4 mb-4">
+                          <p
+                            className="text-[10px] uppercase text-neutral-500 mb-1.5"
+                            style={{ letterSpacing: "1.2px" }}
+                          >
+                            Annualized Spend
+                          </p>
+                          <p
+                            className="font-abridge font-bold text-[#EA2C00] leading-none"
+                            style={{ fontSize: "2.5rem" }}
+                            data-testid="text-annualized-spend"
+                          >
+                            {formatCurrency(annualizedSpend)}
+                          </p>
+                          <p className="text-[11px] text-neutral-500 mt-1.5">
+                            at current pricing
+                          </p>
+                        </div>
 
-                  <div className="border-t border-neutral-100 pt-4 mb-4">
-                    <p className="text-[10px] uppercase text-neutral-500 mb-1.5" style={{ letterSpacing: "1.2px" }}>
-                      Total Over Term
-                    </p>
-                    <p
-                      className="font-abridge font-bold text-[#1A1A1A] leading-none"
-                      style={{ fontSize: "1.75rem" }}
-                      data-testid="text-total-over-term"
-                    >
-                      {formatCurrency(totalOverTerm)}
-                    </p>
-                    <p className="text-[11px] text-neutral-500 mt-1.5">
-                      simple projection, before escalators
-                    </p>
-                  </div>
+                        <div className="border-t border-neutral-100 pt-4 mb-4">
+                          <p
+                            className="text-[10px] uppercase text-neutral-500 mb-1.5"
+                            style={{ letterSpacing: "1.2px" }}
+                          >
+                            Total Over Term
+                          </p>
+                          <p
+                            className="font-abridge font-bold text-[#1A1A1A] leading-none"
+                            style={{ fontSize: "1.75rem" }}
+                            data-testid="text-total-over-term"
+                          >
+                            {formatCurrency(totalOverTerm)}
+                          </p>
+                          <p className="text-[11px] text-neutral-500 mt-1.5">
+                            simple projection, before escalators
+                          </p>
+                        </div>
 
-                  <div
-                    className={cn(
-                      "border-t border-neutral-100 pt-4 flex gap-2 items-start",
-                      insight.warn && "text-[#A82200]",
+                        <div
+                          className={cn(
+                            "border-t border-neutral-100 pt-4 flex gap-2 items-start",
+                            insight.warn && "text-[#A82200]",
+                          )}
+                          data-testid="text-glance-insight"
+                        >
+                          {insight.warn && (
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                          )}
+                          <p
+                            className={cn(
+                              "text-xs leading-snug",
+                              insight.warn ? "font-medium" : "text-neutral-600",
+                            )}
+                          >
+                            {insight.text}
+                          </p>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="empty"
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.25 }}
+                        data-testid="glance-empty"
+                      >
+                        <div className="flex justify-center mb-4">
+                          <Calculator
+                            className="w-10 h-10 text-neutral-300"
+                            style={{ opacity: 0.6 }}
+                          />
+                        </div>
+                        <p className="text-sm font-semibold text-[#1A1A1A] text-center">
+                          Your contract snapshot will appear here.
+                        </p>
+                        <p className="text-xs text-neutral-500 text-center mt-1.5 mb-5">
+                          Each item turns into a green check as you go.
+                        </p>
+
+                        <div className="border-t border-neutral-100 pt-4 space-y-3">
+                          <p
+                            className="text-[10px] font-semibold uppercase text-[#888888] mb-2"
+                            style={{ letterSpacing: "1.2px" }}
+                          >
+                            To see projections
+                          </p>
+                          <ChecklistItem
+                            done={hasActiveUsers}
+                            label="Confirm active users on Baseline"
+                          />
+                          <ChecklistItem
+                            done={hasStartDate}
+                            label="Pick a contract start date"
+                          />
+                          <ChecklistItem
+                            done={hasUnitPrice}
+                            label="Enter your unit price"
+                          />
+                        </div>
+                      </motion.div>
                     )}
-                    data-testid="text-glance-insight"
-                  >
-                    {insight.warn && (
-                      <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    )}
-                    <p
-                      className={cn(
-                        "text-xs leading-snug",
-                        insight.warn ? "font-medium" : "text-neutral-600",
-                      )}
-                    >
-                      {insight.text}
-                    </p>
-                  </div>
+                  </AnimatePresence>
                 </div>
               </div>
             </motion.aside>
@@ -520,15 +638,17 @@ export default function ForecastContract({
                   const Icon = tile.icon;
                   const tileBtn = (
                     <button
-                      key={tile.model}
                       type="button"
-                      onClick={() => !disabled && setModel(tile.model)}
-                      disabled={disabled}
+                      onClick={() => {
+                        if (disabled) return;
+                        setModel(tile.model);
+                      }}
+                      aria-disabled={disabled}
                       data-testid={`tile-pricing-${tile.model}`}
                       className={cn(
-                        "relative bg-white rounded-xl text-left transition-all duration-200 p-4 flex flex-col gap-2 w-full",
+                        "relative bg-white rounded-xl text-left transition-all duration-200 p-4 flex flex-col gap-2 w-full min-h-32",
                         disabled
-                          ? "opacity-50 cursor-not-allowed border border-neutral-200"
+                          ? "opacity-40 cursor-not-allowed border border-neutral-200"
                           : selected
                           ? "border-l-4 shadow-md border-y border-r border-neutral-100"
                           : "border border-neutral-200 hover:border-neutral-300 hover:shadow-sm hover:-translate-y-px",
@@ -545,7 +665,7 @@ export default function ForecastContract({
                       <div className="text-sm font-semibold text-[#1A1A1A]">
                         {tile.title}
                       </div>
-                      <div className="text-[11px] text-neutral-500 leading-snug">
+                      <div className="text-xs text-gray-500 leading-relaxed">
                         {tile.desc}
                       </div>
                     </button>
@@ -557,11 +677,13 @@ export default function ForecastContract({
                         <TooltipTrigger asChild>
                           <span className="block">{tileBtn}</span>
                         </TooltipTrigger>
-                        <TooltipContent>Requires Nursing care setting</TooltipContent>
+                        <TooltipContent>
+                          Add Nursing as a care setting on Baseline to enable per-bed pricing
+                        </TooltipContent>
                       </Tooltip>
                     );
                   }
-                  return tileBtn;
+                  return <div key={tile.model}>{tileBtn}</div>;
                 })}
               </div>
             </TooltipProvider>
@@ -814,15 +936,38 @@ export default function ForecastContract({
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </Button>
-            <Button
-              onClick={onNext}
-              disabled={!canContinue}
-              data-testid="btn-contract-continue"
-              className="bg-[#EA2C00] hover:bg-[#C92500] text-white disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Continue to Dashboard
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <motion.div
+                      key={canContinue ? "ready" : "blocked"}
+                      initial={canContinue ? { scale: 0.98, opacity: 0.9 } : false}
+                      animate={canContinue ? { scale: 1, opacity: 1 } : {}}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    >
+                      <Button
+                        onClick={onNext}
+                        disabled={!canContinue}
+                        data-testid="btn-contract-continue"
+                        className={cn(
+                          "text-white",
+                          canContinue
+                            ? "bg-[#EA2C00] hover:bg-[#C92500]"
+                            : "bg-neutral-300 hover:bg-neutral-300 cursor-not-allowed",
+                        )}
+                      >
+                        Continue to Dashboard
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </motion.div>
+                  </span>
+                </TooltipTrigger>
+                {!canContinue && (
+                  <TooltipContent>Complete the required fields to continue</TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </motion.div>
         </div>
       </div>
