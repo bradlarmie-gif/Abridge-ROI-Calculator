@@ -1,0 +1,90 @@
+Redesign client/src/pages/forecast/ForecastBaseline.tsx — Screen 2 of the Forecast path.                                                                                                                   
+  ▎
+  ▎ The current version feels off-brand and cluttered. Two sections don't belong here, and the overall card layout reads like default shadcn gray rectangles with no Abridge character. Fix both.              
+  ▎                                                         
+  ▎ Remove entirely                                                                                                                                                                                            
+  ▎                                                         
+  ▎ 1. Historical Growth (MoM) — delete the whole section. Growth is a forward-looking lever, not a baseline fact. It belongs on the Dashboard's "Adoption & Growth" section (already there in Phase 3). Do not
+  ▎  move it here.
+  ▎ 2. Imported Value Drivers — delete the whole section. It's confusing at this step and always renders an empty placeholder. Value drivers are managed on the Dashboard's Value Drivers left-rail section. Do
+  ▎  not show them on Baseline at all.                                                                                                                                                                         
+  ▎
+  ▎ Also remove the subheading "Confirm the current state. Most of this auto-populates from a Measure import." — redundant and quiet.                                                                          
+  ▎                                                         
+  ▎ Keep, but restructure                                                                                                                                                                                      
+  ▎                                                         
+  ▎ Three inputs total, grouped into a cleaner two-column hero layout:                                                                                                                                         
+  ▎
+  ▎ - Care Settings Active — move to the top of the page, above everything else. It frames what everything below means. Style it as a prominent selector strip using the existing CareSettingCard component    
+  ▎ pattern (reference: how Explore presents care settings). Each care setting is a clickable card with an icon, label, and subtle description. Multi-select; selected cards get the Abridge red left-border 
+  ▎ accent. When Nursing is selected, reveal an inline nursingStaffedBeds input directly under that card (framer-motion reveal).                                                                               
+  ▎ - Users & Seats + Encounters — combine into a single unified "Baseline" card (not two separate cards). Inside that card:
+  ▎   - Row 1: Active Users Today · Provisioned Seats (two inputs, equal columns)                                                                                                                              
+  ▎   - Subtle divider                                                                                                                                                                                         
+  ▎   - Row 2: Encounters on Abridge (last 12 months) · Total Organizational Encounters (last 12 months)                                                                                                       
+  ▎   - Each row gets a small icon and label header. Use Inter Medium text-sm, muted.                                                                                                                          
+  ▎ - Abridge Encounter Share % — keep this as a separate elevated hero card to the right (sticky on desktop). But upgrade the styling:                                                                        
+  ▎   - Bigger number (JetBrains Mono, text-6xl, Abridge red #E8350A)                                                                                                                                          
+  ▎   - Label in small uppercase above                                                                                                                                                                         
+  ▎   - Context line below in muted gray: "450,000 of 700,000 encounters in the last 12 months"                                                                                                                
+  ▎   - Add a one-line insight below the context, auto-generated based on the share %:                                                                                                                         
+  ▎       - If share ≥ 60%: "Strong penetration — ambient is core to your workflow"                                                                                                                            
+  ▎     - If share 30–60%: "Meaningful footprint — significant room to grow"                                                                                                                                   
+  ▎     - If share < 30%: "Early adoption — major expansion opportunity"                                                                                                                                       
+  ▎   - Left border accent Abridge red (reuses existing KPI card pattern)                                                                                                                                      
+  ▎                                                                                                                                                                                                            
+  ▎ Visual upgrades — on-brand, not generic                                                                                                                                                                    
+  ▎                                                                                                                                                                                                            
+  ▎ The current cards look like plain gray rectangles. Bring them in line with the Abridge brand language used in Explore and Measure:                                                                         
+  ▎                                                         
+  ▎ - Card styling: white background, shadow-md (not shadow-sm), rounded-xl (not rounded-lg), border border-gray-100 very subtle. Inner padding p-8 generous, not p-6.                                         
+  ▎ - Section headers inside cards: Inter Semibold text-sm uppercase tracking-wider, muted gray #888888, with a small Lucide icon (e.g., Users for Users & Seats, Activity for Encounters). Bottom-border 
+  ▎ divider with pb-3 mb-6.                                                                                                                                                                                    
+  ▎ - Inputs: use FormattedNumberInput (already in codebase). Larger height h-12, JetBrains Mono value display, subtle focus ring in Abridge red when active.
+  ▎ - Typography hierarchy:                                                                                                                                                                                    
+  ▎   - Page title: existing "Where are you today?" — keep in Abridge display font, uppercase, but reduce tracking slightly and add a small Abridge-red accent underline (2px, 40px wide) beneath it for brand 
+  ▎ character                                                                                                                                                                                                  
+  ▎   - Remove the existing subheading                                                                                                                                                                         
+  ▎ - Background: add a subtle BackgroundPattern or BackgroundShape component (already in client/src/components/) fixed behind the content, very low opacity, to give the page visual depth instead of flat    
+  ▎ white.                                                                                                                                                                                                     
+  ▎ - Entrance animation: stagger the three elements (care setting strip, baseline card, Abridge share card) 80ms apart with framer-motion motion.div from opacity: 0, y: 16 to opacity: 1, y: 0.              
+  ▎                                                                                                                                                                                                            
+  ▎ Layout (desktop)                                        
+  ▎                                                                                                                                                                                                            
+  ▎ ┌──────────────────────────────────────────────────┐                                                                                                                                                       
+  ▎ │  WHERE ARE YOU TODAY?  (with red underline)      │
+  ▎ │                                                  │                                                                                                                                                       
+  ▎ │  [ Care Setting Cards strip — full width ]       │    
+  ▎ │                                                  │                                                                                                                                                       
+  ▎ │  ┌────────────────────────┐  ┌───────────────┐  │                                                                                                                                                        
+  ▎ │  │  BASELINE CARD         │  │  ABRIDGE      │  │
+  ▎ │  │                        │  │  ENCOUNTER    │  │                                                                                                                                                        
+  ▎ │  │  Active · Provisioned  │  │  SHARE        │  │     
+  ▎ │  │  ─────────────────     │  │               │  │                                                                                                                                                        
+  ▎ │  │  On Abridge · Total    │  │  64.3%        │  │                                                                                                                                                        
+  ▎ │  │                        │  │  (context)    │  │                                                                                                                                                        
+  ▎ │  └────────────────────────┘  │  (insight)    │  │                                                                                                                                                        
+  ▎ │                              └───────────────┘  │     
+  ▎ │                                                  │                                                                                                                                                       
+  ▎ │       [  Continue to Contract & Pricing  →  ]    │    
+  ▎ └──────────────────────────────────────────────────┘                                                                                                                                                       
+  ▎                                                         
+  ▎ Tablet: stack Abridge share card below baseline card. Mobile: everything single column.                                                                                                                    
+  ▎                                                         
+  ▎ State changes                                                                                                                                                                                              
+  ▎                                                         
+  ▎ - Remove historicalGrowthMonthly and growthSource from Screen 2 — they stay in ForecastState (used on Dashboard) but are not editable here. Keep their defaults as seeded in Phase 2.                      
+  ▎ - Remove the imported value drivers display entirely from this screen. They remain in state.valueDrivers and are surfaced on the Dashboard.
+  ▎                                                                                                                                                                                                            
+  ▎ What I want to see when this is done                                                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ - Page feels premium, on-brand, and confident — matches the visual language of Explore and Measure                                                                                                         
+  ▎ - Only 4 things on the page: care setting selector, the baseline input card, the Abridge share hero, and the Continue button
+  ▎ - Historical growth and imported value drivers are gone                                                                                                                                                    
+  ▎ - Abridge share updates live as encounter inputs change, with the insight line changing based on share range
+  ▎ - Nursing beds input appears inline only when Nursing is selected                                                                                                                                          
+  ▎ - Subtle background pattern gives the page depth        
+  ▎ - Screens 1, 3, and the Dashboard still work; nothing regressed                                                                                                                                            
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Paste it. When you're happy with the redesign, flag any other screens that feel off and I'll do the same treatment. 
