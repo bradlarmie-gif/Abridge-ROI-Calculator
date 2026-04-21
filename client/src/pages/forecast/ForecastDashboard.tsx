@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import {
   ArrowLeft,
-  Bookmark,
   Check,
   ChevronDown,
   Download,
@@ -14,6 +13,7 @@ import {
   Sparkles,
   Trash2,
   TrendingUp,
+  X,
 } from "lucide-react";
 import {
   Tooltip,
@@ -50,9 +50,7 @@ import {
   type ComparisonPricing,
   type DriverOnset,
   type ForecastCalibration,
-  type ForecastScenario,
   type ForecastState,
-  type ForecastStateSnapshot,
   type ForecastValueDriver,
   type PricingConfig,
   type PricingModel,
@@ -77,7 +75,6 @@ import {
   DOMAIN_BADGE_CLASS,
   ONSET_LABELS,
   SCALING_UNIT_LABELS,
-  SCENARIO_COLORS,
   confidenceLabelFor,
 } from "./dashboard/constants";
 
@@ -93,8 +90,6 @@ const ACCENT = "#EA2C00";
 const CARD_BG = "bg-[#FAF8F5]";
 const CARD_BORDER = "border border-[#E8E2DA]";
 const PAGE_BG = "bg-[#FAFAF8]";
-
-const MAX_SCENARIOS = 4;
 
 const ALL_MODELS: PricingModel[] = [
   "perProvider",
@@ -533,15 +528,11 @@ export default function ForecastDashboard({
         {/* Measured Outcomes (only when imported from Measure) */}
         <MeasuredOutcomesPanel state={state} />
 
-        {/* Saved Scenarios pill strip */}
-        <ScenariosStrip state={state} updateState={updateState} replaceState={replaceState} />
-
-        {/* Pricing comparison */}
-        <PricingComparisonBlock
+        {/* Unified scenario comparison (replaces saved scenarios + pricing comparison) */}
+        <ScenarioComparison
           state={state}
           updateState={updateState}
-          result={result}
-          applySwap={applySwap}
+          currentResult={result}
         />
 
         {/* Calibration assumptions — cascade to all drivers */}
@@ -1792,101 +1783,190 @@ function AddDriverDialog({
 }
 
 // ────────────────────────────────────────────────────────────
-// Pricing Comparison ("What if you changed pricing?")
+// Scenario Comparison — unified "what if we changed the deal?"
+// Replaces the legacy PricingComparisonBlock + ScenariosStrip.
 // ────────────────────────────────────────────────────────────
-function defaultPricingFor(model: PricingModel): PricingConfig {
+interface ComparisonColumn {
+  id: string;
+  label: string;
+  pricing: PricingConfig;
+  adoptionMultiplier: 0.8 | 1.0 | 1.2;
+}
+
+const ADOPTION_PACES: { value: 0.8 | 1.0 | 1.2; label: string; emoji: string }[] = [
+  { value: 0.8, label: "Slower", emoji: "🐢" },
+  { value: 1.0, label: "Current", emoji: "→" },
+  { value: 1.2, label: "Faster", emoji: "🚀" },
+];
+
+function clonePricing(p: PricingConfig): PricingConfig {
+  return { ...p, yearlyEscalators: [...(p.yearlyEscalators ?? [])] };
+}
+
+function buildAltState(base: ForecastState, alt: ComparisonColumn): ForecastState {
+  const adoptionCurve = {
+    ...base.adoptionCurve,
+    startPct: Math.min(95, base.adoptionCurve.startPct * alt.adoptionMultiplier),
+    endPct: Math.min(98, base.adoptionCurve.endPct * alt.adoptionMultiplier),
+  };
   return {
-    model,
-    unitPrice:
-      model === "annualFlat"
-        ? 500_000
-        : model === "perEncounter"
-          ? 5
-          : model === "perStaffedBed"
-            ? 150
-            : 200,
-    yearlyEscalators: [0, 0, 0, 0, 0],
-    ...(model === "perEncounter" || model === "hybrid"
-      ? { contractEncounterLimit: 500_000, capacityCeiling: 600_000, overageRate: 8 }
-      : {}),
-    ...(model === "hybrid" ? { secondaryModel: "perEncounter", secondaryUnitPrice: 1 } : {}),
+    ...base,
+    currentPricing: alt.pricing,
+    adoptionCurve,
   };
 }
 
-function PricingComparisonBlock({
+function formatPricingHeadline(p: PricingConfig): string {
+  const u = `$${p.unitPrice.toLocaleString()}`;
+  switch (p.model) {
+    case "perProvider": return `${u} / provider / mo`;
+    case "perStaffedBed": return `${u} / bed / mo`;
+    case "annualFlat": return `${u} / year`;
+    case "perEncounter": return `${u} / encounter`;
+    case "hybrid": return `${u} / unit`;
+  }
+}
+
+function unitSuffix(model: PricingModel): string {
+  switch (model) {
+    case "perProvider": return "/prov-mo";
+    case "perStaffedBed": return "/bed-mo";
+    case "annualFlat": return "/year";
+    case "perEncounter": return "/enc";
+    case "hybrid": return "/unit";
+  }
+}
+
+function ScenarioComparison({
   state,
   updateState,
-  result,
-  applySwap,
+  currentResult,
 }: {
   state: ForecastState;
   updateState: (u: Partial<ForecastState>) => void;
-  result: ForecastResult;
-  applySwap: (cmp: ComparisonPricing) => void;
+  currentResult: ForecastResult;
 }) {
-  const nursingActive = state.careSettings.includes("nursing");
-  const currentModel = state.currentPricing.model;
+  const [alternatives, setAlternatives] = useState<ComparisonColumn[]>(() =>
+    state.comparisonPricing.slice(0, 3).map((c) => ({
+      id: c.id,
+      label: c.label || `Alternative`,
+      pricing: clonePricing(c.pricing),
+      adoptionMultiplier: 1.0 as const,
+    })),
+  );
 
-  // Build display set: current first, then existing comparisons, top up with defaults
-  const cards = useMemo(() => {
-    const arr: { id: string; label: string; pricing: PricingConfig; isCurrent: boolean; cmpId?: string }[] = [
-      {
-        id: "current",
-        label: PRICING_MODEL_LABELS[currentModel],
-        pricing: state.currentPricing,
-        isCurrent: true,
-      },
-    ];
-    const used = new Set<PricingModel>([currentModel]);
-    for (const c of state.comparisonPricing) {
-      if (used.has(c.pricing.model)) continue;
-      arr.push({
-        id: c.id,
-        label: PRICING_MODEL_LABELS[c.pricing.model],
-        pricing: c.pricing,
-        isCurrent: false,
-        cmpId: c.id,
-      });
-      used.add(c.pricing.model);
-    }
-    for (const m of ALL_MODELS) {
-      if (arr.length >= 4) break;
-      if (used.has(m)) continue;
-      if (m === "perStaffedBed" && !nursingActive) continue;
-      arr.push({
-        id: `default-${m}`,
-        label: PRICING_MODEL_LABELS[m],
-        pricing: defaultPricingFor(m),
-        isCurrent: false,
-      });
-      used.add(m);
-    }
-    return arr.slice(0, 4);
-  }, [currentModel, state.currentPricing, state.comparisonPricing, nursingActive]);
+  // Track the comparisonPricing snapshot we last wrote so we can detect
+  // external mutations (e.g. AlertsZone.applySwap) and re-hydrate.
+  const lastMirrorRef = useRef<ComparisonPricing[]>(
+    alternatives.map((a) => ({ id: a.id, label: a.label, pricing: a.pricing })),
+  );
 
-  const computeCardKpi = (card: (typeof cards)[number]) => {
-    if (card.isCurrent) return result.kpis;
-    if (card.cmpId && result.alternateKpis[card.cmpId]) return result.alternateKpis[card.cmpId];
-    // ad-hoc compute via clone
-    const cloneState: ForecastState = {
-      ...state,
-      currentPricing: card.pricing,
-      comparisonPricing: [],
+  useEffect(() => {
+    const incoming = state.comparisonPricing;
+    const mine = lastMirrorRef.current;
+    const sameIds =
+      incoming.length === mine.length &&
+      incoming.every((c, i) => c.id === mine[i]?.id && c.pricing === mine[i]?.pricing);
+    if (sameIds) return;
+    // External change — rehydrate local alternatives, defaulting adoption to 1.0
+    const next: ComparisonColumn[] = incoming.slice(0, 3).map((c) => ({
+      id: c.id,
+      label: c.label || "Alternative",
+      pricing: clonePricing(c.pricing),
+      adoptionMultiplier: 1.0,
+    }));
+    lastMirrorRef.current = next.map((a) => ({ id: a.id, label: a.label, pricing: a.pricing }));
+    setAlternatives(next);
+  }, [state.comparisonPricing]);
+
+  const syncToState = useCallback(
+    (next: ComparisonColumn[]) => {
+      setAlternatives(next);
+      const mirror: ComparisonPricing[] = next.map((a) => ({
+        id: a.id,
+        label: a.label,
+        pricing: clonePricing(a.pricing),
+      }));
+      lastMirrorRef.current = mirror;
+      updateState({ comparisonPricing: mirror });
+    },
+    [updateState],
+  );
+
+  const updateAlt = (id: string, patch: Partial<ComparisonColumn>) => {
+    syncToState(alternatives.map((a) => (a.id === id ? { ...a, ...patch } : a)));
+  };
+
+  const removeAlt = (id: string) => {
+    syncToState(alternatives.filter((a) => a.id !== id));
+  };
+
+  const addAlternative = () => {
+    if (alternatives.length >= 3) return;
+    const next: ComparisonColumn = {
+      id: `alt-${Date.now().toString(36)}`,
+      label: `Alternative ${alternatives.length + 1}`,
+      pricing: clonePricing(state.currentPricing),
+      adoptionMultiplier: 1.0,
     };
-    return calculateForecast(cloneState).kpis;
+    syncToState([...alternatives, next]);
   };
 
-  const makePrimary = (card: (typeof cards)[number]) => {
-    if (card.isCurrent) return;
-    const synthetic: ComparisonPricing = card.cmpId
-      ? (state.comparisonPricing.find((c) => c.id === card.cmpId) as ComparisonPricing)
-      : {
-          id: `cmp-${card.pricing.model}-${Date.now().toString(36)}`,
-          label: `Switch to ${PRICING_MODEL_LABELS[card.pricing.model]}`,
-          pricing: card.pricing,
-        };
-    if (synthetic) applySwap(synthetic);
+  const altResults = useMemo(
+    () =>
+      alternatives.map((alt) => ({
+        id: alt.id,
+        result: calculateForecast(buildAltState(state, alt)),
+      })),
+    [alternatives, state],
+  );
+
+  const winnerId = useMemo(() => {
+    if (!altResults.length) return null;
+    const best = altResults.reduce((acc, r) =>
+      r.result.kpis.netContractValue > acc.result.kpis.netContractValue ? r : acc,
+    );
+    return best.result.kpis.netContractValue > currentResult.kpis.netContractValue
+      ? best.id
+      : null;
+  }, [altResults, currentResult]);
+
+  const applyAlternative = (alt: ComparisonColumn) => {
+    const remaining = alternatives.filter((a) => a.id !== alt.id);
+    setAlternatives(remaining);
+    updateState({
+      currentPricing: clonePricing(alt.pricing),
+      comparisonPricing: remaining.map((a) => ({
+        id: a.id,
+        label: a.label,
+        pricing: clonePricing(a.pricing),
+      })),
+    });
   };
+
+  const totalCols = 1 + alternatives.length;
+  const desktopGrid =
+    totalCols === 1 ? "md:grid-cols-1" : totalCols === 2 ? "md:grid-cols-2" : totalCols === 3 ? "md:grid-cols-3" : "md:grid-cols-4";
+
+  const currentColumn = (
+    <CurrentColumn pricing={state.currentPricing} result={currentResult} />
+  );
+
+  const altColumns = alternatives.map((alt) => {
+    const altResult = altResults.find((r) => r.id === alt.id)?.result ?? currentResult;
+    return (
+      <AlternativeColumn
+        key={alt.id}
+        alt={alt}
+        altResult={altResult}
+        baseline={currentResult}
+        isWinner={winnerId === alt.id}
+        onUpdate={(patch) => updateAlt(alt.id, patch)}
+        onRemove={() => removeAlt(alt.id)}
+        onApply={() => applyAlternative(alt)}
+      />
+    );
+  });
 
   return (
     <motion.section
@@ -1894,84 +1974,342 @@ function PricingComparisonBlock({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.18 }}
       className="mb-8"
-      data-testid="section-pricing-comparison"
+      data-testid="section-scenario-comparison"
     >
-      <h2 className="text-[11px] uppercase tracking-[2px] text-[#666666] font-semibold mb-1">
-        What If We Changed The Deal?
-      </h2>
-      <p className="text-xs text-[#999999] mb-4">
-        Model alternate pricing structures and see the impact on your break-even and net value.
-      </p>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {cards.map((card) => {
-          const kpis = computeCardKpi(card);
-          const ncv = Number.isFinite(kpis.netContractValue) ? kpis.netContractValue : 0;
-          const tcv = Number.isFinite(kpis.totalContractValue) ? kpis.totalContractValue : 0;
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-[11px] uppercase tracking-[2px] text-[#666666] font-semibold">
+            What If We Changed The Deal?
+          </h2>
+          <p className="text-xs text-neutral-400 mt-0.5">
+            Model alternate structures side by side. Changes show delta vs current.
+          </p>
+        </div>
+      </div>
+
+      {/* Desktop: equal-width grid */}
+      <div className={`hidden md:grid ${desktopGrid} gap-3`}>
+        {currentColumn}
+        {altColumns}
+      </div>
+
+      {/* Mobile: horizontal scroll-snap, 85vw cards */}
+      <div className="md:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4">
+        <div className="snap-start flex-shrink-0 w-[85vw]">{currentColumn}</div>
+        {alternatives.map((alt) => {
+          const altResult = altResults.find((r) => r.id === alt.id)?.result ?? currentResult;
           return (
-            <div
-              key={card.id}
-              data-testid={`pricing-card-${card.pricing.model}`}
-              className={`rounded-xl p-4 transition-all ${
-                card.isCurrent
-                  ? "bg-white border-2 border-[#1A1A1A] shadow-sm"
-                  : `${CARD_BG} ${CARD_BORDER} hover:border-[#CCCCCC]`
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] uppercase tracking-widest text-[#666666] font-semibold">
-                  {card.label}
-                </p>
-                {card.isCurrent && (
-                  <Badge className="text-[9px] bg-[#FBE9E2] text-[#A82200] hover:bg-[#FBE9E2]">
-                    Current
-                  </Badge>
-                )}
-              </div>
-              <p className="text-xs text-[#999999] mb-3">
-                ${card.pricing.unitPrice.toLocaleString()} {PRICING_UNIT_LABELS[card.pricing.model]}
-              </p>
-              <div className="space-y-2 mb-3 pb-3 border-b border-[#E8E2DA]">
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-[#999999]">TCV</p>
-                  <p className="text-base font-bold font-abridge text-[#1A1A1A]">
-                    {fmtCurrencyShort(tcv)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-[#999999]">Net Value</p>
-                  <p
-                    className="text-base font-bold font-abridge"
-                    style={{ color: ncv < 0 ? "#FF6B6B" : ACCENT }}
-                  >
-                    {fmtCurrencyShort(ncv)}
-                  </p>
-                </div>
-              </div>
-              {card.isCurrent ? (
-                <div
-                  className="flex items-center justify-center gap-1 text-[11px] text-[#1A1A1A] font-semibold py-2"
-                  data-testid={`pricing-card-active-${card.pricing.model}`}
-                >
-                  <Check className="w-3 h-3" /> Active
-                </div>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  data-testid={`btn-make-primary-${card.pricing.model}`}
-                  onClick={() => makePrimary(card)}
-                  className="w-full h-8 text-[11px] border-[#E8E2DA] hover:border-[#1A1A1A] hover:bg-white"
-                >
-                  Make this primary
-                </Button>
-              )}
+            <div key={alt.id} className="snap-start flex-shrink-0 w-[85vw]">
+              <AlternativeColumn
+                alt={alt}
+                altResult={altResult}
+                baseline={currentResult}
+                isWinner={winnerId === alt.id}
+                onUpdate={(patch) => updateAlt(alt.id, patch)}
+                onRemove={() => removeAlt(alt.id)}
+                onApply={() => applyAlternative(alt)}
+              />
             </div>
           );
         })}
       </div>
+
+      {alternatives.length < 3 && (
+        <button
+          type="button"
+          onClick={addAlternative}
+          data-testid="btn-add-alternative"
+          className="w-full mt-4 py-3 rounded-xl border-2 border-dashed border-[#E8E2DA] text-sm text-neutral-400 hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Add alternative deal structure
+        </button>
+      )}
     </motion.section>
   );
 }
+
+function CurrentColumn({
+  pricing,
+  result,
+}: {
+  pricing: PricingConfig;
+  result: ForecastResult;
+}) {
+  return (
+    <div
+      className="rounded-xl bg-[#1A1A1A] text-white p-5 flex flex-col gap-4"
+      data-testid="scenario-column-current"
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] uppercase tracking-[2px] text-white/50 font-semibold">
+          Current Deal
+        </span>
+        <span className="text-[10px] uppercase tracking-[2px] text-[#EA2C00] font-semibold bg-[#EA2C00]/10 px-2 py-0.5 rounded">
+          Active
+        </span>
+      </div>
+      <div>
+        <p className="text-xs text-white/50 mb-1">{PRICING_MODEL_LABELS[pricing.model]}</p>
+        <p className="text-lg font-bold font-abridge">{formatPricingHeadline(pricing)}</p>
+      </div>
+      <KPIRows result={result} baseline={null} />
+    </div>
+  );
+}
+
+function AlternativeColumn({
+  alt,
+  altResult,
+  baseline,
+  isWinner,
+  onUpdate,
+  onRemove,
+  onApply,
+}: {
+  alt: ComparisonColumn;
+  altResult: ForecastResult;
+  baseline: ForecastResult;
+  isWinner: boolean;
+  onUpdate: (patch: Partial<ComparisonColumn>) => void;
+  onRemove: () => void;
+  onApply: () => void;
+}) {
+  return (
+    <div
+      className="rounded-xl bg-white border border-[#E8E2DA] p-5 flex flex-col gap-4 relative"
+      data-testid={`scenario-column-${alt.id}`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <input
+          value={alt.label}
+          onChange={(e) => onUpdate({ label: e.target.value })}
+          data-testid={`input-alt-label-${alt.id}`}
+          className="text-sm font-semibold text-[#1A1A1A] bg-transparent border-0 border-b border-dashed border-neutral-300 focus:outline-none focus:border-[#EA2C00] w-full py-0.5"
+          placeholder="Alternative name"
+        />
+        <button
+          type="button"
+          onClick={onRemove}
+          data-testid={`btn-remove-alt-${alt.id}`}
+          aria-label="Remove alternative"
+          className="text-neutral-300 hover:text-red-500 flex-shrink-0"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      <div>
+        <p className="text-[10px] uppercase tracking-wide text-neutral-400 mb-2">Pricing Model</p>
+        <div className="grid grid-cols-2 gap-1.5 mb-3">
+          {ALL_MODELS.map((model) => (
+            <button
+              type="button"
+              key={model}
+              onClick={() => onUpdate({ pricing: { ...alt.pricing, model } })}
+              data-testid={`btn-alt-model-${alt.id}-${model}`}
+              className={`text-[11px] py-1.5 px-2 rounded-lg border text-left transition-all ${
+                alt.pricing.model === model
+                  ? "border-[#1A1A1A] bg-[#1A1A1A] text-white font-semibold"
+                  : "border-neutral-200 text-neutral-600 hover:border-neutral-400"
+              }`}
+            >
+              {PRICING_MODEL_LABELS[model].replace(" / Month", "/mo")}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-neutral-500 flex-shrink-0">Unit price</span>
+          <FormattedNumberInput
+            value={alt.pricing.unitPrice}
+            onChange={(v) => onUpdate({ pricing: { ...alt.pricing, unitPrice: v } })}
+            data-testid={`input-alt-unit-price-${alt.id}`}
+            className="h-8 text-sm font-semibold flex-1"
+          />
+          <span className="text-[11px] text-neutral-400 flex-shrink-0">
+            {unitSuffix(alt.pricing.model)}
+          </span>
+        </div>
+      </div>
+
+      <div>
+        <p className="text-[10px] uppercase tracking-wide text-neutral-400 mb-2">Adoption Pace</p>
+        <div className="grid grid-cols-3 gap-1">
+          {ADOPTION_PACES.map(({ value, label, emoji }) => (
+            <button
+              type="button"
+              key={value}
+              onClick={() => onUpdate({ adoptionMultiplier: value })}
+              data-testid={`btn-alt-adoption-${alt.id}-${value}`}
+              className={`text-[11px] py-1.5 rounded-lg border text-center transition-all ${
+                alt.adoptionMultiplier === value
+                  ? "border-[#EA2C00] bg-[#FBE9E2] text-[#A82200] font-semibold"
+                  : "border-neutral-200 text-neutral-500 hover:border-neutral-300"
+              }`}
+            >
+              {emoji} {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <KPIRows result={altResult} baseline={baseline} />
+
+      {isWinner && (
+        <div
+          className="text-[10px] uppercase tracking-wide text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5 text-center font-semibold"
+          data-testid={`badge-winner-${alt.id}`}
+        >
+          ✓ Best net value
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={onApply}
+        data-testid={`btn-use-deal-${alt.id}`}
+        className="w-full py-2 rounded-lg border border-[#1A1A1A] text-[#1A1A1A] text-sm font-semibold hover:bg-[#1A1A1A] hover:text-white transition-all"
+      >
+        Use this deal →
+      </button>
+    </div>
+  );
+}
+
+type KpiRow = {
+  label: "Total Cost" | "Net Value" | "ROI" | "Break-Even";
+  current: number | null;
+  fmt: (n: number) => string;
+  lowerIsBetter: boolean;
+  isMonth?: boolean;
+};
+
+function KPIRows({
+  result,
+  baseline,
+}: {
+  result: ForecastResult;
+  baseline: ForecastResult | null;
+}) {
+  const rows: KpiRow[] = [
+    {
+      label: "Total Cost",
+      current: result.kpis.totalContractCost,
+      fmt: fmtCurrencyShort,
+      lowerIsBetter: true,
+    },
+    {
+      label: "Net Value",
+      current: result.kpis.netContractValue,
+      fmt: fmtCurrencyShort,
+      lowerIsBetter: false,
+    },
+    {
+      label: "ROI",
+      current: result.kpis.roiMultiple,
+      fmt: (n: number) => `${n.toFixed(2)}x`,
+      lowerIsBetter: false,
+    },
+    {
+      label: "Break-Even",
+      current: result.kpis.fullBreakEvenMonth,
+      fmt: (n: number) => `Month ${n}`,
+      lowerIsBetter: true,
+      isMonth: true,
+    },
+  ];
+
+  const baseValueFor = (label: KpiRow["label"]): number | null => {
+    if (!baseline) return null;
+    switch (label) {
+      case "Total Cost": return baseline.kpis.totalContractCost;
+      case "Net Value": return baseline.kpis.netContractValue;
+      case "ROI": return baseline.kpis.roiMultiple;
+      case "Break-Even": return baseline.kpis.fullBreakEvenMonth;
+    }
+  };
+
+  return (
+    <div
+      className={`space-y-3 pt-4 ${baseline === null ? "border-t border-white/10" : "border-t border-neutral-200"}`}
+    >
+      {rows.map((row) => {
+        const val = row.current;
+        const baseVal = baseValueFor(row.label);
+
+        let deltaStr = "";
+        let deltaColor = "text-neutral-400";
+
+        if (
+          baseline !== null &&
+          baseVal !== null &&
+          val !== null &&
+          typeof val === "number" &&
+          typeof baseVal === "number"
+        ) {
+          const delta = val - baseVal;
+          const isGood = row.lowerIsBetter ? delta < 0 : delta > 0;
+          const isBad = row.lowerIsBetter ? delta > 0 : delta < 0;
+
+          if (row.isMonth) {
+            deltaStr =
+              delta === 0
+                ? "="
+                : delta < 0
+                  ? `${Math.abs(delta)}mo earlier`
+                  : `${delta}mo later`;
+          } else if (row.label === "ROI") {
+            deltaStr = delta === 0 ? "=" : `${delta > 0 ? "+" : ""}${delta.toFixed(2)}x`;
+          } else {
+            deltaStr =
+              delta === 0
+                ? "="
+                : `${delta > 0 ? "+" : "-"}${fmtCurrencyShort(Math.abs(delta))}`;
+          }
+
+          deltaColor = isGood
+            ? "text-emerald-600"
+            : isBad
+              ? "text-red-500"
+              : "text-neutral-400";
+        }
+
+        const display =
+          val === null || val === undefined
+            ? row.isMonth
+              ? "Not reached"
+              : "—"
+            : row.fmt(val as number);
+
+        return (
+          <div key={row.label} className="flex items-center justify-between">
+            <span
+              className={`text-[10px] uppercase tracking-wide font-semibold ${
+                baseline === null ? "text-white/50" : "text-neutral-400"
+              }`}
+            >
+              {row.label}
+            </span>
+            <div className="flex items-center gap-2">
+              {deltaStr && (
+                <span className={`text-[11px] font-semibold ${deltaColor}`}>{deltaStr}</span>
+              )}
+              <span
+                className={`text-sm font-bold font-abridge ${
+                  baseline === null ? "text-white" : "text-[#1A1A1A]"
+                }`}
+              >
+                {display}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 
 // ────────────────────────────────────────────────────────────
 // Levers (2x2 sliders)
@@ -2115,126 +2453,3 @@ function LeverRow({
   );
 }
 
-// ────────────────────────────────────────────────────────────
-// Saved Scenarios horizontal pill strip
-// ────────────────────────────────────────────────────────────
-function ScenariosStrip({
-  state,
-  updateState,
-  replaceState,
-}: {
-  state: ForecastState;
-  updateState: (u: Partial<ForecastState>) => void;
-  replaceState: (s: ForecastState) => void;
-}) {
-  const [name, setName] = useState("");
-  const atLimit = state.scenarios.length >= MAX_SCENARIOS;
-
-  const saveScenario = () => {
-    if (!name.trim() || atLimit) return;
-    const { scenarios: _omit, ...snapshot } = state;
-    void _omit;
-    const next: ForecastScenario = {
-      id: `scn-${Date.now().toString(36)}`,
-      name: name.trim(),
-      snapshot: snapshot as ForecastStateSnapshot,
-      createdAt: Date.now(),
-      overlayOnChart: false,
-      colorIdx: state.scenarios.length % SCENARIO_COLORS.length,
-    };
-    updateState({ scenarios: [...state.scenarios, next] });
-    setName("");
-  };
-
-  const removeScenario = (id: string) =>
-    updateState({ scenarios: state.scenarios.filter((s) => s.id !== id) });
-
-  const loadScenario = (s: ForecastScenario) => {
-    replaceState({
-      ...(s.snapshot as ForecastStateSnapshot),
-      scenarios: state.scenarios,
-    } as ForecastState);
-  };
-
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.25 }}
-      className="mb-4"
-      data-testid="section-scenarios-strip"
-    >
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <h2 className="text-[11px] uppercase tracking-[2px] text-[#666666] font-semibold flex items-center gap-2">
-          <Bookmark className="w-3.5 h-3.5" /> Saved Scenarios
-        </h2>
-        <div className="flex items-center gap-2">
-          <Input
-            data-testid="input-scenario-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Scenario name"
-            disabled={atLimit}
-            className="h-8 text-xs w-44 bg-white border-[#E8E2DA]"
-          />
-          <Button
-            size="sm"
-            data-testid="btn-save-scenario"
-            disabled={!name.trim() || atLimit}
-            onClick={saveScenario}
-            className="h-8 text-xs bg-[#1A1A1A] hover:bg-[#1A1A1A]/90 text-white"
-          >
-            Save current
-          </Button>
-        </div>
-      </div>
-      {atLimit && (
-        <p className="text-[10px] text-[#999999] mb-2">Max {MAX_SCENARIOS} scenarios saved.</p>
-      )}
-      <div className="flex flex-wrap gap-2" data-testid="scenarios-pills">
-        {state.scenarios.length === 0 && (
-          <p className="text-xs text-[#999999] italic">
-            No saved scenarios yet — name one and save your current view to compare later.
-          </p>
-        )}
-        <AnimatePresence>
-          {state.scenarios.map((s) => (
-            <motion.div
-              key={s.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              data-testid={`scenario-pill-${s.id}`}
-              className="inline-flex items-center gap-2 rounded-full border border-[#E8E2DA] bg-white pl-2 pr-1 py-1"
-            >
-              <span
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: SCENARIO_COLORS[s.colorIdx] ?? SCENARIO_COLORS[0] }}
-              />
-              <button
-                type="button"
-                onClick={() => loadScenario(s)}
-                data-testid={`btn-load-scenario-${s.id}`}
-                className="text-xs font-medium text-[#1A1A1A] hover:text-[#EA2C00]"
-              >
-                {s.name}
-              </button>
-              <span className="text-[10px] text-[#999999]">
-                {format(new Date(s.createdAt), "MMM d")}
-              </span>
-              <button
-                type="button"
-                onClick={() => removeScenario(s.id)}
-                data-testid={`btn-delete-scenario-${s.id}`}
-                aria-label={`Delete scenario ${s.name}`}
-                className="p-1 rounded-full text-neutral-400 hover:text-red-600 hover:bg-red-50"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-    </motion.section>
-  );
-}
