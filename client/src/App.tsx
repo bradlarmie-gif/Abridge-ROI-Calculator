@@ -36,6 +36,7 @@ import { ExpandFlow } from "@/pages/expand";
 import { SwitchFlow } from "@/pages/switch";
 import LearnPath, { type LearnScreen } from "@/pages/LearnPath";
 import MeasureFlow from "@/pages/measure/MeasureFlow";
+import ForecastFlow from "@/pages/forecast/ForecastFlow";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
 import MeasureDataRequest from "@/pages/intake/MeasureDataRequest";
@@ -51,7 +52,7 @@ import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -65,6 +66,7 @@ type InitialDeepLink =
   | { type: 'explore_intake_receipt'; data: ExploreIntakeResponse }
   | { type: 'measure_data_receipt'; data: MeasureDataRequestResponse }
   | { type: 'learn'; screen: LearnScreen }
+  | { type: 'forecast' }
   | { type: 'none' };
 
 const PARTNER_SESSION_KEY = 'abridge_partner_session';
@@ -152,6 +154,10 @@ function getInitialDeepLink(): InitialDeepLink {
     }
   }
 
+  if (pathname === '/forecast' || pathname.startsWith('/forecast/') || pathname.startsWith('/forecast?')) {
+    return { type: 'forecast' };
+  }
+
   if (pathname.startsWith('/learn/')) {
     const setting = pathname.replace('/learn/', '');
     const validScreens: LearnScreen[] = ['outpatient', 'ed', 'inpatient', 'nursing', 'home'];
@@ -218,6 +224,7 @@ export default function App() {
     if (INITIAL_DEEP_LINK.type === 'measure_data_form') return "measure-data-request";
     if (INITIAL_DEEP_LINK.type === 'explore') return "explore";
     if (INITIAL_DEEP_LINK.type === 'learn') return "learn";
+    if (INITIAL_DEEP_LINK.type === 'forecast') return "forecast";
     return "splash";
   });
   
@@ -614,6 +621,7 @@ export default function App() {
                 }}
                 onSelectExpand={() => navigateTo("measure")}
                 onSelectSwitch={() => navigateTo("switch")}
+                onSelectForecast={() => navigateTo("forecast")}
                 onSelectLearn={() => {
                   setLearnInitialScreen(undefined);
                   navigateTo("learn");
@@ -716,6 +724,10 @@ export default function App() {
 
             {currentView === "measure" && (
               <MeasureFlow onBackToJourney={() => navigateTo("journey")} />
+            )}
+
+            {currentView === "forecast" && (
+              <ForecastFlow onBackToJourney={() => navigateTo("journey")} />
             )}
 
             {currentView === "measure-data-request" && (

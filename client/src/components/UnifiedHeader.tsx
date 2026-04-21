@@ -45,7 +45,7 @@ function ProgressDots({ currentStep, totalSteps, onStepClick, stepLabels }: Prog
   );
 }
 
-export type PathType = "explore" | "switch" | "expand" | "measure";
+export type PathType = "explore" | "switch" | "expand" | "measure" | "forecast";
 
 interface UnifiedHeaderProps {
   pathType: PathType;
@@ -65,6 +65,7 @@ const PATH_LABELS: Record<PathType, string> = {
   switch: "Assess",
   expand: "Expand",
   measure: "Measure",
+  forecast: "Forecast",
 };
 
 export function UnifiedHeader({ 

@@ -1,0 +1,47 @@
+ Build Phase 1 of the Forecast path for Abridge ROI Studio.                                                                                                                                                 
+  ▎
+  ▎ Context: We're adding a fourth path alongside Explore, Measure, Assess/Expand. It's called Forecast and it lets Abridge internal teams model existing-partner ROI forward under different pricing          
+  ▎ structures. Full spec is in 2026-04-20-forecast-path-design.md (attach it to the agent if possible — otherwise key details below).
+  ▎                                                                                                                                                                                                            
+  ▎ Scope of this phase:                                    
+  ▎
+  ▎ 1. Routing                                                                                                                                                                                                 
+  ▎   - Add route /forecast in client/src/App.tsx
+  ▎   - Create client/src/pages/forecast/ForecastFlow.tsx as the top-level container with screen-stepping logic (mirrors ExploreFlow.tsx / MeasureFlow.tsx)                                                    
+  ▎   - Create client/src/pages/forecast/index.ts exporting screen components                                                                                                                                  
+  ▎ 2. JourneySelector tile
+  ▎   - In client/src/pages/JourneySelector.tsx, add a new tile: title "Forecast", subtitle "Model the road ahead for existing partners", matches the existing tile styling (Abridge branding, Material-ish    
+  ▎ cards, Inter font)                                                                                                                                                                                         
+  ▎   - Clicking the tile routes to /forecast                                                                                                                                                                  
+  ▎ 3. State types — create client/src/pages/forecast/types.ts with the full ForecastState, PricingConfig, AdoptionCurve, UtilizationCurve, EncounterShareCurve, ForecastValueDriver, ForecastScenario         
+  ▎ interfaces. Reuse YearlyPricing, YearlyUtilization, SCENARIO_COLORS, SCENARIO_DASHES, MAX_SCENARIOS from client/src/pages/proforma/proformaTypes.ts. Update CONTRACT_TERM_OPTIONS in that file from 2–6    
+  ▎ years to 1–5 years. Extend ONSET_DELAY_MONTHS with longTerm: 15.
+  ▎ 4. Screen 1 — Start (client/src/pages/forecast/ForecastStart.tsx)                                                                                                                                          
+  ▎   - Three large cards in a horizontal row (mobile: stack):                                                                                                                                                 
+  ▎       - "Import from Measure session" — opens a dialog to paste a Measure short-link OR pick from recent sessions (stub the recent-sessions list for now; the short-link paste should call /api/shorten or 
+  ▎ equivalent to resolve — stub the handler if needed)                                                                                                                                                        
+  ▎     - "Start from scratch" — routes to Screen 2 with empty state                                                                                                                                           
+  ▎     - "Load saved Forecast" — lists scenarios from sessionStorage with name + timestamp (stub with empty list if none)                                                                                     
+  ▎   - Cards use existing CareSettingCard styling pattern as reference for brand consistency                                                                                                                  
+  ▎   - Use framer-motion staggered entrance like existing screens                                                                                                                                             
+  ▎   - Page uses UnifiedHeader with pathType="forecast" — add "forecast" to the pathType enum and wire step count (current step 1 of 3 for setup, dashboard and output don't count in the header stepper)     
+  ▎ 5. Session state persistence — use the same URL-compressed pattern as client/src/lib/measureUrlState.ts. Create client/src/lib/forecastUrlState.ts mirroring that file for ForecastState.                  
+  ▎ 6. Empty shells for Screens 2, 3, and Dashboard — just placeholder components with a heading and "coming in Phase 2" text so routing works end-to-end.                                                     
+  ▎                                                                                                                                                                                                            
+  ▎ Brand alignment (non-negotiable):                                                                                                                                                                          
+  ▎ - Inter body / JetBrains Mono numbers / Abridge display font for titles                                                                                                                                    
+  ▎ - Abridge red #E8350A as primary accent                                                                                                                                                                    
+  ▎ - shadcn/ui + Radix components                                                                                                                                                                             
+  ▎ - framer-motion staggered entrance animations                                                                                                                                                              
+  ▎ - Desktop-first but tablet responsive                                                                                                                                                                      
+  ▎                                                         
+  ▎ What I want to see when this is done:                                                                                                                                                                      
+  ▎ - Click Forecast tile on home → lands on Start screen with 3 entry cards, styled on-brand
+  ▎ - Click "Start from scratch" → routes to a Screen 2 placeholder                                                                                                                                            
+  ▎ - Click "Import from Measure" → opens dialog (stub OK, doesn't need to work yet)                                                                                                                           
+  ▎ - Header shows "Forecast" with step 1/3 indicator                                                                                                                                                          
+  ▎ - Refresh page → state persists (empty is fine at this stage)                                                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ Do not build yet: calculation engine, dashboard, charts, PDF, real Measure import wiring. Those are Phases 2–4.                                                                                            
+  ▎                                                         
+  ▎ Keep all file paths under client/src/pages/forecast/ and client/src/lib/forecastUrlState.ts. Don't touch Explore, Measure, or Proforma code except to extend the shared types as listed.   

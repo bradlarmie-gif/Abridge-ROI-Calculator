@@ -1,4 +1,4 @@
-import { Compass, TrendingUp, ClipboardCheck, BookOpen, ChevronRight, ArrowRight, Layers } from "lucide-react";
+import { Compass, TrendingUp, ClipboardCheck, BookOpen, ChevronRight, ArrowRight, Layers, LineChart } from "lucide-react";
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -10,11 +10,12 @@ interface JourneySelectorProps {
   onSelectExpand: () => void;
   onSelectSwitch: () => void;
   onSelectLearn: () => void;
+  onSelectForecast?: () => void;
   proformaCount?: number;
   onOpenProforma?: () => void;
 }
 
-export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn, proformaCount, onOpenProforma }: JourneySelectorProps) {
+export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn, onSelectForecast, proformaCount, onOpenProforma }: JourneySelectorProps) {
   const handleCardKey = (e: React.KeyboardEvent, handler: () => void) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -90,7 +91,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
             </motion.div>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6 max-w-6xl mx-auto">
 
             {/* CARD 1: EXPLORE */}
             <motion.div 
@@ -214,6 +215,49 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </motion.div>
+
+            {/* CARD 4: FORECAST */}
+            {onSelectForecast && (
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
+                whileHover={{ y: -4 }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => handleCardKey(e, onSelectForecast)}
+                className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
+                onClick={onSelectForecast}
+                data-testid="card-forecast"
+              >
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
+                  <LineChart className="w-6 h-6 text-[#EA2C00]" />
+                </div>
+
+                <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-forecast-tagline">
+                  For existing partners
+                </p>
+                <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5" data-testid="text-forecast-title">
+                  Forecast
+                </h3>
+                <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6" data-testid="text-forecast-description">
+                  Model the road ahead for existing partners.
+                </p>
+
+                <Button
+                  className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
+                  size="lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectForecast();
+                  }}
+                  data-testid="card-forecast-button"
+                >
+                  Open Forecast
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </motion.div>
+            )}
           </div>
         </section>
 

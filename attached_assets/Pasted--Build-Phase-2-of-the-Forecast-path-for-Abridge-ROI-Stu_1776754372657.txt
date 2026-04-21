@@ -1,0 +1,239 @@
+                     
+  ▎ Build Phase 2 of the Forecast path for Abridge ROI Studio.                                                                                                                                                 
+  ▎
+  ▎ Context: Phase 1 shipped the routing, Start screen, state types, and JourneySelector tile. Now we're building the two setup screens, the full calculation engine (pure, unit-tested), and a simple results 
+  ▎ page so you can see numbers come out end-to-end.        
+  ▎                                                                                                                                                                                                            
+  ▎ Full spec is in 2026-04-20-forecast-path-design.md — attach it if possible.                                                                                                                                
+  ▎
+  ▎ Scope of this phase:                                                                                                                                                                                       
+  ▎                                                         
+  ▎ 1. Screen 2 — Current Baseline (client/src/pages/forecast/ForecastBaseline.tsx)                                                                                                                            
+  ▎
+  ▎ Heading: "Where are you today?"                                                                                                                                                                            
+  ▎ Subheading: "Confirm the current state. Most of this auto-populates from a Measure import."
+  ▎                                                                                                                                                                                                            
+  ▎ Fields (in a left panel + preview on right, OR single column if simpler — use Measure's MeasureDataEntry as the visual reference):                                                                         
+  ▎                                                                                                                                                                                                            
+  ▎ | Field                                            | Type                            | Default / Notes                                                                                                     
+  ▎                                                                                |                                                                                       
+  ▎ |--------------------------------------------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------
+  ▎ -------------------------------------------------------------------------------|                                                                                                                           
+  ▎ | Active users today                               | FormattedNumberInput            | From Measure import if available                                                                                    
+  ▎                                                                                |                                                                                                                           
+  ▎ | Provisioned seats                                | FormattedNumberInput            | Manual                                                                                                              
+  ▎                                                                                |                                                                                                                           
+  ▎ | Total encounters on Abridge (last 12 months)     | FormattedNumberInput            | From Measure if available                                                                                           
+  ▎                                                                                |                                                                                                                           
+  ▎ | Total organizational encounters (last 12 months) | FormattedNumberInput            | Manual                                                                                                              
+  ▎                                                                                |
+  ▎ | Abridge encounter share %                        | read-only, derived              | abridgeEncountersLTM / totalOrgEncountersLTM × 100, shown with JetBrains Mono, big visual
+  ▎                                                                                |
+  ▎ | Historical growth (MoM user growth %)            | number slider OR paste N months | Default: 4% MoM (label "AMC benchmark" — placeholder, override-able). Add a toggle: "Paste last 6 months" → opens 6
+  ▎ number inputs; "Use benchmark" → single % slider. Save choice in growthSource. |
+  ▎ | Care settings active                             | multi-select chips              | outpatient, ed, inpatient, nursing — imported from Measure if present                                               
+  ▎                                                                                |                                                                                                                           
+  ▎ | Nursing staffed beds                             | FormattedNumberInput            | Conditional — only if nursing is in care settings                                                                   
+  ▎                                                                                |                                                                                                                           
+  ▎ | Imported value drivers                           | list of cards                   | Each card shows: label, measured delta, domain, with a small "from Measure" badge. User can remove from list with an
+  ▎  X. Empty state if no drivers imported: "Add drivers later on the Dashboard."  |                                                                                                                           
+  ▎                                                         
+  ▎ "Back" and "Continue to Contract & Pricing" buttons at the bottom.                                                                                                                                         
+  ▎                                                         
+  ▎ 2. Screen 3 — Contract & Pricing (client/src/pages/forecast/ForecastContract.tsx)                                                                                                                          
+  ▎                                                         
+  ▎ Heading: "Your current contract"                                                                                                                                                                           
+  ▎ Subheading: "Confirm the terms. We'll compare other pricing models on the Dashboard."
+  ▎                                                                                                                                                                                                            
+  ▎ Fields:
+  ▎                                                                                                                                                                                                            
+  ▎ | Field                                                             | Type                                      | Notes                                                                                    
+  ▎                                                                                                                     |
+  ▎ |-------------------------------------------------------------------|-------------------------------------------|------------------------------------------------------------------------------------------
+  ▎ --------------------------------------------------------------------------------------------------------------------|                                                                                      
+  ▎ | Contract term                                                     | segmented toggle: 1 / 2 / 3 / 4 / 5 years | Reuses updated CONTRACT_TERM_OPTIONS (1–5 years)                                         
+  ▎                                                                                                                     |                                                                                      
+  ▎ | Contract start date                                               | date picker (shadcn/ui)                   | Derives "months elapsed" and "months remaining", shown below the picker as read-only     
+  ▎ labels ("Started Apr 2024 · 24 months elapsed · 12 months remaining")                                                   |
+  ▎ | Current pricing model                                             | dropdown/select                           | Options: perProvider "Per Provider / Month", perStaffedBed "Per Staffed Bed / Month" 
+  ▎ (disabled if nursing not in care settings), annualFlat "Annual Flat Fee", perEncounter "Per Encounter", hybrid "Hybrid" |                                                                                  
+  ▎ | Unit price                                                        | FormattedNumberInput                      | Label changes with model: "$ per provider / month" / "$ per bed / month" / "$ per        
+  ▎ encounter" / "Annual fee"                                                                                                  |                                                                               
+  ▎ | Annual escalators                                                 | collapsible section, per-year % inputs    | Reuses YearlyPricing shape. Default 0% (flat).                                           
+  ▎                                                                                                                     |                                                                                      
+  ▎ | Encounter-mode extras (revealed only when perEncounter or hybrid) |                                           |                                                                                          
+  ▎                                                                                                                     |                                                                                      
+  ▎ | └ Contract encounter limit                                        | FormattedNumberInput                      | e.g., 500,000. Required if encounter-mode.                                               
+  ▎                                                                                                                     |                                                                                      
+  ▎ | └ Total capacity ceiling                                          | FormattedNumberInput                      | e.g., 600,000. Defaults to contractEncounterLimit × 1.2 if blank.                        
+  ▎                                                                                                                     |                                                                                      
+  ▎ | └ Overage rate                                                    | FormattedNumberInput                      | $/encounter above limit                                                                  
+  ▎                                                                                                                     |                                                                                      
+  ▎ | Hybrid secondary (revealed only when hybrid)                      |                                           |                                                                                          
+  ▎                                                                                                                     |                                                                                      
+  ▎ | └ Secondary model                                                 | dropdown                                  | Same options minus hybrid                                                                
+  ▎                                                                                                                     |                                                                                      
+  ▎ | └ Secondary unit price                                            | FormattedNumberInput                      | e.g., base per-provider + per-encounter overage                                          
+  ▎                                                                                                                     |                                                                                      
+  ▎                                                         
+  ▎ Use motion.div to smoothly reveal conditional sections (framer-motion).                                                                                                                                    
+  ▎
+  ▎ "Back" and "Continue to Dashboard" buttons at the bottom.                                                                                                                                                  
+  ▎                                                         
+  ▎ 3. Calculation Engine (client/src/lib/forecastCalculator.ts)                                                                                                                                               
+  ▎                                                         
+  ▎ Pure function: calculateForecast(state: ForecastState): ForecastResult.                                                                                                                                    
+  ▎                                                         
+  ▎ Monthly projection loop — for each month from 1 to contractTermYears × 12:                                                                                                                                 
+  ▎                                                         
+  ▎ // 1. Adoption → active users                                                                                                                                                                              
+  ▎ const adoptionPct = computeAdoptionCurve(state.adoptionCurve, month);
+  ▎ const utilizationPct = state.utilizationCurve.values[quarterIdx(month)] / 100;                                                                                                                             
+  ▎ const activeUsers = state.provisionedSeats * adoptionPct * utilizationPct;                                                                                                                                 
+  ▎                                                                                                                                                                                                            
+  ▎ // 2. Encounters on Abridge                                                                                                                                                                                
+  ▎ const monthlyOrgEncounters =                                                                                                                                                                               
+  ▎   (state.totalOrgEncountersLTM / 12) * Math.pow(1 + monthlyGrowthRate, month - 1);                                                                                                                         
+  ▎ const abridgeSharePct = state.encounterShareCurve.values[quarterIdx(month)] / 100;                                                                                                                         
+  ▎ const monthlyAbridgeEncounters = monthlyOrgEncounters * abridgeSharePct;                                                                                                                                   
+  ▎                                                                                                                                                                                                            
+  ▎ // 3. Cost (current pricing)                                                                                                                                                                               
+  ▎ const cost = computeCost(                                                                                                                                                                                  
+  ▎   state.currentPricing, month, activeUsers,                                                                                                                                                                
+  ▎   monthlyAbridgeEncounters, state.nursingStaffedBeds, cumulativeEncounters                                                                                                                                 
+  ▎ );                                                                                                                                                                                                         
+  ▎                                                                                                                                                                                                            
+  ▎ // 4. Value (sum over drivers with onset ramp)                                                                                                                                                             
+  ▎ let totalValue = 0;                                     
+  ▎ const valueByDomain: Record<ValueDomain, number> = { ... };                                                                                                                                                
+  ▎ for (const driver of state.valueDrivers) {                                                                                                                                                                 
+  ▎   const ramp = rampFactor(driver.onset, month);                                                                                                                                                            
+  ▎   const basis = scalingBasis(driver.scalingUnit, activeUsers,                                                                                                                                              
+  ▎                              monthlyAbridgeEncounters, state.nursingStaffedBeds);                                                                                                                          
+  ▎   const v = driver.projectedDelta * basis * ramp        
+  ▎             * (driver.confidence / 100) * (driver.realizationPct / 100);                                                                                                                                   
+  ▎   totalValue += v;                                                                                                                                                                                         
+  ▎   valueByDomain[driver.domain] += v;                                                                                                                                                                       
+  ▎ }                                                                                                                                                                                                          
+  ▎                                                                                                                                                                                                            
+  ▎ const netValue = totalValue - cost;                     
+  ▎ cumulativeNet += netValue;
+  ▎ cumulativeNetExcludingLongTerm += (immediate/delayed/phased drivers only) - cost;                                                                                                                          
+  ▎ cumulativeEncounters += monthlyAbridgeEncounters;                                                                                                                                                          
+  ▎                                                                                                                                                                                                            
+  ▎ Cost function (inside forecastCalculator.ts):                                                                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ function computeCost(p: PricingConfig, month, activeUsers, monthlyEncounters,                                                                                                                              
+  ▎                     nursingBeds, cumulativeEncounters): number {
+  ▎   const escalator = yearlyEscalatorForMonth(p.yearlyEscalators, month);                                                                                                                                    
+  ▎   const basePrice = p.unitPrice * escalator;                                                                                                                                                               
+  ▎   switch (p.model) {                                                                                                                                                                                       
+  ▎     case 'perProvider':    return activeUsers * basePrice;                                                                                                                                                 
+  ▎     case 'perStaffedBed':  return (nursingBeds ?? 0) * basePrice;                                                                                                                                          
+  ▎     case 'annualFlat':     return basePrice / 12;       
+  ▎     case 'perEncounter': {                                                                                                                                                                                 
+  ▎       let cost = monthlyEncounters * basePrice;         
+  ▎       if (p.contractEncounterLimit && cumulativeEncounters > p.contractEncounterLimit) {                                                                                                                   
+  ▎         const overageEncs = Math.min(monthlyEncounters,                                                                                                                                                    
+  ▎                                      cumulativeEncounters - p.contractEncounterLimit);                                                                                                                     
+  ▎         cost += overageEncs * (p.overageRate ?? basePrice);                                                                                                                                                
+  ▎       }                                                                                                                                                                                                    
+  ▎       return cost;                                      
+  ▎     }                                                                                                                                                                                                      
+  ▎     case 'hybrid': {                                    
+  ▎       const primary = computeCost({ ...p, model: p.model }, ...);                                                                                                                                          
+  ▎       const secondary = computeCost(                                                                                                                                                                       
+  ▎         { ...p, model: p.secondaryModel!, unitPrice: p.secondaryUnitPrice! }, ...);                                                                                                                        
+  ▎       return primary + secondary;                                                                                                                                                                          
+  ▎     }                                                   
+  ▎   }                                                                                                                                                                                                        
+  ▎ }                                                       
+  ▎
+  ▎ Onset ramp:                                                                                                                                                                                                
+  ▎
+  ▎ const ONSET_DELAY_MONTHS = {                                                                                                                                                                               
+  ▎   immediate: 2, delayed: 5, phased: 6, longTerm: 15,    
+  ▎ };                                                                                                                                                                                                         
+  ▎ function rampFactor(onset, month) {                                                                                                                                                                        
+  ▎   const delay = ONSET_DELAY_MONTHS[onset];
+  ▎   if (month < delay) return 0;                                                                                                                                                                             
+  ▎   return Math.min(1, (month - delay) / 3); // linear 3-month ramp                                                                                                                                          
+  ▎ }                                                                                                                                                                                                          
+  ▎                                                                                                                                                                                                            
+  ▎ Scaling basis:                                                                                                                                                                                             
+  ▎                                                         
+  ▎ function scalingBasis(unit, activeUsers, monthlyEncounters, nursingBeds) {                                                                                                                                 
+  ▎   switch (unit) {
+  ▎     case 'perEncounter':  return monthlyEncounters;                                                                                                                                                        
+  ▎     case 'perActiveUser': return activeUsers;                                                                                                                                                              
+  ▎     case 'perBed':        return nursingBeds ?? 0;
+  ▎     case 'annualFlat':    return 1 / 12;                                                                                                                                                                   
+  ▎   }                                                     
+  ▎ }                                                                                                                                                                                                          
+  ▎                                                         
+  ▎ After the loop, roll up:                                                                                                                                                                                   
+  ▎ - fastBreakEvenMonth = first month where cumulativeNetExcludingLongTerm >= 0 (null if not reached)
+  ▎ - fullBreakEvenMonth = first month where cumulativeNet >= 0 (null if not reached)                                                                                                                          
+  ▎ - runwayMonth (encounter-mode only) = first month where cumulativeEncounters >= contractEncounterLimit                                                                                                     
+  ▎ - capacityBreachMonth = first month where cumulativeEncounters >= capacityCeiling                                                                                                                          
+  ▎ - projectedOverage = sum of overage costs across all months                                                                                                                                                
+  ▎ - totalContractValue = sum of monthly totalValue                                                                                                                                                           
+  ▎ - netContractValue = sum of monthly netValue                                                                                                                                                               
+  ▎ - roiMultiple = totalContractValue / sum(cost)                                                                                                                                                             
+  ▎                                                                                                                                                                                                            
+  ▎ Alerts (generate in engine, consumed by UI):                                                                                                                                                               
+  ▎ - If runwayMonth within contract term: { type: 'runway', month, message: "You'll hit 500K in Month N" }                                                                                                    
+  ▎ - If capacityBreachMonth within term: { type: 'capacity', month, message: "Projected to exceed capacity ceiling in Month N" }                                                                              
+  ▎ - If any comparison pricing saves > 10% of current cost: { type: 'pricing-savings', comparisonId, delta }                                                                                                  
+  ▎                                                                                                                                                                                                            
+  ▎ Pricing comparison section: for each state.comparisonPricing[i], run the same monthly loop but with computeCost called against the alternate PricingConfig — emit parallel ForecastMonthRow[] into         
+  ▎ alternateMonthly[comparisonId]. Value curve is identical across comparisons (usage-driven, not pricing-driven).                                                                                            
+  ▎                                                                                                                                                                                                            
+  ▎ 4. Unit tests (client/src/__tests__/forecastCalculator.test.ts)
+  ▎
+  ▎ Reuse existing vitest.config.ts. Cover:                                                                                                                                                                    
+  ▎ - Per-provider flat: 100 providers × $200/mo × 36 months = $720K total cost
+  ▎ - Per-bed nursing: 50 beds × $150/mo × 60 months = $450K                                                                                                                                                   
+  ▎ - Annual flat with 5% escalators: Y1 $500K, Y2 $525K, Y3 $551.25K                                                                                                                                          
+  ▎ - Per-encounter runway: limit 500K, growth rate triggers runway at expected month                                                                                                                          
+  ▎ - Per-encounter overage: overage kicks in after limit hit                                                                                                                                                  
+  ▎ - Hybrid: base per-provider + per-encounter, both contribute                                                                                                                                               
+  ▎ - Onset ramping: longTerm: 15 driver produces 0 through Month 14, ramps M15–M17, full from M18                                                                                                             
+  ▎ - Break-even band: fast < full when long-term drivers exist                                                                                                                                                
+  ▎ - Pricing comparison: swapping pricing changes cost only, not value                                                                                                                                        
+  ▎                                                                                                                                                                                                            
+  ▎ 5. Simple Results Screen (client/src/pages/forecast/ForecastResultsSimple.tsx)                                                                                                                             
+  ▎                                                                                                                                                                                                            
+  ▎ Placeholder results page (Phase 3 will replace with the full dashboard). Shows:                                                                                                                            
+  ▎ - KPI strip: Total Contract Value, Net Contract Value, ROI Multiple, Fast Break-Even, Full Break-Even, Runway Month (if encounter-mode)
+  ▎ - Below: a raw <pre> JSON dump of ForecastResult.kpis and the first 12 months of monthly for debugging                                                                                                     
+  ▎ - "Back to Contract" and "This will become the Dashboard in Phase 3" note                                                                                                                                  
+  ▎                                                                                                                                                                                                            
+  ▎ Use KpiCard component for the KPI strip — matches Measure/Explore styling.                                                                                                                                 
+  ▎                                                                                                                                                                                                            
+  ▎ 6. Defaults                                                                                                                                                                                                
+  ▎                                                         
+  ▎ When state is initialized fresh (Start → "Start from scratch"), seed with:                                                                                                                                 
+  ▎ - adoptionCurve: { type: 's-curve', rampMonths: 6, startPct: 40, endPct: 85 }
+  ▎ - utilizationCurve.values: all 75 (%) across all quarters of the contract term                                                                                                                             
+  ▎ - encounterShareCurve.values: derived from baseline share %, held constant                                                                                                                                 
+  ▎ - historicalGrowthMonthly: [4] with growthSource: 'benchmark'                                                                                                                                              
+  ▎ - valueDrivers: []                                                                                                                                                                                         
+  ▎ - comparisonPricing: []                                                                                                                                                                                    
+  ▎ - scenarios: []                                                                                                                                                                                            
+  ▎                                                         
+  ▎ Brand alignment (same as Phase 1):                                                                                                                                                                         
+  ▎ - Inter + JetBrains Mono + Abridge display font         
+  ▎ - Abridge red #E8350A accent                                                                                                                                                                               
+  ▎ - shadcn/ui + Radix                                     
+  ▎ - framer-motion entrance + conditional-reveal animations                                                                                                                                                   
+  ▎ - Desktop-first, tablet responsive
+  ▎                                                                                                                                                                                                            
+  ▎ What I want to see when this is done:                   
+  ▎ - Screen 2: full baseline form, Abridge share % auto-updates as I type encounters, nursing beds only appears when nursing is selected                                                                      
+  ▎ - Screen 3: pricing model dropdown shows all 5 options, encounter-mode extras appear/hide smoothly, start-date picker derives elapsed/remaining                                                            
+  ▎ - Click "Continue to Dashboard" from Screen 3 → lands on Simple Results page with real KPIs populated from calc engine                                                                                     
+  ▎ - Unit tests pass — npm run test or vitest run                                                                                                                                                             
+  ▎ - Routing Phase 1 still works, nothing regressed                                                                                                                                                           
+  ▎                                                                                                                                                                                                            
+  ▎ Do not build yet: the full dashboard (left rail + charts + live reactivity + comparisons), PDF, Measure handoff wiring. Those are Phases 3–4.   

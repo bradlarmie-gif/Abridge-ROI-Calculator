@@ -1,6 +1,6 @@
 import { type ExploreState } from "../explore/ExploreFlow";
 
-export type DriverOnset = "immediate" | "delayed" | "phased";
+export type DriverOnset = "immediate" | "delayed" | "phased" | "longTerm";
 
 export interface ProformaDriver {
   id: string;
@@ -186,11 +186,11 @@ export const DEFAULT_PROFORMA_CONFIG: ProformaConfig = {
 };
 
 export const CONTRACT_TERM_OPTIONS = [
+  { label: "1-Year", months: 12 },
   { label: "2-Year", months: 24 },
   { label: "3-Year", months: 36 },
   { label: "4-Year", months: 48 },
   { label: "5-Year", months: 60 },
-  { label: "6-Year", months: 72 },
 ] as const;
 
 export interface ProformaScenario {
@@ -211,10 +211,12 @@ export const ONSET_DELAY_MONTHS: Record<DriverOnset, number> = {
   immediate: 2,
   delayed: 5,
   phased: 6,
+  longTerm: 15,
 };
 
 export const ONSET_LABELS: Record<DriverOnset, string> = {
   immediate: "Immediate",
   delayed: `Delayed (M${ONSET_DELAY_MONTHS.delayed}+)`,
   phased: "Phased (Y1/Y2/Y3)",
+  longTerm: `Long-term (M${ONSET_DELAY_MONTHS.longTerm}+)`,
 };

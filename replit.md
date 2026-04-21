@@ -7,7 +7,7 @@ Abridge ROI Studio is a client-side single-page web application designed to calc
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
-The application supports distinct user journeys: "Explore Path" for new prospects, "Assess Path" for evaluating current documentation, "Expand Path" for existing customers, and "Measure Path" for partners.
+The application supports distinct user journeys: "Explore Path" for new prospects, "Assess Path" for evaluating current documentation, "Expand Path" for existing customers, "Measure Path" for partners, and "Forecast Path" (internal Abridge tool) for forward-modeling existing partner ROI under different pricing/adoption/term configurations.
 
 ### UI/UX Decisions
 The application adheres to Material Design principles, utilizing Abridge's brand color palette, Inter and JetBrains Mono fonts, and full mobile responsiveness. It includes premium UX enhancements like smooth page transitions, staggered entrance animations, and sticky right panels.
@@ -24,6 +24,7 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 ### Feature Specifications
 -   **Comprehensive ROI Modeling**: Includes specialized flows for various user journeys (Explore, Assess, Expand, Measure Paths) and detailed proforma builders for multiple care settings (Outpatient, ED, Inpatient, Nursing).
 -   **Multi-Setting Proforma Builder**: Allows layering multiple care settings into a combined financial model with features like stacked area charts, 3-year P&L, card-based pricing, editable retention phasing, and scenario comparison.
+-   **Forecast Path (Phase 1)**: Internal Abridge tool routed at `/forecast`. Three-step setup wizard (Start → Configure → Build scenarios) followed by a Dashboard. Phase 1 ships the entry screen (`ForecastStart`) with three entry points — Import from Measure (stub dialog), Start from scratch, Load saved Forecast (sessionStorage list) — plus partner-context fields, session persistence via `forecastUrlState` (LZString-compressed `?f=` param mirroring measure pattern), and placeholder shells for Configure/Build/Dashboard. Types live in `client/src/pages/forecast/types.ts` (ForecastState, ForecastScenario, PricingConfig, AdoptionCurve, UtilizationCurve, EncounterShareCurve, ForecastValueDriver, SavedForecast). Reuses shared `MAX_SCENARIOS=4` from proforma. Header uses `pathType="forecast"` (added to UnifiedHeader PathType union). JourneySelector grid expanded from 3 to 4 cards with `LineChart` icon for the Forecast tile. Shared proforma changes: `CONTRACT_TERM_OPTIONS` shrunk from 2–6 yr to 1–5 yr; `DriverOnset` extended with `longTerm` (15-month delay).
 -   **Flexible Pricing Models**: Supports Per Provider/Month, Per Encounter, and Annual Fixed Fee models.
 -   **Configurable Ramps and Onset Timings**: Allows detailed configuration of implementation and utilization ramps, and various driver onset timings.
 -   **Key Metrics**: Focuses on Value-to-Cost, Simple ROI, Payback, and Net Value.
