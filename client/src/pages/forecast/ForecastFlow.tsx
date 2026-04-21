@@ -12,11 +12,17 @@ import { convertMeasureToForecast } from "@/lib/measureToForecast";
 import { decodeStateFromUrl as decodeMeasureState } from "@/lib/measureUrlState";
 import { useToast } from "@/hooks/use-toast";
 import ForecastStart from "./ForecastStart";
+import ForecastImportSummary from "./ForecastImportSummary";
 import ForecastBaseline from "./ForecastBaseline";
 import ForecastContract from "./ForecastContract";
 import ForecastDashboard from "./ForecastDashboard";
 
-export type ForecastPhase = "start" | "baseline" | "contract" | "results";
+export type ForecastPhase =
+  | "start"
+  | "import-summary"
+  | "baseline"
+  | "contract"
+  | "results";
 
 const MEASURE_HANDOFF_KEY = "abridge_measure_to_forecast_v1";
 
@@ -49,7 +55,7 @@ export default function ForecastFlow({ onBackToJourney }: ForecastFlowProps) {
           if (decoded) {
             const seeded = convertMeasureToForecast(decoded);
             setState({ ...seeded, updatedAt: Date.now() });
-            setPhase("baseline");
+            setPhase("import-summary");
             toast({
               title: "Imported from Measure",
               description:
@@ -109,6 +115,17 @@ export default function ForecastFlow({ onBackToJourney }: ForecastFlowProps) {
           replaceState={replaceState}
           resetState={resetState}
           onNext={() => navigate("baseline")}
+          onImported={() => navigate("import-summary")}
+          onHome={goHome}
+        />
+      );
+
+    case "import-summary":
+      return (
+        <ForecastImportSummary
+          state={state}
+          onNext={() => navigate("baseline")}
+          onBack={() => navigate("start")}
           onHome={goHome}
         />
       );

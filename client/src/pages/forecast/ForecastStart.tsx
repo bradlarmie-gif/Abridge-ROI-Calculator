@@ -43,6 +43,7 @@ interface ForecastStartProps {
   replaceState: (next: ForecastState) => void;
   resetState: () => void;
   onNext: () => void;
+  onImported: () => void;
   onHome: () => void;
 }
 
@@ -54,6 +55,7 @@ export default function ForecastStart({
   replaceState,
   resetState,
   onNext,
+  onImported,
   onHome,
 }: ForecastStartProps) {
   const { toast } = useToast();
@@ -129,7 +131,7 @@ export default function ForecastStart({
       if (seedFromMeasureState(decoded, "Resolved from short link")) {
         setImportOpen(false);
         setShortLink("");
-        onNext();
+        onImported();
       }
     } catch (err) {
       toast({
@@ -146,7 +148,7 @@ export default function ForecastStart({
     const decoded = decodeMeasureSession(entry);
     if (seedFromMeasureState(decoded, entry.partnerName)) {
       setImportOpen(false);
-      onNext();
+      onImported();
     }
   };
 
@@ -243,43 +245,79 @@ export default function ForecastStart({
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
-          <EntryCard
-            index={0}
-            icon={<Download className="w-6 h-6 text-[#EA2C00]" />}
-            tagline="From a measured baseline"
-            title="Import from Measure"
-            description="Pull providers, encounters, and confirmed value from an existing Measure session, then forecast forward."
-            cta="Paste a Measure link"
-            onClick={() => setImportOpen(true)}
-            testId="card-forecast-import"
-          />
-          <EntryCard
-            index={1}
-            icon={<FilePlus className="w-6 h-6 text-[#EA2C00]" />}
-            tagline="Pricing exploration"
-            title="Start from scratch"
-            description="Begin with a clean slate. Configure care settings, adoption, and pricing yourself."
-            cta="New forecast"
-            onClick={handleStartFromScratch}
-            testId="card-forecast-scratch"
-          />
-          <EntryCard
-            index={2}
-            icon={<FolderOpen className="w-6 h-6 text-[#EA2C00]" />}
-            tagline="Pick up where you left off"
-            title="Load saved Forecast"
-            description={
-              savedForecasts.length > 0
-                ? `${savedForecasts.length} saved scenario${savedForecasts.length === 1 ? "" : "s"} on this device.`
-                : "Saved forecasts on this device will show up here."
-            }
-            cta={savedForecasts.length > 0 ? "Open library" : "No saved forecasts yet"}
-            onClick={() => setSavedOpen(true)}
-            disabled={savedForecasts.length === 0}
-            testId="card-forecast-saved"
-          />
-        </div>
+        {recentMeasureSessions.length > 0 ? (
+          <div className="space-y-5 md:space-y-6">
+            <ImportHeroCard
+              count={recentMeasureSessions.length}
+              onClick={() => setImportOpen(true)}
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+              <EntryCard
+                index={1}
+                icon={<FilePlus className="w-6 h-6 text-[#EA2C00]" />}
+                tagline="Pricing exploration"
+                title="Start from scratch"
+                description="Begin with a clean slate. Configure care settings, adoption, and pricing yourself."
+                cta="New forecast"
+                onClick={handleStartFromScratch}
+                testId="card-forecast-scratch"
+              />
+              <EntryCard
+                index={2}
+                icon={<FolderOpen className="w-6 h-6 text-[#EA2C00]" />}
+                tagline="Pick up where you left off"
+                title="Load saved Forecast"
+                description={
+                  savedForecasts.length > 0
+                    ? `${savedForecasts.length} saved scenario${savedForecasts.length === 1 ? "" : "s"} on this device.`
+                    : "Saved forecasts on this device will show up here."
+                }
+                cta={savedForecasts.length > 0 ? "Open library" : "No saved forecasts yet"}
+                onClick={() => setSavedOpen(true)}
+                disabled={savedForecasts.length === 0}
+                testId="card-forecast-saved"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+            <EntryCard
+              index={0}
+              icon={<Download className="w-6 h-6 text-[#EA2C00]" />}
+              tagline="From a measured baseline"
+              title="Import from Measure"
+              description="Pull providers, encounters, and confirmed value from an existing Measure session, then forecast forward."
+              cta="Paste a Measure link"
+              onClick={() => setImportOpen(true)}
+              testId="card-forecast-import"
+            />
+            <EntryCard
+              index={1}
+              icon={<FilePlus className="w-6 h-6 text-[#EA2C00]" />}
+              tagline="Pricing exploration"
+              title="Start from scratch"
+              description="Begin with a clean slate. Configure care settings, adoption, and pricing yourself."
+              cta="New forecast"
+              onClick={handleStartFromScratch}
+              testId="card-forecast-scratch"
+            />
+            <EntryCard
+              index={2}
+              icon={<FolderOpen className="w-6 h-6 text-[#EA2C00]" />}
+              tagline="Pick up where you left off"
+              title="Load saved Forecast"
+              description={
+                savedForecasts.length > 0
+                  ? `${savedForecasts.length} saved scenario${savedForecasts.length === 1 ? "" : "s"} on this device.`
+                  : "Saved forecasts on this device will show up here."
+              }
+              cta={savedForecasts.length > 0 ? "Open library" : "No saved forecasts yet"}
+              onClick={() => setSavedOpen(true)}
+              disabled={savedForecasts.length === 0}
+              testId="card-forecast-saved"
+            />
+          </div>
+        )}
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -442,6 +480,62 @@ export default function ForecastStart({
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function ImportHeroCard({
+  count,
+  onClick,
+}: {
+  count: number;
+  onClick: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full text-left rounded-xl bg-[#1A1A1A] text-white p-8 md:p-10 transition-all hover:bg-[#252525] hover:shadow-[0_12px_40px_rgba(0,0,0,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2 relative overflow-hidden"
+        data-testid="card-forecast-import-hero"
+      >
+        <div className="absolute top-0 right-0 w-48 h-48 bg-[#EA2C00]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-[#EA2C00]/20 flex items-center justify-center flex-shrink-0">
+                <Download className="w-6 h-6 text-[#EA2C00]" />
+              </div>
+              <p
+                className="text-[11px] uppercase font-medium text-[#EA2C00]"
+                style={{ letterSpacing: "2.5px" }}
+              >
+                Recommended · {count} session{count === 1 ? "" : "s"} available
+              </p>
+            </div>
+            <h3
+              className="text-2xl md:text-3xl font-bold font-abridge uppercase mb-3 leading-tight"
+              style={{ letterSpacing: "0.01em" }}
+            >
+              Import from Measure
+            </h3>
+            <p className="text-sm md:text-base text-neutral-300 leading-relaxed max-w-xl">
+              Measure data available — your partner&apos;s proven outcomes are
+              ready to import.
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <div className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#C92500] transition-colors text-white text-sm font-semibold rounded-lg px-5 py-3">
+              Import now
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+      </button>
+    </motion.div>
   );
 }
 
