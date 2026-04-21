@@ -586,7 +586,13 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
               ))}
 
               <View style={{ marginTop: 12 }}>
-                {state.valueDrivers.slice(0, 3).map(d => driverCalcChain(d, state.calibration ?? DEFAULT_FORECAST_CALIBRATION))}
+                {state.valueDrivers
+                  .filter(d => {
+                    const ft = d.clinicalInputs?.formulaType;
+                    return ft === 'timeSavingsWorkforce' || ft === 'wrvuLift' || ft === 'emLevelLift' || ft === 'denialReduction';
+                  })
+                  .slice(0, 3)
+                  .map(d => driverCalcChain(d, state.calibration ?? DEFAULT_FORECAST_CALIBRATION))}
               </View>
 
               <Text style={s.subheader}>Domain totals over contract</Text>
@@ -868,11 +874,13 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
 
               // 4. Up to 2 system alerts
               const seen = new Set(bullets);
+              let alertsAdded = 0;
               for (const a of result.alerts) {
+                if (alertsAdded >= 2) break;
                 if (seen.has(a.message)) continue;
                 bullets.push(a.message);
                 seen.add(a.message);
-                if (bullets.filter(b => b === a.message || result.alerts.some(x => x.message === b)).length >= 2) break;
+                alertsAdded++;
               }
 
               // 5. Closing EBR action (always last)
