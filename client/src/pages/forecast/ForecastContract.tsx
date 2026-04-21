@@ -234,6 +234,45 @@ export default function ForecastContract({
 
   const totalOverTerm = annualizedSpend * termYears;
 
+  const estimatedAnnualValue = useMemo(() => {
+    if (!state.valueDrivers.length) return 0;
+    const annualEnc =
+      state.contractTermMonths > 0
+        ? (state.abridgeEncountersLTM || 0) / state.contractTermMonths * 12
+        : 0;
+    return state.valueDrivers.reduce((sum, d) => {
+      const att = (d.confidence ?? 0) / 100;
+      const real = (d.realizationPct ?? 0) / 100;
+      let scaled = 0;
+      switch (d.scalingUnit) {
+        case "perEncounter":
+          scaled = (d.projectedDelta || 0) * annualEnc;
+          break;
+        case "perActiveUser":
+          scaled = (d.projectedDelta || 0) * (state.activeUsersToday || 0) * 12;
+          break;
+        case "perBed":
+          scaled = (d.projectedDelta || 0) * (state.nursingStaffedBeds || 0) * 12;
+          break;
+        case "annualFlat":
+          scaled = d.projectedDelta || 0;
+          break;
+      }
+      return sum + scaled * att * real;
+    }, 0);
+  }, [
+    state.valueDrivers,
+    state.abridgeEncountersLTM,
+    state.contractTermMonths,
+    state.activeUsersToday,
+    state.nursingStaffedBeds,
+  ]);
+
+  const valueRatio =
+    annualizedSpend > 0 && estimatedAnnualValue > 0
+      ? estimatedAnnualValue / annualizedSpend
+      : 0;
+
   const insight = useMemo(() => {
     const p = state.currentPricing;
     if (
@@ -549,6 +588,42 @@ export default function ForecastContract({
                           </p>
                         </div>
 
+                        {state.valueDrivers.length > 0 &&
+                          annualizedSpend > 0 &&
+                          estimatedAnnualValue > 0 && (
+                            <div
+                              className="border-t border-neutral-100 pt-4 mb-4"
+                              data-testid="section-estimated-annual-value"
+                            >
+                              <p
+                                className="text-[10px] uppercase text-neutral-500 mb-1.5"
+                                style={{ letterSpacing: "1.2px" }}
+                              >
+                                Estimated Annual Value
+                              </p>
+                              <p
+                                className="font-abridge font-bold text-[#1A1A1A] leading-none"
+                                style={{ fontSize: "1.75rem" }}
+                                data-testid="text-estimated-annual-value"
+                              >
+                                {formatCurrency(estimatedAnnualValue)}
+                              </p>
+                              <p
+                                className={cn(
+                                  "text-[11px] font-medium mt-1.5",
+                                  valueRatio > 1.5
+                                    ? "text-emerald-600"
+                                    : valueRatio >= 1
+                                      ? "text-neutral-600"
+                                      : "text-amber-600",
+                                )}
+                                data-testid="text-value-ratio"
+                              >
+                                ~{valueRatio.toFixed(1)}x value vs. cost
+                              </p>
+                            </div>
+                          )}
+
                         <div
                           className={cn(
                             "border-t border-neutral-100 pt-4 flex gap-2 items-start",
@@ -567,6 +642,13 @@ export default function ForecastContract({
                           >
                             {insight.text}
                           </p>
+                        </div>
+
+                        <div
+                          className="mt-4 inline-block text-[11px] text-neutral-500 bg-neutral-50 rounded px-2 py-1 border border-neutral-100"
+                          data-testid="chip-adoption-preview"
+                        >
+                          Adoption: {state.adoptionCurve.startPct}% → {state.adoptionCurve.endPct}% over {state.adoptionCurve.rampMonths} months · adjustable on Dashboard
                         </div>
                       </motion.div>
                     ) : (
