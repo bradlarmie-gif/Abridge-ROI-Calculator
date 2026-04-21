@@ -11,7 +11,7 @@ import {
 import ForecastStart from "./ForecastStart";
 import ForecastBaseline from "./ForecastBaseline";
 import ForecastContract from "./ForecastContract";
-import ForecastResultsSimple from "./ForecastResultsSimple";
+import ForecastDashboard from "./ForecastDashboard";
 
 export type ForecastPhase = "start" | "baseline" | "contract" | "results";
 
@@ -99,8 +99,10 @@ export default function ForecastFlow({ onBackToJourney }: ForecastFlowProps) {
 
     case "results":
       return (
-        <ForecastResultsSimple
+        <ForecastDashboard
           state={state}
+          updateState={updateState}
+          replaceState={replaceState}
           onBack={() => navigate("contract")}
           onHome={goHome}
         />

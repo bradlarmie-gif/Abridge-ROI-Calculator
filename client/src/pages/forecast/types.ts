@@ -68,6 +68,20 @@ export interface ComparisonPricing {
   pricing: PricingConfig;
 }
 
+export interface ForecastScenario {
+  id: string;
+  name: string;
+  /** Snapshot of full state at save time */
+  snapshot: ForecastStateSnapshot;
+  createdAt: number;
+  /** Whether this scenario is overlaid on Chart 2 */
+  overlayOnChart: boolean;
+  colorIdx: number;
+}
+
+/** Pruned-state shape stored in scenarios — same as ForecastState but without `scenarios` to avoid recursion. */
+export type ForecastStateSnapshot = Omit<ForecastState, "scenarios">;
+
 export interface ForecastImportSource {
   type: "measure" | "scratch" | "saved";
   measureLink?: string;
@@ -108,6 +122,7 @@ export interface ForecastState {
 
   // comparisons / scenarios
   comparisonPricing: ComparisonPricing[];
+  scenarios: ForecastScenario[];
 }
 
 export interface SavedForecast {
@@ -175,6 +190,7 @@ export function makeEmptyForecastState(): ForecastState {
     valueDrivers: [],
 
     comparisonPricing: [],
+    scenarios: [],
   };
 }
 

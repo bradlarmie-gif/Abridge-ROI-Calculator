@@ -3,12 +3,15 @@ import {
   type ComparisonPricing,
   type DriverOnset,
   type ForecastState,
+  type ForecastStateSnapshot,
   type ForecastValueDriver,
   type PricingConfig,
   type ScalingUnit,
   type ValueDomain,
   ONSET_DELAY_MONTHS,
 } from "@/pages/forecast/types";
+
+type CalcInput = ForecastState | ForecastStateSnapshot;
 
 const RAMP_MONTHS = 3;
 const LONG_TERM_ONSETS: DriverOnset[] = ["longTerm"];
@@ -200,7 +203,7 @@ function emptyDomainMap(): Record<ValueDomain, number> {
   return { capacity: 0, revenue: 0, workforce: 0, quality: 0 };
 }
 
-function monthlyGrowthRate(state: ForecastState): number {
+function monthlyGrowthRate(state: CalcInput): number {
   const arr = state.historicalGrowthMonthly && state.historicalGrowthMonthly.length > 0
     ? state.historicalGrowthMonthly
     : [0];
@@ -209,7 +212,7 @@ function monthlyGrowthRate(state: ForecastState): number {
 }
 
 function runProjection(
-  state: ForecastState,
+  state: CalcInput,
   pricing: PricingConfig,
 ): { monthly: ForecastMonthRow[]; kpis: ForecastKpis } {
   const months = state.contractTermMonths;
@@ -341,7 +344,7 @@ function runProjection(
   };
 }
 
-export function calculateForecast(state: ForecastState): ForecastResult {
+export function calculateForecast(state: CalcInput): ForecastResult {
   const main = runProjection(state, state.currentPricing);
 
   const alternateMonthly: Record<string, ForecastMonthRow[]> = {};
