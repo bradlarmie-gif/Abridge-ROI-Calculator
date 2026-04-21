@@ -5,13 +5,22 @@ import {
   ArrowLeft,
   Bookmark,
   Check,
+  ChevronDown,
   Download,
   Home,
+  Info,
   Plus,
+  Settings,
   Sparkles,
   Trash2,
   TrendingUp,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +49,7 @@ import {
 import {
   type ComparisonPricing,
   type DriverOnset,
+  type ForecastCalibration,
   type ForecastScenario,
   type ForecastState,
   type ForecastStateSnapshot,
@@ -141,6 +151,47 @@ export function recalculateProjectedDelta(driver: ForecastValueDriver): number {
     default:
       return driver.projectedDelta;
   }
+}
+
+export function recalculateAllDrivers(
+  drivers: ForecastValueDriver[],
+  calibration: ForecastCalibration,
+): ForecastValueDriver[] {
+  return drivers.map((d) => {
+    if (
+      !d.clinicalInputs?.formulaType ||
+      d.clinicalInputs.formulaType === "customDollar"
+    ) {
+      return d;
+    }
+    const updatedCi = { ...d.clinicalInputs };
+    switch (d.clinicalInputs.formulaType) {
+      case "timeSavingsWorkforce":
+      case "workOutsideHoursReduction":
+        updatedCi.factor1Value = calibration.otHourlyRate;
+        break;
+      case "timeSavingsCapacity":
+        updatedCi.factor1Value = calibration.minutesPerVisit;
+        updatedCi.factor2Value = calibration.revenuePerVisit;
+        break;
+      case "wrvuLift":
+        updatedCi.factor1Value = calibration.wrvuConversionFactor;
+        break;
+      case "denialReduction":
+        updatedCi.factor1Value = calibration.avgClaimValue;
+        break;
+      case "nursingOvertimeReduction":
+        updatedCi.factor1Value = calibration.nursingHourlyRate;
+        break;
+      case "retentionLift":
+        updatedCi.factor1Value = calibration.providerReplacementCost;
+        break;
+      // emLevelLift, cmiLift, hccCapture, losReduction — driver-specific factors,
+      // not surfaced in the global calibration panel.
+    }
+    const newDelta = recalculateProjectedDelta({ ...d, clinicalInputs: updatedCi });
+    return { ...d, clinicalInputs: updatedCi, projectedDelta: newDelta };
+  });
 }
 
 interface DriverTemplateDef {
@@ -482,6 +533,9 @@ export default function ForecastDashboard({
           result={result}
           applySwap={applySwap}
         />
+
+        {/* Calibration assumptions — cascade to all drivers */}
+        <CalibrationPanel state={state} updateState={updateState} />
 
         {/* Value Drivers */}
         <ValueDriversBlock state={state} updateState={updateState} />
@@ -1011,6 +1065,163 @@ function ValueDriversBlock({
         }}
       />
     </motion.section>
+  );
+}
+
+function CalibrationPanel({
+  state,
+  updateState,
+}: {
+  state: ForecastState;
+  updateState: (u: Partial<ForecastState>) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const cal = state.calibration;
+
+  const updateCal = (patch: Partial<ForecastCalibration>) => {
+    const next = { ...cal, ...patch };
+    const recalcedDrivers = recalculateAllDrivers(state.valueDrivers, next);
+    updateState({ calibration: next, valueDrivers: recalcedDrivers });
+  };
+
+  return (
+    <div
+      className={`${CARD_BG} ${CARD_BORDER} rounded-xl mb-8`}
+      data-testid="section-calibration"
+    >
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-3.5 text-left"
+        data-testid="btn-calibration-toggle"
+      >
+        <div className="flex items-center gap-2.5">
+          <Settings className="w-3.5 h-3.5 text-[#888888]" />
+          <span className="text-[11px] uppercase tracking-[2px] text-[#666666] font-semibold">
+            Calibration Assumptions
+          </span>
+          <span className="text-[10px] text-neutral-400 normal-case tracking-normal">
+            · changes cascade to all drivers
+          </span>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open && (
+        <div className="px-5 pb-5 border-t border-[#E8E2DA] pt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <CalField
+              label="OT hourly rate"
+              unit="$/hr"
+              value={cal.otHourlyRate}
+              onChange={(v) => updateCal({ otHourlyRate: v })}
+              tooltip="Used to value time savings allocated to workforce cost reduction"
+              testId="cal-ot-hourly-rate"
+            />
+            <CalField
+              label="wRVU conversion"
+              unit="$/wRVU"
+              value={cal.wrvuConversionFactor}
+              onChange={(v) => updateCal({ wrvuConversionFactor: v })}
+              tooltip="Physician fee schedule conversion factor. CMS default ~$33"
+              testId="cal-wrvu-conversion"
+            />
+            <CalField
+              label="Revenue per visit"
+              unit="$/visit"
+              value={cal.revenuePerVisit}
+              onChange={(v) => updateCal({ revenuePerVisit: v })}
+              tooltip="Average revenue per incremental patient visit (used for capacity drivers)"
+              testId="cal-revenue-per-visit"
+            />
+            <CalField
+              label="Avg visit length"
+              unit="min"
+              value={cal.minutesPerVisit}
+              onChange={(v) => updateCal({ minutesPerVisit: v })}
+              tooltip="Average appointment length — determines how many extra visits freed time creates"
+              testId="cal-minutes-per-visit"
+            />
+            <CalField
+              label="Avg claim value"
+              unit="$"
+              value={cal.avgClaimValue}
+              onChange={(v) => updateCal({ avgClaimValue: v })}
+              tooltip="Average net claim value — used to calculate denial reduction impact"
+              testId="cal-avg-claim-value"
+            />
+            <CalField
+              label="Nursing hourly rate"
+              unit="$/hr"
+              value={cal.nursingHourlyRate}
+              onChange={(v) => updateCal({ nursingHourlyRate: v })}
+              tooltip="Nursing hourly rate used for overtime reduction calculations"
+              testId="cal-nursing-hourly-rate"
+            />
+            <CalField
+              label="Provider replacement cost"
+              unit="$"
+              value={cal.providerReplacementCost}
+              onChange={(v) => updateCal({ providerReplacementCost: v })}
+              tooltip="Fully loaded cost to recruit and onboard a replacement physician (~$150K–$300K)"
+              testId="cal-provider-replacement-cost"
+            />
+          </div>
+          <p className="text-[10px] text-neutral-400 mt-4">
+            These are shared assumptions. Individual drivers can be fine-tuned by expanding them below.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CalField({
+  label,
+  unit,
+  value,
+  onChange,
+  tooltip,
+  testId,
+}: {
+  label: string;
+  unit: string;
+  value: number;
+  onChange: (v: number) => void;
+  tooltip: string;
+  testId: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-1">
+        <label className="text-[10px] uppercase tracking-wide text-neutral-500 font-medium">
+          {label}
+        </label>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="w-3 h-3 text-neutral-300 cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[200px] text-xs">
+              {tooltip}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <FormattedNumberInput
+          value={value}
+          onChange={onChange}
+          className="h-8 text-xs"
+          data-testid={`input-${testId}`}
+        />
+        <span className="text-[11px] text-neutral-400 flex-shrink-0">{unit}</span>
+      </div>
+    </div>
   );
 }
 

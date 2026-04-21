@@ -1,0 +1,113 @@
+  Prompt 8 — PDF: Make it Credible
+                                                                                                                                                                                                               
+  Upgrade the forecast PDF in client/src/components/forecast/ForecastPDFExport.tsx. The existing 9-page structure is good — keep it. Make these targeted improvements:
+                                                                                                                                                                                                               
+  CHANGE 1: Page 2 Executive Summary — use rich narrative prose                                                                                                                                                
+                                                                                                                                                                                                               
+  Replace the existing `summaryNarrative()` function with one that produces a 3-paragraph structure:                                                                                                           
+                                                        
+  Paragraph 1 (Hero): Dynamic based on ROI multiple:                                                                                                                                                           
+  - If roiMultiple >= 3: "[Partner] is projecting a [X]x return — [TCV] in modeled value against [cost] invested over [N] years. [If from Measure: Built on measured clinical outcomes, not estimates.]"
+  - If roiMultiple >= 1.5: "[Partner] is on track to generate [NCV] in net value — a [X]x return on their Abridge investment over [N] years."                                                                  
+  - If roiMultiple >= 1: "[Partner] reaches positive ROI but the margin is thin at [X]x. The sections below identify the levers to strengthen the case."                                                       
+  - If roiMultiple < 1: "Under current assumptions, [Partner] does not reach positive ROI within the [N]-year term. Adjusting adoption pace or pricing model significantly changes this picture."              
+                                                                                                                                                                                                               
+  Paragraph 2 (Break-even):                                                                                                                                                                                    
+  - If fullBreakEvenMonth: "[Partner] recovers their full investment at Month [X], leaving [remaining] months of value creation before contract end."                                                          
+  - If not: "Break-even does not occur within the [N]-year term under current assumptions."                                                                                                                    
+                                                                                                                                                                                                               
+  Paragraph 3 (Top lever — based on state):                                                                                                                                                                    
+  - If no value drivers: "Add value drivers to unlock the full ROI picture."                                                                                                                                   
+  - If roiMultiple < 2 and no revenue drivers: "Adding a revenue driver — wRVU lift, E/M level improvement, or denial reduction — would meaningfully strengthen the ROI multiple."                             
+  - If roiMultiple < 2 and no workforce drivers: "A provider retention driver would add significant long-term value. Replacement costs of $150K–$300K per departure make even small retention gains financially
+   meaningful."                                                                                                                                                                                                
+  - If roiMultiple >= 2: "The ROI story is compelling. Focus the conversation on whether the current pricing structure captures value fairly as [Partner] scales."                                             
+                                                                                                                                                                                                               
+  Make the narrative text font size 10, color C.mid, lineHeight 1.65, with bold callouts for the key numbers.                                                                                                  
+                                                                                                                                                                                                               
+  CHANGE 2: Page 3 Measured Outcomes — add before/after clinical columns                                                                                                                                       
+                                                        
+  Update the driver table to show clinical inputs when available. Change the columns from:                                                                                                                     
+    Driver | Measured Δ | Confidence | Realization
+  To:                                                                                                                                                                                                          
+    Driver | Before → After | Clinical Unit | $/Unit | Confidence | Realization
+                                                                                                                                                                                                               
+  For each driver:                                      
+  - "Before → After": show `d.clinicalInputs?.metricBefore?.toFixed(1) + " → " + d.clinicalInputs?.metricAfter?.toFixed(1)` if available, else "—"                                                             
+  - "Clinical Unit": show `d.clinicalInputs?.metricUnit` if available, else "—"                                                                                                                                
+  - "$/Unit": show `fmtCurrencyShort(d.projectedDelta)`                                                                                                                                                        
+  - Confidence and Realization: same as before                                                                                                                                                                 
+                                                                                                                                                                                                               
+  After the driver table, add a "Calibration rates used" mini-table with 2 columns (assumption | value):                                                                                                       
+  - OT Hourly Rate: $[state.calibration?.otHourlyRate ?? 150]/hr                                                                                                                                               
+  - wRVU Conversion: $[state.calibration?.wrvuConversionFactor ?? 33]/wRVU                                                                                                                                     
+  - Revenue Per Visit: $[state.calibration?.revenuePerVisit ?? 200]/visit                                                                                                                                      
+  - Avg Visit Length: [state.calibration?.minutesPerVisit ?? 30] min                                                                                                                                           
+                                                                                                                                                                                                               
+  Use s.smallLabel for the header, tiny font (size 8) for the values.                                                                                                                                          
+                                                        
+  CHANGE 3: Page 5 Value Extrapolation — add calculation chain callouts                                                                                                                                        
+                                                        
+  After the main driver table, for each driver that has clinicalInputs and formulaType, add a "calculation chain" callout box. Show:                                                                           
+   
+  Label: "[driver.label] · HOW WE GOT HERE"                                                                                                                                                                    
+                                                        
+  Then show the calculation in a step format using a monospace-style text. Examples:                                                                                                                           
+                                                        
+  For timeSavingsWorkforce:                                                                                                                                                                                    
+    "[metricBefore] min/enc → [metricAfter] min/enc = [delta] min saved
+     ÷ 60 = [delta/60] hrs × $[otHourlyRate]/hr × [allocationPct]% allocation                                                                                                                                  
+     = $[projectedDelta]/encounter"                                                                                                                                                                            
+                                                                                                                                                                                                               
+  For wrvuLift:                                                                                                                                                                                                
+    "[metricBefore] → [metricAfter] wRVU/enc = +[delta] wRVU delta
+     × $[conversionFactor]/wRVU                                                                                                                                                                                
+     = $[projectedDelta]/encounter"                                                                                                                                                                            
+                                                                                                                                                                                                               
+  For emLevelLift:                                                                                                                                                                                             
+    "Avg E/M level: [metricBefore] → [metricAfter] = +[delta] level improvement
+     × $[factor1Value]/level                                                                                                                                                                                   
+     = $[projectedDelta]/encounter"
+                                                                                                                                                                                                               
+  For denialReduction:                                                                                                                                                                                         
+    "Initial denial rate: [metricBefore]% → [metricAfter]% = [delta]pp reduction
+     × $[avgClaimValue] avg claim value                                                                                                                                                                        
+     = $[projectedDelta] recovered per encounter"                                                                                                                                                              
+                                                                                                                                                                                                               
+  Only show callouts for the first 3 drivers to avoid page overflow. Style the callout with:                                                                                                                   
+  - backgroundColor: "#FAFAFA"                          
+  - borderLeftWidth: 2, borderLeftColor: C.orange                                                                                                                                                              
+  - padding: 8, marginBottom: 6                                                                                                                                                                                
+  - fontSize: 8, fontFamily: "Courier" for the math lines                                                                                                                                                      
+  - fontSize: 8, color: C.orange, fontWeight: "bold" for the label                                                                                                                                             
+                                                                                                                                                                                                               
+  CHANGE 4: Page 8 Recommendations — replace mechanical alerts with strategic insights                                                                                                                         
+                                                                                                                                                                                                               
+  Replace the current bullets array construction with this priority-ordered logic:                                                                                                                             
+                                                        
+  1. First bullet: The top lever recommendation (dynamic based on ROI multiple and missing driver domains — same logic as Change 1 Paragraph 3 but written as an action item: "To strengthen ROI beyond [X]x,  
+  add a [type] value driver...")                        
+                                                                                                                                                                                                               
+  2. Pricing opportunity: If any comparison pricing saves >5% vs current, add: "Model a switch to [pricing model] — it generates [savings] more in net value over the term. Schedule the pricing conversation  
+  before Month [contractTermMonths - 3]."
+                                                                                                                                                                                                               
+  3. Adoption opportunity: If final encounterShareCurve value - initial value > 0.1: "Expanding encounter coverage from [initial]% to [final]% is a key growth lever. Set a quarterly milestone and track      
+  against it."
+                                                                                                                                                                                                               
+  4. From alerts: Add up to 2 alerts that are system-generated (runway warnings, capacity warnings). Keep these concise.                                                                                       
+   
+  5. Closing action: Always add: "Schedule an EBR at Month [min(12, contractTermMonths/2)] to reconcile projection against actual measured outcomes."                                                          
+                                                        
+  Format each bullet with a red dot (using s.bullet) and clear action-oriented language. The tone should be direct and confident, not hedged.                                                                  
+                                                        
+  CHANGE 5: Add a footer callout on Page 2 showing data provenance                                                                                                                                             
+                                                        
+  Below the narrative on Page 2, add a small horizontal strip showing:                                                                                                                                         
+  - If importSource.type === "measure": A red-bordered callout: "SOURCED FROM MEASURE · [valueDrivers.filter(d => d.source === 'measure').length] measured outcomes imported · [format(importedAt, 'MMM
+  yyyy')]"                                                                                                                                                                                                     
+  - If from scratch: A gray callout: "EXPLORATORY MODEL · assumptions entered manually — no measured outcomes yet"
+                                                                                                                                                                                                               
+  This makes it immediately clear to a CFO reading the document whether the numbers are measured or estimated.                                                                                                 
+                                                                                                                                                                                                               
+  Do not change the page structure, fonts, color system, or footer. Keep generateForecastPDF() signature the same. The PDF should still be 8-9 pages.                                                          
+                                                        

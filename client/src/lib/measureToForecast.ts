@@ -3,6 +3,8 @@ import {
   type ForecastState,
   type ForecastValueDriver,
   type ForecastCareSetting,
+  type ForecastCalibration,
+  DEFAULT_FORECAST_CALIBRATION,
   makeEmptyForecastState,
 } from "@/pages/forecast/types";
 
@@ -420,6 +422,19 @@ export function convertMeasureToForecast(m: MeasureState): ForecastState {
   const sharePct = totalEnc > 0 ? (dep.abridgeEncounters / totalEnc) * 100 : 60;
   const quarters = Math.ceil(base.contractTermMonths / 3);
 
+  const calibration: ForecastCalibration = {
+    otHourlyRate: m.calibration.otHourlyRate ?? DEFAULT_FORECAST_CALIBRATION.otHourlyRate,
+    wrvuConversionFactor:
+      m.calibration.conversionFactor ?? DEFAULT_FORECAST_CALIBRATION.wrvuConversionFactor,
+    revenuePerVisit:
+      m.calibration.revenuePerVisit ?? DEFAULT_FORECAST_CALIBRATION.revenuePerVisit,
+    minutesPerVisit:
+      m.calibration.minutesPerVisit ?? DEFAULT_FORECAST_CALIBRATION.minutesPerVisit,
+    avgClaimValue: DEFAULT_FORECAST_CALIBRATION.avgClaimValue,
+    nursingHourlyRate: DEFAULT_FORECAST_CALIBRATION.nursingHourlyRate,
+    providerReplacementCost: DEFAULT_FORECAST_CALIBRATION.providerReplacementCost,
+  };
+
   return {
     ...base,
     partnerName: dep.organizationName || base.partnerName,
@@ -429,6 +444,7 @@ export function convertMeasureToForecast(m: MeasureState): ForecastState {
     abridgeEncountersLTM: dep.abridgeEncounters || adoptedEnc,
     totalOrgEncountersLTM: totalEnc,
     careSettings: careSettings.length > 0 ? careSettings : ["outpatient"],
+    calibration,
     valueDrivers: drivers,
     encounterShareCurve: {
       values: Array.from({ length: quarters }, () => sharePct),

@@ -2,6 +2,7 @@ import LZString from "lz-string";
 import {
   type ForecastState,
   type SavedForecast,
+  DEFAULT_FORECAST_CALIBRATION,
   makeEmptyForecastState,
 } from "@/pages/forecast/types";
 
@@ -25,9 +26,19 @@ export function decodeStateFromUrl(encoded: string): ForecastState | null {
       "currentPricing" in parsed &&
       "contractTermMonths" in parsed
     ) {
-      // Merge into a fresh empty state so missing fields hydrate to defaults
+      // Merge into a fresh empty state so missing fields hydrate to defaults.
+      // Nested objects (like `calibration`) are shallow-merged so partial legacy
+      // payloads can't leave required keys undefined.
       const base = makeEmptyForecastState();
-      return { ...base, ...(parsed as Partial<ForecastState>) } as ForecastState;
+      const partial = parsed as Partial<ForecastState>;
+      return {
+        ...base,
+        ...partial,
+        calibration: {
+          ...DEFAULT_FORECAST_CALIBRATION,
+          ...(partial.calibration ?? {}),
+        },
+      } as ForecastState;
     }
     return null;
   } catch {

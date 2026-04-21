@@ -116,6 +116,26 @@ export interface ForecastScenario {
 /** Pruned-state shape stored in scenarios — same as ForecastState but without `scenarios` to avoid recursion. */
 export type ForecastStateSnapshot = Omit<ForecastState, "scenarios">;
 
+export interface ForecastCalibration {
+  otHourlyRate: number;
+  wrvuConversionFactor: number;
+  revenuePerVisit: number;
+  minutesPerVisit: number;
+  avgClaimValue: number;
+  nursingHourlyRate: number;
+  providerReplacementCost: number;
+}
+
+export const DEFAULT_FORECAST_CALIBRATION: ForecastCalibration = {
+  otHourlyRate: 150,
+  wrvuConversionFactor: 33,
+  revenuePerVisit: 200,
+  minutesPerVisit: 30,
+  avgClaimValue: 350,
+  nursingHourlyRate: 50,
+  providerReplacementCost: 150_000,
+};
+
 export interface ForecastImportSource {
   type: "measure" | "scratch" | "saved";
   measureLink?: string;
@@ -141,6 +161,9 @@ export interface ForecastState {
   historicalGrowthMonthly: number[];
   careSettings: ForecastCareSetting[];
   nursingStaffedBeds: number;
+
+  // shared assumptions used to recalc all formula-driven drivers
+  calibration: ForecastCalibration;
 
   // contract
   contractTermMonths: number;
@@ -213,6 +236,8 @@ export function makeEmptyForecastState(): ForecastState {
     historicalGrowthMonthly: [BENCHMARK_MOM_GROWTH_PCT],
     careSettings: ["outpatient"],
     nursingStaffedBeds: 0,
+
+    calibration: { ...DEFAULT_FORECAST_CALIBRATION },
 
     contractTermMonths: 36,
     contractStartDate: null,
