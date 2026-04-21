@@ -55,6 +55,7 @@ import {
 import { EncounterTrajectory } from "./dashboard/charts/EncounterTrajectory";
 import { AlertsZone } from "./dashboard/AlertsZone";
 import { ExportDialog } from "./dashboard/ExportDialog";
+import { MeasuredOutcomesPanel } from "./dashboard/MeasuredOutcomesPanel";
 import { useSmoothCountUp } from "./dashboard/useSmoothCountUp";
 import { fmtCurrencyShort } from "./dashboard/charts/shared";
 import {
@@ -213,22 +214,37 @@ export default function ForecastDashboard({
 
       <div className="max-w-[960px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         {/* Page title */}
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-xs text-[#999999] uppercase tracking-widest font-medium mb-2"
-        >
-          {partner} · {termYears} year forecast
-        </motion.p>
-        <motion.h1
-          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] font-abridge uppercase tracking-tight mb-8"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          data-testid="text-dashboard-title"
-        >
-          What This Forecast Could Mean
-        </motion.h1>
+        {(() => {
+          const fromMeasure = state.importSource.type === "measure";
+          const measuredCount = state.valueDrivers.filter(
+            (d) => d.source === "measure",
+          ).length;
+          const subtitle = fromMeasure
+            ? `Based on ${measuredCount} measured outcome${measuredCount === 1 ? "" : "s"}`
+            : "Exploratory model";
+          return (
+            <>
+              <motion.h1
+                className="text-2xl md:text-3xl font-bold text-[#1A1A1A] font-abridge uppercase tracking-tight mb-2"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                data-testid="text-dashboard-title"
+              >
+                {termYears}-Year Forecast · {partner}
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.08 }}
+                className="text-sm text-[#666666] mb-8"
+                data-testid="text-dashboard-subtitle"
+              >
+                {subtitle}
+              </motion.p>
+            </>
+          );
+        })()}
 
         {/* Hero ROI card */}
         {state.valueDrivers.length === 0 && (
@@ -238,8 +254,11 @@ export default function ForecastDashboard({
         )}
         <HeroROI result={result} state={state} />
 
-        {/* Value Drivers */}
-        <ValueDriversBlock state={state} updateState={updateState} />
+        {/* Measured Outcomes (only when imported from Measure) */}
+        <MeasuredOutcomesPanel state={state} />
+
+        {/* Saved Scenarios pill strip */}
+        <ScenariosStrip state={state} updateState={updateState} replaceState={replaceState} />
 
         {/* Pricing comparison */}
         <PricingComparisonBlock
@@ -248,6 +267,9 @@ export default function ForecastDashboard({
           result={result}
           applySwap={applySwap}
         />
+
+        {/* Value Drivers */}
+        <ValueDriversBlock state={state} updateState={updateState} />
 
         {/* Levers */}
         <LeversBlock state={state} updateState={updateState} />
@@ -277,9 +299,6 @@ export default function ForecastDashboard({
             <EncounterTrajectory result={result} state={state} />
           </motion.section>
         )}
-
-        {/* Scenarios pill strip */}
-        <ScenariosStrip state={state} updateState={updateState} replaceState={replaceState} />
       </div>
 
       <ExportDialog open={exportOpen} onOpenChange={setExportOpen} state={state} />
@@ -421,34 +440,6 @@ function ValueDriversBlock({
         >
           <Plus className="w-3 h-3 mr-1" /> Add driver
         </Button>
-      </div>
-
-      {/* Preset chips */}
-      <div className="flex gap-3 mb-4" data-testid="attribution-presets">
-        {ATTRIBUTION_PRESETS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            onClick={() => selectPreset(p.id)}
-            data-testid={`preset-${p.id}`}
-            className={`flex-1 rounded-xl border px-4 py-3 text-left transition-all ${
-              preset === p.id
-                ? "border-[#1A1A1A] bg-white shadow-sm"
-                : "border-[#E8E2DA] bg-white/60 hover:border-[#CCCCCC]"
-            }`}
-          >
-            <p
-              className={`text-sm font-semibold mb-0.5 ${
-                preset === p.id ? "text-[#1A1A1A]" : "text-[#666666]"
-              }`}
-            >
-              {p.label}
-            </p>
-            <p className="text-[11px] text-[#999999] leading-snug">
-              {p.confidence}% attribution · {p.realization}% realization
-            </p>
-          </button>
-        ))}
       </div>
 
       <div className="space-y-4">
@@ -603,6 +594,45 @@ function ValueDriversBlock({
           </div>
           );
         })}
+      </div>
+
+      {/* Preset chips — apply to all drivers */}
+      <div className="mt-6" data-testid="attribution-presets">
+        <p className="text-[10px] uppercase tracking-widest text-[#666666] font-semibold mb-2">
+          Apply to all drivers:
+        </p>
+        <div className="flex gap-3">
+          {ATTRIBUTION_PRESETS.map((p) => {
+            const disabled = state.valueDrivers.length === 0;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => !disabled && selectPreset(p.id)}
+                disabled={disabled}
+                data-testid={`preset-${p.id}`}
+                className={`flex-1 rounded-xl border px-4 py-3 text-left transition-all ${
+                  disabled
+                    ? "border-[#E8E2DA] bg-white/40 opacity-50 cursor-not-allowed"
+                    : preset === p.id
+                      ? "border-[#1A1A1A] bg-white shadow-sm"
+                      : "border-[#E8E2DA] bg-white/60 hover:border-[#CCCCCC]"
+                }`}
+              >
+                <p
+                  className={`text-sm font-semibold mb-0.5 ${
+                    !disabled && preset === p.id ? "text-[#1A1A1A]" : "text-[#666666]"
+                  }`}
+                >
+                  {p.label}
+                </p>
+                <p className="text-[11px] text-[#999999] leading-snug">
+                  {p.confidence}% attribution · {p.realization}% realization
+                </p>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <AddDriverDialog
@@ -883,9 +913,12 @@ function PricingComparisonBlock({
       className="mb-8"
       data-testid="section-pricing-comparison"
     >
-      <h2 className="text-[11px] uppercase tracking-[2px] text-[#666666] font-semibold mb-4">
-        What if you changed pricing?
+      <h2 className="text-[11px] uppercase tracking-[2px] text-[#666666] font-semibold mb-1">
+        What If We Changed The Deal?
       </h2>
+      <p className="text-xs text-[#999999] mb-4">
+        Model alternate pricing structures and see the impact on your break-even and net value.
+      </p>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {cards.map((card) => {
           const kpis = computeCardKpi(card);
