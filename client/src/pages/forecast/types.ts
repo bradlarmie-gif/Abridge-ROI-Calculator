@@ -51,7 +51,12 @@ export interface ForecastValueDriver {
   domain: ValueDomain;
   category: "time" | "documentation" | "retention" | "quality";
   scalingUnit: ScalingUnit;
-  /** Dollars per scaling-unit-event (e.g. $/encounter, $/user/month, $/bed/month) */
+  // New: the raw before/after measurements the customer provides
+  baselineValue?: number;   // metric value before Abridge
+  measuredValue?: number;   // metric value after Abridge
+  conversionFactor?: number; // $/unit (e.g. $/wRVU, $/hour)
+  unitLabel?: string;       // display label e.g. "wRVU/encounter"
+  /** Dollars per scaling-unit-event — derived from (measuredValue−baselineValue)×conversionFactor when available */
   projectedDelta: number;
   /** Confidence 0-100 */
   confidence: number;
@@ -187,44 +192,7 @@ export function makeEmptyForecastState(): ForecastState {
     adoptionCurve: { ...DEFAULT_ADOPTION_CURVE },
     utilizationCurve: makeDefaultUtilizationCurve(36),
     encounterShareCurve: makeDefaultEncounterShareCurve(36, 60),
-    valueDrivers: [
-      {
-        id: "seed-wrvu",
-        label: "wRVU lift per provider/year",
-        domain: "revenue",
-        category: "documentation",
-        scalingUnit: "perActiveUser",
-        projectedDelta: 1200,
-        confidence: 70,
-        realizationPct: 80,
-        onset: "immediate",
-        source: "manual",
-      },
-      {
-        id: "seed-doc-time",
-        label: "Documentation time saved",
-        domain: "workforce",
-        category: "time",
-        scalingUnit: "perEncounter",
-        projectedDelta: 45,
-        confidence: 80,
-        realizationPct: 85,
-        onset: "immediate",
-        source: "manual",
-      },
-      {
-        id: "seed-retention",
-        label: "Clinician retention value",
-        domain: "workforce",
-        category: "retention",
-        scalingUnit: "perActiveUser",
-        projectedDelta: 8000,
-        confidence: 60,
-        realizationPct: 70,
-        onset: "longTerm",
-        source: "manual",
-      },
-    ],
+    valueDrivers: [],
 
     comparisonPricing: [],
     scenarios: [],

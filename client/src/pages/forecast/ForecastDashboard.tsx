@@ -287,13 +287,17 @@ export default function ForecastDashboard({
 // ────────────────────────────────────────────────────────────
 function HeroROI({ result, state }: { result: ForecastResult; state: ForecastState }) {
   const { totalContractValue, netContractValue, roiMultiple, fullBreakEvenMonth } = result.kpis;
+  const hasDrivers = state.valueDrivers.length > 0;
 
   const tcv = useSmoothCountUp(Number.isFinite(totalContractValue) ? totalContractValue : 0);
   const ncv = useSmoothCountUp(Number.isFinite(netContractValue) ? netContractValue : 0);
   const roi = useSmoothCountUp(Number.isFinite(roiMultiple) ? roiMultiple : 0);
 
-  const breakEvenLabel =
-    fullBreakEvenMonth != null ? `Month ${fullBreakEvenMonth}` : "Not within term";
+  const breakEvenLabel = !hasDrivers
+    ? "—"
+    : fullBreakEvenMonth != null
+      ? `Month ${fullBreakEvenMonth}`
+      : "Not within term";
   const pricingLabel = PRICING_MODEL_LABELS[state.currentPricing.model];
 
   return (
@@ -446,7 +450,10 @@ function ValueDriversBlock({
             <p className="text-sm text-[#999999]">No drivers yet — add one above.</p>
           </div>
         )}
-        {state.valueDrivers.map((d) => (
+        {state.valueDrivers.map((d) => {
+          const hasRaw = d.baselineValue != null && d.measuredValue != null && d.conversionFactor != null;
+          const rawDelta = hasRaw ? d.measuredValue! - d.baselineValue! : null;
+          return (
           <div
             key={d.id}
             data-testid={`driver-card-${d.id}`}
@@ -473,6 +480,11 @@ function ValueDriversBlock({
                     </Badge>
                   )}
                 </div>
+                {hasRaw && rawDelta !== null && (
+                  <p className="text-[11px] text-[#666666] mt-1.5">
+                    {d.baselineValue!.toFixed(2)} → {d.measuredValue!.toFixed(2)} {d.unitLabel ?? ""} × ${d.conversionFactor!.toFixed(2)} = <span className="font-semibold text-[#EA2C00]">${d.projectedDelta.toFixed(2)}</span> / {SCALING_UNIT_LABELS[d.scalingUnit] ?? d.scalingUnit}
+                  </p>
+                )}
               </div>
               <button
                 type="button"
@@ -582,7 +594,8 @@ function ValueDriversBlock({
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <AddDriverDialog
@@ -607,27 +620,45 @@ function AddDriverDialog({
   onSave: (d: ForecastValueDriver) => void;
 }) {
   const [label, setLabel] = useState("");
-  const [domain, setDomain] = useState<ValueDomain>("capacity");
-  const [projectedDelta, setProjectedDelta] = useState(0);
+  const [domain, setDomain] = useState<ValueDomain>("revenue");
   const [onset, setOnset] = useState<DriverOnset>("delayed");
   const [scalingUnit, setScalingUnit] = useState<ScalingUnit>("perEncounter");
+  const [baselineValue, setBaselineValue] = useState(0);
+  const [measuredValue, setMeasuredValue] = useState(0);
+  const [conversionFactor, setConversionFactor] = useState(0);
+  const [unitLabel, setUnitLabel] = useState("");
+  const [attribution, setAttribution] = useState(62);
+  const [realization, setRealization] = useState(80);
+
+  const delta = measuredValue - baselineValue;
+  const projectedDelta = delta * conversionFactor;
+  const canSave = label.trim().length > 0 && conversionFactor > 0 && Math.abs(delta) > 0;
+
+  const fmtPreview = (n: number) => {
+    if (!Number.isFinite(n) || n === 0) return "—";
+    if (Math.abs(n) >= 1000) return `$${(n / 1000).toFixed(1)}K`;
+    return `$${n.toFixed(2)}`;
+  };
 
   const handleSave = () => {
-    if (!label.trim()) return;
+    if (!canSave) return;
     onSave({
       id: `drv-${Date.now().toString(36)}`,
       label: label.trim(),
       domain,
       category: "documentation",
       scalingUnit,
-      projectedDelta,
-      confidence: 70,
-      realizationPct: 80,
+      baselineValue,
+      measuredValue,
+      conversionFactor,
+      unitLabel: unitLabel.trim() || undefined,
+      projectedDelta: Math.abs(projectedDelta),
+      confidence: attribution,
+      realizationPct: realization,
       onset,
       source: "manual",
     });
-    setLabel("");
-    setProjectedDelta(0);
+    setLabel(""); setBaselineValue(0); setMeasuredValue(0); setConversionFactor(0); setUnitLabel("");
   };
 
   return (
@@ -638,25 +669,55 @@ function AddDriverDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label className="text-xs uppercase tracking-wide">Label</Label>
+            <Label className="text-xs uppercase tracking-wide">Driver name</Label>
             <Input
               data-testid="input-new-driver-label"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder="e.g. wRVU lift"
+              placeholder="e.g. wRVU per encounter"
               autoFocus
             />
           </div>
+
+          <div className="rounded-md bg-[#FAF8F5] border border-[#E8E2DA] p-3 space-y-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#EA2C00]">Partner's measured data</p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase tracking-wide text-neutral-500">Before Abridge</Label>
+                <FormattedNumberInput data-testid="input-baseline" value={baselineValue || ""} onChange={setBaselineValue} step={0.01} placeholder="0.00" className="h-8 text-sm" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase tracking-wide text-neutral-500">After Abridge</Label>
+                <FormattedNumberInput data-testid="input-measured" value={measuredValue || ""} onChange={setMeasuredValue} step={0.01} placeholder="0.00" className="h-8 text-sm" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase tracking-wide text-neutral-500">Conversion factor ($/unit)</Label>
+                <FormattedNumberInput data-testid="input-conversion" value={conversionFactor || ""} onChange={setConversionFactor} step={0.01} placeholder="e.g. 33 for $/wRVU" className="h-8 text-sm" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase tracking-wide text-neutral-500">Unit label</Label>
+                <Input value={unitLabel} onChange={(e) => setUnitLabel(e.target.value)} placeholder="e.g. wRVU/enc" className="h-8 text-sm" />
+              </div>
+            </div>
+            {Math.abs(delta) > 0 && conversionFactor > 0 && (
+              <div className="rounded border border-[#E8E2DA] bg-white px-3 py-2">
+                <p className="text-[11px] text-neutral-500">
+                  Δ {delta >= 0 ? "+" : ""}{delta.toFixed(2)} {unitLabel} × ${conversionFactor.toFixed(2)} = <span className="font-bold text-[#EA2C00]">{fmtPreview(projectedDelta)}</span> per {SCALING_UNIT_LABELS[scalingUnit]}
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-xs uppercase tracking-wide">Domain</Label>
               <Select value={domain} onValueChange={(v) => setDomain(v as ValueDomain)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {DOMAIN_VALUES.map((d) => (
-                    <SelectItem key={d} value={d}>
-                      {VALUE_DOMAIN_LABELS[d]}
-                    </SelectItem>
+                    <SelectItem key={d} value={d}>{VALUE_DOMAIN_LABELS[d]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -664,47 +725,41 @@ function AddDriverDialog({
             <div className="space-y-1">
               <Label className="text-xs uppercase tracking-wide">Onset</Label>
               <Select value={onset} onValueChange={(v) => setOnset(v as DriverOnset)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {ONSET_VALUES.map((o) => (
-                    <SelectItem key={o} value={o}>
-                      {ONSET_LABELS[o]}
-                    </SelectItem>
+                    <SelectItem key={o} value={o}>{ONSET_LABELS[o]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label className="text-xs uppercase tracking-wide">Scaling</Label>
-              <Select value={scalingUnit} onValueChange={(v) => setScalingUnit(v as ScalingUnit)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {SCALING_VALUES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {SCALING_UNIT_LABELS[s]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs uppercase tracking-wide">Projected Δ</Label>
-              <FormattedNumberInput
-                data-testid="input-new-driver-delta"
-                value={projectedDelta || ""}
-                onChange={setProjectedDelta}
-                step={0.01}
-              />
-            </div>
+          <div className="space-y-1">
+            <Label className="text-xs uppercase tracking-wide">Scaling</Label>
+            <Select value={scalingUnit} onValueChange={(v) => setScalingUnit(v as ScalingUnit)}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {SCALING_VALUES.map((s) => (
+                  <SelectItem key={s} value={s}>{SCALING_UNIT_LABELS[s]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs"><span>Attribution</span><span className="font-semibold">{attribution}%</span></div>
+            <Slider value={[attribution]} min={0} max={100} step={5} onValueChange={([v]) => setAttribution(v)} />
+            <p className="text-[10px] text-neutral-400">How much of the improvement is attributed to Abridge</p>
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs"><span>Realization</span><span className="font-semibold">{realization}%</span></div>
+            <Slider value={[realization]} min={0} max={100} step={5} onValueChange={([v]) => setRealization(v)} />
           </div>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
             onClick={handleSave}
-            disabled={!label.trim()}
+            disabled={!canSave}
             data-testid="btn-save-new-driver"
             className="bg-[#EA2C00] hover:bg-[#C92500] text-white"
           >
