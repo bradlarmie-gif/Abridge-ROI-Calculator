@@ -1,0 +1,119 @@
+Redesign client/src/pages/forecast/ForecastContract.tsx — Screen 3 of the Forecast path.                                                                                                                   
+  ▎
+  ▎ Match the premium, on-brand treatment that was just applied to Screen 2 (ForecastBaseline.tsx). Current version has the same "generic gray cards" problem plus awkward spacing (huge card with tiny date   
+  ▎ picker, abrupt Annual Escalators, no visual context for what the contract timeline actually looks like).
+  ▎                                                                                                                                                                                                            
+  ▎ Same visual system as Baseline: white cards, shadow-md, rounded-xl, border border-gray-100, generous p-8 padding, Inter Semibold text-sm uppercase tracking-wider section headers with Lucide icons,       
+  ▎ JetBrains Mono for numbers, Abridge red #E8350A accent ring on focused inputs, subtle BackgroundPattern or BackgroundShape behind the content, staggered framer-motion entrance.
+  ▎                                                                                                                                                                                                            
+  ▎ Page header                                             
+  ▎
+  ▎ - Drop the "STEP 3 · CONTRACT & PRICING" eyebrow (the UnifiedHeader and breadcrumb already communicate this — redundant)                                                                                   
+  ▎ - Keep the title "Your current contract" in Abridge display font, uppercase
+  ▎ - Add the same 2px × 40px Abridge-red underline accent beneath the title (matches Baseline)                                                                                                                
+  ▎ - Tighten the subheading copy: "Confirm the terms. We'll compare other pricing models on the Dashboard." — keep but reduce to text-sm muted, not the current large muted text                              
+  ▎                                                                                                                                                                                                            
+  ▎ Layout (desktop, two columns)                                                                                                                                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ ┌────────────────────────────────────┐  ┌─────────────────────┐                                                                                                                                            
+  ▎ │  CONTRACT TERMS CARD               │  │  AT A GLANCE        │
+  ▎ │                                    │  │                     │                                                                                                                                            
+  ▎ │  Contract term (segmented pills)   │  │  Contract window    │
+  ▎ │  1 · 2 · 3 · 4 · 5 yr              │  │  Apr 2024 → Apr '27 │                                                                                                                                            
+  ▎ │                                    │  │                     │                                                                                                                                            
+  ▎ │  Start date picker                 │  │  ANNUALIZED SPEND   │                                                                                                                                            
+  ▎ │  [ calendar button ]               │  │  $2,400,000         │                                                                                                                                            
+  ▎ │                                    │  │  (at current        │                                                                                                                                            
+  ▎ │  Timeline visualization:           │  │   pricing)          │                                                                                                                                            
+  ▎ │  ──●════════════○────────────      │  │                     │                                                                                                                                            
+  ▎ │   start       today       end      │  │  TOTAL OVER TERM    │                                                                                                                                            
+  ▎ │   "12 months elapsed ·             │  │  $7,200,000         │                                                                                                                                            
+  ▎ │    24 months remaining"            │  │                     │                                                                                                                                            
+  ▎ └────────────────────────────────────┘  └─────────────────────┘                                                                                                                                            
+  ▎                                                                                                                                                                                                            
+  ▎ ┌──────────────────────────────────────────────────────────────┐                                                                                                                                           
+  ▎ │  PRICING MODEL CARD (full width)                             │
+  ▎ │                                                              │                                                                                                                                           
+  ▎ │  [ 5 visual pricing-model tiles — selectable cards ]         │
+  ▎ │  Per Provider · Per Bed · Annual Flat · Per Encounter · Hybrid│                                                                                                                                          
+  ▎ │                                                              │                                                                                                                                           
+  ▎ │  ─── divider ───                                             │                                                                                                                                           
+  ▎ │                                                              │                                                                                                                                           
+  ▎ │  Unit price input (label dynamic based on model selection)   │
+  ▎ │                                                              │                                                                                                                                           
+  ▎ │  [ Encounter-mode extras — smooth reveal when applicable ]   │
+  ▎ │  [ Hybrid secondary fields — smooth reveal when applicable ] │                                                                                                                                           
+  ▎ │                                                              │                                                                                                                                           
+  ▎ │  ▸ Annual escalators (collapsible, default collapsed)        │                                                                                                                                           
+  ▎ └──────────────────────────────────────────────────────────────┘                                                                                                                                           
+  ▎                                                         
+  ▎            [ ← Back ]              [ Continue to Dashboard → ]                                                                                                                                             
+  ▎                                                         
+  ▎ Tablet: At-a-glance card drops below contract-terms card. Mobile: single column, pricing model tiles wrap 2-per-row.                                                                                       
+  ▎                                                         
+  ▎ Specific component changes                                                                                                                                                                                 
+  ▎                                                         
+  ▎ 1. Contract term pills — keep as segmented control but upgrade: when selected, use a filled black pill with white text (matches the care-setting "Outpatient" selected state from Baseline for             
+  ▎ consistency). Hover states with subtle lift.
+  ▎                                                                                                                                                                                                            
+  ▎ 2. Start date picker — keep the shadcn calendar picker, but:                                                                                                                                               
+  ▎ - Shrink the button so it doesn't look lost in a huge card
+  ▎ - Directly below the picker, render a visual contract timeline:                                                                                                                                            
+  ▎   - Horizontal bar (full card width, h-2, rounded-full, muted gray background)
+  ▎   - Abridge red fill from start to today's position (%)                                                                                                                                                    
+  ▎   - Small dots at start, today, end                                                                                                                                                                        
+  ▎   - Labels below: "Started Apr 2024" · "Today" · "Ends Apr 2027"                                                                                                                                           
+  ▎   - Text below timeline in muted JetBrains Mono: "12 months elapsed · 24 months remaining"                                                                                                                 
+  ▎                                                                                                                                                                                                            
+  ▎ 3. Pricing model selector — replace the dropdown with 5 visual selectable tiles in a row (similar pattern to care-setting cards on Baseline):                                                              
+  ▎ - Each tile: icon (Lucide — User, BedDouble, Calendar, Activity, Layers), model name, one-line description                                                                                                 
+  ▎ - Selected tile: Abridge red left border, slight elevation shadow                                                                                                                                          
+  ▎ - perStaffedBed tile is disabled (50% opacity, tooltip "Requires Nursing care setting") if Nursing is not selected on Baseline                                                                             
+  ▎ - Smooth framer-motion transition when switching models — inputs below animate in/out                                                                                                                      
+  ▎                                                                                                                                                                                                            
+  ▎ 4. Unit price input — bigger (h-14), JetBrains Mono display, dynamic label above it based on selected pricing model:                                                                                       
+  ▎ - perProvider → "$ per provider / month"                                                                                                                                                                   
+  ▎ - perStaffedBed → "$ per staffed bed / month"                                                                                                                                                              
+  ▎ - annualFlat → "Total annual fee"                                                                                                                                                                          
+  ▎ - perEncounter → "$ per encounter"                                                                                                                                                                         
+  ▎ - hybrid → "Base $ per provider / month"                                                                                                                                                                   
+  ▎                                                                                                                                                                                                            
+  ▎ 5. Encounter-mode extras — when perEncounter or hybrid is selected, reveal a nested sub-card (inset bg-gray-50, rounded-lg, p-6) below with the three inputs (contract encounter limit, capacity ceiling,  
+  ▎ overage rate). Small header: "Encounter-mode details". Smooth motion.div slide-down.                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ 6. Hybrid secondary — when hybrid, reveal a second nested sub-card with secondary model dropdown + secondary unit price. Title: "Secondary pricing component".                                             
+  ▎
+  ▎ 7. Annual escalators — stays as collapsible but:                                                                                                                                                           
+  ▎ - Default collapsed                                     
+  ▎ - When expanded, show N year inputs (where N = selected contract term) with % suffix, labeled "Year 1 escalator", etc. Use a compact grid.                                                                 
+  ▎ - Chevron rotates on expand                                                                                                                                                                                
+  ▎
+  ▎ The "At a glance" card (right rail, sticky on desktop)                                                                                                                                                     
+  ▎                                                         
+  ▎ Mirrors the Abridge Share card from Baseline for visual consistency:                                                                                                                                       
+  ▎                                                         
+  ▎ - White card, Abridge red left border accent (border-l-4 border-[#E8350A])                                                                                                                                 
+  ▎ - Small uppercase label: "AT A GLANCE"                  
+  ▎ - Contract window: Inter Semibold, "Apr 2024 → Apr 2027", muted line below: "36-month term"                                                                                                                
+  ▎ - Divider                                                                                                                                                                                                  
+  ▎ - Annualized spend: JetBrains Mono text-5xl Abridge red, computed from the current pricing model + unit price × (active users from Baseline) × 12 (or the appropriate formula per model)                   
+  ▎ - Small caption: "at current pricing"                                                                                                                                                                      
+  ▎ - Divider                                                                                                                                                                                                  
+  ▎ - Total over term: JetBrains Mono text-3xl, sum of annualized × years (simplified, no escalator compounding yet — engine handles that elsewhere)                                                           
+  ▎ - Small caption: "simple projection, before escalators"                                                                                                                                                    
+  ▎ - One-line insight at bottom (auto-generated):                                                                                                                                                             
+  ▎   - If pricing is perEncounter and totalOrgEncountersLTM × abridgeSharePct would exceed the entered contractEncounterLimit: "⚠ Current usage trajectory suggests you may hit the contract limit — model on 
+  ▎ the Dashboard"                                                                                                                                                                                             
+  ▎   - If pricing is perProvider and activeUsers < provisionedSeats × 0.7: "Active utilization is below 70% of provisioned — Dashboard will model adoption levers"                                            
+  ▎   - Otherwise: "Your current contract at a glance. Dashboard will model what-if scenarios."                                                                                                                
+  ▎                                                                                                                                                                                                            
+  ▎ What I want to see when this is done                                                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ - Visual language matches Screen 2 exactly — same card style, fonts, animation timing, background pattern, spacing                                                                                         
+  ▎ - Contract term pills feel confident, filled black when selected
+  ▎ - Picking a start date produces a live timeline visualization with today's position marked                                                                                                                 
+  ▎ - Pricing model is 5 visual tiles, not a dropdown — "Per Staffed Bed" tile is disabled when Nursing isn't selected                                                                                         
+  ▎ - Switching to perEncounter or hybrid smoothly reveals the extra nested sub-cards — no jarring pop-in                                                                                                      
+  ▎ - At-a-glance card shows live annualized spend and total-over-term numbers as you change inputs                                                                                                            
+  ▎ - Background pattern gives depth; entrance animation staggers                                                                                                                                              
+  ▎ - Nothing regressed on other screens   
