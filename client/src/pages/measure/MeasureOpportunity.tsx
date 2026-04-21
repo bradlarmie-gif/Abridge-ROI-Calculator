@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Download, Check, ArrowLeft } from "lucide-react";
+import { Download, Check, ArrowLeft, LineChart as LineChartIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -785,6 +785,37 @@ export default function MeasureOpportunity({
             <Download className="w-5 h-5" />
             {pdfLoading ? 'Generating...' : 'Download EBR Summary — PDF'}
           </Button>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.27 }}
+          className="mb-6"
+          data-testid="section-continue-forecast"
+        >
+          <Button
+            onClick={async () => {
+              try {
+                const { encodeStateToUrl } = await import('@/lib/measureUrlState');
+                const { registerMeasureSession } = await import('@/lib/measureSessionsRegistry');
+                registerMeasureSession(state);
+                sessionStorage.setItem('abridge_measure_to_forecast_v1', encodeStateToUrl(state));
+                window.location.href = '/forecast?source=measure';
+              } catch (err) {
+                console.error('Failed to hand off to Forecast', err);
+              }
+            }}
+            variant="outline"
+            className="w-full h-12 border-2 border-[#EA2C00] text-[#EA2C00] hover:bg-[#EA2C00] hover:text-white font-bold text-sm rounded-xl gap-2 transition-colors"
+            data-testid="button-continue-to-forecast"
+          >
+            <LineChartIcon className="w-4 h-4" />
+            Continue to Forecast — Model the road ahead
+          </Button>
+          <p className="text-xs text-[#999999] mt-2 text-center">
+            Internal Abridge tool · forecasts forward under different pricing scenarios
+          </p>
         </motion.div>
 
         <motion.div

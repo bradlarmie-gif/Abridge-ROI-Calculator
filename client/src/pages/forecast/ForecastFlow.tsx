@@ -8,12 +8,17 @@ import {
   getInitialForecastState,
   persistSession,
 } from "@/lib/forecastUrlState";
+import { convertMeasureToForecast } from "@/lib/measureToForecast";
+import { decodeStateFromUrl as decodeMeasureState } from "@/lib/measureUrlState";
+import { useToast } from "@/hooks/use-toast";
 import ForecastStart from "./ForecastStart";
 import ForecastBaseline from "./ForecastBaseline";
 import ForecastContract from "./ForecastContract";
 import ForecastDashboard from "./ForecastDashboard";
 
 export type ForecastPhase = "start" | "baseline" | "contract" | "results";
+
+const MEASURE_HANDOFF_KEY = "abridge_measure_to_forecast_v1";
 
 export const FORECAST_SETUP_STEPS: Array<{ phase: ForecastPhase; label: string }> = [
   { phase: "start", label: "Start" },
@@ -26,6 +31,7 @@ interface ForecastFlowProps {
 }
 
 export default function ForecastFlow({ onBackToJourney }: ForecastFlowProps) {
+  const { toast } = useToast();
   const [phase, setPhase] = useState<ForecastPhase>("start");
   const [state, setState] = useState<ForecastState>(() => getInitialForecastState());
 
@@ -33,6 +39,38 @@ export default function ForecastFlow({ onBackToJourney }: ForecastFlowProps) {
     if (window.location.search.includes("f=")) {
       clearUrlState();
     }
+    // Measure → Forecast handoff via sessionStorage + ?source=measure
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("source") === "measure") {
+      try {
+        const raw = sessionStorage.getItem(MEASURE_HANDOFF_KEY);
+        if (raw) {
+          const decoded = decodeMeasureState(raw);
+          if (decoded) {
+            const seeded = convertMeasureToForecast(decoded);
+            setState({ ...seeded, updatedAt: Date.now() });
+            setPhase("baseline");
+            toast({
+              title: "Imported from Measure",
+              description:
+                seeded.valueDrivers.length > 0
+                  ? `Seeded ${seeded.valueDrivers.length} measured driver${
+                      seeded.valueDrivers.length === 1 ? "" : "s"
+                    }.`
+                  : "Baseline seeded from your Measure session.",
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Measure handoff failed", err);
+      } finally {
+        sessionStorage.removeItem(MEASURE_HANDOFF_KEY);
+        const url = new URL(window.location.href);
+        url.searchParams.delete("source");
+        window.history.replaceState({}, "", url.pathname + (url.search || ""));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

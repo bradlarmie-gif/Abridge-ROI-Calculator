@@ -78,6 +78,28 @@ export function NetValueOverTime({ result, scenarios, contractStartDate }: Props
 
   const todayMonth = monthFromContractStart(contractStartDate);
 
+  if (scenarios.length === 0 && result.monthly.every((m) => {
+    const v = m.valueByDomain;
+    return v.capacity === 0 && v.revenue === 0 && v.workforce === 0 && v.quality === 0;
+  })) {
+    return (
+      <div
+        className="h-[320px] w-full flex items-center justify-center rounded border border-dashed border-neutral-200 bg-neutral-50/50"
+        data-testid="empty-state-net-value"
+      >
+        <div className="text-center max-w-xs px-6">
+          <p className="text-sm font-medium text-neutral-700 mb-1">
+            No value drivers yet
+          </p>
+          <p className="text-xs text-neutral-500 leading-relaxed">
+            Add value drivers in the left panel to project net value over time.
+            Right now this chart only shows pricing.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-[320px] w-full">
       <ResponsiveContainer>

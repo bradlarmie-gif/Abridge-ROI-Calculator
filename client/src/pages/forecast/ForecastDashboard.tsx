@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Download, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { calculateForecast } from "@/lib/forecastCalculator";
@@ -91,10 +92,19 @@ export default function ForecastDashboard({
               <h1 className="text-base font-semibold text-[#1A1A1A]">
                 Forecast Dashboard
               </h1>
-              <p className="text-xs text-neutral-500">
-                {state.partnerName || "Untitled partner"} ·{" "}
-                {state.contractTermMonths / 12} yr term
-              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <Input
+                  value={state.partnerName}
+                  onChange={(e) => updateState({ partnerName: e.target.value })}
+                  placeholder="Untitled partner"
+                  data-testid="input-dashboard-partner-name"
+                  className="h-7 text-xs px-2 py-0.5 w-56 border-transparent hover:border-neutral-200 focus:border-neutral-300 bg-transparent hover:bg-neutral-50 transition-colors"
+                />
+                <span className="text-xs text-neutral-400">·</span>
+                <span className="text-xs text-neutral-500 whitespace-nowrap">
+                  {state.contractTermMonths / 12} yr term
+                </span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -189,7 +199,7 @@ export default function ForecastDashboard({
         </div>
       </div>
 
-      <ExportDialog open={exportOpen} onOpenChange={setExportOpen} />
+      <ExportDialog open={exportOpen} onOpenChange={setExportOpen} state={state} />
     </div>
   );
 }

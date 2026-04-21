@@ -27,6 +27,14 @@ import {
   makeEmptyForecastState,
 } from "./types";
 import { listSavedForecasts } from "@/lib/forecastUrlState";
+import { decodeStateFromUrl as decodeMeasureState } from "@/lib/measureUrlState";
+import { resolveShortLink } from "@/lib/shortLinks";
+import { convertMeasureToForecast } from "@/lib/measureToForecast";
+import {
+  listRecentMeasureSessions,
+  decodeMeasureSession,
+  type MeasureSessionEntry,
+} from "@/lib/measureSessionsRegistry";
 import type { SavedForecast } from "./types";
 
 interface ForecastStartProps {
@@ -55,6 +63,10 @@ export default function ForecastStart({
   const [isResolving, setIsResolving] = useState(false);
 
   const savedForecasts = useMemo<SavedForecast[]>(() => listSavedForecasts(), [savedOpen]);
+  const recentMeasureSessions = useMemo<MeasureSessionEntry[]>(
+    () => listRecentMeasureSessions(),
+    [importOpen],
+  );
 
   const handleStartFromScratch = () => {
     const fresh = makeEmptyForecastState();
@@ -63,6 +75,34 @@ export default function ForecastStart({
     fresh.importSource = { type: "scratch" };
     replaceState(fresh);
     onNext();
+  };
+
+  const seedFromMeasureState = (
+    measurePayload: ReturnType<typeof decodeMeasureState>,
+    sourceLabel: string,
+  ) => {
+    if (!measurePayload) {
+      toast({
+        title: "Couldn't read Measure session",
+        description: "The link or session may be from an older version.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    const seeded = convertMeasureToForecast(measurePayload);
+    seeded.partnerNotes = state.partnerNotes;
+    if (state.partnerName && !seeded.partnerName) seeded.partnerName = state.partnerName;
+    replaceState(seeded);
+    toast({
+      title: "Imported from Measure",
+      description:
+        seeded.valueDrivers.length > 0
+          ? `${sourceLabel} · ${seeded.valueDrivers.length} measured driver${
+              seeded.valueDrivers.length === 1 ? "" : "s"
+            }`
+          : `${sourceLabel} · baseline seeded`,
+    });
+    return true;
   };
 
   const handleResolveShortLink = async () => {
@@ -76,25 +116,37 @@ export default function ForecastStart({
     }
     setIsResolving(true);
     try {
-      // STUB: real Measure import wiring lands in Phase 2
-      await new Promise((r) => setTimeout(r, 700));
+      const resolved = await resolveShortLink(shortLink.trim());
+      if (resolved.paramKey !== "measure_state") {
+        toast({
+          title: "That's not a Measure link",
+          description: `Expected measure_state, got ${resolved.paramKey}.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      const decoded = decodeMeasureState(resolved.payload);
+      if (seedFromMeasureState(decoded, "Resolved from short link")) {
+        setImportOpen(false);
+        setShortLink("");
+        onNext();
+      }
+    } catch (err) {
       toast({
-        title: "Measure import is coming in Phase 2",
-        description: "We saved your link reference — start with the manual flow for now.",
+        title: "Couldn't resolve link",
+        description: err instanceof Error ? err.message : "Please check the URL.",
+        variant: "destructive",
       });
-      const next = makeEmptyForecastState();
-      next.partnerName = state.partnerName;
-      next.importSource = {
-        type: "measure",
-        measureLink: shortLink.trim(),
-        importedAt: Date.now(),
-      };
-      replaceState(next);
-      setImportOpen(false);
-      setShortLink("");
-      onNext();
     } finally {
       setIsResolving(false);
+    }
+  };
+
+  const handleLoadRecentMeasure = (entry: MeasureSessionEntry) => {
+    const decoded = decodeMeasureSession(entry);
+    if (seedFromMeasureState(decoded, entry.partnerName)) {
+      setImportOpen(false);
+      onNext();
     }
   };
 
@@ -288,11 +340,37 @@ export default function ForecastStart({
               </div>
             </div>
 
-            <div className="rounded-md border border-dashed border-neutral-200 p-4 text-center">
-              <p className="text-xs text-neutral-500 mb-2">Recent Measure sessions</p>
-              <p className="text-xs text-neutral-400">
-                None on this device yet — Phase 2 will wire this up.
+            <div className="rounded-md border border-neutral-200 p-3">
+              <p className="text-[11px] uppercase font-medium text-[#666666] mb-2" style={{ letterSpacing: "1.5px" }}>
+                Recent Measure sessions
               </p>
+              {recentMeasureSessions.length === 0 ? (
+                <p className="text-xs text-neutral-400 py-2 text-center">
+                  None on this device yet — open a Measure session and we'll list it here.
+                </p>
+              ) : (
+                <div className="space-y-1.5 max-h-44 overflow-y-auto">
+                  {recentMeasureSessions.map((entry) => (
+                    <button
+                      key={entry.id}
+                      onClick={() => handleLoadRecentMeasure(entry)}
+                      className="w-full text-left bg-white hover:bg-neutral-50 border border-neutral-200 rounded px-3 py-2 transition-colors group flex items-center justify-between gap-2"
+                      data-testid={`row-recent-measure-${entry.id}`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-neutral-900 truncate">
+                          {entry.partnerName}
+                        </p>
+                        <p className="text-[11px] text-neutral-400">
+                          {entry.settings.join(" · ")} ·{" "}
+                          {new Date(entry.savedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-[#EA2C00] transition-colors flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter className="gap-2">

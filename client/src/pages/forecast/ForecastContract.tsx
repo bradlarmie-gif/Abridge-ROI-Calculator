@@ -120,6 +120,22 @@ export default function ForecastContract({
 
   const isHybrid = state.currentPricing.model === "hybrid";
 
+  const validationErrors: string[] = [];
+  if (startDate) {
+    const fiveYearsAgo = new Date();
+    fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+    if (startDate < fiveYearsAgo) {
+      validationErrors.push("Contract start date must be within the last 5 years.");
+    }
+  }
+  if (isEncounterMode && (!state.currentPricing.contractEncounterLimit || state.currentPricing.contractEncounterLimit <= 0)) {
+    validationErrors.push("Encounter-mode pricing requires a contract encounter limit.");
+  }
+  if (state.currentPricing.unitPrice <= 0) {
+    validationErrors.push("Unit price must be greater than 0.");
+  }
+  const canContinue = validationErrors.length === 0;
+
   const nursingDisabled = !state.careSettings.includes("nursing");
 
   const unitPriceLabel = PRICING_UNIT_LABELS[state.currentPricing.model];
@@ -442,6 +458,22 @@ export default function ForecastContract({
           </AnimatePresence>
         </div>
 
+        {validationErrors.length > 0 && (
+          <div
+            className="mt-8 rounded-md border border-red-200 bg-red-50 p-3"
+            data-testid="contract-validation-errors"
+          >
+            <p className="text-xs font-semibold text-red-700 mb-1.5 uppercase tracking-wide">
+              Fix before continuing
+            </p>
+            <ul className="text-sm text-red-800 space-y-0.5 list-disc pl-5">
+              {validationErrors.map((e, i) => (
+                <li key={i}>{e}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mt-12">
           <Button
             variant="outline"
@@ -452,8 +484,9 @@ export default function ForecastContract({
           </Button>
           <Button
             onClick={onNext}
+            disabled={!canContinue}
             data-testid="btn-contract-continue"
-            className="bg-[#EA2C00] hover:bg-[#C92500] text-white"
+            className="bg-[#EA2C00] hover:bg-[#C92500] text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue to Dashboard
             <ArrowRight className="w-4 h-4 ml-2" />
