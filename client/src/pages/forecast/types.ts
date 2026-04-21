@@ -45,6 +45,34 @@ export interface QuarterlyCurve {
 export type UtilizationCurve = QuarterlyCurve;
 export type EncounterShareCurve = QuarterlyCurve;
 
+export interface DriverClinicalInputs {
+  metricBefore?: number;
+  metricAfter?: number;
+  metricUnit?: string;
+  metricLabel?: string;
+  factor1Value?: number;
+  factor1Label?: string;
+  factor2Value?: number;
+  factor2Label?: string;
+  factor3Value?: number;
+  factor3Label?: string;
+  allocationPct?: number;
+  allocationLabel?: string;
+  formulaType?:
+    | "timeSavingsWorkforce"
+    | "timeSavingsCapacity"
+    | "workOutsideHoursReduction"
+    | "wrvuLift"
+    | "emLevelLift"
+    | "cmiLift"
+    | "retentionLift"
+    | "hccCapture"
+    | "denialReduction"
+    | "nursingOvertimeReduction"
+    | "losReduction"
+    | "customDollar";
+}
+
 export interface ForecastValueDriver {
   id: string;
   label: string;
@@ -65,6 +93,7 @@ export interface ForecastValueDriver {
   onset: DriverOnset;
   source?: "measure" | "manual";
   measuredDelta?: number;
+  clinicalInputs?: DriverClinicalInputs;
 }
 
 export interface ComparisonPricing {

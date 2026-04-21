@@ -1,0 +1,334 @@
+  Prompt 7 — Narrative Intelligence Layer
+                                                                                                                                                                                                               
+  Create a narrative intelligence layer for the Forecast dashboard that generates plain-English explanations of the numbers, updating live as assumptions change. This mirrors the pattern already used in
+  measureNarrative.ts in this codebase.                                                                                                                                                                        
+   
+  STEP 1: Create client/src/lib/forecastNarrative.ts                                                                                                                                                           
+                                                        
+  This file generates dynamic prose from forecast state and results:                                                                                                                                           
+                                                        
+  ```typescript                                                                                                                                                                                                
+  import type { ForecastState } from "@/pages/forecast/types";
+  import type { ForecastResult } from "./forecastCalculator";
+  import { fmtCurrencyShort } from "@/pages/forecast/dashboard/charts/shared";                                                                                                                                 
+  import { PRICING_MODEL_LABELS } from "@/pages/forecast/types";                                                                                                                                               
+                                                                                                                                                                                                               
+  function pluralize(n: number, word: string) {                                                                                                                                                                
+    return `${n} ${word}${n === 1 ? "" : "s"}`;                                                                                                                                                                
+  }                                                                                                                                                                                                            
+   
+  function monthLabel(m: number | null | undefined): string {                                                                                                                                                  
+    if (m == null) return "outside the contract term";  
+    if (m <= 6) return `Month ${m} — ahead of most deployments`;                                                                                                                                               
+    if (m <= 12) return `Month ${m} — within the first year`;                                                                                                                                                  
+    if (m <= 18) return `Month ${m}`;                                                                                                                                                                          
+    return `Month ${m} — in year ${Math.ceil(m / 12)}`;                                                                                                                                                        
+  }                                                                                                                                                                                                            
+                                                        
+  export interface ForecastNarrative {                                                                                                                                                                         
+    heroSummary: string;                                
+    breakEvenInsight: string;                                                                                                                                                                                  
+    pricingInsight: string;
+    adoptionInsight: string;                                                                                                                                                                                   
+    topLeverRecommendation: string;                     
+    bottomLine: string;                                                                                                                                                                                        
+    driverInsights: Record<string, string>;
+  }                                                                                                                                                                                                            
+                                                        
+  export function generateForecastNarrative(                                                                                                                                                                   
+    state: ForecastState,
+    result: ForecastResult                                                                                                                                                                                     
+  ): ForecastNarrative {                                
+    const partner = state.partnerName?.trim() || "this partner";
+    const termYears = state.contractTermMonths / 12;                                                                                                                                                           
+    const hasDrivers = state.valueDrivers.length > 0;                                                                                                                                                          
+    const fromMeasure = state.importSource?.type === "measure";                                                                                                                                                
+    const kpis = result.kpis;                                                                                                                                                                                  
+    const pricingLabel = PRICING_MODEL_LABELS[state.currentPricing.model];
+                                                                                                                                                                                                               
+    // Hero summary                                     
+    let heroSummary = "";                                                                                                                                                                                      
+    if (!hasDrivers) {                                                                                                                                                                                         
+      heroSummary = `${partner}'s ${termYears}-year contract totals ${fmtCurrencyShort(kpis.totalContractCost)} under ${pricingLabel} pricing. Add value drivers to model the full ROI picture.`;
+    } else if (kpis.roiMultiple >= 3) {                                                                                                                                                                        
+      heroSummary = `${partner} is projecting a ${kpis.roiMultiple.toFixed(1)}x return — ${fmtCurrencyShort(kpis.totalContractValue)} in modeled value against ${fmtCurrencyShort(kpis.totalContractCost)}     
+  invested over ${termYears} ${termYears === 1 ? "year" : "years"}.${fromMeasure ? " Built on measured outcomes, not estimates." : ""}`;                                                                       
+    } else if (kpis.roiMultiple >= 1.5) {                                                                                                                                                                      
+      heroSummary = `${partner} is on track to generate ${fmtCurrencyShort(kpis.netContractValue)} in net value over ${termYears} ${termYears === 1 ? "year" : "years"} — a ${kpis.roiMultiple.toFixed(1)}x    
+  return on their Abridge investment.`;                                                                                                                                                                        
+    } else if (kpis.roiMultiple >= 1) {
+      heroSummary = `${partner} reaches positive ROI but the margin is thin at ${kpis.roiMultiple.toFixed(1)}x. Explore pricing structures or adoption levers below to strengthen the case.`;                  
+    } else {                                                                                                                                                                                                   
+      heroSummary = `Under current assumptions, ${partner} does not reach positive ROI within the ${termYears}-year term. Adjust adoption pace, pricing model, or value driver assumptions to find the path    
+  forward.`;                                                                                                                                                                                                   
+    }                                                   
+                                                                                                                                                                                                               
+    // Break-even insight                               
+    let breakEvenInsight = "";
+    if (!hasDrivers) {
+      breakEvenInsight = "Add value drivers to calculate break-even.";
+    } else if (kpis.fullBreakEvenMonth != null) {                                                                                                                                                              
+      const monthsLeft = state.contractTermMonths - kpis.fullBreakEvenMonth;                                                                                                                                   
+      breakEvenInsight = `${partner} recovers their full investment at ${monthLabel(kpis.fullBreakEvenMonth)}, leaving ${pluralize(monthsLeft, "month")} of pure value creation before contract end.`;         
+    } else {                                                                                                                                                                                                   
+      breakEvenInsight = `Break-even doesn't occur within the ${termYears}-year term under current assumptions. Consider a longer contract, accelerated adoption, or a different pricing structure.`;          
+    }                                                                                                                                                                                                          
+                                                        
+    // Pricing insight                                                                                                                                                                                         
+    let pricingInsight = "";                            
+    if (state.comparisonPricing.length === 0) {
+      pricingInsight = `Currently modeled at ${pricingLabel}. Add an alternative pricing structure below to see the financial tradeoffs side by side.`;                                                        
+    } else {                                                                                                                                                                                                   
+      const bestAlt = result.comparisonResults?.reduce((best, c) => {                                                                                                                                          
+        if (!best) return c;                                                                                                                                                                                   
+        return (c.kpis?.netContractValue ?? 0) > (best.kpis?.netContractValue ?? 0) ? c : best;
+      }, result.comparisonResults[0]);                                                                                                                                                                         
+      if (bestAlt && bestAlt.kpis) {                                                                                                                                                                           
+        const diff = bestAlt.kpis.netContractValue - kpis.netContractValue;                                                                                                                                    
+        const altLabel = PRICING_MODEL_LABELS[state.comparisonPricing[0].pricing.model];                                                                                                                       
+        if (diff > 0) {                                                                                                                                                                                        
+          pricingInsight = `${altLabel} pricing generates ${fmtCurrencyShort(Math.abs(diff))} more in net value over ${termYears} years. Worth a conversation about restructuring the deal.`;                  
+        } else {                                                                                                                                                                                               
+          pricingInsight = `Current ${pricingLabel} pricing outperforms alternatives by ${fmtCurrencyShort(Math.abs(diff))} over the term. The existing structure is working in ${partner}'s favor.`;
+        }                                                                                                                                                                                                      
+      }                                                 
+    }                                                                                                                                                                                                          
+                                                        
+    // Adoption insight
+    const adoptionCurve = state.adoptionCurve;
+    let adoptionInsight = "";                                                                                                                                                                                  
+    const shareVals = state.encounterShareCurve.values;
+    const finalShare = shareVals.length > 0 ? shareVals[shareVals.length - 1] : 0;                                                                                                                             
+    const initialShare = shareVals.length > 0 ? shareVals[0] : 0;                                                                                                                                              
+    if (finalShare > initialShare * 1.3) {                                                                                                                                                                     
+      adoptionInsight = `Encounter share is projected to grow from ${initialShare.toFixed(0)}% to ${finalShare.toFixed(0)}% over the term — a ${((finalShare / initialShare - 1) * 100).toFixed(0)}% expansion 
+  in Abridge reach. This growth drives compounding value.`;                                                                                                                                                    
+    } else {                                            
+      adoptionInsight = `Encounter share is holding near ${initialShare.toFixed(0)}%. Modeling an expansion in coverage could significantly improve the long-term value story.`;                               
+    }                                                                                                                                                                                                          
+   
+    // Top lever recommendation                                                                                                                                                                                
+    let topLeverRecommendation = "";                    
+    if (!hasDrivers) {                                                                                                                                                                                         
+      topLeverRecommendation = "Import a Measure session or add value drivers to unlock lever recommendations.";
+    } else if (kpis.fullBreakEvenMonth == null) {                                                                                                                                                              
+      topLeverRecommendation = "The single biggest lever is adoption pace — increasing encounter share from " + initialShare.toFixed(0) + "% to " + Math.min(100, initialShare + 20).toFixed(0) + "% would
+  materially accelerate break-even. Try adjusting the encounter share curve in the Growth section.";                                                                                                           
+    } else if (kpis.roiMultiple < 2) {                  
+      const workforceDrivers = state.valueDrivers.filter(d => d.domain === "workforce");                                                                                                                       
+      const revenueDrivers = state.valueDrivers.filter(d => d.domain === "revenue");                                                                                                                           
+      if (revenueDrivers.length === 0) {                                                                                                                                                                       
+        topLeverRecommendation = "Adding a revenue driver — wRVU lift, E/M level improvement, or denial reduction — would meaningfully strengthen the ROI multiple. These tend to be the highest-value levers  
+  for outpatient.";                                                                                                                                                                                            
+      } else if (workforceDrivers.length === 0) {                                                                                                                                                              
+        topLeverRecommendation = "A workforce retention driver would add significant long-term value that compounds over the contract. Provider replacement costs ($150K–$300K per departure) make even small  
+  retention gains financially meaningful.";                                                                                                                                                                    
+      } else {
+        topLeverRecommendation = "The current model is solid. To push the multiple higher, revisit your realization rates — even moving from 70% to 80% realization adds meaningful value at scale.";          
+      }                                                                                                                                                                                                        
+    } else {
+      topLeverRecommendation = `The ROI story is compelling at ${kpis.roiMultiple.toFixed(1)}x. Focus the conversation on contract structure — specifically whether the current pricing model captures value   
+  fairly as ${partner} scales.`;                                                                                                                                                                               
+    }
+                                                                                                                                                                                                               
+    // Bottom line                                      
+    let bottomLine = "";
+    if (!hasDrivers) {
+      bottomLine = `Add value drivers to generate the executive summary.`;
+    } else {                                                                                                                                                                                                   
+      bottomLine = `Bottom line: ${heroSummary} ${breakEvenInsight} ${topLeverRecommendation}`;
+    }                                                                                                                                                                                                          
+                                                        
+    // Per-driver insights                                                                                                                                                                                     
+    const driverInsights: Record<string, string> = {};  
+    for (const d of state.valueDrivers) {
+      const ci = d.clinicalInputs;                                                                                                                                                                             
+      if (!ci) {
+        driverInsights[d.id] = `Estimated at ${fmtCurrencyShort(d.projectedDelta)} per ${d.scalingUnit === "perEncounter" ? "encounter" : d.scalingUnit === "perActiveUser" ? "active provider per month" :    
+  "unit"}.`;                                                                                                                                                                                                   
+        continue;
+      }                                                                                                                                                                                                        
+      switch (ci.formulaType) {                         
+        case "timeSavingsWorkforce": {
+          const minDelta = Math.abs((ci.metricAfter ?? 0) - (ci.metricBefore ?? 0));                                                                                                                           
+          const annualHrs = (minDelta / 60) * ((state.abridgeEncountersLTM || 0) / (state.activeUsersToday || 1));                                                                                             
+          driverInsights[d.id] = `Providers save ${minDelta.toFixed(0)} min/encounter — ${annualHrs.toFixed(0)} hours per provider per year returned from documentation.`;                                     
+          break;                                                                                                                                                                                               
+        }                                                                                                                                                                                                      
+        case "wrvuLift": {                                                                                                                                                                                     
+          const delta = Math.abs((ci.metricAfter ?? 0) - (ci.metricBefore ?? 0));
+          driverInsights[d.id] = `A ${delta.toFixed(2)} wRVU improvement per encounter at $${ci.factor1Value ?? 33}/wRVU. Better documentation captures work that was already being done.`;                    
+          break;                                                                                                                                                                                               
+        }                                                                                                                                                                                                      
+        case "timeSavingsCapacity": {                                                                                                                                                                          
+          const minDelta = Math.abs((ci.metricAfter ?? 0) - (ci.metricBefore ?? 0));
+          const extraVisits = ((minDelta / 60) / ((ci.factor1Value ?? 30) / 60));                                                                                                                              
+          driverInsights[d.id] = `${minDelta.toFixed(0)} min saved per encounter enables ~${extraVisits.toFixed(2)} additional visits per provider per encounter — at $${ci.factor2Value ?? 200}/visit.`;      
+          break;                                                                                                                                                                                               
+        }                                                                                                                                                                                                      
+        case "cmiLift": {                                                                                                                                                                                      
+          const delta = Math.abs((ci.metricAfter ?? 0) - (ci.metricBefore ?? 0));                                                                                                                              
+          driverInsights[d.id] = `A ${delta.toFixed(3)} CMI improvement reflects more complete inpatient documentation. Each CMI point is worth ~$${ci.factor1Value?.toLocaleString() ?? "1,500"} at scale.`;
+          break;                                                                                                                                                                                               
+        }                                               
+        case "retentionLift": {                                                                                                                                                                                
+          driverInsights[d.id] = `Reducing provider turnover avoids recruiting and onboarding costs estimated at $${(ci.factor1Value ?? 150000).toLocaleString()} per departure. Long-term, compounding
+  value.`;                                                                                                                                                                                                     
+          break;
+        }                                                                                                                                                                                                      
+        case "denialReduction": {                       
+          const delta = Math.abs((ci.metricAfter ?? 0) - (ci.metricBefore ?? 0));
+          driverInsights[d.id] = `A ${delta.toFixed(1)}pp improvement in clean claim rate at $${ci.factor1Value ?? 350} average claim value. Documentation quality directly reduces first-pass denials.`;      
+          break;                                                                                                                                                                                               
+        }                                                                                                                                                                                                      
+        case "emLevelLift": {                                                                                                                                                                                  
+          const delta = Math.abs((ci.metricAfter ?? 0) - (ci.metricBefore ?? 0));                                                                                                                              
+          driverInsights[d.id] = `A ${delta.toFixed(2)}-level improvement in average E/M coding. More complete notes support accurate level selection — this is revenue that was earned but not captured.`;    
+          break;                                                                                                                                                                                               
+        }                                                                                                                                                                                                      
+        default:                                                                                                                                                                                               
+          driverInsights[d.id] = `Contributing ${fmtCurrencyShort(d.projectedDelta)} per ${d.scalingUnit === "perEncounter" ? "encounter" : "unit"} to the ${d.domain} value domain.`;
+      }                                                                                                                                                                                                        
+    }
+                                                                                                                                                                                                               
+    return {                                            
+      heroSummary,
+      breakEvenInsight,
+      pricingInsight,                                                                                                                                                                                          
+      adoptionInsight,
+      topLeverRecommendation,                                                                                                                                                                                  
+      bottomLine,                                       
+      driverInsights,
+    };
+  }
+
+  export function generateCalibrationChangeSentence(                                                                                                                                                           
+    field: keyof ForecastCalibration,
+    oldVal: number,                                                                                                                                                                                            
+    newVal: number,                                                                                                                                                                                            
+    netValueDelta: number
+  ): string {                                                                                                                                                                                                  
+    const labels: Record<keyof ForecastCalibration, string> = {
+      otHourlyRate: "OT hourly rate",                                                                                                                                                                          
+      wrvuConversionFactor: "wRVU conversion factor",
+      revenuePerVisit: "revenue per visit",                                                                                                                                                                    
+      minutesPerVisit: "avg visit length",              
+      avgClaimValue: "avg claim value",                                                                                                                                                                        
+      nursingHourlyRate: "nursing hourly rate",                                                                                                                                                                
+      providerReplacementCost: "provider replacement cost",
+    };                                                                                                                                                                                                         
+    const dir = newVal > oldVal ? "↑" : "↓";            
+    const valSign = netValueDelta >= 0 ? "+" : "";                                                                                                                                                             
+    return `${labels[field]} ${dir} → net value ${valSign}${fmtCurrencyShort(netValueDelta)} over term`;                                                                                                       
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  STEP 2: Add a NarrativeBar component above the hero ROI card in ForecastDashboard.tsx                                                                                                                        
+                                                        
+  function NarrativeBar({                                                                                                                                                                                      
+    narrative,                                          
+    hasDrivers,
+  }: {
+    narrative: ForecastNarrative;
+    hasDrivers: boolean;                                                                                                                                                                                       
+  }) {
+    if (!hasDrivers) return null;                                                                                                                                                                              
+    return (                                            
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}                                                                                                                                                                         
+        className="bg-[#1A1A1A] text-white rounded-xl px-6 py-4 mb-4 flex items-start gap-4"
+        data-testid="narrative-bar"                                                                                                                                                                            
+      >                                                 
+        <TrendingUp className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />                                                                                                                                 
+        <p className="text-sm leading-relaxed text-white/90">                                                                                                                                                  
+          {narrative.heroSummary}                                                                                                                                                                              
+        </p>                                                                                                                                                                                                   
+      </motion.div>                                                                                                                                                                                            
+    );                                                  
+  }
+
+  STEP 3: Add a BottomLinePanel at the bottom of the dashboard (before ExportDialog)                                                                                                                           
+   
+  function BottomLinePanel({ narrative }: { narrative: ForecastNarrative }) {                                                                                                                                  
+    if (!narrative.heroSummary || narrative.heroSummary.includes("Add value")) return null;                                                                                                                    
+    return (                                                                                                                                                                                                   
+      <motion.section                                                                                                                                                                                          
+        initial={{ opacity: 0, y: 16 }}                                                                                                                                                                        
+        animate={{ opacity: 1, y: 0 }}                                                                                                                                                                         
+        className="rounded-xl border-2 border-[#EA2C00]/20 bg-white p-6 mb-8"
+        data-testid="section-bottom-line"                                                                                                                                                                      
+      >                                                                                                                                                                                                        
+        <p className="text-[11px] uppercase tracking-[2px] text-[#EA2C00] font-semibold mb-3">                                                                                                                 
+          Executive Summary · Ready to share                                                                                                                                                                   
+        </p>                                            
+        <p className="text-sm text-[#1A1A1A] leading-relaxed mb-4">                                                                                                                                            
+          {narrative.heroSummary}                                                                                                                                                                              
+        </p>
+        <p className="text-sm text-[#444444] leading-relaxed mb-4">                                                                                                                                            
+          {narrative.breakEvenInsight}                                                                                                                                                                         
+        </p>
+        <div className="border-t border-neutral-100 pt-4">                                                                                                                                                     
+          <p className="text-[11px] uppercase tracking-wide text-[#888888] font-semibold mb-2">                                                                                                                
+            Recommended next lever                                                                                                                                                                             
+          </p>                                                                                                                                                                                                 
+          <p className="text-sm text-[#444444] leading-relaxed">                                                                                                                                               
+            {narrative.topLeverRecommendation}                                                                                                                                                                 
+          </p>                                          
+        </div>
+      </motion.section>                                                                                                                                                                                        
+    );
+  }                                                                                                                                                                                                            
+                                                        
+  STEP 4: Add driver insight chips to each driver card
+
+  In the driver expansion panel (inside the map over state.valueDrivers), at the top of the expanded section — before the onset/scaling controls — add:                                                        
+   
+  {narrative.driverInsights[d.id] && (                                                                                                                                                                         
+    <p className="text-[11px] text-[#666666] italic leading-snug bg-[#FAF8F5] rounded px-3 py-2 mb-3">
+      {narrative.driverInsights[d.id]}                                                                                                                                                                         
+    </p>
+  )}                                                                                                                                                                                                           
+                                                        
+  Pass narrative down as a prop to the ValueDriversBlock component.                                                                                                                                            
+   
+  STEP 5: Add inline change notifications to CalibrationPanel                                                                                                                                                  
+                                                        
+  In the CalibrationPanel component (created in Prompt 6), track the previous net value before a calibration change. When updateCal is called, capture the old result.kpis.netContractValue, apply the update, 
+  then compute the new net value from the recalculated drivers, and display a temporary notification using generateCalibrationChangeSentence:
+                                                                                                                                                                                                               
+  Add state: const [lastChange, setLastChange] = useState<string | null>(null)                                                                                                                                 
+   
+  In updateCal, after updating state, set lastChange to the generated sentence, then clear it after 4 seconds using setTimeout.                                                                                
+                                                        
+  Render below the calibration grid:                                                                                                                                                                           
+  <AnimatePresence>                                     
+    {lastChange && (                                                                                                                                                                                           
+      <motion.p     
+        key={lastChange}                                                                                                                                                                                       
+        initial={{ opacity: 0, y: -4 }}                 
+        animate={{ opacity: 1, y: 0 }} 
+        exit={{ opacity: 0 }}                                                                                                                                                                                  
+        className="text-xs font-medium text-[#EA2C00] mt-3"
+      >                                                                                                                                                                                                        
+        {lastChange}                                                                                                                                                                                           
+      </motion.p>   
+    )}                                                                                                                                                                                                         
+  </AnimatePresence>                                    
+                    
+  STEP 6: Wire narrative generation into ForecastDashboard
+                                                                                                                                                                                                               
+  At the top of ForecastDashboard component, after the existing result useMemo, add:                                                                                                                           
+                                                                                                                                                                                                               
+  const narrative = useMemo(                                                                                                                                                                                   
+    () => generateForecastNarrative(state, result),                                                                                                                                                            
+    [state, result]
+  );                                                                                                                                                                                                           
+                                                        
+  Import generateForecastNarrative from "@/lib/forecastNarrative".                                                                                                                                             
+   
+  Then render:                                                                                                                                                                                                 
+  -  0} /> — above HeroROI                              
+  -  — near the bottom, above ExportDialog                                                                                                                                                                     
+  - Pass narrative to ValueDriversBlock for driver insight chips
+                                                                                                                                                                                                               
+  Keep all brand colors. The narrative text should feel confident and direct, not hedged or corporate. It's written for a sales rep to read aloud in a partner meeting

@@ -1,0 +1,235 @@
+                                                                                                                                       
+  Prompt 6 — Global Calibration Panel + Cascade Recalculation
+                                                                                                                                                                                                               
+  In the ROI Calculator Forecast path, add a global calibration settings panel to the dashboard that lets users adjust shared assumptions and automatically recalculates all affected drivers.
+                                                                                                                                                                                                               
+  STEP 1: Add calibration to ForecastState in client/src/pages/forecast/types.ts                                                                                                                               
+                                                                                                                                                                                                               
+  Add a new interface:                                                                                                                                                                                         
+  export interface ForecastCalibration {                
+    otHourlyRate: number;        // default 150
+    wrvuConversionFactor: number; // default 33
+    revenuePerVisit: number;     // default 200                                                                                                                                                                
+    minutesPerVisit: number;     // default 30 
+    avgClaimValue: number;       // default 350                                                                                                                                                                
+    nursingHourlyRate: number;   // default 50          
+    providerReplacementCost: number; // default 150000                                                                                                                                                         
+  }                                                     
+                                                                                                                                                                                                               
+  Add `calibration: ForecastCalibration` to the ForecastState interface.
+                                                                                                                                                                                                               
+  In makeEmptyForecastState(), set:                     
+  calibration: {                                                                                                                                                                                               
+    otHourlyRate: 150,                                                                                                                                                                                         
+    wrvuConversionFactor: 33,
+    revenuePerVisit: 200,                                                                                                                                                                                      
+    minutesPerVisit: 30,                                
+    avgClaimValue: 350, 
+    nursingHourlyRate: 50,
+    providerReplacementCost: 150000,                                                                                                                                                                           
+  },
+                                                                                                                                                                                                               
+  STEP 2: Add a cascade recalculation function          
+                                                                                                                                                                                                               
+  In client/src/pages/forecast/dashboard/recalculateDriver.ts (the file created in Prompt 5B), add a new exported function:                                                                                    
+                                                                                                                                                                                                               
+  ```typescript                                                                                                                                                                                                
+  export function recalculateAllDrivers(                
+    drivers: ForecastValueDriver[],                                                                                                                                                                            
+    calibration: ForecastCalibration                    
+  ): ForecastValueDriver[] {
+    return drivers.map((d) => {
+      if (!d.clinicalInputs?.formulaType || d.clinicalInputs.formulaType === 'customDollar') {                                                                                                                 
+        return d;                                                                                                                                                                                              
+      }                                                                                                                                                                                                        
+      // Sync calibration factors into the driver's clinicalInputs based on formulaType                                                                                                                        
+      let updatedCi = { ...d.clinicalInputs };                                                                                                                                                                 
+      switch (d.clinicalInputs.formulaType) {                                                                                                                                                                  
+        case 'timeSavingsWorkforce':                                                                                                                                                                           
+          updatedCi.factor1Value = calibration.otHourlyRate;                                                                                                                                                   
+          break;                                        
+        case 'timeSavingsCapacity':                                                                                                                                                                            
+          updatedCi.factor1Value = calibration.minutesPerVisit;                                                                                                                                                
+          updatedCi.factor2Value = calibration.revenuePerVisit;
+          break;                                                                                                                                                                                               
+        case 'wrvuLift':                                
+          updatedCi.factor1Value = calibration.wrvuConversionFactor;                                                                                                                                           
+          break;
+        case 'denialReduction':                                                                                                                                                                                
+          updatedCi.factor1Value = calibration.avgClaimValue;
+          break;                                                                                                                                                                                               
+        case 'nursingOvertimeReduction':
+          updatedCi.factor1Value = calibration.nursingHourlyRate;                                                                                                                                              
+          break;                                        
+        case 'retentionLift':
+          updatedCi.factor1Value = calibration.providerReplacementCost;                                                                                                                                        
+          break;
+      }                                                                                                                                                                                                        
+      const newDelta = recalculateProjectedDelta({ ...d, clinicalInputs: updatedCi });
+      return { ...d, clinicalInputs: updatedCi, projectedDelta: newDelta };                                                                                                                                    
+    });                                                                                                                                                                                                        
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  STEP 3: Add the Calibration Panel component to ForecastDashboard.tsx
+
+  Add a new component CalibrationPanel inside ForecastDashboard.tsx:                                                                                                                                           
+   
+  function CalibrationPanel({                                                                                                                                                                                  
+    state,                                              
+    updateState,                                                                                                                                                                                               
+  }: {
+    state: ForecastState;                                                                                                                                                                                      
+    updateState: (u: Partial<ForecastState>) => void;   
+  }) {
+    const [open, setOpen] = useState(false);
+    const cal = state.calibration;                                                                                                                                                                             
+   
+    const updateCal = (patch: Partial<ForecastCalibration>) => {                                                                                                                                               
+      const next = { ...cal, ...patch };                
+      const recalcedDrivers = recalculateAllDrivers(state.valueDrivers, next);                                                                                                                                 
+      updateState({ calibration: next, valueDrivers: recalcedDrivers });                                                                                                                                       
+    };
+                                                                                                                                                                                                               
+    return (                                            
+      <div className={`${CARD_BG} ${CARD_BORDER} rounded-xl mb-8`}>
+        <button                                                                                                                                                                                                
+          type="button"
+          onClick={() => setOpen(!open)}                                                                                                                                                                       
+          className="w-full flex items-center justify-between px-5 py-3.5 text-left"
+          data-testid="btn-calibration-toggle"                                                                                                                                                                 
+        >                                                                                                                                                                                                      
+          <div className="flex items-center gap-2.5">                                                                                                                                                          
+            <Settings className="w-3.5 h-3.5 text-[#888888]" />                                                                                                                                                
+            <span className="text-[11px] uppercase tracking-[2px] text-[#666666] font-semibold">                                                                                                               
+              Calibration Assumptions                                                                                                                                                                          
+            </span>                                                                                                                                                                                            
+            <span className="text-[10px] text-neutral-400 normal-case tracking-normal">                                                                                                                        
+              · changes cascade to all drivers                                                                                                                                                                 
+            </span>
+          </div>                                                                                                                                                                                               
+          <ChevronDown                                  
+            className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}                                                                                               
+          />                                                                                                                                                                                                   
+        </button>
+                                                                                                                                                                                                               
+        {open && (                                      
+          <div className="px-5 pb-5 border-t border-[#E8E2DA] pt-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">                                                                                                                                            
+              <CalField
+                label="OT hourly rate"                                                                                                                                                                         
+                unit="$/hr"                             
+                value={cal.otHourlyRate}                                                                                                                                                                       
+                onChange={(v) => updateCal({ otHourlyRate: v })}
+                tooltip="Used to value time savings allocated to workforce cost reduction"                                                                                                                     
+              />                                                                                                                                                                                               
+              <CalField                                                                                                                                                                                        
+                label="wRVU conversion"                                                                                                                                                                        
+                unit="$/wRVU"                           
+                value={cal.wrvuConversionFactor}
+                onChange={(v) => updateCal({ wrvuConversionFactor: v })}                                                                                                                                       
+                tooltip="Physician fee schedule conversion factor. CMS default ~$33"
+              />                                                                                                                                                                                               
+              <CalField                                 
+                label="Revenue per visit"                                                                                                                                                                      
+                unit="$/visit"                          
+                value={cal.revenuePerVisit}
+                onChange={(v) => updateCal({ revenuePerVisit: v })}                                                                                                                                            
+                tooltip="Average revenue per incremental patient visit (used for capacity drivers)"
+              />                                                                                                                                                                                               
+              <CalField                                 
+                label="Avg visit length"                                                                                                                                                                       
+                unit="min"                                                                                                                                                                                     
+                value={cal.minutesPerVisit}
+                onChange={(v) => updateCal({ minutesPerVisit: v })}                                                                                                                                            
+                tooltip="Average appointment length — determines how many extra visits freed time creates"
+              />                                                                                                                                                                                               
+              <CalField
+                label="Avg claim value"                                                                                                                                                                        
+                unit="$"                                
+                value={cal.avgClaimValue}                                                                                                                                                                      
+                onChange={(v) => updateCal({ avgClaimValue: v })}
+                tooltip="Average net claim value — used to calculate denial reduction impact"
+              />                                                                                                                                                                                               
+              <CalField
+                label="Nursing hourly rate"                                                                                                                                                                    
+                unit="$/hr"                                                                                                                                                                                    
+                value={cal.nursingHourlyRate}
+                onChange={(v) => updateCal({ nursingHourlyRate: v })}                                                                                                                                          
+                tooltip="Nursing hourly rate used for overtime reduction calculations"
+              />                                                                                                                                                                                               
+              <CalField
+                label="Provider replacement cost"                                                                                                                                                              
+                unit="$"                                
+                value={cal.providerReplacementCost}
+                onChange={(v) => updateCal({ providerReplacementCost: v })}
+                tooltip="Fully loaded cost to recruit and onboard a replacement physician (~$150K–$300K)"                                                                                                      
+              />                                                                                                                                                                                               
+            </div>                                                                                                                                                                                             
+            <p className="text-[10px] text-neutral-400 mt-4">                                                                                                                                                  
+              These are shared assumptions. Individual drivers can be fine-tuned by expanding them below.                                                                                                      
+            </p>                                                                                                                                                                                               
+          </div>                                                                                                                                                                                               
+        )}                                                                                                                                                                                                     
+      </div>                                                                                                                                                                                                   
+    );
+  }                                                                                                                                                                                                            
+                                                        
+  function CalField({
+    label, unit, value, onChange, tooltip,
+  }: {
+    label: string; unit: string; value: number;
+    onChange: (v: number) => void; tooltip: string;                                                                                                                                                            
+  }) {
+    return (                                                                                                                                                                                                   
+      <div className="space-y-1">                       
+        <div className="flex items-center gap-1">
+          <label className="text-[10px] uppercase tracking-wide text-neutral-500 font-medium">                                                                                                                 
+            {label}                                                                                                                                                                                            
+          </label>                                                                                                                                                                                             
+          <TooltipProvider>                                                                                                                                                                                    
+            <Tooltip>                                   
+              <TooltipTrigger asChild>
+                <Info className="w-3 h-3 text-neutral-300 cursor-help" />                                                                                                                                      
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[200px] text-xs">                                                                                                                                               
+                {tooltip}                                                                                                                                                                                      
+              </TooltipContent>
+            </Tooltip>                                                                                                                                                                                         
+          </TooltipProvider>                            
+        </div>
+        <div className="flex items-center gap-1.5">
+          <FormattedNumberInput                                                                                                                                                                                
+            value={value}
+            onChange={onChange}                                                                                                                                                                                
+            className="h-8 text-xs"                     
+          />                                                                                                                                                                                                   
+          <span className="text-[11px] text-neutral-400 flex-shrink-0">{unit}</span>
+        </div>                                                                                                                                                                                                 
+      </div>                                            
+    );                                                                                                                                                                                                         
+  }                                                     
+
+  Import Settings and Info from lucide-react at the top of the file.                                                                                                                                           
+   
+  STEP 4: Place the CalibrationPanel in the dashboard layout                                                                                                                                                   
+                                                        
+  In ForecastDashboard.tsx, render CalibrationPanel ABOVE the ValueDriversBlock section (after the PricingComparisonBlock and before ValueDriversBlock). Pass it state and updateState as props.               
+   
+  STEP 5: Sync calibration into measureToForecast.ts                                                                                                                                                           
+                                                        
+  In client/src/lib/measureToForecast.ts, the converted drivers already store clinicalInputs. But when a Forecast loads, make sure calibration values from the MeasureState are seeded into the ForecastState  
+  calibration object. At the end of the convertMeasureToForecast function, before the return statement, add:
+                                                                                                                                                                                                               
+  const calibration: ForecastCalibration = {            
+    otHourlyRate: m.calibration.otHourlyRate || 150,                                                                                                                                                           
+    wrvuConversionFactor: m.calibration.conversionFactor || 33,
+    revenuePerVisit: m.calibration.revenuePerVisit || 200,                                                                                                                                                     
+    minutesPerVisit: m.calibration.minutesPerVisit || 30,
+    avgClaimValue: 350,                                                                                                                                                                                        
+    nursingHourlyRate: 50,                              
+    providerReplacementCost: 150000,                                                                                                                                                                           
+  };                                                    
+
+  And include calibration in the returned state object.                                                                                                                                                        
+   
+  Keep all brand colors (#EA2C00, #1A1A1A, #FAF8F5, #E8E2DA). The panel should be collapsed by default so it doesn't distract from the KPI hero view, but is easily discoverable.   

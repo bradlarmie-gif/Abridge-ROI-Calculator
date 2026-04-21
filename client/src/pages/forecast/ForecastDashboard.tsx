@@ -89,6 +89,221 @@ const ALL_MODELS: PricingModel[] = [
   "hybrid",
 ];
 
+export function recalculateProjectedDelta(driver: ForecastValueDriver): number {
+  const ci = driver.clinicalInputs;
+  if (!ci || !ci.formulaType) return driver.projectedDelta;
+
+  const before = ci.metricBefore ?? 0;
+  const after = ci.metricAfter ?? 0;
+  const allocPct = (ci.allocationPct ?? 100) / 100;
+
+  // Directional improvement — clamp negative (worsening) to 0 so a deterioration
+  // never produces positive ROI. For metrics where higher = better (wRVU, E/M,
+  // CMI, HCC capture) improvement = after - before. For metrics where lower =
+  // better (time in notes, work outside hours, denial rate, OT, LOS)
+  // improvement = before - after.
+  const improvementHigherBetter = Math.max(0, after - before);
+  const improvementLowerBetter = Math.max(0, before - after);
+
+  switch (ci.formulaType) {
+    case "timeSavingsWorkforce": {
+      // (minutesDelta / 60) * hourlyRate * allocationPct
+      return (improvementLowerBetter / 60) * (ci.factor1Value ?? 150) * allocPct;
+    }
+    case "timeSavingsCapacity": {
+      // (minutesDelta / 60 / minutesPerVisit) * revenuePerVisit * allocationPct
+      const minPerVisit = Math.max(ci.factor1Value ?? 30, 1);
+      const revPerVisit = ci.factor2Value ?? 200;
+      return (improvementLowerBetter / 60 / minPerVisit) * revPerVisit * allocPct;
+    }
+    case "workOutsideHoursReduction": {
+      // Hours/week reduction → monthly $ per active user.
+      // (hrsPerWeekDelta * 52 / 12) * hourlyRate
+      return (improvementLowerBetter * 52 / 12) * (ci.factor1Value ?? 150);
+    }
+    case "wrvuLift":
+      return improvementHigherBetter * (ci.factor1Value ?? 33);
+    case "emLevelLift":
+      return improvementHigherBetter * (ci.factor1Value ?? 15);
+    case "cmiLift":
+      return improvementHigherBetter * (ci.factor1Value ?? 1500);
+    case "retentionLift":
+      // 3% lift × replacement cost ÷ 12 (monthly per user); no metric needed.
+      return (0.03 * (ci.factor1Value ?? 150_000)) / 12;
+    case "hccCapture":
+      return (improvementHigherBetter / 100) * (ci.factor1Value ?? 1200);
+    case "denialReduction":
+      return (improvementLowerBetter / 100) * (ci.factor1Value ?? 350);
+    case "nursingOvertimeReduction":
+      return improvementLowerBetter * (ci.factor1Value ?? 50) * 1.5;
+    case "losReduction":
+      return improvementLowerBetter * (ci.factor1Value ?? 2800);
+    default:
+      return driver.projectedDelta;
+  }
+}
+
+interface DriverTemplateDef {
+  id: string;
+  label: string;
+  formulaType?: import("./types").DriverClinicalInputs["formulaType"];
+  domain: ValueDomain;
+  onset: DriverOnset;
+  scaling: ScalingUnit;
+  defaultLabel: string;
+  category: ForecastValueDriver["category"];
+  metricLabel?: string;
+  metricUnit?: string;
+  factor1Label?: string;
+  factor1Value?: number;
+  factor2Label?: string;
+  factor2Value?: number;
+  allocationLabel?: string;
+  allocationPct?: number;
+}
+
+const DRIVER_TEMPLATES: DriverTemplateDef[] = [
+  {
+    id: "custom",
+    label: "Custom (enter dollar value directly)",
+    domain: "revenue",
+    onset: "delayed",
+    scaling: "perEncounter",
+    defaultLabel: "",
+    category: "documentation",
+  },
+  {
+    id: "timeSavingsWorkforce",
+    label: "Time savings → Cost reduction",
+    formulaType: "timeSavingsWorkforce",
+    domain: "workforce",
+    onset: "immediate",
+    scaling: "perEncounter",
+    defaultLabel: "Time saved on documentation",
+    category: "time",
+    metricLabel: "Minutes in note",
+    metricUnit: "min/encounter",
+    factor1Label: "OT hourly rate ($/hr)",
+    factor1Value: 150,
+    allocationLabel: "Allocated to cost savings",
+    allocationPct: 50,
+  },
+  {
+    id: "timeSavingsCapacity",
+    label: "Time savings → Patient access",
+    formulaType: "timeSavingsCapacity",
+    domain: "capacity",
+    onset: "delayed",
+    scaling: "perEncounter",
+    defaultLabel: "Throughput from time saved",
+    category: "time",
+    metricLabel: "Minutes in note",
+    metricUnit: "min/encounter",
+    factor1Label: "Minutes per visit",
+    factor1Value: 30,
+    factor2Label: "Revenue per visit ($)",
+    factor2Value: 200,
+    allocationLabel: "Allocated to new patient capacity",
+    allocationPct: 20,
+  },
+  {
+    id: "wrvuLift",
+    label: "wRVU improvement → Revenue",
+    formulaType: "wrvuLift",
+    domain: "revenue",
+    onset: "delayed",
+    scaling: "perEncounter",
+    defaultLabel: "wRVU lift per encounter",
+    category: "documentation",
+    metricLabel: "wRVU per encounter",
+    metricUnit: "wRVU/encounter",
+    factor1Label: "wRVU conversion factor ($/wRVU)",
+    factor1Value: 33,
+  },
+  {
+    id: "emLevelLift",
+    label: "E/M level improvement → Revenue",
+    formulaType: "emLevelLift",
+    domain: "revenue",
+    onset: "delayed",
+    scaling: "perEncounter",
+    defaultLabel: "E/M level improvement",
+    category: "documentation",
+    metricLabel: "E/M level",
+    metricUnit: "avg E/M level",
+    factor1Label: "Value per E/M level ($)",
+    factor1Value: 15,
+  },
+  {
+    id: "cmiLift",
+    label: "CMI improvement → Revenue (inpatient)",
+    formulaType: "cmiLift",
+    domain: "quality",
+    onset: "phased",
+    scaling: "perEncounter",
+    defaultLabel: "CMI improvement",
+    category: "documentation",
+    metricLabel: "Case-mix index",
+    metricUnit: "CMI points",
+    factor1Label: "Value per CMI point ($)",
+    factor1Value: 1500,
+  },
+  {
+    id: "hccCapture",
+    label: "HCC capture rate → Revenue",
+    formulaType: "hccCapture",
+    domain: "revenue",
+    onset: "phased",
+    scaling: "perEncounter",
+    defaultLabel: "HCC capture improvement",
+    category: "documentation",
+    metricLabel: "HCC capture rate",
+    metricUnit: "%",
+    factor1Label: "RAF value ($)",
+    factor1Value: 1200,
+  },
+  {
+    id: "denialReduction",
+    label: "Denial rate reduction → Revenue",
+    formulaType: "denialReduction",
+    domain: "revenue",
+    onset: "phased",
+    scaling: "perEncounter",
+    defaultLabel: "Denial rate reduction",
+    category: "documentation",
+    metricLabel: "Initial denial rate",
+    metricUnit: "% denial rate",
+    factor1Label: "Avg claim value ($)",
+    factor1Value: 350,
+  },
+  {
+    id: "retentionLift",
+    label: "Provider retention improvement",
+    formulaType: "retentionLift",
+    domain: "workforce",
+    onset: "longTerm",
+    scaling: "perActiveUser",
+    defaultLabel: "Provider retention lift",
+    category: "retention",
+    factor1Label: "Replacement cost per provider ($)",
+    factor1Value: 150_000,
+  },
+  {
+    id: "nursingOvertimeReduction",
+    label: "Nursing overtime reduction",
+    formulaType: "nursingOvertimeReduction",
+    domain: "workforce",
+    onset: "immediate",
+    scaling: "perBed",
+    defaultLabel: "Nursing overtime reduction",
+    category: "time",
+    metricLabel: "Overtime hours per nurse",
+    metricUnit: "hrs/month overtime",
+    factor1Label: "Nursing hourly rate ($/hr)",
+    factor1Value: 50,
+  },
+];
+
 const ATTRIBUTION_PRESETS = [
   { id: "conservative", label: "Conservative", confidence: 50, realization: 60 },
   { id: "standard", label: "Standard", confidence: 70, realization: 80 },
@@ -591,6 +806,158 @@ function ValueDriversBlock({
                 />
               </div>
             </div>
+
+            {/* Clinical inputs — shown when driver has formula-based inputs */}
+            {d.clinicalInputs?.formulaType &&
+              d.clinicalInputs.formulaType !== "customDollar" && (
+                <div
+                  className="mt-3 pt-3 border-t border-[#E8E2DA]"
+                  data-testid={`clinical-inputs-${d.id}`}
+                >
+                  <p className="text-[10px] uppercase tracking-widest text-[#999999] font-semibold mb-2">
+                    Adjust Inputs · recalculates live
+                  </p>
+                  <div className="space-y-2">
+                    {d.clinicalInputs.metricLabel && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-neutral-500 w-32 flex-shrink-0">
+                          {d.clinicalInputs.metricLabel} (before)
+                        </span>
+                        <FormattedNumberInput
+                          data-testid={`input-ci-before-${d.id}`}
+                          value={d.clinicalInputs.metricBefore ?? ""}
+                          onChange={(v) => {
+                            const newCi = { ...d.clinicalInputs!, metricBefore: v };
+                            updateDriver(d.id, {
+                              clinicalInputs: newCi,
+                              projectedDelta: recalculateProjectedDelta({
+                                ...d,
+                                clinicalInputs: newCi,
+                              }),
+                            });
+                          }}
+                          step={0.01}
+                          className="h-7 text-xs w-24 bg-white border-[#E8E2DA]"
+                        />
+                        <span className="text-[11px] text-neutral-400">
+                          {d.clinicalInputs.metricUnit}
+                        </span>
+                      </div>
+                    )}
+                    {d.clinicalInputs.metricLabel && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-neutral-500 w-32 flex-shrink-0">
+                          {d.clinicalInputs.metricLabel} (after)
+                        </span>
+                        <FormattedNumberInput
+                          data-testid={`input-ci-after-${d.id}`}
+                          value={d.clinicalInputs.metricAfter ?? ""}
+                          onChange={(v) => {
+                            const newCi = { ...d.clinicalInputs!, metricAfter: v };
+                            updateDriver(d.id, {
+                              clinicalInputs: newCi,
+                              projectedDelta: recalculateProjectedDelta({
+                                ...d,
+                                clinicalInputs: newCi,
+                              }),
+                            });
+                          }}
+                          step={0.01}
+                          className="h-7 text-xs w-24 bg-white border-[#E8E2DA]"
+                        />
+                        <span className="text-[11px] text-neutral-400">
+                          {d.clinicalInputs.metricUnit}
+                        </span>
+                      </div>
+                    )}
+                    {d.clinicalInputs.factor1Label && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-neutral-500 w-32 flex-shrink-0">
+                          {d.clinicalInputs.factor1Label}
+                        </span>
+                        <FormattedNumberInput
+                          data-testid={`input-ci-factor1-${d.id}`}
+                          value={d.clinicalInputs.factor1Value ?? ""}
+                          onChange={(v) => {
+                            const newCi = { ...d.clinicalInputs!, factor1Value: v };
+                            updateDriver(d.id, {
+                              clinicalInputs: newCi,
+                              projectedDelta: recalculateProjectedDelta({
+                                ...d,
+                                clinicalInputs: newCi,
+                              }),
+                            });
+                          }}
+                          step={0.01}
+                          className="h-7 text-xs w-24 bg-white border-[#E8E2DA]"
+                        />
+                      </div>
+                    )}
+                    {d.clinicalInputs.factor2Label && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-neutral-500 w-32 flex-shrink-0">
+                          {d.clinicalInputs.factor2Label}
+                        </span>
+                        <FormattedNumberInput
+                          data-testid={`input-ci-factor2-${d.id}`}
+                          value={d.clinicalInputs.factor2Value ?? ""}
+                          onChange={(v) => {
+                            const newCi = { ...d.clinicalInputs!, factor2Value: v };
+                            updateDriver(d.id, {
+                              clinicalInputs: newCi,
+                              projectedDelta: recalculateProjectedDelta({
+                                ...d,
+                                clinicalInputs: newCi,
+                              }),
+                            });
+                          }}
+                          step={0.01}
+                          className="h-7 text-xs w-24 bg-white border-[#E8E2DA]"
+                        />
+                      </div>
+                    )}
+                    {d.clinicalInputs.allocationLabel && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-neutral-500 w-32 flex-shrink-0">
+                          {d.clinicalInputs.allocationLabel}
+                        </span>
+                        <FormattedNumberInput
+                          data-testid={`input-ci-alloc-${d.id}`}
+                          value={d.clinicalInputs.allocationPct ?? ""}
+                          onChange={(v) => {
+                            const newCi = {
+                              ...d.clinicalInputs!,
+                              allocationPct: Math.min(100, Math.max(0, v)),
+                            };
+                            updateDriver(d.id, {
+                              clinicalInputs: newCi,
+                              projectedDelta: recalculateProjectedDelta({
+                                ...d,
+                                clinicalInputs: newCi,
+                              }),
+                            });
+                          }}
+                          step={1}
+                          className="h-7 text-xs w-24 bg-white border-[#E8E2DA]"
+                        />
+                        <span className="text-[11px] text-neutral-400">%</span>
+                      </div>
+                    )}
+                    <div className="pt-2 border-t border-[#E8E2DA]">
+                      <p className="text-[11px] text-neutral-500">
+                        Calculated value:{" "}
+                        <span
+                          className="font-semibold text-[#EA2C00]"
+                          data-testid={`text-ci-calc-${d.id}`}
+                        >
+                          {fmtCurrencyShort(recalculateProjectedDelta(d))} /{" "}
+                          {SCALING_UNIT_LABELS[d.scalingUnit]}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
           </div>
           );
         })}
@@ -656,20 +1023,104 @@ function AddDriverDialog({
   onOpenChange: (b: boolean) => void;
   onSave: (d: ForecastValueDriver) => void;
 }) {
+  const [templateId, setTemplateId] = useState<string>("custom");
+  const template = useMemo(
+    () => DRIVER_TEMPLATES.find((t) => t.id === templateId) ?? DRIVER_TEMPLATES[0],
+    [templateId],
+  );
+  const isCustom = templateId === "custom";
+
   const [label, setLabel] = useState("");
   const [domain, setDomain] = useState<ValueDomain>("revenue");
   const [onset, setOnset] = useState<DriverOnset>("delayed");
   const [scalingUnit, setScalingUnit] = useState<ScalingUnit>("perEncounter");
+  // Custom-only fields
   const [baselineValue, setBaselineValue] = useState(0);
   const [measuredValue, setMeasuredValue] = useState(0);
   const [conversionFactor, setConversionFactor] = useState(0);
   const [unitLabel, setUnitLabel] = useState("");
+  // Formula-based fields
+  const [metricBefore, setMetricBefore] = useState<number>(0);
+  const [metricAfter, setMetricAfter] = useState<number>(0);
+  const [factor1Value, setFactor1Value] = useState<number>(0);
+  const [factor2Value, setFactor2Value] = useState<number>(0);
+  const [allocationPct, setAllocationPct] = useState<number>(100);
+  // Common
   const [attribution, setAttribution] = useState(62);
   const [realization, setRealization] = useState(80);
 
-  const delta = measuredValue - baselineValue;
-  const projectedDelta = delta * conversionFactor;
-  const canSave = label.trim().length > 0 && conversionFactor > 0 && Math.abs(delta) > 0;
+  const applyTemplate = (id: string) => {
+    setTemplateId(id);
+    const t = DRIVER_TEMPLATES.find((x) => x.id === id) ?? DRIVER_TEMPLATES[0];
+    setLabel(t.defaultLabel);
+    setDomain(t.domain);
+    setOnset(t.onset);
+    setScalingUnit(t.scaling);
+    setMetricBefore(0);
+    setMetricAfter(0);
+    setFactor1Value(t.factor1Value ?? 0);
+    setFactor2Value(t.factor2Value ?? 0);
+    setAllocationPct(t.allocationPct ?? 100);
+    if (id === "custom") {
+      setBaselineValue(0);
+      setMeasuredValue(0);
+      setConversionFactor(0);
+      setUnitLabel("");
+    }
+  };
+
+  // Live preview for formula-based templates
+  const previewClinical = useMemo<import("./types").DriverClinicalInputs | undefined>(() => {
+    if (isCustom || !template.formulaType) return undefined;
+    return {
+      metricBefore,
+      metricAfter,
+      metricUnit: template.metricUnit,
+      metricLabel: template.metricLabel,
+      factor1Value,
+      factor1Label: template.factor1Label,
+      factor2Value: template.factor2Label ? factor2Value : undefined,
+      factor2Label: template.factor2Label,
+      allocationPct: template.allocationLabel ? allocationPct : undefined,
+      allocationLabel: template.allocationLabel,
+      formulaType: template.formulaType,
+    };
+  }, [isCustom, template, metricBefore, metricAfter, factor1Value, factor2Value, allocationPct]);
+
+  const previewProjected = useMemo(() => {
+    if (isCustom) return Math.abs((measuredValue - baselineValue) * conversionFactor);
+    if (!previewClinical) return 0;
+    return recalculateProjectedDelta({
+      id: "preview",
+      label: "preview",
+      domain,
+      category: template.category,
+      scalingUnit,
+      projectedDelta: 0,
+      confidence: attribution,
+      realizationPct: realization,
+      onset,
+      clinicalInputs: previewClinical,
+    });
+  }, [
+    isCustom,
+    measuredValue,
+    baselineValue,
+    conversionFactor,
+    previewClinical,
+    domain,
+    template.category,
+    scalingUnit,
+    attribution,
+    realization,
+    onset,
+  ]);
+
+  const canSave = isCustom
+    ? label.trim().length > 0 &&
+      conversionFactor > 0 &&
+      Math.abs(measuredValue - baselineValue) > 0
+    : label.trim().length > 0 && previewProjected > 0;
 
   const fmtPreview = (n: number) => {
     if (!Number.isFinite(n) || n === 0) return "—";
@@ -677,75 +1128,274 @@ function AddDriverDialog({
     return `$${n.toFixed(2)}`;
   };
 
+  const resetForm = () => {
+    setTemplateId("custom");
+    setLabel("");
+    setBaselineValue(0);
+    setMeasuredValue(0);
+    setConversionFactor(0);
+    setUnitLabel("");
+    setMetricBefore(0);
+    setMetricAfter(0);
+    setFactor1Value(0);
+    setFactor2Value(0);
+    setAllocationPct(100);
+  };
+
   const handleSave = () => {
     if (!canSave) return;
-    onSave({
-      id: `drv-${Date.now().toString(36)}`,
-      label: label.trim(),
-      domain,
-      category: "documentation",
-      scalingUnit,
-      baselineValue,
-      measuredValue,
-      conversionFactor,
-      unitLabel: unitLabel.trim() || undefined,
-      projectedDelta: Math.abs(projectedDelta),
-      confidence: attribution,
-      realizationPct: realization,
-      onset,
-      source: "manual",
-    });
-    setLabel(""); setBaselineValue(0); setMeasuredValue(0); setConversionFactor(0); setUnitLabel("");
+    if (isCustom) {
+      const delta = measuredValue - baselineValue;
+      onSave({
+        id: `drv-${Date.now().toString(36)}`,
+        label: label.trim(),
+        domain,
+        category: "documentation",
+        scalingUnit,
+        baselineValue,
+        measuredValue,
+        conversionFactor,
+        unitLabel: unitLabel.trim() || undefined,
+        projectedDelta: Math.abs(delta * conversionFactor),
+        confidence: attribution,
+        realizationPct: realization,
+        onset,
+        source: "manual",
+      });
+    } else {
+      onSave({
+        id: `drv-${Date.now().toString(36)}`,
+        label: label.trim() || template.defaultLabel,
+        domain,
+        category: template.category,
+        scalingUnit,
+        baselineValue: metricBefore,
+        measuredValue: metricAfter,
+        unitLabel: template.metricUnit,
+        projectedDelta: previewProjected,
+        confidence: attribution,
+        realizationPct: realization,
+        onset,
+        source: "manual",
+        clinicalInputs: previewClinical,
+      });
+    }
+    resetForm();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" data-testid="dialog-add-driver">
+      <DialogContent
+        className="sm:max-w-md max-h-[85vh] overflow-y-auto"
+        data-testid="dialog-add-driver"
+      >
         <DialogHeader>
           <DialogTitle>Add value driver</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          <div className="space-y-1">
+            <Label className="text-xs uppercase tracking-wide">Template</Label>
+            <Select value={templateId} onValueChange={applyTemplate}>
+              <SelectTrigger
+                className="h-8 text-xs"
+                data-testid="select-driver-template"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DRIVER_TEMPLATES.map((t) => (
+                  <SelectItem key={t.id} value={t.id} data-testid={`option-template-${t.id}`}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {!isCustom && (
+              <p className="text-[10px] text-neutral-500">
+                Inputs auto-calculate the dollar value using the {template.label.toLowerCase()} formula.
+              </p>
+            )}
+          </div>
+
           <div className="space-y-1">
             <Label className="text-xs uppercase tracking-wide">Driver name</Label>
             <Input
               data-testid="input-new-driver-label"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder="e.g. wRVU per encounter"
+              placeholder={template.defaultLabel || "e.g. wRVU per encounter"}
               autoFocus
             />
           </div>
 
-          <div className="rounded-md bg-[#FAF8F5] border border-[#E8E2DA] p-3 space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#EA2C00]">Partner's measured data</p>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase tracking-wide text-neutral-500">Before Abridge</Label>
-                <FormattedNumberInput data-testid="input-baseline" value={baselineValue || ""} onChange={setBaselineValue} step={0.01} placeholder="0.00" className="h-8 text-sm" />
+          {isCustom ? (
+            <div className="rounded-md bg-[#FAF8F5] border border-[#E8E2DA] p-3 space-y-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#EA2C00]">
+                Partner&apos;s measured data
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
+                    Before Abridge
+                  </Label>
+                  <FormattedNumberInput
+                    data-testid="input-baseline"
+                    value={baselineValue || ""}
+                    onChange={setBaselineValue}
+                    step={0.01}
+                    placeholder="0.00"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
+                    After Abridge
+                  </Label>
+                  <FormattedNumberInput
+                    data-testid="input-measured"
+                    value={measuredValue || ""}
+                    onChange={setMeasuredValue}
+                    step={0.01}
+                    placeholder="0.00"
+                    className="h-8 text-sm"
+                  />
+                </div>
               </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase tracking-wide text-neutral-500">After Abridge</Label>
-                <FormattedNumberInput data-testid="input-measured" value={measuredValue || ""} onChange={setMeasuredValue} step={0.01} placeholder="0.00" className="h-8 text-sm" />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
+                    Conversion factor ($/unit)
+                  </Label>
+                  <FormattedNumberInput
+                    data-testid="input-conversion"
+                    value={conversionFactor || ""}
+                    onChange={setConversionFactor}
+                    step={0.01}
+                    placeholder="e.g. 33 for $/wRVU"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
+                    Unit label
+                  </Label>
+                  <Input
+                    value={unitLabel}
+                    onChange={(e) => setUnitLabel(e.target.value)}
+                    placeholder="e.g. wRVU/enc"
+                    className="h-8 text-sm"
+                  />
+                </div>
               </div>
+              {Math.abs(measuredValue - baselineValue) > 0 && conversionFactor > 0 && (
+                <div className="rounded border border-[#E8E2DA] bg-white px-3 py-2">
+                  <p className="text-[11px] text-neutral-500">
+                    Δ {(measuredValue - baselineValue) >= 0 ? "+" : ""}
+                    {(measuredValue - baselineValue).toFixed(2)} {unitLabel} × $
+                    {conversionFactor.toFixed(2)} ={" "}
+                    <span className="font-bold text-[#EA2C00]">
+                      {fmtPreview(previewProjected)}
+                    </span>{" "}
+                    per {SCALING_UNIT_LABELS[scalingUnit]}
+                  </p>
+                </div>
+              )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase tracking-wide text-neutral-500">Conversion factor ($/unit)</Label>
-                <FormattedNumberInput data-testid="input-conversion" value={conversionFactor || ""} onChange={setConversionFactor} step={0.01} placeholder="e.g. 33 for $/wRVU" className="h-8 text-sm" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase tracking-wide text-neutral-500">Unit label</Label>
-                <Input value={unitLabel} onChange={(e) => setUnitLabel(e.target.value)} placeholder="e.g. wRVU/enc" className="h-8 text-sm" />
-              </div>
+          ) : (
+            <div className="rounded-md bg-[#FAF8F5] border border-[#E8E2DA] p-3 space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#EA2C00]">
+                Clinical inputs
+              </p>
+              {template.metricLabel && (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
+                        {template.metricLabel} (before)
+                      </Label>
+                      <FormattedNumberInput
+                        data-testid="input-template-before"
+                        value={metricBefore || ""}
+                        onChange={setMetricBefore}
+                        step={0.01}
+                        placeholder="0.00"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
+                        {template.metricLabel} (after)
+                      </Label>
+                      <FormattedNumberInput
+                        data-testid="input-template-after"
+                        value={metricAfter || ""}
+                        onChange={setMetricAfter}
+                        step={0.01}
+                        placeholder="0.00"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </div>
+                  {template.metricUnit && (
+                    <p className="text-[10px] text-neutral-400">Units: {template.metricUnit}</p>
+                  )}
+                </>
+              )}
+              {template.factor1Label && (
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
+                    {template.factor1Label}
+                  </Label>
+                  <FormattedNumberInput
+                    data-testid="input-template-factor1"
+                    value={factor1Value || ""}
+                    onChange={setFactor1Value}
+                    step={0.01}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              )}
+              {template.factor2Label && (
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
+                    {template.factor2Label}
+                  </Label>
+                  <FormattedNumberInput
+                    data-testid="input-template-factor2"
+                    value={factor2Value || ""}
+                    onChange={setFactor2Value}
+                    step={0.01}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              )}
+              {template.allocationLabel && (
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
+                    {template.allocationLabel} (%)
+                  </Label>
+                  <FormattedNumberInput
+                    data-testid="input-template-allocation"
+                    value={allocationPct || ""}
+                    onChange={(v) => setAllocationPct(Math.min(100, Math.max(0, v)))}
+                    step={1}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              )}
+              {previewProjected > 0 && (
+                <div className="rounded border border-[#E8E2DA] bg-white px-3 py-2">
+                  <p className="text-[11px] text-neutral-500">
+                    Calculated value:{" "}
+                    <span className="font-bold text-[#EA2C00]">
+                      {fmtPreview(previewProjected)}
+                    </span>{" "}
+                    per {SCALING_UNIT_LABELS[scalingUnit]}
+                  </p>
+                </div>
+              )}
             </div>
-            {Math.abs(delta) > 0 && conversionFactor > 0 && (
-              <div className="rounded border border-[#E8E2DA] bg-white px-3 py-2">
-                <p className="text-[11px] text-neutral-500">
-                  Δ {delta >= 0 ? "+" : ""}{delta.toFixed(2)} {unitLabel} × ${conversionFactor.toFixed(2)} = <span className="font-bold text-[#EA2C00]">{fmtPreview(projectedDelta)}</span> per {SCALING_UNIT_LABELS[scalingUnit]}
-                </p>
-              </div>
-            )}
-          </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
