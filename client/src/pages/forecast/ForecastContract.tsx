@@ -172,7 +172,7 @@ export default function ForecastContract({
     }
     if (model === "hybrid" && !next.secondaryModel) {
       next.secondaryModel = "perEncounter";
-      next.secondaryUnitPrice = next.secondaryUnitPrice ?? 1;
+      next.secondaryUnitPrice = next.secondaryUnitPrice ?? 0;
     }
     updateState({ currentPricing: next });
   };

@@ -177,7 +177,7 @@ export default function ForecastDashboard({
                 onChange={(e) => updateState({ partnerName: e.target.value })}
                 placeholder="Untitled partner"
                 data-testid="input-dashboard-partner-name"
-                className="h-7 text-sm font-semibold px-2 py-0.5 w-56 border-transparent hover:border-neutral-200 focus:border-neutral-300 bg-transparent hover:bg-neutral-50 transition-colors"
+                className="h-7 text-sm font-semibold px-2 py-0.5 w-56 border-transparent hover:border-[#E8E2DA] focus:border-[#CCCCCC] bg-transparent hover:bg-[#FAF8F5] transition-colors"
               />
               <div className="flex items-center gap-2 mt-0.5 px-2">
                 <span
@@ -231,6 +231,11 @@ export default function ForecastDashboard({
         </motion.h1>
 
         {/* Hero ROI card */}
+        {state.valueDrivers.length === 0 && (
+          <p className="text-xs text-[#999999] mb-2" data-testid="text-cost-comparison-hint">
+            Cost comparison active — add value drivers to see ROI
+          </p>
+        )}
         <HeroROI result={result} state={state} />
 
         {/* Value Drivers */}
@@ -298,6 +303,8 @@ function HeroROI({ result, state }: { result: ForecastResult; state: ForecastSta
     : fullBreakEvenMonth != null
       ? `Month ${fullBreakEvenMonth}`
       : "Not within term";
+  const ncvDisplay = hasDrivers ? fmtCurrencyShort(ncv) : "—";
+  const roiDisplay = hasDrivers ? `${roi.toFixed(2)}×` : "—";
   const pricingLabel = PRICING_MODEL_LABELS[state.currentPricing.model];
 
   return (
@@ -327,10 +334,10 @@ function HeroROI({ result, state }: { result: ForecastResult; state: ForecastSta
           <p className="text-[10px] uppercase tracking-widest text-white/50 mb-1">Net Value</p>
           <p
             className="text-xl md:text-2xl font-bold font-abridge"
-            style={{ color: ncv < 0 ? "#FF6B6B" : ACCENT }}
+            style={{ color: hasDrivers && ncv < 0 ? "#FF6B6B" : ACCENT }}
             data-testid="text-hero-ncv"
           >
-            {fmtCurrencyShort(ncv)}
+            {ncvDisplay}
           </p>
         </div>
         <div>
@@ -340,7 +347,7 @@ function HeroROI({ result, state }: { result: ForecastResult; state: ForecastSta
             style={{ color: ACCENT }}
             data-testid="text-hero-roi"
           >
-            {roi.toFixed(2)}×
+            {roiDisplay}
           </p>
         </div>
         <div>

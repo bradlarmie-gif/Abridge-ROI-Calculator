@@ -82,7 +82,7 @@ export function ContractPricingSection({ state, updateState }: Props) {
     }
     if (model === "hybrid" && !next.secondaryModel) {
       next.secondaryModel = "perEncounter";
-      next.secondaryUnitPrice = next.secondaryUnitPrice ?? 1;
+      next.secondaryUnitPrice = next.secondaryUnitPrice ?? 0;
     }
     updateState({ currentPricing: next });
   };
@@ -129,17 +129,10 @@ export function ContractPricingSection({ state, updateState }: Props) {
         label: `Switch to ${PRICING_MODEL_LABELS[m]}`,
         pricing: {
           model: m,
-          unitPrice: m === "annualFlat" ? 500_000 : m === "perEncounter" ? 5 : m === "perStaffedBed" ? 150 : 200,
+          unitPrice: 0,
           yearlyEscalators: [0, 0, 0, 0, 0],
-          ...(m === "perEncounter" || m === "hybrid"
-            ? {
-                contractEncounterLimit: 500_000,
-                capacityCeiling: 600_000,
-                overageRate: 8,
-              }
-            : {}),
           ...(m === "hybrid"
-            ? { secondaryModel: "perEncounter", secondaryUnitPrice: 1 }
+            ? { secondaryModel: "perEncounter", secondaryUnitPrice: 0 }
             : {}),
         },
       };

@@ -71,6 +71,7 @@ export function ProvisionedActiveSection({ state, updateState }: Props) {
     <SectionShell
       title="Provisioned vs. Active"
       icon={<Users className="w-4 h-4" />}
+      defaultOpen
       testId="section-provisioned-active"
     >
       <div className="space-y-2">

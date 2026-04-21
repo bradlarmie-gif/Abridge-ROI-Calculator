@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { TrendingUp } from "lucide-react";
+import { useMemo, useState } from "react";
+import { TrendingUp, ChevronRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -15,6 +15,23 @@ interface Props {
 export function AdoptionGrowthSection({ state, updateState }: Props) {
   const termYears = state.contractTermMonths / 12;
   const growth = state.historicalGrowthMonthly[0] ?? 4;
+  const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
+
+  const toggleYear = (yIdx: number) => {
+    setExpandedYears((prev) => {
+      const next = new Set(prev);
+      if (next.has(yIdx)) next.delete(yIdx);
+      else next.add(yIdx);
+      return next;
+    });
+  };
+
+  const setShareForQuarter = (yIdx: number, qIdx: number, pct: number) => {
+    const next = [...state.encounterShareCurve.values];
+    const idx = yIdx * 4 + qIdx;
+    if (idx < next.length) next[idx] = pct;
+    updateState({ encounterShareCurve: { values: next } });
+  };
 
   const shareByYear = useMemo(() => {
     const out: number[] = [];
@@ -138,22 +155,63 @@ export function AdoptionGrowthSection({ state, updateState }: Props) {
         <Label className="text-[10px] uppercase tracking-wide text-neutral-500">
           Abridge encounter share by year (%)
         </Label>
-        {shareByYear.map((pct, idx) => (
-          <div key={idx} className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-neutral-700">Y{idx + 1}</span>
-              <span className="font-sans font-semibold">{pct}%</span>
+        {shareByYear.map((pct, idx) => {
+          const isOpen = expandedYears.has(idx);
+          return (
+            <div key={idx} className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-neutral-700">Y{idx + 1}</span>
+                <span className="font-sans font-semibold">{pct}%</span>
+              </div>
+              <Slider
+                data-testid={`slider-share-y${idx + 1}`}
+                value={[pct]}
+                min={0}
+                max={100}
+                step={1}
+                onValueChange={(v) => setShareForYear(idx, v[0])}
+              />
+              <button
+                type="button"
+                data-testid={`btn-quarterly-toggle-y${idx + 1}`}
+                onClick={() => toggleYear(idx)}
+                className="flex items-center gap-1 text-[10px] text-neutral-500 hover:text-[#1A1A1A] mt-1"
+              >
+                <ChevronRight
+                  className={`w-3 h-3 transition-transform ${isOpen ? "rotate-90" : ""}`}
+                />
+                Quarterly detail
+              </button>
+              {isOpen && (
+                <div className="space-y-2 pl-4 pt-1 pb-2 border-l border-neutral-200 ml-1">
+                  {[0, 1, 2, 3].map((q) => {
+                    const qPct = Math.round(
+                      state.encounterShareCurve.values[idx * 4 + q] ?? 0
+                    );
+                    return (
+                      <div key={q} className="space-y-0.5">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-neutral-600">
+                            Y{idx + 1} Q{q + 1}
+                          </span>
+                          <span className="font-sans font-semibold">{qPct}%</span>
+                        </div>
+                        <Slider
+                          data-testid={`slider-share-y${idx + 1}-q${q + 1}`}
+                          value={[qPct]}
+                          min={0}
+                          max={100}
+                          step={1}
+                          onValueChange={(v) => setShareForQuarter(idx, q, v[0])}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-            <Slider
-              data-testid={`slider-share-y${idx + 1}`}
-              value={[pct]}
-              min={0}
-              max={100}
-              step={1}
-              onValueChange={(v) => setShareForYear(idx, v[0])}
-            />
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="rounded bg-neutral-50 p-2 text-[11px] text-neutral-600">

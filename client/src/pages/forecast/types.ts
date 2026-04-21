@@ -143,7 +143,7 @@ export const BENCHMARK_MOM_GROWTH_PCT = 4;
 
 export const DEFAULT_PRICING_CONFIG: PricingConfig = {
   model: "perProvider",
-  unitPrice: 250,
+  unitPrice: 0,
   yearlyEscalators: [0, 0, 0, 0, 0],
 };
 

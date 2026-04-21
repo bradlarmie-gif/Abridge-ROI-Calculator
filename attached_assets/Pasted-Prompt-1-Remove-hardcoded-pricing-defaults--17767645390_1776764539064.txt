@@ -1,0 +1,123 @@
+Prompt 1 — Remove hardcoded pricing defaults                                                                                                                                                                 
+                                                                                                                                                                                                               
+  ▎ In client/src/pages/forecast/dashboard/sections/ContractPricingSection.tsx, make one surgical change.                                                                                                      
+  ▎                                                                                                                                                                                                            
+  ▎ Find the toggleComparison function. It contains this block around line 127–148:                                                                                                                            
+  ▎                                                                                                                                                                                                            
+  ▎ const newCmp: ComparisonPricing = {                                                                                                                                                                        
+  ▎   id,                                                
+  ▎   label: `Switch to ${PRICING_MODEL_LABELS[m]}`,                                                                                                                                                           
+  ▎   pricing: {                                                                                                                                                                                               
+  ▎     model: m,
+  ▎     unitPrice: m === "annualFlat" ? 500_000 : m === "perEncounter" ? 5 : m === "perStaffedBed" ? 150 : 200,                                                                                                
+  ▎     yearlyEscalators: [0, 0, 0, 0, 0],                                                                                                                                                                     
+  ▎     ...(m === "perEncounter" || m === "hybrid"
+  ▎       ? {                                                                                                                                                                                                  
+  ▎           contractEncounterLimit: 500_000,           
+  ▎           capacityCeiling: 600_000,                                                                                                                                                                        
+  ▎           overageRate: 8,                            
+  ▎         }                                                                                                                                                                                                  
+  ▎       : {}),
+  ▎     ...(m === "hybrid"                                                                                                                                                                                     
+  ▎       ? { secondaryModel: "perEncounter", secondaryUnitPrice: 1 }
+  ▎       : {}),
+  ▎   },                                                                                                                                                                                                       
+  ▎ };
+  ▎                                                                                                                                                                                                            
+  ▎ Replace it with:                                     
+  ▎
+  ▎ const newCmp: ComparisonPricing = {
+  ▎   id,
+  ▎   label: `Switch to ${PRICING_MODEL_LABELS[m]}`,                                                                                                                                                           
+  ▎   pricing: {
+  ▎     model: m,                                                                                                                                                                                              
+  ▎     unitPrice: 0,                                    
+  ▎     yearlyEscalators: [0, 0, 0, 0, 0],
+  ▎     ...(m === "hybrid"                                                                                                                                                                                     
+  ▎       ? { secondaryModel: "perEncounter", secondaryUnitPrice: 0 }
+  ▎       : {}),                                                                                                                                                                                               
+  ▎   },                                                 
+  ▎ };                                                                                                                                                                                                         
+  ▎
+  ▎ Also in the same file, find the setModel function (around line 83–86):                                                                                                                                     
+  ▎ if (model === "hybrid" && !next.secondaryModel) {    
+  ▎   next.secondaryModel = "perEncounter";                                                                                                                                                                    
+  ▎   next.secondaryUnitPrice = next.secondaryUnitPrice ?? 1;                                                                                                                                                  
+  ▎ }                                                                                                                                                                                                          
+  ▎ Change ?? 1 to ?? 0.                                                                                                                                                                                       
+  ▎                                                                                                                                                                                                            
+  ▎ Also in client/src/pages/forecast/types.ts, find DEFAULT_PRICING_CONFIG:                                                                                                                                   
+  ▎ export const DEFAULT_PRICING_CONFIG: PricingConfig = {
+  ▎   model: "perProvider",                                                                                                                                                                                    
+  ▎   unitPrice: 250,                                                                                                                                                                                          
+  ▎   yearlyEscalators: [0, 0, 0, 0, 0],
+  ▎ };                                                                                                                                                                                                         
+  ▎ Change unitPrice: 250 to unitPrice: 0.               
+  ▎                                                                                                                                                                                                            
+  ▎ No other changes. Verify: open dashboard → "Compare against" → check Per Encounter → the expanded form shows all blank fields, no pre-filled dollar amounts.                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Prompt 2 — Dashboard KPI empty state + brand tokens    
+                                                     
+  ▎ Edit client/src/pages/forecast/ForecastDashboard.tsx. Two changes.
+  ▎                                                                                                                                                                                                            
+  ▎ Change A — KPI empty state when no value drivers:                                                                                                                                                          
+  ▎                                                                                                                                                                                                            
+  ▎ Find the KpiStrip component and the KpiCard component. Wrap the KpiStrip call with an awareness of whether drivers exist:                                                                                  
+  ▎                                                      
+  ▎ In ForecastDashboard (the main export), before the <KpiStrip> render, add:                                                                                                                                 
+  ▎ const hasDrivers = state.valueDrivers.length > 0;    
+  ▎                                                                                                                                                                                                            
+  ▎ Then above <KpiStrip>, add this line:                                                                                                                                                                      
+  ▎ {!hasDrivers && (
+  ▎   <p className="text-xs text-[#999999] mb-2">                                                                                                                                                              
+  ▎     Cost comparison active — add value drivers to see ROI                                                                                                                                                  
+  ▎   </p>                                                                                                                                                                                                     
+  ▎ )}                                                                                                                                                                                                         
+  ▎                                                                                                                                                                                                            
+  ▎ In KpiCard, change the display logic so that when the card label is NOT "Total Contract Cost" (or similar cost-only label), and value === 0, it shows "—" instead of "$0" or "0.00×". The simplest         
+  ▎ approach: pass a hasDrivers prop to KpiStrip and KpiCard, and in KpiCard, if !hasDrivers and the format is not a plain cost (i.e., format is "multiple" or the label contains "Value" or "ROI" or "Break"),
+  ▎  show "—" instead of the computed display string.                                                                                                                                                          
+  ▎                                                      
+  ▎ Change B — Brand tokens:
+  ▎
+  ▎ Make these exact string replacements throughout ForecastDashboard.tsx:                                                                                                                                     
+  ▎
+  ▎ | Find                            | Replace                           |                                                                                                                                    
+  ▎ |---------------------------------|-----------------------------------|
+  ▎ | bg-[#FAFAFA]                    | bg-[#FAFAF8]                      |
+  ▎ | border-neutral-200 bg-white p-4 | border-[#E8E2DA] bg-[#FAF8F5] p-4 |                                                                                                                                    
+  ▎ | border-neutral-200 bg-white p-3 | border-[#E8E2DA] bg-[#FAF8F5] p-3 |                                                                                                                                    
+  ▎ | border-neutral-200 bg-white     | border-[#E8E2DA] bg-[#FAF8F5]     |                                                                                                                                    
+  ▎ | border-neutral-200              | border-[#E8E2DA]                  |                                                                                                                                    
+  ▎                                                                                                                                                                                                            
+  ▎ Do not change border-[#EA2C00]/30 bg-[#FFF6F2] — that's the accent KPI card and should stay.                                                                                                               
+  ▎                                                                                                                                                                                                            
+  ▎ Verify: open dashboard with no value drivers → KPIs show "—" for ROI/NCV/break-even, "Cost comparison active" hint appears, cost curves chart still renders, background is warm off-white not cold gray.   
+                                                         
+  ---                                                                                                                                                                                                          
+  Prompt 3 — Quarterly ramp detail + utilization curve visibility
+                                                                                                                                                                                                               
+  ▎ Edit two files in client/src/pages/forecast/dashboard/sections/.
+  ▎                                                                                                                                                                                                            
+  ▎ File 1: ProvisionedActiveSection.tsx                                                                                                                                                                       
+  ▎
+  ▎ This section has per-year utilization sliders. Ensure the section is open by default: find <SectionShell and confirm defaultOpen is true (not false). If it's false, change it to true.                    
+  ▎                                                      
+  ▎ The utilization sliders currently silently fall back to 75% in code. Wherever the code reads (state.utilizationCurve.values[utilIdx] ?? 75), ensure that makeDefaultUtilizationCurve has been called at    
+  ▎ state initialization so the actual stored values are 75 (not a silent fallback). This is already the case from makeEmptyForecastState, so just confirm the sliders are visually rendering the stored 
+  ▎ values, not showing 0 because the array is shorter than expected.                                                                                                                                          
+  ▎                                                      
+  ▎ File 2: AdoptionGrowthSection.tsx
+  ▎
+  ▎ The per-year encounter share sliders set all 4 quarters in a year uniformly via a helper like setShareForYear. Add a per-year quarterly detail expander.                                                   
+  ▎
+  ▎ For each year row, add a small <button> labelled "▸ Quarterly detail" that toggles a expandedYear state variable (a Set<number>). When expanded for year yIdx, show 4 quarter sub-sliders (Q1–Q4) directly 
+  ▎ below, each controlling state.encounterShareCurve.values[yIdx * 4 + qIdx] individually (0–100, step 1).
+  ▎                                                                                                                                                                                                            
+  ▎ The year-level slider continues to work as "set all 4 quarters to this value" — it's now a convenience control, not the only control.                                                                      
+  ▎
+  ▎ Style the quarterly sliders as compact sub-rows: pl-3 border-l-2 border-[#E8E2DA] indentation, labels Q1/Q2/Q3/Q4 in text-[10px] text-[#999999].                                                           
+  ▎                                                      
+  ▎ Verify: set Y2 to 60% via the year slider → all 4 Q labels show 60%. Click "▸ Quarterly detail" → 4 sliders appear. Drag Q3 to 75% → Q3 shows 75%, others stay at 60%. Collapse and re-expand → values     
+  ▎ persist.   
