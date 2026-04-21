@@ -1,10 +1,11 @@
 import { Document, Page, Text, View, StyleSheet, Svg, Rect, Line, Path, pdf, Font } from "@react-pdf/renderer";
+import { format } from "date-fns";
 import { savePdfBlob } from "@/lib/pdf-save";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
-import type { ForecastState, ForecastValueDriver, ValueDomain, DriverOnset, PricingModel } from "@/pages/forecast/types";
-import { CARE_SETTING_LABELS, VALUE_DOMAIN_LABELS, ONSET_DELAY_MONTHS, PRICING_MODEL_LABELS } from "@/pages/forecast/types";
+import type { ForecastState, ForecastValueDriver, ValueDomain, DriverOnset, PricingModel, ForecastCalibration } from "@/pages/forecast/types";
+import { CARE_SETTING_LABELS, VALUE_DOMAIN_LABELS, ONSET_DELAY_MONTHS, PRICING_MODEL_LABELS, DEFAULT_FORECAST_CALIBRATION } from "@/pages/forecast/types";
 import { calculateForecast, type ForecastResult } from "@/lib/forecastCalculator";
 
 Font.registerHyphenationCallback((word) => [word]);
@@ -90,36 +91,224 @@ const DOMAIN_LEGEND = [
   { label: "Quality", color: DOMAIN_FILLS.quality }
 ];
 
-function summaryNarrative(state: ForecastState, result: ForecastResult, partnerName: string) {
-  const termMonths = state.contractTermMonths;
-  const netValue = result.kpis.netContractValue;
-  const fastBE = breakEvenLabel(result.kpis.fastBreakEvenMonth);
-  const fullBE = breakEvenLabel(result.kpis.fullBreakEvenMonth);
-  
-  const parts = [
-    { text: "Based on current trajectory and measured outcomes, " },
-    { text: partnerName, bold: true },
-    { text: " is projected to realize " },
-    { text: fmtCurrency(netValue), bold: true },
-    { text: " in net value over the " },
-    { text: `${termMonths}-month`, bold: true },
-    { text: " remaining contract term. Fast break-even is expected in " },
-    { text: "Month " + fastBE, bold: true },
-    { text: ", full break-even in " },
-    { text: "Month " + fullBE, bold: true },
-    { text: "." }
-  ];
+type NarrativePart = { text: string; bold?: boolean };
 
-  if (state.valueDrivers.length === 0) {
-    parts.push({ text: " No value drivers have been added yet — the projection above reflects pricing only." });
+function executiveNarrative(state: ForecastState, result: ForecastResult, partnerName: string) {
+  const termMonths = state.contractTermMonths;
+  const termYears = Math.max(1, Math.round(termMonths / 12));
+  const roi = result.kpis.roiMultiple;
+  const tcv = result.kpis.totalContractValue;
+  const ncv = result.kpis.netContractValue;
+  const cost = result.kpis.totalContractCost;
+  const fullBE = result.kpis.fullBreakEvenMonth;
+  const fromMeasure = state.importSource.type === 'measure';
+
+  const p1: NarrativePart[] = [];
+  if (roi >= 3) {
+    p1.push(
+      { text: partnerName, bold: true },
+      { text: " is projecting a " },
+      { text: `${roi.toFixed(1)}x return`, bold: true },
+      { text: " — " },
+      { text: fmtCurrencyShort(tcv), bold: true },
+      { text: " in modeled value against " },
+      { text: fmtCurrencyShort(cost), bold: true },
+      { text: ` invested over ${termYears} years.` },
+    );
+    if (fromMeasure) p1.push({ text: " Built on measured clinical outcomes, not estimates." });
+  } else if (roi >= 1.5) {
+    p1.push(
+      { text: partnerName, bold: true },
+      { text: " is on track to generate " },
+      { text: fmtCurrencyShort(ncv), bold: true },
+      { text: " in net value — a " },
+      { text: `${roi.toFixed(1)}x return`, bold: true },
+      { text: ` on their Abridge investment over ${termYears} years.` },
+    );
+  } else if (roi >= 1) {
+    p1.push(
+      { text: partnerName, bold: true },
+      { text: " reaches positive ROI but the margin is thin at " },
+      { text: `${roi.toFixed(2)}x`, bold: true },
+      { text: ". The sections below identify the levers to strengthen the case." },
+    );
+  } else {
+    p1.push(
+      { text: "Under current assumptions, " },
+      { text: partnerName, bold: true },
+      { text: ` does not reach positive ROI within the ${termYears}-year term. Adjusting adoption pace or pricing model significantly changes this picture.` },
+    );
   }
 
-  return (
-    <Text style={s.narrative}>
+  const p2: NarrativePart[] = [];
+  if (fullBE) {
+    const remaining = Math.max(0, termMonths - fullBE);
+    p2.push(
+      { text: partnerName, bold: true },
+      { text: " recovers their full investment at " },
+      { text: `Month ${fullBE}`, bold: true },
+      { text: ", leaving " },
+      { text: `${remaining} months`, bold: true },
+      { text: " of value creation before contract end." },
+    );
+  } else {
+    p2.push({ text: `Break-even does not occur within the ${termYears}-year term under current assumptions.` });
+  }
+
+  const drivers = state.valueDrivers;
+  const hasRevenue = drivers.some(d => d.domain === 'revenue');
+  const hasWorkforce = drivers.some(d => d.domain === 'workforce');
+  const p3: NarrativePart[] = [];
+  if (drivers.length === 0) {
+    p3.push({ text: "Add value drivers to unlock the full ROI picture." });
+  } else if (roi < 2 && !hasRevenue) {
+    p3.push(
+      { text: "Adding a revenue driver — " },
+      { text: "wRVU lift, E/M level improvement, or denial reduction", bold: true },
+      { text: " — would meaningfully strengthen the ROI multiple." },
+    );
+  } else if (roi < 2 && !hasWorkforce) {
+    p3.push(
+      { text: "A " },
+      { text: "provider retention driver", bold: true },
+      { text: " would add significant long-term value. Replacement costs of " },
+      { text: "$150K–$300K", bold: true },
+      { text: " per departure make even small retention gains financially meaningful." },
+    );
+  } else if (roi >= 2) {
+    p3.push(
+      { text: "The ROI story is compelling. Focus the conversation on whether the current " },
+      { text: "pricing structure", bold: true },
+      { text: " captures value fairly as " },
+      { text: partnerName, bold: true },
+      { text: " scales." },
+    );
+  } else {
+    p3.push({ text: "Diversifying across additional value domains would further de-risk the projection." });
+  }
+
+  const renderPara = (parts: NarrativePart[], idx: number) => (
+    <Text key={idx} style={[{ fontSize: 10, color: C.mid, lineHeight: 1.65 }, idx === 0 ? { marginTop: 16 } : { marginTop: 10 }]}>
       {parts.map((p, i) => (
         <Text key={i} style={p.bold ? s.bold : {}}>{p.text}</Text>
       ))}
     </Text>
+  );
+
+  return (
+    <View>
+      {renderPara(p1, 0)}
+      {renderPara(p2, 1)}
+      {renderPara(p3, 2)}
+    </View>
+  );
+}
+
+function provenanceCallout(state: ForecastState) {
+  const fromMeasure = state.importSource.type === 'measure';
+  if (fromMeasure) {
+    const measuredCount = state.valueDrivers.filter(d => d.source === 'measure').length;
+    const importedAt = state.importSource.importedAt;
+    const monthYear = importedAt ? format(new Date(importedAt), 'MMM yyyy') : '—';
+    return (
+      <View style={{ marginTop: 14, borderWidth: 1, borderColor: C.orange, borderRadius: 4, paddingVertical: 6, paddingHorizontal: 10 }}>
+        <Text style={{ fontSize: 8, color: C.orange, fontWeight: 'bold', letterSpacing: 1 }}>
+          SOURCED FROM MEASURE · {measuredCount} measured outcome{measuredCount === 1 ? '' : 's'} imported · {monthYear}
+        </Text>
+      </View>
+    );
+  }
+  return (
+    <View style={{ marginTop: 14, borderWidth: 1, borderColor: C.muted, borderRadius: 4, paddingVertical: 6, paddingHorizontal: 10 }}>
+      <Text style={{ fontSize: 8, color: C.muted, fontWeight: 'bold', letterSpacing: 1 }}>
+        EXPLORATORY MODEL · assumptions entered manually — no measured outcomes yet
+      </Text>
+    </View>
+  );
+}
+
+function calibrationRatesTable(cal: ForecastCalibration | undefined) {
+  const c = cal ?? DEFAULT_FORECAST_CALIBRATION;
+  const rows: [string, string][] = [
+    ['OT Hourly Rate', `$${c.otHourlyRate}/hr`],
+    ['wRVU Conversion', `$${c.wrvuConversionFactor}/wRVU`],
+    ['Revenue Per Visit', `$${c.revenuePerVisit}/visit`],
+    ['Avg Visit Length', `${c.minutesPerVisit} min`],
+  ];
+  return (
+    <View style={{ marginTop: 14 }}>
+      <Text style={s.smallLabel}>Calibration rates used</Text>
+      {rows.map(([k, v], i) => (
+        <View key={i} style={{ flexDirection: 'row', paddingVertical: 3, borderBottomWidth: 1, borderBottomColor: C.border }}>
+          <Text style={{ flex: 1, fontSize: 8, color: C.mid }}>{k}</Text>
+          <Text style={{ width: 120, fontSize: 8, textAlign: 'right' }}>{v}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function driverCalcChain(d: ForecastValueDriver, cal: ForecastCalibration) {
+  const ci = d.clinicalInputs;
+  if (!ci || !ci.formulaType) return null;
+  const before = ci.metricBefore ?? 0;
+  const after = ci.metricAfter ?? 0;
+  const alloc = ci.allocationPct ?? 100;
+  const projDelta = d.projectedDelta;
+  let lines: string[] | null = null;
+
+  switch (ci.formulaType) {
+    case 'timeSavingsWorkforce': {
+      const delta = before - after;
+      const hrs = (delta / 60).toFixed(2);
+      lines = [
+        `${before} min/enc \u2192 ${after} min/enc = ${delta.toFixed(1)} min saved`,
+        `\u00f7 60 = ${hrs} hrs \u00d7 $${cal.otHourlyRate}/hr \u00d7 ${alloc}% allocation`,
+        `= ${fmtCurrencyShort(projDelta)}/encounter`,
+      ];
+      break;
+    }
+    case 'wrvuLift': {
+      const delta = (after - before).toFixed(2);
+      lines = [
+        `${before} \u2192 ${after} wRVU/enc = +${delta} wRVU delta`,
+        `\u00d7 $${cal.wrvuConversionFactor}/wRVU`,
+        `= ${fmtCurrencyShort(projDelta)}/encounter`,
+      ];
+      break;
+    }
+    case 'emLevelLift': {
+      const delta = (after - before).toFixed(2);
+      const f1 = ci.factor1Value ?? 0;
+      lines = [
+        `Avg E/M level: ${before} \u2192 ${after} = +${delta} level improvement`,
+        `\u00d7 $${f1}/level`,
+        `= ${fmtCurrencyShort(projDelta)}/encounter`,
+      ];
+      break;
+    }
+    case 'denialReduction': {
+      const delta = (before - after).toFixed(1);
+      lines = [
+        `Initial denial rate: ${before}% \u2192 ${after}% = ${delta}pp reduction`,
+        `\u00d7 $${cal.avgClaimValue} avg claim value`,
+        `= ${fmtCurrencyShort(projDelta)} recovered per encounter`,
+      ];
+      break;
+    }
+    default:
+      return null;
+  }
+
+  return (
+    <View key={`chain-${d.id}`} style={{ backgroundColor: '#FAFAFA', borderLeftWidth: 2, borderLeftColor: C.orange, padding: 8, marginBottom: 6 }}>
+      <Text style={{ fontSize: 8, color: C.orange, fontWeight: 'bold', marginBottom: 4 }}>
+        {d.label.toUpperCase()} · HOW WE GOT HERE
+      </Text>
+      {lines.map((ln, i) => (
+        <Text key={i} style={{ fontSize: 8, fontFamily: 'Courier', color: C.dark, lineHeight: 1.4 }}>{ln}</Text>
+      ))}
+    </View>
   );
 }
 
@@ -212,7 +401,8 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
             )}
           </View>
 
-          {summaryNarrative(state, result, partnerName)}
+          {executiveNarrative(state, result, partnerName)}
+          {provenanceCallout(state)}
         </View>
         <PageFooter partnerName={partnerName} dateStr={dateStr} />
       </Page>
@@ -253,22 +443,33 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
             <View>
               <View style={s.tableHeader}>
                 <Text style={[s.colLabel, { flex: 1 }]}>Driver</Text>
-                <Text style={[s.colLabel, { width: 80, textAlign: "right" }]}>Measured Δ</Text>
-                <Text style={[s.colLabel, { width: 70, textAlign: "right" }]}>Confidence</Text>
-                <Text style={[s.colLabel, { width: 70, textAlign: "right" }]}>Realization</Text>
+                <Text style={[s.colLabel, { width: 80, textAlign: "right" }]}>Before → After</Text>
+                <Text style={[s.colLabel, { width: 70, textAlign: "right" }]}>Clinical Unit</Text>
+                <Text style={[s.colLabel, { width: 60, textAlign: "right" }]}>$/Unit</Text>
+                <Text style={[s.colLabel, { width: 60, textAlign: "right" }]}>Conf</Text>
+                <Text style={[s.colLabel, { width: 50, textAlign: "right" }]}>Real</Text>
               </View>
-              {state.valueDrivers.map(d => (
-                <View key={d.id} style={s.tableRow}>
-                  <Text style={{ fontSize: 9, fontWeight: "bold", flex: 1 }}>{d.label}</Text>
-                  <Text style={{ fontSize: 9, width: 80, textAlign: "right" }}>
-                    {d.measuredDelta !== undefined ? `$${d.measuredDelta.toLocaleString()}` : "—"}
-                  </Text>
-                  <Text style={{ fontSize: 9, width: 70, textAlign: "right" }}>{d.confidence}%</Text>
-                  <Text style={{ fontSize: 9, width: 70, textAlign: "right" }}>{d.realizationPct}%</Text>
-                </View>
-              ))}
+              {state.valueDrivers.map(d => {
+                const ci = d.clinicalInputs;
+                const beforeAfter = (ci?.metricBefore !== undefined && ci?.metricAfter !== undefined)
+                  ? `${ci.metricBefore.toFixed(1)} \u2192 ${ci.metricAfter.toFixed(1)}`
+                  : "—";
+                const unit = ci?.metricUnit ?? "—";
+                return (
+                  <View key={d.id} style={s.tableRow}>
+                    <Text style={{ fontSize: 9, fontWeight: "bold", flex: 1 }}>{d.label}</Text>
+                    <Text style={{ fontSize: 8, width: 80, textAlign: "right" }}>{beforeAfter}</Text>
+                    <Text style={{ fontSize: 8, width: 70, textAlign: "right", color: C.mid }}>{unit}</Text>
+                    <Text style={{ fontSize: 8, width: 60, textAlign: "right" }}>{fmtCurrencyShort(d.projectedDelta)}</Text>
+                    <Text style={{ fontSize: 8, width: 60, textAlign: "right", color: d.confidence > 75 ? C.green : d.confidence > 50 ? C.orange : C.muted }}>{d.confidence}%</Text>
+                    <Text style={{ fontSize: 8, width: 50, textAlign: "right" }}>{d.realizationPct}%</Text>
+                  </View>
+                );
+              })}
             </View>
           )}
+
+          {calibrationRatesTable(state.calibration)}
         </View>
         <PageFooter partnerName={partnerName} dateStr={dateStr} />
       </Page>
@@ -383,6 +584,10 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
                   <Text style={{ fontSize: 8, width: 45, textAlign: "right" }}>{SCALING_LABELS[d.scalingUnit]}</Text>
                 </View>
               ))}
+
+              <View style={{ marginTop: 12 }}>
+                {state.valueDrivers.slice(0, 3).map(d => driverCalcChain(d, state.calibration ?? DEFAULT_FORECAST_CALIBRATION))}
+              </View>
 
               <Text style={s.subheader}>Domain totals over contract</Text>
               <View style={s.chartContainer}>
@@ -613,33 +818,68 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
           <View style={{ marginTop: 10 }}>
             {(() => {
               const bullets: string[] = [];
-              result.alerts.forEach(a => { if (!bullets.includes(a.message)) bullets.push(a.message); });
-              
-              if (result.kpis.runwayMonth && result.kpis.runwayMonth < state.contractTermMonths) {
-                bullets.push(`Plan to renegotiate encounter limit in Month ${Math.max(1, result.kpis.runwayMonth - 3)} (3 months before runway).`);
-              }
-              
-              state.comparisonPricing.forEach(cmp => {
-                const savings = result.kpis.totalContractCost - result.alternateKpis[cmp.id].totalContractCost;
-                if (savings > result.kpis.totalContractCost * 0.1) {
-                  bullets.push(`Consider switching to ${cmp.label} for ${fmtCurrencyShort(savings)} savings over the term.`);
-                }
-              });
+              const drivers = state.valueDrivers;
+              const hasRevenue = drivers.some(d => d.domain === 'revenue');
+              const hasWorkforce = drivers.some(d => d.domain === 'workforce');
+              const roi = result.kpis.roiMultiple;
+              const termMonths = state.contractTermMonths;
 
-              state.valueDrivers.forEach(d => {
-                if (d.confidence < 70 || d.realizationPct < 70) {
-                  bullets.push(`Improve adoption playbook for ${d.label} to push break-even earlier — currently capped by ${d.confidence < 70 ? 'low confidence' : 'low realization'}.`);
-                }
-                if (d.onset === 'longTerm') {
-                  bullets.push(`${d.label} won't materialize until late in the term — consider an interim leading indicator.`);
-                }
-              });
-
-              if (bullets.length < 3) {
-                bullets.push(`Run another EBR after Month ${Math.min(12, Math.floor(state.contractTermMonths / 2))} to reconcile projection vs measured.`);
+              // 1. Top lever recommendation
+              if (drivers.length === 0) {
+                bullets.push("Add value drivers to unlock the full ROI picture — start with the highest-confidence measured outcomes.");
+              } else if (roi < 2 && !hasRevenue) {
+                bullets.push(`To strengthen ROI beyond ${roi.toFixed(1)}x, add a revenue value driver — wRVU lift, E/M level improvement, or denial reduction.`);
+              } else if (roi < 2 && !hasWorkforce) {
+                bullets.push(`To strengthen ROI beyond ${roi.toFixed(1)}x, add a provider retention driver. Replacement costs of $150K–$300K make even small retention gains material.`);
+              } else if (roi >= 2) {
+                bullets.push(`At ${roi.toFixed(1)}x ROI the story is compelling. Focus the conversation on whether the current pricing structure captures value fairly as ${partnerName} scales.`);
+              } else {
+                bullets.push("Diversify across additional value domains to de-risk the projection.");
               }
 
-              return bullets.slice(0, 6).map((b, i) => (
+              // 2. Pricing opportunity (>5% net value lift)
+              const baseNet = result.kpis.netContractValue;
+              const altCandidates = state.comparisonPricing
+                .map(cmp => {
+                  const alt = result.alternateKpis[cmp.id];
+                  if (!alt) return null;
+                  const lift = alt.netContractValue - baseNet;
+                  return { cmp, alt, lift };
+                })
+                .filter((x): x is { cmp: typeof state.comparisonPricing[number]; alt: typeof result.kpis; lift: number } =>
+                  x !== null && x.lift > 0 && x.lift > Math.abs(baseNet) * 0.05,
+                )
+                .sort((a, b) => b.lift - a.lift);
+              const bestAlt = altCandidates[0];
+              if (bestAlt) {
+                const conversationMonth = Math.max(1, termMonths - 3);
+                bullets.push(`Model a switch to ${bestAlt.cmp.label} — it generates ${fmtCurrencyShort(bestAlt.lift)} more in net value over the term. Schedule the pricing conversation before Month ${conversationMonth}.`);
+              }
+
+              // 3. Adoption opportunity (encounter share growth >0.1, i.e. 10pp)
+              const shareVals = state.encounterShareCurve.values;
+              if (shareVals.length > 1) {
+                const initial = shareVals[0];
+                const final = shareVals[shareVals.length - 1];
+                if (final - initial > 10) {
+                  bullets.push(`Expanding encounter coverage from ${initial.toFixed(0)}% to ${final.toFixed(0)}% is a key growth lever. Set a quarterly milestone and track against it.`);
+                }
+              }
+
+              // 4. Up to 2 system alerts
+              const seen = new Set(bullets);
+              for (const a of result.alerts) {
+                if (seen.has(a.message)) continue;
+                bullets.push(a.message);
+                seen.add(a.message);
+                if (bullets.filter(b => b === a.message || result.alerts.some(x => x.message === b)).length >= 2) break;
+              }
+
+              // 5. Closing EBR action (always last)
+              const ebrMonth = Math.min(12, Math.max(1, Math.floor(termMonths / 2)));
+              bullets.push(`Schedule an EBR at Month ${ebrMonth} to reconcile projection against actual measured outcomes.`);
+
+              return bullets.map((b, i) => (
                 <View key={i} style={s.bulletRow}>
                   <View style={s.bullet} />
                   <Text style={{ fontSize: 10, color: C.mid, lineHeight: 1.5, flex: 1 }}>{b}</Text>

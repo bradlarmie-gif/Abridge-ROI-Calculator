@@ -1,0 +1,285 @@
+Prompt 9 — Side-by-Side Scenario Comparison (replace the current comparison sections)
+                                                                                                                                                                                                               
+  Replace the existing PricingComparisonBlock and ScenariosStrip in client/src/pages/forecast/ForecastDashboard.tsx with a single, unified ScenarioComparison component. This is the centerpiece of the
+  dashboard — the thing that answers "which deal structure is better for us?" in a partner meeting.                                                                                                            
+                                                        
+  COMPONENT: ScenarioComparison                                                                                                                                                                                
+                                                        
+  Place it immediately after the HeroROI card and MeasuredOutcomesPanel (if present), BEFORE value drivers.                                                                                                    
+  
+  DATA MODEL: Each alternative has:                                                                                                                                                                            
+  ```typescript                                         
+  interface ComparisonColumn {                                                                                                                                                                                 
+    id: string;
+    label: string;                                                                                                                                                                                             
+    pricing: PricingConfig;                             
+    adoptionMultiplier: 0.8 | 1.0 | 1.2; // Conservative / Current / Aggressive
+  }                                                                                                                                                                                                            
+   
+  Store up to 3 alternatives in local state inside the component:                                                                                                                                              
+  const [alternatives, setAlternatives] = useState<ComparisonColumn[]>([]);
+                                                                                                                                                                                                               
+  LAYOUT: A horizontal card grid. Always shows the "Current" column pinned left. Alternatives appear to its right.
+                                                                                                                                                                                                               
+  On desktop (md+): columns are equal width, displayed side by side (CSS grid, grid-cols-2 for 1 alt, grid-cols-3 for 2+).                                                                                     
+  On mobile: horizontal scroll with snap points, each column is 85vw wide.                                                                                                                                     
+                                                                                                                                                                                                               
+  CURRENT COLUMN (left, always present):                                                                                                                                                                       
+  <div className="rounded-xl bg-[#1A1A1A] text-white p-5 flex flex-col gap-4">                                                                                                                                 
+    <div className="flex items-center justify-between">                                                                                                                                                        
+      <span className="text-[10px] uppercase tracking-[2px] text-white/50 font-semibold">                                                                                                                      
+        Current Deal                                                                                                                                                                                           
+      </span>                                                                                                                                                                                                  
+      <span className="text-[10px] uppercase tracking-[2px] text-[#EA2C00] font-semibold bg-[#EA2C00]/10 px-2 py-0.5 rounded">                                                                                 
+        Active                                                                                                                                                                                                 
+      </span>                                                                                                                                                                                                  
+    </div>   
+    <div>                                                                                                                                                                                                      
+      <p className="text-xs text-white/50 mb-1">{PRICING_MODEL_LABELS[state.currentPricing.model]}</p>
+      <p className="text-lg font-bold font-abridge">{formatPricingModel(state.currentPricing)}</p>    
+    </div>                                                                                                                                                                                                     
+    {/* KPI rows — see below */}                                                                                                                                                                               
+    <KPIRows result={currentResult} baseline={null} />                                                                                                                                                         
+  </div>                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ALTERNATIVE COLUMN (for each alternative):                                                                                                                                                                   
+                                                                                                                                                                                                               
+  <div className="rounded-xl bg-white border border-[#E8E2DA] p-5 flex flex-col gap-4 relative">
+    {/* Header: editable name + remove button */}                                                                                                                                                              
+    <div className="flex items-center justify-between gap-2">
+      <input                                                                                                                                                                                                   
+        value={alt.label}                                                                                                                                                                                      
+        onChange={(e) => updateAlt(alt.id, { label: e.target.value })}
+        className="text-sm font-semibold text-[#1A1A1A] bg-transparent border-0 border-b border-dashed border-neutral-300 focus:outline-none focus:border-[#EA2C00] w-full"                                    
+        placeholder="Alternative name"                                                                                                                                                                         
+      />
+      <button onClick={() => removeAlt(alt.id)} className="text-neutral-300 hover:text-red-500 flex-shrink-0">                                                                                                 
+        <X className="w-3.5 h-3.5" />                                                                                                                                                                          
+      </button>
+    </div>                                                                                                                                                                                                     
+                                                        
+    {/* Pricing model selector — compact tile grid */}                                                                                                                                                         
+    <div>
+      <p className="text-[10px] uppercase tracking-wide text-neutral-400 mb-2">Pricing Model</p>                                                                                                               
+      <div className="grid grid-cols-2 gap-1.5 mb-3">                                                                                                                                                          
+        {ALL_MODELS.map(model => (
+          <button                                                                                                                                                                                              
+            key={model}                                 
+            onClick={() => updateAlt(alt.id, { pricing: { ...alt.pricing, model } })}                                                                                                                          
+            className={`text-[11px] py-1.5 px-2 rounded-lg border text-left transition-all ${                                                                                                                  
+              alt.pricing.model === model                                                                                                                                                                      
+                ? 'border-[#1A1A1A] bg-[#1A1A1A] text-white font-semibold'                                                                                                                                     
+                : 'border-neutral-200 text-neutral-600 hover:border-neutral-400'                                                                                                                               
+            }`}                                         
+          >                                                                                                                                                                                                    
+            {PRICING_MODEL_LABELS[model].replace(' / Month', '/mo')}
+          </button>                                                                                                                                                                                            
+        ))}
+      </div>                                                                                                                                                                                                   
+                                                                                                                                                                                                               
+      {/* Unit price input */}
+      <div className="flex items-center gap-2">                                                                                                                                                                
+        <span className="text-[11px] text-neutral-500 flex-shrink-0">Unit price</span>
+        <FormattedNumberInput                                                                                                                                                                                  
+          onChange={(v) => updateAlt(alt.id, { pricing: { ...alt.pricing, unitPrice: v } })}
+          className="h-8 text-sm font-semibold flex-1"                                                                                                                                                         
+        />                                              
+        <span className="text-[11px] text-neutral-400 flex-shrink-0">                                                                                                                                          
+          {PRICING_UNIT_LABELS[alt.pricing.model].replace('$', '').replace('per ', '/')}
+        </span>                                                                                                                                                                                                
+      </div>                                                                                                                                                                                                   
+    </div>  
+                                                                                                                                                                                                               
+    {/* Adoption speed — 3 radio buttons */}            
+    <div>                                   
+      <p className="text-[10px] uppercase tracking-wide text-neutral-400 mb-2">Adoption Pace</p>
+      <div className="grid grid-cols-3 gap-1">                                                                                                                                                                 
+        {[                                    
+          { value: 0.8, label: 'Slower', emoji: '🐢' },                                                                                                                                                        
+          { value: 1.0, label: 'Current', emoji: '→' }, 
+          { value: 1.2, label: 'Faster', emoji: '🚀' },                                                                                                                                                        
+        ].map(({ value, label, emoji }) => (            
+          <button                                                                                                                                                                                              
+            key={value}                                 
+            onClick={() => updateAlt(alt.id, { adoptionMultiplier: value as 0.8 | 1.0 | 1.2 })}                                                                                                                
+            className={`text-[11px] py-1.5 rounded-lg border text-center transition-all ${     
+              alt.adoptionMultiplier === value                                                                                                                                                                 
+                ? 'border-[#EA2C00] bg-[#FBE9E2] text-[#A82200] font-semibold'                                                                                                                                 
+                : 'border-neutral-200 text-neutral-500 hover:border-neutral-300'                                                                                                                               
+            }`}                                                                                                                                                                                                
+          >                                                                                                                                                                                                    
+            {emoji} {label}                                                                                                                                                                                    
+          </button>                                                                                                                                                                                            
+        ))}                                             
+      </div>
+    </div>  
+          
+    {/* KPI rows with deltas */}
+    <KPIRows result={altResult} baseline={currentResult} />                                                                                                                                                    
+                                                           
+    {/* Winner badge */}                                                                                                                                                                                       
+    {isWinner && (                                                                                                                                                                                             
+      <div className="text-[10px] uppercase tracking-wide text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5 text-center font-semibold">
+        ✓ Best net value                                                                                                                                                                                       
+      </div>                                                                                                                                                                                                   
+    )}      
+                                                                                                                                                                                                               
+    {/* Use this deal button */}                        
+    <button                     
+      onClick={() => applyAlternative(alt)}
+      className="w-full py-2 rounded-lg border border-[#1A1A1A] text-[#1A1A1A] text-sm font-semibold hover:bg-[#1A1A1A] hover:text-white transition-all"                                                       
+    >                                                                                                                                                   
+      Use this deal →                                                                                                                                                                                          
+    </button>                                           
+  </div>                                                                                                                                                                                                       
+                                                        
+  KPI ROWS COMPONENT — the heart of the comparison:                                                                                                                                                            
+                                                                                                                                                                                                               
+  function KPIRows({
+    result,                                                                                                                                                                                                    
+    baseline,                                           
+  }: {
+    result: ForecastResult;
+    baseline: ForecastResult | null; // null = this IS the baseline (current)
+  }) {                                                                                                                                                                                                         
+    const rows = [
+      {                                                                                                                                                                                                        
+        label: 'Total Cost',                                                                                                                                                                                   
+        current: result.kpis.totalContractCost,
+        fmt: fmtCurrencyShort,                                                                                                                                                                                 
+        lowerIsBetter: true,                                                                                                                                                                                   
+      },
+      {                                                                                                                                                                                                        
+        label: 'Net Value',                             
+        current: result.kpis.netContractValue,
+        fmt: fmtCurrencyShort,                                                                                                                                                                                 
+        lowerIsBetter: false,
+      },                                                                                                                                                                                                       
+      {                                                 
+        label: 'ROI',
+        current: result.kpis.roiMultiple,
+        fmt: (n: number) => `${n.toFixed(2)}x`,                                                                                                                                                                
+        lowerIsBetter: false,                                                                                                                                                                                  
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: 'Break-Even',                            
+        current: result.kpis.fullBreakEvenMonth,
+        fmt: (n: number | null) => n ? `Month ${n}` : 'Not reached',                                                                                                                                           
+        lowerIsBetter: true, // earlier is better                                                                                                                                                              
+        isMonth: true,                                                                                                                                                                                         
+      },                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+    return (
+      <div className="space-y-3 border-t border-white/10 pt-4">                                                                                                                                                
+        {rows.map((row) => {                                   
+          const val = row.current;
+          const baseVal = baseline ? (row.label === 'Total Cost' ? baseline.kpis.totalContractCost : row.label === 'Net Value' ? baseline.kpis.netContractValue : row.label === 'ROI' ?                        
+  baseline.kpis.roiMultiple : baseline.kpis.fullBreakEvenMonth) : null;                                                                                                                
+                                                                                                                                                                                                               
+          let delta: number | null = null;              
+          let deltaStr = '';                                                                                                                                                                                   
+          let deltaColor = 'text-neutral-400';          
+                                                                                                                                                                                                               
+          if (baseline !== null && baseVal !== null && val !== null && typeof val === 'number' && typeof baseVal === 'number') {                                                                               
+            delta = val - baseVal;                                                                                                                                                                             
+            const isGood = row.lowerIsBetter ? delta < 0 : delta > 0;                                                                                                                                          
+            const isBad = row.lowerIsBetter ? delta > 0 : delta < 0;                                                                                                                                           
+                                                                                                                                                                                                               
+            if (row.isMonth) {                                                                                                                                                                                 
+              deltaStr = delta === 0 ? '=' : delta < 0 ? `${Math.abs(delta)}mo earlier` : `${delta}mo later`;                                                                                                  
+            } else if (row.label === 'ROI') {                                                                                                                                                                  
+              deltaStr = delta === 0 ? '=' : `${delta > 0 ? '+' : ''}${delta.toFixed(2)}x`;                                                                                                                    
+            } else {                                                                                                                                                                                           
+              deltaStr = delta === 0 ? '=' : `${delta > 0 ? '+' : ''}${fmtCurrencyShort(Math.abs(delta))}`;                                                                                                    
+            }                                                                                                                                                                                                  
+                                                                                                                                                                                                               
+            deltaColor = isGood ? 'text-emerald-600' : isBad ? 'text-red-500' : 'text-neutral-400';
+          }                                                                                                                                                                                                    
+                                                        
+          return (                                                                                                                                                                                             
+            <div key={row.label} className="flex items-center justify-between">                                                                                                                                
+              <span className={`text-[10px] uppercase tracking-wide ${baseline === null ? 'text-white/50' : 'text-neutral-400'} font-semibold`}>
+                {row.label}                                                                                                                                                                                    
+              </span>                                                                                                                                                                                          
+              <div className="flex items-center gap-2">
+                {deltaStr && (                                                                                                                                                                                 
+                  <span className={`text-[11px] font-semibold ${deltaColor}`}>                                                                                                                                 
+                    {deltaStr}                                                
+                  </span>                                                                                                                                                                                      
+                )}                                                                                                                                                                                             
+                <span className={`text-sm font-bold font-abridge ${baseline === null ? 'text-white' : 'text-[#1A1A1A]'}`}>
+                  {val === null || val === undefined                                                                                                                                                           
+                    ? '—'                                                                                                                                                                                      
+                    : row.fmt(val as any)}                                                                                                                                                                     
+                </span>                                                                                                                                                                                        
+              </div>                                                                                                                                                                                           
+            </div>                                      
+          );      
+        })} 
+      </div>
+    );                                                                                                                                                                                                         
+  }   
+                                                                                                                                                                                                               
+  ALTERNATIVE CALCULATION: For each alternative, derive a modified ForecastState and run calculateForecast():
+  function buildAltState(base: ForecastState, alt: ComparisonColumn): ForecastState {                                                                                                                          
+    const adoptionCurve = {                                                          
+      ...base.adoptionCurve,                                                                                                                                                                                   
+      startPct: Math.min(95, base.adoptionCurve.startPct * alt.adoptionMultiplier),                                                                                                                            
+      endPct: Math.min(98, base.adoptionCurve.endPct * alt.adoptionMultiplier),                                                                                                                                
+    };                                                                                                                                                                                                         
+    return {                                                                                                                                                                                                   
+      ...base,                                                                                                                                                                                                 
+      currentPricing: alt.pricing,                                                                                                                                                                             
+      adoptionCurve,                                    
+    };                                                                                                                                                                                                         
+  }   
+                                                                                                                                                                                                               
+  Calculate all alt results in a single useMemo that depends on alternatives and state:
+  const altResults = useMemo(() => {                                                                                                                                                                           
+    return alternatives.map(alt => ({
+      id: alt.id,                                                                                                                                                                                              
+      result: calculateForecast(buildAltState(state, alt)),
+    }));                                                                                                                                                                                                       
+  }, [alternatives, state]);                                                                                                                                                                                   
+                            
+  "Winner" = alternative with highest netContractValue (only shown if > currentResult.kpis.netContractValue).                                                                                                  
+                                                                                                                                                                                                               
+  "Use this deal" applies the alternative's pricing to state.currentPricing via updateState and removes that alternative from the list.                                                                        
+                                                                                                                                                                                                               
+  ADD ALTERNATIVE BUTTON: Below the card grid, full-width dashed border button:                                                                                                                                
+  {alternatives.length < 3 && (                         
+    <button                                                                                                                                                                                                    
+      onClick={addAlternative}                          
+      className="w-full mt-4 py-3 rounded-xl border-2 border-dashed border-[#E8E2DA] text-sm text-neutral-400 hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center 
+  gap-2"                                                                                                                                                                                                  
+    >                                                                                                                                                                                                          
+      <Plus className="w-4 h-4" />
+      Add alternative deal structure                                                                                                                                                                           
+    </button>                                                                                                                                                                                                  
+  )}
+                                                                                                                                                                                                               
+  addAlternative creates a new column with:             
+  - label: "Alternative [n]"
+  - pricing: deep copy of state.currentPricing (starts identical so delta = 0)                                                                                                                                 
+  - adoptionMultiplier: 1.0                                                   
+                                                                                                                                                                                                               
+  SECTION HEADER: Above the card grid, show:            
+  <div className="flex items-center justify-between mb-4">                                                                                                                                                     
+    <div>                                                 
+      <h2 className="text-[11px] uppercase tracking-[2px] text-[#666666] font-semibold">                                                                                                                       
+        What If We Changed The Deal?                                                    
+      </h2>                                                                                                                                                                                                    
+      <p className="text-xs text-neutral-400 mt-0.5">                                                                                                                                                          
+        Model alternate structures side by side. Changes show delta vs current.                                                                                                                                
+      </p>                                                                                                                                                                                                     
+    </div>                                                                                                                                                                                                     
+  </div>                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  REMOVE the existing PricingComparisonBlock and ScenariosStrip completely. The ScenarioComparison replaces both.
+                                                                                                                                                                                                               
+  Wire state.comparisonPricing and state.scenarios to use the new alternatives if they were previously saved — on mount, if state.comparisonPricing.length > 0, initialize alternatives from those. This       
+  preserves any existing comparison data.                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Keep all brand colors: #EA2C00 red, #1A1A1A dark, #FAF8F5 warm card, #E8E2DA border. Import calculateForecast from "@/lib/forecastCalculator". Import fmtCurrencyShort from "./dashboard/charts/shared".     
+  Import X and Plus from lucide-react.
+                                                                
