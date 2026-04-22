@@ -66,6 +66,12 @@ const s = StyleSheet.create({
   profileHighlightLabel: { fontSize: 9, color: "#999999", marginTop: 2 },
   profileStatBlock: { flex: 1, alignItems: "center" as const, paddingVertical: 12, paddingHorizontal: 8 },
   profileStatsRow: { flexDirection: "row" as const, backgroundColor: "#F9FAFB", borderRadius: 8, marginTop: 8 },
+  assumptionsPage: { fontFamily: "Manrope", backgroundColor: "#FFFFFF", paddingHorizontal: 48, paddingVertical: 48 },
+  assumptionGroup: { marginBottom: 20 },
+  assumptionGroupTitle: { fontSize: 9, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase" as const, marginBottom: 8 },
+  assumptionRow: { flexDirection: "row" as const, justifyContent: "space-between" as const, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: "#F3F4F6" },
+  assumptionLabel: { fontSize: 10, color: "#888888", flex: 1, paddingRight: 12 },
+  assumptionValue: { fontSize: 10, fontWeight: 700, color: "#1A1A1A" },
 });
 
 export interface DataRequestPDFMetric {
@@ -94,6 +100,7 @@ export interface DataRequestPDFData {
   annualContractValue?: number;
   preparedBy?: string;
   repName?: string;
+  ipOperational?: Record<string, number | null>;
 }
 
 function formatVal(n: number | null): string {
@@ -268,6 +275,92 @@ function PartnerProfilePage({ data }: { data: DataRequestPDFData }) {
   );
 }
 
+function InpatientAssumptionsPage({ data }: { data: DataRequestPDFData }) {
+  const op = data.ipOperational ?? {};
+  const hasVal = (key: string) => op[key] != null;
+  const fmt = (key: string, suffix = '') =>
+    hasVal(key) ? `${(op[key] as number).toLocaleString()}${suffix}` : '\u2014';
+  const fmtPct = (key: string) => fmt(key, '%');
+  const fmtDollar = (key: string) =>
+    hasVal(key) ? `$${(op[key] as number).toLocaleString()}` : '\u2014';
+
+  const groups = [
+    {
+      title: 'Throughput',
+      rows: [
+        { label: 'Average Length of Stay', value: fmt('avgLos', ' days') },
+      ],
+    },
+    {
+      title: 'DRG Documentation',
+      rows: [
+        { label: 'Documentation gap rate', value: fmtPct('drgGapRate') },
+        { label: 'Avg DRG weight improvement per corrected case', value: fmt('avgDrgWeightIncrease') },
+        { label: 'Base DRG reimbursement per case', value: fmtDollar('baseDrgPayment') },
+        { label: 'DRG value realization rate', value: fmtPct('drgRealizationRate') },
+      ],
+    },
+    {
+      title: 'Medical Necessity Appeals',
+      rows: [
+        { label: 'Inpatient denial rate', value: fmtPct('obsDenialRate') },
+        { label: 'Average claim value at risk', value: fmtDollar('obsAvgClaimValue') },
+        { label: "Documentation's share of successful appeals", value: fmtPct('obsDocContributionPct') },
+      ],
+    },
+    {
+      title: 'CDI Program',
+      rows: [
+        { label: 'CDI query rate (per 100 admissions)', value: fmt('cdiQueryRate') },
+        { label: 'CDI cost per query', value: fmtDollar('cdiCostPerQuery') },
+      ],
+    },
+    {
+      title: 'Provider Retention',
+      rows: [
+        { label: 'Annual hospitalist turnover rate', value: fmtPct('hospitalistTurnoverRate') },
+        { label: "Documentation burden's share of turnover", value: fmtPct('burnoutTurnoverPct') },
+        { label: 'Hospitalist replacement cost', value: fmtDollar('hospitalistReplacementCost') },
+      ],
+    },
+  ].filter(g => g.rows.some(r => r.value !== '\u2014'));
+
+  if (groups.length === 0) return null;
+
+  return (
+    <Page size="LETTER" style={s.assumptionsPage}>
+      <View style={s.header}>
+        <Image src={abridgeLogo} style={s.logo} />
+        <View style={s.headerRight}>
+          <Text style={s.headerTitle}>Model Assumptions</Text>
+          <Text style={s.headerMeta}>Inpatient / Hospital Medicine</Text>
+        </View>
+      </View>
+      <View style={s.divider} />
+      <Text style={{ fontSize: 10, color: "#666666", marginBottom: 20, lineHeight: 1.5 }}>
+        These operational parameters calibrate the ROI model. Abridge will use them as the baseline for your financial analysis.
+      </Text>
+      {groups.map((g, gi) => (
+        <View key={gi} style={s.assumptionGroup}>
+          <Text style={s.assumptionGroupTitle}>{g.title}</Text>
+          {g.rows.map((r, ri) => (
+            <View key={ri} style={s.assumptionRow}>
+              <Text style={s.assumptionLabel}>{r.label}</Text>
+              <Text style={s.assumptionValue}>{r.value}</Text>
+            </View>
+          ))}
+        </View>
+      ))}
+      <View style={s.footer}>
+        <Text style={s.footerText}>
+          {data.repName ? `Send to ${data.repName} at Abridge \u00B7 Confidential` : "Return to your Abridge partner \u00B7 Confidential"}
+        </Text>
+        <Text style={s.footerRed}>Abridge</Text>
+      </View>
+    </Page>
+  );
+}
+
 function DataRequestDocument({ data }: { data: DataRequestPDFData }) {
   const dateStr = data.generatedAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const metricsWithData = data.metrics.filter(m => m.before !== null || m.after !== null);
@@ -297,6 +390,9 @@ function DataRequestDocument({ data }: { data: DataRequestPDFData }) {
         preparedBy={data.repName ? `${data.repName} \u00B7 Abridge` : "Abridge Partner Success"}
       />
       <PartnerProfilePage data={data} />
+      {data.ipOperational && Object.values(data.ipOperational).some(v => v != null) && (
+        <InpatientAssumptionsPage data={data} />
+      )}
       <Page size="LETTER" style={s.page}>
         <View style={s.header}>
           <View>

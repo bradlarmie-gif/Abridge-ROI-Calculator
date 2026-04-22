@@ -332,6 +332,10 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   const [entries, setEntries] = useState<Record<string, DataRequestMetricEntry>>({});
   const [deployment, setDeployment] = useState<DeploymentSnapshot>(defaultDeployment);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [ipOperational, setIpOperational] = useState<Record<string, number | null>>({});
+  function updateIpOp(key: string, val: number | null) {
+    setIpOperational(prev => ({ ...prev, [key]: val }));
+  }
 
   function toggleMetric(id: string) {
     setCheckedIds((prev) => {
@@ -414,6 +418,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
       abridgeEncounters: deployment.abridgeEncounters || undefined,
       preparedBy: preseed?.repName || "Abridge Partner Success",
       repName: preseed?.repName,
+      ipOperational: primarySetting === 'inpatient' ? { ...ipOperational } : undefined,
     };
 
     await generateDataRequestPDF(data);
@@ -424,7 +429,8 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
     const e = entries[id];
     return e && (e.before !== null || e.after !== null || e.isMonthlyMode);
   });
-  const hasAnyData = hasAnyMetricData;
+  const hasAnyIpOp = primarySetting === 'inpatient' && Object.values(ipOperational).some(v => v !== null && v !== undefined);
+  const hasAnyData = hasAnyMetricData || hasAnyIpOp;
 
   return (
     <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4 pb-24">
@@ -628,6 +634,146 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
             </div>
           </div>
         </div>
+
+        {primarySetting === 'inpatient' && (
+          <div className="bg-white rounded-xl border border-[#E0D9D0] p-4 sm:p-6 shadow-md">
+            <div className="flex items-start gap-3 mb-5">
+              <div className="w-1 rounded-full bg-[#EA2C00] flex-shrink-0 mt-1" style={{ height: '2.5rem' }} />
+              <div>
+                <h2 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-widest mb-0.5">
+                  Inpatient Model Assumptions
+                </h2>
+                <p className="text-xs text-[#999999] leading-snug">
+                  These operational inputs calibrate the ROI model. Provide your best estimate — we'll verify these with you during the analysis.
+                </p>
+              </div>
+            </div>
+
+            {/* Throughput */}
+            <div className="mb-6">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Throughput</p>
+              <div>
+                <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Average Length of Stay (days)</label>
+                <p className="text-[11px] text-[#999999] mb-1.5">Average inpatient length of stay. National median is ~4.5 days for hospital medicine.</p>
+                <MetricInput value={ipOperational['avgLos'] ?? null} onCommit={(v) => updateIpOp('avgLos', v)}
+                  placeholder="e.g., 4.5"
+                  className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+              </div>
+            </div>
+
+            {/* DRG Documentation */}
+            <div className="mb-6">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">DRG Documentation</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Documentation gap rate (%)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">Estimated % of admissions with a documentation gap that could affect DRG assignment. Typically 15–25%.</p>
+                  <MetricInput value={ipOperational['drgGapRate'] ?? null} onCommit={(v) => updateIpOp('drgGapRate', v)}
+                    placeholder="e.g., 18"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Average DRG weight improvement per corrected case</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">Expected average DRG weight increase per corrected admission. Industry benchmark ~0.4.</p>
+                  <MetricInput value={ipOperational['avgDrgWeightIncrease'] ?? null} onCommit={(v) => updateIpOp('avgDrgWeightIncrease', v)}
+                    placeholder="e.g., 0.4"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Base DRG reimbursement ($/case)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">Your average base DRG reimbursement per admission. Typically $5,000–$9,000.</p>
+                  <MetricInput value={ipOperational['baseDrgPayment'] ?? null} onCommit={(v) => updateIpOp('baseDrgPayment', v)}
+                    placeholder="e.g., 6000"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">DRG value realization rate (%)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">% of identified DRG opportunities that convert to actual net revenue after coding, billing, and payer adjudication. Typically 25–40%.</p>
+                  <MetricInput value={ipOperational['drgRealizationRate'] ?? null} onCommit={(v) => updateIpOp('drgRealizationRate', v)}
+                    placeholder="e.g., 33"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+              </div>
+            </div>
+
+            {/* Medical Necessity Appeals */}
+            <div className="mb-6">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Medical Necessity Appeals</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Inpatient denial rate (%)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">% of admissions subject to medical necessity review and denial. Typically 3–8%.</p>
+                  <MetricInput value={ipOperational['obsDenialRate'] ?? null} onCommit={(v) => updateIpOp('obsDenialRate', v)}
+                    placeholder="e.g., 5"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Average claim value at risk ($/case)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">Average revenue at risk per denied admission. Typically $8,000–$15,000.</p>
+                  <MetricInput value={ipOperational['obsAvgClaimValue'] ?? null} onCommit={(v) => updateIpOp('obsAvgClaimValue', v)}
+                    placeholder="e.g., 10000"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Documentation's share of successful appeals (%)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">% of successfully overturned denials where documentation quality was a deciding factor. Typically 15–25%.</p>
+                  <MetricInput value={ipOperational['obsDocContributionPct'] ?? null} onCommit={(v) => updateIpOp('obsDocContributionPct', v)}
+                    placeholder="e.g., 20"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+              </div>
+            </div>
+
+            {/* CDI Program */}
+            <div className="mb-6">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">CDI Program</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">CDI query rate (queries per 100 admissions)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">How many clarification queries your CDI program generates per 100 admissions. Typically 20–40.</p>
+                  <MetricInput value={ipOperational['cdiQueryRate'] ?? null} onCommit={(v) => updateIpOp('cdiQueryRate', v)}
+                    placeholder="e.g., 30"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">CDI cost per query ($)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">Fully loaded cost to generate and resolve one CDI query (CDI staff time, systems). Typically $40–$75.</p>
+                  <MetricInput value={ipOperational['cdiCostPerQuery'] ?? null} onCommit={(v) => updateIpOp('cdiCostPerQuery', v)}
+                    placeholder="e.g., 50"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+              </div>
+            </div>
+
+            {/* Provider Retention */}
+            <div>
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Provider Retention</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Annual hospitalist turnover rate (%)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">% of hospitalists who leave per year. National average is 6–10%.</p>
+                  <MetricInput value={ipOperational['hospitalistTurnoverRate'] ?? null} onCommit={(v) => updateIpOp('hospitalistTurnoverRate', v)}
+                    placeholder="e.g., 8"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Documentation burden's share of turnover (%)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">% of departures where documentation burden was a contributing factor. Typically 40–50% for hospitalists.</p>
+                  <MetricInput value={ipOperational['burnoutTurnoverPct'] ?? null} onCommit={(v) => updateIpOp('burnoutTurnoverPct', v)}
+                    placeholder="e.g., 45"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Hospitalist replacement cost ($)</label>
+                  <p className="text-[11px] text-[#999999] mb-1.5">All-in cost to recruit and onboard a replacement hospitalist (agency fees, onboarding, productivity ramp). Typically $250,000–$400,000.</p>
+                  <MetricInput value={ipOperational['hospitalistReplacementCost'] ?? null} onCommit={(v) => updateIpOp('hospitalistReplacementCost', v)}
+                    placeholder="e.g., 300000"
+                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {settingMetricGroups.map(({ setting: s, metrics: settingMetrics }) => {
           const byDomain = settingMetrics.reduce<Record<string, MetricDefinition[]>>((acc, m) => {
