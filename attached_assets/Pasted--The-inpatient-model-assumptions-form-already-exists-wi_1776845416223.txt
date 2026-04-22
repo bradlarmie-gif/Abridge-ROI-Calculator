@@ -1,0 +1,70 @@
+ The inpatient model assumptions form already exists with sections for Deployment, OBS/IP Status Defense, DRG Accuracy / CC-MCC Capture, CDI Query Reduction, Concurrent Review / Continued Stay, and       
+  ▎ Workforce. Add the missing fields below, matching the existing style exactly.
+  ▎                                                                                                                                                                                                            
+  ▎ ---                                                  
+  ▎ 1. New section: THROUGHPUT — insert BEFORE "OBS/IP STATUS DEFENSE"
+  ▎                                                                                                                                                                                                            
+  ▎ Add a section header "THROUGHPUT" (same red uppercase eyebrow style as the others). One full-width input:                                                                                                  
+  ▎                                                                                                                                                                                                            
+  ▎ | Label                  | Placeholder | Helper text                                                                           |                                                                           
+  ▎ |------------------------|-------------|---------------------------------------------------------------------------------------|
+  ▎ | AVERAGE LENGTH OF STAY | e.g. 4.5    | days · national median ~4.5 for hospital medicine · used to compute E/M charge volume |                                                                           
+  ▎                                                                                                                                                                                                            
+  ▎ ---
+  ▎ 2. New section: E/M CODING ACCURACY — insert AFTER "WORKFORCE" (at the bottom)                                                                                                                             
+  ▎                                                                                                                                                                                                            
+  ▎ Add a section header "E/M CODING ACCURACY" (same red uppercase eyebrow style). Three inputs — first two in a 2-column grid, third full-width:                                                              
+  ▎                                                                                                                                                                                                            
+  ▎ | Label                         | Placeholder | Helper text                                                                                      |                                                         
+  ▎ |-------------------------------|-------------|--------------------------------------------------------------------------------------------------|
+  ▎ | AVG REVENUE PER E/M ENCOUNTER | e.g. 50     | $ · avg physician fee per H&P, progress note, or consult · typically $40–$80                     |                                                         
+  ▎ | CONSULTS PER ADMISSION        | e.g. 1.0    | avg specialist consults billed per inpatient stay                                                |                                                         
+  ▎ | E/M REALIZATION RATE          | e.g. 40     | % · % of identified E/M coding opportunity that converts to net revenue after payer adjudication |                                                         
+  ▎                                                                                                                                                                                                            
+  ▎ ---                                                                                                                                                                                                        
+  ▎ 3. Add to existing DRG ACCURACY / CC-MCC CAPTURE section
+  ▎                                                                                                                                                                                                            
+  ▎ After the existing "BASE DRG PAYMENT" field, add one additional full-width input:                                                                                                                          
+  ▎
+  ▎ | Label                | Placeholder | Helper text                                                                                                                       |                                 
+  ▎ |----------------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------|
+  ▎ | DRG REALIZATION RATE | e.g. 33     | % · % of identified DRG opportunity that converts to net revenue after coding, billing, and payer adjudication · typically 25–40% |
+  ▎                                                                                                                                                                                                            
+  ▎ ---
+  ▎ 4. Add to existing OBS/IP STATUS DEFENSE section                                                                                                                                                           
+  ▎                                                                                                                                                                                                            
+  ▎ After the existing two fields (denial rate + avg claim value), add one additional field:
+  ▎                                                                                                                                                                                                            
+  ▎ | Label                                      | Placeholder | Helper text                                                                                      |                                            
+  ▎ |--------------------------------------------|-------------|--------------------------------------------------------------------------------------------------|
+  ▎ | DOCUMENTATION'S ROLE IN SUCCESSFUL APPEALS | e.g. 20     | % · % of overturned denials where documentation quality was a deciding factor · typically 15–25% |                                            
+  ▎                                                                                                                                                                                                            
+  ▎ ---
+  ▎ 5. Add to existing WORKFORCE section                                                                                                                                                                       
+  ▎                                                      
+  ▎ After the existing two fields (annual turnover + replacement cost), add one additional field:                                                                                                              
+  ▎
+  ▎ | Label                                    | Placeholder | Helper text                                                                                                  |                                  
+  ▎ |------------------------------------------|-------------|--------------------------------------------------------------------------------------------------------------|
+  ▎ | DOCUMENTATION BURDEN'S SHARE OF TURNOVER | e.g. 45     | % · % of departures where documentation burden was a contributing factor · typically 40–50% for hospitalists |
+  ▎                                                                                                                                                                                                            
+  ▎ ---
+  ▎ 6. PDF export                                                                                                                                                                                              
+  ▎                                                      
+  ▎ Wherever the PDF currently renders the inpatient model assumptions, add the new fields to the appropriate sections:                                                                                        
+  ▎ - THROUGHPUT group: Average Length of Stay
+  ▎ - E/M CODING ACCURACY group (new): Avg revenue per encounter, Consults per admission, Realization rate                                                                                                     
+  ▎ - DRG group: add DRG Realization Rate row            
+  ▎ - OBS/IP group: add Documentation's Role in Appeals row                                                                                                                                                    
+  ▎ - WORKFORCE group: add Documentation Burden Share row
+  ▎                                                                                                                                                                                                            
+  ▎ ---                                                  
+  ▎ Verify                                                                                                                                                                                                     
+  ▎                                                      
+  ▎ Open the inpatient data request form. Confirm:                                                                                                                                                             
+  ▎ 1. THROUGHPUT section with Length of Stay appears first (before OBS/IP)
+  ▎ 2. E/M CODING ACCURACY section appears at the bottom of the model assumptions card                                                                                                                         
+  ▎ 3. DRG section now has 4 fields (added realization rate)
+  ▎ 4. OBS/IP section now has 3 fields (added doc contribution %)                                                                                                                                              
+  ▎ 5. Workforce section now has 3 fields (added burnout share %)                                                                                                                                              
+  ▎ 6. All new fields appear in the downloaded PDF   

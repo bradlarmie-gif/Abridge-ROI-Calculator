@@ -157,6 +157,10 @@ interface IntakeFormState {
   ipCdiQueryRate: number | null; ipCdiCostPerQuery: number | null;
   ipConcurrentReviewRate: number | null; ipConcurrentDenialRate: number | null;
   ipConcurrentAvgDays: number | null; ipConcurrentDailyRate: number | null;
+  ipAvgLos: number | null; ipDrgRealizationRate: number | null;
+  ipDocAppealContribution: number | null; ipDocBurnoutShare: number | null;
+  ipEmRevenuePerEncounter: number | null; ipEmConsultsPerAdmission: number | null;
+  ipEmRealizationRate: number | null;
   nursingFTEs: number | null; nursingStaffedBeds: number | null; nursingOccupancyRate: number | null;
   nursingOtHoursPerWeek: number | null; nursingOtHourlyRate: number | null; nursingTurnoverRate: number | null;
   nursingReplacementCost: number | null; hapiRate: number | null; fallRate: number | null;
@@ -179,6 +183,10 @@ function getEmptyState(preseed?: IntakeFormPreseed): IntakeFormState {
     ipCdiQueryRate: null, ipCdiCostPerQuery: null,
     ipConcurrentReviewRate: null, ipConcurrentDenialRate: null,
     ipConcurrentAvgDays: null, ipConcurrentDailyRate: null,
+    ipAvgLos: null, ipDrgRealizationRate: null,
+    ipDocAppealContribution: null, ipDocBurnoutShare: null,
+    ipEmRevenuePerEncounter: null, ipEmConsultsPerAdmission: null,
+    ipEmRealizationRate: null,
     nursingFTEs: null, nursingStaffedBeds: null, nursingOccupancyRate: null,
     nursingOtHoursPerWeek: null, nursingOtHourlyRate: null, nursingTurnoverRate: null,
     nursingReplacementCost: null, hapiRate: null, fallRate: null,
@@ -231,6 +239,10 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
       ipCdiQueryRate: s.ipCdiQueryRate, ipCdiCostPerQuery: s.ipCdiCostPerQuery,
       ipConcurrentReviewRate: s.ipConcurrentReviewRate, ipConcurrentDenialRate: s.ipConcurrentDenialRate,
       ipConcurrentAvgDays: s.ipConcurrentAvgDays, ipConcurrentDailyRate: s.ipConcurrentDailyRate,
+      ipAvgLos: s.ipAvgLos, ipDrgRealizationRate: s.ipDrgRealizationRate,
+      ipDocAppealContribution: s.ipDocAppealContribution, ipDocBurnoutShare: s.ipDocBurnoutShare,
+      ipEmRevenuePerEncounter: s.ipEmRevenuePerEncounter, ipEmConsultsPerAdmission: s.ipEmConsultsPerAdmission,
+      ipEmRealizationRate: s.ipEmRealizationRate,
       nursingFTEs: s.nursingFTEs, nursingStaffedBeds: s.nursingStaffedBeds,
       nursingOccupancyRate: s.nursingOccupancyRate, nursingOtHoursPerWeek: s.nursingOtHoursPerWeek,
       nursingOtHourlyRate: s.nursingOtHourlyRate, nursingTurnoverRate: s.nursingTurnoverRate,
@@ -438,6 +450,11 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('ipAdmissions', v)} placeholder="e.g. 5,000" />
                     </div>
 
+                    <SectionDivider label="Throughput" />
+                    <NumberField label="Average length of stay" value={formState.ipAvgLos}
+                      onChange={v => update('ipAvgLos', v)} placeholder="e.g. 4.5" step="0.1"
+                      hint="days · national median ~4.5 for hospital medicine · used to compute E/M charge volume" />
+
                     <SectionDivider label="Obs/IP Status Defense" />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Obs/IP status denial rate" value={formState.ipDenialRate}
@@ -446,6 +463,9 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('ipAvgClaimValue', v)} placeholder="e.g. 10,000" suffix="$"
                         hint="avg $ of claims where Obs vs IP status is disputed" />
                     </div>
+                    <NumberField label="Documentation's role in successful appeals" value={formState.ipDocAppealContribution}
+                      onChange={v => update('ipDocAppealContribution', v)} placeholder="e.g. 20" suffix="%"
+                      hint="% of overturned denials where documentation quality was a deciding factor · typically 15–25%" />
 
                     <SectionDivider label="DRG Accuracy / CC-MCC Capture" />
                     <div className="grid grid-cols-2 gap-4">
@@ -461,6 +481,9 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('ipDrgBasePayment', v)} placeholder="e.g. 6,000" suffix="$"
                         hint="hospital-specific base rate" />
                     </div>
+                    <NumberField label="DRG realization rate" value={formState.ipDrgRealizationRate}
+                      onChange={v => update('ipDrgRealizationRate', v)} placeholder="e.g. 33" suffix="%"
+                      hint="% of identified DRG opportunity that converts to net revenue after coding, billing, and payer adjudication · typically 25–40%" />
 
                     <SectionDivider label="CDI Query Reduction" />
                     <div className="grid grid-cols-2 gap-4">
@@ -496,6 +519,22 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                       <NumberField label="Cost to replace one hospitalist" value={formState.ipReplacementCost}
                         onChange={v => update('ipReplacementCost', v)} placeholder="e.g. 300,000" suffix="$" />
                     </div>
+                    <NumberField label="Documentation burden's share of turnover" value={formState.ipDocBurnoutShare}
+                      onChange={v => update('ipDocBurnoutShare', v)} placeholder="e.g. 45" suffix="%"
+                      hint="% of departures where documentation burden was a contributing factor · typically 40–50% for hospitalists" />
+
+                    <SectionDivider label="E/M Coding Accuracy" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Avg revenue per E/M encounter" value={formState.ipEmRevenuePerEncounter}
+                        onChange={v => update('ipEmRevenuePerEncounter', v)} placeholder="e.g. 50" suffix="$"
+                        hint="avg physician fee per H&P, progress note, or consult · typically $40–$80" />
+                      <NumberField label="Consults per admission" value={formState.ipEmConsultsPerAdmission}
+                        onChange={v => update('ipEmConsultsPerAdmission', v)} placeholder="e.g. 1.0" step="0.1"
+                        hint="avg specialist consults billed per inpatient stay" />
+                    </div>
+                    <NumberField label="E/M realization rate" value={formState.ipEmRealizationRate}
+                      onChange={v => update('ipEmRealizationRate', v)} placeholder="e.g. 40" suffix="%"
+                      hint="% of identified E/M coding opportunity that converts to net revenue after payer adjudication" />
                   </div>
                 )}
 

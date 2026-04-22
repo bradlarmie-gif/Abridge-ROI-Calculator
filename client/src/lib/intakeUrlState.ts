@@ -43,6 +43,13 @@ export interface ExploreIntakeResponse {
   ipConcurrentDenialRate?: number | null;
   ipConcurrentAvgDays?: number | null;
   ipConcurrentDailyRate?: number | null;
+  ipAvgLos?: number | null;
+  ipDrgRealizationRate?: number | null;
+  ipDocAppealContribution?: number | null;
+  ipDocBurnoutShare?: number | null;
+  ipEmRevenuePerEncounter?: number | null;
+  ipEmConsultsPerAdmission?: number | null;
+  ipEmRealizationRate?: number | null;
 
   nursingFTEs?: number | null;
   nursingStaffedBeds?: number | null;
@@ -159,11 +166,14 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
       lines.push(
         line('Hospitalists', data.ipProviders),
         line('Annual admissions', data.ipAnnualAdmissions),
+        line('Average length of stay (days)', data.ipAvgLos, { decimals: 1 }),
         line('Obs/IP status denial rate', data.ipDenialRate, { suffix: '%' }),
         line('Avg claim value at risk', data.ipAvgClaimValue, { suffix: ' $' }),
+        line("Documentation's role in successful appeals", data.ipDocAppealContribution, { suffix: '%' }),
         line('DRG at-risk rate', data.ipDrgAtRiskRate, { suffix: '%' }),
         line('DRG weight increase', data.ipDrgWeightIncrease, { decimals: 2 }),
         line('Base DRG payment', data.ipDrgBasePayment, { suffix: ' $' }),
+        line('DRG realization rate', data.ipDrgRealizationRate, { suffix: '%' }),
         line('CDI query rate', data.ipCdiQueryRate, { suffix: '%' }),
         line('Cost per CDI query', data.ipCdiCostPerQuery, { suffix: ' $' }),
         line('Concurrent review rate', data.ipConcurrentReviewRate, { suffix: '%' }),
@@ -172,6 +182,10 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
         line('Daily rate', data.ipConcurrentDailyRate, { suffix: ' $' }),
         line('Annual hospitalist turnover', data.ipTurnoverRate, { suffix: '%' }),
         line('Cost to replace one hospitalist', data.ipReplacementCost, { suffix: ' $' }),
+        line("Documentation burden's share of turnover", data.ipDocBurnoutShare, { suffix: '%' }),
+        line('Avg revenue per E/M encounter', data.ipEmRevenuePerEncounter, { suffix: ' $' }),
+        line('Consults per admission', data.ipEmConsultsPerAdmission, { decimals: 1 }),
+        line('E/M realization rate', data.ipEmRealizationRate, { suffix: '%' }),
       );
     }
     if (s === 'nursing') {

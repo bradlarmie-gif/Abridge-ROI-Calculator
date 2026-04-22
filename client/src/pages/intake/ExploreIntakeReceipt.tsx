@@ -80,14 +80,19 @@ function getInpatientFields(d: ExploreIntakeResponse): { section: string; fields
       { label: "Hospitalists", value: fmt(d.ipProviders) },
       { label: "Annual admissions", value: fmt(d.ipAnnualAdmissions) },
     ]},
+    { section: "Throughput", fields: [
+      { label: "Average length of stay", value: d.ipAvgLos != null ? `${d.ipAvgLos.toFixed(1)} days` : null },
+    ]},
     { section: "Obs/IP Status Defense", fields: [
       { label: "Obs/IP status denial rate", value: fmt(d.ipDenialRate, { suffix: "%" }) },
       { label: "Avg claim value at risk", value: fmt(d.ipAvgClaimValue, { prefix: "$" }) },
+      { label: "Documentation's role in successful appeals", value: fmt(d.ipDocAppealContribution, { suffix: "%" }) },
     ]},
     { section: "DRG Accuracy / CC-MCC Capture", fields: [
       { label: "DRG at-risk rate", value: fmt(d.ipDrgAtRiskRate, { suffix: "%" }) },
       { label: "DRG weight increase", value: d.ipDrgWeightIncrease != null ? d.ipDrgWeightIncrease.toFixed(2) : null },
       { label: "Base DRG payment", value: fmt(d.ipDrgBasePayment, { prefix: "$" }) },
+      { label: "DRG realization rate", value: fmt(d.ipDrgRealizationRate, { suffix: "%" }) },
     ]},
     { section: "CDI Query Reduction", fields: [
       { label: "CDI query rate", value: fmt(d.ipCdiQueryRate, { suffix: "%" }) },
@@ -102,6 +107,12 @@ function getInpatientFields(d: ExploreIntakeResponse): { section: string; fields
     { section: "Workforce", fields: [
       { label: "Annual hospitalist turnover", value: fmt(d.ipTurnoverRate, { suffix: "%" }) },
       { label: "Cost to replace one hospitalist", value: fmt(d.ipReplacementCost, { prefix: "$" }) },
+      { label: "Documentation burden's share of turnover", value: fmt(d.ipDocBurnoutShare, { suffix: "%" }) },
+    ]},
+    { section: "E/M Coding Accuracy", fields: [
+      { label: "Avg revenue per E/M encounter", value: fmt(d.ipEmRevenuePerEncounter, { prefix: "$" }) },
+      { label: "Consults per admission", value: d.ipEmConsultsPerAdmission != null ? d.ipEmConsultsPerAdmission.toFixed(1) : null },
+      { label: "E/M realization rate", value: fmt(d.ipEmRealizationRate, { suffix: "%" }) },
     ]},
   ];
 }
