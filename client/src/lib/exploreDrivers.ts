@@ -15,6 +15,8 @@ import NursingClabsiCalc from "@/components/explore/drivers/NursingClabsiCalc";
 import NursingSepsisCalc from "@/components/explore/drivers/NursingSepsisCalc";
 
 export type ExploreQuadrant = 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
+
+export type DriverScaleAxis = 'providers' | 'encounters' | 'patientDays' | 'fixed';
 export type ExploreSetting = 'outpatient' | 'ed' | 'inpatient' | 'nursing';
 export type ExploreDriverVisibility = 'quantified' | 'qualitative';
 
@@ -33,6 +35,7 @@ export interface ExploreDriverMeasureDefaults {
   valuePerUnitPrefix?: string;
   valuePerUnitSuffix?: string;
   realizationDefault: number;
+  scaleAxis: DriverScaleAxis;
 }
 
 export interface ExploreDriver {
@@ -70,6 +73,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 250,
       valuePerUnitPrefix: '$',
       realizationDefault: 80,
+      scaleAxis: 'providers',
     },
   },
   {
@@ -90,6 +94,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 480,
       valuePerUnitPrefix: '$',
       realizationDefault: 75,
+      scaleAxis: 'encounters',
     },
   },
   {
@@ -110,6 +115,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 8000,
       valuePerUnitPrefix: '$',
       realizationDefault: 40,
+      scaleAxis: 'encounters',
     },
   },
   {
@@ -152,6 +158,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 400000,
       valuePerUnitPrefix: '$',
       realizationDefault: 100,
+      scaleAxis: 'providers',
     },
   },
   {
@@ -173,6 +180,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 5000,
       valuePerUnitPrefix: '$',
       realizationDefault: 100,
+      scaleAxis: 'providers',
     },
   },
   {
@@ -193,6 +201,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 56300,
       valuePerUnitPrefix: '$',
       realizationDefault: 100,
+      scaleAxis: 'providers',
     },
   },
   {
@@ -214,6 +223,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 2500,
       valuePerUnitPrefix: '$',
       realizationDefault: 100,
+      scaleAxis: 'providers',
     },
   },
   {
@@ -234,6 +244,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 75,
       valuePerUnitPrefix: '$',
       realizationDefault: 100,
+      scaleAxis: 'providers',
     },
   },
   // ───── QUALITY ─────
@@ -378,6 +389,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 25000,
       valuePerUnitPrefix: '$',
       realizationDefault: 85,
+      scaleAxis: 'patientDays',
     },
   },
   {
@@ -397,6 +409,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 6500,
       valuePerUnitPrefix: '$',
       realizationDefault: 85,
+      scaleAxis: 'patientDays',
     },
   },
   {
@@ -416,6 +429,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 13000,
       valuePerUnitPrefix: '$',
       realizationDefault: 80,
+      scaleAxis: 'patientDays',
     },
   },
   {
@@ -435,6 +449,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 20000,
       valuePerUnitPrefix: '$',
       realizationDefault: 80,
+      scaleAxis: 'patientDays',
     },
   },
   {
@@ -454,6 +469,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitDefault: 3500,
       valuePerUnitPrefix: '$',
       realizationDefault: 60,
+      scaleAxis: 'patientDays',
     },
   },
   {

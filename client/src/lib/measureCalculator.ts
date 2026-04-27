@@ -5,6 +5,14 @@ import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATI
 
 export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
+export interface ForecastScenario {
+  providers: number;
+  utilizationPercent: number;
+  encounters: number;
+  staffedBeds: number;
+  occupancyPercent: number;
+}
+
 export interface MeasureDeployment {
   organizationName: string;
   providers: number;
@@ -171,6 +179,7 @@ export interface MeasureState {
   maEncounterPct?: number;
   censusConstrained?: boolean;
   trackedDrivers: Record<string, MeasureDriverEntry>;
+  forecastScenario: ForecastScenario;
 }
 
 export interface MeasureDriverEntry {
@@ -320,6 +329,13 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
   enabledMetrics: {},
   activeCareSettings: ['outpatient'],
   trackedDrivers: {},
+  forecastScenario: {
+    providers: 0,
+    utilizationPercent: 0,
+    encounters: 0,
+    staffedBeds: 0,
+    occupancyPercent: 0,
+  },
 };
 
 export function syncOutpatientMetricsToLegacy(state: MeasureState): Partial<MeasureState> {
