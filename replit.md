@@ -44,7 +44,7 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 -   **Data Management**: Utilizes confidence haircuts, consolidated benchmarks, and supports variable contract terms (1-6 years).
 -   **Adoption Model**: Employs an S-curve adoption model for projections.
 -   **Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing, with structured domain maps.
--   **Measure Path (EBR)**: A multi-screen Executive Business Review tool for consolidated measurement, metric selection, financial impact allocation, and growth path analysis, supporting multi-setting data integrity.
+-   **Measure Path (EBR)**: A multi-screen Executive Business Review tool for consolidated measurement, metric selection, financial impact allocation, and growth path analysis, supporting multi-setting data integrity. Measure quadrant pages (Capacity, Workforce, Revenue, Quality) use a per-driver With/Without entry pattern: PS picks drivers from the EXPLORE_DRIVERS catalog, enters Without/With Abridge values, adjusts attribution and realization, and sees realized dollars per driver. Quantifiable drivers carry $ math (delta × valuePerUnit × attribution% × realization%); qualitative drivers are tracked with notes only.
 -   **Architecture**: Component-driven UI, configuration-driven ROI levers, pure functions for calculation logic, and handling of qualitative drivers.
 
 ## External Dependencies

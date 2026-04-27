@@ -25,6 +25,16 @@ export interface ExploreCalcComponentProps {
   totalHoursSaved: number;
 }
 
+export interface ExploreDriverMeasureDefaults {
+  deltaLabel: string;
+  deltaUnit: string;
+  valuePerUnitLabel: string;
+  valuePerUnitDefault: number;
+  valuePerUnitPrefix?: string;
+  valuePerUnitSuffix?: string;
+  realizationDefault: number;
+}
+
 export interface ExploreDriver {
   id: string;
   label: string;
@@ -37,6 +47,7 @@ export interface ExploreDriver {
   childOfDriverId?: string;
   trackedMeasureIds?: string[];
   calcComponent?: ComponentType<ExploreCalcComponentProps>;
+  measureDefaults?: ExploreDriverMeasureDefaults;
 }
 
 export const EXPLORE_DRIVERS: ExploreDriver[] = [
@@ -52,6 +63,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'patientAccessExpanded',
     calcComponent: PatientAccessCalc,
     trackedMeasureIds: ['patientsPerProvider', 'visitsPerHour', 'timeInNote'],
+    measureDefaults: {
+      deltaLabel: 'Additional visits per year (across all providers)',
+      deltaUnit: 'visits',
+      valuePerUnitLabel: 'Revenue per visit',
+      valuePerUnitDefault: 250,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 80,
+    },
   },
   {
     id: 'lwbsRecovery',
@@ -64,6 +83,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'edLwbsExpanded',
     calcComponent: LwbsRecoveryCalc,
     trackedMeasureIds: ['lwbsRate', 'doorToProvider'],
+    measureDefaults: {
+      deltaLabel: 'Patients recovered from LWBS per year',
+      deltaUnit: 'patients',
+      valuePerUnitLabel: 'Revenue per ED visit',
+      valuePerUnitDefault: 480,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 75,
+    },
   },
   {
     id: 'admissionCapture',
@@ -76,6 +103,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'edThroughputExpanded',
     childOfDriverId: 'lwbsRecovery',
     calcComponent: AdmissionCaptureCalc,
+    measureDefaults: {
+      deltaLabel: 'Admissions captured from recovered LWBS',
+      deltaUnit: 'admissions',
+      valuePerUnitLabel: 'Revenue per admission',
+      valuePerUnitDefault: 8000,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 40,
+    },
   },
   {
     id: 'roundingEfficiency',
@@ -110,6 +145,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'wellbeingExpanded',
     calcComponent: ProviderWellbeingCalc,
     trackedMeasureIds: ['burnoutAssessment', 'likelihoodToStay', 'workOutsideWorkEmpirical'],
+    measureDefaults: {
+      deltaLabel: 'Providers retained per year',
+      deltaUnit: 'providers',
+      valuePerUnitLabel: 'Replacement cost per provider',
+      valuePerUnitDefault: 400000,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 100,
+    },
   },
   {
     id: 'physicianLocumAgency',
@@ -123,6 +166,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     childOfDriverId: 'providerWellbeing',
     calcComponent: PhysicianLocumAgencyCalc,
     trackedMeasureIds: ['agencyLocumSpend'],
+    measureDefaults: {
+      deltaLabel: 'Provider-weeks of locum coverage avoided',
+      deltaUnit: 'weeks',
+      valuePerUnitLabel: 'Weekly locum premium',
+      valuePerUnitDefault: 5000,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 100,
+    },
   },
   {
     id: 'nursingRetention',
@@ -135,6 +186,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'nursingRetentionExpanded',
     calcComponent: NursingRetentionCalc,
     trackedMeasureIds: ['rnRetention', 'burnoutAssessment', 'likelihoodToStay'],
+    measureDefaults: {
+      deltaLabel: 'Nurses retained per year',
+      deltaUnit: 'nurses',
+      valuePerUnitLabel: 'Replacement cost per nurse',
+      valuePerUnitDefault: 56300,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 100,
+    },
   },
   {
     id: 'nursingAgency',
@@ -148,6 +207,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     childOfDriverId: 'nursingRetention',
     calcComponent: NursingAgencyCalc,
     trackedMeasureIds: ['travelAgencyNurseSpend'],
+    measureDefaults: {
+      deltaLabel: 'Nurse-weeks of agency coverage avoided',
+      deltaUnit: 'weeks',
+      valuePerUnitLabel: 'Weekly agency premium',
+      valuePerUnitDefault: 2500,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 100,
+    },
   },
   {
     id: 'nursingOvertime',
@@ -160,6 +227,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'nursingOtExpanded',
     calcComponent: NursingOvertimeCalc,
     trackedMeasureIds: ['documentationOvertime', 'chartingAfterShift'],
+    measureDefaults: {
+      deltaLabel: 'Overtime hours eliminated per year',
+      deltaUnit: 'hours',
+      valuePerUnitLabel: 'Overtime hourly rate',
+      valuePerUnitDefault: 75,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 100,
+    },
   },
   // ───── QUALITY ─────
   // Outpatient (qualitative)
@@ -296,6 +371,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingHapiEnabled',
     expandedStateKey: 'nursingHapiExpanded',
     calcComponent: NursingHapiCalc,
+    measureDefaults: {
+      deltaLabel: 'HAPIs prevented per year',
+      deltaUnit: 'events',
+      valuePerUnitLabel: 'Cost per HAPI',
+      valuePerUnitDefault: 25000,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 85,
+    },
   },
   {
     id: 'nursingFalls',
@@ -307,6 +390,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingFallsEnabled',
     expandedStateKey: 'nursingFallsExpanded',
     calcComponent: NursingFallsCalc,
+    measureDefaults: {
+      deltaLabel: 'Falls prevented per year',
+      deltaUnit: 'events',
+      valuePerUnitLabel: 'Cost per fall',
+      valuePerUnitDefault: 6500,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 85,
+    },
   },
   {
     id: 'nursingCauti',
@@ -318,6 +409,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingCautiEnabled',
     expandedStateKey: 'nursingCautiExpanded',
     calcComponent: NursingCautiCalc,
+    measureDefaults: {
+      deltaLabel: 'CAUTIs prevented per year',
+      deltaUnit: 'events',
+      valuePerUnitLabel: 'Cost per CAUTI',
+      valuePerUnitDefault: 13000,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 80,
+    },
   },
   {
     id: 'nursingClabsi',
@@ -329,6 +428,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingClabsiEnabled',
     expandedStateKey: 'nursingClabsiExpanded',
     calcComponent: NursingClabsiCalc,
+    measureDefaults: {
+      deltaLabel: 'CLABSIs prevented per year',
+      deltaUnit: 'events',
+      valuePerUnitLabel: 'Cost per CLABSI',
+      valuePerUnitDefault: 20000,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 80,
+    },
   },
   {
     id: 'nursingSepsis',
@@ -340,6 +447,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingSepsisEnabled',
     expandedStateKey: 'nursingSepsisExpanded',
     calcComponent: NursingSepsisCalc,
+    measureDefaults: {
+      deltaLabel: 'Sepsis bundle non-compliance cases avoided',
+      deltaUnit: 'cases',
+      valuePerUnitLabel: 'Excess cost per case',
+      valuePerUnitDefault: 3500,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 60,
+    },
   },
   {
     id: 'nursingHcahps',

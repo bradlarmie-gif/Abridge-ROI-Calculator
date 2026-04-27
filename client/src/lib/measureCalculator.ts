@@ -170,6 +170,20 @@ export interface MeasureState {
   emEligibilityRate?: number;
   maEncounterPct?: number;
   censusConstrained?: boolean;
+  trackedDrivers: Record<string, MeasureDriverEntry>;
+}
+
+export interface MeasureDriverEntry {
+  driverId: string;
+  withoutAbridge: number;
+  withAbridge: number;
+  valuePerUnit: number;
+  attributionPercent: number;
+  realizationPercent: number;
+  expanded: boolean;
+  notes?: string;
+  isMonthlyMode?: boolean;
+  monthlyData?: Array<{ month: string; withAbridge: number; withoutAbridge: number }>;
 }
 
 export const CONFIDENCE_LABELS: Record<string, string> = {
@@ -286,6 +300,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
   metricValues: {},
   enabledMetrics: {},
   activeCareSettings: ['outpatient'],
+  trackedDrivers: {},
 };
 
 export function syncOutpatientMetricsToLegacy(state: MeasureState): Partial<MeasureState> {
