@@ -13,6 +13,14 @@ import { ExploreProgressBar } from "@/components/ExploreProgressBar";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
+export interface OtherFinancialBenefitItem {
+  id: string;
+  label: string;
+  amount: number;
+  type: 'annual' | 'oneTime';
+  quadrant: 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
+}
+
 export type TimePathScenario = 'conservative' | 'typical' | 'aggressive' | null;
 
 export type TimeAllocationFocus = 'patientAccess' | 'reducingLocums' | 'clinicianWellbeing';
@@ -310,6 +318,8 @@ export interface ExploreState {
   
   // Calculated values
   calculatedValues?: CalculatedValues;
+
+  otherFinancialBenefits: OtherFinancialBenefitItem[];
 }
 
 export const DEFAULT_EXPLORE_STATE: ExploreState = {
@@ -428,6 +438,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edThroughputExpanded: false,
     ipRoundingExpanded: false,
   },
+  otherFinancialBenefits: [],
   // Documentation quality inputs
   docQualityInputs: {
     wrvuEnabled: false,

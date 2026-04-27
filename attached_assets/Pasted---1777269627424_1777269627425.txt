@@ -1,0 +1,823 @@
+ ---                                                                                                                                                                                                          
+  🔧 Sprint 2D-Revenue — Replit prompt (paste verbatim)                                                                                                                                                        
+                                                                                                                                                                                                               
+  Context: Building the Revenue quadrant. Adds 7 quantified driver calc components (wRVU + HCC + Denials for OP/ED, plus DRG/CDI/Obs/EM for IP), 2 qualitative drivers for Nursing Revenue, and wires          
+  ExploreRevenue.tsx as a copy of the Capacity/Workforce template.                                                                                                                                             
+                                                             
+  Pre-req: Sprints 2A through 2D-Workforce shipped.                                                                                                                                                            
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Add new state fields for nursing qualitative Revenue drivers
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx             
+                                                                                                                                                                                                               
+  In TimeDriverInputs interface, ADD these fields (toggleable, no calc):
+    nursingCdiResponseEnabled: boolean;                                                                                                                                                                        
+    nursingCdiResponseExpanded: boolean;                     
+    nursingDocCompletionEnabled: boolean;                                                                                                                                                                      
+    nursingDocCompletionExpanded: boolean;                   
+                                                                                                                                                                                                               
+  In DEFAULT_EXPLORE_STATE.timeDriverInputs, ADD defaults:   
+    nursingCdiResponseEnabled: false,                                                                                                                                                                          
+    nursingCdiResponseExpanded: false,                                                                                                                                                                         
+    nursingDocCompletionEnabled: false,                                                                                                                                                                        
+    nursingDocCompletionExpanded: false,                                                                                                                                                                       
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Update docValue memoizer to include ipEmCoding contribution
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx (around lines 789-859, inside the docValue useMemo)
+                                                                                                                                                                                                               
+  The existing docValue memoizer handles wRVU/HCC/Denials/DRG/Obs/CDI but NOT ipEmCoding. Add this branch INSIDE the inpatient section, after the existing ipObsDefense block:
+                                                                                                                                                                                                               
+    // Inpatient: E/M Coding Accuracy (consults)             
+    if (state.careSetting === 'inpatient' && docQualityInputs.ipEmCodingEnabled) {                                                                                                                             
+      const losVal = state.ipAvgLengthOfStay ?? 4.5;         
+      const progressPerAdmission = Math.max(losVal - 2, 1);                                                                                                                                                    
+      const totalCharges = eligibleEncounters * (1 + progressPerAdmission + docQualityInputs.ipEmCodingConsultsPerAdmission);                                                                                  
+      const gapMap: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };                                                                                                                 
+      const gapPct = (gapMap[docQualityInputs.ipEmCodingGapScenario] ?? 12) / 100;                                                                                                                             
+      const gross = totalCharges * gapPct * docQualityInputs.ipEmCodingAvgRevenueLift;                                                                                                                         
+      total += gross * (docQualityInputs.ipEmCodingRealization / 100);                                                                                                                                         
+    }                                                        
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Create WrvuCalc component (handles OP + ED variants)                                                                                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/WrvuCalc.tsx                                                                                                                                                 
+                                                                                                                                                                                                               
+  import { Info } from "lucide-react";                                                                                                                                                                         
+  import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";                                                                                                                                       
+                                                                                                                                                                                                               
+  const SCENARIO_LABELS: Record<string, string> = {                                                                                                                                                            
+    conservative: 'Conservative',                       
+    typical: 'Typical',                                                                                                                                                                                        
+    aggressive: 'Optimistic',                                
+  };                                                                                                                                                                                                           
+                                                        
+  type Props = ExploreCalcComponentProps;                                                                                                                                                                      
+                                                             
+  export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {                                                                                                                                 
+    const { docQualityInputs, careSetting, annualEncounters, utilizationPercent } = state;
+    const isED = careSetting === 'ed';                                                                                                                                                                         
+                                                             
+    const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));                                                                                                                      
+    const wrvuScenarios: Record<string, number> = isED       
+      ? { conservative: 1, typical: 2.5, aggressive: 4 }                                                                                                                                                       
+      : { conservative: 2, typical: 5, aggressive: 7 };      
+                                                                                                                                                                                                               
+    const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
+    const wrvuLiftPerVisit = (docQualityInputs.currentWrvu * wrvuLiftPercent) / 100;                                                                                                                           
+    const totalAdditionalWrvus = eligibleEncounters * wrvuLiftPerVisit;
+    const wrvuRevenueGross = totalAdditionalWrvus * docQualityInputs.conversionFactor;                                                                                                                         
+    const wrvuRevenueNet = wrvuRevenueGross * (docQualityInputs.wrvuRealization / 100);
+                                                                                                                                                                                                               
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
+    const formatNumber = (n: number) => n.toLocaleString();                                                                                                                                                    
+                                                                                                                                                                                                               
+    return (                                                 
+      <div>                                                                                                                                                                                                    
+        <p className="text-sm text-black mb-4">                                                                                                                                                                
+          When notes fully reflect visit complexity, E/M levels often code higher.                                                                                                                             
+          Industry data shows {isED ? '1-4%' : '2-7%'} {isED ? 'E&M' : 'wRVU'} lift from better documentation.                                                                                                 
+        </p>                                                                                                                                                                                                   
+                                                          
+        <p className="text-sm font-medium text-black mb-2">Choose your scenario:</p>                                                                                                                           
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+          {(['conservative', 'typical', 'aggressive'] as const).map((level) => (                                                                                                                               
+            <button                                          
+              key={level}                                    
+              onClick={() => updateDocQualityInputs({ wrvuScenario: level })}                                                                                                                                  
+              className={`p-2 sm:p-3 rounded-lg border-2 transition-all text-center ${                                                                                                                         
+                docQualityInputs.wrvuScenario === level                                                                                                                                                        
+                  ? "border-[#EA2C00] bg-white"                                                                                                                                                                
+                  : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
+              }`}                                                                                                                                                                                              
+            >                                                
+              <p className="font-medium text-black">{SCENARIO_LABELS[level]}</p>                                                                                                                               
+              <p className="text-sm text-[#888888]">{wrvuScenarios[level]}%</p>
+            </button>                                                                                                                                                                                          
+          ))}                                                                                                                                                                                                  
+        </div>                                               
+                                                                                                                                                                                                               
+        <div className="bg-[#F5F0EB] rounded-lg p-4">                                                                                                                                                          
+          <div className="flex items-center justify-between mb-3">                                                                                                                                             
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>                                                                                                       
+            <span className="text-xs text-[#888888]">Click values to edit</span>                                                                                                                               
+          </div>                                                                                                                                                                                               
+          <div className="space-y-2 text-sm">                                                                                                                                                                  
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">Eligible encounters</span>
+              <span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span>                                                                                                             
+            </div>                                        
+            <div className="flex justify-between items-center">                                                                                                                                                
+              <span className="text-[#666666]">Current avg wRVU/visit</span>                                                                                                                                   
+              <div className="flex items-center gap-1">                                                                                                                                                        
+                <input                                                                                                                                                                                         
+                  type="number"                                                                                                                                                                                
+                  step="0.1"                                                                                                                                                                                   
+                  value={docQualityInputs.currentWrvu}       
+                  onChange={(e) => updateDocQualityInputs({ currentWrvu: parseFloat(e.target.value) || 0 })}                                                                                                   
+                  className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                />                                                                                                                                                                                             
+                <span className="text-[#888888]">wRVU</span>                                                                                                                                                   
+              </div>                                         
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between gap-2">     
+              <span className="text-[#666666]">Documentation improvement</span>                                                                                                                                
+              <span className="font-semibold text-black">{wrvuLiftPercent}%</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">= wRVU lift per visit</span>                                                                                                                                    
+              <span className="font-semibold text-black">{wrvuLiftPerVisit.toFixed(3)} wRVU</span>                                                                                                             
+            </div>                                      
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">= Total additional wRVUs</span>
+              <span className="font-semibold text-black">{formatNumber(Math.round(totalAdditionalWrvus))}</span>                                                                                               
+            </div>                                           
+            <div className="flex justify-between items-center">                                                                                                                                                
+              <span className="text-[#666666]">× Conversion factor</span>
+              <div className="flex items-center gap-1">                                                                                                                                                        
+                <span className="text-[#888888]">$</span>                                                                                                                                                      
+                <input                                                                                                                                                                                         
+                  type="number"                                                                                                                                                                                
+                  value={docQualityInputs.conversionFactor}                                                                                                                                                    
+                  onChange={(e) => updateDocQualityInputs({ conversionFactor: parseFloat(e.target.value) || 0 })}                                                                                              
+                  className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"                                                                                                        
+                />                                                                                                                                                                                             
+              </div>                                                                                                                                                                                           
+            </div>                                           
+            <div className="flex justify-between items-center">                                                                                                                                                
+              <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" title="Realization rate accounts for the fact that not all
+  gross opportunity converts to captured value." /></span>
+              <div className="flex items-center gap-1">                                                                                                                                                        
+                <input                                                                                                                                                                                         
+                  type="number"                                                                                                                                                                                
+                  value={docQualityInputs.wrvuRealization}                                                                                                                                                     
+                  onChange={(e) => updateDocQualityInputs({ wrvuRealization: parseFloat(e.target.value) || 0 })}
+                  className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"                                                                                                        
+                />                                      
+                <span className="text-[#888888]">%</span>                                                                                                                                                      
+              </div>                                         
+            </div>                                                                                                                                                                                             
+            <div className="h-px bg-[#E5E5E5] my-2" />       
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="font-semibold text-black">Annual {isED ? 'E&M' : 'wRVU'} Value</span>
+              <span className="font-bold text-[#EA2C00]">{formatCurrency(wrvuRevenueNet)}</span>                                                                                                               
+            </div>                                                                                                                                                                                             
+          </div>                                                                                                                                                                                               
+        </div>                                                                                                                                                                                                 
+      </div>                                                 
+    );                                                       
+  }                                                                                                                                                                                                            
+                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Create HccCaptureCalc component (OP only)                                                                                                                                                           
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/HccCaptureCalc.tsx                                                                                                                                           
+                                                             
+  Source: port the HccExpandedContent helper from ExploreDocQuality.tsx (lines 27-279) into a standalone component.
+                                                             
+  import { useState } from "react";                       
+  import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";                                                                                                                                       
+                                                             
+  const HCC_DEFAULTS = {                                                                                                                                                                                       
+    avgHccs: 0.5,                                            
+    rafImpact: 0.15,                                                                                                                                                                                           
+    annualPayment: 10000,                                                                                                                                                                                      
+    hccRealization: 40,                                      
+  };                                                                                                                                                                                                           
+                                                             
+  const SCENARIO_LABELS: Record<string, string> = {                                                                                                                                                            
+    conservative: 'Conservative',                                                                                                                                                                              
+    typical: 'Typical',                                   
+    aggressive: 'Optimistic',                                                                                                                                                                                  
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  type Props = ExploreCalcComponentProps;                                                                                                                                                                      
+                                                                                                                                                                                                               
+  export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props) {                                                                                                                           
+    const { docQualityInputs, numberOfProviders } = state;   
+    const [advancedOpen, setAdvancedOpen] = useState(false);                                                                                                                                                   
+                                                        
+    const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
+    const recapturePercent = hccScenarios[docQualityInputs.hccScenario];
+                                                                                                                                                                                                               
+    const maPatients = numberOfProviders * docQualityInputs.panelSize * (docQualityInputs.maPercent / 100);
+    const gapPatients = maPatients * (docQualityInputs.gapRate / 100);                                                                                                                                         
+    const recaptured = gapPatients * (recapturePercent / 100);
+    const hccsDocumented = recaptured * docQualityInputs.avgHccs;                                                                                                                                              
+    const hccGrossValue = hccsDocumented * docQualityInputs.rafImpact * docQualityInputs.annualPayment;
+    const hccRevenueNet = hccGrossValue * (docQualityInputs.hccRealization / 100);                                                                                                                             
+                                                             
+    const valuePerHcc = docQualityInputs.rafImpact * docQualityInputs.annualPayment;                                                                                                                           
+    const hasCustomValues =                                                                                                                                                                                    
+      docQualityInputs.avgHccs !== HCC_DEFAULTS.avgHccs ||                                                                                                                                                     
+      docQualityInputs.rafImpact !== HCC_DEFAULTS.rafImpact ||                                                                                                                                                 
+      docQualityInputs.annualPayment !== HCC_DEFAULTS.annualPayment ||                                                                                                                                         
+      docQualityInputs.hccRealization !== HCC_DEFAULTS.hccRealization;                                                                                                                                         
+                                                                                                                                                                                                               
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();                                                                                                                                
+    const formatNumber = (n: number) => n.toLocaleString();                                                                                                                                                    
+                                                                                                                                                                                                               
+    return (                                                                                                                                                                                                   
+      <div>                                                  
+        <p className="text-sm text-[#666666] leading-relaxed mb-3">                                                                                                                                            
+          When providers use ambient documentation, chronic conditions addressed verbally are more likely to appear in the note. For Medicare Advantage patients, documented conditions drive risk-adjusted    
+  payment. This models the estimated revenue impact of that documentation improvement {"–"} not a guarantee, and not your total HCC program value.                                                             
+        </p>                                                                                                                                                                                                   
+                                                             
+        <div className="h-px bg-[#E5E5E5] my-4" />                                                                                                                                                             
+                                                             
+        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Population</p>
+        <div className="space-y-3">                          
+          <div className="flex justify-between items-start gap-4">                                                                                                                                             
+            <div className="flex-1 min-w-0">                                                                                                                                                                   
+              <p className="text-sm text-black">Panel size per provider</p>                                                                                                                                    
+              <p className="text-xs text-[#888888] mt-0.5">Active patients per provider. Primary care typically 1,200{"–"}2,000.</p>                                                                           
+            </div>                                           
+            <div className="flex items-center gap-1 flex-shrink-0">                                                                                                                                            
+              <input                                                                                                                                                                                           
+                type="text"                                  
+                inputMode="numeric"                                                                                                                                                                            
+                value={docQualityInputs.panelSize ? docQualityInputs.panelSize.toLocaleString("en-US") : ""}
+                onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocQualityInputs({ panelSize: v }); }}                                                                   
+                className="w-20 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+              />                                                                                                                                                                                               
+              <span className="text-xs text-[#888888]">pts</span>                                                                                                                                              
+            </div>                                                                                                                                                                                             
+          </div>                                                                                                                                                                                               
+                                                                                                                                                                                                               
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex-1 min-w-0">                                                                                                                                                                   
+              <p className="text-sm text-black">Medicare Advantage %</p>                                                                                                                                       
+              <p className="text-xs text-[#888888] mt-0.5">Share of your panel enrolled in MA plans. Many primary care panels run 30{"–"}45%.</p>                                                              
+            </div>                                                                                                                                                                                             
+            <div className="flex items-center gap-1 flex-shrink-0">                                                                                                                                            
+              <input                                                                                                                                                                                           
+                type="number"                                
+                value={docQualityInputs.maPercent}                                                                                                                                                             
+                onChange={(e) => updateDocQualityInputs({ maPercent: parseFloat(e.target.value) || 0 })}
+                className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+              />                                                                                                                                                                                               
+              <span className="text-xs text-[#888888]">%</span>                                                                                                                                                
+            </div>                                                                                                                                                                                             
+          </div>                                                                                                                                                                                               
+                                                             
+          <div className="flex justify-between items-start gap-4">                                                                                                                                             
+            <div className="flex-1 min-w-0">            
+              <p className="text-sm text-black">Documentation gap rate</p>                                                                                                                                     
+              <p className="text-xs text-[#888888] mt-0.5">CMS MA data: 10{"–"}18% of members have at least one gap annually. 12% is a mid-range estimate.</p>
+            </div>                                                                                                                                                                                             
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <input                                                                                                                                                                                           
+                type="number"                                
+                value={docQualityInputs.gapRate}             
+                onChange={(e) => updateDocQualityInputs({ gapRate: parseFloat(e.target.value) || 0 })}
+                className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"                                                                                                          
+              />                                          
+              <span className="text-xs text-[#888888]">%</span>                                                                                                                                                
+            </div>                                           
+          </div>                                                                                                                                                                                               
+        </div>                                               
+                                                          
+        <div className="bg-[#F5F0EB] rounded-lg px-4 py-3 mt-3">                                                                                                                                               
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-[#666666]">                                                                                                                                                                  
+              {formatNumber(numberOfProviders)} providers {"×"} {formatNumber(docQualityInputs.panelSize)} panel {"×"} {docQualityInputs.maPercent}% MA {"×"} {docQualityInputs.gapRate}% gap rate
+            </span>                                                                                                                                                                                            
+            <span className="font-semibold text-black ml-2 flex-shrink-0">= {formatNumber(Math.round(gapPatients))} patients with gaps</span>                                                                  
+          </div>                                          
+        </div>                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+        <div className="h-px bg-[#E5E5E5] my-4" />           
+                                                                                                                                                                                                               
+        <p className="text-sm font-medium text-black mb-2">Recapture rate from improved documentation:</p>
+        <div className="grid grid-cols-3 gap-2 mb-4">                                                                                                                                                          
+          {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
+            <button                                                                                                                                                                                            
+              key={level}                                    
+              onClick={() => updateDocQualityInputs({ hccScenario: level })}                                                                                                                                   
+              className={`p-2 sm:p-3 rounded-lg border-2 transition-all text-center ${
+                docQualityInputs.hccScenario === level  
+                  ? "border-[#EA2C00] bg-white"                                                                                                                                                                
+                  : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
+              }`}                                                                                                                                                                                              
+            >                                                
+              <p className="font-medium text-black">{SCENARIO_LABELS[level]}</p>                                                                                                                               
+              <p className="text-sm text-[#888888]">{hccScenarios[level]}%</p>
+            </button>                                                                                                                                                                                          
+          ))}                                           
+        </div>                                                                                                                                                                                                 
+                                                             
+        <div className="bg-[#F5F0EB] rounded-lg p-4">                                                                                                                                                          
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>                                                                                                       
+          </div>                                             
+          <div className="space-y-2 text-sm">                                                                                                                                                                  
+            <div className="flex justify-between gap-2">  
+              <span className="text-[#666666]">Patients with gaps</span>                                                                                                                                       
+              <span className="font-semibold text-black">{formatNumber(Math.round(gapPatients))}</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between gap-2">  
+              <span className="text-[#666666]">× Recapture rate</span>                                                                                                                                         
+              <span className="font-semibold text-black">{recapturePercent}%</span>                                                                                                                            
+            </div>                                        
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">= Patients recaptured</span>
+              <span className="font-semibold text-black">{formatNumber(Math.round(recaptured))}</span>                                                                                                         
+            </div>                                           
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">× HCCs per recaptured patient</span>                                                                                                                            
+              <span className="font-semibold text-black">{docQualityInputs.avgHccs.toFixed(2)}</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between gap-2">     
+              <span className="text-[#666666]">= HCCs documented</span>                                                                                                                                        
+              <span className="font-semibold text-black">{formatNumber(Math.round(hccsDocumented))}</span>                                                                                                     
+            </div>                                           
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">× Value per HCC ({docQualityInputs.rafImpact} RAF × {formatCurrency(docQualityInputs.annualPayment)})</span>                                                    
+              <span className="font-semibold text-black">{formatCurrency(valuePerHcc)}</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between gap-2">  
+              <span className="text-[#666666]">= Gross value</span>                                                                                                                                            
+              <span className="font-semibold text-black">{formatCurrency(hccGrossValue)}</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between items-center">
+              <span className="text-[#666666]">× Realization rate</span>                                                                                                                                       
+              <div className="flex items-center gap-1">                                                                                                                                                        
+                <input                                       
+                  type="number"                                                                                                                                                                                
+                  value={docQualityInputs.hccRealization}                                                                                                                                                      
+                  onChange={(e) => updateDocQualityInputs({ hccRealization: parseFloat(e.target.value) || 0 })}
+                  className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"                                                                                                        
+                />                                      
+                <span className="text-[#888888]">%</span>                                                                                                                                                      
+              </div>                                         
+            </div>                                                                                                                                                                                             
+            <div className="h-px bg-[#E5E5E5] my-2" />       
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="font-semibold text-black">Annual HCC Value</span>
+              <span className="font-bold text-[#EA2C00]">{formatCurrency(hccRevenueNet)}</span>                                                                                                                
+            </div>                                                                                                                                                                                             
+          </div>                                                                                                                                                                                               
+        </div>                                                                                                                                                                                                 
+                                                             
+        <button                                              
+          onClick={() => setAdvancedOpen(!advancedOpen)}                                                                                                                                                       
+          className="text-xs font-medium text-[#EA2C00] hover:text-[#EA2C00]/80 mt-4"
+        >                                                                                                                                                                                                      
+          {advancedOpen ? '− Hide advanced inputs' : `+ Edit advanced inputs${hasCustomValues ? ' (modified)' : ''}`}                                                                                          
+        </button>                                            
+                                                                                                                                                                                                               
+        {advancedOpen && (                                   
+          <div className="mt-3 space-y-2 text-sm">           
+            <div className="flex justify-between items-center">
+              <span className="text-[#666666]">Avg HCCs per recaptured patient</span>                                                                                                                          
+              <input                                                                                                                                                                                           
+                type="number"                                                                                                                                                                                  
+                step="0.1"                                                                                                                                                                                     
+                value={docQualityInputs.avgHccs}             
+                onChange={(e) => updateDocQualityInputs({ avgHccs: parseFloat(e.target.value) || 0 })}                                                                                                         
+                className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+              />                                        
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between items-center">
+              <span className="text-[#666666]">RAF impact per HCC</span>                                                                                                                                       
+              <input                                         
+                type="number"                                                                                                                                                                                  
+                step="0.01"                               
+                value={docQualityInputs.rafImpact}                                                                                                                                                             
+                onChange={(e) => updateDocQualityInputs({ rafImpact: parseFloat(e.target.value) || 0 })}                                                                                                       
+                className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"                                                                                                          
+              />                                                                                                                                                                                               
+            </div>                                        
+            <div className="flex justify-between items-center">                                                                                                                                                
+              <span className="text-[#666666]">Annual MA payment per patient</span>
+              <div className="flex items-center gap-1">                                                                                                                                                        
+                <span className="text-[#888888]">$</span>
+                <input                                    
+                  type="number"                                                                                                                                                                                
+                  value={docQualityInputs.annualPayment}                                                                                                                                                       
+                  onChange={(e) => updateDocQualityInputs({ annualPayment: parseFloat(e.target.value) || 0 })}                                                                                                 
+                  className="w-20 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"                                                                                                        
+                />                                           
+              </div>                                                                                                                                                                                           
+            </div>                                           
+          </div>                                                                                                                                                                                               
+        )}                                              
+      </div>                                                                                                                                                                                                   
+    );                                                       
+  }                                                                                                                                                                                                            
+                                                        
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Create DenialPreventionCalc component (OP + ED)
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/DenialPreventionCalc.tsx
+                                                                                                                                                                                                               
+  Source: port from ExploreDocQuality.tsx lines 2156-2306 (the Denials calc card and surrounding content).
+                                                             
+  Component takes ExploreCalcComponentProps. Uses these state fields:
+  - docQualityInputs: denialsScenario, denialRate, unappealableRate, avgClaimValue, denialsRealization
+  - careSetting (for ED-vs-OP scenario tuning)               
+  - annualEncounters, utilizationPercent (for eligibleEncounters)                                                                                                                                              
+                                                             
+  Computes internally:                                                                                                                                                                                         
+  - isED = careSetting === 'ed'                                                                                                                                                                                
+  - denialsScenarios: ED uses { conservative: 15, typical: 30, aggressive: 50 }, others use { conservative: 25, typical: 50, aggressive: 75 }
+  - preventionPercent, totalDenials, unappealableDenials, preventedDenials, denialsRevenueGross, denialsRevenueNet                                                                                             
+                                                        
+  Renders:                                                                                                                                                                                                     
+  1. Description copy at top: "Documentation gaps drive 30-40% of denials that cannot be appealed—permanent revenue loss. Abridge captures clinical reasoning and medical necessity in real-time, preventing   
+  denials before they occur."                                                                                                                                                                                  
+  2. Scenario buttons (Conservative / Typical / Optimistic — use the SCENARIO_LABELS map shown in WrvuCalc above for the labels, mapping 'aggressive' to 'Optimistic')                                         
+  3. Calculation card with editable denial rate, unappealable rate, avg claim value, realization rate                                                                                                          
+  4. Denial breakdown sub-block (├─ Appealable / └─ Unappealable) — preserve from source
+                                                                                                                                                                                                               
+  Imports:                                                                                                                                                                                                     
+  import { Info } from "lucide-react";                                                                                                                                                                         
+  import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";                                                                                                                                       
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 6 — Create DrgAccuracyCalc component (IP only)                                                                                                                                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/DrgAccuracyCalc.tsx                                                                                                                                          
+                                                                                                                                                                                                               
+  Source: port from ExploreDocQuality.tsx lines 1250-1486 (DRG Accuracy expanded content).                                                                                                                     
+                                                                                                                                                                                                               
+  Uses state fields: docQualityInputs.ipDrgScenario, ipDrgAtRiskRate, ipDrgWeightIncrease, ipDrgBasePayment, ipDrgRealization.
+                                                                                                                                                                                                               
+  Internal calc:                                             
+  - ipDrgProtectionScenarios: { conservative: 15, typical: 20, aggressive: 25 }                                                                                                                                
+  - protectionPercent = ipDrgProtectionScenarios[ipDrgScenario]
+  - admissionsAtRisk = eligibleEncounters × ipDrgAtRiskRate / 100                                                                                                                                              
+  - admissionsProtected = admissionsAtRisk × protectionPercent / 100                                                                                                                                           
+  - ipDrgGross = admissionsProtected × ipDrgWeightIncrease × ipDrgBasePayment                                                                                                                                  
+  - ipDrgNet = ipDrgGross × ipDrgRealization / 100                                                                                                                                                             
+                                                             
+  Render scenario buttons with Conservative/Typical/Optimistic labels. Calc card with all editable fields.                                                                                                     
+                                                             
+  Component takes ExploreCalcComponentProps; computes eligibleEncounters from annualEncounters × utilizationPercent / 100 internally.                                                                          
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 7 — Create CdiQueryReductionCalc component (IP only)                                                                                                                                                    
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/CdiQueryReductionCalc.tsx                                                                                                                                    
+                                                                                                                                                                                                               
+  Source: port from ExploreDocQuality.tsx lines 1720-1880 (CDI Query Reduction).                                                                                                                               
+                                                                                                                                                                                                               
+  Uses: docQualityInputs.ipCdiScenario, ipCdiQueryRate, ipCdiCostPerQuery, ipCdiRealization.
+                                                                                                                                                                                                               
+  Internal calc:                                             
+  - ipCdiReductionScenarios: { conservative: 15, typical: 25, aggressive: 35 }                                                                                                                                 
+  - reductionPercent = ipCdiReductionScenarios[ipCdiScenario]
+  - totalQueries = eligibleEncounters × ipCdiQueryRate / 100                                                                                                                                                   
+  - queriesAvoided = totalQueries × reductionPercent / 100                                                                                                                                                     
+  - ipCdiNet = queriesAvoided × ipCdiCostPerQuery × ipCdiRealization / 100                                                                                                                                     
+                                                                                                                                                                                                               
+  Scenario buttons + calc card. Optimistic label for 'aggressive' enum.
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 8 — Create ObsDefenseCalc component (IP only)                                                                                                                                                           
+  ═══════════════════════════════════════════════════════════
+  NEW FILE: client/src/components/explore/drivers/ObsDefenseCalc.tsx                                                                                                                                           
+                                                                                                                                                                                                               
+  Source: port from ExploreDocQuality.tsx lines 1523-1683 (Obs/IP Status Defense).                                                                                                                             
+                                                                                                                                                                                                               
+  Uses: docQualityInputs.ipObsDefenseDenialRate, ipObsDefenseClaimValue, ipObsDefenseDocContribution, ipObsDefenseRealization.
+                                                                                                                                                                                                               
+  Internal calc:                                             
+  - gross = eligibleEncounters × (ipObsDefenseDenialRate/100) × ipObsDefenseClaimValue × (ipObsDefenseDocContribution/100)                                                                                     
+  - net = gross × ipObsDefenseRealization / 100              
+                                                                                                                                                                                                               
+  This driver does NOT have scenario presets — it uses direct inputs only. Calc card with all fields editable.                                                                                                 
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 9 — Create EmCodingCalc component (IP only)           
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/EmCodingCalc.tsx
+                                                                                                                                                                                                               
+  Source: port from ExploreDocQuality.tsx lines ~1006-1213 (the E/M Coding Accuracy expanded content with the LOS-derived progress note count).
+                                                                                                                                                                                                               
+  Uses: docQualityInputs.ipEmCodingGapScenario, ipEmCodingAvgRevenueLift, ipEmCodingRealization, ipEmCodingConsultsPerAdmission. Plus state.ipAvgLengthOfStay.
+                                                                                                                                                                                                               
+  Internal calc:                                             
+  - losVal = state.ipAvgLengthOfStay ?? 4.5                                                                                                                                                                    
+  - progressPerAdmission = max(losVal - 2, 1)                
+  - hAndPs = eligibleEncounters                                                                                                                                                                                
+  - progressNotes = eligibleEncounters × progressPerAdmission                                                                                                                                                  
+  - consults = eligibleEncounters × ipEmCodingConsultsPerAdmission
+  - totalCharges = hAndPs + progressNotes + consults                                                                                                                                                           
+  - gapMap: { conservative: 8, typical: 12, optimistic: 18 } — note this one already uses 'optimistic' in the enum
+  - gapPct = gapMap[ipEmCodingGapScenario] / 100                                                                                                                                                               
+  - gross = totalCharges × gapPct × ipEmCodingAvgRevenueLift 
+  - net = gross × ipEmCodingRealization / 100                                                                                                                                                                  
+                                                                                                                                                                                                               
+  Scenario buttons (Conservative / Typical / Optimistic). Calc card includes the LOS-derived note volume breakdown so users see where the charge volume comes from.                                            
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 10 — Add Revenue drivers to EXPLORE_DRIVERS                                                                                                                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Add imports for the 7 new calc components:                                                                                                                                                                   
+    import WrvuCalc from "@/components/explore/drivers/WrvuCalc";                                                                                                                                              
+    import HccCaptureCalc from "@/components/explore/drivers/HccCaptureCalc";                                                                                                                                  
+    import DenialPreventionCalc from "@/components/explore/drivers/DenialPreventionCalc";                                                                                                                      
+    import DrgAccuracyCalc from "@/components/explore/drivers/DrgAccuracyCalc";
+    import CdiQueryReductionCalc from "@/components/explore/drivers/CdiQueryReductionCalc";                                                                                                                    
+    import ObsDefenseCalc from "@/components/explore/drivers/ObsDefenseCalc";
+    import EmCodingCalc from "@/components/explore/drivers/EmCodingCalc";                                                                                                                                      
+                                                             
+  APPEND to EXPLORE_DRIVERS array (after the Workforce drivers):                                                                                                                                               
+                                                                                                                                                                                                               
+    // ───── REVENUE ─────                                                                                                                                                                                     
+    {                                                                                                                                                                                                          
+      id: 'wrvu',                                                                                                                                                                                              
+      label: 'wRVU Capture',                                                                                                                                                                                   
+      shortDescription: 'When notes fully reflect visit complexity, E/M levels often code higher.',                                                                                                            
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'wrvuEnabled',                                                                                                                                                                          
+      expandedStateKey: 'wrvuExpanded',                      
+      calcComponent: WrvuCalc,                                                                                                                                                                                 
+      trackedMeasureIds: ['wrvu'],                           
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'edEmLevel',                                                                                                                                                                                         
+      label: 'E&M Level Accuracy',                                                                                                                                                                             
+      shortDescription: 'Capture the true complexity of ED visits supporting accurate E/M leveling.',                                                                                                          
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['ed'],                                                                                                                                                                                        
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'wrvuEnabled',                                                                                                                                                                          
+      expandedStateKey: 'wrvuExpanded',                                                                                                                                                                        
+      calcComponent: WrvuCalc,                                                                                                                                                                                 
+      trackedMeasureIds: ['wrvuPerShift', 'emLevel'],                                                                                                                                                          
+    },                                                       
+    {                                                                                                                                                                                                          
+      id: 'hccCapture',                                   
+      label: 'HCC Capture',                                                                                                                                                                                    
+      shortDescription: 'Recapture missed diagnoses for the Medicare Advantage population.',
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['outpatient'],                           
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'hccEnabled',                                                                                                                                                                           
+      expandedStateKey: 'hccExpanded',                       
+      calcComponent: HccCaptureCalc,                                                                                                                                                                           
+      trackedMeasureIds: ['hccCapture'],                     
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'denialPrevention',                                                                                                                                                                                  
+      label: 'Denial Prevention',                                                                                                                                                                              
+      shortDescription: 'Reduce documentation-related claim denials.',                                                                                                                                         
+      quadrant: 'Revenue',                              
+      settings: ['outpatient', 'ed'],                                                                                                                                                                          
+      visibility: 'quantified',                           
+      enabledStateKey: 'denialsEnabled',                                                                                                                                                                       
+      expandedStateKey: 'denialsExpanded',                   
+      calcComponent: DenialPreventionCalc,                                                                                                                                                                     
+      trackedMeasureIds: ['cleanClaim', 'medicalNecessityDenial'],
+    },                                                    
+    {                                                                                                                                                                                                          
+      id: 'drgAccuracy',                                     
+      label: 'DRG Accuracy',                                                                                                                                                                                   
+      shortDescription: 'Capture clinical complexity discussed during care that affects DRG assignment.',
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['inpatient'],                                                                                                                                                                                 
+      visibility: 'quantified',                              
+      enabledStateKey: 'ipDrgEnabled',                                                                                                                                                                         
+      expandedStateKey: 'ipDrgExpanded',                     
+      calcComponent: DrgAccuracyCalc,                                                                                                                                                                          
+      trackedMeasureIds: ['drgAccuracy', 'ccMccCapture', 'caseMixIndex'],                                                                                                                                      
+    },                                                    
+    {                                                                                                                                                                                                          
+      id: 'cdiQueryReduction',                               
+      label: 'CDI Query Reduction',                                                                                                                                                                            
+      shortDescription: 'Fewer queries when documentation is complete upfront.',
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['inpatient'],                                                                                                                                                                                 
+      visibility: 'quantified',                           
+      enabledStateKey: 'ipCdiEnabled',                                                                                                                                                                         
+      expandedStateKey: 'ipCdiExpanded',                     
+      calcComponent: CdiQueryReductionCalc,                                                                                                                                                                    
+      trackedMeasureIds: ['cdiQueryReduction'],           
+    },                                                       
+    {                                                                                                                                                                                                          
+      id: 'obsDefense',                                   
+      label: 'Observation / IP Status Defense',                                                                                                                                                                
+      shortDescription: 'Defensible documentation supporting admission status determinations.',
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['inpatient'],                            
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'ipObsDefenseEnabled',                                                                                                                                                                  
+      expandedStateKey: 'ipObsDefenseExpanded',              
+      calcComponent: ObsDefenseCalc,                                                                                                                                                                           
+      trackedMeasureIds: ['medicalNecessityDenial'],      
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'emCodingAccuracy',                                                                                                                                                                                  
+      label: 'E/M Coding Accuracy',                                                                                                                                                                            
+      shortDescription: 'Right-code clinical complexity from ambient capture, including consults and progress notes.',
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['inpatient'],                               
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'ipEmCodingEnabled',                  
+      expandedStateKey: 'ipEmCodingExpanded',                                                                                                                                                                  
+      calcComponent: EmCodingCalc,                      
+      trackedMeasureIds: ['emLevel'],                                                                                                                                                                          
+    },                                                       
+    {                                                                                                                                                                                                          
+      id: 'nursingCdiResponse',                           
+      label: 'CDI Query Response',                                                                                                                                                                             
+      shortDescription: 'Faster, more complete nursing documentation supports DRG accuracy and timeliness.',
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['nursing'],                                 
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'nursingCdiResponseEnabled',                                                                                                                                                            
+      expandedStateKey: 'nursingCdiResponseExpanded',        
+      trackedMeasureIds: ['cdiQueryResponseRate'],                                                                                                                                                             
+    },                                                                                                                                                                                                         
+    {                                                        
+      id: 'nursingDocCompletion',                                                                                                                                                                              
+      label: 'Documentation Completion',                     
+      shortDescription: 'Timely nursing documentation reduces billing delays and discharge holds.',                                                                                                            
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['nursing'],                                 
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'nursingDocCompletionEnabled',                                                                                                                                                          
+      expandedStateKey: 'nursingDocCompletionExpanded',      
+      trackedMeasureIds: ['nursingDocCompletion'],                                                                                                                                                             
+    },                                                                                                                                                                                                         
+                                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 11 — Build out ExploreRevenue.tsx                                                                                                                                                                       
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreRevenue.tsx (REPLACE the placeholder from Sprint 2B)                                                                                                                   
+                                                             
+  Copy the entire body of client/src/pages/explore/ExploreWorkforce.tsx into ExploreRevenue.tsx, then make these substitutions:                                                                                
+                                                             
+  1. Component name: ExploreWorkforce → ExploreRevenue                                                                                                                                                         
+  2. Props interface name: ExploreWorkforceProps → ExploreRevenueProps                                                                                                                                         
+  3. data-testid prefix: wf- → rev-                          
+  4. Quadrant filter: getDriversForPage('Workforce', setting) → getDriversForPage('Revenue', setting)                                                                                                          
+  5. Other Financial Benefits filter: 'Workforce' → 'Revenue'
+  6. UnifiedHeader: currentStep={5} → currentStep={6}, stepName="Workforce" → stepName="Revenue"                                                                                                               
+  7. Page H1: "Workforce" → "Revenue"                                                                                                                                                                          
+  8. Page subtitle: "How does reclaimed time affect your team?" → "How does better documentation show up financially?"                                                                                         
+  9. Right panel header: "Workforce Value" → "Revenue Value"                                                                                                                                                   
+  10. Continue buttons: "Continue to Revenue" → "Continue to Quality"
+                                                                                                                                                                                                               
+  REPLACE the driverValues useMemo with this Revenue-specific version:                                                                                                                                         
+                                                                                                                                                                                                               
+  const driverValues = useMemo(() => {                                                                                                                                                                         
+    const result: Record<string, number> = {};                                                                                                                                                                 
+    const dq = state.docQualityInputs;                       
+    const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));                                                                                                          
+    const isED = state.careSetting === 'ed';                                                                                                                                                                   
+                                                                                                                                                                                                               
+    const wrvuScenarios: Record<string, number> = isED                                                                                                                                                         
+      ? { conservative: 1, typical: 2.5, aggressive: 4 }                                                                                                                                                       
+      : { conservative: 2, typical: 5, aggressive: 7 };                                                                                                                                                        
+    const denialsScenarios: Record<string, number> = isED    
+      ? { conservative: 15, typical: 30, aggressive: 50 }                                                                                                                                                      
+      : { conservative: 25, typical: 50, aggressive: 75 };
+    const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };                                                                                                             
+                                                             
+    // wRVU (OP + ED variants share state)                                                                                                                                                                     
+    if (dq.wrvuEnabled) {                                 
+      const lift = (dq.currentWrvu * wrvuScenarios[dq.wrvuScenario]) / 100;                                                                                                                                    
+      const wrvus = eligibleEncounters * lift;                                                                                                                                                                 
+      const value = wrvus * dq.conversionFactor * (dq.wrvuRealization / 100);                                                                                                                                  
+      if (state.careSetting === 'ed') {                                                                                                                                                                        
+        result.edEmLevel = Math.round(value);                                                                                                                                                                  
+      } else if (state.careSetting === 'outpatient') {                                                                                                                                                         
+        result.wrvu = Math.round(value);                                                                                                                                                                       
+      }                                                                                                                                                                                                        
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    // HCC (OP only)                                                                                                                                                                                           
+    if (dq.hccEnabled && state.careSetting === 'outpatient') {                                                                                                                                                 
+      const recap = hccScenarios[dq.hccScenario] / 100;                                                                                                                                                        
+      const maPatients = state.numberOfProviders * dq.panelSize * (dq.maPercent / 100);                                                                                                                        
+      const gapPatients = maPatients * (dq.gapRate / 100);
+      const recaptured = gapPatients * recap;                                                                                                                                                                  
+      const hccs = recaptured * dq.avgHccs;                  
+      const value = hccs * dq.rafImpact * dq.annualPayment * (dq.hccRealization / 100);                                                                                                                        
+      result.hccCapture = Math.round(value);                 
+    }                                                        
+                                                                                                                                                                                                               
+    // Denials (OP + ED)                                                                                                                                                                                       
+    if (dq.denialsEnabled && (state.careSetting === 'outpatient' || state.careSetting === 'ed')) {                                                                                                             
+      const prev = denialsScenarios[dq.denialsScenario] / 100;                                                                                                                                                 
+      const totalDenials = eligibleEncounters * (dq.denialRate / 100);                                                                                                                                         
+      const unappealable = totalDenials * (dq.unappealableRate / 100);                                                                                                                                         
+      const prevented = unappealable * prev;                                                                                                                                                                   
+      const value = prevented * dq.avgClaimValue * (dq.denialsRealization / 100);                                                                                                                              
+      result.denialPrevention = Math.round(value);                                                                                                                                                             
+    }                                                        
+                                                             
+    // IP DRG Accuracy                                                                                                                                                                                         
+    if (state.careSetting === 'inpatient' && dq.ipDrgEnabled) {                                                                                                                                                
+      const protectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };                                                                                                   
+      const pct = protectionScenarios[dq.ipDrgScenario] / 100;                                                                                                                                                 
+      const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);                                                                                                                                          
+      const protectedAdmissions = atRisk * pct;              
+      const value = protectedAdmissions * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100);                                                                                          
+      result.drgAccuracy = Math.round(value);                
+    }                                                                                                                                                                                                          
+                                                             
+    // IP CDI Query Reduction                                                                                                                                                                                  
+    if (state.careSetting === 'inpatient' && dq.ipCdiEnabled) {                                                                                                                                                
+      const cdiScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };                                                                                                          
+      const pct = cdiScenarios[dq.ipCdiScenario] / 100;                                                                                                                                                        
+      const totalQueries = eligibleEncounters * (dq.ipCdiQueryRate / 100);                                                                                                                                     
+      const avoided = totalQueries * pct;                                                                                                                                                                      
+      const value = avoided * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100);                                                                                                                              
+      result.cdiQueryReduction = Math.round(value);                                                                                                                                                            
+    }                                                        
+                                                             
+    // IP Obs Defense                                                                                                                                                                                          
+    if (state.careSetting === 'inpatient' && dq.ipObsDefenseEnabled) {                                                                                                                                         
+      const gross = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100) * dq.ipObsDefenseClaimValue * (dq.ipObsDefenseDocContribution / 100);                                                               
+      result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));                                                                                                                              
+    }                                                        
+                                                                                                                                                                                                               
+    // IP E/M Coding                                         
+    if (state.careSetting === 'inpatient' && dq.ipEmCodingEnabled) {                                                                                                                                           
+      const losVal = state.ipAvgLengthOfStay ?? 4.5;                                                                                                                                                           
+      const progressPerAdmission = Math.max(losVal - 2, 1);
+      const totalCharges = eligibleEncounters * (1 + progressPerAdmission + dq.ipEmCodingConsultsPerAdmission);                                                                                                
+      const gapMap: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };                                                                                                                 
+      const gapPct = (gapMap[dq.ipEmCodingGapScenario] ?? 12) / 100;                                                                                                                                           
+      const gross = totalCharges * gapPct * dq.ipEmCodingAvgRevenueLift;                                                                                                                                       
+      result.emCodingAccuracy = Math.round(gross * (dq.ipEmCodingRealization / 100));                                                                                                                          
+    }                                                        
+                                                                                                                                                                                                               
+    return result;                                           
+  }, [state]);                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 12 — Pass props to ExploreRevenue from ExploreFlow                                                                                                                                                      
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                                                                                                                                               
+  Update case 'revenue' branch to pass totalHoursSaved (used by ExploreRevenue page for consistency, even though Revenue calcs don't need it):                                                                 
+                                                             
+    case 'revenue':                                          
+      content = (                                            
+        <ExploreRevenue                                      
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}                          
+          totalHoursSaved={totalHoursSaved}                                                                                                                                                                    
+          onNext={() => navigate('quality')}                                                                                                                                                                   
+          onBack={() => navigate('workforce')}                                                                                                                                                                 
+          onHome={goHome}                                                                                                                                                                                      
+        />                                                   
+      );                                                                                                                                                                                                       
+      break;                                                 
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                         
+  1. TypeScript compiles. All 7 new calc components type-check against ExploreCalcComponentProps.                                                                                                              
+                                                          
+  2. Outpatient walkthrough → Revenue (step 6/9):                                                                                                                                                              
+     - Three drivers visible: wRVU Capture, HCC Capture, Denial Prevention
+     - Toggle wRVU on → scenario buttons (Conservative 2% / Typical 5% / Optimistic 7%) + calc card with editable wRVU/conversion/realization
+     - Toggle HCC on → population inputs (panel size, MA%, gap rate) + scenario + advanced inputs collapsible
+     - Toggle Denials on → scenario + denial breakdown + calc card
+     - Right panel: live $ values for each enabled, summed in Quadrant Total                                                                                                                                   
+     - Add an Other Financial Benefit → reflects in Quadrant Total                                                                                                                                             
+     - All scenario buttons show "Optimistic" (NOT "Aggressive")                                                                                                                                               
+                                                                                                                                                                                                               
+  3. ED walkthrough → Revenue:                               
+     - Two drivers visible: E&M Level Accuracy + Denial Prevention (HCC does NOT show)                                                                                                                         
+     - E&M Level Accuracy uses ED scenarios (Conservative 1% / Typical 2.5% / Optimistic 4%)                                                                                                                   
+     - Denial Prevention uses ED scenarios (Conservative 15% / Typical 30% / Optimistic 50%)                                                                                                                   
+     - Calc cards reference "E&M" terminology in headers where applicable                                                                                                                                      
+                                                                                                                                                                                                               
+  4. Inpatient walkthrough → Revenue:                                                                                                                                                                          
+     - Four drivers visible: DRG Accuracy, CDI Query Reduction, Observation/IP Status Defense, E/M Coding Accuracy                                                                                             
+     - Each renders its own calc card with appropriate inputs and scenarios                                                                                                                                    
+     - All show live $ values in right panel                                                                                                                                                                   
+     - E/M Coding Accuracy shows the LOS-derived progress note count (e.g., for LOS 4.5: 1 H&P + 2.5 progress + N consults per admission)                                                                      
+                                                                                                                                                                                                               
+  5. Nursing walkthrough → Revenue:                                                                                                                                                                            
+     - Two drivers visible: CDI Query Response, Documentation Completion                                                                                                                                       
+     - Both qualitative — show description + "Qualitative driver. No financial value modeled. Tracked post-deployment as a strategic outcome."
+     - Right panel shows them as "Qualitative" when enabled, "—" otherwise                                                                                                                                     
+     - Nursing's Quadrant Total reflects only Other Financial Benefits (since both drivers are qualitative)                                                                                                    
+                                                                                                                                                                                                               
+  6. Step 9 Model picks up Revenue contribution via existing docValue memoizer (now includes ipEmCoding from Task 2).                                                                                          
+                                                                                                                                                                                                               
+  7. Capacity (step 4) and Workforce (step 5) still work exactly as before — Revenue is purely additive.                                                                                                       
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - For ED, the wRVU driver entry uses id='edEmLevel' and label='E&M Level Accuracy', but shares enabledStateKey='wrvuEnabled' with the OP wrvu driver. Since only one shows per setting, no toggle conflict.  
+  - DenialPrevention is one driver entry with settings: ['outpatient', 'ed'] — internally the calc branches on care setting for ED-tuned scenarios.                                                            
+  - The DenialPrevention shortDescription stays generic for both settings; if you want different copy per setting later, split into two driver entries.                                                        
+  - ExploreDocQuality.tsx remains on disk untouched. Source for porting calc components.                                                                                                                       
+                                                                                                      

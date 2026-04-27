@@ -1,0 +1,558 @@
+---                                                           
+  🔧 Sprint 2D-Quality — Replit prompt (paste verbatim)                                                                                                                                                        
+                                                           
+  Context: Final sub-prompt of Sprint 2D. Builds the Quality quadrant page — mostly qualitative drivers for OP/ED/IP, with 5 quantified calc components for Nursing care quality (HAPI, Falls, CAUTI, CLABSI,  
+  Sepsis Bundle). Also fixes a small bug in ExploreRevenue.tsx where its toggle helpers look at the wrong state object.                                                                                        
+                                                                                                                                                                                                               
+  Pre-req: Sprints 2A through 2D-Revenue shipped.           
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Fix ExploreRevenue toggle helpers                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreRevenue.tsx     
+                                                                                                                                                                                                               
+  The page was copied from ExploreWorkforce, which reads toggle state from state.timeDriverInputs. But all Revenue drivers (wrvuEnabled, hccEnabled, denialsEnabled, ipDrgEnabled, etc.) live in
+  state.docQualityInputs. The toggles never read true.                                                                                                                                                         
+                                                            
+  REPLACE the existing isEnabled, isExpanded, toggleEnabled, toggleExpand helpers with versions that read state.docQualityInputs:                                                                              
+                                                             
+  const updateDocQualityInputs = (updates: Partial<typeof state.docQualityInputs>) => {                                                                                                                        
+    updateState({ docQualityInputs: { ...state.docQualityInputs, ...updates } });                                                                                                                              
+  };                                                        
+                                                                                                                                                                                                               
+  const isEnabled = (driver: ExploreDriver): boolean => {   
+    return Boolean((state.docQualityInputs as any)[driver.enabledStateKey]);                                                                                                                                   
+  };                                                                                                                                                                                                           
+                                                             
+  const isExpanded = (driver: ExploreDriver): boolean => {                                                                                                                                                     
+    return driver.expandedStateKey ? Boolean((state.docQualityInputs as any)[driver.expandedStateKey]) : false;
+  };                                                                                                                                                                                                           
+                                                             
+  const toggleEnabled = (driver: ExploreDriver) => {                                                                                                                                                           
+    const current = isEnabled(driver);                       
+    const updates: any = { [driver.enabledStateKey]: !current };                                                                                                                                               
+    if (!current && driver.expandedStateKey) {          
+      updates[driver.expandedStateKey] = true;                                                                                                                                                                 
+    }                                                     
+    updateDocQualityInputs(updates);                                                                                                                                                                           
+  };                                                        
+                                                                                                                                                                                                               
+  const toggleExpand = (driver: ExploreDriver) => {         
+    if (!driver.expandedStateKey) return;                                                                                                                                                                      
+    updateDocQualityInputs({ [driver.expandedStateKey]: !isExpanded(driver) } as any);                                                                                                                         
+  };                                                         
+                                                                                                                                                                                                               
+  ALSO update the calcComponent rendering site so it passes the right updateDocQualityInputs (it already should, but verify).
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 2 — Add new state fields for qualitative Quality drivers
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                          
+  In TimeDriverInputs interface, ADD these toggle field pairs (all booleans, for qualitative-only Quality drivers without existing state):                                                                     
+                                                                                                                                                                                                               
+    // OP qualitative Quality drivers                                                                                                                                                                          
+    opCdiQueryReductionEnabled: boolean;                                                                                                                                                                       
+    opCdiQueryReductionExpanded: boolean;                   
+    opCognitiveLoadEnabled: boolean;                                                                                                                                                                           
+    opCognitiveLoadExpanded: boolean;                     
+    opAuditComplianceEnabled: boolean;                                                                                                                                                                         
+    opAuditComplianceExpanded: boolean;                                                                                                                                                                        
+    opCareContinuityEnabled: boolean;                     
+    opCareContinuityExpanded: boolean;                                                                                                                                                                         
+    opNoteStarRatingEnabled: boolean;                       
+    opNoteStarRatingExpanded: boolean;                                                                                                                                                                         
+    opDiagnosisCaptureEnabled: boolean;                      
+    opDiagnosisCaptureExpanded: boolean;                                                                                                                                                                       
+    opDiagnosisSpecificityEnabled: boolean;                                                                                                                                                                    
+    opDiagnosisSpecificityExpanded: boolean;                
+    // ED qualitative Quality drivers                                                                                                                                                                          
+    edNoteStarRatingEnabled: boolean;                       
+    edNoteStarRatingExpanded: boolean;                                                                                                                                                                         
+    edPressGaneyEnabled: boolean;                                                                                                                                                                              
+    edPressGaneyExpanded: boolean;                                                                                                                                                                             
+    // IP qualitative Quality drivers                                                                                                                                                                          
+    ipNoteStarRatingEnabled: boolean;                     
+    ipNoteStarRatingExpanded: boolean;                                                                                                                                                                         
+    ipHcahpsCompositeEnabled: boolean;                      
+    ipHcahpsCompositeExpanded: boolean;                                                                                                                                                                        
+    ipReadmissionEnabled: boolean;                           
+    ipReadmissionExpanded: boolean;                                                                                                                                                                            
+    // Nursing qualitative Quality (1 new — HCAHPS already exists in docQualityInputs)                                                                                                                         
+    nursingMedErrorEnabled: boolean;                         
+    nursingMedErrorExpanded: boolean;                                                                                                                                                                          
+                                                          
+  Add corresponding `false` defaults to DEFAULT_EXPLORE_STATE.timeDriverInputs.                                                                                                                                
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 3 — Create 5 nursing care quality calc components                                                                                                                                                       
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  All five port from existing logic in client/src/pages/explore/ExploreCareQuality.tsx. Each takes ExploreCalcComponentProps and computes patient days internally:                                             
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;                                                                                                                   
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                                                                                                                                                                     
+  NEW FILE: client/src/components/explore/drivers/NursingHapiCalc.tsx                                                                                                                                          
+                                                        
+  Port from ExploreCareQuality.tsx HAPI section. Uses docQualityInputs.nursingHapiRate, nursingHapiPreventionRate, nursingHapiCost.                                                                            
+                                                             
+  Math:                                                                                                                                                                                                        
+  - hapisPerYear = (patientDays / 1000) × nursingHapiRate   
+  - hapisPrevented = hapisPerYear × (nursingHapiPreventionRate / 100)                                                                                                                                          
+  - value = hapisPrevented × nursingHapiCost                 
+                                                                                                                                                                                                               
+  Render: "The Theory" copy block ("HAPIs happen when risk signals aren't visible in time to act..."), Step 1: Current HAPI Volume (3-col grid: Patient Days, HAPI Rate, HAPIs/Year), Step 2:                  
+  Documentation-Preventable (Prevention Rate, Cost per HAPI), Step 3: Potential Value calc card.                                                                                                               
+                                                                                                                                                                                                               
+  Source for behavior: ExploreCareQuality.tsx (Sprint 2A doesn't fully match the ExploreDocQuality.tsx version — use the ExploreCareQuality.tsx logic since that's the page nursing currently routes to). If   
+  both exist, prefer ExploreCareQuality.tsx.                 
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                                                                                                                                                                     
+  NEW FILE: client/src/components/explore/drivers/NursingFallsCalc.tsx                                                                                                                                         
+                                                                                                                                                                                                               
+  Port from ExploreCareQuality.tsx Falls section. Uses nursingFallsRate, nursingFallsPreventionRate, nursingFallsCost.                                                                                         
+                                                                                                                                                                                                               
+  Math:                                                                                                                                                                                                        
+  - fallsPerYear = (patientDays / 1000) × nursingFallsRate
+  - fallsPrevented = fallsPerYear × (nursingFallsPreventionRate / 100)                                                                                                                                         
+  - value = fallsPrevented × nursingFallsCost                
+                                                          
+  ────────────────────────────────────────                   
+  NEW FILE: client/src/components/explore/drivers/NursingCautiCalc.tsx                                                                                                                                         
+                                                        
+  Port from ExploreCareQuality.tsx CAUTI section. Uses nursingCautiUtilizationRatio, nursingCautiRate, nursingCautiPreventionRate, nursingCautiCost.                                                           
+                                                             
+  Math:                                                                                                                                                                                                        
+  - catheterDays = patientDays × (nursingCautiUtilizationRatio / 100)
+  - cautisPerYear = (catheterDays / 1000) × nursingCautiRate                                                                                                                                                   
+  - prevented = cautisPerYear × (nursingCautiPreventionRate / 100)
+  - value = prevented × nursingCautiCost                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                                                                                                                                                                     
+  NEW FILE: client/src/components/explore/drivers/NursingClabsiCalc.tsx                                                                                                                                        
+                                                                                                                                                                                                               
+  Port from ExploreCareQuality.tsx CLABSI section. Same pattern as CAUTI but with line days instead of catheter days.
+                                                                                                                                                                                                               
+  Math:                                                                                                                                                                                                        
+  - lineDays = patientDays × (nursingClabsiUtilizationRatio / 100)                                                                                                                                             
+  - clabsiPerYear = (lineDays / 1000) × nursingClabsiRate                                                                                                                                                      
+  - prevented = clabsiPerYear × (nursingClabsiPreventionRate / 100)
+  - value = prevented × nursingClabsiCost                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                                                                                                                                                                     
+  NEW FILE: client/src/components/explore/drivers/NursingSepsisCalc.tsx                                                                                                                                        
+                                                                                                                                                                                                               
+  Port from ExploreCareQuality.tsx Sepsis section. Uses nursingSepsisRatePerThousand, nursingSepsisCurrentCompliance, nursingSepsisDocLagPercent, nursingSepsisExcessCostPerCase, nursingSepsisRealization.
+                                                                                                                                                                                                               
+  Math:                                                   
+  - sepsisPerYear = (patientDays / 1000) × nursingSepsisRatePerThousand                                                                                                                                        
+  - nonCompliant = sepsisPerYear × ((100 - nursingSepsisCurrentCompliance) / 100)
+  - docLagCases = nonCompliant × (nursingSepsisDocLagPercent / 100)                                                                                                                                            
+  - value = docLagCases × nursingSepsisExcessCostPerCase × (nursingSepsisRealization / 100)
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Add Quality drivers to EXPLORE_DRIVERS                                                                                                                                                              
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                     
+                                                          
+  Add imports:                                                                                                                                                                                                 
+    import NursingHapiCalc from "@/components/explore/drivers/NursingHapiCalc";                                                                                                                                
+    import NursingFallsCalc from "@/components/explore/drivers/NursingFallsCalc";                                                                                                                              
+    import NursingCautiCalc from "@/components/explore/drivers/NursingCautiCalc";                                                                                                                              
+    import NursingClabsiCalc from "@/components/explore/drivers/NursingClabsiCalc";                                                                                                                            
+    import NursingSepsisCalc from "@/components/explore/drivers/NursingSepsisCalc";                                                                                                                            
+                                                             
+  APPEND to EXPLORE_DRIVERS array (after Revenue drivers):                                                                                                                                                     
+                                                             
+    // ───── QUALITY ─────                                  
+    // OP — all qualitative                                                                                                                                                                                    
+    {                                                                                                                                                                                                          
+      id: 'opCdiQueryReduction',                                                                                                                                                                               
+      label: 'CDI Query Reduction',                                                                                                                                                                            
+      shortDescription: 'Volume of CDI or coding queries returned to providers post-visit. Reductions are typically associated with more complete documentation captured at the point of care.',
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['outpatient'],                              
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opCdiQueryReductionEnabled',         
+      expandedStateKey: 'opCdiQueryReductionExpanded',                                                                                                                                                         
+      trackedMeasureIds: ['opCdiQueryReduction'],            
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'opCognitiveLoad',                                                                                                                                                                                   
+      label: 'Cognitive Load Reduction',                                                                                                                                                                       
+      shortDescription: 'Self-reported reduction in mental effort spent context-switching between patient interaction and documentation during a visit.',                                                      
+      quadrant: 'Quality',                                
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                             
+      enabledStateKey: 'opCognitiveLoadEnabled',                                                                                                                                                               
+      expandedStateKey: 'opCognitiveLoadExpanded',          
+      trackedMeasureIds: ['opCognitiveLoadReduction'],                                                                                                                                                         
+    },                                                                                                                                                                                                         
+    {                                                     
+      id: 'opAuditCompliance',                                                                                                                                                                                 
+      label: 'Audit & Compliance Readiness',                                                                                                                                                                   
+      shortDescription: 'Share of records meeting internal audit or payer completeness criteria. Higher completeness is associated with reduced audit exposure.',                                              
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['outpatient'],                              
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opAuditComplianceEnabled',           
+      expandedStateKey: 'opAuditComplianceExpanded',                                                                                                                                                           
+      trackedMeasureIds: ['opAuditComplianceReadiness'],
+    },                                                                                                                                                                                                         
+    {                                                     
+      id: 'opCareContinuity',                                                                                                                                                                                  
+      label: 'Care Continuity for Handoffs & Referrals',    
+      shortDescription: 'Share of referrals or care handoffs accompanied by structured documentation at time of transition.',                                                                                  
+      quadrant: 'Quality',                                   
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opCareContinuityEnabled',           
+      expandedStateKey: 'opCareContinuityExpanded',                                                                                                                                                            
+      trackedMeasureIds: ['opCareContinuity'],               
+    },                                                    
+    {                                                                                                                                                                                                          
+      id: 'opNoteStarRating',                                                                                                                                                                                  
+      label: 'Note Star Rating',                                                                                                                                                                               
+      shortDescription: 'Provider-assigned quality rating of generated notes (typically 1-5 scale).',                                                                                                          
+      quadrant: 'Quality',                                
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                            
+      enabledStateKey: 'opNoteStarRatingEnabled',                                                                                                                                                              
+      expandedStateKey: 'opNoteStarRatingExpanded',          
+      trackedMeasureIds: ['noteStarRating'],              
+    },                                                                                                                                                                                                         
+    {                                                       
+      id: 'opDiagnosisCapture',                                                                                                                                                                                
+      label: 'Diagnosis Capture Rate',                      
+      shortDescription: 'Share of diagnoses discussed during the encounter that appear in the coded record.',                                                                                                  
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['outpatient'],                              
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opDiagnosisCaptureEnabled',         
+      expandedStateKey: 'opDiagnosisCaptureExpanded',                                                                                                                                                          
+      trackedMeasureIds: ['diagnosisCapture'],            
+    },                                                       
+    {                                                                                                                                                                                                          
+      id: 'opDiagnosisSpecificity',                                                                                                                                                                            
+      label: 'Diagnosis Specificity',                                                                                                                                                                          
+      shortDescription: 'Share of diagnoses coded to the highest available ICD-10 specificity.',                                                                                                               
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['outpatient'],                              
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opDiagnosisSpecificityEnabled',     
+      expandedStateKey: 'opDiagnosisSpecificityExpanded',                                                                                                                                                      
+      trackedMeasureIds: ['diagnosisSpecificity'],           
+    },                                                    
+    // ED — qualitative                                                                                                                                                                                        
+    {                                                                                                                                                                                                          
+      id: 'edNoteStarRating',                                                                                                                                                                                  
+      label: 'Note Quality Score',                                                                                                                                                                             
+      shortDescription: 'Provider-assigned quality rating of generated notes (typically 1-5 scale).',
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['ed'],                                   
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edNoteStarRatingEnabled',            
+      expandedStateKey: 'edNoteStarRatingExpanded',                                                                                                                                                            
+      trackedMeasureIds: ['noteStarRating'],            
+    },                                                       
+    {                                                                                                                                                                                                          
+      id: 'edPressGaney',                               
+      label: 'Press Ganey / Patient Experience',                                                                                                                                                               
+      shortDescription: 'Patient experience scores from Press Ganey or similar instruments, ED-specific subscale.',                                                                                            
+      quadrant: 'Quality',                                   
+      settings: ['ed'],                                                                                                                                                                                        
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edPressGaneyEnabled',               
+      expandedStateKey: 'edPressGaneyExpanded',                                                                                                                                                                
+      trackedMeasureIds: ['pressGaney'],                     
+    },                                                    
+    // IP — qualitative                                                                                                                                                                                        
+    {                                                                                                                                                                                                          
+      id: 'ipNoteStarRating',                                                                                                                                                                                  
+      label: 'Note Quality Score',                                                                                                                                                                             
+      shortDescription: 'Provider-assigned quality rating of generated notes (typically 1-5 scale).',
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['inpatient'],                               
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipNoteStarRatingEnabled',       
+      expandedStateKey: 'ipNoteStarRatingExpanded',                                                                                                                                                            
+      trackedMeasureIds: ['noteStarRating'],                 
+    },                                                                                                                                                                                                         
+    {                                                   
+      id: 'ipHcahpsComposite',                                                                                                                                                                                 
+      label: 'HCAHPS Composite',                          
+      shortDescription: 'Inpatient patient experience score from the HCAHPS survey.',                                                                                                                          
+      quadrant: 'Quality',                                  
+      settings: ['inpatient'],                                                                                                                                                                                 
+      visibility: 'qualitative',                          
+      enabledStateKey: 'ipHcahpsCompositeEnabled',                                                                                                                                                             
+      expandedStateKey: 'ipHcahpsCompositeExpanded',                                                                                                                                                           
+      trackedMeasureIds: ['hcahpsComposite'],             
+    },                                                                                                                                                                                                         
+    {                                                       
+      id: 'ipReadmission',                                                                                                                                                                                     
+      label: '30-Day Readmission',                          
+      shortDescription: 'Share of inpatient discharges followed by readmission within 30 days. CMS-reportable under HRRP.',                                                                                    
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['inpatient'],                               
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipReadmissionEnabled',              
+      expandedStateKey: 'ipReadmissionExpanded',                                                                                                                                                               
+      trackedMeasureIds: ['thirtyDayReadmission'],          
+    },                                                       
+    // Nursing — quantified care quality                                                                                                                                                                       
+    {                                                                                                                                                                                                          
+      id: 'nursingHapi',                                                                                                                                                                                       
+      label: 'HAPI Prevention',                                                                                                                                                                                
+      shortDescription: 'Stage 2+ hospital-acquired pressure injuries per 1,000 patient days. Real-time skin assessment documentation enables earlier intervention.',                                          
+      quadrant: 'Quality',                                   
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'quantified',                           
+      enabledStateKey: 'nursingHapiEnabled',                                                                                                                                                                   
+      expandedStateKey: 'nursingHapiExpanded',                                                                                                                                                                 
+      calcComponent: NursingHapiCalc,                   
+      trackedMeasureIds: ['hapiRate'],                                                                                                                                                                         
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'nursingFalls',                                                                                                                                                                                      
+      label: 'Falls Prevention',                                                                                                                                                                               
+      shortDescription: 'Falls per 1,000 patient days. Timely fall risk assessment documentation supports earlier intervention.',
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'quantified',                           
+      enabledStateKey: 'nursingFallsEnabled',                                                                                                                                                                  
+      expandedStateKey: 'nursingFallsExpanded',             
+      calcComponent: NursingFallsCalc,                                                                                                                                                                         
+      trackedMeasureIds: ['patientFallRate'],                
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'nursingCauti',                                   
+      label: 'CAUTI Prevention',                                                                                                                                                                               
+      shortDescription: 'Catheter-associated UTIs per 1,000 catheter days. Documentation of catheter necessity drives prevention bundle compliance.',
+      quadrant: 'Quality',                       
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'quantified',                           
+      enabledStateKey: 'nursingCautiEnabled',                                                                                                                                                                  
+      expandedStateKey: 'nursingCautiExpanded',             
+      calcComponent: NursingCautiCalc,                                                                                                                                                                         
+      trackedMeasureIds: ['cautiRate'],                      
+    },                                                    
+    {                                                                                                                                                                                                          
+      id: 'nursingClabsi',                                  
+      label: 'CLABSI Prevention',                                                                                                                                                                              
+      shortDescription: 'Central line-associated bloodstream infections per 1,000 line days. Bundle compliance documentation drives prevention.',
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'quantified',                           
+      enabledStateKey: 'nursingClabsiEnabled',                                                                                                                                                                 
+      expandedStateKey: 'nursingClabsiExpanded',            
+      calcComponent: NursingClabsiCalc,                      
+      trackedMeasureIds: ['clabsiRate'],                  
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'nursingSepsis',                                                                                                                                                                                     
+      label: 'Sepsis Bundle Compliance',                                                                                                                                                                       
+      shortDescription: 'Excess cost from sepsis cases not meeting bundle compliance, where documentation lag is the contributing factor.',
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['nursing'],                                 
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'nursingSepsisEnabled',                                                                                                                                                                 
+      expandedStateKey: 'nursingSepsisExpanded',            
+      calcComponent: NursingSepsisCalc,                                                                                                                                                                        
+      trackedMeasureIds: [],                                 
+    },                                                                                                                                                                                                         
+    // Nursing — qualitative                                                                                                                                                                                   
+    {                                                                                                                                                                                                          
+      id: 'nursingMedError',                                                                                                                                                                                   
+      label: 'Medication Error & Near-Miss',                                                                                                                                                                   
+      shortDescription: 'Medication error and near-miss events per 1,000 patient days. Documentation clarity at handoffs influences event rates.',
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['nursing'],                                 
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'nursingMedErrorEnabled',             
+      expandedStateKey: 'nursingMedErrorExpanded',                                                                                                                                                             
+      trackedMeasureIds: ['medicationErrorRate'],       
+    },                                                                                                                                                                                                         
+    {                                                     
+      id: 'nursingHcahpsNurseComm',                                                                                                                                                                            
+      label: 'HCAHPS Nurse Communication',                  
+      shortDescription: 'HCAHPS subscale measuring patient-reported nurse communication. Among the highest-weighted components of the inpatient HCAHPS composite.',                                            
+      quadrant: 'Quality',                                
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'nursingHcahpsEnabled',          
+      expandedStateKey: 'nursingHcahpsExpanded',                                                                                                                                                               
+      trackedMeasureIds: ['hcahpsNurseCommunication'],       
+    },                                                                                                                                                                                                         
+                                                        
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Build out ExploreQuality.tsx                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreQuality.tsx (REPLACE the placeholder from Sprint 2B)
+                                                                                                                                                                                                               
+  Copy the entire body of ExploreWorkforce.tsx into ExploreQuality.tsx, then make these substitutions and modifications:
+                                                                                                                                                                                                               
+  1. Component name: ExploreWorkforce → ExploreQuality                                                                                                                                                         
+  2. Props interface name: ExploreWorkforceProps → ExploreQualityProps
+  3. data-testid prefix: wf- → q-                                                                                                                                                                              
+  4. Quadrant filter: getDriversForPage('Workforce', setting) → getDriversForPage('Quality', setting)                                                                                                          
+  5. Other Financial Benefits filter: 'Workforce' → 'Quality'
+  6. UnifiedHeader: currentStep={5} → currentStep={7}, stepName="Workforce" → stepName="Quality"                                                                                                               
+  7. Page H1: "Workforce" → "Quality"                                                                                                                                                                          
+  8. Page subtitle: "How does reclaimed time affect your team?" → "Strategic outcomes that come along with the work."                                                                                          
+  9. Right panel header: "Workforce Value" → "Quality Value"                                                                                                                                                   
+  10. Continue buttons: "Continue to Revenue" → "Continue to Investment"
+                                                                                                                                                                                                               
+  CRITICAL: Quality drivers live across BOTH state.timeDriverInputs (OP/ED/IP/nursing qualitative drivers added in Task 2) AND state.docQualityInputs (nursing HAPI/Falls/CAUTI/CLABSI/Sepsis/HCAHPS — existing
+   fields). Update the helpers to check both:                                                                                                                                                                  
+                                                                                                                                                                                                               
+  const updateTimeDriverInputs = (updates: Partial<typeof state.timeDriverInputs>) => {                                                                                                                        
+    updateState({ timeDriverInputs: { ...state.timeDriverInputs, ...updates } });                                                                                                                              
+  };                                                                                                                                                                                                           
+  const updateDocQualityInputs = (updates: Partial<typeof state.docQualityInputs>) => {
+    updateState({ docQualityInputs: { ...state.docQualityInputs, ...updates } });                                                                                                                              
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  const isEnabled = (driver: ExploreDriver): boolean => {                                                                                                                                                      
+    const td = state.timeDriverInputs as any;                                                                                                                                                                  
+    const dq = state.docQualityInputs as any;             
+    return Boolean(td[driver.enabledStateKey] ?? dq[driver.enabledStateKey]);                                                                                                                                  
+  };                                                        
+                                                                                                                                                                                                               
+  const isExpanded = (driver: ExploreDriver): boolean => {  
+    if (!driver.expandedStateKey) return false;                                                                                                                                                                
+    const td = state.timeDriverInputs as any;                                                                                                                                                                  
+    const dq = state.docQualityInputs as any;           
+    return Boolean(td[driver.expandedStateKey] ?? dq[driver.expandedStateKey]);                                                                                                                                
+  };                                                         
+                                                                                                                                                                                                               
+  const toggleEnabled = (driver: ExploreDriver) => {    
+    const td = state.timeDriverInputs as any;                                                                                                                                                                  
+    const dq = state.docQualityInputs as any;             
+    const inTd = driver.enabledStateKey in td;                                                                                                                                                                 
+    const current = inTd ? td[driver.enabledStateKey] : dq[driver.enabledStateKey];
+    const updates: any = { [driver.enabledStateKey]: !current };                                                                                                                                               
+    if (!current && driver.expandedStateKey) {               
+      updates[driver.expandedStateKey] = true;                                                                                                                                                                 
+    }                                                                                                                                                                                                          
+    if (inTd) {                                             
+      updateTimeDriverInputs(updates);                                                                                                                                                                         
+    } else {                                                
+      updateDocQualityInputs(updates);                                                                                                                                                                         
+    }                                                                                                                                                                                                          
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  const toggleExpand = (driver: ExploreDriver) => {
+    if (!driver.expandedStateKey) return;                                                                                                                                                                      
+    const td = state.timeDriverInputs as any;             
+    const dq = state.docQualityInputs as any;                                                                                                                                                                  
+    const inTd = driver.expandedStateKey in td;             
+    const current = inTd ? td[driver.expandedStateKey] : dq[driver.expandedStateKey];                                                                                                                          
+    if (inTd) {                                              
+      updateTimeDriverInputs({ [driver.expandedStateKey]: !current } as any);
+    } else {                                                                                                                                                                                                   
+      updateDocQualityInputs({ [driver.expandedStateKey]: !current } as any);
+    }                                                                                                                                                                                                          
+  };                                                         
+                                                          
+  REPLACE the driverValues useMemo with this Quality-specific version (only nursing care quality drivers contribute $; all others are qualitative):                                                            
+                                                             
+  const driverValues = useMemo(() => {                                                                                                                                                                         
+    const result: Record<string, number> = {};          
+    const dq = state.docQualityInputs;                                                                                                                                                                         
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;                                                                                                                   
+                                                          
+    if (dq.nursingHapiEnabled) {                                                                                                                                                                               
+      const hapis = (patientDays / 1000) * dq.nursingHapiRate;                                                                                                                                                 
+      result.nursingHapi = Math.round(hapis * (dq.nursingHapiPreventionRate / 100) * dq.nursingHapiCost);
+    }                                                                                                                                                                                                          
+    if (dq.nursingFallsEnabled) {                            
+      const falls = (patientDays / 1000) * dq.nursingFallsRate;                                                                                                                                                
+      result.nursingFalls = Math.round(falls * (dq.nursingFallsPreventionRate / 100) * dq.nursingFallsCost);
+    }                                                                                                                                                                                                          
+    if (dq.nursingCautiEnabled) {                                                                                                                                                                              
+      const catheterDays = patientDays * (dq.nursingCautiUtilizationRatio / 100);                                                                                                                              
+      const cautis = (catheterDays / 1000) * dq.nursingCautiRate;                                                                                                                                              
+      result.nursingCauti = Math.round(cautis * (dq.nursingCautiPreventionRate / 100) * dq.nursingCautiCost);                                                                                                  
+    }                                                                                                                                                                                                          
+    if (dq.nursingClabsiEnabled) {                                                                                                                                                                             
+      const lineDays = patientDays * (dq.nursingClabsiUtilizationRatio / 100);
+      const clabsi = (lineDays / 1000) * dq.nursingClabsiRate;                                                                                                                                                 
+      result.nursingClabsi = Math.round(clabsi * (dq.nursingClabsiPreventionRate / 100) * dq.nursingClabsiCost);
+    }                                                                                                                                                                                                          
+    if (dq.nursingSepsisEnabled) {                                                                                                                                                                             
+      const sepsis = (patientDays / 1000) * dq.nursingSepsisRatePerThousand;                                                                                                                                   
+      const nonCompliant = sepsis * ((100 - dq.nursingSepsisCurrentCompliance) / 100);                                                                                                                         
+      const docLag = nonCompliant * (dq.nursingSepsisDocLagPercent / 100);                                                                                                                                     
+      result.nursingSepsis = Math.round(docLag * dq.nursingSepsisExcessCostPerCase * (dq.nursingSepsisRealization / 100));
+    }                                                                                                                                                                                                          
+                                                             
+    return result;                                                                                                                                                                                             
+  }, [state]);                                              
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 6 — Wire props in ExploreFlow.tsx                                                                                                                                                                       
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                                                                                                                                               
+  Update case 'quality' branch:                                                                                                                                                                                
+                                                             
+    case 'quality':                                         
+      content = (                                                                                                                                                                                              
+        <ExploreQuality                                     
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}                                                                                                                                                                            
+          totalHoursSaved={totalHoursSaved}                  
+          onNext={() => navigate('investment')}                                                                                                                                                                
+          onBack={() => navigate('revenue')}                 
+          onHome={goHome}                                                                                                                                                                                      
+        />                                                   
+      );                                                    
+      break;                                            
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  1. TypeScript compiles. The 5 new nursing calc components type-check against ExploreCalcComponentProps.
+                                                                                                                                                                                                               
+  2. Outpatient walkthrough → Quality (step 7/9):         
+     - 7 toggleable drivers visible: CDI Query Reduction, Cognitive Load Reduction, Audit & Compliance Readiness, Care Continuity, Note Star Rating, Diagnosis Capture, Diagnosis Specificity
+     - All are qualitative — toggling on shows the description + "Qualitative driver. No financial value modeled. Tracked post-deployment."                                                                    
+     - Right panel shows "Qualitative" for enabled drivers   
+     - Quadrant Total reflects only Other Financial Benefits (no $ from drivers)                                                                                                                               
+                                                             
+  3. ED walkthrough → Quality:                                                                                                                                                                                 
+     - 2 toggleable drivers: Note Quality Score, Press Ganey
+     - Both qualitative                                                                                                                                                                                        
+                                                             
+  4. IP walkthrough → Quality:                                                                                                                                                                                 
+     - 3 toggleable drivers: Note Quality Score, HCAHPS Composite, 30-Day Readmission                                                                                                                          
+     - All qualitative                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  5. Nursing walkthrough → Quality:                                                                                                                                                                            
+     - 7 toggleable drivers: HAPI, Falls, CAUTI, CLABSI, Sepsis (all quantified) + Med Error, HCAHPS Nurse Communication (qualitative)                                                                         
+     - HAPI/Falls/CAUTI/CLABSI/Sepsis show full calc UI when toggled on (3-step calculations with patient days, rates, prevention, cost)                                                                       
+     - Right panel: quantified drivers show live $ values, qualitative show "Qualitative"
+     - Quadrant Total sums the 5 quantified driver values + Other Financial Benefits                                                                                                                           
+                                                             
+  6. Revenue page (step 6) — verify Task 1 fix worked:                                                                                                                                                         
+     - Toggle wRVU on → toggle visually shows ON (red) — previously this was broken
+     - Same for HCC, Denials, IP DRG/CDI/Obs/EM                                                                                                                                                                
+     - All calc UIs render correctly when expanded           
+                                                                                                                                                                                                               
+  7. Capacity (4) and Workforce (5) still work as before — Quality is additive only.                                                                                                                           
+                                                                                                                                                                                                               
+  8. Step 9 Model:                                                                                                                                                                                             
+     - With nursing care quality drivers enabled, Step 9's nursingCareQualityPotential calc (which lives in ExploreInvestment.tsx and ExploreModel.tsx) picks them up automatically — same fields, same math.  
+  Verify Step 9 totals reflect Quality contributions.                                                                                                                                                          
+     - For OP/ED/IP, no Quality $ contribution to Step 9 (correctly — all qualitative).                                                                                                                        
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - ExploreCareQuality.tsx becomes unreachable code at this point (nursing now routes through Quality page, not its own care-quality page). Keep it on disk for now — the calc logic is the source for the 5   
+  nursing calc components. Cleanup sprint can delete it later.                                                                                                                                                 
+  - ExploreDocQuality.tsx and ExploreValueDrivers.tsx are similarly unreachable. Same instruction — keep on disk.                                                                                              
+  - Some Sprint 2A measure ids referenced in trackedMeasureIds may not exactly match if the actual ids in measureCareSettings.ts differ slightly. Replit should match by id first, then by label, and report
+  any unmatched.                                                                                                                                                                                               
+  - The Quality page is the ONLY page that needs to read from both timeDriverInputs and docQualityInputs. Capacity and Workforce only use timeDriverInputs. Revenue (after Task 1 fix) only uses
+  docQualityInputs. Quality straddles both. 

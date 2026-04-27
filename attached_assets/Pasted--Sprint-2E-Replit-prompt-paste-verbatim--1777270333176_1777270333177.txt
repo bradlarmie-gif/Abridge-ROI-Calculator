@@ -1,0 +1,403 @@
+🔧 Sprint 2E — Replit prompt (paste verbatim)                                                                                                                                                                
+                                                    
+  Context: Sprint 2E redesigns Step 9 Model. Replaces the existing 4-card grid (Access / Revenue / Workforce / Downstream) with quadrant-aligned cards (Capacity / Workforce / Revenue / Quality, in flow      
+  order). Drops the standalone Downstream card per spec. Each card shows enabled drivers + their dollar values, qualitative drivers as text-only items, Other Financial Benefits filtered by that quadrant, and
+   a separate one-time (Y1) callout if applicable. Total Annual Value and ROI math now derive from quadrant breakdowns rather than the legacy timeValue+docValue split.                                        
+                                                                                                                                                                                                               
+  Pre-req: Sprints 2A through 2D-Quality shipped.                                                                                                                                                              
+                                                             
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Add isDriverEnabled helper to exploreDrivers.ts                                                                                                                                                     
+  ═══════════════════════════════════════════════════════════
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                          
+  Add this exported helper at the bottom of the file. Reads driver enable state from either timeDriverInputs OR docQualityInputs (some drivers live in each), so the same function works for any quadrant.     
+                                                                                                                                                                                                               
+  import type { ExploreState } from "@/pages/explore/ExploreFlow";
+                                                                                                                                                                                                               
+  export function isDriverEnabled(driver: ExploreDriver, state: ExploreState): boolean {
+    const td = state.timeDriverInputs as any;                                                                                                                                                                  
+    const dq = state.docQualityInputs as any;               
+    return Boolean(td[driver.enabledStateKey] ?? dq[driver.enabledStateKey]);                                                                                                                                  
+  }                                                                                                                                                                                                            
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Replace value calculations in ExploreModel.tsx
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreModel.tsx            
+                                                                                                                                                                                                               
+  The existing component receives timeValue and docValue as props and computes nursingCareQualityPotential locally, then sums to totalValue. Replace this with per-quadrant calcs.
+                                                                                                                                                                                                               
+  ADD imports at the top:                                 
+    import { EXPLORE_DRIVERS, isDriverEnabled, type ExploreQuadrant } from "@/lib/exploreDrivers";                                                                                                             
+    import type { OtherFinancialBenefitItem } from "./ExploreFlow";
+                                                                                                                                                                                                               
+  REMOVE the existing nursingCareQualityPotential useMemo block.
+                                                                                                                                                                                                               
+  REMOVE the existing totalValue calculation (line ~81: const totalValue = timeValue + docValue + nursingCareQualityPotential).                                                                                
+                                                             
+  REPLACE WITH this block. Place after the props are destructured but before any JSX:                                                                                                                          
+                                                             
+  // ───── Per-quadrant value calculations ─────                                                                                                                                                               
+                                                                                                                                                                                                               
+  const allDriverValues = useMemo(() => {                                                                                                                                                                      
+    const result: Record<string, number> = {};                                                                                                                                                                 
+    const td = state.timeDriverInputs;                                                                                                                                                                         
+    const dq = state.docQualityInputs;                  
+    const setting = state.careSetting;                                                                                                                                                                         
+    const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
+    const isED = setting === 'ed';                                                                                                                                                                             
+    const isIP = setting === 'inpatient';                    
+    const isOP = setting === 'outpatient';                                                                                                                                                                     
+    const isNursing = setting === 'nursing';                
+    const isPhysician = isOP || isED || isIP;                                                                                                                                                                  
+                                                             
+    // ─── Capacity ───                                      
+    if (isOP && td.patientAccessEnabled) {                                                                                                                                                                     
+      const eff = Math.min(td.accessProviders || state.numberOfProviders, state.numberOfProviders);                                                                                                            
+      const hrsPerProvWk = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;                                                                                                   
+      const reinvest = (td.capacityRealizationPercent ?? 25) / 100;                                                                                                                                            
+      const visitHrs = (td.visitDuration ?? 30) / 60;                                                                                                                                                          
+      const visitsPerWk = visitHrs > 0 ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10 : 0;                                                                                                       
+      result.patientAccess = Math.round(visitsPerWk * eff * 48 * td.revenuePerVisit);                                                                                                                          
+    }                                                                                                                                                                                                          
+    if (isED && td.edLwbsEnabled) {                                                                                                                                                                            
+      const lwbs = state.annualEncounters * (td.edLwbsRate / 100);                                                                                                                                             
+      const recovered = lwbs * (td.edLwbsReduction / 100);                                                                                                                                                     
+      result.lwbsRecovery = Math.round(recovered * td.edRevenuePerVisit * (td.edLwbsRealization / 100));                                                                                                       
+      if (td.edThroughputEnabled) {                                                                                                                                                                            
+        const adm = recovered * (td.edAdmissionRate / 100);                                                                                                                                                    
+        result.admissionCapture = Math.round(adm * td.edAdmissionRevenue * (td.edAdmissionRealization / 100));                                                                                                 
+      }                                                                                                                                                                                                        
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    // ─── Workforce ───                                                                                                                                                                                       
+    const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };                                                                                                       
+    const nursingScenarios: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };                                                                                                        
+    if (isPhysician && td.wellbeingEnabled && td.calculateRetentionValue) {                                                                                                                                    
+      const turnover = td.annualTurnoverRate / 100;                                                                                                                                                            
+      const burnout = td.burnoutRelatedTurnover / 100;                                                                                                                                                         
+      const impact = retentionScenarios[td.retentionImpactScenario] / 100;                                                                                                                                     
+      const retained = state.numberOfProviders * turnover * burnout * impact;                                                                                                                                  
+      result.providerWellbeing = Math.round(retained * td.replacementCost);
+      if (td.physicianAgencyEnabled) {                       
+        result.physicianLocumAgency = Math.round(retained * td.physicianAgencyWeeksPerVacancy * td.physicianAgencyWeeklyPremium);                                                                              
+      }                                                      
+    }                                                                                                                                                                                                          
+    if (isNursing && td.nursingRetentionEnabled) {                                                                                                                                                             
+      const turnover = td.nursingTurnoverRate / 100;                                                                                                                                                           
+      const impact = nursingScenarios[td.retentionImpactScenario] / 100;                                                                                                                                       
+      const burnoutDep = state.numberOfProviders * turnover * 0.40;                                                                                                                                            
+      const retained = burnoutDep * impact;                                                                                                                                                                    
+      result.nursingRetention = Math.round(retained * td.nursingReplacementCost);                                                                                                                              
+      if (td.nursingAgencyEnabled) {                                                                                                                                                                           
+        result.nursingAgency = Math.round(retained * td.nursingAgencyWeeksPerVacancy * td.nursingAgencyWeeklyPremium);                                                                                         
+      }                                                                                                                                                                                                        
+    }                                                                                                                                                                                                          
+    if (isNursing && td.nursingOtEnabled) {                 
+      const otHrs = td.nursingOtHoursPerNurseWeek * (td.nursingOtReductionPercent / 100) * state.numberOfProviders * 52;                                                                                       
+      result.nursingOvertime = Math.round(otHrs * td.nursingOtHourlyRate);                                                                                                                                     
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    // ─── Revenue ───                                      
+    const wrvuScenarios: Record<string, number> = isED ? { conservative: 1, typical: 2.5, aggressive: 4 } : { conservative: 2, typical: 5, aggressive: 7 };                                                    
+    const denialsScenarios: Record<string, number> = isED ? { conservative: 15, typical: 30, aggressive: 50 } : { conservative: 25, typical: 50, aggressive: 75 };
+    const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };                                                                                                             
+                                                                                                                                                                                                               
+    if (dq.wrvuEnabled && (isOP || isED)) {                                                                                                                                                                    
+      const lift = (dq.currentWrvu * wrvuScenarios[dq.wrvuScenario]) / 100;                                                                                                                                    
+      const value = eligibleEncounters * lift * dq.conversionFactor * (dq.wrvuRealization / 100);                                                                                                              
+      if (isED) result.edEmLevel = Math.round(value);                                                                                                                                                          
+      else result.wrvu = Math.round(value);                  
+    }                                                                                                                                                                                                          
+    if (dq.hccEnabled && isOP) {                                                                                                                                                                               
+      const recap = hccScenarios[dq.hccScenario] / 100;                                                                                                                                                        
+      const ma = state.numberOfProviders * dq.panelSize * (dq.maPercent / 100);                                                                                                                                
+      const gap = ma * (dq.gapRate / 100);                                                                                                                                                                     
+      const recaptured = gap * recap;                                                                                                                                                                          
+      result.hccCapture = Math.round(recaptured * dq.avgHccs * dq.rafImpact * dq.annualPayment * (dq.hccRealization / 100));                                                                                   
+    }                                                                                                                                                                                                          
+    if (dq.denialsEnabled && (isOP || isED)) {                                                                                                                                                                 
+      const prev = denialsScenarios[dq.denialsScenario] / 100;                                                                                                                                                 
+      const tot = eligibleEncounters * (dq.denialRate / 100);                                                                                                                                                  
+      const unapp = tot * (dq.unappealableRate / 100);       
+      result.denialPrevention = Math.round(unapp * prev * dq.avgClaimValue * (dq.denialsRealization / 100));                                                                                                   
+    }                                                                                                                                                                                                          
+    if (isIP && dq.ipDrgEnabled) {                                                                                                                                                                             
+      const protectScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };                                                                                                      
+      const pct = protectScenarios[dq.ipDrgScenario] / 100; 
+      const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);                                                                                                                                          
+      result.drgAccuracy = Math.round(atRisk * pct * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100));                                                                              
+    }                                                        
+    if (isIP && dq.ipCdiEnabled) {                                                                                                                                                                             
+      const cdiScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };                                                                                                          
+      const pct = cdiScenarios[dq.ipCdiScenario] / 100;                                                                                                                                                        
+      const queries = eligibleEncounters * (dq.ipCdiQueryRate / 100);                                                                                                                                          
+      result.cdiQueryReduction = Math.round(queries * pct * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100));                                                                                               
+    }                                                        
+    if (isIP && dq.ipObsDefenseEnabled) {                                                                                                                                                                      
+      const gross = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100) * dq.ipObsDefenseClaimValue * (dq.ipObsDefenseDocContribution / 100);                                                               
+      result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));                                                                                                                              
+    }                                                                                                                                                                                                          
+    if (isIP && dq.ipEmCodingEnabled) {                                                                                                                                                                        
+      const losVal = state.ipAvgLengthOfStay ?? 4.5;                                                                                                                                                           
+      const progressPerAdm = Math.max(losVal - 2, 1);                                                                                                                                                          
+      const totalCharges = eligibleEncounters * (1 + progressPerAdm + dq.ipEmCodingConsultsPerAdmission);                                                                                                      
+      const gapMap: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };                                                                                                                 
+      const gapPct = (gapMap[dq.ipEmCodingGapScenario] ?? 12) / 100;                                                                                                                                           
+      result.emCodingAccuracy = Math.round(totalCharges * gapPct * dq.ipEmCodingAvgRevenueLift * (dq.ipEmCodingRealization / 100));                                                                            
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    // ─── Quality (Nursing only quantified) ───                                                                                                                                                               
+    if (isNursing) {                                                                                                                                                                                           
+      const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;                                                                                                                 
+      if (dq.nursingHapiEnabled) {                                                                                                                                                                             
+        const hapis = (patientDays / 1000) * dq.nursingHapiRate;                                                                                                                                               
+        result.nursingHapi = Math.round(hapis * (dq.nursingHapiPreventionRate / 100) * dq.nursingHapiCost);                                                                                                    
+      }                                                                                                                                                                                                        
+      if (dq.nursingFallsEnabled) {                                                                                                                                                                            
+        const falls = (patientDays / 1000) * dq.nursingFallsRate;                                                                                                                                              
+        result.nursingFalls = Math.round(falls * (dq.nursingFallsPreventionRate / 100) * dq.nursingFallsCost);
+      }                                                                                                                                                                                                        
+      if (dq.nursingCautiEnabled) {                                                                                                                                                                            
+        const cathDays = patientDays * (dq.nursingCautiUtilizationRatio / 100);                                                                                                                                
+        const cautis = (cathDays / 1000) * dq.nursingCautiRate;                                                                                                                                                
+        result.nursingCauti = Math.round(cautis * (dq.nursingCautiPreventionRate / 100) * dq.nursingCautiCost);                                                                                                
+      }                                                                                                                                                                                                        
+      if (dq.nursingClabsiEnabled) {                                                                                                                                                                           
+        const lineDays = patientDays * (dq.nursingClabsiUtilizationRatio / 100);                                                                                                                               
+        const clabsi = (lineDays / 1000) * dq.nursingClabsiRate;                                                                                                                                               
+        result.nursingClabsi = Math.round(clabsi * (dq.nursingClabsiPreventionRate / 100) * dq.nursingClabsiCost);                                                                                             
+      }                                                                                                                                                                                                        
+      if (dq.nursingSepsisEnabled) {                                                                                                                                                                           
+        const sepsis = (patientDays / 1000) * dq.nursingSepsisRatePerThousand;                                                                                                                                 
+        const nonComp = sepsis * ((100 - dq.nursingSepsisCurrentCompliance) / 100);                                                                                                                            
+        const docLag = nonComp * (dq.nursingSepsisDocLagPercent / 100);
+        result.nursingSepsis = Math.round(docLag * dq.nursingSepsisExcessCostPerCase * (dq.nursingSepsisRealization / 100));                                                                                   
+      }                                                                                                                                                                                                        
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    return result;                                                                                                                                                                                             
+  }, [state, totalHoursSaved]);                                                                                                                                                                                
+                                                                                                                                                                                                               
+  const valueByQuadrant = useMemo(() => {                                                                                                                                                                      
+    const totals: Record<ExploreQuadrant, number> = { Capacity: 0, Workforce: 0, Revenue: 0, Quality: 0 };                                                                                                     
+    if (!state.careSetting) return totals;                                                                                                                                                                     
+    EXPLORE_DRIVERS.forEach(d => {                                                                                                                                                                             
+      if (d.settings.includes(state.careSetting!)) {                                                                                                                                                           
+        totals[d.quadrant] += allDriverValues[d.id] || 0; 
+      }                                                                                                                                                                                                        
+    });                                                      
+    return totals;                                                                                                                                                                                             
+  }, [allDriverValues, state.careSetting]);                 
+                                                                                                                                                                                                               
+  const benefitsByQuadrant = useMemo(() => {                                                                                                                                                                   
+    const result: Record<ExploreQuadrant, { annual: number; oneTime: number; items: OtherFinancialBenefitItem[] }> = {                                                                                         
+      Capacity: { annual: 0, oneTime: 0, items: [] },                                                                                                                                                          
+      Workforce: { annual: 0, oneTime: 0, items: [] },                                                                                                                                                         
+      Revenue: { annual: 0, oneTime: 0, items: [] },                                                                                                                                                           
+      Quality: { annual: 0, oneTime: 0, items: [] },                                                                                                                                                           
+    };                                                       
+    (state.otherFinancialBenefits ?? []).forEach(b => {                                                                                                                                                        
+      if (b.label.trim() && b.amount > 0) {             
+        const slot = result[b.quadrant];                                                                                                                                                                       
+        slot.items.push(b);                                                                                                                                                                                    
+        if (b.type === 'annual') slot.annual += b.amount;                                                                                                                                                      
+        else slot.oneTime += b.amount;                                                                                                                                                                         
+      }                                                                                                                                                                                                        
+    });                                                   
+    return result;                                                                                                                                                                                             
+  }, [state.otherFinancialBenefits]);                                                                                                                                                                          
+                                                                                                                                                                                                               
+  const totalAnnualValue = useMemo(() => {                                                                                                                                                                     
+    const driverSum = Object.values(valueByQuadrant).reduce((s, v) => s + v, 0);                                                                                                                               
+    const benefitSum = Object.values(benefitsByQuadrant).reduce((s, b) => s + b.annual, 0);                                                                                                                    
+    return driverSum + benefitSum;                           
+  }, [valueByQuadrant, benefitsByQuadrant]);                                                                                                                                                                   
+                                                          
+  const totalOneTimeValue = useMemo(() => {                 
+    return Object.values(benefitsByQuadrant).reduce((s, b) => s + b.oneTime, 0);                                                                                                                               
+  }, [benefitsByQuadrant]);                               
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Update totalValue references throughout ExploreModel                                                                                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  Search ExploreModel.tsx for all references to the variable `totalValue` (used in hero, ROI calc, value-per-provider, growth chart, 3-year projection, proforma snapshot, PDF export).                        
+                                                             
+  Replace `totalValue` with `totalAnnualValue` everywhere it appears.                                                                                                                                          
+                                                                                                                                                                                                               
+  If a one-time spike should ALSO be added (e.g., Year-1 line in 3-year projection), use `totalAnnualValue + totalOneTimeValue` for Year-1 only and `totalAnnualValue` (or its growth-adjusted version) for
+  Year-2/Year-3.                                                                                                                                                                                               
+                                                                                                                                                                                                               
+  For the existing `noDriversEnabled` check from Sprint 1 Task 9 (the empty state), CHANGE the condition from `totalValue === 0` to `totalAnnualValue === 0 && totalOneTimeValue === 0`.
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 4 — Replace the 4-card grid section                                                                                                                                                                     
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreModel.tsx (around lines 1654-1877)                                                                                                                                     
+                                                          
+  The existing section is the "How Your Numbers Were Built" 4-card grid showing Access / Revenue / Workforce / Downstream. REPLACE the entire grid block with the new quadrant-aligned version below.          
+                                                                                                                                                                                                               
+  Find the section header text "How Your Numbers Were Built" (or similar) and the surrounding container. Replace from the section header opening through the closing of the 4-card grid container (everything
+  inside the `grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4` wrapper plus the header text immediately above it).                                                                                              
+                                                            
+  REPLACE WITH:                                                                                                                                                                                                
+                                                            
+  {/* How Your Numbers Were Built — quadrant cards */}                                                                                                                                                         
+  <motion.div                                                                                                                                                                                                  
+    className="mb-8"                                                                                                                                                                                           
+    initial={{ opacity: 0, y: 20 }}                                                                                                                                                                            
+    animate={{ opacity: 1, y: 0 }}                          
+    transition={{ delay: 0.2 }}                                                                                                                                                                                
+  >                                                       
+    <div className="text-center mb-6">                  
+      <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">                                                                                                                      
+        How Your Numbers Were Built                          
+      </p>                                                                                                                                                                                                     
+      <h2 className="text-xl md:text-2xl font-bold text-black font-abridge uppercase tracking-tight">
+        Value by Quadrant                                                                                                                                                                                      
+      </h2>                                                  
+    </div>                                                                                                                                                                                                     
+                                                        
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">                                                                                                                                     
+      {(['Capacity', 'Workforce', 'Revenue', 'Quality'] as const).map((quadrant) => {                                                                                                                          
+        const drivers = state.careSetting                                                                                                                                                                      
+          ? EXPLORE_DRIVERS.filter(d =>                                                                                                                                                                        
+              d.quadrant === quadrant &&                                                                                                                                                                       
+              d.settings.includes(state.careSetting!) &&     
+              isDriverEnabled(d, state)                                                                                                                                                                        
+            )                                           
+          : [];                                                                                                                                                                                                
+        const benefits = benefitsByQuadrant[quadrant];    
+        const driverSum = valueByQuadrant[quadrant];                                                                                                                                                           
+        const cardAnnual = driverSum + benefits.annual;     
+        const hasContent = drivers.length > 0 || benefits.items.length > 0;                                                                                                                                    
+                                                             
+        const subtitleByQuadrant: Record<ExploreQuadrant, string> = {                                                                                                                                          
+          Capacity: 'Throughput, access, and reinvested time',                                                                                                                                                 
+          Workforce: 'Retention, sustainability, and labor stability',
+          Revenue: 'Coding, denials, and reimbursement integrity',                                                                                                                                             
+          Quality: 'Clinical outcomes, safety, and experience',
+        };                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+        return (                                                                                                                                                                                               
+          <div                                                                                                                                                                                                 
+            key={quadrant}                       
+            className="bg-white border border-[#E5E5E5] rounded-xl p-5 flex flex-col"                                                                                                                          
+            data-testid={`quadrant-card-${quadrant.toLowerCase()}`}                                                                                                                                            
+          >                                                                                                                                                                                                    
+            <div className="mb-3">                                                                                                                                                                             
+              <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">{quadrant}</p>                                                                                                
+              <p className="text-xs text-[#888888] leading-tight">{subtitleByQuadrant[quadrant]}</p>
+            </div>                                           
+                                                             
+            <div className="mb-4">                        
+              <p className="text-2xl font-bold text-black">                                                                                                                                                    
+                {cardAnnual > 0 ? formatCurrency(cardAnnual) : '—'}                                                                                                                                            
+              </p>                                                                                                                                                                                             
+              <p className="text-xs text-[#888888]">annual</p>                                                                                                                                                 
+              {benefits.oneTime > 0 && (                                                                                                                                                                       
+                <p className="text-xs text-[#666666] mt-1">+ {formatCurrency(benefits.oneTime)} one-time (Y1)</p>                                                                                              
+              )}                                                                                                                                                                                               
+            </div>                                                                                                                                                                                             
+                                                          
+            <div className="flex-1 space-y-1.5">                                                                                                                                                               
+              {!hasContent && (                                                                                                                                                                                
+                <p className="text-xs text-[#AAAAAA] italic">No drivers selected.</p>
+              )}                                                                                                                                                                                               
+              {drivers.map(d => {                                                                                                                                                                              
+                const isQual = d.visibility === 'qualitative';                                                                                                                                                 
+                const value = allDriverValues[d.id] || 0;                                                                                                                                                      
+                return (                                                                                                                                                                                       
+                  <div key={d.id} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="text-[#666666] truncate flex-1 min-w-0">{d.label}</span>
+                    <span className={`font-medium flex-shrink-0 ${isQual ? 'text-[#888888] italic' : 'text-black'}`}>                                                                                          
+                      {isQual ? 'Qualitative' : (value > 0 ? formatCurrency(value) : '—')}
+                    </span>                                                                                                                                                                                    
+                  </div>                                                                                                                                                                                       
+                );                                          
+              })}                                                                                                                                                                                              
+              {benefits.items.map(b => (                    
+                <div key={b.id} className="flex items-center justify-between gap-2 text-xs">                                                                                                                   
+                  <span className="text-[#666666] truncate flex-1 min-w-0">{b.label || 'Other benefit'}</span>                                                                                                 
+                  <span className="font-medium text-black flex-shrink-0">                                                                                                                                      
+                    {formatCurrency(b.amount)}                                                                                                                                                                 
+                    {b.type === 'oneTime' && <span className="text-[10px] text-[#888888] ml-1">Y1</span>}                                                                                                      
+                  </span>                                                                                                                                                                                      
+                </div>                                       
+              ))}                                                                                                                                                                                              
+            </div>                                      
+          </div>                                                                                                                                                                                               
+        );                                                                                                                                                                                                     
+      })}                                                                                                                                                                                                      
+    </div>                                                                                                                                                                                                     
+  </motion.div>                                                                                                                                                                                                
+                                         
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Update proforma snapshot construction             
+  ═══════════════════════════════════════════════════════════
+                                                        
+  The existing `handleAddToProforma` function (around lines 345-453) builds a ProformaSettingSnapshot using the legacy timeValue + docValue split. Update it to use totalAnnualValue and group drivers by
+  quadrant.                                                  
+                                                          
+  Within handleAddToProforma:                           
+  - REPLACE references to `timeValue + docValue + nursingCareQualityPotential` with `totalAnnualValue`                                                                                                         
+  - ADD oneTimeValue to the snapshot if your ProformaSettingSnapshot type supports it (check the type at @/pages/proforma/proformaTypes — if it doesn't have a one-time field yet, leave one-time excluded for
+  now and we'll thread it in a later cleanup sprint)                                                                                                                                                           
+  - The drivers array passed to the snapshot can iterate over EXPLORE_DRIVERS filtered to enabled-and-applicable, with their allDriverValues[d.id] amounts
+                                                                                                                                                                                                               
+  If migrating the snapshot shape feels risky, the minimum viable change is: replace `totalValue` → `totalAnnualValue`. The drivers array and quadrant grouping can land in a cleanup sprint.
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 6 — Update PDF export construction                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  Same principle as Task 5 — the `handleExportPDF` function builds an ExplorePDFData object. Replace `totalValue` with `totalAnnualValue` and `oneTimeValue` (if the PDF type supports it).                    
+                                                                                                                                                                                                               
+  DO NOT rebuild the PDF data shape in this sprint — that's Sprint 2H. Just swap the total source.                                                                                                             
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                             
+  1. TypeScript compiles. Watch for any remaining references to `totalValue`, `timeValue`, `docValue`, or `nursingCareQualityPotential` in ExploreModel — they should all flow through the new                 
+  `totalAnnualValue` / quadrant breakdowns.                  
+                                                                                                                                                                                                               
+  2. Walk an Outpatient through end-to-end with all of these enabled: Patient Access (Capacity), Provider Wellbeing + Locum/Agency (Workforce), wRVU + HCC + Denials (Revenue). Plus add 1 Other Financial
+  Benefit ($50K annual) tagged Capacity, 1 ($25K one-time) tagged Quality, plus toggle a few qualitative Quality drivers (Cognitive Load, Audit/Compliance).                                                   
+                                                          
+     On Step 9 verify:                                                                                                                                                                                         
+     - Capacity card: Patient Access $ value + $50K Other Benefit. Annual subtotal = both. No one-time.
+     - Workforce card: Provider Wellbeing $ + Physician Locum/Agency $.                                                                                                                                        
+     - Revenue card: wRVU + HCC + Denials, all $ values.     
+     - Quality card: 0 annual driver $, but shows Cognitive Load and Audit/Compliance as "Qualitative" text. Plus the $25K one-time benefit listed AND shown as "+ $25,000 one-time (Y1)".                     
+     - Hero "Net Annual Value" = totalAnnualValue - investment.                                                                                                                                                
+     - ROI multiplier = totalAnnualValue / investment.       
+     - 3-Year Projection: Year-1 includes one-time spike; Years 2/3 do not.                                                                                                                                    
+                                                                                                                                                                                                               
+  3. Walk an ED through with LWBS+Admission Capture, Provider Wellbeing+Locum/Agency, wRVU+Denials. Verify Capacity card shows BOTH lwbsRecovery AND admissionCapture as separate driver lines (the child
+  driver renders inline, not nested).                                                                                                                                                                          
+                                                                                                                                                                                                               
+  4. Walk an Inpatient through with Provider Wellbeing+Locum, all 4 IP Revenue drivers (DRG, CDI, Obs, EM Coding), and toggle some qualitative Quality drivers (HCAHPS Composite, 30-Day Readmission). Verify  
+  Revenue card shows all 4 drivers with their values; Quality card shows qualitative items text-only.                                                                                                          
+                                                                                                                                                                                                               
+  5. Walk a Nursing setting through with everything: Overtime + RN Retention + Travel/Agency, no Revenue (qualitative), all 5 Care Quality (HAPI/Falls/CAUTI/CLABSI/Sepsis). Verify:                           
+     - Workforce card has 3 driver lines summed correctly                                                                                                                                                      
+     - Revenue card shows the 2 qualitative drivers (CDI Response, Doc Completion) as "Qualitative", with annual = 0                                                                                           
+     - Quality card has all 5 drivers with $ values summed                                                                                                                                                     
+                                                                                                                                                                                                               
+  6. Empty state: with no drivers enabled and no benefits, Step 9 hero shows "Build your value story" empty state (preserved from Sprint 1). The 4 quadrant cards still render but each shows "—" annual and   
+  "No drivers selected." Add to Proforma + Download PDF buttons hidden.
+                                                                                                                                                                                                               
+  7. The legacy "Downstream" 4th card is gone. No place in Step 9 references it.                                                                                                                               
+                                                             
+  8. Visually: 4 cards in a 1-col mobile / 2-col tablet / 4-col desktop grid. Each card has consistent height (use flex-col + flex-1 on the driver list). Card subtitle ("Throughput, access, and reinvested   
+  time" etc.) renders.                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - The legacy timeValue and docValue props passed into ExploreModel are no longer the primary source for totals — they're now redundant. Don't remove them yet (other downstream consumers like the           
+  right-panel summary may still use them). They become removable in a cleanup sprint.                                                                                                                          
+  - If TypeScript complains that ExploreQuadrant isn't exported from exploreDrivers.ts, add it: `export type ExploreQuadrant = 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';` (it already exists per Sprint
+   2C1, just confirm export).                             
+  - Subtitle copy under each quadrant title is provisional — feel free to swap for more brand-aligned phrasing in a polish sprint.     
