@@ -7,10 +7,12 @@ import {
 import { getStateFromCurrentUrl, clearUrlState } from "@/lib/measureUrlState";
 import { getDefaultOutpatientMetrics, getDefaultMetrics, syncSettingToState } from "@/lib/measureCareSettings";
 import MeasureDataEntry from "./MeasureDataEntry";
-import MeasureMetricSelection from "./MeasureMetricSelection";
-import MeasureJourney from "./MeasureJourney";
-import MeasureAllocate from "./MeasureAllocate";
-import MeasureOpportunity from "./MeasureOpportunity";
+import MeasureCapacity from "./MeasureCapacity";
+import MeasureWorkforce from "./MeasureWorkforce";
+import MeasureRevenue from "./MeasureRevenue";
+import MeasureQuality from "./MeasureQuality";
+import MeasureForecast from "./MeasureForecast";
+import MeasureOutput from "./MeasureOutput";
 
 class MeasureErrorBoundary extends Component<
   { children: ReactNode; onBack: () => void },
@@ -46,14 +48,46 @@ class MeasureErrorBoundary extends Component<
   }
 }
 
-type MeasurePhase = 'data' | 'metrics' | 'journey' | 'financial' | 'next';
+type MeasurePhase =
+  | 'setup'
+  | 'capacity'
+  | 'workforce'
+  | 'revenue'
+  | 'quality'
+  | 'forecast'
+  | 'output';
+
+const LEGACY_PHASE_MAP: Record<string, MeasurePhase> = {
+  data: 'setup',
+  metrics: 'capacity',
+  journey: 'capacity',
+  financial: 'forecast',
+  next: 'output',
+};
+
+const phaseToStep: Record<MeasurePhase, number> = {
+  setup: 1,
+  capacity: 2,
+  workforce: 3,
+  revenue: 4,
+  quality: 5,
+  forecast: 6,
+  output: 7,
+};
+
+function migratePhase(requested: string | undefined | null): MeasurePhase {
+  const value = requested || 'setup';
+  const mapped = (LEGACY_PHASE_MAP[value] ?? value) as MeasurePhase;
+  return mapped in phaseToStep ? mapped : 'setup';
+}
 
 interface MeasureFlowProps {
   onBackToJourney?: () => void;
+  initialPhase?: string;
 }
 
-export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
-  const [phase, setPhase] = useState<MeasurePhase>('data');
+export default function MeasureFlow({ onBackToJourney, initialPhase }: MeasureFlowProps) {
+  const [phase, setPhase] = useState<MeasurePhase>(() => migratePhase(initialPhase));
   const [presentMode, setPresentMode] = useState(false);
   const [state, setState] = useState<MeasureState>({
     ...DEFAULT_MEASURE_STATE,
@@ -66,6 +100,11 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
       nursing: getDefaultMetrics('nursing'),
     },
   });
+
+  // Sprint 3A no longer renders the per-phase progress bar; placeholder pages
+  // own their own headers. Keep the mapping exported via reference for
+  // upcoming sprints that re-introduce a global progress strip.
+  void phaseToStep;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
@@ -86,7 +125,8 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
     const urlState = getStateFromCurrentUrl();
     if (urlState) {
       setState(urlState);
-      setPhase('journey');
+      // Old URLs landed users on the journey page — that becomes capacity now.
+      setPhase(migratePhase('journey'));
       clearUrlState();
     }
   }, []);
@@ -136,63 +176,98 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   }, []);
 
   const mode = presentMode ? 'present' as const : 'build' as const;
+  void mode;
 
   switch (phase) {
-    case 'data':
+    case 'setup':
       return (
         <MeasureDataEntry
           state={state}
           updateState={updateState}
-          onNext={() => { applySettingSync(); navigate('metrics'); }}
-          onBack={goHome}
+          onNext={() => { applySettingSync(); navigate('capacity'); }}
+          onBack={onBackToJourney || (() => {})}
           onHome={goHome}
         />
       );
 
-    case 'metrics':
+    case 'capacity':
       return (
-        <MeasureMetricSelection
-          state={state}
-          updateState={updateState}
-          onNext={() => { applySettingSync(); navigate('journey'); }}
-          onBack={() => navigate('data')}
-          onHome={goHome}
-        />
-      );
-
-    case 'journey':
-      return (
-        <MeasureJourney
-          state={state}
-          onNext={() => navigate('financial')}
-          onBack={() => navigate('metrics')}
-          onHome={goHome}
-        />
-      );
-
-    case 'financial':
-      return (
-        <MeasureErrorBoundary onBack={() => navigate('journey')}>
-          <MeasureAllocate
+        <MeasureErrorBoundary onBack={() => navigate('setup')}>
+          <MeasureCapacity
             state={state}
             updateState={updateState}
-            onNext={() => navigate('next')}
-            onBack={() => navigate('journey')}
+            onNext={() => navigate('workforce')}
+            onBack={() => navigate('setup')}
             onHome={goHome}
           />
         </MeasureErrorBoundary>
       );
 
-    case 'next':
+    case 'workforce':
       return (
-        <MeasureOpportunity
-          state={state}
-          updateState={updateState}
-          onBack={() => navigate('financial')}
-          onHome={goHome}
-        />
+        <MeasureErrorBoundary onBack={() => navigate('capacity')}>
+          <MeasureWorkforce
+            state={state}
+            updateState={updateState}
+            onNext={() => navigate('revenue')}
+            onBack={() => navigate('capacity')}
+            onHome={goHome}
+          />
+        </MeasureErrorBoundary>
       );
-    
+
+    case 'revenue':
+      return (
+        <MeasureErrorBoundary onBack={() => navigate('workforce')}>
+          <MeasureRevenue
+            state={state}
+            updateState={updateState}
+            onNext={() => navigate('quality')}
+            onBack={() => navigate('workforce')}
+            onHome={goHome}
+          />
+        </MeasureErrorBoundary>
+      );
+
+    case 'quality':
+      return (
+        <MeasureErrorBoundary onBack={() => navigate('revenue')}>
+          <MeasureQuality
+            state={state}
+            updateState={updateState}
+            onNext={() => navigate('forecast')}
+            onBack={() => navigate('revenue')}
+            onHome={goHome}
+          />
+        </MeasureErrorBoundary>
+      );
+
+    case 'forecast':
+      return (
+        <MeasureErrorBoundary onBack={() => navigate('quality')}>
+          <MeasureForecast
+            state={state}
+            updateState={updateState}
+            onNext={() => navigate('output')}
+            onBack={() => navigate('quality')}
+            onHome={goHome}
+          />
+        </MeasureErrorBoundary>
+      );
+
+    case 'output':
+      return (
+        <MeasureErrorBoundary onBack={() => navigate('forecast')}>
+          <MeasureOutput
+            state={state}
+            updateState={updateState}
+            onNext={() => {}}
+            onBack={() => navigate('setup')}
+            onHome={goHome}
+          />
+        </MeasureErrorBoundary>
+      );
+
     default:
       return null;
   }
