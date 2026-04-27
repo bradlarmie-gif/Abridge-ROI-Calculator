@@ -94,9 +94,72 @@ export function computeWorkforceBreakdown(state: ExploreState, _totalHoursSaved:
 }
 
 export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {
-  // Revenue page is currently a placeholder with no quantitative drivers wired.
-  // Other financial benefits tagged to the Revenue quadrant still roll up.
-  return buildResult({}, benefitsForQuadrant(state, 'Revenue'));
+  // Mirrors ExploreRevenue.tsx driverValues exactly so the Quality page's
+  // "Progress So Far" carry-forward stays in sync with the Revenue page total.
+  const result: Record<string, number> = {};
+  const dq = state.docQualityInputs;
+  const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
+  const isED = state.careSetting === 'ed';
+  const isOPorED = state.careSetting === 'outpatient' || state.careSetting === 'ed';
+  const isIP = state.careSetting === 'inpatient';
+
+  const wrvuScenarios: Record<string, number> = isED
+    ? { conservative: 1, typical: 2.5, aggressive: 4 }
+    : { conservative: 2, typical: 5, aggressive: 7 };
+  const denialsScenarios: Record<string, number> = isED
+    ? { conservative: 15, typical: 30, aggressive: 50 }
+    : { conservative: 25, typical: 50, aggressive: 75 };
+  const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
+
+  if (dq.wrvuEnabled && isOPorED) {
+    const lift = (dq.currentWrvu * wrvuScenarios[dq.wrvuScenario]) / 100;
+    const value = eligibleEncounters * lift * dq.conversionFactor * (dq.wrvuRealization / 100);
+    if (isED) result.edEmLevel = Math.round(value);
+    else result.wrvu = Math.round(value);
+  }
+  if (dq.hccEnabled && state.careSetting === 'outpatient') {
+    const recap = hccScenarios[dq.hccScenario] / 100;
+    const ma = state.numberOfProviders * dq.panelSize * (dq.maPercent / 100);
+    const gap = ma * (dq.gapRate / 100);
+    const recaptured = gap * recap;
+    const hccs = recaptured * dq.avgHccs;
+    result.hccCapture = Math.round(hccs * dq.rafImpact * dq.annualPayment * (dq.hccRealization / 100));
+  }
+  if (dq.denialsEnabled && isOPorED) {
+    const prev = denialsScenarios[dq.denialsScenario] / 100;
+    const totalDenials = eligibleEncounters * (dq.denialRate / 100);
+    const unappealable = totalDenials * (dq.unappealableRate / 100);
+    const prevented = unappealable * prev;
+    result.denialPrevention = Math.round(prevented * dq.avgClaimValue * (dq.denialsRealization / 100));
+  }
+  if (isIP && dq.ipDrgEnabled) {
+    const protectScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
+    const pct = protectScenarios[dq.ipDrgScenario] / 100;
+    const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);
+    result.drgAccuracy = Math.round(atRisk * pct * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100));
+  }
+  if (isIP && dq.ipCdiEnabled) {
+    const cdiScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
+    const pct = cdiScenarios[dq.ipCdiScenario] / 100;
+    const totalQueries = eligibleEncounters * (dq.ipCdiQueryRate / 100);
+    const avoided = totalQueries * pct;
+    result.cdiQueryReduction = Math.round(avoided * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100));
+  }
+  if (isIP && dq.ipObsDefenseEnabled) {
+    const gross = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100) * dq.ipObsDefenseClaimValue * (dq.ipObsDefenseDocContribution / 100);
+    result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));
+  }
+  if (isIP && dq.ipEmCodingEnabled) {
+    const losVal = state.ipAvgLengthOfStay ?? 4.5;
+    const progressPerAdm = Math.max(losVal - 2, 1);
+    const totalCharges = eligibleEncounters * (1 + progressPerAdm + dq.ipEmCodingConsultsPerAdmission);
+    const gapMap: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };
+    const gapPct = (gapMap[dq.ipEmCodingGapScenario] ?? 12) / 100;
+    const gross = totalCharges * gapPct * dq.ipEmCodingAvgRevenueLift;
+    result.emCodingAccuracy = Math.round(gross * (dq.ipEmCodingRealization / 100));
+  }
+
+  return buildResult(result, benefitsForQuadrant(state, 'Revenue'));
 }
 
 export function computeQualityBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {

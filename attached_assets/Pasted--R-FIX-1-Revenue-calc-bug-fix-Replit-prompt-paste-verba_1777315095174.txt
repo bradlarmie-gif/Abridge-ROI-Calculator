@@ -1,0 +1,136 @@
+ 🔧 R-FIX-1 — Revenue calc bug fix (Replit prompt — paste verbatim)
+                                                                                                                                                                                                               
+  Context: ExploreRevenue page's right-panel Quadrant Total reads $0 even when wRVU / HCC / Denials are toggled with their default values. Diagnosis: computeRevenueBreakdown() in
+  client/src/lib/exploreQuadrantValues.ts still has placeholder code from before R1 ran (literally returns an empty driverValues map with a comment "Revenue page is currently a placeholder"). When R1 rebuilt
+   the Revenue page UI, this shared helper wasn't updated. Two consumers are affected: the Revenue page's own right-panel total and the running-total feed into Quality's "Progress So Far" block.
+                                                                                                                                                                                                               
+  Fix is one function — implement the Revenue calc inside computeRevenueBreakdown() to mirror the math already used by ExploreModel.tsx's allDriverValues for Revenue.                                         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Replace computeRevenueBreakdown with working implementation                                                                                                                                         
+  ═══════════════════════════════════════════════════════════      
+  File: client/src/lib/exploreQuadrantValues.ts (around lines 96-100)                                                                                                                                          
+                                                                                
+  REPLACE:                                                                                                                                                                                                     
+    export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {                                                                                                
+      // Revenue page is currently a placeholder with no quantitative drivers wired.
+      // Other financial benefits tagged to the Revenue quadrant still roll up.                                                                                                                                
+      return buildResult({}, benefitsForQuadrant(state, 'Revenue'));            
+    }                                                                                                                                                                                                          
+                                                                                
+  WITH:                                                                                                                                                                                                        
+    export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {
+      const result: Record<string, number> = {};                                                                                                                                                               
+      const dq = state.docQualityInputs;                                                                                                                                                                       
+      const setting = state.careSetting;                                                                                                                                                                       
+      const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));                                                                                                        
+      const isED = setting === 'ed';                                                                                                                                                                           
+      const isOP = setting === 'outpatient';                                                                                                                                                                   
+      const isIP = setting === 'inpatient';                        
+                                                                                                                                                                                                               
+      const wrvuScenarios: Record<string, number> = isED                                                                                                                                                       
+        ? { conservative: 1, typical: 2.5, aggressive: 4 }         
+        : { conservative: 2, typical: 5, aggressive: 7 };                                                                                                                                                      
+      const denialsScenarios: Record<string, number> = isED                                                                                                                                                    
+        ? { conservative: 15, typical: 30, aggressive: 50 }                                                                                                                                                    
+        : { conservative: 25, typical: 50, aggressive: 75 };                                                                                                                                                   
+      const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };                                                                                                           
+                                                                                                                                                                                                               
+      // wRVU / E&M Level (OP + ED)                                                                                                                                                                            
+      if (dq.wrvuEnabled && (isOP || isED)) {                                                                                                                                                                  
+        const lift = (dq.currentWrvu * wrvuScenarios[dq.wrvuScenario]) / 100;                                                                                                                                  
+        const value = eligibleEncounters * lift * dq.conversionFactor * (dq.wrvuRealization / 100);                                                                                                            
+        if (isED) result.edEmLevel = Math.round(value);                                                                                                                                                        
+        else result.wrvu = Math.round(value);                                                                                                                                                                  
+      }                                                                         
+                                                                                                                                                                                                               
+      // HCC Capture (OP only)                                                                                                                                                                                 
+      if (dq.hccEnabled && isOP) {                                                                                                                                                                             
+        const recap = hccScenarios[dq.hccScenario] / 100;                                                                                                                                                      
+        const ma = state.numberOfProviders * dq.panelSize * (dq.maPercent / 100);                                                                                                                              
+        const gap = ma * (dq.gapRate / 100);                                                                                                                                                                   
+        const recaptured = gap * recap;                                                                                                                                                                        
+        result.hccCapture = Math.round(recaptured * dq.avgHccs * dq.rafImpact * dq.annualPayment * (dq.hccRealization / 100));                                                                                 
+      }                                                                                                                                                                                                        
+                                                                                                                                                                                                               
+      // Denial Prevention (OP + ED)                                            
+      if (dq.denialsEnabled && (isOP || isED)) {                                                                                                                                                               
+        const prev = denialsScenarios[dq.denialsScenario] / 100;   
+        const totalDenials = eligibleEncounters * (dq.denialRate / 100);                                                                                                                                       
+        const unappealable = totalDenials * (dq.unappealableRate / 100);                                                                                                                                       
+        const prevented = unappealable * prev;                                                                                                                                                                 
+        result.denialPrevention = Math.round(prevented * dq.avgClaimValue * (dq.denialsRealization / 100));                                                                                                    
+      }                                                                                                                                                                                                        
+                                                                                                                                                                                                               
+      // IP DRG Accuracy                                                        
+      if (isIP && dq.ipDrgEnabled) {                                                                                                                                                                           
+        const protectScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };                                                                                                    
+        const pct = protectScenarios[dq.ipDrgScenario] / 100;                                                                                                                                                  
+        const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);                                                                                                                                        
+        result.drgAccuracy = Math.round(atRisk * pct * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100));                                                                            
+      }                                                                                                                                                                                                        
+                                                                                
+      // IP CDI Query Reduction                                                                                                                                                                                
+      if (isIP && dq.ipCdiEnabled) {                                            
+        const cdiScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };                                                                                                        
+        const pct = cdiScenarios[dq.ipCdiScenario] / 100;                                                                                                                                                      
+        const totalQueries = eligibleEncounters * (dq.ipCdiQueryRate / 100);                                                                                                                                   
+        const avoided = totalQueries * pct;                                                                                                                                                                    
+        result.cdiQueryReduction = Math.round(avoided * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100));                                                                                                   
+      }                                                                                                                                                                                                        
+                                                                                                                                                                                                               
+      // IP Obs / IP Status Defense                                                                                                                                                                            
+      if (isIP && dq.ipObsDefenseEnabled) {                                                                                                                                                                    
+        const gross = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100) * dq.ipObsDefenseClaimValue * (dq.ipObsDefenseDocContribution / 100);
+        result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));                                                                                                                            
+      }                                                                         
+                                                                                                                                                                                                               
+      // IP E/M Coding Accuracy (consults + progress notes)                                                                                                                                                    
+      if (isIP && dq.ipEmCodingEnabled) {                                                                                                                                                                      
+        const losVal = (state as any).ipAvgLengthOfStay ?? 4.5;                                                                                                                                                
+        const progressPerAdm = Math.max(losVal - 2, 1);                         
+        const totalCharges = eligibleEncounters * (1 + progressPerAdm + dq.ipEmCodingConsultsPerAdmission);                                                                                                    
+        const gapMap: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };                                                                                                               
+        const gapPct = (gapMap[dq.ipEmCodingGapScenario] ?? 12) / 100;                                                                                                                                         
+        const gross = totalCharges * gapPct * dq.ipEmCodingAvgRevenueLift;                                                                                                                                     
+        result.emCodingAccuracy = Math.round(gross * (dq.ipEmCodingRealization / 100));                                                                                                                        
+      }                                                                         
+                                                                                                                                                                                                               
+      return buildResult(result, benefitsForQuadrant(state, 'Revenue'));                                                                                                                                       
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  1. TypeScript compiles. The math mirrors the existing math in client/src/pages/explore/ExploreModel.tsx allDriverValues (around lines 114-161) — keep them in sync conceptually.                             
+                                                                                                                                                                                                               
+  2. Walk an Outpatient session through:                           
+     - Land on Step 6 (Revenue). Toggle Denial Prevention on with default values.                                                                                                                              
+     - Right-panel Quadrant Total should now read approximately $126K (or whatever the calc produces — NOT $0).                                                                                                
+     - Toggle wRVU on too. Quadrant Total updates to wRVU + Denials.
+     - Toggle HCC on. Total updates further.                                                                                                                                                                   
+                                                                                
+  3. Continue to Step 7 (Quality). The right-panel "Progress So Far" block should show:                                                                                                                        
+     - Capacity: $X                                                
+     - Workforce: $Y                                                                                                                                                                                           
+     - Revenue: $Z (with Revenue value, NOT $0)                                 
+     - Running Total: sum of all three                                                                                                                                                                         
+                                                                                                                                                                                                               
+  4. Land on Step 9 (Model). The 4-quadrant card grid's Revenue card should show:                                                                                                                              
+     - Big "annual" number reflecting Revenue total (NOT $0)                                                                                                                                                   
+     - Per-driver line items beneath it                                                                                                                                                                        
+     - And the Hero Net Annual Value should include Revenue's contribution                                                                                                                                     
+                                                                                                                                                                                                               
+  5. Walk ED, IP, Nursing through Revenue:                                      
+     - ED: E&M Level Accuracy + Denial Prevention should drive Revenue total                                                                                                                                   
+     - IP: DRG / CDI / Obs / EM Coding should drive Revenue total  
+     - Nursing: Revenue is qualitative-only (CDI Query Response + Doc Completion), so quadrant total stays at the Other Financial Benefits sum (likely $0 unless benefits added) — that's correct, no change   
+                                                                                
+  6. No console errors. No TypeScript errors.                                                                                                                                                                  
+                                                                                
+  NOTES:                                                                                                                                                                                                       
+  - This brings computeRevenueBreakdown into parity with the existing computeCapacityBreakdown and computeWorkforceBreakdown helpers, which already had real implementations.                                  
+  - The math intentionally mirrors ExploreModel.tsx's allDriverValues calc for Revenue. If you ever change the Revenue calc logic, update both places. Future cleanup could consolidate into a single shared   
+  function — but not in scope for this fix.                                                                                                                                                                    
+  - This fix is purely a calculation correction — no UI changes.
