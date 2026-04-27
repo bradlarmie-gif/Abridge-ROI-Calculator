@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import MeasureDriverCard from "@/components/measure/MeasureDriverCard";
 import AddMeasureDriverPicker from "@/components/measure/AddMeasureDriverPicker";
 import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting } from "@/lib/exploreDrivers";
-import { type MeasureState, type MeasureDriverEntry } from "@/lib/measureCalculator";
+import { getRealizedValueForEntry, type MeasureState, type MeasureDriverEntry } from "@/lib/measureCalculator";
 
 interface MeasureQualityProps {
   state: MeasureState;
@@ -64,10 +64,8 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
 
   const quadrantTotal = useMemo(() => {
     return trackedHere.reduce((sum, { driver, entry }) => {
-      if (driver.visibility !== 'quantified' || !driver.measureDefaults) return sum;
-      const delta = entry.withAbridge - entry.withoutAbridge;
-      const value = delta * entry.valuePerUnit * (entry.attributionPercent / 100) * (entry.realizationPercent / 100);
-      return sum + value;
+      const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
+      return sum + getRealizedValueForEntry(entry, isQuantifiable);
     }, 0);
   }, [trackedHere]);
 

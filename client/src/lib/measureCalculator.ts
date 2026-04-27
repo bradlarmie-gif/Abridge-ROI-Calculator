@@ -186,6 +186,25 @@ export interface MeasureDriverEntry {
   monthlyData?: Array<{ month: string; withAbridge: number; withoutAbridge: number }>;
 }
 
+export function getEffectiveWithWithout(entry: MeasureDriverEntry): { withAbridge: number; withoutAbridge: number } {
+  if (entry.isMonthlyMode && entry.monthlyData && entry.monthlyData.length > 0) {
+    const sorted = [...entry.monthlyData].sort((a, b) => a.month.localeCompare(b.month));
+    const latest = sorted[sorted.length - 1];
+    return { withAbridge: latest.withAbridge, withoutAbridge: latest.withoutAbridge };
+  }
+  return { withAbridge: entry.withAbridge, withoutAbridge: entry.withoutAbridge };
+}
+
+export function getRealizedValueForEntry(
+  entry: MeasureDriverEntry,
+  isQuantifiable: boolean,
+): number {
+  if (!isQuantifiable) return 0;
+  const { withAbridge, withoutAbridge } = getEffectiveWithWithout(entry);
+  const delta = withAbridge - withoutAbridge;
+  return Math.round(delta * entry.valuePerUnit * (entry.attributionPercent / 100) * (entry.realizationPercent / 100));
+}
+
 export const CONFIDENCE_LABELS: Record<string, string> = {
   unmeasured: 'Benchmark estimate',
   signaling: 'Directional estimate',
