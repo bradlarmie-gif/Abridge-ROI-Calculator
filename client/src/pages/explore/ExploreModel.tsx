@@ -494,9 +494,46 @@ export default function ExploreModel({
     return Math.round(year2Value * (1 + state.year3GrowthPercent / 100));
   }, [year2Value, state.year3GrowthPercent]);
 
-  const threeYearTotal = useMemo(() => {
-    return year1Value + year2Value + year3Value;
-  }, [year1Value, year2Value, year3Value]);
+  // Per-year encounter projections (uses the same Y2/Y3 growth as value)
+  const year1Encounters = useMemo(() => state.annualEncounters, [state.annualEncounters]);
+
+  const year2Encounters = useMemo(() => {
+    return Math.round(year1Encounters * (1 + state.year2GrowthPercent / 100));
+  }, [year1Encounters, state.year2GrowthPercent]);
+
+  const year3Encounters = useMemo(() => {
+    return Math.round(year2Encounters * (1 + state.year3GrowthPercent / 100));
+  }, [year2Encounters, state.year3GrowthPercent]);
+
+  // Per-year investment projections (varies by pricing model)
+  const year1Investment = useMemo(() => annualInvestment, [annualInvestment]);
+
+  const year2Investment = useMemo(() => {
+    if (state.pricingModel === 'perEncounter') {
+      return Math.round(year2Encounters * (state.costPerEncounter ?? 0));
+    }
+    return state.pricingModel === 'perProvider'
+      ? (state.careSetting === 'nursing' ? state.nursingStaffedBeds : state.numberOfProviders) * state.costPerProvider * 12
+      : state.annualLicenseFee;
+  }, [state.pricingModel, year2Encounters, state.costPerEncounter, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.careSetting]);
+
+  const year3Investment = useMemo(() => {
+    if (state.pricingModel === 'perEncounter') {
+      return Math.round(year3Encounters * (state.costPerEncounter ?? 0));
+    }
+    return state.pricingModel === 'perProvider'
+      ? (state.careSetting === 'nursing' ? state.nursingStaffedBeds : state.numberOfProviders) * state.costPerProvider * 12
+      : state.annualLicenseFee;
+  }, [state.pricingModel, year3Encounters, state.costPerEncounter, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.careSetting]);
+
+  // Per-year net value
+  const year1Net = useMemo(() => year1Value - year1Investment, [year1Value, year1Investment]);
+  const year2Net = useMemo(() => year2Value - year2Investment, [year2Value, year2Investment]);
+  const year3Net = useMemo(() => year3Value - year3Investment, [year3Value, year3Investment]);
+
+  const threeYearGrossTotal = useMemo(() => year1Value + year2Value + year3Value, [year1Value, year2Value, year3Value]);
+  const threeYearNetTotal = useMemo(() => year1Net + year2Net + year3Net, [year1Net, year2Net, year3Net]);
+  const threeYearInvestmentTotal = useMemo(() => year1Investment + year2Investment + year3Investment, [year1Investment, year2Investment, year3Investment]);
 
   // Expansion opportunity (use fullScaleProviders from state, editable utilization)
   const expandedProviders = state.fullScaleProviders;
@@ -1568,6 +1605,7 @@ export default function ExploreModel({
             </p>
           )}
           {!isQualitativeOnly && <p className="text-xl text-[#888888] mb-4">/ year</p>}
+          {!isQualitativeOnly && <p className="text-xs text-[#888888] uppercase tracking-wide mb-4">Year 1, including one-time benefits</p>}
           {isQualitativeOnly && <p className="text-sm text-[#888888] mb-4">Strategic value — not dollarized</p>}
 
           {/* Subtext */}
@@ -2404,31 +2442,64 @@ export default function ExploreModel({
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center">
+            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center" data-testid="projection-year-1">
               <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 1</p>
               <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year1Value)}</p>
               {totalOneTimeValue > 0 && (
                 <p className="text-xs text-[#888888] mt-1">Includes {formatCurrency(totalOneTimeValue)} one-time</p>
               )}
+              <div className="h-px bg-[#F0EBE4] my-3" />
+              <p className="text-sm">
+                <span className="text-[#888888]">Net: </span>
+                <span className={`font-semibold ${year1Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-1-net">{formatCurrency(year1Net)}</span>
+              </p>
+              {state.pricingModel === 'perEncounter' && (
+                <p className="text-xs text-[#AAAAAA] mt-1">Investment: {formatCurrency(year1Investment)}</p>
+              )}
             </div>
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center">
+            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center" data-testid="projection-year-2">
               <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 2</p>
               <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year2Value)}</p>
               <p className="text-xs text-[#888888] mt-1">+{state.year2GrowthPercent}% growth</p>
+              <div className="h-px bg-[#F0EBE4] my-3" />
+              <p className="text-sm">
+                <span className="text-[#888888]">Net: </span>
+                <span className={`font-semibold ${year2Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-2-net">{formatCurrency(year2Net)}</span>
+              </p>
+              {state.pricingModel === 'perEncounter' && (
+                <p className="text-xs text-[#AAAAAA] mt-1">Investment: {formatCurrency(year2Investment)}</p>
+              )}
             </div>
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center">
+            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center" data-testid="projection-year-3">
               <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 3</p>
               <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year3Value)}</p>
               <p className="text-xs text-[#888888] mt-1">+{state.year3GrowthPercent}% growth</p>
+              <div className="h-px bg-[#F0EBE4] my-3" />
+              <p className="text-sm">
+                <span className="text-[#888888]">Net: </span>
+                <span className={`font-semibold ${year3Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-3-net">{formatCurrency(year3Net)}</span>
+              </p>
+              {state.pricingModel === 'perEncounter' && (
+                <p className="text-xs text-[#AAAAAA] mt-1">Investment: {formatCurrency(year3Investment)}</p>
+              )}
             </div>
-            <div className="bg-[#F5F0EB] rounded-lg p-3 sm:p-5 text-center">
+            <div className="bg-[#F5F0EB] rounded-lg p-3 sm:p-5 text-center" data-testid="projection-three-year-total">
               <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">3-Year Value</p>
-              <p className="text-lg sm:text-xl font-bold text-[#EA2C00]">{formatCurrency(threeYearTotal)}</p>
+              <p className="text-lg sm:text-xl font-bold text-[#EA2C00]">{formatCurrency(threeYearGrossTotal)}</p>
+              <p className="text-xs text-[#888888] mt-1">gross value</p>
+              <div className="h-px bg-[#E5DCD0] my-3" />
+              <p className="text-base">
+                <span className="text-[#888888]">Net: </span>
+                <span className={`font-semibold ${threeYearNetTotal >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-three-year-net">{formatCurrency(threeYearNetTotal)}</span>
+              </p>
+              <p className="text-xs text-[#AAAAAA] mt-1">Investment: {formatCurrency(threeYearInvestmentTotal)}</p>
             </div>
           </div>
 
           <p className="text-sm text-[#888888] text-center mt-4">
-            Years 2 and 3 use {state.year2GrowthPercent}% and {state.year3GrowthPercent}% growth respectively. Adjust the pace selector or override the percentages directly.
+            Years 2 and 3 apply {state.year2GrowthPercent}% and {state.year3GrowthPercent}% growth to annual recurring value. {state.pricingModel === 'perEncounter'
+              ? 'For per-encounter pricing, encounter volume scales by the same percentages, so investment grows alongside value.'
+              : 'For per-provider or annual-license pricing, investment is held constant across years.'}
           </p>
         </motion.div>
         )}
