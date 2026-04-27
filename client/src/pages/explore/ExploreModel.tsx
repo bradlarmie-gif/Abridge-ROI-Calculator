@@ -480,12 +480,23 @@ export default function ExploreModel({
     return Math.round(docLagCases * state.docQualityInputs.nursingSepsisExcessCostPerCase * (state.docQualityInputs.nursingSepsisRealization / 100));
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
-  // 3-year projection (10% growth per year)
+  // 3-year projection (Y2/Y3 growth driven by state, one-time benefits in Y1 only)
   const implementationCost = state.includeImplementation ? state.implementationFee : 0;
-  const year1Value = totalAnnualValue - implementationCost;
-  const year2Value = Math.round(totalAnnualValue * 1.1);
-  const year3Value = Math.round(totalAnnualValue * 1.21);
-  const threeYearTotal = year1Value + year2Value + year3Value;
+  const year1Value = useMemo(() => {
+    return totalAnnualValue + totalOneTimeValue;
+  }, [totalAnnualValue, totalOneTimeValue]);
+
+  const year2Value = useMemo(() => {
+    return Math.round(totalAnnualValue * (1 + state.year2GrowthPercent / 100));
+  }, [totalAnnualValue, state.year2GrowthPercent]);
+
+  const year3Value = useMemo(() => {
+    return Math.round(year2Value * (1 + state.year3GrowthPercent / 100));
+  }, [year2Value, state.year3GrowthPercent]);
+
+  const threeYearTotal = useMemo(() => {
+    return year1Value + year2Value + year3Value;
+  }, [year1Value, year2Value, year3Value]);
 
   // Expansion opportunity (use fullScaleProviders from state, editable utilization)
   const expandedProviders = state.fullScaleProviders;
@@ -610,6 +621,21 @@ export default function ExploreModel({
 
   // Scaling pace options
   const [selectedPace, setSelectedPace] = useState<'measured' | 'steady' | 'aggressive'>('steady');
+
+  const PACE_GROWTH_PRESETS: Record<'measured' | 'steady' | 'aggressive', { y2: number; y3: number }> = {
+    measured: { y2: 5, y3: 5 },
+    steady: { y2: 10, y3: 10 },
+    aggressive: { y2: 15, y3: 15 },
+  };
+
+  const handlePaceChange = (paceKey: 'measured' | 'steady' | 'aggressive') => {
+    const preset = PACE_GROWTH_PRESETS[paceKey] ?? { y2: 10, y3: 10 };
+    setSelectedPace(paceKey);
+    updateState({
+      year2GrowthPercent: preset.y2,
+      year3GrowthPercent: preset.y3,
+    });
+  };
   
   const paceConfig = {
     measured: { months: 36, label: '36mo', maturityMultiplier: 1.05 },
@@ -2185,17 +2211,47 @@ export default function ExploreModel({
                     key={pace}
                     variant={selectedPace === pace ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => setSelectedPace(pace)}
-                    className={`rounded-full min-h-[40px] min-w-[52px] ${
+                    onClick={() => handlePaceChange(pace)}
+                    className={`rounded-full min-h-[40px] min-w-[64px] flex-col px-3 py-1 h-auto ${
                       selectedPace === pace 
                         ? "bg-[#EA2C00] text-white" 
                         : "bg-[#F5F0EB] text-[#888888]"
                     }`}
                     data-testid={`pace-${pace}`}
                   >
-                    {paceConfig[pace].months}mo
+                    <span>{paceConfig[pace].months}mo</span>
+                    <span className={`block text-[10px] mt-0.5 ${selectedPace === pace ? 'text-white/80' : 'text-[#888888]'}`}>
+                      Y2 +{PACE_GROWTH_PRESETS[pace].y2}% · Y3 +{PACE_GROWTH_PRESETS[pace].y3}%
+                    </span>
                   </Button>
                 ))}
+              </div>
+            </div>
+
+            {/* Custom growth overrides */}
+            <div className="flex items-center justify-center gap-4 mb-4 text-sm flex-wrap">
+              <span className="text-[#888888]">Custom growth:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#666666]">Y2</span>
+                <input
+                  type="number"
+                  value={state.year2GrowthPercent}
+                  onChange={(e) => updateState({ year2GrowthPercent: parseFloat(e.target.value) || 0 })}
+                  className="w-14 h-7 text-center bg-white border border-[#E5E5E5] rounded text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                  data-testid="input-y2-growth"
+                />
+                <span className="text-[#888888]">%</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#666666]">Y3</span>
+                <input
+                  type="number"
+                  value={state.year3GrowthPercent}
+                  onChange={(e) => updateState({ year3GrowthPercent: parseFloat(e.target.value) || 0 })}
+                  className="w-14 h-7 text-center bg-white border border-[#E5E5E5] rounded text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                  data-testid="input-y3-growth"
+                />
+                <span className="text-[#888888]">%</span>
               </div>
             </div>
 
@@ -2351,14 +2407,19 @@ export default function ExploreModel({
             <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center">
               <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 1</p>
               <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year1Value)}</p>
+              {totalOneTimeValue > 0 && (
+                <p className="text-xs text-[#888888] mt-1">Includes {formatCurrency(totalOneTimeValue)} one-time</p>
+              )}
             </div>
             <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center">
               <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 2</p>
               <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year2Value)}</p>
+              <p className="text-xs text-[#888888] mt-1">+{state.year2GrowthPercent}% growth</p>
             </div>
             <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center">
               <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 3</p>
               <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year3Value)}</p>
+              <p className="text-xs text-[#888888] mt-1">+{state.year3GrowthPercent}% growth</p>
             </div>
             <div className="bg-[#F5F0EB] rounded-lg p-3 sm:p-5 text-center">
               <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">3-Year Value</p>
@@ -2367,10 +2428,7 @@ export default function ExploreModel({
           </div>
 
           <p className="text-sm text-[#888888] text-center mt-4">
-            {implementationCost > 0 ? `Year 1 includes ${formatCurrency(implementationCost)} implementation fee. ` : ''}
-            {isNursing
-              ? 'Years 2-3 assume 10% growth as adoption matures and documentation habits improve across the unit.'
-              : 'Years 2-3 assume 10% value growth from improved utilization.'}
+            Years 2 and 3 use {state.year2GrowthPercent}% and {state.year3GrowthPercent}% growth respectively. Adjust the pace selector or override the percentages directly.
           </p>
         </motion.div>
         )}
@@ -2478,7 +2536,7 @@ export default function ExploreModel({
                     </p>
                   )}
                   <p>
-                    <strong className="text-black">Growth assumptions:</strong> 10% annual improvement from workflow maturity.
+                    <strong className="text-black">Growth assumptions:</strong> Year 2 uses {state.year2GrowthPercent}% growth and Year 3 uses {state.year3GrowthPercent}% growth (compounded over Year 2). Adjust the pace selector or override the percentages directly.
                   </p>
                 </div>
               </motion.div>

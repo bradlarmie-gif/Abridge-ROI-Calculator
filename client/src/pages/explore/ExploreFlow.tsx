@@ -357,6 +357,9 @@ export interface ExploreState {
   calculatedValues?: CalculatedValues;
 
   otherFinancialBenefits: OtherFinancialBenefitItem[];
+
+  year2GrowthPercent: number;
+  year3GrowthPercent: number;
 }
 
 export const DEFAULT_EXPLORE_STATE: ExploreState = {
@@ -610,6 +613,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   implementationFee: 25000,
   includeImplementation: false,
   fullScaleProviders: 500,
+  year2GrowthPercent: 10,
+  year3GrowthPercent: 10,
 };
 
 type ExplorePhase = 
