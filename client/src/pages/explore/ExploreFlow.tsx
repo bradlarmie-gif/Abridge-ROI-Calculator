@@ -208,6 +208,48 @@ export interface TimeDriverInputs {
   nursingCdiResponseExpanded: boolean;
   nursingDocCompletionEnabled: boolean;
   nursingDocCompletionExpanded: boolean;
+
+  // ───── R-IA-2 curated qualitative drivers ─────
+  // OP Capacity qualitative
+  opThirdNextAvailableEnabled: boolean;
+  opThirdNextAvailableExpanded: boolean;
+  opPatientWaitTimeEnabled: boolean;
+  opPatientWaitTimeExpanded: boolean;
+  // OP Workforce qualitative
+  opBurnoutTrackingEnabled: boolean;
+  opBurnoutTrackingExpanded: boolean;
+  opLikelihoodToStayEnabled: boolean;
+  opLikelihoodToStayExpanded: boolean;
+  // OP Revenue qualitative
+  opDaysInAREnabled: boolean;
+  opDaysInARExpanded: boolean;
+  opAuditDefensibilityEnabled: boolean;
+  opAuditDefensibilityExpanded: boolean;
+  // ED Capacity qualitative
+  edDoorToProviderEnabled: boolean;
+  edDoorToProviderExpanded: boolean;
+  // ED Workforce qualitative
+  edBurnoutTrackingEnabled: boolean;
+  edBurnoutTrackingExpanded: boolean;
+  edLikelihoodToStayEnabled: boolean;
+  edLikelihoodToStayExpanded: boolean;
+  // ED Revenue qualitative
+  edCleanClaimEnabled: boolean;
+  edCleanClaimExpanded: boolean;
+  // IP Capacity qualitative
+  ipAlosTrackingEnabled: boolean;
+  ipAlosTrackingExpanded: boolean;
+  // IP Workforce qualitative
+  ipBurnoutTrackingEnabled: boolean;
+  ipBurnoutTrackingExpanded: boolean;
+  ipLikelihoodToStayEnabled: boolean;
+  ipLikelihoodToStayExpanded: boolean;
+  // IP Revenue qualitative
+  ipCmiTrackingEnabled: boolean;
+  ipCmiTrackingExpanded: boolean;
+  // Nursing Workforce qualitative
+  nursingLikelihoodToStayEnabled: boolean;
+  nursingLikelihoodToStayExpanded: boolean;
 }
 
 // Documentation Quality inputs
@@ -524,6 +566,37 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingCdiResponseExpanded: false,
     nursingDocCompletionEnabled: false,
     nursingDocCompletionExpanded: false,
+    // R-IA-2 curated qualitative driver defaults
+    opThirdNextAvailableEnabled: false,
+    opThirdNextAvailableExpanded: false,
+    opPatientWaitTimeEnabled: false,
+    opPatientWaitTimeExpanded: false,
+    opBurnoutTrackingEnabled: false,
+    opBurnoutTrackingExpanded: false,
+    opLikelihoodToStayEnabled: false,
+    opLikelihoodToStayExpanded: false,
+    opDaysInAREnabled: false,
+    opDaysInARExpanded: false,
+    opAuditDefensibilityEnabled: false,
+    opAuditDefensibilityExpanded: false,
+    edDoorToProviderEnabled: false,
+    edDoorToProviderExpanded: false,
+    edBurnoutTrackingEnabled: false,
+    edBurnoutTrackingExpanded: false,
+    edLikelihoodToStayEnabled: false,
+    edLikelihoodToStayExpanded: false,
+    edCleanClaimEnabled: false,
+    edCleanClaimExpanded: false,
+    ipAlosTrackingEnabled: false,
+    ipAlosTrackingExpanded: false,
+    ipBurnoutTrackingEnabled: false,
+    ipBurnoutTrackingExpanded: false,
+    ipLikelihoodToStayEnabled: false,
+    ipLikelihoodToStayExpanded: false,
+    ipCmiTrackingEnabled: false,
+    ipCmiTrackingExpanded: false,
+    nursingLikelihoodToStayEnabled: false,
+    nursingLikelihoodToStayExpanded: false,
   },
   otherFinancialBenefits: [],
   // Documentation quality inputs

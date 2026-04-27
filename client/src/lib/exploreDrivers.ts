@@ -691,6 +691,192 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'nursingDocCompletionExpanded',
     trackedMeasureIds: ['nursingDocCompletion'],
   },
+
+  // ───── R-IA-2 — Curated qualitative drivers (toggleable, no $ math) ─────
+  // OP Capacity (qualitative)
+  {
+    id: 'opThirdNextAvailable',
+    label: '3rd Next Available',
+    shortDescription: 'Days until the third next available appointment slot. A standard access metric.',
+    quadrant: 'Capacity',
+    settings: ['outpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'opThirdNextAvailableEnabled',
+    expandedStateKey: 'opThirdNextAvailableExpanded',
+    trackedMeasureIds: ['thirdNextAvailable'],
+  },
+  {
+    id: 'opPatientWaitTime',
+    label: 'Patient Wait Time',
+    shortDescription: 'Average minutes patients wait between scheduled appointment time and being seen.',
+    quadrant: 'Capacity',
+    settings: ['outpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'opPatientWaitTimeEnabled',
+    expandedStateKey: 'opPatientWaitTimeExpanded',
+    trackedMeasureIds: [],
+  },
+
+  // OP Workforce (qualitative)
+  {
+    id: 'opBurnoutTracking',
+    label: 'Burnout Score',
+    shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Tracked as a leading indicator for retention.',
+    quadrant: 'Workforce',
+    settings: ['outpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'opBurnoutTrackingEnabled',
+    expandedStateKey: 'opBurnoutTrackingExpanded',
+    trackedMeasureIds: ['burnoutAssessment'],
+  },
+  {
+    id: 'opLikelihoodToStay',
+    label: 'Likelihood to Stay',
+    shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',
+    quadrant: 'Workforce',
+    settings: ['outpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'opLikelihoodToStayEnabled',
+    expandedStateKey: 'opLikelihoodToStayExpanded',
+    trackedMeasureIds: ['likelihoodToStay'],
+  },
+
+  // OP Revenue (qualitative)
+  {
+    id: 'opDaysInAR',
+    label: 'Days in AR',
+    shortDescription: 'Average days from claim submission to payment. A standard revenue cycle indicator.',
+    quadrant: 'Revenue',
+    settings: ['outpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'opDaysInAREnabled',
+    expandedStateKey: 'opDaysInARExpanded',
+    trackedMeasureIds: [],
+  },
+  {
+    id: 'opAuditDefensibility',
+    label: 'Audit Defensibility',
+    shortDescription: 'Share of records meeting completeness criteria during internal audit reviews.',
+    quadrant: 'Revenue',
+    settings: ['outpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'opAuditDefensibilityEnabled',
+    expandedStateKey: 'opAuditDefensibilityExpanded',
+    trackedMeasureIds: [],
+  },
+
+  // ED Capacity (qualitative)
+  {
+    id: 'edDoorToProvider',
+    label: 'Door-to-Provider Time',
+    shortDescription: 'Minutes from patient arrival to first provider contact. An upstream indicator for LWBS and patient experience.',
+    quadrant: 'Capacity',
+    settings: ['ed'],
+    visibility: 'qualitative',
+    enabledStateKey: 'edDoorToProviderEnabled',
+    expandedStateKey: 'edDoorToProviderExpanded',
+    trackedMeasureIds: ['doorToProvider'],
+  },
+
+  // ED Workforce (qualitative)
+  {
+    id: 'edBurnoutTracking',
+    label: 'Burnout Score',
+    shortDescription: 'Score from a validated burnout instrument. Tracked as a leading indicator for retention.',
+    quadrant: 'Workforce',
+    settings: ['ed'],
+    visibility: 'qualitative',
+    enabledStateKey: 'edBurnoutTrackingEnabled',
+    expandedStateKey: 'edBurnoutTrackingExpanded',
+    trackedMeasureIds: ['burnoutAssessment'],
+  },
+  {
+    id: 'edLikelihoodToStay',
+    label: 'Likelihood to Stay',
+    shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',
+    quadrant: 'Workforce',
+    settings: ['ed'],
+    visibility: 'qualitative',
+    enabledStateKey: 'edLikelihoodToStayEnabled',
+    expandedStateKey: 'edLikelihoodToStayExpanded',
+    trackedMeasureIds: ['likelihoodToStay'],
+  },
+
+  // ED Revenue (qualitative)
+  {
+    id: 'edCleanClaim',
+    label: 'Clean Claim Rate',
+    shortDescription: 'Share of ED claims accepted on first submission. Tracked as a downstream signal of documentation completeness.',
+    quadrant: 'Revenue',
+    settings: ['ed'],
+    visibility: 'qualitative',
+    enabledStateKey: 'edCleanClaimEnabled',
+    expandedStateKey: 'edCleanClaimExpanded',
+    trackedMeasureIds: ['cleanClaim'],
+  },
+
+  // IP Capacity (qualitative)
+  {
+    id: 'ipAlosTracking',
+    label: 'Average Length of Stay',
+    shortDescription: 'Average days per inpatient admission. Tracked as a flow indicator alongside discharge timing.',
+    quadrant: 'Capacity',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipAlosTrackingEnabled',
+    expandedStateKey: 'ipAlosTrackingExpanded',
+    trackedMeasureIds: ['avgLengthOfStay'],
+  },
+
+  // IP Workforce (qualitative)
+  {
+    id: 'ipBurnoutTracking',
+    label: 'Burnout Score',
+    shortDescription: 'Score from a validated burnout instrument. Tracked as a leading indicator for hospitalist retention.',
+    quadrant: 'Workforce',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipBurnoutTrackingEnabled',
+    expandedStateKey: 'ipBurnoutTrackingExpanded',
+    trackedMeasureIds: ['burnoutAssessment'],
+  },
+  {
+    id: 'ipLikelihoodToStay',
+    label: 'Likelihood to Stay',
+    shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',
+    quadrant: 'Workforce',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipLikelihoodToStayEnabled',
+    expandedStateKey: 'ipLikelihoodToStayExpanded',
+    trackedMeasureIds: ['likelihoodToStay'],
+  },
+
+  // IP Revenue (qualitative)
+  {
+    id: 'ipCmiTracking',
+    label: 'Case Mix Index',
+    shortDescription: 'Weighted average of DRG relative weights. Tracked as a downstream signal of CC/MCC capture and DRG accuracy.',
+    quadrant: 'Revenue',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipCmiTrackingEnabled',
+    expandedStateKey: 'ipCmiTrackingExpanded',
+    trackedMeasureIds: ['caseMixIndex'],
+  },
+
+  // Nursing Workforce (qualitative)
+  {
+    id: 'nursingLikelihoodToStay',
+    label: 'Likelihood to Stay',
+    shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',
+    quadrant: 'Workforce',
+    settings: ['nursing'],
+    visibility: 'qualitative',
+    enabledStateKey: 'nursingLikelihoodToStayEnabled',
+    expandedStateKey: 'nursingLikelihoodToStayExpanded',
+    trackedMeasureIds: ['likelihoodToStay'],
+  },
 ];
 
 export function getDriversForPage(quadrant: ExploreQuadrant, setting: ExploreSetting): ExploreDriver[] {
