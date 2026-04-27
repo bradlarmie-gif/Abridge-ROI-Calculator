@@ -1,0 +1,651 @@
+ 🔧 Sprint 3F — Replit prompt (paste verbatim)                                                                                                                                                                
+                                                             
+  Context: Adds care-setting expansion to the Forecast page. PS clicks "+ Add care setting" → modal asks for setting type, provider count, encounters/beds, utilization, and scenario                          
+  (Conservative/Typical/Optimistic). The added setting renders as a card on Forecast with an estimated annual value computed from per-setting/per-scenario heuristics. PS can override the auto-computed total 
+  per added setting. Right panel shows combined value: original baseline + projected + added settings.                                                                                                         
+                                                                                                                                                                                                             
+  Pre-req: Sprint 3E shipped.                                                                                                                                                                                  
+                                                        
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Add per-setting/per-scenario value-per-provider constants                                                                                                                                           
+  ═══════════════════════════════════════════════════════════
+  File: client/src/lib/forecastDefaults.ts (NEW FILE)                                                                                                                                                          
+                                                          
+  Per-setting estimates of annual value per active provider/FTE at typical utilization (70%). Conservative ≈ 60% of typical, Optimistic ≈ 160% of typical. These are MODELING DEFAULTS that PS can override per
+   scenario. Real values come from Abridge benchmark data and should be reviewed by Brad before customer use.                                                                                                  
+                                                             
+  import type { ExploreSetting } from "./exploreDrivers";                                                                                                                                                      
+                                                             
+  export type ForecastScenarioLevel = 'conservative' | 'typical' | 'optimistic';                                                                                                                               
+                                                            
+  export const SETTING_FORECAST_VALUE_PER_PROVIDER: Record<ExploreSetting, Record<ForecastScenarioLevel, number>> = {                                                                                          
+    outpatient: {                                                                                                                                                                                              
+      conservative: 50000,                                                                                                                                                                                     
+      typical: 90000,                                                                                                                                                                                          
+      optimistic: 150000,                                                                                                                                                                                      
+    },                                                       
+    ed: {                                                                                                                                                                                                      
+      conservative: 70000,                                   
+      typical: 130000,                                                                                                                                                                                         
+      optimistic: 220000,                
+    },                                                                                                                                                                                                         
+    inpatient: {                                        
+      conservative: 60000,                                                                                                                                                                                     
+      typical: 110000,                                      
+      optimistic: 180000,                        
+    },                                                       
+    nursing: {   
+      // For nursing, "provider" = nurse FTE. Per-FTE values.
+      conservative: 7000,                                                                                                                                                                                      
+      typical: 12000,                                     
+      optimistic: 19000,                                                                                                                                                                                       
+    },                                                      
+  };                                                         
+                                                             
+  export const SETTING_LABELS: Record<ExploreSetting, string> = {
+    outpatient: 'Outpatient',                                                                                                                                                                                  
+    ed: 'Emergency',                                                                                                                                                                                           
+    inpatient: 'Inpatient',                                                                                                                                                                                    
+    nursing: 'Nursing',                                                                                                                                                                                        
+  };                                                         
+                                                        
+  export const FORECAST_BASELINE_UTILIZATION = 70; // utilization% at which the per-provider values are calibrated
+                                                                                                                                                                                                               
+  export function computeAddedSettingValue(params: {      
+    setting: ExploreSetting;                                                                                                                                                                                   
+    providers: number;                                    
+    utilizationPercent: number;                              
+    scenario: ForecastScenarioLevel;                                                                                                                                                                           
+    customValueOverride?: number;                            
+  }): number {                                                                                                                                                                                                 
+    if (params.customValueOverride !== undefined && params.customValueOverride > 0) {
+      return params.customValueOverride;                                                                                                                                                                       
+    }                                                   
+    const valuePerProvider = SETTING_FORECAST_VALUE_PER_PROVIDER[params.setting][params.scenario];                                                                                                             
+    const utilizationFactor = params.utilizationPercent / FORECAST_BASELINE_UTILIZATION;
+    return Math.round(params.providers * valuePerProvider * utilizationFactor);
+  }                                                                                                                                                                                                            
+                                                            
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Add ForecastAddedSetting type to MeasureState                                                                                                                                                       
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/measure/MeasureFlow.tsx (or wherever MeasureState is defined)                                                                                                                         
+                                                                                                                                                                                                               
+  ADD this type (import ForecastScenarioLevel from forecastDefaults if needed):
+                                                                                                                                                                                                               
+  import type { ExploreSetting } from "@/lib/exploreDrivers";
+  import type { ForecastScenarioLevel } from "@/lib/forecastDefaults";                                                                                                                                         
+                                                             
+  export interface ForecastAddedSetting {                                                                                                                                                                      
+    id: string;                          // unique id (timestamp + random)
+    setting: ExploreSetting;                                                                                                                                                                                   
+    providers: number;                   // provider count (or nurse FTEs)                                                                                                                                     
+    utilizationPercent: number;                                                                                                                                                                                
+    encounters: number;                  // total annual encounters (non-nursing)                                                                                                                              
+    staffedBeds: number;                 // nursing only
+    occupancyPercent: number;            // nursing only                                                                                                                                                       
+    scenario: ForecastScenarioLevel;                        
+    customValueOverride?: number;        // PS can override auto-computed value                                                                                                                                
+  }                                                                                                                                                                                                            
+                                                             
+  UPDATE the existing ForecastScenario type (added in Sprint 3E) to include the array:                                                                                                                         
+                                                                                                                                                                                                               
+  export interface ForecastScenario {                                                                                                                                                                          
+    // ... existing fields from 3E ...                                                                                                                                                                         
+    addedSettings: ForecastAddedSetting[];                                                                                                                                                                     
+  }                                                                                                                                                                                                            
+                                                          
+  UPDATE the default initialization to include `addedSettings: []`.                                                                                                                                            
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 3 — Create AddCareSettingModal component                                                                                                                                                                
+  ═══════════════════════════════════════════════════════════
+  NEW FILE: client/src/components/measure/AddCareSettingModal.tsx                                                                                                                                              
+                                                          
+  Modal where PS enters the new setting's scale + scenario. On save, calls onAdd with a complete ForecastAddedSetting.                                                                                         
+                                                                                                                                                                                                               
+  import { useState, useMemo } from "react";                 
+  import { X, Check } from "lucide-react";                                                                                                                                                                     
+  import { motion, AnimatePresence } from "framer-motion";   
+  import { Button } from "@/components/ui/button";                                                                                                                                                             
+  import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+  import type { ExploreSetting } from "@/lib/exploreDrivers";                                                                                                                                                  
+  import {                                                                                                                                                                                                     
+    computeAddedSettingValue,                                                                                                                                                                                  
+    SETTING_LABELS,                                                                                                                                                                                            
+    type ForecastScenarioLevel,                         
+  } from "@/lib/forecastDefaults";                                                                                                                                                                             
+  import type { ForecastAddedSetting } from "@/pages/measure/MeasureFlow";                                                                                                                                     
+                                                 
+  interface AddCareSettingModalProps {                                                                                                                                                                         
+    open: boolean;                                        
+    excludeSettings: ExploreSetting[];   // current setting + already-added settings                                                                                                                           
+    onClose: () => void;                                                                                                                                                                                       
+    onAdd: (added: ForecastAddedSetting) => void;            
+  }                                                                                                                                                                                                            
+                                                            
+  const SCENARIO_OPTIONS: Array<{ key: ForecastScenarioLevel; label: string; description: string }> = [                                                                                                        
+    { key: 'conservative', label: 'Conservative', description: 'Modest expansion outcomes' },
+    { key: 'typical', label: 'Typical', description: 'Based on observed customer data' },                                                                                                                      
+    { key: 'optimistic', label: 'Optimistic', description: 'Strong adoption + change management' },
+  ];                                                                                                                                                                                                           
+                                                             
+  export default function AddCareSettingModal({ open, excludeSettings, onClose, onAdd }: AddCareSettingModalProps) {                                                                                           
+    const allSettings: ExploreSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
+    const available = allSettings.filter(s => !excludeSettings.includes(s));                                                                                                                                   
+                                                            
+    const [setting, setSetting] = useState<ExploreSetting>(available[0] ?? 'outpatient');                                                                                                                      
+    const [providers, setProviders] = useState(0);                                                                                                                                                             
+    const [utilizationPercent, setUtilizationPercent] = useState(70);                                                                                                                                          
+    const [encounters, setEncounters] = useState(0);                                                                                                                                                           
+    const [staffedBeds, setStaffedBeds] = useState(0);                                                                                                                                                         
+    const [occupancyPercent, setOccupancyPercent] = useState(85);
+    const [scenario, setScenario] = useState<ForecastScenarioLevel>('typical');                                                                                                                                
+                                                                                                                                                                                                               
+    const isNursing = setting === 'nursing';                                                                                                                                                                   
+                                                                                                                                                                                                               
+    const livePreview = useMemo(() => {                                                                                                                                                                        
+      return computeAddedSettingValue({ setting, providers, utilizationPercent, scenario });
+    }, [setting, providers, utilizationPercent, scenario]);                                                                                                                                                    
+                                                             
+    const isValid = providers > 0 && utilizationPercent > 0;                                                                                                                                                   
+                                                            
+    const handleSave = () => {                                                                                                                                                                                 
+      if (!isValid) return;                                  
+      const added: ForecastAddedSetting = {                                                                                                                                                                    
+        id: `added-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        setting,                                                                                                                                                                                               
+        providers,                                        
+        utilizationPercent,                                                                                                                                                                                    
+        encounters: isNursing ? 0 : encounters,           
+        staffedBeds: isNursing ? staffedBeds : 0,                                                                                                                                                              
+        occupancyPercent: isNursing ? occupancyPercent : 0,
+        scenario,                                            
+      };                                                                                                                                                                                                       
+      onAdd(added);                                         
+      // Reset for next add                                                                                                                                                                                    
+      setProviders(0);                                       
+      setEncounters(0);                                                                                                                                                                                        
+      setStaffedBeds(0);                                  
+      onClose();                                                                                                                                                                                               
+    };                                           
+                                                                                                                                                                                                               
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
+                                                        
+    return (                                                                                                                                                                                                   
+      <AnimatePresence>                                     
+        {open && (                                                                                                                                                                                             
+          <motion.div                                        
+            initial={{ opacity: 0 }}                    
+            animate={{ opacity: 1 }}                      
+            exit={{ opacity: 0 }}                                                                                                                                                                              
+            onClick={onClose}                    
+            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"                                                                                                                    
+          >                                             
+            <motion.div                                   
+              initial={{ opacity: 0, scale: 0.95 }}                                                                                                                                                            
+              animate={{ opacity: 1, scale: 1 }}        
+              exit={{ opacity: 0, scale: 0.95 }}                                                                                                                                                               
+              onClick={(e) => e.stopPropagation()}          
+              className="bg-white rounded-2xl w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden"
+            >                                                                                                                                                                                                  
+              <div className="p-5 border-b border-[#E5E5E5] flex items-center justify-between">
+                <div>                                                                                                                                                                                          
+                  <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest">Forecast</p>                                                                                                   
+                  <h3 className="text-lg font-bold text-black mt-0.5">Add a care setting</h3>
+                </div>                                                                                                                                                                                         
+                <button onClick={onClose} className="p-2 hover:bg-[#F5F0EB] rounded-lg" data-testid="modal-close">                                                                                             
+                  <X className="w-5 h-5 text-[#888888]" />   
+                </button>                                                                                                                                                                                      
+              </div>                                         
+                                                                                                                                                                                                               
+              <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                {available.length === 0 && (                                                                                                                                                                   
+                  <p className="text-sm text-[#888888] italic text-center py-8">All four care settings are already modeled.</p>                                                                                
+                )}                                                                                                                                                                                             
+                                                                                                                                                                                                               
+                {available.length > 0 && (                   
+                  <>                                                                                                                                                                                           
+                    <div>                                   
+                      <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-2 block">Care setting</label>                                                                            
+                      <div className="grid grid-cols-2 gap-2">
+                        {available.map(s => (                                                                                                                                                                  
+                          <button                                                                                                                                                                              
+                            key={s}                                                                                                                                                                            
+                            onClick={() => setSetting(s)}                                                                                                                                                      
+                            className={`p-3 rounded-lg border-2 text-left transition-all ${                                                                                                                    
+                              setting === s ? 'border-[#EA2C00] bg-white' : 'border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]'
+                            }`}                              
+                            data-testid={`setting-option-${s}`}                                                                                                                                                
+                          >                                 
+                            <p className="font-semibold text-black text-sm">{SETTING_LABELS[s]}</p>                                                                                                            
+                          </button>                          
+                        ))}                                                                                                                                                                                    
+                      </div>                                
+                    </div>                                                                                                                                                                                     
+                                                                                                                                                                                                               
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">                                                                                                                                    
+                      <div>                                                                                                                                                                                    
+                        <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">                                                                                            
+                          {isNursing ? 'Nurse FTEs' : 'Providers'}
+                        </label>                                                                                                                                                                               
+                        <FormattedNumberInput value={providers} onChange={setProviders} className="h-11 bg-white" />
+                      </div>                                                                                                                                                                                   
+                      <div>                                 
+                        <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">Utilization</label>                                                                         
+                        <div className="relative">           
+                          <FormattedNumberInput value={utilizationPercent} onChange={setUtilizationPercent} className="h-11 bg-white pr-8" />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>                                                                                          
+                        </div>                                                                                                                                                                                 
+                      </div>                                                                                                                                                                                   
+                    </div>                                                                                                                                                                                     
+                                                                                                                                                                                                               
+                    {!isNursing && (                                                                                                                                                                           
+                      <div>                                                                                                                                                                                    
+                        <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">Annual encounters</label>                                                                   
+                        <FormattedNumberInput value={encounters} onChange={setEncounters} className="h-11 bg-white" />                                                                                         
+                        <p className="text-xs text-[#888888] mt-1">Optional context — used in 3G pricing comparison.</p>                                                                                       
+                      </div>                                                                                                                                                                                   
+                    )}                                      
+                                                                                                                                                                                                               
+                    {isNursing && (                          
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>                                
+                          <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">Staffed beds</label>                                                                      
+                          <FormattedNumberInput value={staffedBeds} onChange={setStaffedBeds} className="h-11 bg-white" />                                                                                     
+                        </div>                                                                                                                                                                                 
+                        <div>                                                                                                                                                                                  
+                          <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">Occupancy</label>                                                                         
+                          <div className="relative">        
+                            <FormattedNumberInput value={occupancyPercent} onChange={setOccupancyPercent} className="h-11 bg-white pr-8" />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                          </div>                            
+                        </div>                                                                                                                                                                                 
+                      </div>                                                                                                                                                                                   
+                    )}                                                                                                                                                                                         
+                                                                                                                                                                                                               
+                    <div>                                                                                                                                                                                      
+                      <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-2 block">Scenario</label>
+                      <div className="space-y-2">                                                                                                                                                              
+                        {SCENARIO_OPTIONS.map(opt => (                                                                                                                                                         
+                          <button                                                                                                                                                                              
+                            key={opt.key}                                                                                                                                                                      
+                            onClick={() => setScenario(opt.key)}
+                            className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                              scenario === opt.key ? 'border-[#EA2C00] bg-white' : 'border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]'
+                            }`}                              
+                            data-testid={`scenario-option-${opt.key}`}                                                                                                                                         
+                          >                                 
+                            <div className="flex items-center justify-between">                                                                                                                                
+                              <div>                          
+                                <p className="font-semibold text-black text-sm">{opt.label}</p>                                                                                                                
+                                <p className="text-xs text-[#888888]">{opt.description}</p>
+                              </div>                                                                                                                                                                           
+                              {scenario === opt.key && <Check className="w-4 h-4 text-[#EA2C00]" />}                                                                                                           
+                            </div>                                                                                                                                                                             
+                          </button>                                                                                                                                                                            
+                        ))}                               
+                      </div>                                 
+                    </div>                                                                                                                                                                                     
+                                                             
+                    {/* Live preview */}                                                                                                                                                                       
+                    <div className="bg-[#1A1A1A] rounded-lg p-4">
+                      <p className="text-xs font-medium text-white/70 uppercase tracking-[1.5px] mb-1">Estimated annual value</p>                                                                              
+                      <p className="text-3xl font-bold text-[#EA2C00]">{providers > 0 ? formatCurrency(livePreview) : '—'}</p>
+                      <p className="text-xs text-white/50 mt-1">                                                                                                                                               
+                        {providers > 0                      
+                          ? `${providers} ${isNursing ? 'nurse FTEs' : 'providers'} × ${SETTING_LABELS[setting]} ${scenario} estimate × utilization adjustment`
+                          : 'Enter scale to see estimate'}   
+                      </p>                                   
+                    </div>                                   
+                  </>                                                                                                                                                                                          
+                )}                                                                                                                                                                                             
+              </div>                                                                                                                                                                                           
+                                                                                                                                                                                                               
+              {available.length > 0 && (                                                                                                                                                                       
+                <div className="p-5 border-t border-[#E5E5E5] flex items-center justify-end gap-2">                                                                                                            
+                  <button                                                                                                                                                                                      
+                    onClick={onClose}                                                                                                                                                                          
+                    className="px-4 py-2 text-sm font-medium text-[#666666] hover:text-black transition-colors"                                                                                                
+                  >                                          
+                    Cancel                                
+                  </button>                                 
+                  <Button                                                                                                                                                                                      
+                    onClick={handleSave}                     
+                    disabled={!isValid}                                                                                                                                                                        
+                    className={`h-10 px-5 font-semibold rounded-full text-sm ${
+                      isValid ? 'bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white' : 'bg-[#E0E0E0] text-[#999999] cursor-not-allowed'                                                                             
+                    }`}                                 
+                    data-testid="button-add-care-setting-save"                                                                                                                                                 
+                  >                                                                                                                                                                                            
+                    Add care setting                        
+                  </Button>                                                                                                                                                                                    
+                </div>                                       
+              )}                                          
+            </motion.div>                                                                                                                                                                                      
+          </motion.div>                                                                                                                                                                                        
+        )}                                                                                                                                                                                                     
+      </AnimatePresence>                                                                                                                                                                                       
+    );                                   
+  }                                                                                                                                                                                                            
+                                         
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Create AddedSettingCard component              
+  ═══════════════════════════════════════════════════════════
+  NEW FILE: client/src/components/measure/AddedSettingCard.tsx
+                                                             
+  Renders one added setting as a card on the Forecast page. PS can change scenario, edit scale, override the auto-computed value, or remove the setting.
+                                                            
+  import { useState } from "react";                                                                                                                                                                            
+  import { Trash2, Pencil, Check, X } from "lucide-react";   
+  import { FormattedNumberInput } from "@/components/FormattedNumberInput";                                                                                                                                    
+  import {                                                   
+    SETTING_LABELS,                                                                                                                                                                                            
+    computeAddedSettingValue,                               
+    type ForecastScenarioLevel,                                                                                                                                                                                
+  } from "@/lib/forecastDefaults";                           
+  import type { ForecastAddedSetting } from "@/pages/measure/MeasureFlow";                                                                                                                                     
+                                                 
+  interface AddedSettingCardProps {                                                                                                                                                                            
+    added: ForecastAddedSetting;                          
+    onUpdate: (updates: Partial<ForecastAddedSetting>) => void;                                                                                                                                                
+    onRemove: () => void;                                                                                                                                                                                      
+  }                                                          
+                                                                                                                                                                                                               
+  const SCENARIO_LABELS: Record<ForecastScenarioLevel, string> = {
+    conservative: 'Conservative',                                                                                                                                                                              
+    typical: 'Typical',                                      
+    optimistic: 'Optimistic',                                                                                                                                                                                  
+  };                                             
+                                                                                                                                                                                                               
+  export default function AddedSettingCard({ added, onUpdate, onRemove }: AddedSettingCardProps) {
+    const [editingValue, setEditingValue] = useState(false);                                                                                                                                                   
+    const [tempValue, setTempValue] = useState(added.customValueOverride ?? 0);                                                                                                                                
+                                                            
+    const computedValue = computeAddedSettingValue(added);                                                                                                                                                     
+    const isOverridden = added.customValueOverride !== undefined && added.customValueOverride > 0;
+    const isNursing = added.setting === 'nursing';        
+                                                             
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();                                                                                                                                
+    const formatNumber = (n: number) => n.toLocaleString();  
+                                                                                                                                                                                                               
+    return (                                                 
+      <div className="bg-white rounded-lg border border-[#E5E5E5] p-4" data-testid={`added-setting-${added.id}`}>                                                                                              
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0">                                                                                                                                                                     
+            <div className="flex items-center gap-2 mb-1">
+              <p className="font-semibold text-black">{SETTING_LABELS[added.setting]}</p>                                                                                                                      
+              <span className="text-[10px] font-medium text-[#888888] bg-[#F5F0EB] px-1.5 py-0.5 rounded uppercase tracking-wide">
+                Modeled                                                                                                                                                                                        
+              </span>                                        
+            </div>                                        
+            <p className="text-xs text-[#888888]">                                                                                                                                                             
+              {formatNumber(added.providers)} {isNursing ? 'nurse FTEs' : 'providers'} · {added.utilizationPercent}% util                                                                                      
+              {isNursing && added.staffedBeds > 0 && ` · ${formatNumber(added.staffedBeds)} beds`}                                                                                                             
+            </p>                                                                                                                                                                                               
+          </div>                                            
+          <button                                                                                                                                                                                              
+            onClick={onRemove}                               
+            className="p-1.5 text-[#888888] hover:text-[#EA2C00] hover:bg-[#FCE8E2] rounded transition-colors"                                                                                                 
+            data-testid={`remove-added-setting-${added.id}`} 
+          >                                                                                                                                                                                                    
+            <Trash2 className="w-4 h-4" />                                                                                                                                                                     
+          </button>                                                                                                                                                                                            
+        </div>                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+        {/* Scenario selector */}                       
+        <div className="grid grid-cols-3 gap-1.5 mb-3">   
+          {(['conservative', 'typical', 'optimistic'] as ForecastScenarioLevel[]).map(s => (                                                                                                                   
+            <button                              
+              key={s}                                                                                                                                                                                          
+              onClick={() => onUpdate({ scenario: s })}   
+              className={`py-1.5 px-2 rounded-md text-xs font-medium transition-all ${
+                added.scenario === s ? 'bg-[#EA2C00] text-white' : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'                                                                                            
+              }`}                                            
+              data-testid={`scenario-${added.id}-${s}`}                                                                                                                                                        
+            >                                             
+              {SCENARIO_LABELS[s]}                                                                                                                                                                             
+            </button>                                     
+          ))}                                                                                                                                                                                                  
+        </div>                                                                                                                                                                                                 
+                                                             
+        {/* Estimated value */}                                                                                                                                                                                
+        <div className="bg-[#F5F0EB] rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1">                                                                                                                                             
+            <p className="text-xs font-medium text-[#666666]">
+              Estimated annual value                                                                                                                                                                           
+              {isOverridden && <span className="text-[10px] text-[#EA2C00] ml-1.5 font-semibold uppercase tracking-wide">overridden</span>}
+            </p>                                          
+            {!editingValue ? (                               
+              <button                                     
+                onClick={() => { setTempValue(computedValue); setEditingValue(true); }}
+                className="p-1 text-[#888888] hover:text-[#EA2C00] hover:bg-white rounded"                                                                                                                     
+                data-testid={`edit-value-${added.id}`}       
+              >                                                                                                                                                                                                
+                <Pencil className="w-3 h-3" />              
+              </button>                                                                                                                                                                                        
+            ) : (                                                                                                                                                                                              
+              <div className="flex items-center gap-1">                                                                                                                                                        
+                <button                                                                                                                                                                                        
+                  onClick={() => { onUpdate({ customValueOverride: tempValue }); setEditingValue(false); }}                                                                                                    
+                  className="p-1 text-[#EA2C00] hover:bg-white rounded"                                                                                                                                        
+                >                                                                                                                                                                                              
+                  <Check className="w-3 h-3" />                                                                                                                                                                
+                </button>                                   
+                <button                                 
+                  onClick={() => { onUpdate({ customValueOverride: undefined }); setEditingValue(false); }}                                                                                                    
+                  className="p-1 text-[#888888] hover:bg-white rounded"
+                  title="Reset to auto-computed"                                                                                                                                                               
+                >                                                                                                                                                                                              
+                  <X className="w-3 h-3" />                 
+                </button>                                                                                                                                                                                      
+              </div>                                                                                                                                                                                           
+            )}                                   
+          </div>                                                                                                                                                                                               
+          {editingValue ? (                                                                                                                                                                                    
+            <div className="relative">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-base font-bold text-[#EA2C00]">$</span>                                                                                           
+              <FormattedNumberInput                     
+                value={tempValue}                                                                                                                                                                              
+                onChange={(v: number) => setTempValue(v)}   
+                className="h-9 bg-white pl-6 text-base font-bold"
+              />                                             
+            </div>                                           
+          ) : (                                             
+            <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(computedValue)}</p>                                                                                                               
+          )}                                                                                                                                                                                                   
+        </div>                                                                                                                                                                                                 
+      </div>                                                                                                                                                                                                   
+    );                                                                                                                                                                                                         
+  }                                                          
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 5 — Update MeasureForecast.tsx to support added settings                                                                                                                                                
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/measure/MeasureForecast.tsx                                                                                                                                                           
+                                                                                                                                                                                                               
+  ADD imports:                                              
+    import { useState } from "react";                                                                                                                                                                          
+    import { Plus } from "lucide-react";                     
+    import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
+    import AddedSettingCard from "@/components/measure/AddedSettingCard";
+    import { computeAddedSettingValue } from "@/lib/forecastDefaults";                                                                                                                                         
+    import type { ForecastAddedSetting } from "./MeasureFlow";
+                                                                                                                                                                                                               
+  Inside the component, ADD modal state:                     
+                                                                                                                                                                                                               
+    const [addModalOpen, setAddModalOpen] = useState(false);
+                                                                                                                                                                                                               
+  ADD handlers for managing added settings:                                                                                                                                                                    
+                                                                                                                                                                                                               
+    const addedSettings = state.forecastScenario.addedSettings || [];                                                                                                                                          
+                                                            
+    const addCareSetting = (added: ForecastAddedSetting) => {                                                                                                                                                  
+      updateState({                                          
+        forecastScenario: {                                                                                                                                                                                    
+          ...state.forecastScenario,                         
+          addedSettings: [...addedSettings, added],                                                                                                                                                            
+        },                                                  
+      });                                                                                                                                                                                                      
+    };                                                       
+                                                                                                                                                                                                               
+    const updateAddedSetting = (id: string, updates: Partial<ForecastAddedSetting>) => {
+      updateState({                                                                                                                                                                                            
+        forecastScenario: {                      
+          ...state.forecastScenario,                                                                                                                                                                           
+          addedSettings: addedSettings.map(a => a.id === id ? { ...a, ...updates } : a),
+        },                                              
+      });                                                                                                                                                                                                      
+    };                                                      
+                                                                                                                                                                                                               
+    const removeAddedSetting = (id: string) => {             
+      updateState({                                     
+        forecastScenario: {                               
+          ...state.forecastScenario,                                                                                                                                                                           
+          addedSettings: addedSettings.filter(a => a.id !== id),
+        },                                                                                                                                                                                                     
+      });                                               
+    };                                                    
+                                                                                                                                                                                                               
+    const addedSettingsTotal = useMemo(() => {   
+      return addedSettings.reduce((sum, a) => sum + computeAddedSettingValue(a), 0);                                                                                                                           
+    }, [addedSettings]);                 
+                                                        
+  UPDATE the right-panel total to include added settings. REPLACE the existing "Total Annual Value" block with:                                                                                                
+                                                            
+    <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Combined Annual Value</p>                                                                                                    
+    <p className="text-sm text-white/50 mb-5">Realized + projected + expansion</p>
+                                                          
+    <div className="space-y-3 mb-5">                         
+      <div className="flex items-center justify-between">                                                                                                                                                      
+        <span className="text-xs text-white/50">Realized today</span>
+        <span className="text-base font-medium text-white/80">{formatCurrency(totalRealized)}</span>                                                                                                           
+      </div>                                                 
+      <div className="flex items-center justify-between">                                                                                                                                                      
+        <span className="text-xs text-white/50">Projected at scale</span>
+        <span className="text-base font-medium text-white/80">{formatCurrency(totalProjected)}</span>                                                                                                          
+      </div>                                                                                                                                                                                                   
+      {addedSettings.length > 0 && (                                                                                                                                                                           
+        <div className="flex items-center justify-between">                                                                                                                                                    
+          <span className="text-xs text-white/50">+ {addedSettings.length} setting{addedSettings.length === 1 ? '' : 's'}</span>
+          <span className="text-base font-medium text-white/80">{formatCurrency(addedSettingsTotal)}</span>                                                                                                    
+        </div>                                               
+      )}                                                                                                                                                                                                       
+      <div className="flex items-center justify-between pt-3 border-t border-[#333333]">
+        <span className="text-xs font-semibold text-white">Combined total</span>                                                                                                                               
+        <span className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(totalProjected + addedSettingsTotal)}</span>
+      </div>                                                                                                                                                                                                   
+    </div>                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ADD a new "Modeled Expansions" section in the main column, AFTER the per-quadrant projection cards and BEFORE the mobile continue button:                                                                    
+                                                                                                                                                                                                               
+    <motion.div                                              
+      className="mt-8"                                                                                                                                                                                         
+      initial={{ opacity: 0, y: 20 }}                                                                                                                                                                          
+      animate={{ opacity: 1, y: 0 }}                                                                                                                                                                           
+      transition={{ delay: 0.25 }}                                                                                                                                                                             
+    >                                                                                                                                                                                                          
+      <div className="flex items-center justify-between mb-3">                                                                                                                                                 
+        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Modeled Expansions</p>
+        {addedSettings.length > 0 && (                                                                                                                                                                         
+          <p className="text-xs text-[#666666]">{addedSettings.length} setting{addedSettings.length === 1 ? '' : 's'} · {formatCurrency(addedSettingsTotal)}/yr</p>
+        )}                                                  
+      </div>                                                                                                                                                                                                   
+                                                             
+      <div className="space-y-3">                                                                                                                                                                              
+        {addedSettings.map(added => (            
+          <AddedSettingCard                                                                                                                                                                                    
+            key={added.id}                                                                                                                                                                                     
+            added={added}                                                                                                                                                                                      
+            onUpdate={(updates) => updateAddedSetting(added.id, updates)}                                                                                                                                      
+            onRemove={() => removeAddedSetting(added.id)} 
+          />                                                                                                                                                                                                   
+        ))}                                      
+                                                             
+        <button                                           
+          onClick={() => setAddModalOpen(true)}             
+          className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center       
+  justify-center gap-1.5"                                    
+          data-testid="button-add-care-setting"                                                                                                                                                                
+        >                                                 
+          <Plus className="w-4 h-4" /> Add a care setting                                                                                                                                                      
+        </button>                                         
+      </div>                                                                                                                                                                                                   
+    </motion.div>                                
+                                                             
+  ADD the modal at the bottom of the component JSX (just before the closing `</div>` of the main wrapper):                                                                                                     
+                                                          
+    <AddCareSettingModal                                                                                                                                                                                       
+      open={addModalOpen}                                   
+      excludeSettings={[setting as ExploreSetting, ...addedSettings.map(a => a.setting)]}                                                                                                                      
+      onClose={() => setAddModalOpen(false)}                 
+      onAdd={addCareSetting}                            
+    />                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+                                                            
+  1. TypeScript compiles. The new ForecastAddedSetting type, modal, card, and forecastDefaults lib all wire together.                                                                                          
+                                                             
+  2. Walk Outpatient through Setup → Capacity (add Patient Access, enter values) → Workforce (add Provider Wellbeing) → Revenue → Quality → Forecast.                                                          
+                                                            
+  3. **Forecast page baseline behavior** (from 3E):                                                                                                                                                            
+     - Sliders show baseline values                          
+     - Per-quadrant projection cards work                                                                                                                                                                      
+     - Right panel shows Realized + Projected                
+     - "Modeled Expansions" section now appears below quadrant cards with "+ Add a care setting" button                                                                                                        
+                                                             
+  4. **Click "+ Add a care setting"**:                                                                                                                                                                         
+     - Modal opens                                           
+     - Setting picker shows ED, Inpatient, Nursing (Outpatient excluded — already current)                                                                                                                     
+     - Pick "Emergency"                                     
+     - Enter 25 providers                                                                                                                                                                                      
+     - Set utilization to 75%                                
+     - Pick "Typical" scenario                                                                                                                                                                                 
+     - Live preview at bottom of modal: $25 × 130k × (75/70) ≈ $3,482,000 — verify roughly that magnitude                                                                                                      
+     - Click "Add care setting"                                                                                                                                                                                
+     - Modal closes                                                                                                                                                                                            
+     - New AddedSettingCard appears in the Modeled Expansions section                                                                                                                                          
+                                                                                                                                                                                                               
+  5. **AddedSettingCard interactions**:                      
+     - Header: "Emergency · Modeled · 25 providers · 75% util"                                                                                                                                                 
+     - Three scenario buttons (Conservative/Typical/Optimistic) — Typical is highlighted red
+     - Click Conservative → value drops; click Optimistic → value rises                                                                                                                                        
+     - Click pencil edit icon → input field appears with current computed value                                                                                                                                
+     - Type a custom value (e.g., $2M) → click checkmark to save                                                                                                                                               
+     - Card now shows $2M with "OVERRIDDEN" badge                                                                                                                                                              
+     - Click X to reset → reverts to auto-computed value     
+     - Click trash icon → setting removed                                                                                                                                                                      
+                                                             
+  6. **Right panel updates**:                                                                                                                                                                                  
+     - Combined Annual Value section shows: Realized today / Projected at scale / + N settings / Combined total                                                                                                
+     - Combined total = totalProjected + addedSettingsTotal                                                                                                                                                    
+                                                                                                                                                                                                               
+  7. **Add a second setting** (Inpatient with 10 hospitalists, Optimistic):                                                                                                                                    
+     - Modal excludes both Outpatient (current) and Emergency (already added)                                                                                                                                  
+     - Add Inpatient                                                                                                                                                                                           
+     - Right panel updates: "+ 2 settings"                   
+     - Combined total includes both                                                                                                                                                                            
+                                                             
+  8. **Add Nursing**:                                                                                                                                                                                          
+     - Modal pivots to nursing fields (Nurse FTEs, Staffed Beds, Occupancy)
+     - Encounter field hidden                                                                                                                                                                                  
+     - Save → Nursing card shows nurse FTE count and bed count in subtitle
+                                                                                                                                                                                                               
+  9. **All four added**:                                    
+     - Modal "All four care settings are already modeled." italic message                                                                                                                                      
+     - Save button hidden (only Cancel)                                                                                                                                                                        
+                                                                                                                                                                                                               
+  10. **Persistence**: navigate to Quality and back to Forecast — all added settings preserved.                                                                                                                
+                                                                                                                                                                                                               
+  11. **Empty state**: with no added settings, the Modeled Expansions section just shows the "+ Add a care setting" dashed-border button.                                                                      
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - The per-setting/per-scenario value-per-provider numbers in forecastDefaults.ts are MODELING DEFAULTS sized to be reasonable but require Brad's review before customer-facing use. They're easy to update in
+   one place.                                                                                                                                                                                                  
+  - For Nursing, "providers" in the data model means "nurse FTEs" and the per-FTE value is correspondingly smaller (~$12K typical vs ~$90K-130K for physician settings).
+  - The customValueOverride lets PS bypass the heuristic if they have better numbers for a specific deal.                                                                                                      
+  - Per-driver detail for added settings is not exposed in 3F — PS sees a single estimated annual value per setting. Adding driver-level breakdown for added settings is a future enhancement (3G or beyond).
+  - The added-setting model intentionally simplifies the math by not running per-driver scaleAxis projections for the new setting. The single-number-per-provider heuristic is good enough for renewal         
+  conversations and avoids the complexity of fully modeling a setting that isn't deployed yet.

@@ -3,7 +3,8 @@ import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, Bar
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type ExploreState } from "./ExploreFlow";
+import { type ExploreState, type OtherFinancialBenefitItem } from "./ExploreFlow";
+import { EXPLORE_DRIVERS, isDriverEnabled, type ExploreQuadrant } from "@/lib/exploreDrivers";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
 import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
@@ -48,40 +49,194 @@ export default function ExploreModel({
   const { toast } = useToast();
 
   const isNursingForTotal = state.careSetting === 'nursing';
-  const nursingCareQualityPotential = useMemo(() => {
-    if (!isNursingForTotal) return 0;
-    const { docQualityInputs } = state;
-    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-    let total = 0;
-    if (docQualityInputs.nursingHapiEnabled) {
-      const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;
-      total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
-    }
-    if (docQualityInputs.nursingFallsEnabled) {
-      const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
-      total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
-    }
-    if (docQualityInputs.nursingCautiEnabled) {
-      const cathDays = patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100);
-      total += (cathDays / 1000) * docQualityInputs.nursingCautiRate * (docQualityInputs.nursingCautiPreventionRate / 100) * docQualityInputs.nursingCautiCost;
-    }
-    if (docQualityInputs.nursingClabsiEnabled) {
-      const clDays = patientDays * (docQualityInputs.nursingClabsiUtilizationRatio / 100);
-      total += (clDays / 1000) * docQualityInputs.nursingClabsiRate * (docQualityInputs.nursingClabsiPreventionRate / 100) * docQualityInputs.nursingClabsiCost;
-    }
-    if (docQualityInputs.nursingSepsisEnabled) {
-      const sepsisPerYear = (patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand;
-      const nonCompliant = sepsisPerYear * ((100 - docQualityInputs.nursingSepsisCurrentCompliance) / 100);
-      const docLagCases = nonCompliant * (docQualityInputs.nursingSepsisDocLagPercent / 100);
-      total += docLagCases * docQualityInputs.nursingSepsisExcessCostPerCase * (docQualityInputs.nursingSepsisRealization / 100);
-    }
-    return Math.round(total);
-  }, [isNursingForTotal, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
-  const totalValue = timeValue + docValue + nursingCareQualityPotential;
-  const noDriversEnabled = totalValue === 0;
-  const netAnnualValue = totalValue - annualInvestment;
-  const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
+  // ───── Per-quadrant value calculations ─────
+
+  const allDriverValues = useMemo(() => {
+    const result: Record<string, number> = {};
+    const td = state.timeDriverInputs as any;
+    const dq = state.docQualityInputs as any;
+    const setting = state.careSetting;
+    const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
+    const isED = setting === 'ed';
+    const isIP = setting === 'inpatient';
+    const isOP = setting === 'outpatient';
+    const isNursing = setting === 'nursing';
+    const isPhysician = isOP || isED || isIP;
+
+    // ─── Capacity ───
+    if (isOP && td.patientAccessEnabled) {
+      const eff = Math.min(td.accessProviders || state.numberOfProviders, state.numberOfProviders);
+      const hrsPerProvWk = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;
+      const reinvest = (td.capacityRealizationPercent ?? 25) / 100;
+      const visitHrs = (td.visitDuration ?? 30) / 60;
+      const visitsPerWk = visitHrs > 0 ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10 : 0;
+      result.patientAccess = Math.round(visitsPerWk * eff * 48 * td.revenuePerVisit);
+    }
+    if (isED && td.edLwbsEnabled) {
+      const lwbs = state.annualEncounters * (td.edLwbsRate / 100);
+      const recovered = lwbs * (td.edLwbsReduction / 100);
+      result.lwbsRecovery = Math.round(recovered * td.edRevenuePerVisit * (td.edLwbsRealization / 100));
+      if (td.edThroughputEnabled) {
+        const adm = recovered * (td.edAdmissionRate / 100);
+        result.admissionCapture = Math.round(adm * td.edAdmissionRevenue * (td.edAdmissionRealization / 100));
+      }
+    }
+
+    // ─── Workforce ───
+    const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+    const nursingScenariosWf: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
+    if (isPhysician && td.wellbeingEnabled && td.calculateRetentionValue) {
+      const turnover = td.annualTurnoverRate / 100;
+      const burnout = td.burnoutRelatedTurnover / 100;
+      const impact = retentionScenarios[td.retentionImpactScenario] / 100;
+      const retained = state.numberOfProviders * turnover * burnout * impact;
+      result.providerWellbeing = Math.round(retained * td.replacementCost);
+      if (td.physicianAgencyEnabled) {
+        result.physicianLocumAgency = Math.round(retained * td.physicianAgencyWeeksPerVacancy * td.physicianAgencyWeeklyPremium);
+      }
+    }
+    if (isNursing && td.nursingRetentionEnabled) {
+      const turnover = td.nursingTurnoverRate / 100;
+      const impact = nursingScenariosWf[td.retentionImpactScenario] / 100;
+      const burnoutDep = state.numberOfProviders * turnover * 0.40;
+      const retained = burnoutDep * impact;
+      result.nursingRetention = Math.round(retained * td.nursingReplacementCost);
+      if (td.nursingAgencyEnabled) {
+        result.nursingAgency = Math.round(retained * td.nursingAgencyWeeksPerVacancy * td.nursingAgencyWeeklyPremium);
+      }
+    }
+    if (isNursing && td.nursingOtEnabled) {
+      const otHrs = td.nursingOtHoursPerNurseWeek * (td.nursingOtReductionPercent / 100) * state.numberOfProviders * 52;
+      result.nursingOvertime = Math.round(otHrs * td.nursingOtHourlyRate);
+    }
+
+    // ─── Revenue ───
+    const wrvuScenariosLocal: Record<string, number> = isED ? { conservative: 1, typical: 2.5, aggressive: 4 } : { conservative: 2, typical: 5, aggressive: 7 };
+    const denialsScenariosLocal: Record<string, number> = isED ? { conservative: 15, typical: 30, aggressive: 50 } : { conservative: 25, typical: 50, aggressive: 75 };
+    const hccScenariosLocal: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
+
+    if (dq.wrvuEnabled && (isOP || isED)) {
+      const lift = (dq.currentWrvu * wrvuScenariosLocal[dq.wrvuScenario]) / 100;
+      const value = eligibleEncounters * lift * dq.conversionFactor * (dq.wrvuRealization / 100);
+      if (isED) result.edEmLevel = Math.round(value);
+      else result.wrvu = Math.round(value);
+    }
+    if (dq.hccEnabled && isOP) {
+      const recap = hccScenariosLocal[dq.hccScenario] / 100;
+      const ma = state.numberOfProviders * dq.panelSize * (dq.maPercent / 100);
+      const gap = ma * (dq.gapRate / 100);
+      const recaptured = gap * recap;
+      result.hccCapture = Math.round(recaptured * dq.avgHccs * dq.rafImpact * dq.annualPayment * (dq.hccRealization / 100));
+    }
+    if (dq.denialsEnabled && (isOP || isED)) {
+      const prev = denialsScenariosLocal[dq.denialsScenario] / 100;
+      const tot = eligibleEncounters * (dq.denialRate / 100);
+      const unapp = tot * (dq.unappealableRate / 100);
+      result.denialPrevention = Math.round(unapp * prev * dq.avgClaimValue * (dq.denialsRealization / 100));
+    }
+    if (isIP && dq.ipDrgEnabled) {
+      const protectScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
+      const pct = protectScenarios[dq.ipDrgScenario] / 100;
+      const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);
+      result.drgAccuracy = Math.round(atRisk * pct * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100));
+    }
+    if (isIP && dq.ipCdiEnabled) {
+      const cdiScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
+      const pct = cdiScenarios[dq.ipCdiScenario] / 100;
+      const queries = eligibleEncounters * (dq.ipCdiQueryRate / 100);
+      result.cdiQueryReduction = Math.round(queries * pct * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100));
+    }
+    if (isIP && dq.ipObsDefenseEnabled) {
+      const gross = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100) * dq.ipObsDefenseClaimValue * (dq.ipObsDefenseDocContribution / 100);
+      result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));
+    }
+    if (isIP && dq.ipEmCodingEnabled) {
+      const losVal = (state as any).ipAvgLengthOfStay ?? 4.5;
+      const progressPerAdm = Math.max(losVal - 2, 1);
+      const totalCharges = eligibleEncounters * (1 + progressPerAdm + dq.ipEmCodingConsultsPerAdmission);
+      const gapMap: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };
+      const gapPct = (gapMap[dq.ipEmCodingGapScenario] ?? 12) / 100;
+      result.emCodingAccuracy = Math.round(totalCharges * gapPct * dq.ipEmCodingAvgRevenueLift * (dq.ipEmCodingRealization / 100));
+    }
+
+    // ─── Quality (Nursing only quantified) ───
+    if (isNursing) {
+      const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+      if (dq.nursingHapiEnabled) {
+        const hapis = (patientDays / 1000) * dq.nursingHapiRate;
+        result.nursingHapi = Math.round(hapis * (dq.nursingHapiPreventionRate / 100) * dq.nursingHapiCost);
+      }
+      if (dq.nursingFallsEnabled) {
+        const falls = (patientDays / 1000) * dq.nursingFallsRate;
+        result.nursingFalls = Math.round(falls * (dq.nursingFallsPreventionRate / 100) * dq.nursingFallsCost);
+      }
+      if (dq.nursingCautiEnabled) {
+        const cathDays = patientDays * (dq.nursingCautiUtilizationRatio / 100);
+        const cautis = (cathDays / 1000) * dq.nursingCautiRate;
+        result.nursingCauti = Math.round(cautis * (dq.nursingCautiPreventionRate / 100) * dq.nursingCautiCost);
+      }
+      if (dq.nursingClabsiEnabled) {
+        const lineDays = patientDays * (dq.nursingClabsiUtilizationRatio / 100);
+        const clabsi = (lineDays / 1000) * dq.nursingClabsiRate;
+        result.nursingClabsi = Math.round(clabsi * (dq.nursingClabsiPreventionRate / 100) * dq.nursingClabsiCost);
+      }
+      if (dq.nursingSepsisEnabled) {
+        const sepsis = (patientDays / 1000) * dq.nursingSepsisRatePerThousand;
+        const nonComp = sepsis * ((100 - dq.nursingSepsisCurrentCompliance) / 100);
+        const docLag = nonComp * (dq.nursingSepsisDocLagPercent / 100);
+        result.nursingSepsis = Math.round(docLag * dq.nursingSepsisExcessCostPerCase * (dq.nursingSepsisRealization / 100));
+      }
+    }
+
+    return result;
+  }, [state, totalHoursSaved]);
+
+  const valueByQuadrant = useMemo(() => {
+    const totals: Record<ExploreQuadrant, number> = { Capacity: 0, Workforce: 0, Revenue: 0, Quality: 0 };
+    if (!state.careSetting) return totals;
+    EXPLORE_DRIVERS.forEach(d => {
+      if (d.settings.includes(state.careSetting!)) {
+        totals[d.quadrant] += allDriverValues[d.id] || 0;
+      }
+    });
+    return totals;
+  }, [allDriverValues, state.careSetting]);
+
+  const benefitsByQuadrant = useMemo(() => {
+    const result: Record<ExploreQuadrant, { annual: number; oneTime: number; items: OtherFinancialBenefitItem[] }> = {
+      Capacity: { annual: 0, oneTime: 0, items: [] },
+      Workforce: { annual: 0, oneTime: 0, items: [] },
+      Revenue: { annual: 0, oneTime: 0, items: [] },
+      Quality: { annual: 0, oneTime: 0, items: [] },
+    };
+    (state.otherFinancialBenefits ?? []).forEach(b => {
+      if (b.label.trim() && b.amount > 0) {
+        const slot = result[b.quadrant];
+        slot.items.push(b);
+        if (b.type === 'annual') slot.annual += b.amount;
+        else slot.oneTime += b.amount;
+      }
+    });
+    return result;
+  }, [state.otherFinancialBenefits]);
+
+  const totalAnnualValue = useMemo(() => {
+    const driverSum = Object.values(valueByQuadrant).reduce((s, v) => s + v, 0);
+    const benefitSum = Object.values(benefitsByQuadrant).reduce((s, b) => s + b.annual, 0);
+    return driverSum + benefitSum;
+  }, [valueByQuadrant, benefitsByQuadrant]);
+
+  const totalOneTimeValue = useMemo(() => {
+    return Object.values(benefitsByQuadrant).reduce((s, b) => s + b.oneTime, 0);
+  }, [benefitsByQuadrant]);
+
+  // Preserve nursingCareQualityPotential as a derived value for downstream PDF consumers
+  const nursingCareQualityPotential = isNursingForTotal ? valueByQuadrant.Quality : 0;
+
+  const noDriversEnabled = totalAnnualValue === 0 && totalOneTimeValue === 0;
+  const netAnnualValue = totalAnnualValue - annualInvestment;
+  const roi = annualInvestment > 0 ? totalAnnualValue / annualInvestment : 0;
   const valuePerProvider = state.numberOfProviders > 0 ? Math.round(netAnnualValue / state.numberOfProviders) : 0;
 
   const hasQualitativeDrivers = useMemo(() => {
@@ -92,7 +247,7 @@ export default function ExploreModel({
     if (state.careSetting === 'nursing') return d.nursingHcahpsEnabled;
     return false;
   }, [state]);
-  const isQualitativeOnly = totalValue === 0 && hasQualitativeDrivers;
+  const isQualitativeOnly = totalAnnualValue === 0 && hasQualitativeDrivers;
 
   // Calculate patient access and cost reduction separately
   const { timeDriverInputs, docQualityInputs } = state;
@@ -280,7 +435,7 @@ export default function ExploreModel({
     return Math.round(retainedForAgency * weeksOfCoverage * weeklyPremium);
   }, [isNursing, nursingRetainedCount, state.timeDriverInputs]);
 
-  const valuePerBed = isNursing && state.nursingStaffedBeds > 0 ? Math.round(totalValue / state.nursingStaffedBeds) : 0;
+  const valuePerBed = isNursing && state.nursingStaffedBeds > 0 ? Math.round(totalAnnualValue / state.nursingStaffedBeds) : 0;
   const netPerBedYear = isNursing && state.nursingStaffedBeds > 0 ? Math.round(netAnnualValue / state.nursingStaffedBeds) : 0;
 
   const nursingHapiValue = useMemo(() => {
@@ -327,9 +482,9 @@ export default function ExploreModel({
 
   // 3-year projection (10% growth per year)
   const implementationCost = state.includeImplementation ? state.implementationFee : 0;
-  const year1Value = totalValue - implementationCost;
-  const year2Value = Math.round(totalValue * 1.1);
-  const year3Value = Math.round(totalValue * 1.21);
+  const year1Value = totalAnnualValue - implementationCost;
+  const year2Value = Math.round(totalAnnualValue * 1.1);
+  const year3Value = Math.round(totalAnnualValue * 1.21);
   const threeYearTotal = year1Value + year2Value + year3Value;
 
   // Expansion opportunity (use fullScaleProviders from state, editable utilization)
@@ -341,7 +496,7 @@ export default function ExploreModel({
   // Full scale investment scales with provider count (not utilization - you pay per provider)
   const providerExpansionRatio = expandedProviders / state.numberOfProviders;
   const expandedInvestment = annualInvestment * providerExpansionRatio;
-  const expandedRoi = expandedInvestment > 0 ? (totalValue * expansionMultiplier) / expandedInvestment : 0;
+  const expandedRoi = expandedInvestment > 0 ? (totalAnnualValue * expansionMultiplier) / expandedInvestment : 0;
 
   const handleAddToProforma = () => {
     if (!onAddToProforma || !state.careSetting) return;
@@ -415,7 +570,7 @@ export default function ExploreModel({
       },
       encounters: state.annualEncounters,
       utilizationPercent: state.utilizationPercent,
-      annualValue: totalValue + drivers.filter(d => d.id === "docQuality").reduce((s, d) => s + d.value, 0),
+      annualValue: totalAnnualValue + drivers.filter(d => d.id === "docQuality").reduce((s, d) => s + d.value, 0),
       timeValue,
       docValue: docValue + drivers.filter(d => d.id === "docQuality").reduce((s, d) => s + d.value, 0),
       retentionValue,
@@ -449,7 +604,7 @@ export default function ExploreModel({
     onAddToProforma(snapshot);
     toast({
       title: `${snapshot.label} added to proforma`,
-      description: `${formatCurrency(totalValue)} annual value captured`,
+      description: `${formatCurrency(totalAnnualValue)} annual value captured`,
     });
   };
 
@@ -825,7 +980,7 @@ export default function ExploreModel({
         hoursReturned: totalHoursSaved,
         nursingStaffedBeds: state.nursingStaffedBeds,
         nursingFTEs: state.numberOfProviders,
-        totalValue,
+        totalValue: totalAnnualValue,
         timeValue,
         docValue,
         annualInvestment,
@@ -1393,7 +1548,7 @@ export default function ExploreModel({
           <p className="text-base text-[#888888] mb-8">
             {isQualitativeOnly
               ? "Enable quantitative levers to build a financial case"
-              : `${formatCurrency(totalValue)} value – ${formatCurrency(annualInvestment)} investment`}
+              : `${formatCurrency(totalAnnualValue)} value – ${formatCurrency(annualInvestment)} investment`}
           </p>
 
           {/* Stat Cards */}
@@ -1675,734 +1830,94 @@ export default function ExploreModel({
           )}
         </motion.div>
         
-        {/* WHERE THE VALUE COMES FROM */}
+        {/* How Your Numbers Were Built — quadrant cards */}
         <motion.div
-          className="mb-12"
+          className="mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.2 }}
         >
-          <p className="text-center text-xl font-bold text-black mb-2">
-            {(isNursing || isOutpatientSetting || isED) ? 'How Your Numbers Were Built' : 'Where the Value Comes From'}
-          </p>
-          {(isNursing || isOutpatientSetting || isED) ? (
-            <p className="text-center text-base text-[#888888] mb-6">
-              Each value driver uses your inputs — not industry averages — to calculate a defensible return.
+          <div className="text-center mb-6">
+            <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">
+              How Your Numbers Were Built
             </p>
-          ) : (
-            <p className="text-center text-base text-[#888888] mb-6">
-              Abridge creates value through two mechanisms—each with its own drivers and assumptions.
-            </p>
-          )}
+            <h2 className="text-xl md:text-2xl font-bold text-black font-abridge uppercase tracking-tight">
+              Value by Quadrant
+            </h2>
+          </div>
 
-          {isED ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" data-testid="ed-four-bucket-grid">
-              {/* QUALITY Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ed-quality">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Quality</p>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                  <p className="text-base font-medium text-[#888888]" data-testid="text-quality-value">Measured, not modeled</p>
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <p className="text-xs text-[#888888]">Sepsis & stroke documentation, obs/admit status defense, and readmission prevention — reported at 90 days post-deployment.</p>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {(['Capacity', 'Workforce', 'Revenue', 'Quality'] as const).map((quadrant) => {
+              const drivers = state.careSetting
+                ? EXPLORE_DRIVERS.filter(d =>
+                    d.quadrant === quadrant &&
+                    d.settings.includes(state.careSetting!) &&
+                    isDriverEnabled(d, state)
+                  )
+                : [];
+              const benefits = benefitsByQuadrant[quadrant];
+              const driverSum = valueByQuadrant[quadrant];
+              const cardAnnual = driverSum + benefits.annual;
+              const hasContent = drivers.length > 0 || benefits.items.length > 0;
 
-              {/* WORKFORCE Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ed-workforce">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Workforce</p>
-                <div className="flex items-center gap-2 mb-3">
-                  {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0 ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-workforce-value">{formatCurrency(clinicianRetentionValue)}</p>
-                    </>
-                  ) : timeDriverInputs.wellbeingEnabled ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-workforce-value">{hoursPerProviderPerWeek} hrs/wk</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-workforce-value">Not modeled</p>
-                    </>
-                  )}
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Provider Wellbeing</span>
-                    <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
-                  </div>
-                </div>
-              </div>
+              const subtitleByQuadrant: Record<ExploreQuadrant, string> = {
+                Capacity: 'Throughput, access, and reinvested time',
+                Workforce: 'Retention, sustainability, and labor stability',
+                Revenue: 'Coding, denials, and reimbursement integrity',
+                Quality: 'Clinical outcomes, safety, and experience',
+              };
 
-              {/* CAPACITY Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ed-capacity">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Capacity</p>
-                <div className="flex items-center gap-2 mb-3">
-                  {(edLwbsValue + edAdmissionCaptureValue) > 0 ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-capacity-value">{formatCurrency(edLwbsValue + edAdmissionCaptureValue)}</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-capacity-value">Not modeled</p>
-                    </>
-                  )}
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">LWBS Recovery</span>
-                    <span className="font-semibold text-black">{timeDriverInputs.edLwbsEnabled ? formatCurrency(edLwbsValue) : '—'}</span>
-                  </div>
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Admission Capture</span>
-                    <span className="font-semibold text-black">{timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled ? formatCurrency(edAdmissionCaptureValue) : '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* REVENUE Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ed-revenue">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Revenue</p>
-                <div className="flex items-center gap-2 mb-3">
-                  {docValue > 0 ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-revenue-value">{formatCurrency(docValue)}</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-revenue-value">Not modeled</p>
-                    </>
-                  )}
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">E&M Accuracy</span>
-                    <span className="font-semibold text-black">{docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'}</span>
-                  </div>
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Denial Prevention</span>
-                    <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : isOutpatientSetting ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" data-testid="outpatient-four-bucket-grid">
-              {/* ACCESS Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-op-access">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Access</p>
-                <div className="flex items-center gap-2 mb-3">
-                  {timeDriverInputs.patientAccessEnabled && patientAccessValue > 0 ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-op-access-value">{formatCurrency(patientAccessValue)}</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-op-access-value">Not modeled</p>
-                    </>
-                  )}
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Patient Access</span>
-                    <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
-                  </div>
-                  {timeDriverInputs.patientAccessEnabled && (
-                    <p className="text-[10px] text-[#888888]">{derivedVisitsPerWeek} visits/wk · {effectiveAccessProviders} providers</p>
-                  )}
-                </div>
-              </div>
-
-              {/* REVENUE Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-op-revenue">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Revenue</p>
-                <div className="flex items-center gap-2 mb-3">
-                  {docValue > 0 ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-op-revenue-value">{formatCurrency(docValue)}</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-op-revenue-value">Not modeled</p>
-                    </>
-                  )}
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">wRVU Improvement</span>
-                    <span className="font-semibold text-black">{docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'}</span>
-                  </div>
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">HCC Capture</span>
-                    <span className="font-semibold text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
-                  </div>
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Denial Prevention</span>
-                    <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* WORKFORCE Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-op-workforce">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Workforce</p>
-                <div className="flex items-center gap-2 mb-3">
-                  {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0 ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-op-workforce-value">{formatCurrency(clinicianRetentionValue)}</p>
-                    </>
-                  ) : timeDriverInputs.wellbeingEnabled ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-op-workforce-value">{hoursPerProviderPerWeek} hrs/wk</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-op-workforce-value">Not modeled</p>
-                    </>
-                  )}
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Provider Wellbeing</span>
-                    <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* DOWNSTREAM Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-op-downstream">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Downstream</p>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                  <p className="text-base font-medium text-[#888888]" data-testid="text-op-downstream-value">Connected value</p>
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <p className="text-xs text-[#888888]">Specialist referral quality, ancillary revenue, and downstream care setting impact — not double-counted. Organization-specific sizing.</p>
-              </div>
-            </div>
-          ) : isInpatient ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" data-testid="inpatient-four-bucket-grid">
-              {/* QUALITY Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ip-quality">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Quality</p>
-                <div className="flex items-center gap-2 mb-3">
-                  {docQualityInputs.ipCdiEnabled && ipCdiValue > 0 ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-quality-value">{formatCurrency(ipCdiValue)}</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-ip-quality-value">Not modeled</p>
-                    </>
-                  )}
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">CDI Query Reduction</span>
-                    <span className="font-semibold text-black">{docQualityInputs.ipCdiEnabled ? formatCurrency(ipCdiValue) : '—'}</span>
-                  </div>
-                  {docQualityInputs.ipCdiEnabled && (
-                    <p className="text-[10px] text-[#888888]">({docQualityInputs.ipCdiQueryRate}% query rate · {docQualityInputs.ipCdiScenario})</p>
-                  )}
-                </div>
-              </div>
-
-              {/* WORKFORCE Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ip-workforce">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Workforce</p>
-                <div className="flex items-center gap-2 mb-3">
-                  {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && ipWellbeingRetentionValue > 0 ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-workforce-value">{formatCurrency(ipWellbeingRetentionValue)}</p>
-                    </>
-                  ) : timeDriverInputs.wellbeingEnabled ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-workforce-value">{hoursPerProviderPerWeek} hrs/wk</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-ip-workforce-value">Not modeled</p>
-                    </>
-                  )}
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Provider Wellbeing</span>
-                    <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(ipWellbeingRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* CAPACITY Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ip-capacity">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Capacity</p>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                  <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-capacity-value">{costReductionValue > 0 ? formatCurrency(costReductionValue) : `${hoursPerProviderPerWeek} hrs/wk`}</p>
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Rounding Efficiency</span>
-                    <span className="font-semibold text-black">{`${hoursPerProviderPerWeek} hrs/wk`}</span>
-                  </div>
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Cost Reduction</span>
-                    <span className="font-semibold text-black">{timeDriverInputs.costReductionEnabled && costReductionValue > 0 ? formatCurrency(costReductionValue) : '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* REVENUE Card */}
-              <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-ip-revenue">
-                <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Revenue</p>
-                <div className="flex items-center gap-2 mb-3">
-                  {(ipDrgValue + ipObsDefenseValue) > 0 ? (
-                    <>
-                      <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                      <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-ip-revenue-value">{formatCurrency(ipDrgValue + ipObsDefenseValue)}</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-ip-revenue-value">Not modeled</p>
-                    </>
-                  )}
-                </div>
-                <div className="h-px bg-[#E5E5E5] mb-3" />
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">E/M Coding Accuracy</span>
-                    <span className="font-semibold text-black">{docQualityInputs.ipEmCodingEnabled ? formatCurrency(ipEmCodingValue) : '—'}</span>
-                  </div>
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">DRG Accuracy</span>
-                    <span className="font-semibold text-black">{docQualityInputs.ipDrgEnabled ? formatCurrency(ipDrgValue) : '—'}</span>
-                  </div>
-                  <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Obs/IP Defense</span>
-                    <span className="font-semibold text-black">{docQualityInputs.ipObsDefenseEnabled ? formatCurrency(ipObsDefenseValue) : '—'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : isNursing ? (
-            (() => {
-              const nursingQualityTotal = nursingHapiValue + nursingFallsValue + nursingCautiValue + nursingClabsiValue + nursingSepsisValue;
-              const nursingWorkforceTotal = nursingRetentionValue + nursingAgencyValue;
               return (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" data-testid="nursing-four-bucket-grid">
-                  {/* QUALITY Card */}
-                  <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-nursing-quality">
-                    <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Quality</p>
-                    <div className="flex items-center gap-2 mb-3">
-                      {nursingQualityTotal > 0 ? (
-                        <>
-                          <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                          <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-nursing-quality-value">{formatCurrency(nursingQualityTotal)}</p>
-                          <span className="text-[10px] text-[#888888]">(potential)</span>
-                        </>
-                      ) : (
-                        <>
-                          <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                          <p className="text-base font-medium text-[#888888]" data-testid="text-nursing-quality-value">Not modeled</p>
-                        </>
-                      )}
-                    </div>
-                    <div className="h-px bg-[#E5E5E5] mb-3" />
-                    <div className="space-y-1.5 text-xs">
-                      <div className="flex justify-between gap-1">
-                        <span className="text-[#666666]">HAPI Risk Reduction</span>
-                        <span className="font-semibold text-black">{state.docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '\u2014'}</span>
-                      </div>
-                      <div className="flex justify-between gap-1">
-                        <span className="text-[#666666]">Fall Risk Visibility</span>
-                        <span className="font-semibold text-black">{state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '\u2014'}</span>
-                      </div>
-                      <div className="flex justify-between gap-1">
-                        <span className="text-[#666666]">CAUTI Compliance</span>
-                        <span className="font-semibold text-black">{state.docQualityInputs.nursingCautiEnabled ? formatCurrency(nursingCautiValue) : '\u2014'}</span>
-                      </div>
-                      <div className="flex justify-between gap-1">
-                        <span className="text-[#666666]">CLABSI Compliance</span>
-                        <span className="font-semibold text-black">{state.docQualityInputs.nursingClabsiEnabled ? formatCurrency(nursingClabsiValue) : '\u2014'}</span>
-                      </div>
-                      <div className="flex justify-between gap-1">
-                        <span className="text-[#666666]">Sepsis SEP-1</span>
-                        <span className="font-semibold text-black">{state.docQualityInputs.nursingSepsisEnabled ? formatCurrency(nursingSepsisValue) : '\u2014'}</span>
-                      </div>
-                      <div className="flex justify-between gap-1">
-                        <span className="text-[#666666]">HAC Penalty</span>
-                        <span className="font-semibold text-black">{state.docQualityInputs.nursingHacEnabled && state.docQualityInputs.nursingHacBottomQuartile ? formatCurrency(nursingHacPenalty) : '\u2014'}</span>
-                      </div>
-                      {state.docQualityInputs.nursingHacEnabled && state.docQualityInputs.nursingHacBottomQuartile && (
-                        <p className="text-[10px] text-[#888888]">(risk only)</p>
-                      )}
-                      <div className="flex justify-between gap-1">
-                        <span className="text-[#666666]">HCAHPS</span>
-                        <span className="font-semibold text-black">{"\u2014"}</span>
-                      </div>
-                      <p className="text-[10px] text-[#888888]">(qualitative)</p>
-                    </div>
+                <div
+                  key={quadrant}
+                  className="bg-white border border-[#E5E5E5] rounded-xl p-5 flex flex-col"
+                  data-testid={`quadrant-card-${quadrant.toLowerCase()}`}
+                >
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">{quadrant}</p>
+                    <p className="text-xs text-[#888888] leading-tight">{subtitleByQuadrant[quadrant]}</p>
                   </div>
 
-                  {/* WORKFORCE Card */}
-                  <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-nursing-workforce">
-                    <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Workforce</p>
-                    <div className="flex items-center gap-2 mb-3">
-                      {nursingWorkforceTotal > 0 ? (
-                        <>
-                          <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                          <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-nursing-workforce-value">{formatCurrency(nursingWorkforceTotal)}</p>
-                        </>
-                      ) : state.timeDriverInputs.nursingRetentionEnabled ? (
-                        <>
-                          <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                          <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-nursing-workforce-value">{nursingRetainedCount.toFixed(1)} nurses retained</p>
-                        </>
-                      ) : (
-                        <>
-                          <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                          <p className="text-base font-medium text-[#888888]" data-testid="text-nursing-workforce-value">Not modeled</p>
-                        </>
-                      )}
-                    </div>
-                    <div className="h-px bg-[#E5E5E5] mb-3" />
-                    <div className="space-y-1.5 text-xs">
-                      <div className="flex justify-between gap-1">
-                        <span className="text-[#666666]">Retention Savings</span>
-                        <span className="font-semibold text-black">{state.timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingRetentionValue) : '\u2014'}</span>
-                      </div>
-                      <div className="flex justify-between gap-1">
-                        <span className="text-[#666666]">Agency Cost Avoidance</span>
-                        <span className="font-semibold text-black">{state.timeDriverInputs.nursingAgencyEnabled && state.timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingAgencyValue) : '\u2014'}</span>
-                      </div>
-                    </div>
+                  <div className="mb-4">
+                    <p className="text-2xl font-bold text-black">
+                      {cardAnnual > 0 ? formatCurrency(cardAnnual) : '—'}
+                    </p>
+                    <p className="text-xs text-[#888888]">annual</p>
+                    {benefits.oneTime > 0 && (
+                      <p className="text-xs text-[#666666] mt-1">+ {formatCurrency(benefits.oneTime)} one-time (Y1)</p>
+                    )}
                   </div>
 
-                  {/* CAPACITY Card */}
-                  <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-nursing-capacity">
-                    <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Capacity</p>
-                    <div className="flex items-center gap-2 mb-3">
-                      {nursingOtValue > 0 ? (
-                        <>
-                          <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                          <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-nursing-capacity-value">{formatCurrency(nursingOtValue)}</p>
-                        </>
-                      ) : state.timeDriverInputs.nursingOtEnabled ? (
-                        <>
-                          <div className="w-1 h-6 bg-[#EA2C00] rounded-full" />
-                          <p className="text-lg font-bold text-[#EA2C00]" data-testid="text-nursing-capacity-value">{hoursPerProviderPerWeek} hrs/wk</p>
-                        </>
-                      ) : (
-                        <>
-                          <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                          <p className="text-base font-medium text-[#888888]" data-testid="text-nursing-capacity-value">Not modeled</p>
-                        </>
-                      )}
-                    </div>
-                    <div className="h-px bg-[#E5E5E5] mb-3" />
-                    <div className="space-y-1.5 text-xs">
-                      <div className="flex justify-between gap-1">
-                        <span className="text-[#666666]">OT Reduction</span>
-                        <span className="font-semibold text-black">{state.timeDriverInputs.nursingOtEnabled ? formatCurrency(nursingOtValue) : '\u2014'}</span>
+                  <div className="flex-1 space-y-1.5">
+                    {!hasContent && (
+                      <p className="text-xs text-[#AAAAAA] italic">No drivers selected.</p>
+                    )}
+                    {drivers.map(d => {
+                      const isQual = d.visibility === 'qualitative';
+                      const value = allDriverValues[d.id] || 0;
+                      return (
+                        <div key={d.id} className="flex items-center justify-between gap-2 text-xs">
+                          <span className="text-[#666666] truncate flex-1 min-w-0">{d.label}</span>
+                          <span className={`font-medium flex-shrink-0 ${isQual ? 'text-[#888888] italic' : 'text-black'}`}>
+                            {isQual ? 'Qualitative' : (value > 0 ? formatCurrency(value) : '—')}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {benefits.items.map(b => (
+                      <div key={b.id} className="flex items-center justify-between gap-2 text-xs">
+                        <span className="text-[#666666] truncate flex-1 min-w-0">{b.label || 'Other benefit'}</span>
+                        <span className="font-medium text-black flex-shrink-0">
+                          {formatCurrency(b.amount)}
+                          {b.type === 'oneTime' && <span className="text-[10px] text-[#888888] ml-1">Y1</span>}
+                        </span>
                       </div>
-                      {state.timeDriverInputs.nursingOtEnabled && (
-                        <p className="text-[10px] text-[#888888]">({state.timeDriverInputs.nursingOtHoursPerNurseWeek} OT hrs/wk {"\u00b7"} {state.timeDriverInputs.nursingOtReductionPercent}% reduction)</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* REVENUE Card */}
-                  <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-5" data-testid="card-nursing-revenue">
-                    <p className="text-xs font-bold text-black uppercase tracking-wide mb-2">Revenue</p>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-1 h-6 bg-[#888888] rounded-full" />
-                      <p className="text-base font-medium text-[#888888]" data-testid="text-nursing-revenue-value">Not Applicable</p>
-                    </div>
-                    <div className="h-px bg-[#E5E5E5] mb-3" />
-                    <p className="text-xs text-[#888888]">Nursing documentation doesn't generate billing revenue. The value lives in labor economics and care quality {"\u2014"} which is where we've modeled it.</p>
+                    ))}
                   </div>
                 </div>
               );
-            })()
-          ) : (
-          <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
-            {/* Time/Efficiency Card */}
-            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6">
-              <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">{labels.timeCardTitle}</p>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-1 h-8 bg-[#EA2C00] rounded-full" />
-                <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(timeValue)} / year</p>
-              </div>
-
-              <div className="h-px bg-[#E5E5E5] mb-4" />
-
-              <p className="text-sm text-[#666666] mb-4">
-                {labels.timeCardDescription}
-              </p>
-
-              <div className="h-px bg-[#E5E5E5] mb-4" />
-
-              <div className="space-y-2 text-sm">
-                {isNursing ? (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• OT Reduction</span>
-                      <span className="font-semibold text-black">{state.timeDriverInputs.nursingOtEnabled ? formatCurrency(nursingOtValue) : '—'}</span>
-                    </div>
-                    {state.timeDriverInputs.nursingOtEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({state.timeDriverInputs.nursingOtHoursPerNurseWeek} OT hrs/wk × {state.timeDriverInputs.nursingOtReductionPercent}% reduction)</p>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• Retention Savings</span>
-                      <span className="font-semibold text-black">{state.timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingRetentionValue) : '—'}</span>
-                    </div>
-                    {state.timeDriverInputs.nursingRetentionEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({nursingRetainedCount.toFixed(1)} nurses retained)</p>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• Agency Reduction</span>
-                      <span className="font-semibold text-black">{state.timeDriverInputs.nursingAgencyEnabled && state.timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingAgencyValue) : '—'}</span>
-                    </div>
-                    {state.timeDriverInputs.nursingAgencyEnabled && state.timeDriverInputs.nursingRetentionEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({state.timeDriverInputs.nursingAgencyWeeksPerVacancy} weeks × ${state.timeDriverInputs.nursingAgencyWeeklyPremium.toLocaleString()})</p>
-                    )}
-                  </>
-                ) : isED ? (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.driver1}</span>
-                      <span className="font-semibold text-black">{timeDriverInputs.edLwbsEnabled ? formatCurrency(edLwbsValue) : '—'}</span>
-                    </div>
-                    {timeDriverInputs.edLwbsEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edLwbsReduction}% LWBS reduction × {timeDriverInputs.edLwbsRealization}% realization)</p>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.driver2}</span>
-                      <span className="font-semibold text-black">{timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled ? formatCurrency(edAdmissionCaptureValue) : '—'}</span>
-                    </div>
-                    {timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edAdmissionRate}% admission rate)</p>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.driver3}</span>
-                      <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
-                    </div>
-                    {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '5' : timeDriverInputs.retentionImpactScenario === 'typical' ? '10' : '15'}% retention lift)</p>
-                    )}
-                    {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
-                      <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
-                    )}
-                  </>
-                ) : isInpatient ? (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.driver1}</span>
-                      <span className="font-semibold text-black">{`${hoursPerProviderPerWeek} hrs/wk`}</span>
-                    </div>
-                    <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.driver2}</span>
-                      <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(ipWellbeingRetentionValue) : '—'}</span>
-                    </div>
-                    {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '5' : timeDriverInputs.retentionImpactScenario === 'typical' ? '10' : '15'}% retention lift)</p>
-                    )}
-                    {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
-                      <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.driver1}</span>
-                      <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
-                    </div>
-                    {timeDriverInputs.patientAccessEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({derivedVisitsPerWeek} visit{derivedVisitsPerWeek !== 1 ? 's' : ''}/wk × {effectiveAccessProviders}{effectiveAccessProviders < state.numberOfProviders ? ` of ${state.numberOfProviders}` : ''} providers)</p>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.driver2}</span>
-                      <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
-                    </div>
-                    {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '5' : timeDriverInputs.retentionImpactScenario === 'typical' ? '10' : '15'}% retention lift)</p>
-                    )}
-                    {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
-                      <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Documentation Quality Card */}
-            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6">
-              <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">{labels.docCardTitle}</p>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-1 h-8 bg-[#EA2C00] rounded-full" />
-                {isNursing ? (
-                  <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(nursingCareQualityPotential)} / year <span className="text-base font-medium text-[#888888]">(potential)</span></p>
-                ) : (
-                  <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(docValue)} / year</p>
-                )}
-              </div>
-
-              <div className="h-px bg-[#E5E5E5] mb-4" />
-
-              <p className="text-sm text-[#666666] mb-4">
-                {labels.docCardDescription}
-              </p>
-
-              <div className="h-px bg-[#E5E5E5] mb-4" />
-
-              <div className="space-y-2 text-sm">
-                {isNursing ? (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• HAPI Risk Reduction</span>
-                      <span className="font-semibold text-black">{state.docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '—'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• Fall Risk Visibility Gap</span>
-                      <span className="font-semibold text-black">{state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• HAC Penalty Exposure</span>
-                      <span className="font-semibold text-[#666666]">{state.docQualityInputs.nursingHacEnabled && nursingHacPenalty > 0 ? formatCurrency(nursingHacPenalty) : '—'}</span>
-                    </div>
-                    {state.docQualityInputs.nursingHacEnabled && nursingHacPenalty > 0 && (
-                      <p className="text-xs text-[#888888] pl-4 italic">risk only — not in total</p>
-                    )}
-                    {state.docQualityInputs.nursingCautiEnabled && (
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">• CAUTI Bundle Compliance</span>
-                        <span className="font-semibold text-black">{formatCurrency(nursingCautiValue)}</span>
-                      </div>
-                    )}
-                    {state.docQualityInputs.nursingClabsiEnabled && (
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">• CLABSI Bundle Compliance</span>
-                        <span className="font-semibold text-black">{formatCurrency(nursingClabsiValue)}</span>
-                      </div>
-                    )}
-                    {state.docQualityInputs.nursingSepsisEnabled && (
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">• Sepsis SEP-1 Bundle</span>
-                        <span className="font-semibold text-black">{formatCurrency(nursingSepsisValue)}</span>
-                      </div>
-                    )}
-                    {state.docQualityInputs.nursingHcahpsEnabled && (
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">• HCAHPS Improvement</span>
-                        <span className="font-semibold text-black">—</span>
-                      </div>
-                    )}
-                    {state.docQualityInputs.nursingHcahpsEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">(qualitative — not in total)</p>
-                    )}
-                    <div className="h-px bg-[#E5E5E5] mt-3 mb-2" />
-                    <p className="text-xs text-[#888888] italic">
-                      This is potential value — requires clinical practice, not just documentation.
-                    </p>
-                    <p className="text-sm text-[#666666] mt-2">
-                      Time saved per nurse: <span className="font-semibold text-black">{hoursPerProviderPerWeek} hrs/wk</span> — available for direct patient care
-                    </p>
-                  </>
-                ) : isInpatient ? (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.docDriver1}</span>
-                      <span className="font-semibold text-black">{docQualityInputs.ipDrgEnabled ? formatCurrency(ipDrgValue) : '—'}</span>
-                    </div>
-                    {docQualityInputs.ipDrgEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipDrgScenario === 'conservative' ? '15' : docQualityInputs.ipDrgScenario === 'typical' ? '20' : '25'}% protection)</p>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• Obs/IP Status Defense</span>
-                      <span className="font-semibold text-black">{docQualityInputs.ipObsDefenseEnabled ? formatCurrency(ipObsDefenseValue) : '—'}</span>
-                    </div>
-                    {docQualityInputs.ipObsDefenseEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipObsDefenseRealization}% realization)</p>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.docDriver2}</span>
-                      <span className="font-semibold text-black">{docQualityInputs.ipCdiEnabled ? formatCurrency(ipCdiValue) : '—'}</span>
-                    </div>
-                    {docQualityInputs.ipCdiEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipCdiScenario === 'conservative' ? '15' : docQualityInputs.ipCdiScenario === 'typical' ? '25' : '35'}% query reduction)</p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.docDriver1}</span>
-                      <span className="font-semibold text-black">{docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'}</span>
-                    </div>
-                    {docQualityInputs.wrvuEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({wrvuScenarios[docQualityInputs.wrvuScenario]}% lift)</p>
-                    )}
-                    {labels.showHCC && (
-                      <>
-                        <div className="flex justify-between">
-                          <span className="text-[#666666]">• {labels.docDriver2}</span>
-                          <span className="font-semibold text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
-                        </div>
-                        {docQualityInputs.hccEnabled && (
-                          <p className="text-xs text-[#888888] pl-4">({docQualityInputs.maPercent}% MA mix · typical recapture rate)</p>
-                        )}
-                      </>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-[#666666]">• {labels.docDriver3}</span>
-                      <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
-                    </div>
-                    {docQualityInputs.denialsEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.denialRate}% denial rate · {docQualityInputs.denialsScenario} prevention)</p>
-                    )}
-                    {isOutpatientSetting && (
-                      <>
-                        <div className="h-px bg-[#E5E5E5] mt-3 mb-2" />
-                        <p className="text-xs text-[#888888] italic">
-                          All documentation quality figures include conservative realization rates.
-                        </p>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
+            })}
           </div>
-          )}
         </motion.div>
 
         {/* ED-specific Downstream Value narrative section */}

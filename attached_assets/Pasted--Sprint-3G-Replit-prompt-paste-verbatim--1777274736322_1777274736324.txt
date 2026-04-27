@@ -1,0 +1,593 @@
+  🔧 Sprint 3G — Replit prompt (paste verbatim)                                                                                                                                                                
+                                                                
+  Context: Adds pricing model comparison to the Forecast page. PS configures tier structures (per-provider, per-encounter, or annual license) for multiple pricing scenarios. Each scenario computes annual    
+  investment at the combined projected scale (current setting + added settings). Side-by-side comparison shows investment, combined value, net, and ROI per scenario. Lowest-investment scenario gets a "Best
+  Value" badge. Stepped tier math (NOT graduated): all units price at the rate of the tier the scale falls into.                                                                                               
+                                                                                                                                                                                                               
+  Pre-req: Sprints 3E and 3F shipped.                                                                                                                                                                          
+                                                        
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Add pricing types + math helpers                                                                                                                                                                    
+  ═══════════════════════════════════════════════════════════
+  File: client/src/lib/forecastPricing.ts (NEW FILE)                                                                                                                                                           
+                                                        
+  import type { ExploreSetting } from "./exploreDrivers";                                                                                                                                                      
+                                                                                                                                                                                                               
+  export type PricingModel = 'perProvider' | 'perEncounter' | 'annualLicense';
+                                                                                                                                                                                                               
+  export interface PricingTier {                             
+    id: string;                                              
+    thresholdFrom: number;          // inclusive (e.g., 1 means "1 and above")                                                                                                                                 
+    thresholdTo: number | null;     // exclusive; null = unlimited                                                                                                                                             
+    rate: number;                   // dollars per unit (provider/month for perProvider, per encounter, or annual flat)                                                                                        
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  export interface PricingScenario {                      
+    id: string;                                                                                                                                                                                                
+    label: string;                               
+    model: PricingModel;                                     
+    tiers: PricingTier[];                                                                                                                                                                                      
+  }
+                                                                                                                                                                                                               
+  export const PRICING_MODEL_LABELS: Record<PricingModel, string> = {
+    perProvider: 'Per Provider / Month',                                                                                                                                                                       
+    perEncounter: 'Per Encounter',                        
+    annualLicense: 'Annual License',                        
+  };                                             
+                                                             
+  export const PRICING_MODEL_RATE_SUFFIX: Record<PricingModel, string> = {
+    perProvider: '/provider/mo',                            
+    perEncounter: '/encounter',                                                                                                                                                                                
+    annualLicense: '/year',                                  
+  };                                                                                                                                                                                                           
+                                                             
+  export const PRICING_MODEL_SCALE_LABEL: Record<PricingModel, string> = {                                                                                                                                     
+    perProvider: 'providers',                           
+    perEncounter: 'encounters',                                                                                                                                                                                
+    annualLicense: 'flat (no scale axis)',                  
+  };                                                                                                                                                                                                           
+                                                             
+  // Find the tier that the scale falls into. Stepped logic — first match wins.
+  export function findApplicableTier(tiers: PricingTier[], scale: number): PricingTier | null {
+    for (const tier of tiers) {                                                                                                                                                                                
+      const aboveLower = scale >= tier.thresholdFrom;        
+      const belowUpper = tier.thresholdTo === null || scale < tier.thresholdTo;                                                                                                                                
+      if (aboveLower && belowUpper) return tier;             
+    }                                                                                                                                                                                                          
+    return null;                                             
+  }                                                                                                                                                                                                            
+                                                 
+  // Compute annual investment for a scenario at given scale.                                                                                                                                                  
+  // Stepped tier: ALL units price at the matched tier's rate.
+  export function computeScenarioInvestment(scenario: PricingScenario, scale: number): { value: number; tier: PricingTier | null; warning?: string } {                                                         
+    if (scenario.model === 'annualLicense') {                                                                                                                                                                  
+      const tier = scenario.tiers[0];                     
+      if (!tier) return { value: 0, tier: null, warning: 'No tier defined' };                                                                                                                                  
+      return { value: tier.rate, tier };                    
+    }                                                        
+                                                                                                                                                                                                               
+    const tier = findApplicableTier(scenario.tiers, scale);
+    if (!tier) {                                                                                                                                                                                               
+      return { value: 0, tier: null, warning: `Scale ${scale.toLocaleString()} falls outside all defined tiers` };                                                                                             
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    if (scenario.model === 'perProvider') {                 
+      return { value: scale * tier.rate * 12, tier };                                                                                                                                                          
+    }                                                        
+    if (scenario.model === 'perEncounter') {                                                                                                                                                                   
+      return { value: scale * tier.rate, tier };          
+    }                                                                                                                                                                                                          
+    return { value: 0, tier: null };                                                                                                                                                                           
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  // Default tier structure when PS adds a new scenario     
+  export function makeDefaultTiers(model: PricingModel): PricingTier[] {                                                                                                                                       
+    if (model === 'perProvider') {                           
+      return [                                                                                                                                                                                                 
+        { id: `tier-${Date.now()}-1`, thresholdFrom: 1, thresholdTo: 100, rate: 1500 },
+        { id: `tier-${Date.now()}-2`, thresholdFrom: 100, thresholdTo: 300, rate: 1200 },                                                                                                                      
+        { id: `tier-${Date.now()}-3`, thresholdFrom: 300, thresholdTo: null, rate: 900 },
+      ];                                                                                                                                                                                                       
+    }                                                                                                                                                                                                          
+    if (model === 'perEncounter') {                         
+      return [                                                                                                                                                                                                 
+        { id: `tier-${Date.now()}-1`, thresholdFrom: 1, thresholdTo: 200000, rate: 0.5 },                                                                                                                      
+        { id: `tier-${Date.now()}-2`, thresholdFrom: 200000, thresholdTo: null, rate: 0.4 },
+      ];                                                                                                                                                                                                       
+    }                                                                                                                                                                                                          
+    return [                                                                                                                                                                                                   
+      { id: `tier-${Date.now()}-1`, thresholdFrom: 0, thresholdTo: null, rate: 1500000 },                                                                                                                      
+    ];                                                                                                                                                                                                         
+  }                                                          
+                                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Add pricingScenarios to ForecastScenario state                                                                                                                                                      
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/measure/MeasureFlow.tsx (or wherever ForecastScenario is defined)                                                                                                                     
+                                                 
+  import type { PricingScenario } from "@/lib/forecastPricing";                                                                                                                                                
+                                                          
+  UPDATE ForecastScenario type to include:                                                                                                                                                                     
+    pricingScenarios: PricingScenario[];                                                                                                                                                                       
+                                                             
+  Default initialization:                                                                                                                                                                                      
+    pricingScenarios: [],                                 
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Create PricingScenarioCard component                                                                                                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/measure/PricingScenarioCard.tsx
+                                                                                                                                                                                                               
+  Renders one pricing scenario as a card with editable tier table. PS can change label, model, edit tiers, add/remove tiers, see live computed investment.
+                                                                                                                                                                                                               
+  import { Plus, Trash2 } from "lucide-react";              
+  import { FormattedNumberInput } from "@/components/FormattedNumberInput";                                                                                                                                    
+  import {                                                   
+    computeScenarioInvestment,                                                                                                                                                                                 
+    makeDefaultTiers,                                     
+    PRICING_MODEL_LABELS,                                                                                                                                                                                      
+    PRICING_MODEL_RATE_SUFFIX,                                                                                                                                                                                 
+    type PricingScenario,                                                                                                                                                                                      
+    type PricingModel,                                                                                                                                                                                         
+    type PricingTier,                                     
+  } from "@/lib/forecastPricing";                                                                                                                                                                              
+                                                        
+  interface PricingScenarioCardProps {                                                                                                                                                                         
+    scenario: PricingScenario;                              
+    combinedProviders: number;                   
+    combinedEncounters: number;                                                                                                                                                                                
+    combinedValue: number;          // total annual value being compared against
+    isBestValue: boolean;                                                                                                                                                                                      
+    onUpdate: (updates: Partial<PricingScenario>) => void;                                                                                                                                                     
+    onRemove: () => void;                                   
+  }                                                                                                                                                                                                            
+                                                             
+  export default function PricingScenarioCard({              
+    scenario,                                    
+    combinedProviders,                                                                                                                                                                                         
+    combinedEncounters,                                                                                                                                                                                        
+    combinedValue,                                                                                                                                                                                             
+    isBestValue,                                                                                                                                                                                               
+    onUpdate,                                             
+    onRemove,                                                                                                                                                                                                  
+  }: PricingScenarioCardProps) {                 
+    const scale = scenario.model === 'perProvider' ? combinedProviders
+                : scenario.model === 'perEncounter' ? combinedEncounters
+                : 0;                                    
+    const { value: investment, tier: appliedTier, warning } = computeScenarioInvestment(scenario, scale);                                                                                                      
+    const net = combinedValue - investment;                 
+    const roi = investment > 0 ? combinedValue / investment : 0;                                                                                                                                               
+                                                             
+    const updateTier = (tierId: string, updates: Partial<PricingTier>) => {
+      onUpdate({                                          
+        tiers: scenario.tiers.map(t => t.id === tierId ? { ...t, ...updates } : t),                                                                                                                            
+      });                                                                                                                                                                                                      
+    };                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    const addTier = () => {                                 
+      const lastTier = scenario.tiers[scenario.tiers.length - 1];                                                                                                                                              
+      const newFrom = lastTier?.thresholdTo ?? 1;            
+      const newTier: PricingTier = {                                                                                                                                                                           
+        id: `tier-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        thresholdFrom: newFrom,                                                                                                                                                                                
+        thresholdTo: null,                                
+        rate: 0,                                                                                                                                                                                               
+      };                                                
+      // Cap the previous tier's upper bound if it was unlimited
+      const updatedExisting = scenario.tiers.map((t, idx) =>                                                                                                                                                   
+        idx === scenario.tiers.length - 1 && t.thresholdTo === null
+          ? { ...t, thresholdTo: newFrom }                                                                                                                                                                     
+          : t                                               
+      );                                                                                                                                                                                                       
+      onUpdate({ tiers: [...updatedExisting, newTier] });                                                                                                                                                      
+    };                                                       
+                                                                                                                                                                                                               
+    const removeTier = (tierId: string) => {                                                                                                                                                                   
+      onUpdate({ tiers: scenario.tiers.filter(t => t.id !== tierId) });                                                                                                                                        
+    };                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    const handleModelChange = (newModel: PricingModel) => {
+      onUpdate({ model: newModel, tiers: makeDefaultTiers(newModel) });                                                                                                                                        
+    };                                                    
+                                                             
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
+    const formatNumber = (n: number) => n.toLocaleString();  
+    const isAnnualLicense = scenario.model === 'annualLicense';                                                                                                                                                
+                                                            
+    return (                                                                                                                                                                                                   
+      <div                                                   
+        className={`bg-white rounded-lg p-5 border-2 transition-all ${                                                                                                                                         
+          isBestValue ? 'border-[#EA2C00] shadow-[0_4px_16px_rgba(234,44,0,0.1)]' : 'border-[#E5E5E5]'
+        }`}                                                                                                                                                                                                    
+        data-testid={`pricing-scenario-${scenario.id}`}   
+      >                                                                                                                                                                                                        
+        {/* Header: editable label + model selector + remove */}
+        <div className="flex items-start justify-between gap-3 mb-4">                                                                                                                                          
+          <div className="flex-1 min-w-0">                   
+            <input                                      
+              type="text"                                                                                                                                                                                      
+              value={scenario.label}                                                                                                                                                                           
+              onChange={(e) => onUpdate({ label: e.target.value })}                                                                                                                                            
+              className="w-full text-base font-bold text-black bg-transparent border-b border-transparent hover:border-[#E5E5E5] focus:border-[#EA2C00] focus:outline-none pb-1"                               
+              placeholder="Scenario name"                 
+            />                                                                                                                                                                                                 
+            {isBestValue && (                                                                                                                                                                                  
+              <span className="inline-block mt-1 text-[10px] font-semibold text-[#EA2C00] bg-[#FCE8E2] px-2 py-0.5 rounded uppercase tracking-wide">
+                ★ Best Value                                                                                                                                                                                   
+              </span>                                        
+            )}                                                                                                                                                                                                 
+          </div>                                            
+          <button                                                                                                                                                                                              
+            onClick={onRemove}                               
+            className="p-1.5 text-[#888888] hover:text-[#EA2C00] hover:bg-[#FCE8E2] rounded transition-colors"                                                                                                 
+            data-testid={`remove-scenario-${scenario.id}`}                                                                                                                                                     
+          >                                                                                                                                                                                                    
+            <Trash2 className="w-4 h-4" />                                                                                                                                                                     
+          </button>                                                                                                                                                                                            
+        </div>                                              
+                                                             
+        {/* Pricing model segmented control */}              
+        <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#F5F0EB] rounded-lg mb-4">
+          {(['perProvider', 'perEncounter', 'annualLicense'] as PricingModel[]).map(m => (                                                                                                                     
+            <button                                                                                                                                                                                            
+              key={m}                                                                                                                                                                                          
+              onClick={() => handleModelChange(m)}                                                                                                                                                             
+              className={`py-1.5 px-2 rounded-md text-xs font-medium transition-all ${
+                scenario.model === m ? 'bg-white text-black shadow-sm' : 'text-[#666666] hover:text-black'                                                                                                     
+              }`}                                            
+              data-testid={`pricing-model-${scenario.id}-${m}`}                                                                                                                                                
+            >                                                                                                                                                                                                  
+              {PRICING_MODEL_LABELS[m]}                                                                                                                                                                        
+            </button>                                                                                                                                                                                          
+          ))}                                                                                                                                                                                                  
+        </div>                                                                                                                                                                                                 
+                                                             
+        {/* Tier table */}                                                                                                                                                                                     
+        <div className="space-y-2 mb-4">                
+          <div className="flex items-center justify-between">                                                                                                                                                  
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-wide">
+              {isAnnualLicense ? 'Annual fee' : 'Tier structure (stepped)'}                                                                                                                                    
+            </p>                                             
+            {!isAnnualLicense && (                        
+              <button                                       
+                onClick={addTier}                                                                                                                                                                              
+                className="text-xs font-medium text-[#EA2C00] hover:text-[#EA2C00]/80 flex items-center gap-1"
+              >                                                                                                                                                                                                
+                <Plus className="w-3 h-3" /> Add tier   
+              </button>                                                                                                                                                                                        
+            )}                                                                                                                                                                                                 
+          </div>                                                                                                                                                                                               
+                                                                                                                                                                                                               
+          {!isAnnualLicense && (                            
+            <div className="grid grid-cols-12 gap-2 px-2 text-[10px] font-medium text-[#888888] uppercase tracking-wide">                                                                                      
+              <span className="col-span-3">From</span>                                                                                                                                                         
+              <span className="col-span-3">To</span>    
+              <span className="col-span-5">Rate</span>                                                                                                                                                         
+              <span className="col-span-1"></span>                                                                                                                                                             
+            </div>                                          
+          )}                                                                                                                                                                                                   
+                                                             
+          {scenario.tiers.map((tier, idx) => {              
+            const isApplied = appliedTier?.id === tier.id;                                                                                                                                                     
+            return (                                                                                                                                                                                           
+              <div                                                                                                                                                                                             
+                key={tier.id}                                                                                                                                                                                  
+                className={`grid grid-cols-12 gap-2 items-center p-2 rounded-md ${                                                                                                                             
+                  isApplied ? 'bg-[#FCE8E2] border border-[#EA2C00]/30' : 'bg-[#F5F0EB]'
+                }`}                                                                                                                                                                                            
+              >                                           
+                {!isAnnualLicense ? (                       
+                  <>                                                                                                                                                                                           
+                    <div className="col-span-3">             
+                      <FormattedNumberInput                                                                                                                                                                    
+                        value={tier.thresholdFrom}          
+                        onChange={(v: number) => updateTier(tier.id, { thresholdFrom: v })}                                                                                                                    
+                        className="h-8 bg-white text-sm"                                                                                                                                                       
+                      />                                                                                                                                                                                       
+                    </div>                                                                                                                                                                                     
+                    <div className="col-span-3">                                                                                                                                                               
+                      {tier.thresholdTo === null ? (         
+                        <button                                                                                                                                                                                
+                          onClick={() => updateTier(tier.id, { thresholdTo: tier.thresholdFrom + 100 })}
+                          className="h-8 w-full text-sm text-[#888888] italic bg-white border border-[#E5E5E5] rounded px-2 hover:border-[#D1D5DB]"                                                            
+                        >                                   
+                          ∞ unlimited                                                                                                                                                                          
+                        </button>                            
+                      ) : (                                                                                                                                                                                    
+                        <FormattedNumberInput                
+                          value={tier.thresholdTo}                                                                                                                                                             
+                          onChange={(v: number) => updateTier(tier.id, { thresholdTo: v })}
+                          className="h-8 bg-white text-sm"                                                                                                                                                     
+                        />                                                                                                                                                                                     
+                      )}                                                                                                                                                                                       
+                    </div>                                                                                                                                                                                     
+                  </>                                       
+                ) : (                            
+                  <div className="col-span-6 text-sm text-[#888888] italic px-2">Flat rate</div>                                                                                                               
+                )}                       
+                <div className="col-span-5">                                                                                                                                                                   
+                  <div className="relative flex items-center">                                                                                                                                                 
+                    <span className="absolute left-2 text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput                                                                                                                                                                      
+                      value={tier.rate}                      
+                      onChange={(v: number) => updateTier(tier.id, { rate: v })}
+                      className="h-8 bg-white text-sm pl-6 pr-1"
+                      step={scenario.model === 'perEncounter' ? 0.01 : 1}                                                                                                                                      
+                    />                                       
+                    <span className="ml-1 text-[10px] text-[#888888] whitespace-nowrap">{PRICING_MODEL_RATE_SUFFIX[scenario.model]}</span>                                                                     
+                  </div>                                  
+                </div>                                                                                                                                                                                         
+                <div className="col-span-1 flex justify-end">
+                  {(scenario.tiers.length > 1 || !isAnnualLicense) && (                                                                                                                                        
+                    <button                                                                                                                                                                                    
+                      onClick={() => removeTier(tier.id)}    
+                      className="p-1 text-[#888888] hover:text-[#EA2C00]"                                                                                                                                      
+                    >                                     
+                      <Trash2 className="w-3.5 h-3.5" />                                                                                                                                                       
+                    </button>                             
+                  )}                                                                                                                                                                                           
+                </div>                                                                                                                                                                                         
+              </div>                                         
+            );                                                                                                                                                                                                 
+          })}                            
+        </div>                                                                                                                                                                                                 
+                                         
+        {/* Computed investment + net */}                                                                                                                                                                      
+        <div className="bg-[#1A1A1A] rounded-lg p-4">     
+          {warning && (                                     
+            <div className="mb-2 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-800">
+              ⚠ {warning}                                    
+            </div>                                          
+          )}                                              
+          {!isAnnualLicense && appliedTier && (                                                                                                                                                                
+            <p className="text-[10px] text-white/50 mb-2">  
+              At {formatNumber(scale)} {scenario.model === 'perProvider' ? 'providers' : 'encounters'} → tier {appliedTier.thresholdFrom.toLocaleString()}–{appliedTier.thresholdTo === null ? '∞' :           
+  appliedTier.thresholdTo.toLocaleString()} applies @ ${appliedTier.rate.toLocaleString()}{PRICING_MODEL_RATE_SUFFIX[scenario.model]}                                                                          
+            </p>                                          
+          )}                                                                                                                                                                                                   
+          <div className="grid grid-cols-3 gap-3">                                                                                                                                                             
+            <div>                                                                                                                                                                                              
+              <p className="text-[10px] text-white/50 uppercase tracking-wide mb-0.5">Investment</p>                                                                                                           
+              <p className="text-base font-bold text-white">{formatCurrency(investment)}</p>
+              <p className="text-[10px] text-white/40">/year</p>                                                                                                                                               
+            </div>                                                                                                                                                                                             
+            <div>                                                                                                                                                                                              
+              <p className="text-[10px] text-white/50 uppercase tracking-wide mb-0.5">Net</p>                                                                                                                  
+              <p className={`text-base font-bold ${net >= 0 ? 'text-[#EA2C00]' : 'text-white/70'}`}>
+                {formatCurrency(net)}                                                                                                                                                                          
+              </p>                                           
+              <p className="text-[10px] text-white/40">/year</p>                                                                                                                                               
+            </div>                                          
+            <div>                                                                                                                                                                                              
+              <p className="text-[10px] text-white/50 uppercase tracking-wide mb-0.5">ROI</p>
+              <p className="text-base font-bold text-white">{roi.toFixed(1)}×</p>                                                                                                                              
+              <p className="text-[10px] text-white/40">value/cost</p>                                                                                                                                          
+            </div>                                                                                                                                                                                             
+          </div>                                                                                                                                                                                               
+        </div>                                                                                                                                                                                                 
+      </div>                                                 
+    );                                                                                                                                                                                                         
+  }                                                          
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 4 — Add the Pricing Comparison section to MeasureForecast.tsx                                                                                                                                           
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/measure/MeasureForecast.tsx                                                                                                                                                           
+                                                             
+  ADD imports:                                              
+    import { Plus, DollarSign } from "lucide-react";        
+    import PricingScenarioCard from "@/components/measure/PricingScenarioCard";                                                                                                                                
+    import { computeScenarioInvestment, makeDefaultTiers, type PricingScenario } from "@/lib/forecastPricing";
+                                                                                                                                                                                                               
+  Inside the component, after the addedSettings logic, ADD pricing scenario handlers:                                                                                                                          
+                                                                                                                                                                                                               
+    const pricingScenarios = state.forecastScenario.pricingScenarios || [];                                                                                                                                    
+                                                                                                                                                                                                               
+    // Combined scale across current + added settings     
+    const combinedProviders = useMemo(() => {                                                                                                                                                                  
+      return projected.providers + addedSettings.reduce((sum, a) => sum + a.providers, 0);                                                                                                                     
+    }, [projected.providers, addedSettings]);                                                                                                                                                                  
+                                                                                                                                                                                                               
+    const combinedEncounters = useMemo(() => {               
+      return projected.encounters + addedSettings.reduce((sum, a) => sum + a.encounters, 0);                                                                                                                   
+    }, [projected.encounters, addedSettings]);               
+                                                                                                                                                                                                               
+    const combinedValue = totalProjected + addedSettingsTotal;
+                                                                                                                                                                                                               
+    const addPricingScenario = () => {                                                                                                                                                                         
+      const newScenario: PricingScenario = {                                                                                                                                                                   
+        id: `pricing-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,                                                                                                                                 
+        label: pricingScenarios.length === 0 ? 'Current contract' : `Alternative ${pricingScenarios.length}`,
+        model: 'perProvider',                                                                                                                                                                                  
+        tiers: makeDefaultTiers('perProvider'),              
+      };                                                                                                                                                                                                       
+      updateState({                                         
+        forecastScenario: {                                                                                                                                                                                    
+          ...state.forecastScenario,                         
+          pricingScenarios: [...pricingScenarios, newScenario],                                                                                                                                                
+        },                                                                                                                                                                                                     
+      });                                                                                                                                                                                                      
+    };                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    const updatePricingScenario = (id: string, updates: Partial<PricingScenario>) => {
+      updateState({                                                                                                                                                                                            
+        forecastScenario: {
+          ...state.forecastScenario,                                                                                                                                                                           
+          pricingScenarios: pricingScenarios.map(s => s.id === id ? { ...s, ...updates } : s),                                                                                                                 
+        },                                                
+      });                                                                                                                                                                                                      
+    };                                                  
+                                                             
+    const removePricingScenario = (id: string) => {         
+      updateState({                              
+        forecastScenario: {                                                                                                                                                                                    
+          ...state.forecastScenario,
+          pricingScenarios: pricingScenarios.filter(s => s.id !== id),                                                                                                                                         
+        },                                                                                                                                                                                                     
+      });                                               
+    };                                                                                                                                                                                                         
+                                                            
+    // Determine the best-value scenario (lowest investment, must have positive value)
+    const bestValueScenarioId = useMemo(() => {              
+      if (pricingScenarios.length < 2) return null;       
+      const evaluated = pricingScenarios.map(s => {         
+        const scale = s.model === 'perProvider' ? combinedProviders                                                                                                                                            
+                    : s.model === 'perEncounter' ? combinedEncounters
+                    : 0;                                                                                                                                                                                       
+        const { value, warning } = computeScenarioInvestment(s, scale);
+        return { id: s.id, investment: value, warning };                                                                                                                                                       
+      }).filter(e => !e.warning && e.investment > 0);   
+      if (evaluated.length === 0) return null;                                                                                                                                                                 
+      evaluated.sort((a, b) => a.investment - b.investment);                                                                                                                                                   
+      return evaluated[0].id;                               
+    }, [pricingScenarios, combinedProviders, combinedEncounters]);                                                                                                                                             
+                                                             
+  ADD the Pricing Comparison section AFTER the "Modeled Expansions" section, BEFORE the mobile continue button:                                                                                                
+                                                                                                                                                                                                               
+    <motion.div                                                                                                                                                                                                
+      className="mt-8"                                                                                                                                                                                         
+      initial={{ opacity: 0, y: 20 }}                                                                                                                                                                          
+      animate={{ opacity: 1, y: 0 }}                         
+      transition={{ delay: 0.3 }}                                                                                                                                                                              
+    >                                                                                                                                                                                                          
+      <div className="flex items-center justify-between mb-3">                                                                                                                                                 
+        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Pricing Comparison</p>                                                                                                    
+        {pricingScenarios.length > 0 && (                                                                                                                                                                      
+          <p className="text-xs text-[#666666]">             
+            Combined scale: {combinedProviders.toLocaleString()} providers · {combinedEncounters.toLocaleString()} encounters                                                                                  
+          </p>                                              
+        )}                                                                                                                                                                                                     
+      </div>                                                 
+                                                                                                                                                                                                               
+      {pricingScenarios.length === 0 && (                                                                                                                                                                      
+        <div className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-3">                                                                                                                                         
+          <DollarSign className="w-8 h-8 text-[#888888] mx-auto mb-2" />                                                                                                                                       
+          <p className="text-sm text-[#666666] mb-1">Compare pricing models at projected scale.</p>                                                                                                            
+          <p className="text-xs text-[#888888]">Add the customer's current contract terms and any alternatives you want to model.</p>                                                                          
+        </div>                                                                                                                                                                                                 
+      )}                                                                                                                                                                                                       
+                                                            
+      <div className="space-y-3">                                                                                                                                                                              
+        {pricingScenarios.map(scenario => (                  
+          <PricingScenarioCard                                                                                                                                                                                 
+            key={scenario.id}                                                                                                                                                                                  
+            scenario={scenario}                                                                                                                                                                                
+            combinedProviders={combinedProviders}                                                                                                                                                              
+            combinedEncounters={combinedEncounters}                                                                                                                                                            
+            combinedValue={combinedValue}                                                                                                                                                                      
+            isBestValue={bestValueScenarioId === scenario.id}
+            onUpdate={(updates) => updatePricingScenario(scenario.id, updates)}
+            onRemove={() => removePricingScenario(scenario.id)}
+          />                                                                                                                                                                                                   
+        ))}                                               
+                                                                                                                                                                                                               
+        <button                                  
+          onClick={addPricingScenario}                       
+          className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center       
+  justify-center gap-1.5"                
+          data-testid="button-add-pricing-scenario"                                                                                                                                                            
+        >                                                 
+          <Plus className="w-4 h-4" /> Add a pricing scenario                                                                                                                                                  
+        </button>                                
+      </div>                                                 
+    </motion.div>                                         
+                                                            
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Update right-panel summary to surface best-value pricing
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/measure/MeasureForecast.tsx    
+                                                                                                                                                                                                               
+  In the right-panel summary, AFTER the "Combined total" block, ADD a pricing summary section that appears only when there are 2+ pricing scenarios:
+                                                                                                                                                                                                               
+    {pricingScenarios.length >= 2 && bestValueScenarioId && (() => {
+      const best = pricingScenarios.find(s => s.id === bestValueScenarioId);
+      if (!best) return null;                    
+      const scale = best.model === 'perProvider' ? combinedProviders                                                                                                                                           
+                  : best.model === 'perEncounter' ? combinedEncounters                                                                                                                                         
+                  : 0;                                                                                                                                                                                         
+      const { value: investment } = computeScenarioInvestment(best, scale);                                                                                                                                    
+      const net = combinedValue - investment;                
+      return (                                                                                                                                                                                                 
+        <>                                                
+          <div className="h-px bg-[#333333] my-4" />                                                                                                                                                           
+          <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Best Pricing</p>
+          <p className="text-sm text-white/50 mb-3">{best.label}</p>                                                                                                                                           
+          <div className="space-y-1.5">                                                                                                                                                                        
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/50">Investment</span>                                                                                                                                        
+              <span className="text-sm font-medium text-white/80">{formatCurrency(investment)}</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/50">Net annual</span>                                                                                                                                        
+              <span className="text-base font-bold text-[#EA2C00]">{formatCurrency(net)}</span>                                                                                                                
+            </div>                                                                                                                                                                                             
+          </div>                                                                                                                                                                                               
+        </>                                                 
+      );                                                                                                                                                                                                       
+    })()}                                                                                                                                                                                                      
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  1. TypeScript compiles. New types and helpers in forecastPricing.ts wire correctly into MeasureState.                                                                                                        
+                                                            
+  2. Walk through Outpatient Measure: Setup → Capacity (add Patient Access, enter $1.6M baseline values) → Workforce (add Provider Wellbeing) → Revenue (add wRVU + HCC) → Quality → Forecast.
+                                                             
+  3. **Forecast page baseline** (from 3E + 3F): scenario controls work, modeled expansions section works.
+                                                             
+  4. **Pricing Comparison section visible below expansions**:                                                                                                                                                  
+     - Empty state shows DollarSign icon and prompt copy     
+     - Click "+ Add a pricing scenario" → first scenario appears with default name "Current contract"                                                                                                          
+                                                             
+  5. **First scenario card**:                                                                                                                                                                                  
+     - Editable label, currently "Current contract"          
+     - Per-provider model is default                                                                                                                                                                           
+     - Default tiers: 1-100 @ $1500, 100-300 @ $1200, 300+ @ $900
+     - Black calc card shows investment + net + ROI                                                                                                                                                            
+     - The applied tier is highlighted with red-tinted background
+     - Caption above the calc card describes which tier applies and at what scale                                                                                                                              
+                                                                                                                                                                                                               
+  6. **Tier editing**:                                                                                                                                                                                         
+     - Edit "From" / "To" / "Rate" fields → calc updates live                                                                                                                                                  
+     - Click "Add tier" → new tier appears at the end, previous unlimited tier gets capped at the new tier's lower bound                                                                                       
+     - Click trash icon on a tier → removed             
+     - For tiers with `to: null`, an "∞ unlimited" placeholder shows; click it to set a finite cap                                                                                                             
+                                                                                                                                                                                                               
+  7. **Switch model** to "Per Encounter":                                                                                                                                                                      
+     - Tier table resets to per-encounter defaults (1-200K @ $0.50, 200K+ @ $0.40)                                                                                                                             
+     - Calc updates against combinedEncounters scale         
+     - Rate suffix changes to "/encounter"                                                                                                                                                                     
+                                                                                                                                                                                                               
+  8. **Switch to "Annual License"**:                                                                                                                                                                           
+     - Tier table collapses to a single "Flat rate" row                                                                                                                                                        
+     - "Add tier" button hidden                                                                                                                                                                                
+     - Rate of $1.5M default                                                                                                                                                                                   
+     - Investment = $1.5M flat regardless of scale                                                                                                                                                             
+                                                                                                                                                                                                               
+  9. **Add a second scenario** ("Per-encounter alternative"):                                                                                                                                                  
+     - Configure it with per-encounter model                                                                                                                                                                   
+     - Both cards visible                                                                                                                                                                                      
+     - One of them gets the "★ Best Value" badge (the lower-investment one)                                                                                                                                    
+     - The other does NOT have the badge                                                                                                                                                                       
+     - Badge appears as red border around the best-value card
+                                                                                                                                                                                                               
+  10. **Right panel "Best Pricing" section** appears with the winning scenario's label, investment, and net annual.                                                                                            
+                                                                                                                                                                                                               
+  11. **Edge cases**:                                                                                                                                                                                          
+      - Scale falls outside all tiers (e.g., providers = 50 but tiers start at 100): warning ⚠ icon with "Scale falls outside all defined tiers" appears                                                       
+      - Single tier covering everything (1 to ∞): works   
+      - Overlapping tiers: first matching tier wins (no validation error in this sprint)                                                                                                                       
+                                                          
+  12. **Persistence**: navigate away and back, all pricing scenarios + tier edits + labels preserved.                                                                                                          
+                                                                                                                                                                                                               
+  13. **Combined scale reflects added settings**: add an ED expansion of 25 providers + 50K encounters in the Modeled Expansions section. The "Combined scale" caption above pricing scenarios updates:
+  providers and encounters now include the additions. Pricing math reflects the larger combined scale.                                                                                                         
+                                                             
+  NOTES:                                                                                                                                                                                                       
+  - Stepped tier math is intentional (NOT graduated). At 250 providers in a 100-300 tier, all 250 price at the 100-300 rate.                                                                                   
+  - For nursing-only customers, "providers" maps to nurse FTEs. Per-provider pricing tiers can be set against FTE count.                                                                                       
+  - Mixed contracts (e.g., physicians on per-provider + nurses on per-bed) are not directly modeled — PS would create two separate pricing scenarios and mentally interpret the comparison, OR enter one       
+  combined scenario at the customer's actual headcount. Future enhancement could split by setting type.                                                                                                        
+  - Annual license tier-based pricing (e.g., site licenses tiered by number of facilities) is supported but defaults to a single flat rate. PS can add tiers manually if their license has volume thresholds.  
+  - Best Value is determined by lowest investment among scenarios with valid (positive, non-warning) computations. Recommendation isn't "lowest investment ever" — it's "best value at this projected scale."

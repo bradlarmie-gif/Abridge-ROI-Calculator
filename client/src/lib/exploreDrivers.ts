@@ -366,3 +366,9 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
 export function getDriversForPage(quadrant: ExploreQuadrant, setting: ExploreSetting): ExploreDriver[] {
   return EXPLORE_DRIVERS.filter(d => d.quadrant === quadrant && d.settings.includes(setting));
 }
+
+export function isDriverEnabled(driver: ExploreDriver, state: ExploreState): boolean {
+  const td = state.timeDriverInputs as any;
+  const dq = state.docQualityInputs as any;
+  return Boolean(td[driver.enabledStateKey] ?? dq[driver.enabledStateKey]);
+}

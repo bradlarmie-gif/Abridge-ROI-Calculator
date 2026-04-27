@@ -1,0 +1,664 @@
+🔧 Sprint 3H — Replit prompt (paste verbatim)                                                                                                                                                                
+                                                 
+  Context: Final sprint of the Sprint 3 series. Updates the Measure PDF export to read from the new quadrant-aware data structure (trackedDrivers, forecastScenario with addedSettings + pricingScenarios).    
+  Cover page is intentionally preserved. MeasureOutput.tsx (currently a placeholder from 3A) gets a slim on-screen summary so the page feels meaningful before the user clicks Download. The PDF tone is       
+  "here's what we're delivering, here's what's possible" — distinct from Explore's "here's the business case."                                                                                                 
+                                                                                                                                                                                                               
+  Pre-req: Sprints 3A through 3G shipped.                    
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Update MeasurePDFData interface                                                                                                                                                                     
+  ═══════════════════════════════════════════════════════════
+  File: client/src/components/measure/MeasurePDFExport.tsx (or wherever MeasurePDFData is exported)                                                                                                            
+                                                          
+  REPLACE the existing MeasurePDFData interface with the new quadrant-aware shape. Preserve any cover-page fields that already exist (organizationName, preparedFor, date, monthsLive, etc.) — do not remove   
+  them. Add the new fields below.                                                                                                                                                                              
+                                                             
+  export interface MeasurePDFDriver {                                                                                                                                                                          
+    id: string;                                              
+    label: string;                                                                                                                                                                                             
+    shortDescription: string;
+    visibility: 'quantified' | 'qualitative';                                                                                                                                                                  
+    isMonthlyMode: boolean;                                                                                                                                                                                    
+    // Snapshot values (effective — pulled from latest month if monthly mode)                                                                                                                                  
+    withoutAbridge: number;                                                                                                                                                                                    
+    withAbridge: number;                                    
+    delta: number;                                        
+    // Multipliers                                           
+    valuePerUnit: number;                                 
+    attributionPercent: number;                              
+    realizationPercent: number;                                                                                                                                                                                
+    // Computed                                              
+    realizedValue: number;                                                                                                                                                                                     
+    // Optional fields                   
+    notes?: string;                                                                                                                                                                                            
+    monthlyData?: Array<{ month: string; withAbridge: number; withoutAbridge: number }>;
+    // Display labels from registry                                                                                                                                                                            
+    deltaUnit?: string;                                 
+    deltaLabel?: string;                                     
+    valuePerUnitLabel?: string;                             
+    valuePerUnitPrefix?: string;                        
+  }                                                                                                                                                                                                            
+                                                            
+  export interface MeasurePDFQuadrantSection {                                                                                                                                                                 
+    quadrant: 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';                                                                                                                                                
+    realizedTotal: number;                                
+    drivers: MeasurePDFDriver[];                                                                                                                                                                               
+  }                                                                                                                                                                                                            
+                                                             
+  export interface MeasurePDFAddedSetting {                                                                                                                                                                    
+    settingLabel: string;                        
+    providers: number;                                                                                                                                                                                         
+    utilizationPercent: number;          
+    encounters: number;                                                                                                                                                                                        
+    staffedBeds: number;                                                                                                                                                                                       
+    occupancyPercent: number;                               
+    scenarioLabel: string;                                                                                                                                                                                     
+    estimatedValue: number;                                  
+    isOverridden: boolean;                              
+    isNursing: boolean;                                   
+  }                                                                                                                                                                                                            
+                                                        
+  export interface MeasurePDFPricingTier {                                                                                                                                                                     
+    thresholdFrom: number;                                  
+    thresholdTo: number | null;                  
+    rate: number;                                                                                                                                                                                              
+  }                                                     
+                                                                                                                                                                                                               
+  export interface MeasurePDFPricingScenario {                                                                                                                                                                 
+    label: string;                               
+    modelLabel: string;                                                                                                                                                                                        
+    rateSuffix: string;                  
+    tiers: MeasurePDFPricingTier[];      
+    appliedTier: MeasurePDFPricingTier | null;                                                                                                                                                                 
+    scale: number;                                        
+    scaleLabel: string; // "providers" or "encounters" or "flat"                                                                                                                                               
+    investment: number;                                   
+    netAnnual: number;                                       
+    roi: number;                                          
+    isBestValue: boolean;                                    
+    warning?: string;                                                                                                                                                                                          
+  }                                                          
+                                                                                                                                                                                                               
+  export interface MeasurePDFData {                       
+    // ─── Cover page fields (preserve existing) ───                                                                                                                                                           
+    organizationName?: string;                   
+    preparedFor?: string;                                                                                                                                                                                      
+    preparedBy?: string;                                  
+    date: string;                                           
+    careSettingLabel: string;                                                                                                                                                                                  
+    monthsLive?: number;                                     
+                                                                                                                                                                                                               
+    // ─── Practice / setup ───                         
+    careSetting: 'outpatient' | 'ed' | 'inpatient' | 'nursing';                                                                                                                                                
+    numberOfProviders: number;                              
+    utilizationPercent: number;                                                                                                                                                                                
+    annualEncounters: number;                                
+    staffedBeds?: number;                                   
+    occupancyPercent?: number;                          
+                                                                                                                                                                                                               
+    // ─── Headline ───                                     
+    totalRealized: number;            // sum of realized $ across all quadrants                                                                                                                                
+    totalProjected: number;            // current setting projected at forecast scenario                                                                                                                       
+    addedSettingsTotal: number;        // sum of estimated value from added settings
+    combinedAnnualTotal: number;       // totalProjected + addedSettingsTotal                                                                                                                                  
+    driversTrackedCount: number;       // total tracked drivers across quadrants                                                                                                                               
+                                                            
+    // ─── Quadrants ───                                                                                                                                                                                       
+    quadrants: MeasurePDFQuadrantSection[];   // ordered: Capacity, Workforce, Revenue, Quality
+                                                             
+    // ─── Forecast ───                                                                                                                                                                                        
+    forecastBaseline: {                                                                                                                                                                                        
+      providers: number;                                                                                                                                                                                       
+      utilizationPercent: number;                                                                                                                                                                              
+      encounters: number;                                                                                                                                                                                      
+      staffedBeds: number;                                                                                                                                                                                     
+      occupancyPercent: number;                                                                                                                                                                                
+    };                                                                                                                                                                                                         
+    forecastProjected: {
+      providers: number;                                                                                                                                                                                       
+      utilizationPercent: number;                                                                                                                                                                              
+      encounters: number;                                 
+      staffedBeds: number;                                                                                                                                                                                     
+      occupancyPercent: number;                  
+    };                                                       
+                 
+    // ─── Added settings (modeled expansions) ───
+    addedSettings: MeasurePDFAddedSetting[];                                                                                                                                                                   
+                                                          
+    // ─── Pricing ───                                                                                                                                                                                         
+    pricingScenarios: MeasurePDFPricingScenario[];        
+    bestPricingScenarioLabel?: string;                       
+    bestPricingInvestment?: number;              
+    bestPricingNet?: number;                                 
+  }                                                                                                                                                                                                            
+                                                            
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Build handleExportPDF in MeasureOutput.tsx        
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/measure/MeasureOutput.tsx          
+                                                                                                                                                                                                               
+  Replace the placeholder body. The page now needs to:       
+  1. Read from MeasureState                                                                                                                                                                                    
+  2. Compute everything needed for the PDF data           
+  3. Render a slim on-screen summary                                                                                                                                                                           
+  4. Provide a Download button that triggers the PDF generation
+                                                                                                                                                                                                               
+  REPLACE the entire file:                                                                                                                                                                                     
+                                                          
+  import { useMemo, useState } from "react";                                                                                                                                                                   
+  import { Download, Edit, ArrowLeft, Loader2, FileText } from "lucide-react";
+  import { Button } from "@/components/ui/button";                                                                                                                                                             
+  import { motion } from "framer-motion";                                                                                                                                                                      
+  import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+  import { EXPLORE_DRIVERS, isDriverEnabled, type ExploreSetting, type ExploreQuadrant } from "@/lib/exploreDrivers";                                                                                          
+  import { computeAddedSettingValue, SETTING_LABELS } from "@/lib/forecastDefaults";
+  import {                                                                                                                                                                                                     
+    computeScenarioInvestment,                                                                                                                                                                                 
+    PRICING_MODEL_LABELS,                                   
+    PRICING_MODEL_RATE_SUFFIX,                                                                                                                                                                                 
+    PRICING_MODEL_SCALE_LABEL,                               
+  } from "@/lib/forecastPricing";                                                                                                                                                                              
+  import { generateMeasurePDF, type MeasurePDFData, type MeasurePDFDriver, type MeasurePDFQuadrantSection } from "@/components/measure/MeasurePDFExport";                                                      
+  import { type MeasureState, type MeasureDriverEntry } from "./MeasureFlow";                                                                                                                                  
+  import { useToast } from "@/hooks/use-toast";                                                                                                                                                                
+                                                                                                                                                                                                               
+  interface MeasureOutputProps {                                                                                                                                                                               
+    state: MeasureState;                                                                                                                                                                                       
+    updateState: (updates: Partial<MeasureState>) => void;   
+    onNext: () => void;                                                                                                                                                                                        
+    onBack: () => void;                          
+    onHome: () => void;                                                                                                                                                                                        
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  const QUADRANT_ORDER: ExploreQuadrant[] = ['Capacity', 'Workforce', 'Revenue', 'Quality'];                                                                                                                   
+                                                             
+  function buildDriverPayload(                                                                                                                                                                                 
+    driver: typeof EXPLORE_DRIVERS[number],                 
+    entry: MeasureDriverEntry                                                                                                                                                                                  
+  ): MeasurePDFDriver {                                      
+    const md = driver.measureDefaults;                                                                                                                                                                         
+    const sortedMonthly = [...(entry.monthlyData || [])].sort((a, b) => a.month.localeCompare(b.month));
+    const latest = sortedMonthly[sortedMonthly.length - 1];                                                                                                                                                    
+    const effWith = entry.isMonthlyMode && latest ? latest.withAbridge : entry.withAbridge;
+    const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;                                                                                                           
+    const delta = effWith - effWithout;                      
+    const isQuantifiable = driver.visibility === 'quantified' && Boolean(md);                                                                                                                                  
+    const realizedValue = isQuantifiable                     
+      ? Math.round(delta * entry.valuePerUnit * (entry.attributionPercent / 100) * (entry.realizationPercent / 100))                                                                                           
+      : 0;                                                   
+                                                                                                                                                                                                               
+    return {                                                
+      id: driver.id,                                                                                                                                                                                           
+      label: driver.label,                                                                                                                                                                                     
+      shortDescription: driver.shortDescription,                                                                                                                                                               
+      visibility: driver.visibility,                                                                                                                                                                           
+      isMonthlyMode: Boolean(entry.isMonthlyMode),                                                                                                                                                             
+      withoutAbridge: effWithout,                                                                                                                                                                              
+      withAbridge: effWith,                                                                                                                                                                                    
+      delta,                                                                                                                                                                                                   
+      valuePerUnit: entry.valuePerUnit,                                                                                                                                                                        
+      attributionPercent: entry.attributionPercent,
+      realizationPercent: entry.realizationPercent,          
+      realizedValue,                                      
+      notes: entry.notes,                                   
+      monthlyData: sortedMonthly.length > 0 ? sortedMonthly : undefined,                                                                                                                                       
+      deltaUnit: md?.deltaUnit,                              
+      deltaLabel: md?.deltaLabel,                                                                                                                                                                              
+      valuePerUnitLabel: md?.valuePerUnitLabel,             
+      valuePerUnitPrefix: md?.valuePerUnitPrefix,                                                                                                                                                              
+    };                                                       
+  }                                                                                                                                                                                                            
+                                                             
+  export default function MeasureOutput({ state, updateState, onNext, onBack, onHome }: MeasureOutputProps) {                                                                                                  
+    const [exporting, setExporting] = useState(false);  
+    const { toast } = useToast();                                                                                                                                                                              
+                                                            
+    const setting = (state.careSetting || 'outpatient') as ExploreSetting;                                                                                                                                     
+                                                                                                                                                                                                               
+    // Build per-quadrant sections                        
+    const quadrants: MeasurePDFQuadrantSection[] = useMemo(() => {                                                                                                                                             
+      return QUADRANT_ORDER.map(q => {                                                                                                                                                                         
+        const drivers = EXPLORE_DRIVERS                      
+          .filter(d => d.quadrant === q && d.settings.includes(setting) && isDriverEnabled(d, state))                                                                                                          
+          .map(d => buildDriverPayload(d, state.trackedDrivers[d.id]))
+          .filter(p => p !== null);                                                                                                                                                                            
+                                                             
+        const realizedTotal = drivers.reduce((sum, d) => sum + d.realizedValue, 0);                                                                                                                            
+                                                             
+        return { quadrant: q, realizedTotal, drivers };                                                                                                                                                        
+      });                                                    
+    }, [setting, state.trackedDrivers]);                                                                                                                                                                       
+                                                                                                                                                                                                               
+    const totalRealized = quadrants.reduce((sum, q) => sum + q.realizedTotal, 0);                                                                                                                              
+    const driversTrackedCount = quadrants.reduce((sum, q) => sum + q.drivers.length, 0);                                                                                                                       
+                                                                                                                                                                                                               
+    // Forecast totals — replicate the math from MeasureForecast
+    const baseline = {                                                                                                                                                                                         
+      providers: state.deployment?.providers ?? 0,           
+      utilizationPercent: state.deployment?.coveragePercent ?? 0,                                                                                                                                              
+      encounters: state.deployment?.encounters ?? 0,         
+      staffedBeds: state.deployment?.staffedBeds ?? 0,                                                                                                                                                         
+      occupancyPercent: state.deployment?.occupancyPercent ?? 0,
+    };                                                                                                                                                                                                         
+    const projected = state.forecastScenario;                                                                                                                                                                  
+                                                                                                                                                                                                               
+    const totalProjected = useMemo(() => {                                                                                                                                                                     
+      return quadrants.reduce((sum, q) => {                                                                                                                                                                    
+        return sum + q.drivers.reduce((qSum, drv) => {       
+          const driverDef = EXPLORE_DRIVERS.find(d => d.id === drv.id);                                                                                                                                        
+          if (!driverDef?.measureDefaults) return qSum + drv.realizedValue;
+          const axis = driverDef.measureDefaults.scaleAxis;                                                                                                                                                    
+          let scale = 1;                                    
+          if (axis === 'providers') {                                                                                                                                                                          
+            const baseScale = baseline.providers * (baseline.utilizationPercent / 100);                                                                                                                        
+            const projScale = projected.providers * (projected.utilizationPercent / 100);
+            scale = baseScale > 0 ? projScale / baseScale : 1;                                                                                                                                                 
+          } else if (axis === 'encounters') {                                                                                                                                                                  
+            const baseScale = baseline.encounters * (baseline.utilizationPercent / 100);
+            const projScale = projected.encounters * (projected.utilizationPercent / 100);                                                                                                                     
+            scale = baseScale > 0 ? projScale / baseScale : 1;                                                                                                                                                 
+          } else if (axis === 'patientDays') {                                                                                                                                                                 
+            const baseScale = baseline.staffedBeds * (baseline.occupancyPercent / 100);                                                                                                                        
+            const projScale = projected.staffedBeds * (projected.occupancyPercent / 100);                                                                                                                      
+            scale = baseScale > 0 ? projScale / baseScale : 1;                                                                                                                                                 
+          }                                                                                                                                                                                                    
+          return qSum + Math.round(drv.realizedValue * scale);                                                                                                                                                 
+        }, 0);                                                                                                                                                                                                 
+      }, 0);                                                 
+    }, [quadrants, baseline, projected]);                                                                                                                                                                      
+                                                                                                                                                                                                               
+    const addedSettings = state.forecastScenario.addedSettings || [];                                                                                                                                          
+    const addedSettingsTotal = addedSettings.reduce((sum, a) => sum + computeAddedSettingValue(a), 0);                                                                                                         
+    const combinedAnnualTotal = totalProjected + addedSettingsTotal;                                                                                                                                           
+                                                                                                                                                                                                               
+    // Pricing scenarios — compute investment for each at combined scale
+    const pricingScenarios = state.forecastScenario.pricingScenarios || [];                                                                                                                                    
+    const combinedProviders = projected.providers + addedSettings.reduce((s, a) => s + a.providers, 0);
+    const combinedEncounters = projected.encounters + addedSettings.reduce((s, a) => s + a.encounters, 0);
+                                                                                                                                                                                                               
+    const evaluatedPricing = useMemo(() => {                 
+      return pricingScenarios.map(sc => {                                                                                                                                                                      
+        const scale = sc.model === 'perProvider' ? combinedProviders                                                                                                                                           
+                    : sc.model === 'perEncounter' ? combinedEncounters                                                                                                                                         
+                    : 0;                                                                                                                                                                                       
+        const { value: investment, tier, warning } = computeScenarioInvestment(sc, scale);                                                                                                                     
+        const net = combinedAnnualTotal - investment;                                                                                                                                                          
+        const roi = investment > 0 ? combinedAnnualTotal / investment : 0;                                                                                                                                     
+        return { scenario: sc, scale, investment, tier, warning, net, roi };                                                                                                                                   
+      });                                                                                                                                                                                                      
+    }, [pricingScenarios, combinedProviders, combinedEncounters, combinedAnnualTotal]);                                                                                                                        
+                                                                                                                                                                                                               
+    const bestValueId = useMemo(() => {                                                                                                                                                                        
+      if (evaluatedPricing.length < 2) return null;                                                                                                                                                            
+      const valid = evaluatedPricing.filter(e => !e.warning && e.investment > 0);                                                                                                                              
+      if (valid.length === 0) return null;                                                                                                                                                                     
+      valid.sort((a, b) => a.investment - b.investment);                                                                                                                                                       
+      return valid[0].scenario.id;                                                                                                                                                                             
+    }, [evaluatedPricing]);                                                                                                                                                                                    
+                                                                                                                                                                                                               
+    const bestEntry = bestValueId ? evaluatedPricing.find(e => e.scenario.id === bestValueId) : null;                                                                                                          
+                                                             
+    // Build the PDF data payload                                                                                                                                                                              
+    const buildPDFData = (): MeasurePDFData => ({                                                                                                                                                              
+      organizationName: state.organizationName, // adapt to actual field name in your state                                                                                                                    
+      date: new Date().toLocaleDateString(),                                                                                                                                                                   
+      careSettingLabel: SETTING_LABELS[setting],                                                                                                                                                               
+      monthsLive: state.deployment?.monthsLive,                                                                                                                                                                
+                                                                                                                                                                                                               
+      careSetting: setting,                                                                                                                                                                                    
+      numberOfProviders: baseline.providers,                                                                                                                                                                   
+      utilizationPercent: baseline.utilizationPercent,       
+      annualEncounters: baseline.encounters,                                                                                                                                                                   
+      staffedBeds: setting === 'nursing' ? baseline.staffedBeds : undefined,                                                                                                                                   
+      occupancyPercent: setting === 'nursing' ? baseline.occupancyPercent : undefined,                                                                                                                         
+                                                                                                                                                                                                               
+      totalRealized,                                                                                                                                                                                           
+      totalProjected,                                     
+      addedSettingsTotal,                                                                                                                                                                                      
+      combinedAnnualTotal,                       
+      driversTrackedCount,                                   
+                                                                                                                                                                                                               
+      quadrants,                                          
+                                                                                                                                                                                                               
+      forecastBaseline: baseline,                
+      forecastProjected: {                                                                                                                                                                                     
+        providers: projected.providers,  
+        utilizationPercent: projected.utilizationPercent,
+        encounters: projected.encounters,                                                                                                                                                                      
+        staffedBeds: projected.staffedBeds,               
+        occupancyPercent: projected.occupancyPercent,                                                                                                                                                          
+      },                                         
+                                                             
+      addedSettings: addedSettings.map(a => ({            
+        settingLabel: SETTING_LABELS[a.setting],            
+        providers: a.providers,                                                                                                                                                                                
+        utilizationPercent: a.utilizationPercent,            
+        encounters: a.encounters,                                                                                                                                                                              
+        staffedBeds: a.staffedBeds,                         
+        occupancyPercent: a.occupancyPercent,                                                                                                                                                                  
+        scenarioLabel: a.scenario,                           
+        estimatedValue: computeAddedSettingValue(a),                                                                                                                                                           
+        isOverridden: a.customValueOverride !== undefined && a.customValueOverride > 0,
+        isNursing: a.setting === 'nursing',                                                                                                                                                                    
+      })),                                                
+                                                                                                                                                                                                               
+      pricingScenarios: evaluatedPricing.map(e => ({        
+        label: e.scenario.label,                             
+        modelLabel: PRICING_MODEL_LABELS[e.scenario.model],                                                                                                                                                    
+        rateSuffix: PRICING_MODEL_RATE_SUFFIX[e.scenario.model],
+        tiers: e.scenario.tiers.map(t => ({ thresholdFrom: t.thresholdFrom, thresholdTo: t.thresholdTo, rate: t.rate })),                                                                                      
+        appliedTier: e.tier ? { thresholdFrom: e.tier.thresholdFrom, thresholdTo: e.tier.thresholdTo, rate: e.tier.rate } : null,                                                                              
+        scale: e.scale,                                                                                                                                                                                        
+        scaleLabel: PRICING_MODEL_SCALE_LABEL[e.scenario.model],                                                                                                                                               
+        investment: e.investment,                           
+        netAnnual: e.net,                                    
+        roi: e.roi,                                                                                                                                                                                            
+        isBestValue: e.scenario.id === bestValueId,          
+        warning: e.warning,                                                                                                                                                                                    
+      })),                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+      bestPricingScenarioLabel: bestEntry?.scenario.label,                                                                                                                                                     
+      bestPricingInvestment: bestEntry?.investment,                                                                                                                                                            
+      bestPricingNet: bestEntry?.net,                        
+    });                                                                                                                                                                                                        
+                                                 
+    const handleExport = async () => {                                                                                                                                                                         
+      setExporting(true);                               
+      try {                                                                                                                                                                                                    
+        await generateMeasurePDF(buildPDFData());                                                                                                                                                              
+        toast({ title: 'Evidence doc generated', description: 'PDF download has started.' });
+      } catch (err) {                                                                                                                                                                                          
+        console.error('PDF generation failed', err);    
+        toast({ title: 'Export failed', description: 'Could not generate the PDF. Please try again.', variant: 'destructive' });
+      } finally {                                                                                                                                                                                              
+        setExporting(false);                              
+      }                                                                                                                                                                                                        
+    };                                                      
+                                                             
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();                                                                                                                                
+                                                        
+    const noContent = totalRealized === 0 && combinedAnnualTotal === 0 && driversTrackedCount === 0;                                                                                                           
+                                                                                                                                                                                                               
+    return (                                                                                                                                                                                                   
+      <div className="min-h-screen bg-white">                                                                                                                                                                  
+        <UnifiedHeader                           
+          pathType="measure"                                 
+          currentStep={7}                                                                                                                                                                                      
+          totalSteps={7}                                  
+          stepName="Outcome Summary"                                                                                                                                                                           
+          onBack={onBack}                               
+          onHome={onHome}                                                                                                                                                                                      
+        />                                                  
+        <UnifiedHeaderSpacer />                         
+                                                                                                                                                                                                               
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+          <motion.div className="text-center mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>                                                                                             
+            <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Outcome Summary</p>                                                                                             
+            <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">Your Outcomes</h1>
+            <p className="text-base text-[#888888]">Realized value, projected scale, and recommended pricing.</p>                                                                                              
+          </motion.div>                                                                                                                                                                                        
+                                                            
+          {noContent ? (                                                                                                                                                                                       
+            <motion.div                                                                                                                                                                                        
+              className="bg-[#1A1A1A] rounded-2xl p-12 text-center mb-8"
+              initial={{ opacity: 0 }}                                                                                                                                                                         
+              animate={{ opacity: 1 }}                                                                                                                                                                         
+            >                                                                                                                                                                                                  
+              <FileText className="w-12 h-12 text-white/40 mx-auto mb-4" />                                                                                                                                    
+              <h2 className="text-2xl font-bold text-white mb-3 font-abridge uppercase tracking-tight">Build the evidence first</h2>                                                                           
+              <p className="text-base text-white/60 max-w-md mx-auto mb-6">                                                                                                                                    
+                No drivers are tracked yet. Walk back through the quadrant pages to capture realized outcomes for this customer.
+              </p>                                        
+              <Button                                                                                                                                                                                          
+                onClick={() => onBack()}                  
+                className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"                                                                                                 
+              >                                                                                                                                                                                                
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Forecast
+              </Button>                                                                                                                                                                                        
+            </motion.div>                                   
+          ) : (                                                                                                                                                                                                
+            <>                                               
+              {/* Hero stat cards */}                                                                                                                                                                          
+              <motion.div                                                                                                                                                                                      
+                className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"                                                                                                                                         
+                initial={{ opacity: 0, y: 20 }}                                                                                                                                                                
+                animate={{ opacity: 1, y: 0 }}                                                                                                                                                                 
+                transition={{ delay: 0.1 }}                                                                                                                                                                    
+              >                                         
+                <div className="bg-[#1A1A1A] rounded-xl p-5">                                                                                                                                                  
+                  <p className="text-xs font-medium text-white/50 uppercase tracking-[1.5px] mb-1">Realized Today</p>
+                  <p className="text-3xl font-bold text-white">{formatCurrency(totalRealized)}</p>
+                  <p className="text-xs text-white/50 mt-1">{driversTrackedCount} driver{driversTrackedCount === 1 ? '' : 's'} tracked</p>                                                                     
+                </div>                                      
+                <div className="bg-[#1A1A1A] rounded-xl p-5">                                                                                                                                                  
+                  <p className="text-xs font-medium text-white/50 uppercase tracking-[1.5px] mb-1">Projected at Scale</p>                                                                                      
+                  <p className="text-3xl font-bold text-[#EA2C00]">{formatCurrency(combinedAnnualTotal)}</p>
+                  <p className="text-xs text-white/50 mt-1">{addedSettings.length > 0 ? `Includes ${addedSettings.length} expansion${addedSettings.length === 1 ? '' : 's'}` : 'Single setting'}</p>           
+                </div>                                                                                                                                                                                         
+                <div className="bg-[#1A1A1A] rounded-xl p-5">                                                                                                                                                  
+                  <p className="text-xs font-medium text-white/50 uppercase tracking-[1.5px] mb-1">Best Pricing</p>                                                                                            
+                  {bestEntry ? (                                                                                                                                                                               
+                    <>                                                                                                                                                                                         
+                      <p className="text-3xl font-bold text-white">{formatCurrency(bestEntry.net)}</p>                                                                                                         
+                      <p className="text-xs text-white/50 mt-1">net under {bestEntry.scenario.label}</p>                                                                                                       
+                    </>                                                                                                                                                                                        
+                  ) : (                                                                                                                                                                                        
+                    <>                                                                                                                                                                                         
+                      <p className="text-3xl font-bold text-white/40">—</p>                                                                                                                                    
+                      <p className="text-xs text-white/50 mt-1">Add 2+ pricing scenarios to compare</p>
+                    </>                                                                                                                                                                                        
+                  )}                                      
+                </div>                                                                                                                                                                                         
+              </motion.div>                                                                                                                                                                                    
+                                                             
+              {/* Per-quadrant recap */}                                                                                                                                                                       
+              <motion.div                               
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"                                                                                                                          
+                initial={{ opacity: 0, y: 20 }}                                                                                                                                                                
+                animate={{ opacity: 1, y: 0 }}                                                                                                                                                                 
+                transition={{ delay: 0.15 }}                                                                                                                                                                   
+              >                                             
+                {quadrants.map(q => (                     
+                  <div key={q.quadrant} className="bg-white rounded-xl border border-[#E5E5E5] p-4">                                                                                                           
+                    <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">{q.quadrant}</p>
+                    <p className="text-xl font-bold text-black">{q.realizedTotal > 0 ? formatCurrency(q.realizedTotal) : '—'}</p>                                                                              
+                    <p className="text-xs text-[#888888] mt-1">{q.drivers.length} driver{q.drivers.length === 1 ? '' : 's'}</p>                                                                                
+                  </div>                                    
+                ))}                                                                                                                                                                                            
+              </motion.div>                                  
+                                                                                                                                                                                                               
+              {/* Action row */}                             
+              <motion.div                                                                                                                                                                                      
+                className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6"                                                                                                                   
+                initial={{ opacity: 0 }}                                                                                                                                                                       
+                animate={{ opacity: 1 }}                                                                                                                                                                       
+                transition={{ delay: 0.2 }}                                                                                                                                                                    
+              >                                                                                                                                                                                                
+                <Button                                      
+                  onClick={handleExport}         
+                  disabled={exporting}                       
+                  className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full gap-2"                                                                                         
+                  data-testid="button-download-evidence-doc"
+                >                                                                                                                                                                                              
+                  {exporting ? (                            
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Generating…</>                                                                                                                              
+                  ) : (                                      
+                    <><Download className="w-4 h-4" /> Download Evidence Doc</>
+                  )}                                      
+                </Button>                                                                                                                                                                                      
+                <Button                                                                                                                                                                                        
+                  onClick={onBack}                                                                                                                                                                             
+                  variant="outline"                                                                                                                                                                            
+                  className="h-12 px-6 border-[#E5E5E5] text-[#666666] hover:bg-[#F5F0EB] rounded-full gap-2"
+                >                                                                                                                                                                                              
+                  <Edit className="w-4 h-4" /> Edit Model
+                </Button>                                                                                                                                                                                      
+              </motion.div>                                 
+                                                                                                                                                                                                               
+              <p className="text-center text-xs text-[#888888]">
+                Evidence doc reflects current realized values, forecast scenarios, and pricing comparisons exactly as configured.
+              </p>                                           
+            </>                                                                                                                                                                                                
+          )}                                              
+        </div>                                                                                                                                                                                                 
+      </div>                                     
+    );                                                                                                                                                                                                         
+  }                                      
+
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Update MeasurePDFExport.tsx rendering        
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/components/measure/MeasurePDFExport.tsx  
+                                                          
+  The existing PDF rendering is organized by domain/chapter. Update it to read the new MeasurePDFData shape. PRESERVE the cover page exactly — only modify body sections.
+                                                          
+  Specific section changes:                                  
+                                                                                                                                                                                                               
+  3.1 — Cover page: NO CHANGES. The first page rendering (org name, careSettingLabel, monthsLive, date, Abridge branding) stays identical. If existing field names differ from new MeasurePDFData fields, only
+  update the field name binding — visual rendering unchanged.                                                                                                                                                  
+                                                          
+  3.2 — Executive Summary page (typically page 2): replace the legacy headline numbers with:                                                                                                                   
+  - "Realized today": data.totalRealized                                                                                                                                                                       
+  - "Projected at scale": data.combinedAnnualTotal                                                                                                                                                             
+  - "Drivers tracked": data.driversTrackedCount                                                                                                                                                                
+  - If data.bestPricingNet exists: "Net under recommended pricing": data.bestPricingNet
+  - Live duration caption (if data.monthsLive): "{monthsLive} months live on Abridge"                                                                                                                          
+                                                        
+  3.3 — Replace legacy "Domains" section with "Realized Value by Quadrant":                                                                                                                                    
+                                                                                                                                                                                                               
+  For each quadrant in data.quadrants, render a sub-section in this order: Capacity → Workforce → Revenue → Quality.
+                                                                                                                                                                                                               
+  Per quadrant:                                              
+  - Header: Quadrant name (red accent), realized total ("$X realized")                                                                                                                                         
+  - For each driver in the quadrant:                                                                                                                                                                           
+    - Label + shortDescription (small gray)                                                                                                                                                                    
+    - "$" badge if visibility === 'quantified'                                                                                                                                                                 
+    - For QUANTIFIED drivers: a calc breakdown row showing                                                                                                                                                     
+      - Without Abridge → With Abridge: {withoutAbridge} → {withAbridge} {deltaUnit}                                                                                                                           
+      - Δ {delta} {deltaUnit} × {valuePerUnitPrefix}{valuePerUnit} {valuePerUnitLabel} × {attributionPercent}% attribution × {realizationPercent}% realization
+      - = {realizedValue} (in red)                                                                                                                                                                             
+    - For QUALITATIVE drivers: notes field if present, plus "Tracked qualitatively — no financial value modeled"
+    - For drivers with isMonthlyMode === true and monthlyData with 2+ points: render the monthly trend chart inline (or as a sparkline). Reuse the existing MeasureTrendChart logic if available, or render a  
+  simple SVG line chart with the monthly data.               
+  - If quadrant has no drivers: "No drivers tracked in this quadrant" italic gray                                                                                                                              
+  - If realizedTotal is 0 across the quadrant (only qualitative drivers): "Tracked qualitatively only" caption                                                                                                 
+                                                                                                                                                                                                               
+  3.4 — Add a "Forecast" section after the quadrant sections:                                                                                                                                                  
+                                                                                                                                                                                                               
+  Header: "Forecast at Scale"                                                                                                                                                                                  
+  Body shows a table or stat row:                                                                                                                                                                              
+  - Baseline → Projected for each scenario axis:                                                                                                                                                               
+    - Providers: data.forecastBaseline.providers → data.forecastProjected.providers                                                                                                                            
+    - Utilization: data.forecastBaseline.utilizationPercent% → data.forecastProjected.utilizationPercent%                                                                                                      
+    - Encounters (non-nursing): data.forecastBaseline.encounters → data.forecastProjected.encounters                                                                                                           
+    - Beds (nursing): data.forecastBaseline.staffedBeds → data.forecastProjected.staffedBeds                                                                                                                   
+    - Occupancy (nursing): data.forecastBaseline.occupancyPercent% → data.forecastProjected.occupancyPercent%                                                                                                  
+  - Then: "Projected combined annual value: {data.totalProjected}"                                                                                                                                             
+  - If addedSettingsTotal > 0: "+ {addedSettingsTotal} from modeled expansions = {combinedAnnualTotal} combined"
+                                                                                                                                                                                                               
+  3.5 — Add a "Modeled Expansions" section if data.addedSettings.length > 0:                                                                                                                                   
+                                                                                                                                                                                                               
+  For each added setting:                                                                                                                                                                                      
+  - Setting name + scenario badge ("Typical" / "Conservative" / "Optimistic")                                                                                                                                  
+  - Provider count + (encounters or beds) + utilization                                                                                                                                                        
+  - Estimated annual value (with "(overridden)" tag if isOverridden)                                                                                                                                           
+                                                                                                                                                                                                               
+  3.6 — Add a "Pricing Comparison" section if data.pricingScenarios.length > 0:                                                                                                                                
+                                                            
+  Table or card list per scenario:                                                                                                                                                                             
+  - Label + "★ Best Value" if isBestValue                                                                                                                                                                      
+  - Model: data.modelLabel (e.g., "Per Provider / Month")    
+  - Tier table: each row shows "From – To: $rate {rateSuffix}", with the appliedTier highlighted                                                                                                               
+  - Caption: "At {scale} {scaleLabel}, applies tier ..."                                                                                                                                                       
+  - Row of: Investment, Net, ROI                                                                                                                                                                               
+                                                                                                                                                                                                               
+  If a warning exists, show: "⚠ {warning}"                                                                                                                                                                     
+                                                                                                                                                                                                               
+  If data.bestPricingScenarioLabel exists, add a callout box:
+  "Recommended at this scale: {label}. Investment {bestPricingInvestment}, net {bestPricingNet} annual."                                                                                                       
+                                                                                                                                                                                                               
+  3.7 — Methodology page: update the existing methodology copy:                                                                                                                                                
+  - Reference attribution + realization framework                                                                                                                                                              
+  - Note that monthly trend charts (where rendered) use latest-month values for the financial calculation                                                                                                      
+  - Pricing scenarios use stepped tier math (all units price at the matched tier rate, not graduated)                                                                                                          
+  - Forecast projections scale per driver based on its scaleAxis (providers, encounters, or patient days)
+  - Added settings use per-setting heuristic value-per-provider estimates (Conservative / Typical / Optimistic)                                                                                                
+  - Remove any references to legacy structure (state.metricValues, state.enabledMetrics, ALOS-based calculations, etc.) if they're called out by name
+                                                                                                                                                                                                               
+  3.8 — Remove orphaned legacy sections: search MeasurePDFExport.tsx for references to "MeasureAllocate", "Five financial streams", "Billing Capture / Revenue Recovery / HCC Capture / Patient Flow / Cost    
+  Reduction" (the legacy stream taxonomy). These sections should be replaced by the quadrant taxonomy. If any survive, remove them.                                                                            
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Verification of cover page preservation                                                                                                                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  After all changes:                                                                                                                                                                                           
+  1. Search MeasurePDFExport.tsx for the cover page rendering function (typically the first page or named like `renderCover`, `coverPage`, or similar).                                                        
+  2. Confirm NO changes were made to cover page layout, fonts, colors, logo placement, or organization name binding.                                                                                           
+  3. Only field name updates (e.g., binding to data.organizationName instead of legacy field) are acceptable IF the existing field name no longer exists in the new MeasurePDFData type. Visual rendering must 
+  be identical.                                                                                                                                                                                                
+                                                            
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  Walk Outpatient through the full Measure flow with realistic data:                                                                                                                                           
+  - Setup: 50 providers, 70% util, 100K encounters, 8 months live, org "Acme Health"                                                                                                                           
+  - Capacity: add Patient Access (without 100K visits, with 110K visits, valuePerUnit $250, attribution 80%, realization 80%) → ~$1.6M realized                                                                
+  - Workforce: add Provider Wellbeing in monthly mode with 3 months of data                                                                                                                                    
+  - Revenue: add wRVU + HCC + Denials with various values                                                                                                                                                      
+  - Quality: add 2 qualitative drivers (Cognitive Load, Audit Compliance)
+  - Forecast: scale providers 50→200, utilization stays 70%, encounters 100K→400K                                                                                                                              
+  - Modeled Expansions: add ED with 25 physicians, Typical scenario, computed ~$3.5M
+  - Pricing Comparison: add 2 scenarios — Current (per-provider $1500/mo single tier) and Alternative (per-encounter $0.45 with stepped tier above 200K @ $0.40)                                               
+                                                             
+  On Step 7 (Outcome Summary):                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  1. Hero stats show: Realized Today $1.6M+, Projected at Scale $X (combined), Best Pricing net (under whichever is cheaper)                                                                                   
+  2. Per-quadrant cards show realized totals for each                                                                                                                                                          
+  3. "Download Evidence Doc" button is primary CTA. Click it.                                                                                                                                                  
+  4. PDF generates and downloads.                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Inspect the PDF:                                                                                                                                                                                             
+  1. **Cover page**: identical to before (org name "Acme Health", date today, careSettingLabel "Outpatient", months live "8", logo unchanged).                                                                 
+  2. **Executive Summary** page: $1.6M+ realized, combined annual, drivers tracked count, months live caption.                                                                                                 
+  3. **Realized Value by Quadrant** section: 4 sub-sections in order Capacity / Workforce / Revenue / Quality. Each driver shows the calc breakdown. Provider Wellbeing renders its monthly trend (sparkline or
+   chart). Qualitative drivers show notes only.              
+  4. **Forecast at Scale** section: shows axes baseline → projected. Combined annual total reflects forecast + expansion.                                                                                      
+  5. **Modeled Expansions** section: ED card with provider count, scenario, estimated value.                                                                                                                   
+  6. **Pricing Comparison** section: 2 scenarios listed. Best Value badge on the cheaper one. Tier tables visible. Recommendation callout.                                                                     
+  7. **Methodology** section: references attribution, realization, stepped tier math, scaleAxis. No legacy "Five financial streams" copy. No "Aggressive" labels (all "Optimistic").                           
+                                                                                                                                                                                                               
+  Edge cases:                                                                                                                                                                                                  
+  - **Empty Measure session** (no drivers tracked, no forecast adjustments, no pricing scenarios): MeasureOutput shows "Build the evidence first" empty state with "Back to Forecast" button. PDF download not 
+  triggered. ✓                                                                                                                                                                                                 
+  - **Forecast unchanged** (projected = baseline): Forecast section in PDF shows "no projected scale change" or omits axes that didn't move.                                                                   
+  - **No pricing scenarios**: Pricing Comparison section omitted entirely from PDF (don't render the section header if no scenarios).                                                                          
+  - **Single pricing scenario**: Pricing section renders the one scenario but no Best Value badge (badge only appears with 2+).                                                                                
+  - **Nursing setting**: Hero stats and forecast section show beds/occupancy in addition to/instead of encounters.                                                                                             
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - Cover page preservation is critical. If unsure whether a change touches the cover, leave the existing code alone.                                                                                          
+  - Some MeasureState field names (organizationName, deployment.monthsLive, etc.) may differ in the actual codebase — adapt to the existing field paths. The PDF data construction is the integration point; if
+   a field doesn't exist, use undefined or sensible defaults.
+  - The MeasureTrendChart component built in Sprint 3C may not render directly inside the PDF (depends on the PDF library — react-pdf uses different primitives than DOM-based recharts). For the PDF, you may 
+  need to render a simplified inline SVG line chart or static sparkline. If the existing PDF library supports SVG embedding, use the same data shape that MeasureTrendChart consumes.                          
+  - The legacy MeasurePDFExport may use a static template engine. Adapt as needed — the goal is visual parity with the cover page and faithful rendering of the new data shape in body sections.               
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  SPRINT 3 COMPLETE                                                                                                                                                                                            
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  After 3H ships, the entire Sprint 3 series is done:                                                                                                                                                          
+                                                                                                                                                                                                               
+    3A → 7-phase Measure flow with quadrant placeholders  
+    3B → Per-driver With/Without snapshot entry + realized $ math                                                                                                                                              
+    3C → Monthly trend mode per driver                    
+    3E → Multi-axis forecast engine                                                                                                                                                                            
+    3F → Care setting expansion in forecast                                                                                                                                                                    
+    3G → Pricing model comparison with stepped tiers         
+    3H → Measure PDF (this sprint)                                                                                                                                                                             
+                                                             
+  Together with Sprint 2 (Explore restructure) and Sprint 1 (mechanical fixes), the ROI Calculator now has a coherent through-line: the same vocabulary (4 quadrants), drivers, calc engine, and tone across   
+  pre-sale (Explore) and post-sale (Measure). Brad's product vision is fully delivered.
