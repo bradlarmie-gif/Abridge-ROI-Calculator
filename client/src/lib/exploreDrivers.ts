@@ -307,6 +307,17 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'edPressGaneyEnabled',
     expandedStateKey: 'edPressGaneyExpanded',
   },
+  {
+    id: 'edProviderCommunication',
+    label: 'Provider Communication',
+    shortDescription: 'Patient-reported provider communication scores from HCAHPS or Press Ganey communication subscales. ED-specific patient experience signal.',
+    quadrant: 'Quality',
+    settings: ['ed'],
+    visibility: 'qualitative',
+    enabledStateKey: 'edProviderCommunicationEnabled',
+    expandedStateKey: 'edProviderCommunicationExpanded',
+    trackedMeasureIds: ['pressGaney'],
+  },
   // IP (qualitative)
   {
     id: 'ipNoteStarRating',
@@ -758,7 +769,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: ['diagnosisSpecificity'],
   },
 
-  // ED Capacity (qualitative)
+  // ED Capacity (qualitative — 3 drivers, expanded by R-IA-4)
   {
     id: 'edDoorToProvider',
     label: 'Door-to-Provider Time',
@@ -770,8 +781,41 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'edDoorToProviderExpanded',
     trackedMeasureIds: ['doorToProvider'],
   },
+  {
+    id: 'edDoorToDisposition',
+    label: 'Door-to-Disposition Time',
+    shortDescription: 'Minutes from patient arrival to admit/discharge decision. A throughput indicator that reflects the full ED decision cycle.',
+    quadrant: 'Capacity',
+    settings: ['ed'],
+    visibility: 'qualitative',
+    enabledStateKey: 'edDoorToDispositionEnabled',
+    expandedStateKey: 'edDoorToDispositionExpanded',
+    trackedMeasureIds: ['doorToDisposition'],
+  },
+  {
+    id: 'edBedTurnover',
+    label: 'Bed Turnover Time',
+    shortDescription: 'Minutes between patient discharge and bed becoming ready for the next patient. Tracks ED operational efficiency and boarding pressure.',
+    quadrant: 'Capacity',
+    settings: ['ed'],
+    visibility: 'qualitative',
+    enabledStateKey: 'edBedTurnoverEnabled',
+    expandedStateKey: 'edBedTurnoverExpanded',
+    trackedMeasureIds: [],
+  },
 
-  // ED Workforce (qualitative)
+  // ED Workforce (qualitative — 3 drivers, expanded by R-IA-4)
+  {
+    id: 'edAfterHoursDoc',
+    label: 'After-Hours Documentation',
+    shortDescription: 'Time providers spend in the EHR outside scheduled shift hours. A widely used signal for documentation burden in shift-based settings.',
+    quadrant: 'Workforce',
+    settings: ['ed'],
+    visibility: 'qualitative',
+    enabledStateKey: 'edAfterHoursDocEnabled',
+    expandedStateKey: 'edAfterHoursDocExpanded',
+    trackedMeasureIds: ['workOutsideWorkEmpirical'],
+  },
   {
     id: 'edBurnoutTracking',
     label: 'Burnout Score',
@@ -795,7 +839,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: ['likelihoodToStay'],
   },
 
-  // ED Revenue (qualitative)
+  // ED Revenue (qualitative — 3 drivers, expanded by R-IA-4)
   {
     id: 'edCleanClaim',
     label: 'Clean Claim Rate',
@@ -806,6 +850,28 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'edCleanClaimEnabled',
     expandedStateKey: 'edCleanClaimExpanded',
     trackedMeasureIds: ['cleanClaim'],
+  },
+  {
+    id: 'edEmLevelDistribution',
+    label: 'E&M Level Distribution Shift',
+    shortDescription: 'Distribution of ED E/M codes (99281-99285) across encounters. A shift toward higher-level codes can indicate documentation more fully reflects visit complexity.',
+    quadrant: 'Revenue',
+    settings: ['ed'],
+    visibility: 'qualitative',
+    enabledStateKey: 'edEmLevelDistributionEnabled',
+    expandedStateKey: 'edEmLevelDistributionExpanded',
+    trackedMeasureIds: ['emLevel'],
+  },
+  {
+    id: 'edCdiQueryTrend',
+    label: 'CDI Query Volume Trend',
+    shortDescription: 'Volume of CDI queries returned to ED providers post-visit. Decreasing query volume often signals more complete documentation at the point of care.',
+    quadrant: 'Revenue',
+    settings: ['ed'],
+    visibility: 'qualitative',
+    enabledStateKey: 'edCdiQueryTrendEnabled',
+    expandedStateKey: 'edCdiQueryTrendExpanded',
+    trackedMeasureIds: [],
   },
 
   // IP Capacity (qualitative)

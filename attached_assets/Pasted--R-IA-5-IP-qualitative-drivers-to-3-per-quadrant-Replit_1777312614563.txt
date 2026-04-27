@@ -1,0 +1,195 @@
+  🔧 R-IA-5 — IP qualitative drivers to 3 per quadrant (Replit prompt — paste verbatim)
+                                                                                                                                                                                                               
+  Context: After R-IA-3 (OP) and R-IA-4 (ED) trimmed those settings to exactly 3 qualitative drivers per quadrant, this prompt does the same for IP. Two existing drivers are removed (ALOS and Likelihood to
+  Stay) and 6 new ones are added. Drops ALOS because length of stay is influenced by many non-documentation factors (post-acute placement, family logistics, insurance auth) and isn't reliably moveable by    
+  Abridge. Replaces with documentation-timeliness items genuinely tied to clinical workflow. Quality is already at 3 — unchanged.
+                                                                                                                                                                                                               
+  Pre-req: R-IA-3 and R-IA-4 shipped.                                           
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════ 
+  TASK 1 — Remove deprecated IP qualitative state fields                                                                                                                                                       
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                
+  REMOVE these enabled/expanded boolean field pairs from the TimeDriverInputs interface AND from DEFAULT_EXPLORE_STATE.timeDriverInputs:                                                                       
+                                                                                                                                                                                                               
+    ipAlosTrackingEnabled / ipAlosTrackingExpanded            
+    ipLikelihoodToStayEnabled / ipLikelihoodToStayExpanded                                                                                                                                                     
+                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Add new IP qualitative state fields                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                                                                                                                                               
+  ADD these enabled/expanded boolean pairs to TimeDriverInputs and to DEFAULT_EXPLORE_STATE.timeDriverInputs (default `false`):                                                                                
+                                                                                
+    // IP Capacity (new)                                                                                                                                                                                       
+    ipDocumentationLagEnabled: boolean;                                                                                                                                                                        
+    ipDocumentationLagExpanded: boolean;                      
+    ipDischargeSummaryTimeEnabled: boolean;                                                                                                                                                                    
+    ipDischargeSummaryTimeExpanded: boolean;                                    
+    // IP Workforce (new)                                                                                                                                                                                      
+    ipAfterHoursDocEnabled: boolean;                                                                                                                                                                           
+    ipAfterHoursDocExpanded: boolean;                                                                                                                                                                          
+    ipTimeToSignNoteEnabled: boolean;                                                                                                                                                                          
+    ipTimeToSignNoteExpanded: boolean;                                          
+    // IP Revenue (new)                                                                                                                                                                                        
+    ipCcMccCaptureEnabled: boolean;                       
+    ipCcMccCaptureExpanded: boolean;                                                                                                                                                                           
+    ipCdiQueryTrendEnabled: boolean;                                                                                                                                                                           
+    ipCdiQueryTrendExpanded: boolean;                         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Remove deprecated IP driver entries from EXPLORE_DRIVERS
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                                        
+                                                                                                                                                                                                               
+  REMOVE these driver entries (find by id):                
+                                                                                                                                                                                                               
+    ipAlosTracking                                                                                                                                                                                             
+    ipLikelihoodToStay                                        
+                                                                                                                                                                                                               
+  KEEP these existing IP qualitative drivers:                                                                                                                                                                  
+                                                           
+    roundingEfficiency           (Capacity — keep)                                                                                                                                                             
+    ipBurnoutTracking            (Workforce — keep)                                                                                                                                                            
+    ipCmiTracking                (Revenue — keep)                                                                                                                                                              
+    ipNoteStarRating             (Quality — keep)                                                                                                                                                              
+    ipHcahpsComposite            (Quality — keep)                               
+    ipReadmission                (Quality — keep)          
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════ 
+  TASK 4 — Add 6 new IP qualitative driver entries                                                                                                                                                             
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                              
+  APPEND these driver entries to the EXPLORE_DRIVERS array. All have `visibility: 'qualitative'`, no calcComponent, no measureDefaults. Voice is neutral.                                                      
+                                                                                                                                                                                                               
+    // ───── IP Capacity (new) ─────                                                                                                                                                                           
+    {                                                                                                                                                                                                          
+      id: 'ipDocumentationLag',                                                                                                                                                                                
+      label: 'Documentation Lag',                                                                                                                                                                              
+      shortDescription: 'Hours from clinical event to signed note. Faster documentation makes current information available to consulting physicians, care managers, and discharge planners — capacity follows
+  information flow.',                                                                                                                                                                                          
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['inpatient'],                                
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipDocumentationLagEnabled',                             
+      expandedStateKey: 'ipDocumentationLagExpanded',                                                                                                                                                          
+      trackedMeasureIds: [],                                                    
+    },                                                        
+    {                                                                                                                                                                                                          
+      id: 'ipDischargeSummaryTime',                           
+      label: 'Discharge Summary Completion Time',                                                                                                                                                              
+      shortDescription: 'Hours from discharge order to signed discharge summary. Bed turnover and downstream care transitions depend on completed documentation.',                                             
+      quadrant: 'Capacity',                                   
+      settings: ['inpatient'],                                                                                                                                                                                 
+      visibility: 'qualitative',                                                
+      enabledStateKey: 'ipDischargeSummaryTimeEnabled',                                                                                                                                                        
+      expandedStateKey: 'ipDischargeSummaryTimeExpanded',                       
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                                                                                                                                                                         
+                                                              
+    // ───── IP Workforce (new) ─────                                                                                                                                                                          
+    {                                                                                                                                                                                                          
+      id: 'ipAfterHoursDoc',                                                                                                                                                                                   
+      label: 'After-Hours Documentation',                                                                                                                                                                      
+      shortDescription: 'Time hospitalists spend in the EHR outside scheduled shift hours. A widely used signal for documentation burden in hospital medicine.',
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['inpatient'],                             
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipAfterHoursDocEnabled',                                                                                                                                                               
+      expandedStateKey: 'ipAfterHoursDocExpanded',            
+      trackedMeasureIds: ['workOutsideWorkEmpirical'],                                                                                                                                                         
+    },                                                                          
+    {                                                         
+      id: 'ipTimeToSignNote',                                                                                                                                                                                  
+      label: 'Time to Sign Note',                                                                                                                                                                              
+      shortDescription: 'Hours from encounter completion to signed note. Hospitalists have a CMS 24-hour H&P signature requirement; this metric tracks compliance and workflow burden.',                       
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['inpatient'],                                                  
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipTimeToSignNoteEnabled',                                                                                                                                                              
+      expandedStateKey: 'ipTimeToSignNoteExpanded',                                                                                                                                                            
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                                                                                                                                                                         
+                                                          
+    // ───── IP Revenue (new) ─────                                                                                                                                                                            
+    {                                                                                                                                                                                                          
+      id: 'ipCcMccCapture',                                                                                                                                                                                    
+      label: 'CC/MCC Capture Trend',                                                                                                                                                                           
+      shortDescription: 'Trend in complication / major-complication capture rate across admissions. CC and MCC documentation drives DRG weighting and inpatient reimbursement.',                               
+      quadrant: 'Revenue',                                
+      settings: ['inpatient'],                                                                                                                                                                                 
+      visibility: 'qualitative',                                                
+      enabledStateKey: 'ipCcMccCaptureEnabled',               
+      expandedStateKey: 'ipCcMccCaptureExpanded',             
+      trackedMeasureIds: ['ccMccCapture'],                                                                                                                                                                     
+    },                                                        
+    {                                                                                                                                                                                                          
+      id: 'ipCdiQueryTrend',                                                                                                                                                                                   
+      label: 'CDI Query Volume Trend',                                                                                                                                                                         
+      shortDescription: 'Volume of CDI queries returned to providers per admission. Decreasing query volume often signals more complete documentation at the point of care.',                                  
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['inpatient'],                                                                                                                                                                                 
+      visibility: 'qualitative',                              
+      enabledStateKey: 'ipCdiQueryTrendEnabled',                                                                                                                                                               
+      expandedStateKey: 'ipCdiQueryTrendExpanded',                              
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                        
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Sanity check                                       
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                
+  Grep client/src/ for the removed driver IDs:                                                                                                                                                                 
+                                                                                                                                                                                                               
+    ipAlosTracking                                            
+    ipLikelihoodToStay                                                                                                                                                                                         
+                                                                                
+  These should now appear ONLY in the deletions above. If any active code path still references them, that's dead code — remove the reference. Legacy files (ExploreCareQuality, ExploreDocQuality,
+  ExploreValueDrivers) are unwired — leave those alone.                                                                                                                                                        
+                                                              
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                                                  
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                
+  1. TypeScript compiles. New TimeDriverInputs fields are typed; defaults present in DEFAULT_EXPLORE_STATE. Removed fields don't appear anywhere.
+                                                                                                                                                                                                               
+  2. Walk an Inpatient session through each quadrant page:    
+     - **Capacity (4/9)**:                                                                                                                                                                                     
+       - Financial Drivers section is HIDDEN (IP Capacity has only qualitative drivers — Rounding Efficiency was always qualitative, no financial driver exists for IP Capacity)
+       - Other Metrics to Watch: Rounding Efficiency · Documentation Lag · Discharge Summary Completion Time
+       - Total qualitative items: exactly 3 ✓                 
+     - **Workforce (5/9)**:                                   
+       - Financial Drivers: Provider Wellbeing (with Locum/Agency child)                                                                                                                                       
+       - Other Metrics to Watch: After-Hours Documentation · Burnout Score · Time to Sign Note
+       - Total qualitative items: exactly 3 ✓                                                                                                                                                                  
+     - **Revenue (6/9)**:                                                       
+       - Financial Drivers: DRG Accuracy · CDI Query Reduction · Observation/IP Status Defense · E/M Coding Accuracy                                                                                           
+       - Other Metrics to Watch: Case Mix Index · CC/MCC Capture Trend · CDI Query Volume Trend                                                                                                                
+       - Total qualitative items: exactly 3 ✓                                                                                                                                                                  
+     - **Quality (7/9)**:                                                                                                                                                                                      
+       - Financial Drivers section is HIDDEN                                                                                                                                                                   
+       - Other Metrics to Watch: Note Quality (Star Rating) · HCAHPS Composite · 30-Day Readmission                                                                                                            
+       - Unchanged from current state — already at 3 ✓                          
+                                                                                                                                                                                                               
+  3. Right-panel summary on each IP page lists the new drivers under "Other Metrics" sub-header. Toggle a few on and confirm they show as "Qualitative."                                                       
+                                                                                                                                                                                                               
+  4. Step 9 Model — toggle a couple of new IP qualitative drivers and confirm they appear as "Qualitative" line items in the matching quadrant card. Quadrant Total math is unaffected (qualitative = no $).   
+                                                                                                                                                                                                               
+  5. Walk OP, ED, Nursing — confirm THEIR pages are untouched and still render correctly with their existing drivers.                                                                                          
+                                                                                
+  6. Confirm Average Length of Stay is no longer toggleable on the IP Capacity page. Confirm Likelihood to Stay is no longer toggleable on the IP Workforce page.                                              
+                                                                                                                                                                                                               
+  7. No console errors. No TypeScript errors.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - Three of the new IP drivers (After-Hours Documentation, CDI Query Volume Trend, similar themes to OP/ED) intentionally mirror the same labels and short descriptions used in OP and ED. Buyers see
+  consistent vocabulary across physician settings.                                                                                                                                                             
+  - IP Capacity has NO financial driver — Rounding Efficiency was always qualitative, and the new pair (Documentation Lag, Discharge Summary Time) are also qualitative. The page renders Financial Drivers
+  section as hidden (same pattern as Quality on OP/ED/IP).                                                                                                                                                     
+  - IP Workforce intentionally drops Likelihood to Stay because Burnout Score covers the same retention-leading-indicator territory and Time to Sign Note is hospitalist-specific (CMS 24-hour H&P requirement
+  is a real workflow lever).                                                                                                                                                                                   
+  - IP Revenue's CC/MCC Capture Trend complements the financial DRG Accuracy driver (which models the $ from documentation completeness) — CC/MCC tracking shows the underlying mechanism as a tracking metric.
+  - IP Quality is intentionally unchanged. It already had 3 qualitative drivers (Note Star Rating · HCAHPS Composite · 30-Day Readmission) which fit the Quality theme correctly.  

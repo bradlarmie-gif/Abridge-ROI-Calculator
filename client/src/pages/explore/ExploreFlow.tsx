@@ -180,11 +180,13 @@ export interface TimeDriverInputs {
   opNoteStarRatingExpanded: boolean;
   opDiagnosisCaptureEnabled: boolean;
   opDiagnosisCaptureExpanded: boolean;
-  // ED qualitative Quality drivers
+  // ED qualitative Quality drivers (3 — expanded by R-IA-4)
   edNoteStarRatingEnabled: boolean;
   edNoteStarRatingExpanded: boolean;
   edPressGaneyEnabled: boolean;
   edPressGaneyExpanded: boolean;
+  edProviderCommunicationEnabled: boolean;
+  edProviderCommunicationExpanded: boolean;
   // IP qualitative Quality drivers
   ipNoteStarRatingEnabled: boolean;
   ipNoteStarRatingExpanded: boolean;
@@ -223,17 +225,27 @@ export interface TimeDriverInputs {
   opCdiQueryTrendExpanded: boolean;
   opCodingSpecificityEnabled: boolean;
   opCodingSpecificityExpanded: boolean;
-  // ED Capacity qualitative
+  // ED Capacity qualitative (3 — expanded by R-IA-4)
   edDoorToProviderEnabled: boolean;
   edDoorToProviderExpanded: boolean;
-  // ED Workforce qualitative
+  edDoorToDispositionEnabled: boolean;
+  edDoorToDispositionExpanded: boolean;
+  edBedTurnoverEnabled: boolean;
+  edBedTurnoverExpanded: boolean;
+  // ED Workforce qualitative (3 — expanded by R-IA-4)
+  edAfterHoursDocEnabled: boolean;
+  edAfterHoursDocExpanded: boolean;
   edBurnoutTrackingEnabled: boolean;
   edBurnoutTrackingExpanded: boolean;
   edLikelihoodToStayEnabled: boolean;
   edLikelihoodToStayExpanded: boolean;
-  // ED Revenue qualitative
+  // ED Revenue qualitative (3 — expanded by R-IA-4)
   edCleanClaimEnabled: boolean;
   edCleanClaimExpanded: boolean;
+  edEmLevelDistributionEnabled: boolean;
+  edEmLevelDistributionExpanded: boolean;
+  edCdiQueryTrendEnabled: boolean;
+  edCdiQueryTrendExpanded: boolean;
   // IP Capacity qualitative
   ipAlosTrackingEnabled: boolean;
   ipAlosTrackingExpanded: boolean;
@@ -544,6 +556,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edNoteStarRatingExpanded: false,
     edPressGaneyEnabled: false,
     edPressGaneyExpanded: false,
+    edProviderCommunicationEnabled: false,
+    edProviderCommunicationExpanded: false,
     ipNoteStarRatingEnabled: false,
     ipNoteStarRatingExpanded: false,
     ipHcahpsCompositeEnabled: false,
@@ -577,12 +591,22 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     opCodingSpecificityExpanded: false,
     edDoorToProviderEnabled: false,
     edDoorToProviderExpanded: false,
+    edDoorToDispositionEnabled: false,
+    edDoorToDispositionExpanded: false,
+    edBedTurnoverEnabled: false,
+    edBedTurnoverExpanded: false,
+    edAfterHoursDocEnabled: false,
+    edAfterHoursDocExpanded: false,
     edBurnoutTrackingEnabled: false,
     edBurnoutTrackingExpanded: false,
     edLikelihoodToStayEnabled: false,
     edLikelihoodToStayExpanded: false,
     edCleanClaimEnabled: false,
     edCleanClaimExpanded: false,
+    edEmLevelDistributionEnabled: false,
+    edEmLevelDistributionExpanded: false,
+    edCdiQueryTrendEnabled: false,
+    edCdiQueryTrendExpanded: false,
     ipAlosTrackingEnabled: false,
     ipAlosTrackingExpanded: false,
     ipBurnoutTrackingEnabled: false,
