@@ -1,0 +1,184 @@
+ 🔧 Sprint 2G — Replit prompt (paste verbatim)            
+                                                                                                                                                                                                               
+  Context: For per-encounter pricing, today's investment number is computed once (annualEncounters × costPerEncounter) and reused across all 3 years on the 3-Year Projection. That's wrong if encounter volume
+   is projected to grow. This sprint projects encounter volume forward using the same Y2/Y3 growth percentages from Sprint 2F, recalculates investment per year for per-encounter pricing, and surfaces net    
+  value per year on the 3-Year Projection cards.             
+                                                                                                                                                                                                               
+  Pre-req: Sprints 2A through 2F shipped.                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Add per-year encounter projections in ExploreModel                                                                                                                                                  
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreModel.tsx                                                                                                                                                              
+                                                          
+  ADD these useMemo blocks after the year1Value / year2Value / year3Value memos from Sprint 2F:                                                                                                                
+                                                                                                                                                                                                               
+  const year1Encounters = useMemo(() => state.annualEncounters, [state.annualEncounters]);
+                                                                                                                                                                                                               
+  const year2Encounters = useMemo(() => {                   
+    return Math.round(year1Encounters * (1 + state.year2GrowthPercent / 100));                                                                                                                                 
+  }, [year1Encounters, state.year2GrowthPercent]);          
+                                                                                                                                                                                                               
+  const year3Encounters = useMemo(() => {                                                                                                                                                                      
+    return Math.round(year2Encounters * (1 + state.year3GrowthPercent / 100));                                                                                                                                 
+  }, [year2Encounters, state.year3GrowthPercent]);                                                                                                                                                             
+                                                        
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Add per-year investment projections               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreModel.tsx       
+                                                                                                                                                                                                               
+  The existing `annualInvestment` (already a prop or computed locally) represents Y1. Add Y2 and Y3 projections that vary by pricing model:
+  - per-encounter: scales with year-N encounter volume                                                                                                                                                         
+  - per-provider / per-bed: constant (no provider growth modeled in this sprint)
+  - annual license: constant                                                                                                                                                                                   
+  - one-time implementation fee: applies to Y1 only, never to Y2/Y3 (it's already Y1-only in current code, just confirm)
+                                                                                                                                                                                                               
+  ADD these useMemo blocks (place near the encounter projections from Task 1):
+                                                                                                                                                                                                               
+  const year1Investment = useMemo(() => annualInvestment, [annualInvestment]);                                                                                                                                 
+                                                                                                                                                                                                               
+  const year2Investment = useMemo(() => {                                                                                                                                                                      
+    if (state.pricingModel === 'perEncounter') {                                                                                                                                                               
+      return Math.round(year2Encounters * state.costPerEncounter);                                                                                                                                             
+    }                                                                                                                                                                                                          
+    // per-provider, per-bed, annual license — constant across years for this sprint                                                                                                                           
+    return state.pricingModel === 'perProvider'                                                                                                                                                                
+      ? (state.careSetting === 'nursing' ? state.nursingStaffedBeds : state.numberOfProviders) * state.costPerProvider * 12                                                                                    
+      : state.annualLicenseFee;                             
+  }, [state.pricingModel, year2Encounters, state.costPerEncounter, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.careSetting]);                      
+                                                             
+  const year3Investment = useMemo(() => {                    
+    if (state.pricingModel === 'perEncounter') {                                                                                                                                                               
+      return Math.round(year3Encounters * state.costPerEncounter);
+    }                                                                                                                                                                                                          
+    return state.pricingModel === 'perProvider'           
+      ? (state.careSetting === 'nursing' ? state.nursingStaffedBeds : state.numberOfProviders) * state.costPerProvider * 12                                                                                    
+      : state.annualLicenseFee;                                                                                                                                                                                
+  }, [state.pricingModel, year3Encounters, state.costPerEncounter, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.careSetting]);                      
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Add per-year net value calculations                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreModel.tsx                                                                                                                                                              
+                                                                                                                                                                                                               
+  ADD these useMemo blocks after the investment projections:
+                                                                                                                                                                                                               
+  const year1Net = useMemo(() => year1Value - year1Investment, [year1Value, year1Investment]);                                                                                                                 
+  const year2Net = useMemo(() => year2Value - year2Investment, [year2Value, year2Investment]);                                                                                                                 
+  const year3Net = useMemo(() => year3Value - year3Investment, [year3Value, year3Investment]);                                                                                                                 
+                                                                                                                                                                                                               
+  const threeYearGrossTotal = useMemo(() => year1Value + year2Value + year3Value, [year1Value, year2Value, year3Value]);
+  const threeYearNetTotal = useMemo(() => year1Net + year2Net + year3Net, [year1Net, year2Net, year3Net]);                                                                                                     
+  const threeYearInvestmentTotal = useMemo(() => year1Investment + year2Investment + year3Investment, [year1Investment, year2Investment, year3Investment]);                                                    
+                                                             
+  If `threeYearTotal` was defined in Sprint 2F, RENAME it to `threeYearGrossTotal` (the existing 3-Year Total card on the projection should keep showing this gross number; net total is added separately).    
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Update 3-Year Projection cards                                                                                                                                                                      
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreModel.tsx (around lines 2797-2832)                                                                                                                                     
+                                                                                                                                                                                                               
+  The existing 3-Year Projection cards show 4 cards: Year 1, Year 2, Year 3, 3-Year Total. Each currently displays the gross value.                                                                            
+                                                                                                                                                                                                               
+  UPDATE each card to also show the net value below the gross. Pattern for each year card:                                                                                                                     
+                                                                                                                                                                                                               
+  - Headline: gross value (existing)                        
+  - Caption: existing caption from Sprint 2F (e.g., "+10% growth")                                                                                                                                             
+  - NEW: small line below: "Net: $X" where X = year-N net value
+  - NEW: even smaller line: "Investment: $Y" — only if pricing model is perEncounter (since other models have constant investment, showing it on each card adds noise)                                         
+                                                                                                                                                                                                               
+  For Year 1 specifically, also show "Includes $Z one-time" if there are one-time benefits (preserved from Sprint 2F).                                                                                         
+                                                                                                                                                                                                               
+  For the 3-Year Total card:                                
+  - Headline: threeYearGrossTotal (existing)                                                                                                                                                                   
+  - Caption: "gross value"                                  
+  - NEW: "Net: $threeYearNetTotal" line in larger emphasis                                                                                                                                                     
+  - NEW: "Investment: $threeYearInvestmentTotal" line                                                                                                                                                          
+                                                                                                                                                                                                               
+  Visual treatment for the net line under each card: use a subtle separator (1px line in light gray) above it. Net value in the brand red color (#EA2C00) when positive, neutral gray when negative or zero.   
+  Format as currency.                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Example JSX for a Year card:                          
+                                                            
+    <div className="bg-white border border-[#E5E5E5] rounded-xl p-5 text-center" data-testid={`projection-year-${yearNum}`}>                                                                                   
+      <p className="text-xs font-semibold text-[#888888] uppercase tracking-wide mb-2">Year {yearNum}</p>                                                                                                      
+      <p className="text-2xl font-bold text-black">{formatCurrency(yearValue)}</p>                                                                                                                             
+      <p className="text-xs text-[#888888] mt-1">{growthCaption}</p>                                                                                                                                           
+      <div className="h-px bg-[#F0EBE4] my-3" />             
+      <p className="text-sm">                                                                                                                                                                                  
+        <span className="text-[#888888]">Net: </span>        
+        <span className={`font-semibold ${yearNet >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`}>{formatCurrency(yearNet)}</span>
+      </p>                                                                                                                                                                                                     
+      {state.pricingModel === 'perEncounter' && (            
+        <p className="text-xs text-[#AAAAAA] mt-1">Investment: {formatCurrency(yearInvestment)}</p>                                                                                                            
+      )}                                                                                                                                                                                                       
+    </div>                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Update methodology / projection caption text                                                                                                                                                        
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreModel.tsx            
+                                                                                                                                                                                                               
+  If there's existing methodology copy explaining the projection, update it to be honest about the encounter scaling. Example new copy near the 3-Year Projection section:                                     
+                                                             
+    "Years 2 and 3 apply {state.year2GrowthPercent}% and {state.year3GrowthPercent}% growth to annual recurring value. For per-encounter pricing, encounter volume scales by the same percentages, so          
+  investment grows alongside value. For per-provider or annual-license pricing, investment is held constant across years."
+                                                            
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 6 — Update Hero Net Annual Value to clarify it's Year-1 only                                                                                                                                            
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreModel.tsx                                                                                                                                                              
+                                                            
+  The Hero's "Net Annual Value" stat already shows year1Net implicitly. Update its label or caption to make it clearer this is Year 1:                                                                         
+                                                             
+  Find the Hero block and update the caption under "Net Annual Value" (or whatever the label currently is) to read something like:                                                                             
+    "Year 1, including one-time benefits"                                                                                                                                                                      
+                                                            
+  OR change the label to "Net Year 1 Value" if that's clearer. Use whichever feels closer to existing brand voice.                                                                                             
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  1. TypeScript compiles. Watch for any places where threeYearTotal was used (needs to become threeYearGrossTotal).
+                                                                                                                                                                                                               
+  2. Per-Provider pricing test:                                                                                                                                                                                
+     - Set up a flow with totalAnnualValue = $500K, $25K one-time, perProvider pricing producing $100K annual investment                                                                                       
+     - Y1 card: Gross $525K, Net $425K, no Investment line shown                                                                                                                                               
+     - Y2 card: Gross $550K (+10%), Net $450K, no Investment line
+     - Y3 card: Gross $605K (+10%), Net $505K, no Investment line                                                                                                                                              
+     - 3-Year Total: Gross $1,680K, Net $1,380K, Investment $300K (3 × $100K)
+                                                                                                                                                                                                               
+  3. Per-Encounter pricing test:                             
+     - Same totals but pricing = perEncounter at $0.50/encounter, annualEncounters = 200K → annualInvestment = $100K                                                                                           
+     - Y1: Gross $525K, Net $425K, Investment $100,000      
+     - Y2: Gross $550K, Net = ?                                                                                                                                                                                
+       - Y2 encounters = 200K × 1.10 = 220K                                                                                                                                                                    
+       - Y2 investment = 220K × $0.50 = $110K                                                                                                                                                                  
+       - Y2 net = $550K - $110K = $440K                                                                                                                                                                        
+     - Y3:                                                                                                                                                                                                     
+       - Y3 encounters = 220K × 1.10 = 242K                                                                                                                                                                    
+       - Y3 investment = 242K × $0.50 = $121K                                                                                                                                                                  
+       - Y3 net = $605K - $121K = $484K                                                                                                                                                                        
+     - 3-Year Total: Gross $1,680K, Net $425+440+484 = $1,349K, Investment $100+110+121 = $331K                                                                                                                
+                                                                                                                                                                                                               
+  4. Annual License pricing test: investment stays flat across years (same as perProvider behavior — Investment line not shown on year cards).                                                                 
+                                                             
+  5. Empty state: per-year values all show $0 / $0 / $0. Net values also $0. No errors.                                                                                                                        
+                                                             
+  6. Switch pace from steady to aggressive (15%/15%):                                                                                                                                                          
+     - Encounters scale 200K → 230K → 264.5K (Y3)                                                                                                                                                              
+     - Per-encounter investment scales accordingly          
+     - All 3-Year Projection cards update live                                                                                                                                                                 
+                                                                                                                                                                                                               
+  7. Override Y2 to 20% manually:                                                                                                                                                                              
+     - Y2 encounters = 200K × 1.20 = 240K                                                                                                                                                                      
+     - Y2 investment (per-encounter) = $120K              
+     - Y2 net updates accordingly                                                                                                                                                                              
+                                                             
+  NOTES:                                                                                                                                                                                                       
+  - For nursing per-bed pricing, the calculation uses nursingStaffedBeds (not numberOfProviders) — verify the per-provider branch handles this correctly.
+  - One-time implementation fee (state.implementationFee, when state.includeImplementation is true) currently flows into Y1 investment only. That behavior is preserved — it doesn't recur in Y2/Y3.           
+  - Provider count growth is intentionally NOT modeled in this sprint. If a customer projects hiring more providers in Y2/Y3, that's a separate scaling axis we can layer in later if needed.                  
+  - The existing trajectory chart (pace-controlled) doesn't need investment-projection awareness — it shows value over time, not net. Leave it as-is. 

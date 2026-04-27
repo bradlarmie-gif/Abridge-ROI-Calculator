@@ -1,21 +1,26 @@
+import { useMemo } from "react";
 import { ArrowRight, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import DriverCard from "@/components/explore/DriverCard";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import PatientAccessCalc from "@/components/explore/drivers/PatientAccessCalc";
+import LwbsRecoveryCalc from "@/components/explore/drivers/LwbsRecoveryCalc";
+import AdmissionCaptureCalc from "@/components/explore/drivers/AdmissionCaptureCalc";
 import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
 import { type ExploreState, type OtherFinancialBenefitItem } from "./ExploreFlow";
 
 interface ExploreCapacityProps {
   state: ExploreState;
   updateState: (updates: Partial<ExploreState>) => void;
+  totalHoursSaved: number;
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
 }
 
-export default function ExploreCapacity({ state, updateState, onNext, onBack, onHome }: ExploreCapacityProps) {
+export default function ExploreCapacity({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreCapacityProps) {
   const setting = state.careSetting;
   const drivers = setting ? getDriversForPage('Capacity', setting) : [];
   const topLevelDrivers = drivers.filter(d => !d.childOfDriverId);
@@ -72,6 +77,66 @@ export default function ExploreCapacity({ state, updateState, onNext, onBack, on
   };
 
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
+
+  const renderCalcForDriver = (driverId: string) => {
+    switch (driverId) {
+      case 'patientAccess':
+        return <PatientAccessCalc state={state} updateTimeDriverInputs={updateTimeDriverInputs} totalHoursSaved={totalHoursSaved} />;
+      case 'lwbsRecovery':
+        return <LwbsRecoveryCalc state={state} updateTimeDriverInputs={updateTimeDriverInputs} />;
+      case 'admissionCapture':
+        return <AdmissionCaptureCalc state={state} updateTimeDriverInputs={updateTimeDriverInputs} />;
+      default:
+        return (
+          <div className="bg-[#F5F0EB] rounded-lg p-4">
+            <p className="text-sm text-[#888888] italic">Calculation logic for "{driverId}" not yet wired.</p>
+          </div>
+        );
+    }
+  };
+
+  const driverValues = useMemo(() => {
+    const result: Record<string, number> = {};
+    const td = state.timeDriverInputs;
+
+    if (td.patientAccessEnabled) {
+      const effectiveAccessProviders = Math.min(td.accessProviders || state.numberOfProviders, state.numberOfProviders);
+      const hrsPerProvPerWeek = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;
+      const reinvestRate = (td.capacityRealizationPercent ?? 25) / 100;
+      const visitDurationHrs = (td.visitDuration ?? 30) / 60;
+      const visitsPerWeek = visitDurationHrs > 0 ? Math.round((hrsPerProvPerWeek * reinvestRate / visitDurationHrs) * 10) / 10 : 0;
+      // Match PatientAccessCalc card formula exactly: round annual visits before multiplying by revenue
+      const annualVisits = Math.round(visitsPerWeek * effectiveAccessProviders * 48);
+      result.patientAccess = Math.round(annualVisits * td.revenuePerVisit);
+    }
+
+    if (td.edLwbsEnabled) {
+      const lwbsPatients = state.annualEncounters * (td.edLwbsRate / 100);
+      const recovered = lwbsPatients * (td.edLwbsReduction / 100);
+      result.lwbsRecovery = Math.round(recovered * td.edRevenuePerVisit * (td.edLwbsRealization / 100));
+    }
+
+    if (td.edThroughputEnabled && td.edLwbsEnabled) {
+      const lwbsPatients = state.annualEncounters * (td.edLwbsRate / 100);
+      const recovered = lwbsPatients * (td.edLwbsReduction / 100);
+      const admissions = recovered * (td.edAdmissionRate / 100);
+      result.admissionCapture = Math.round(admissions * td.edAdmissionRevenue * (td.edAdmissionRealization / 100));
+    }
+
+    return result;
+  }, [state, totalHoursSaved]);
+
+  const annualBenefitsTotal = useMemo(() => {
+    return benefits.filter(b => b.type === 'annual').reduce((sum, b) => sum + (b.amount || 0), 0);
+  }, [benefits]);
+
+  const oneTimeBenefitsTotal = useMemo(() => {
+    return benefits.filter(b => b.type === 'oneTime').reduce((sum, b) => sum + (b.amount || 0), 0);
+  }, [benefits]);
+
+  const quadrantAnnualTotal = useMemo(() => {
+    return Object.values(driverValues).reduce((sum, v) => sum + v, 0) + annualBenefitsTotal;
+  }, [driverValues, annualBenefitsTotal]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -158,11 +223,7 @@ export default function ExploreCapacity({ state, updateState, onNext, onBack, on
                         </div>
                       </div>
                     ) : (
-                      <div className="bg-[#F5F0EB] rounded-lg p-4">
-                        <p className="text-sm text-[#888888] italic">
-                          Calculation logic wires up in the next sprint.
-                        </p>
-                      </div>
+                      renderCalcForDriver(driver.id)
                     )}
 
                     {/* Child drivers (e.g., Admission Capture under LWBS) */}
@@ -183,11 +244,7 @@ export default function ExploreCapacity({ state, updateState, onNext, onBack, on
                               testId={`toggle-${child.id}`}
                               isChild
                             >
-                              <div className="bg-[#F5F0EB] rounded-lg p-4">
-                                <p className="text-sm text-[#888888] italic">
-                                  Calculation logic wires up in the next sprint.
-                                </p>
-                              </div>
+                              {renderCalcForDriver(child.id)}
                             </DriverCard>
                           );
                         })}
@@ -298,14 +355,15 @@ export default function ExploreCapacity({ state, updateState, onNext, onBack, on
                 <div className="space-y-3 mb-4">
                   {drivers.map(d => {
                     const enabled = isEnabled(d);
+                    const value = driverValues[d.id];
                     return (
                       <div key={d.id} className={`flex justify-between items-center ${d.childOfDriverId ? 'pl-4' : ''}`}>
                         <div className="flex items-center gap-2 min-w-0">
                           <span className={`w-2 h-2 rounded-full flex-shrink-0 ${enabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888] truncate">{d.label}</span>
                         </div>
-                        <span className={`text-sm font-semibold ${enabled ? 'text-white' : 'text-[#666666]'}`}>
-                          {enabled && d.visibility === 'qualitative' ? 'Qualitative' : '—'}
+                        <span className={`text-sm font-semibold flex-shrink-0 ${enabled ? 'text-white' : 'text-[#666666]'}`} data-testid={`right-panel-value-${d.id}`}>
+                          {!enabled ? '—' : d.visibility === 'qualitative' ? 'Qualitative' : (typeof value === 'number' ? formatCurrency(value) : '—')}
                         </span>
                       </div>
                     );
@@ -333,8 +391,11 @@ export default function ExploreCapacity({ state, updateState, onNext, onBack, on
               <div className="h-px bg-[#333333] my-4" />
 
               <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Quadrant Total</p>
-              <p className="text-2xl font-bold text-[#EA2C00]">$0</p>
-              <p className="text-xs text-white/50 mt-1">Calculations wire up in the next sprint.</p>
+              <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-quadrant-total">{formatCurrency(quadrantAnnualTotal)}</p>
+              <p className="text-xs text-white/50 mt-1">Annual recurring</p>
+              {oneTimeBenefitsTotal > 0 && (
+                <p className="text-xs text-white/70 mt-1" data-testid="text-quadrant-onetime">+ {formatCurrency(oneTimeBenefitsTotal)} one-time (Y1 only)</p>
+              )}
 
               <div className="hidden lg:block mt-6">
                 <Button

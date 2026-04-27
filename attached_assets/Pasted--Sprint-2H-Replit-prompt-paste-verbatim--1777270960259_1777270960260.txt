@@ -1,0 +1,392 @@
+ 🔧 Sprint 2H — Replit prompt (paste verbatim)                                                                                                                                                                
+                                                               
+  Context: Final sprint of the Sprint 2 series. Updates the PDF export to read from the new quadrant-based data structure. The cover page is intentionally preserved verbatim — only the body content          
+  (executive summary, value breakdowns, 3-year projection, methodology) is updated. The PDF should reflect the same Capacity / Workforce / Revenue / Quality structure the user just walked through, with     
+  per-driver values, qualitative items as text-only, Other Financial Benefits per quadrant, one-time spike on Year 1, and Y2/Y3 growth using the editable percentages from Sprint 2F.                          
+                                                                                                                                                                                                               
+  Pre-req: Sprints 2A through 2G shipped.               
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Update the ExplorePDFData interface                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+  File: client/src/components/explore/ExplorePDFExport.ts (or wherever ExplorePDFData is exported)                                                                                                             
+                                                            
+  REPLACE the existing ExplorePDFData interface with this richer shape. Preserve any cover-page fields that already exist (organizationName, preparedFor, date, etc.) — do not remove them. Add the            
+  quadrant-aware fields shown below.                                                                                                                                                                           
+                                                          
+  export interface ExplorePDFQuadrantDriver {                                                                                                                                                                  
+    id: string;                                              
+    label: string;                                                                                                                                                                                             
+    shortDescription: string;                           
+    visibility: 'quantified' | 'qualitative';                                                                                                                                                                  
+    value: number;                                                                                                                                                                                             
+    isChild?: boolean;                                                                                                                                                                                         
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  export interface ExplorePDFOtherBenefit {               
+    label: string;                                                                                                                                                                                             
+    amount: number;                                         
+    type: 'annual' | 'oneTime';                  
+  }                                      
+                                                             
+  export interface ExplorePDFQuadrantData {                                                                                                                                                                    
+    quadrant: 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
+    annualTotal: number;                                                                                                                                                                                       
+    oneTimeTotal: number;                                    
+    drivers: ExplorePDFQuadrantDriver[];                  
+    otherFinancialBenefits: ExplorePDFOtherBenefit[];   
+  }                                                                                                                                                                                                            
+                                                          
+  export interface ExplorePDFData {                                                                                                                                                                            
+    // ─── Cover page fields (preserve existing) ───        
+    organizationName?: string;                                                                                                                                                                                 
+    preparedFor?: string;                                    
+    preparedBy?: string;                                                                                                                                                                                       
+    date: string;                                                                                                                                                                                              
+    careSettingLabel: string;                                
+    // ... any other existing cover page fields stay as-is ...                                                                                                                                                 
+                                                        
+    // ─── Practice / setup ───                              
+    careSetting: 'outpatient' | 'ed' | 'inpatient' | 'nursing';                                                                                                                                                
+    numberOfProviders: number;                            
+    nursingStaffedBeds?: number;                                                                                                                                                                               
+    nursingOccupancyRate?: number;                                                                                                                                                                             
+    annualEncounters: number;                           
+    utilizationPercent: number;                                                                                                                                                                                
+                                                                                                                                                                                                               
+    // ─── Time savings ───                                                                                                                                                                                    
+    totalHoursSaved: number;                                                                                                                                                                                   
+    minutesSavedPerEncounter: number;                                                                                                                                                                          
+    timePathScenario: string;            
+                                                                                                                                                                                                               
+    // ─── Quadrants (NEW) ───                                                                                                                                                                                 
+    quadrants: ExplorePDFQuadrantData[];   // ordered: Capacity, Workforce, Revenue, Quality
+    totalAnnualValue: number;                                                                                                                                                                                  
+    totalOneTimeValue: number;                               
+                                                            
+    // ─── Investment ───                               
+    pricingModel: 'perProvider' | 'perEncounter' | 'annual';                                                                                                                                                   
+    costPerProvider?: number;                    
+    costPerEncounter?: number;                                                                                                                                                                                 
+    annualLicenseFee?: number;                            
+    implementationFee: number;                                                                                                                                                                                 
+    includeImplementation: boolean;                          
+    annualInvestment: number;                                                                                                                                                                                  
+                                                        
+    // ─── 3-Year Projection (NEW shape) ───                
+    year2GrowthPercent: number;                                                                                                                                                                                
+    year3GrowthPercent: number;                           
+    year1Value: number;                                                                                                                                                                                        
+    year2Value: number;                                                                                                                                                                                        
+    year3Value: number;                          
+    year1Investment: number;                                                                                                                                                                                   
+    year2Investment: number;             
+    year3Investment: number;                                                                                                                                                                                   
+    year1Net: number;                                     
+    year2Net: number;                                                                                                                                                                                          
+    year3Net: number;                                       
+    threeYearGrossTotal: number;                 
+    threeYearInvestmentTotal: number;    
+    threeYearNetTotal: number;                               
+                                                                                                                                                                                                               
+    // ─── Headline / ROI ───                           
+    netAnnualValue: number;                                                                                                                                                                                    
+    roi: number;                                          
+    valuePerProvider: number;                           
+  }                                                         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 2 — Rebuild handleExportPDF in ExploreModel.tsx                                                                                                                                                         
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreModel.tsx       
+                                                                                                                                                                                                               
+  The existing handleExportPDF function constructs the legacy ExplorePDFData (lines ~531-1251). REPLACE the data construction with the new quadrant-aware shape. The function entry point and trailing call to
+  generateExplorePDF should stay the same — only the data object construction changes.
+                                                          
+  Add imports if needed:                                                                                                                                                                                       
+    import { EXPLORE_DRIVERS, isDriverEnabled } from "@/lib/exploreDrivers";
+                                                                                                                                                                                                               
+  REPLACE the body of handleExportPDF (or just the data construction block, leaving error handling / toast / modal logic alone) with:
+                                                                                                                                                                                                               
+  const careSettingLabels: Record<string, string> = {                                                                                                                                                          
+    outpatient: 'Outpatient',                                                                                                                                                                                  
+    ed: 'Emergency',                                                                                                                                                                                           
+    inpatient: 'Inpatient',                             
+    nursing: 'Nursing',                                      
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  const buildQuadrantData = (quadrant: 'Capacity' | 'Workforce' | 'Revenue' | 'Quality'): ExplorePDFQuadrantData => {                                                                                          
+    if (!state.careSetting) {                                                                                                                                                                                  
+      return { quadrant, annualTotal: 0, oneTimeTotal: 0, drivers: [], otherFinancialBenefits: [] };
+    }                                                                                                                                                                                                          
+    const drivers: ExplorePDFQuadrantDriver[] = EXPLORE_DRIVERS                                                                                                                                                
+      .filter(d => d.quadrant === quadrant && d.settings.includes(state.careSetting!) && isDriverEnabled(d, state))
+      .map(d => ({                                                                                                                                                                                             
+        id: d.id,                                            
+        label: d.label,                                                                                                                                                                                        
+        shortDescription: d.shortDescription,           
+        visibility: d.visibility,                                                                                                                                                                              
+        value: allDriverValues[d.id] || 0,                                                                                                                                                                     
+        isChild: Boolean(d.childOfDriverId),                                                                                                                                                                   
+      }));                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+    const benefits: ExplorePDFOtherBenefit[] = (state.otherFinancialBenefits ?? [])
+      .filter(b => b.quadrant === quadrant && b.label.trim() && b.amount > 0)                                                                                                                                  
+      .map(b => ({ label: b.label, amount: b.amount, type: b.type }));                                                                                                                                         
+                                                             
+    const driverAnnualSum = drivers                                                                                                                                                                            
+      .filter(d => d.visibility === 'quantified')                                                                                                                                                              
+      .reduce((s, d) => s + d.value, 0);                    
+    const benefitsAnnual = benefits.filter(b => b.type === 'annual').reduce((s, b) => s + b.amount, 0);                                                                                                        
+    const benefitsOneTime = benefits.filter(b => b.type === 'oneTime').reduce((s, b) => s + b.amount, 0);                                                                                                      
+                                                             
+    return {                                                                                                                                                                                                   
+      quadrant,                                                                                                                                                                                                
+      annualTotal: driverAnnualSum + benefitsAnnual,                                                                                                                                                           
+      oneTimeTotal: benefitsOneTime,                                                                                                                                                                           
+      drivers,                                                                                                                                                                                                 
+      otherFinancialBenefits: benefits,                   
+    };                                                                                                                                                                                                         
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  const pdfData: ExplorePDFData = {                                                                                                                                                                            
+    // Cover page fields — preserve any existing values (org name, prepared by, etc.). Keep whatever the existing code passed.
+    organizationName: /* existing org name source */ undefined,                                                                                                                                                
+    preparedFor: /* existing */ undefined,                   
+    preparedBy: /* existing */ undefined,                                                                                                                                                                      
+    date: new Date().toLocaleDateString(),                
+    careSettingLabel: state.careSetting ? (careSettingLabels[state.careSetting] || state.careSetting) : '',
+                                                                                                                                                                                                               
+    // Practice                                              
+    careSetting: state.careSetting!,                                                                                                                                                                           
+    numberOfProviders: state.numberOfProviders,                                                                                                                                                                
+    nursingStaffedBeds: state.careSetting === 'nursing' ? state.nursingStaffedBeds : undefined,                                                                                                                
+    nursingOccupancyRate: state.careSetting === 'nursing' ? state.nursingOccupancyRate : undefined,                                                                                                            
+    annualEncounters: state.annualEncounters,                                                                                                                                                                  
+    utilizationPercent: state.utilizationPercent,                                                                                                                                                              
+                                                                                                                                                                                                               
+    // Time savings                                                                                                                                                                                            
+    totalHoursSaved,                                                                                                                                                                                           
+    minutesSavedPerEncounter: state.minutesSavedPerEncounter,
+    timePathScenario: state.timePathScenario || 'custom',                                                                                                                                                      
+                                                             
+    // Quadrants                                                                                                                                                                                               
+    quadrants: [                                        
+      buildQuadrantData('Capacity'),                                                                                                                                                                           
+      buildQuadrantData('Workforce'),                        
+      buildQuadrantData('Revenue'),                                                                                                                                                                            
+      buildQuadrantData('Quality'),                     
+    ],                                                                                                                                                                                                         
+    totalAnnualValue,                                     
+    totalOneTimeValue,                                                                                                                                                                                         
+                                                            
+    // Investment                                                                                                                                                                                              
+    pricingModel: state.pricingModel,
+    costPerProvider: state.pricingModel === 'perProvider' ? state.costPerProvider : undefined,                                                                                                                 
+    costPerEncounter: state.pricingModel === 'perEncounter' ? state.costPerEncounter : undefined,                                                                                                              
+    annualLicenseFee: state.pricingModel === 'annual' ? state.annualLicenseFee : undefined,
+    implementationFee: state.implementationFee,                                                                                                                                                                
+    includeImplementation: state.includeImplementation,     
+    annualInvestment,                                        
+                                                            
+    // 3-Year                                           
+    year2GrowthPercent: state.year2GrowthPercent,                                                                                                                                                              
+    year3GrowthPercent: state.year3GrowthPercent,
+    year1Value,                                                                                                                                                                                                
+    year2Value,                                           
+    year3Value,                                                                                                                                                                                                
+    year1Investment,                                        
+    year2Investment,                                                                                                                                                                                           
+    year3Investment,                                         
+    year1Net,                                             
+    year2Net,                                                                                                                                                                                                  
+    year3Net,                                               
+    threeYearGrossTotal,                                                                                                                                                                                       
+    threeYearInvestmentTotal,            
+    threeYearNetTotal,                   
+                                                                                                                                                                                                               
+    // Headline                                           
+    netAnnualValue: year1Net,                                                                                                                                                                                  
+    roi: annualInvestment > 0 ? totalAnnualValue / annualInvestment : 0,
+    valuePerProvider: state.numberOfProviders > 0 ? Math.round(year1Net / state.numberOfProviders) : 0,
+  };                                                      
+                                                             
+  await generateExplorePDF(pdfData);                                                                                                                                                                           
+                                                             
+  If the existing function passed cover page fields like organization name from a state field or prop, preserve those references. Do not break the cover page.                                                 
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Preserve the cover page exactly              
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/components/explore/ExplorePDFExport.ts    
+                                                                                                                                                                                                               
+  Find the cover-page rendering function or block (typically the first page generated, with org name, date, care setting label, and Abridge branding). DO NOT modify any of:
+  - Cover page layout / typography / colors                                                                                                                                                                    
+  - Cover page text or logo placement                     
+  - Cover page data binding (organizationName, preparedFor, date, etc.)                                                                                                                                        
+                                                             
+  If any cover-page field name changes are required to align with the updated ExplorePDFData type, only update the field NAME — the visual rendering must remain identical.                                    
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Update the Executive Summary page                                                                                                                                                                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/components/explore/ExplorePDFExport.ts                                                                                                                                                      
+                                                                                                                                                                                                               
+  Find the Executive Summary rendering (typically page 2). Update the headline numbers to use the new ExplorePDFData fields:                                                                                   
+                                                                                                                                                                                                               
+  - "Net Annual Value" stat → year1Net (with caption "Year 1, including one-time benefits" if totalOneTimeValue > 0, else "Year 1")                                                                            
+  - "3-Year Net Value" stat → threeYearNetTotal                                                                                                                                                                
+  - "Return on Investment" stat → roi.toFixed(1) + "×"      
+  - "Total Annual Value" → totalAnnualValue                                                                                                                                                                    
+  - "Total Investment (Y1)" → annualInvestment               
+                                                                                                                                                                                                               
+  If a "value per provider" stat exists, update to data.valuePerProvider.                                                                                                                                      
+                                                                                                                                                                                                               
+  If hours saved is on this page, use data.totalHoursSaved.                                                                                                                                                    
+                                                             
+  Preserve visual treatment — same fonts, colors, hierarchy as before. Just swap data sources.                                                                                                                 
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — REPLACE the legacy value-breakdown section with quadrant sections                                                                                                                                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/components/explore/ExplorePDFExport.ts
+                                                                                                                                                                                                               
+  Find the legacy "How Your Numbers Were Built" or similar section that renders the four cards (Access / Revenue / Workforce / Downstream). REMOVE that entire section.
+                                                                                                                                                                                                               
+  REPLACE with a "Value by Quadrant" section that renders 4 sub-sections, one per quadrant, in this order: Capacity → Workforce → Revenue → Quality.
+                                                                                                                                                                                                               
+  For each quadrant in data.quadrants array, render a sub-section with:
+                                                                                                                                                                                                               
+  1. Quadrant header — large text, brand-red accent                                                                                                                                                            
+     - Quadrant name (e.g., "Capacity")                      
+     - Annual total (e.g., "$425,000 annual")                                                                                                                                                                  
+     - If oneTimeTotal > 0: "+ $25,000 one-time (Y1)" subtitle
+                                                                                                                                                                                                               
+  2. Driver list — each driver as a row with:                
+     - Label (e.g., "Patient Access")                                                                                                                                                                          
+     - shortDescription on a second line (smaller, gray)    
+     - Value column on the right:                                                                                                                                                                              
+       - For visibility === 'quantified': formatted currency
+       - For visibility === 'qualitative': italic gray text "Qualitative"                                                                                                                                      
+     - Child drivers (isChild === true) get indented 12-16pt left                                                                                                                                              
+                                                                                                                                                                                                               
+  3. Other Financial Benefits list — each benefit as a row with:                                                                                                                                               
+     - Label                                                                                                                                                                                                   
+     - Amount + type indicator: "$50,000 annual" or "$25,000 one-time (Y1)"                                                                                                                                    
+                                                            
+  4. Empty-state when both drivers and benefits arrays are empty:                                                                                                                                              
+     - "No drivers selected for this quadrant." italic gray text
+                                                                                                                                                                                                               
+  If the PDF library uses pages-based pagination, allow each quadrant to break across pages naturally — don't force a page break per quadrant unless content overflows.                                        
+                                                                                                                                                                                                               
+  Brand styling reminder:                                                                                                                                                                                      
+  - Section headers: Abridge red (#EA2C00), uppercase, letter-spacing
+  - Driver labels: black, semibold                                                                                                                                                                             
+  - shortDescription: gray (#888888), regular weight, smaller font
+  - Currency values: black, semibold, right-aligned                                                                                                                                                            
+  - "Qualitative" tag: gray italic                                                                                                                                                                             
+  - Other Benefits visually distinguished — perhaps with a small "+" marker or different row treatment so they're clearly user-added items, not Abridge-modeled drivers                                        
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 6 — Update 3-Year Projection page                    
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/components/explore/ExplorePDFExport.ts   
+                                                                                                                                                                                                               
+  Find the 3-Year Projection rendering. Replace the hardcoded growth narrative with the new dynamic fields.                                                                                                    
+                                                                                                                                                                                                               
+  Replace the year cards with:                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  - Year 1 card:                                                                                                                                                                                               
+    - Headline: data.year1Value (currency)                   
+    - "Net: $X" using data.year1Net                                                                                                                                                                            
+    - If data.totalOneTimeValue > 0: "Includes $Y one-time" caption
+                                                                                                                                                                                                               
+  - Year 2 card:                                             
+    - Headline: data.year2Value                                                                                                                                                                                
+    - "Net: $X" using data.year2Net                         
+    - "+{data.year2GrowthPercent}% growth" caption                                                                                                                                                             
+    - If perEncounter pricing: "Investment: $Y" using data.year2Investment
+                                                                                                                                                                                                               
+  - Year 3 card: same pattern as Year 2 with data.year3Value, year3Net, year3GrowthPercent, year3Investment                                                                                                    
+                                                                                                                                                                                                               
+  - 3-Year Total card:                                                                                                                                                                                         
+    - Gross total: data.threeYearGrossTotal                                                                                                                                                                    
+    - Net total: data.threeYearNetTotal (in brand red)      
+    - Investment total: data.threeYearInvestmentTotal                                                                                                                                                          
+                                                             
+  Update the methodology paragraph below the cards to reference the actual percentages used:                                                                                                                   
+                                                                                                                                                                                                               
+  "Years 2 and 3 apply {data.year2GrowthPercent}% and {data.year3GrowthPercent}% growth to annual recurring value. For per-encounter pricing, encounter volume scales by the same percentages, so investment   
+  grows alongside value."                                                                                                                                                                                      
+                                                            
+  ═══════════════════════════════════════════════════════════
+  TASK 7 — Update Methodology / Assumptions page                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  Find the existing Methodology section. Update any references to:                                                                                                                                             
+  - "10% annual growth" → "growth as configured by the user (Year 2 default 10%, Year 3 default 10%)"                                                                                                          
+  - "Downstream" / "downstream value" → remove all references
+  - "Connected value" → remove if it referred to the old Downstream framing                                                                                                                                    
+  - Hardcoded scenario labels mentioning "Aggressive" → update to "Optimistic"                                                                                                                                 
+                                                             
+  Add a brief note about quadrant structure if not already present:                                                                                                                                            
+                                                                                                                                                                                                               
+  "Value is organized into four ROI quadrants: Capacity, Workforce, Revenue, and Quality. Each quadrant reflects how Abridge's documentation efficiency translates into operational and financial outcomes.
+  Some drivers carry quantified financial models; others are qualitative outcomes tracked post-deployment."                                                                                                    
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 8 — Quality assurance pass on PDF visual hierarchy                                                                                                                                                      
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  After all data is wired through:                                                                                                                                                                             
+                                                                                                                                                                                                               
+  1. The PDF should have these sections in order: Cover (unchanged) → Executive Summary → Practice & Setup → Time Savings → Value by Quadrant (4 sub-sections: Capacity, Workforce, Revenue, Quality) →
+  Investment → 3-Year Projection → Methodology                                                                                                                                                                 
+  2. Verify no orphaned references to the legacy structure: search ExplorePDFExport.ts for "Downstream", "timeValue", "docValue", "nursingCareQualityPotential", "1.1 *", "1.21 *". Each should be replaced or 
+  removed.                                              
+  3. The cover page rendering function and its data binding should be untouched. If it's a separate function, that function should not have been modified by any task above.                                   
+                                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                              
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                             
+  Walk through Outpatient end-to-end with a known set of toggles:                                                                                                                                              
+  - Patient Access on (Capacity)                                                                                                                                                                               
+  - Provider Wellbeing on with retention checkbox + Locum/Agency on (Workforce)
+  - wRVU + HCC + Denials on (Revenue)                                                                                                                                                                          
+  - Cognitive Load + Audit/Compliance on (Quality, qualitative)
+  - Add 1 annual Other Financial Benefit ($50K) tagged Capacity                                                                                                                                                
+  - Add 1 one-time Other Financial Benefit ($25K) tagged Quality                                                                                                                                               
+  - Pricing: per-encounter at $0.50, 200K encounters         
+                                                                                                                                                                                                               
+  Click "Download PDF" on Step 9 and inspect the generated file:
+                                                                                                                                                                                                               
+  1. **Cover page**: identical to before. Same logo, same layout, same fonts.                                                                                                                                  
+                                                                                                                                                                                                               
+  2. **Executive Summary page**: Net Annual Value, 3-Year Net Total, ROI multiplier all populated and consistent with what's shown on Step 9 hero. No "Downstream" reference anywhere.                         
+                                                                                                                                                                                                               
+  3. **Value by Quadrant section**: 4 sub-sections in order Capacity / Workforce / Revenue / Quality. Each with:                                                                                               
+     - Capacity: Patient Access driver line with $ amount, $50K Other Benefit annual line                                                                                                                      
+     - Workforce: Provider Wellbeing line with $ amount, Physician Locum/Agency child driver line indented with $ amount                                                                                       
+     - Revenue: 3 driver lines (wRVU, HCC, Denials) each with $ amount                                                                                                                                         
+     - Quality: 2 qualitative driver lines (Cognitive Load + Audit/Compliance) each showing "Qualitative" text-only, $25K Other Benefit one-time (Y1) line                                                     
+                                                             
+  4. **3-Year Projection**: Y1 / Y2 / Y3 / Total with correct gross + net + investment per year. Year 1 includes the $25K one-time. Year 2 and Year 3 apply the configured growth %. Per-encounter investment  
+  scales with encounter projections.                         
+                                                                                                                                                                                                               
+  5. **Methodology**: references the actual Y2/Y3 % from state. No "Downstream" copy. No "Aggressive" labels (replaced with "Optimistic").
+                                                                                                                                                                                                               
+  6. Walk Nursing through (HAPI + Falls + CAUTI + CLABSI + Sepsis enabled, RN Retention + Travel/Agency on, Overtime on). PDF should include all 5 nursing care quality drivers with $ values in the Quality   
+  quadrant section. Workforce section should have RN Retention + nested Travel/Agency child + standalone Overtime Reduction.                                                                                   
+                                                                                                                                                                                                               
+  7. Empty state PDF: walk through with no drivers enabled. Either the Download PDF button should be disabled (per Sprint 1's empty state) OR the PDF should generate with empty quadrant sections showing "No 
+  drivers selected for this quadrant." in each. Verify whichever behavior was set in Sprint 1.                                                                                                                 
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - The PDF's cover page styling, logo, organization name, prepared-by/date fields are intentionally untouched in this sprint. They were already at the right level of polish.
+  - If the PDF library throws an error on an undefined optional field (costPerProvider, costPerEncounter, annualLicenseFee), gate those fields with conditional rendering before passing them to text          
+  components.                                                
+  - Some legacy fields in ExplorePDFData may have been removed by this sprint. If ExplorePDFExport.ts has rendering code that references fields no longer in the type, remove or replace those references —    
+  they'd cause runtime errors otherwise.                                                                                                                                                                       
+  - This is the LAST sprint of Sprint 2. After 2H deploys, the entire ROI Calculator restructure is complete: quadrant-aligned flow, drivers-as-toggles, qualitative-or-quantified visibility, Other Financial
+  Benefits, editable Y2/Y3 growth, per-encounter scaling, and a PDF that mirrors the experience.

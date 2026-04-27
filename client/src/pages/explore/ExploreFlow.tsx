@@ -970,6 +970,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         <ExploreCapacity
           state={state}
           updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
           onNext={() => navigate('workforce')}
           onBack={() => navigate('timeSavings')}
           onHome={goHome}
