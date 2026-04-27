@@ -1,0 +1,522 @@
+🔧 Sprint 2D-Workforce — Replit prompt (paste verbatim)                                                                                                                                                      
+                                                             
+  Context: Building the Workforce quadrant — Provider Wellbeing + Physician Locum/Agency (child of Wellbeing) for OP/ED/IP, plus Nursing Retention + Travel/Agency (child of Retention) + Overtime Reduction   
+  for Nursing. Includes a small refactor to attach calc components directly to driver definitions so we don't need a switch in every page.                                                                     
+                                                                                                                                                                                                               
+  Pre-req: Sprints 2A through 2C2 have shipped.                                                                                                                                                                
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Add calcComponent to ExploreDriver interface                                                                                                                                                        
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                     
+                                                                                                                                                                                                               
+  UPDATE the ExploreDriver interface to add an optional calcComponent field. All calc components share a single prop signature:
+                                                                                                                                                                                                               
+  import type { ComponentType } from "react";                
+  import type { ExploreState } from "@/pages/explore/ExploreFlow";                                                                                                                                             
+                                                             
+  export interface ExploreCalcComponentProps {                                                                                                                                                                 
+    state: ExploreState;                                     
+    updateTimeDriverInputs: (updates: Partial<ExploreState['timeDriverInputs']>) => void;                                                                                                                      
+    updateDocQualityInputs: (updates: Partial<ExploreState['docQualityInputs']>) => void;                                                                                                                      
+    totalHoursSaved: number;                                                                                                                                                                                   
+  }                                                                                                                                                                                                            
+                                                             
+  export interface ExploreDriver {                                                                                                                                                                             
+    // ... existing fields ...                                                                                                                                                                                 
+    calcComponent?: ComponentType<ExploreCalcComponentProps>;
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Wire calcComponent into existing Capacity drivers                                                                                                                                                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                        
+  Add imports at top:                                                                                                                                                                                          
+  import PatientAccessCalc from "@/components/explore/drivers/PatientAccessCalc";
+  import LwbsRecoveryCalc from "@/components/explore/drivers/LwbsRecoveryCalc";                                                                                                                                
+  import AdmissionCaptureCalc from "@/components/explore/drivers/AdmissionCaptureCalc";
+                                                                                                                                                                                                               
+  Update the 3 existing quantified Capacity drivers in EXPLORE_DRIVERS to include calcComponent:
+  - patientAccess driver → calcComponent: PatientAccessCalc                                                                                                                                                    
+  - lwbsRecovery driver → calcComponent: LwbsRecoveryCalc    
+  - admissionCapture driver → calcComponent: AdmissionCaptureCalc                                                                                                                                              
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Standardize calc component prop signatures                                                                                                                                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  The 3 existing calc components (PatientAccessCalc, LwbsRecoveryCalc, AdmissionCaptureCalc) currently have varied prop shapes. Update all 3 to accept the unified ExploreCalcComponentProps signature.        
+                                                                                                                                                                                                               
+  For each of the 3 files in client/src/components/explore/drivers/:
+  - Replace the existing Props interface with: type Props = ExploreCalcComponentProps;                                                                                                                         
+  - Import the type: import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+  - Components that don't use updateDocQualityInputs simply ignore the prop. PatientAccessCalc uses totalHoursSaved; the other two ignore it.                                                                  
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 4 — Add new state fields for Physician Locum/Agency                                                                                                                                                     
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                             
+  In TimeDriverInputs interface (around lines 61-154), ADD:                                                                                                                                                    
+    physicianAgencyEnabled: boolean;                         
+    physicianAgencyExpanded: boolean;                                                                                                                                                                          
+    physicianAgencyWeeksPerVacancy: number;  // weeks of contracted coverage per vacancy                                                                                                                       
+    physicianAgencyWeeklyPremium: number;    // dollar premium per week above base salary equivalent                                                                                                           
+                                                                                                                                                                                                               
+  In DEFAULT_EXPLORE_STATE.timeDriverInputs (around lines 348-429), ADD:                                                                                                                                       
+    physicianAgencyEnabled: false,                           
+    physicianAgencyExpanded: false,                                                                                                                                                                            
+    physicianAgencyWeeksPerVacancy: 16,    // default: 16 weeks to fill a physician vacancy
+    physicianAgencyWeeklyPremium: 5000,    // default: $5K/week premium for locum coverage                                                                                                                     
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Update timeValue memoizer to include Physician Agency                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx (lines ~689-787)                                                                                                                                              
+                                                                                                                                                                                                               
+  The existing timeValue useMemo handles retention math for ED, IP, and OP via timeDriverInputs.wellbeingEnabled + calculateRetentionValue. We need to add the physician agency contribution as a
+  sub-computation that runs whenever wellbeing+retention+physicianAgency are all enabled.                                                                                                                      
+                                                                                                                                                                                                               
+  INSIDE each of the three branches (isED, isInpatient, OP-default-else) that compute retention, ADD this block AFTER the retention math:                                                                      
+                                                                                                                                                                                                               
+    if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {                                                                            
+      const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+      const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;                                                                                                                                          
+      const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;                                                                                                                                       
+      const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;                                                                                                                   
+      const providersLeaving = numberOfProviders * turnoverRate;                                                                                                                                               
+      const burnoutRelated = providersLeaving * burnoutRate;                                                                                                                                                   
+      const retained = burnoutRelated * impactRate;          
+      const weeksOfCoverage = timeDriverInputs.physicianAgencyWeeksPerVacancy || 16;                                                                                                                           
+      const weeklyPremium = timeDriverInputs.physicianAgencyWeeklyPremium || 5000;
+      total += Math.round(retained * weeksOfCoverage * weeklyPremium);                                                                                                                                         
+    }                                                        
+                                                                                                                                                                                                               
+  The same code block goes inside isED, isInpatient, AND the OP fallback branch.                                                                                                                               
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 6 — Create ProviderWellbeingCalc component                                                                                                                                                              
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/ProviderWellbeingCalc.tsx                                                                                                                                    
+                                                                                                                                                                                                               
+  Source of truth for behavior: ExploreValueDrivers.tsx lines 1384-1572 (the wellbeing expanded content with the "Calculate retention value" checkbox and full retention calculator).                          
+                                                                                                                                                                                                               
+  Port that JSX into a self-contained component. Replace the wrapping toggle infrastructure with just the inner content (DriverCard handles the wrapper now). Keep these behaviors:
+  - Display "X hours per week per provider" hero                                                                                                                                                               
+  - "Calculate retention value" checkbox toggles timeDriverInputs.calculateRetentionValue
+  - When checkbox is on, show: turnover rate input, burnout-related %, replacement cost, impact scenario buttons (Conservative 5% / Typical 10% / Optimistic 15%), full calculation card
+  - The 3 scenario presets must be labeled Conservative / Typical / Optimistic (NOT "Aggressive")
+                                                                                                                                                                                                               
+  Component signature:                                                                                                                                                                                         
+  type Props = ExploreCalcComponentProps;                                                                                                                                                                      
+  export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) { ... }                                                                                             
+                                                             
+  Imports needed:                                                                                                                                                                                              
+    import { useMemo } from "react";                                                                                                                                                                           
+    import { Check, AlertTriangle } from "lucide-react";                                                                                                                                                       
+    import { FormattedNumberInput } from "@/components/FormattedNumberInput";                                                                                                                                  
+    import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";                                                                                                                                     
+                                                                                                                                                                                                               
+  The hours-per-provider-per-week computation:                                                                                                                                                                 
+    const hoursPerProviderPerWeek = state.numberOfProviders > 0
+      ? (totalHoursSaved / state.numberOfProviders / 48).toFixed(1)                                                                                                                                            
+      : '0';                                                 
+                                                                                                                                                                                                               
+  The retention calculations are identical to the existing logic in ExploreValueDrivers.tsx lines 73-91. Port verbatim.                                                                                        
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 7 — Create PhysicianLocumAgencyCalc component                                                                                                                                                           
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/PhysicianLocumAgencyCalc.tsx                                                                                                                                 
+                                                                                                                                                                                                               
+  This is a NEW component (not in ExploreValueDrivers.tsx). Mirrors the nursing agency pattern (ExploreValueDrivers.tsx lines ~1722-1810).
+                                                                                                                                                                                                               
+  import { useMemo } from "react";                           
+  import { FormattedNumberInput } from "@/components/FormattedNumberInput";                                                                                                                                    
+  import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+                                                                                                                                                                                                               
+  type Props = ExploreCalcComponentProps;                 
+                                                                                                                                                                                                               
+  export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs }: Props) {                                                                                                                 
+    const { timeDriverInputs } = state;                                                                                                                                                                        
+                                                                                                                                                                                                               
+    const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+                                                                                                                                                                                                               
+    const calc = useMemo(() => {                             
+      const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;                                                                                                                                          
+      const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
+      const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;                                                                                                                   
+      const providersLeaving = state.numberOfProviders * turnoverRate;
+      const burnoutRelated = providersLeaving * burnoutRate;                                                                                                                                                   
+      const retained = burnoutRelated * impactRate;                                                                                                                                                            
+      const weeksOfCoverage = timeDriverInputs.physicianAgencyWeeksPerVacancy || 16;                                                                                                                           
+      const weeklyPremium = timeDriverInputs.physicianAgencyWeeklyPremium || 5000;                                                                                                                             
+      const value = Math.round(retained * weeksOfCoverage * weeklyPremium);
+      return { retained, weeksOfCoverage, weeklyPremium, value };                                                                                                                                              
+    }, [state.numberOfProviders, timeDriverInputs.annualTurnoverRate, timeDriverInputs.burnoutRelatedTurnover, timeDriverInputs.retentionImpactScenario, timeDriverInputs.physicianAgencyWeeksPerVacancy,
+  timeDriverInputs.physicianAgencyWeeklyPremium]);                                                                                                                                                             
+                                                             
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();                                                                                                                                
+                                                             
+    return (                                                                                                                                                                                                   
+      <div>                                                                                                                                                                                                    
+        {!timeDriverInputs.wellbeingEnabled && (                                                                                                                                                               
+          <div className="mb-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">                                                                                               
+            Locum/Agency Cost Avoidance depends on Provider Wellbeing's retention calculation. Enable Provider Wellbeing above and turn on "Calculate retention value" to see this value.                      
+          </div>                                          
+        )}                                                                                                                                                                                                     
+        {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
+          <div className="mb-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">                                                                                               
+            Turn on "Calculate retention value" inside Provider Wellbeing to compute Locum/Agency avoidance.
+          </div>                                          
+        )}                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+        <p className="text-sm text-black mb-4">                                                                                                                                                                
+          When retention improves, contracted locum and agency physician coverage tends to decline. This models the avoided premium-labor spend tied to retained providers.                                    
+        </p>                                                                                                                                                                                                   
+                                                                                                                                                                                                               
+        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Locum / Agency Profile</p>                                                                                      
+                                                                                                                                                                                                               
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">                                                                                                                                  
+          <div className="space-y-2.5">                                                                                                                                                                        
+            <label className="text-sm text-[#888888]">Weeks of agency coverage per vacancy</label>                                                                                                             
+            <FormattedNumberInput                            
+              value={timeDriverInputs.physicianAgencyWeeksPerVacancy}                                                                                                                                          
+              onChange={(v: number) => updateTimeDriverInputs({ physicianAgencyWeeksPerVacancy: v })}
+              className="h-12 bg-white"                                                                                                                                                                        
+            />                                               
+            <p className="text-xs text-[#888888]">Typical: 12-20 weeks to fill a physician vacancy.</p>                                                                                                        
+          </div>                                             
+          <div className="space-y-2.5">                                                                                                                                                                        
+            <label className="text-sm text-[#888888]">Weekly premium above base cost</label>                                                                                                                   
+            <div className="relative">                       
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>                                                                                                       
+              <FormattedNumberInput                          
+                value={timeDriverInputs.physicianAgencyWeeklyPremium}                                                                                                                                          
+                onChange={(v: number) => updateTimeDriverInputs({ physicianAgencyWeeklyPremium: v })}
+                className="h-12 bg-white pl-7"                                                                                                                                                                 
+              />                                                                                                                                                                                               
+            </div>                                                                                                                                                                                             
+            <p className="text-xs text-[#888888]">Premium paid above the equivalent base salary for the role.</p>                                                                                              
+          </div>                                             
+        </div>                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>                                                                                                      
+                                                                                                                                                                                                               
+        <div className="bg-[#F5F0EB] rounded-lg p-4">     
+          <div className="space-y-2 text-sm">                                                                                                                                                                  
+            <div className="flex justify-between gap-2">     
+              <span className="text-[#666666]">Providers retained (from Wellbeing)</span>                                                                                                                      
+              <span className="font-semibold text-black">{calc.retained.toFixed(2)}</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">× Weeks of coverage avoided per retained provider</span>
+              <span className="font-semibold text-black">{calc.weeksOfCoverage}</span>                                                                                                                         
+            </div>                                           
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">× Weekly premium</span>
+              <span className="font-semibold text-black">{formatCurrency(calc.weeklyPremium)}</span>                                                                                                           
+            </div>                                                                                                                                                                                             
+            <div className="h-px bg-[#333333] my-2" />                                                                                                                                                         
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="font-semibold text-black">Locum/Agency Avoidance</span>                                                                                                                         
+              <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(calc.value)}</span>
+            </div>                                                                                                                                                                                             
+          </div>                                             
+        </div>                                                                                                                                                                                                 
+      </div>                                                                                                                                                                                                   
+    );                                                       
+  }                                                                                                                                                                                                            
+                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 8 — Create NursingRetentionCalc component                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  NEW FILE: client/src/components/explore/drivers/NursingRetentionCalc.tsx                                                                                                                                     
+                                                 
+  Source of truth: ExploreValueDrivers.tsx lines ~1232-1325 (nursing retention expanded content).
+                                                                                                                                                                                                               
+  Port the JSX. Component takes ExploreCalcComponentProps. Uses these state fields:
+  - timeDriverInputs.nursingTurnoverRate                                                                                                                                                                       
+  - timeDriverInputs.nursingReplacementCost                  
+  - timeDriverInputs.retentionImpactScenario (shared with physician version)
+                                                                                                                                                                                                               
+  Math (port from existing nursing logic):                
+  - leavingPerYear = numberOfProviders × nursingTurnoverRate%                                                                                                                                                  
+  - burnoutDepartures = leavingPerYear × 0.40 (fixed 40% burnout-related for nursing)
+  - retentionImpactRates: { conservative: 10, typical: 15, optimistic: 25 }                                                                                                                                    
+  - retained = burnoutDepartures × impactRate%               
+  - value = retained × nursingReplacementCost                                                                                                                                                                  
+                                                                                                                                                                                                               
+  Keep the explanatory copy: "Documentation burden is a leading contributor to nurse burnout and turnover. Of nurses who leave, roughly 40% cite burnout-related reasons. Reducing charting time directly      
+  addresses this driver."                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Three scenario buttons: Conservative (10% impact) / Typical (15% impact) / Optimistic (25% impact).                                                                                                          
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 9 — Create NursingAgencyCalc component                                                                                                                                                                  
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/NursingAgencyCalc.tsx                                                                                                                                        
+                                                             
+  Source of truth: ExploreValueDrivers.tsx lines ~1722-1810 (nursing agency expanded content).                                                                                                                 
+                                                                                                                                                                                                               
+  Port the JSX. Uses these state fields:                     
+  - timeDriverInputs.nursingAgencyWeeksPerVacancy                                                                                                                                                              
+  - timeDriverInputs.nursingAgencyWeeklyPremium              
+  - Plus retention-related fields to compute "retained" upstream                                                                                                                                               
+                                                 
+  Math: retained × weeksPerVacancy × weeklyPremium                                                                                                                                                             
+                                                                                                                                                                                                               
+  Show the same warning patterns as PhysicianLocumAgencyCalc when nursingRetentionEnabled is off.                                                                                                              
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 10 — Create NursingOvertimeCalc component             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/NursingOvertimeCalc.tsx                                                                                                                                      
+                                                                                                                                                                                                               
+  Source of truth: ExploreValueDrivers.tsx lines ~855-958 (nursing overtime expanded content).                                                                                                                 
+                                                                                                                                                                                                               
+  Port the JSX. Uses these state fields:                     
+  - timeDriverInputs.nursingOtHoursPerNurseWeek                                                                                                                                                                
+  - timeDriverInputs.nursingOtReductionPercent               
+  - timeDriverInputs.nursingOtHourlyRate                                                                                                                                                                       
+                                                          
+  Math:                                                                                                                                                                                                        
+  - otHoursEliminated = otHoursPerNurseWeek × reductionPercent% × numberOfProviders × 52                                                                                                                       
+  - value = otHoursEliminated × hourlyRate                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 11 — Add Workforce drivers to EXPLORE_DRIVERS                                                                                                                                                           
+  ═══════════════════════════════════════════════════════════
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                             
+  Add imports for the new calc components:                                                                                                                                                                     
+    import ProviderWellbeingCalc from "@/components/explore/drivers/ProviderWellbeingCalc";                                                                                                                    
+    import PhysicianLocumAgencyCalc from "@/components/explore/drivers/PhysicianLocumAgencyCalc";
+    import NursingRetentionCalc from "@/components/explore/drivers/NursingRetentionCalc";                                                                                                                      
+    import NursingAgencyCalc from "@/components/explore/drivers/NursingAgencyCalc";
+    import NursingOvertimeCalc from "@/components/explore/drivers/NursingOvertimeCalc";                                                                                                                        
+                                                                                                                                                                                                               
+  APPEND to EXPLORE_DRIVERS array (after the Capacity drivers):
+                                                                                                                                                                                                               
+    // ───── WORKFORCE ─────                                 
+    {                                                                                                                                                                                                          
+      id: 'providerWellbeing',                                                                                                                                                                                 
+      label: 'Provider Wellbeing',                                                                                                                                                                             
+      shortDescription: 'Documentation burden is a leading contributor to provider burnout and turnover. This driver models the avoided replacement cost when retention improves.',                            
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['outpatient', 'ed', 'inpatient'],                                                                                                                                                             
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'wellbeingEnabled',                                                                                                                                                                     
+      expandedStateKey: 'wellbeingExpanded',                 
+      calcComponent: ProviderWellbeingCalc,                                                                                                                                                                    
+      trackedMeasureIds: ['burnoutAssessment', 'likelihoodToStay', 'workOutsideWorkEmpirical'],
+    },                                                       
+    {                                                                                                                                                                                                          
+      id: 'physicianLocumAgency',                            
+      label: 'Locum & Agency Cost Avoidance',                                                                                                                                                                  
+      shortDescription: 'Reduced reliance on contracted physician coverage as retention improves.',
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['outpatient', 'ed', 'inpatient'],                                                                                                                                                             
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'physicianAgencyEnabled',                                                                                                                                                               
+      expandedStateKey: 'physicianAgencyExpanded',           
+      childOfDriverId: 'providerWellbeing',                                                                                                                                                                    
+      calcComponent: PhysicianLocumAgencyCalc,            
+      trackedMeasureIds: ['agencyLocumSpend'],                                                                                                                                                                 
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'nursingRetention',                                                                                                                                                                                  
+      label: 'RN Retention',                                                                                                                                                                                   
+      shortDescription: 'Reduced documentation burden helps retain experienced nurses. Models avoided replacement cost.',                                                                                      
+      quadrant: 'Workforce',                            
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'quantified',                              
+      enabledStateKey: 'nursingRetentionEnabled',                                                                                                                                                              
+      expandedStateKey: 'nursingRetentionExpanded',          
+      calcComponent: NursingRetentionCalc,                                                                                                                                                                     
+      trackedMeasureIds: ['rnRetention', 'burnoutAssessment', 'likelihoodToStay'],
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'nursingAgency',                                                                                                                                                                                     
+      label: 'Travel & Agency Cost Avoidance',                                                                                                                                                                 
+      shortDescription: 'Reduced reliance on travel/agency nurses as retention stabilizes.',                                                                                                                   
+      quadrant: 'Workforce',                            
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'nursingAgencyEnabled',                                                                                                                                                                 
+      expandedStateKey: 'nursingAgencyExpanded',                                                                                                                                                               
+      childOfDriverId: 'nursingRetention',                                                                                                                                                                     
+      calcComponent: NursingAgencyCalc,                 
+      trackedMeasureIds: ['travelAgencyNurseSpend'],                                                                                                                                                           
+    },                                                       
+    {                                                                                                                                                                                                          
+      id: 'nursingOvertime',                              
+      label: 'Overtime Reduction',                                                                                                                                                                             
+      shortDescription: 'Faster charting reduces documentation-related overtime hours.',
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['nursing'],                                 
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'nursingOtEnabled',                                                                                                                                                                     
+      expandedStateKey: 'nursingOtExpanded',                 
+      calcComponent: NursingOvertimeCalc,                                                                                                                                                                      
+      trackedMeasureIds: ['documentationOvertime', 'chartingAfterShift'],                                                                                                                                      
+    },                                                       
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 12 — Refactor ExploreCapacity to use driver.calcComponent                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreCapacity.tsx                                                                                                                                                           
+                                                             
+  Replace the renderCalcForDriver helper. Instead of a switch, render the calc component directly from the driver definition.                                                                                  
+                                                                                                                                                                                                               
+  REMOVE the entire renderCalcForDriver function.         
+                                                                                                                                                                                                               
+  REPLACE the JSX that calls renderCalcForDriver(driver.id) for top-level drivers WITH:
+                                                                                                                                                                                                               
+    ) : driver.calcComponent ? (                          
+      <driver.calcComponent                                                                                                                                                                                    
+        state={state}                                                                                                                                                                                          
+        updateTimeDriverInputs={updateTimeDriverInputs}      
+        updateDocQualityInputs={(updates) => updateState({ docQualityInputs: { ...state.docQualityInputs, ...updates } })}                                                                                     
+        totalHoursSaved={totalHoursSaved}               
+      />                                                                                                                                                                                                       
+    ) : (                                                 
+      <div className="bg-[#F5F0EB] rounded-lg p-4">                                                                                                                                                            
+        <p className="text-sm text-[#888888] italic">Calculation logic for "{driver.id}" not yet wired.</p>
+      </div>                                                                                                                                                                                                   
+    )}                                                  
+                                                          
+  REPLACE the same pattern for child drivers further down with:                                                                                                                                                
+                                                                                                                                                                                                               
+    {child.calcComponent ? (                                                                                                                                                                                   
+      <child.calcComponent                                                                                                                                                                                     
+        state={state}                                        
+        updateTimeDriverInputs={updateTimeDriverInputs}                                                                                                                                                        
+        updateDocQualityInputs={(updates) => updateState({ docQualityInputs: { ...state.docQualityInputs, ...updates } })}
+        totalHoursSaved={totalHoursSaved}                                                                                                                                                                      
+      />                                                                                                                                                                                                       
+    ) : (                                                 
+      <div className="bg-[#F5F0EB] rounded-lg p-4">                                                                                                                                                            
+        <p className="text-sm text-[#888888] italic">Calculation logic for "{child.id}" not yet wired.</p>
+      </div>                                                                                                                                                                                                   
+    )}                                                    
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 13 — Build out ExploreWorkforce.tsx                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreWorkforce.tsx (REPLACE the placeholder from Sprint 2B)
+                                                                                                                                                                                                               
+  Copy the entire body of client/src/pages/explore/ExploreCapacity.tsx into ExploreWorkforce.tsx, then make these substitutions:
+                                                                                                                                                                                                               
+  1. Component name: ExploreCapacity → ExploreWorkforce      
+  2. Props interface name: ExploreCapacityProps → ExploreWorkforceProps                                                                                                                                        
+  3. data-testid prefix: cap- → wf- (for benefit row id generation)
+  4. Quadrant filter: getDriversForPage('Capacity', setting) → getDriversForPage('Workforce', setting)                                                                                                         
+  5. Other Financial Benefits filter: filter by 'Capacity' → filter by 'Workforce'
+  6. UnifiedHeader: currentStep={4} → currentStep={5}, stepName="Capacity" → stepName="Workforce"                                                                                                              
+  7. Page H1: "Capacity" → "Workforce"                                                                                                                                                                         
+  8. Page subtitle: "What could you do with the time Abridge gives back?" → "How does reclaimed time affect your team?"                                                                                        
+  9. Right panel header: "Capacity Value" → "Workforce Value"                                                                                                                                                  
+  10. Continue buttons: "Continue to Workforce" → "Continue to Revenue"
+                                                                                                                                                                                                               
+  Update the driverValues useMemo to compute Workforce-quadrant values:                                                                                                                                        
+                                                                                                                                                                                                               
+  const driverValues = useMemo(() => {                                                                                                                                                                         
+    const result: Record<string, number> = {};                                                                                                                                                                 
+    const td = state.timeDriverInputs;                                                                                                                                                                         
+    const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };                                                                                                       
+    const nursingScenarios: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };                                                                                                        
+                                                                                                                                                                                                               
+    // Provider Wellbeing (OP/ED/IP)                                                                                                                                                                           
+    if (td.wellbeingEnabled && td.calculateRetentionValue) {                                                                                                                                                   
+      const turnover = td.annualTurnoverRate / 100;                                                                                                                                                            
+      const burnout = td.burnoutRelatedTurnover / 100;       
+      const impact = retentionScenarios[td.retentionImpactScenario] / 100;                                                                                                                                     
+      const retained = state.numberOfProviders * turnover * burnout * impact;
+      result.providerWellbeing = Math.round(retained * td.replacementCost);                                                                                                                                    
+                                                                                                                                                                                                               
+      // Physician Locum/Agency (child of Wellbeing)                                                                                                                                                           
+      if (td.physicianAgencyEnabled) {                                                                                                                                                                         
+        result.physicianLocumAgency = Math.round(retained * td.physicianAgencyWeeksPerVacancy * td.physicianAgencyWeeklyPremium);                                                                              
+      }                                                                                                                                                                                                        
+    }                                                        
+                                                                                                                                                                                                               
+    // Nursing Retention                                                                                                                                                                                       
+    if (td.nursingRetentionEnabled) {                                                                                                                                                                          
+      const turnover = td.nursingTurnoverRate / 100;                                                                                                                                                           
+      const impact = nursingScenarios[td.retentionImpactScenario] / 100;
+      const burnoutDepartures = state.numberOfProviders * turnover * 0.40;                                                                                                                                     
+      const retained = burnoutDepartures * impact;                                                                                                                                                             
+      result.nursingRetention = Math.round(retained * td.nursingReplacementCost);
+                                                                                                                                                                                                               
+      // Nursing Agency (child of Retention)                                                                                                                                                                   
+      if (td.nursingAgencyEnabled) {                         
+        result.nursingAgency = Math.round(retained * td.nursingAgencyWeeksPerVacancy * td.nursingAgencyWeeklyPremium);                                                                                         
+      }                                                      
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    // Nursing Overtime                                                                                                                                                                                        
+    if (td.nursingOtEnabled) {                                                                                                                                                                                 
+      const otHours = td.nursingOtHoursPerNurseWeek * (td.nursingOtReductionPercent / 100) * state.numberOfProviders * 52;
+      result.nursingOvertime = Math.round(otHours * td.nursingOtHourlyRate);                                                                                                                                   
+    }                                                     
+                                                                                                                                                                                                               
+    return result;                                           
+  }, [state, totalHoursSaved]);                                                                                                                                                                                
+                                                             
+  ═══════════════════════════════════════════════════════════
+  TASK 14 — Pass totalHoursSaved into ExploreWorkforce                                                                                                                                                         
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                                                                                                                                               
+  In the case 'workforce' switch branch, ADD the totalHoursSaved prop:                                                                                                                                         
+                                                          
+    case 'workforce':                                        
+      content = (                                                                                                                                                                                              
+        <ExploreWorkforce                                    
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}              
+          totalHoursSaved={totalHoursSaved}                                                                                                                                                                    
+          onNext={() => navigate('revenue')}                                                                                                                                                                   
+          onBack={() => navigate('capacity')}                                                                                                                                                                  
+          onHome={goHome}                                                                                                                                                                                      
+        />                                                
+      );                                                     
+      break;                                                                                                                                                                                                   
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                         
+  1. TypeScript compiles. The 5 new calc components should all type-check against ExploreCalcComponentProps.                                                                                                   
+                                                          
+  2. Outpatient walkthrough → Workforce (step 5/9):                                                                                                                                                            
+     - Provider Wellbeing toggle appears                     
+     - Toggle on → calc UI renders: hours-per-week hero, "Calculate retention value" checkbox
+     - Click checkbox → full retention calc appears with turnover/burnout/replacement inputs and Conservative/Typical/Optimistic scenarios
+     - Locum & Agency Cost Avoidance toggle appears NESTED below Wellbeing
+     - Toggle Locum on → calc renders with weeksPerVacancy/weeklyPremium inputs                                                                                                                                
+     - If wellbeing off OR retention checkbox off, Locum shows the amber warning                                                                                                                               
+     - Right panel shows live $ values for both, summed in Quadrant Total                                                                                                                                      
+                                                                                                                                                                                                               
+  3. ED + IP walkthroughs → same Wellbeing + Locum pattern. Defaults differ slightly per setting (those come from the existing care-setting effect in ExploreFlow.tsx that resets state).
+                                                                                                                                                                                                               
+  4. Nursing walkthrough → Workforce:                                                                                                                                                                          
+     - RN Retention toggle (NOT "Provider Wellbeing")                                                                                                                                                          
+     - Travel & Agency Cost Avoidance NESTED under RN Retention with same warning if retention off                                                                                                             
+     - Overtime Reduction toggle (independent, not nested)                                                                                                                                                     
+     - All 3 calculate live $ values                                                                                                                                                                           
+     - No "Provider Wellbeing" toggle for nursing (nursingRetention is the equivalent)                                                                                                                         
+                                                                                                                                                                                                               
+  5. Capacity page (step 4) still works exactly as before. The refactor in Task 12 should be invisible to the user — only the implementation changed.                                                          
+                                                                                                                                                                                                               
+  6. Step 9 Model picks up Workforce contribution via the existing timeValue memoizer (now updated in Task 5 to include physician agency).
+                                                                                                                                                                                                               
+  7. Other Financial Benefits work on Workforce page — adding an item with quadrant='Workforce' shows in Workforce right panel only, not Capacity.                                                             
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - Nursing's Overtime Reduction stands alone (not a child driver) because it's independent of retention.                                                                                                      
+  - The Capacity refactor in Task 12 is intentionally minimal — same UX, just removes the switch in favor of driver.calcComponent dispatch. Sprint 2D-Revenue and 2D-Quality will inherit this pattern and     
+  won't need a switch either.                                                                                                                                                                                  
+  - ExploreValueDrivers.tsx remains on disk untouched. It will become the source for porting Revenue calcs (wRVU/HCC/Denials/DRG/etc.) in 2D-Revenue. 

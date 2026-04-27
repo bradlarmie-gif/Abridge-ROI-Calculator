@@ -9,13 +9,15 @@ const STEP_LABELS = [
   "Care Setting",
   "Practice",
   "Time Savings",
-  "Value Drivers",
-  "Doc Quality",
+  "Capacity",
+  "Workforce",
+  "Revenue",
+  "Quality",
   "Investment",
   "Model"
 ];
 
-export function ExploreProgressBar({ currentStep, totalSteps = 7 }: ExploreProgressBarProps) {
+export function ExploreProgressBar({ currentStep, totalSteps = 9 }: ExploreProgressBarProps) {
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="flex items-center justify-between mb-2">

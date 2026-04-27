@@ -1,0 +1,722 @@
+🔧 Sprint 2C2 — Replit prompt (paste verbatim)                
+                                                                                                                                                                                                               
+  Context: Sprint 2C1 shipped the Capacity page shell, driver registry, and reusable DriverCard. Calc stubs render where quantified drivers live. This sprint replaces those stubs with the real calc UI ported
+   from ExploreValueDrivers.tsx, and lights up the right-panel quadrant total with live $ values.                                                                                                              
+                                                             
+  Pre-req: Sprint 2C1 has shipped.                                                                                                                                                                             
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Update ExploreFlow.tsx to pass totalHoursSaved into ExploreCapacity
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx (case 'capacity' in the switch)
+                                                                                                                                                                                                               
+  REPLACE:                                                   
+    case 'capacity':                                                                                                                                                                                           
+      content = (                                            
+        <ExploreCapacity                                                                                                                                                                                       
+          state={state}                                 
+          updateState={updateState}                                                                                                                                                                            
+          onNext={() => navigate('workforce')}               
+          onBack={() => navigate('timeSavings')}                                                                                                                                                               
+          onHome={goHome}                               
+        />                                                                                                                                                                                                     
+      );                                                     
+      break;                                                                                                                                                                                                   
+                                                             
+  WITH:                                                                                                                                                                                                        
+    case 'capacity':                                    
+      content = (                                                                                                                                                                                              
+        <ExploreCapacity                         
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}                          
+          totalHoursSaved={totalHoursSaved}                                                                                                                                                                    
+          onNext={() => navigate('workforce')}          
+          onBack={() => navigate('timeSavings')}
+          onHome={goHome}                        
+        />                                                                                                                                                                                                     
+      );                                                     
+      break;                                                                                                                                                                                                   
+                                                        
+  ═══════════════════════════════════════════════════════════
+  TASK 2 — Create PatientAccessCalc component    
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/PatientAccessCalc.tsx
+                                                                                                                                                                                                               
+  Source of truth for behavior: ExploreValueDrivers.tsx lines 1014-1175 (the Patient Access expanded content). Port exactly, with two changes: (a) "Aggressive" preset label becomes "Optimistic"; (b) extract
+  from a wrapper component so it just renders the inner content.
+                                                             
+  import { useState, useMemo } from "react";                                                                                                                                                                   
+  import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+  import { type ExploreState } from "@/pages/explore/ExploreFlow";                                                                                                                                             
+                                         
+  interface Props {                                                                                                                                                                                            
+    state: ExploreState;                                                                                                                                                                                       
+    updateTimeDriverInputs: (updates: Partial<ExploreState['timeDriverInputs']>) => void;                                                                                                                      
+    totalHoursSaved: number;                                                                                                                                                                                   
+  }                                                     
+                                                          
+  export default function PatientAccessCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
+    const { timeDriverInputs } = state;                                                                                                                                                                        
+    const [customReinvestMode, setCustomReinvestMode] = useState(false);
+    const [customReinvestDisplay, setCustomReinvestDisplay] = useState(String(timeDriverInputs.capacityRealizationPercent));                                                                                   
+                                                             
+    const effectiveAccessProviders = Math.min(timeDriverInputs.accessProviders || state.numberOfProviders, state.numberOfProviders);                                                                           
+                                                          
+    const derivedVisitsPerWeek = useMemo(() => {                                                                                                                                                               
+      if (state.numberOfProviders <= 0 || totalHoursSaved <= 0) return 0;                                                                                                                                      
+      const hrsPerProvPerWeek = totalHoursSaved / state.numberOfProviders / 48;
+      const reinvestmentRate = (timeDriverInputs.capacityRealizationPercent ?? 25) / 100;                                                                                                                      
+      const visitDurationHrs = (timeDriverInputs.visitDuration ?? 30) / 60;
+      if (visitDurationHrs <= 0) return 0;                                                                                                                                                                     
+      return Math.round((hrsPerProvPerWeek * reinvestmentRate / visitDurationHrs) * 10) / 10;                                                                                                                  
+    }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.capacityRealizationPercent, timeDriverInputs.visitDuration]);                                                                               
+                                                                                                                                                                                                               
+    const potentialVisits = Math.round(derivedVisitsPerWeek * effectiveAccessProviders * 48);
+    const potentialRevenue = Math.round(potentialVisits * timeDriverInputs.revenuePerVisit);                                                                                                                   
+                                                                                                                                                                                                               
+    const hoursPerProviderPerWeek = state.numberOfProviders > 0                                                                                                                                                
+      ? (totalHoursSaved / state.numberOfProviders / 48).toFixed(1)                                                                                                                                            
+      : '0';                                              
+                                                                                                                                                                                                               
+    const formatCurrency = (n: number) => '$' + n.toLocaleString();                                                                                                                                            
+    const formatNumber = (n: number) => n.toLocaleString();                                                                                                                                                    
+                                                                                                                                                                                                               
+    return (                                                                                                                                                                                                   
+      <div>                                                                                                                                                                                                    
+        <p className="text-sm text-black mb-4">         
+          What percentage of recovered documentation time could realistically be reinvested into seeing additional patients?                                                                                   
+        </p>                                     
+                                                                                                                                                                                                               
+        <div className="space-y-3 mb-6">                     
+          <label className="text-sm text-[#888888]">Time reinvestment rate</label>                                                                                                                             
+          <div className="flex gap-2 mb-3">               
+            {[                                               
+              { label: 'Conservative', value: 15 },          
+              { label: 'Moderate', value: 25 },                                                                                                                                                                
+              { label: 'Optimistic', value: 35 },
+            ].map((preset) => (                                                                                                                                                                                
+              <button                                                                                                                                                                                          
+                key={preset.label}                           
+                onClick={() => {                                                                                                                                                                               
+                  setCustomReinvestMode(false);  
+                  updateTimeDriverInputs({ capacityRealizationPercent: preset.value });
+                }}                                                                                                                                                                                             
+                className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+                  !customReinvestMode && timeDriverInputs.capacityRealizationPercent === preset.value                                                                                                          
+                    ? 'bg-[#EA2C00] text-white'           
+                    : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+                }`}                                                                                                                                                                                            
+                data-testid={`button-reinvestment-preset-${preset.label.toLowerCase()}`}
+              >                                                                                                                                                                                                
+                <span className="font-medium">{preset.label}</span>
+                <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}%</span>                                                                                                                   
+              </button>                                      
+            ))}                                                                                                                                                                                                
+            <button                                       
+              onClick={() => setCustomReinvestMode(true)}                                                                                                                                                      
+              className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+                customReinvestMode ? 'bg-[#EA2C00] text-white' : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'                                                                                              
+              }`}                                
+            >                                                                                                                                                                                                  
+              <span className="font-medium">Custom</span>                                                                                                                                                      
+            </button>                                        
+          </div>                                                                                                                                                                                               
+                                                        
+          {customReinvestMode && (
+            <div className="flex items-center gap-3 mb-3">                                                                                                                                                     
+              <label className="text-sm text-[#666666] flex-shrink-0">Reinvestment rate</label>                                                                                                                
+              <div className="relative flex-1">                                                                                                                                                                
+                <input                                                                                                                                                                                         
+                  type="text"                                
+                  inputMode="numeric"                        
+                  value={customReinvestDisplay}              
+                  onChange={(e) => {                         
+                    const raw = e.target.value.replace(/[^0-9]/g, '');
+                    setCustomReinvestDisplay(raw);                                                                                                                                                             
+                    const n = parseInt(raw);     
+                    if (!isNaN(n) && n >= 1 && n <= 100) {                                                                                                                                                     
+                      updateTimeDriverInputs({ capacityRealizationPercent: n });
+                    }                                                                                                                                                                                          
+                  }}                                      
+                  onBlur={() => {                            
+                    const n = parseInt(customReinvestDisplay);
+                    if (isNaN(n) || n < 1) {                                                                                                                                                                   
+                      updateTimeDriverInputs({ capacityRealizationPercent: 25 });
+                      setCustomReinvestDisplay('25');                                                                                                                                                          
+                    } else {                                                                                                                                                                                   
+                      const clamped = Math.min(100, n);      
+                      updateTimeDriverInputs({ capacityRealizationPercent: clamped });                                                                                                                         
+                      setCustomReinvestDisplay(String(clamped));
+                    }                                   
+                  }}                                                                                                                                                                                           
+                  className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                  autoFocus                                                                                                                                                                                    
+                />                                      
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>                                                                                                    
+              </div>                                         
+            </div>                                                                                                                                                                                             
+          )}                                                 
+                                                                                                                                                                                                               
+          <div className="bg-[#F5F0EB] rounded-lg px-4 py-3 flex items-center justify-between">
+            <span className="text-sm text-[#666666]">Derived visits per provider per week</span>                                                                                                               
+            <span className="text-2xl font-bold text-black">{derivedVisitsPerWeek}</span>                                                                                                                      
+          </div>                                                                                                                                                                                               
+                                                                                                                                                                                                               
+          <p className="text-xs text-[#888888]">             
+            Most recovered documentation time is absorbed into quality of life, inbox, and longer patient conversations — not additional visits. Only a fraction converts to schedulable capacity.
+          </p>                                                                                                                                                                                                 
+        </div>                                               
+                                                                                                                                                                                                               
+        <div className="mb-6">                                                                                                                                                                                 
+          <div className="space-y-2.5">                      
+            <label className="text-sm text-[#888888]">Providers with scheduling capacity</label>                                                                                                               
+            <input                                                                                                                                                                                             
+              type="number"                      
+              min={1}                                                                                                                                                                                          
+              max={state.numberOfProviders}                  
+              value={effectiveAccessProviders}                                                                                                                                                                 
+              onChange={(e) => {                        
+                const v = Math.max(1, Math.min(state.numberOfProviders, parseInt(e.target.value) || 1));
+                updateTimeDriverInputs({ accessProviders: v });
+              }}                                                                                                                                                                                               
+              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
+            />                                                                                                                                                                                                 
+            <p className="text-xs text-[#888888]">           
+              How many of your {state.numberOfProviders} providers have the scheduling flexibility to see additional patients?
+            </p>                                        
+          </div>                                                                                                                                                                                               
+        </div>                                               
+                                                                                                                                                                                                               
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+          <div className="space-y-2.5">                                                                                                                                                                        
+            <label className="text-sm text-[#888888]">Average visit duration</label>
+            <div className="relative">                                                                                                                                                                         
+              <FormattedNumberInput                     
+                value={timeDriverInputs.visitDuration}                                                                                                                                                         
+                onChange={(v: number) => updateTimeDriverInputs({ visitDuration: v })}
+                className="h-12 bg-white pr-12"                                                                                                                                                                
+              />                                        
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">min</span>                                                                                                    
+            </div>                                           
+          </div>                                                                                                                                                                                               
+          <div className="space-y-2.5">                   
+            <label className="text-sm text-[#888888]">Revenue per visit</label>                                                                                                                                
+            <div className="relative">                       
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>                                                                                                       
+              <FormattedNumberInput                       
+                value={timeDriverInputs.revenuePerVisit}                                                                                                                                                       
+                onChange={(v: number) => updateTimeDriverInputs({ revenuePerVisit: v })}                                                                                                                       
+                className="h-12 bg-white pl-7"               
+              />                                                                                                                                                                                               
+            </div>                                        
+          </div>                                                                                                                                                                                               
+        </div>                                               
+                                                                                                                                                                                                               
+        <div className="bg-[#F5F0EB] rounded-lg p-4">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">How we got here</p>                                                                                                
+          <div className="space-y-2 text-sm">                                                                                                                                                                  
+            <div className="flex justify-between gap-2">     
+              <span className="text-[#666666]">Time saved per provider</span>                                                                                                                                  
+              <span className="font-semibold text-black flex-shrink-0">{hoursPerProviderPerWeek} hrs/wk</span>
+            </div>                                           
+            <div className="flex justify-between gap-2">
+              <span className="text-[#666666]">× {timeDriverInputs.capacityRealizationPercent}% reinvested ÷ {timeDriverInputs.visitDuration} min/visit</span>                                                 
+              <span className="font-semibold text-black flex-shrink-0">= {derivedVisitsPerWeek} visits/wk</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between gap-2">     
+              <span className="text-[#666666]">{derivedVisitsPerWeek} visits/wk × {effectiveAccessProviders} providers × 48 wks</span>                                                                         
+              <span className="font-semibold text-black flex-shrink-0">= {formatNumber(potentialVisits)} visits/yr</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between gap-2">     
+              <span className="text-[#666666]">× {formatCurrency(timeDriverInputs.revenuePerVisit)} per visit</span>                                                                                           
+              <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(potentialRevenue)}/yr</span>                                                                                          
+            </div>                                                                                                                                                                                             
+          </div>                                                                                                                                                                                               
+        </div>                                                                                                                                                                                                 
+      </div>                                                                                                                                                                                                   
+    );                                                                                                                                                                                                         
+  }                                                                                                                                                                                                            
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Create LwbsRecoveryCalc component
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/drivers/LwbsRecoveryCalc.tsx                                                                                                                                         
+                                                          
+  Source of truth for behavior: ExploreValueDrivers.tsx lines 455-591 (the LWBS Recovery inner content, excluding the Admission Capture nested toggle which becomes a separate component below).               
+                                                             
+  import { useMemo } from "react";                        
+  import { Info } from "lucide-react";                       
+  import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+  import { type ExploreState } from "@/pages/explore/ExploreFlow";                                                                                                                                             
+                                                             
+  interface Props {                                                                                                                                                                                            
+    state: ExploreState;                                                                                                                                                                                       
+    updateTimeDriverInputs: (updates: Partial<ExploreState['timeDriverInputs']>) => void;
+  }                                                                                                                                                                                                            
+                                                        
+  export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Props) {                                                                                                                         
+    const { timeDriverInputs } = state;                      
+                                                                                                                                                                                                               
+    const edRecoveredPatients = useMemo(() => {         
+      const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);                                                                                                                       
+      return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+    }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction]);                                                                                                               
+                                                             
+    const edLwbsValue = useMemo(() => {                                                                                                                                                                        
+      const grossValue = edRecoveredPatients * timeDriverInputs.edRevenuePerVisit;
+      return Math.round(grossValue * (timeDriverInputs.edLwbsRealization / 100));                                                                                                                              
+    }, [edRecoveredPatients, timeDriverInputs.edRevenuePerVisit, timeDriverInputs.edLwbsRealization]);                                                                                                         
+                                                                                                                                                                                                               
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();                                                                                                                                
+    const formatNumber = (n: number) => n.toLocaleString();                                                                                                                                                    
+                                                                                                                                                                                                               
+    return (                                                                                                                                                                                                   
+      <div>                                                                                                                                                                                                    
+        <p className="text-sm text-black mb-4">                                                                                                                                                                
+          Faster documentation reduces door-to-doc time and overall wait times. When patients wait less, fewer leave without being seen.                                                                       
+        </p>                                                                                                                                                                                                   
+                                                                                                                                                                                                               
+        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your ED</p>                                                                                                          
+                                                             
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">                                                                                                                                  
+          <div className="space-y-2.5">                      
+            <label className="text-sm text-[#888888]">Current LWBS rate</label>                                                                                                                                
+            <div className="relative">                       
+              <FormattedNumberInput                                                                                                                                                                            
+                value={timeDriverInputs.edLwbsRate}       
+                placeholder="e.g., 3"                                                                                                                                                                          
+                onChange={(v: number) => updateTimeDriverInputs({ edLwbsRate: v })}
+                className="h-12 bg-white pr-8"                                                                                                                                                                 
+              />                                          
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>                                                                                                      
+            </div>                                                                                                                                                                                             
+            <p className="text-xs text-[#888888]">National average: 2-5%. High-volume urban EDs may exceed 5%.</p>
+          </div>                                                                                                                                                                                               
+          <div className="space-y-2.5">                      
+            <label className="text-sm text-[#888888]">Revenue per ED visit</label>                                                                                                                             
+            <div className="relative">                                                                                                                                                                         
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>                                                                                                       
+              <FormattedNumberInput                                                                                                                                                                            
+                value={timeDriverInputs.edRevenuePerVisit}                                                                                                                                                     
+                placeholder="e.g., 350"                      
+                onChange={(v: number) => updateTimeDriverInputs({ edRevenuePerVisit: v })}                                                                                                                     
+                className="h-12 bg-white pl-7"               
+              />                                                                                                                                                                                               
+            </div>                                                                                                                                                                                             
+          </div>                                             
+        </div>                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+        <div className="space-y-3 mb-6">                  
+          <div className="flex items-center justify-between">                                                                                                                                                  
+            <label className="text-sm text-[#888888]">Expected LWBS reduction from faster documentation</label>                                                                                                
+            <span className="text-sm font-semibold text-black">{timeDriverInputs.edLwbsReduction}%</span>
+          </div>                                                                                                                                                                                               
+          <input                                          
+            type="range"                                                                                                                                                                                       
+            min={5}                                          
+            max={40}                                                                                                                                                                                           
+            step={1}                                    
+            value={timeDriverInputs.edLwbsReduction}      
+            onChange={(e) => updateTimeDriverInputs({ edLwbsReduction: Number(e.target.value) })}                                                                                                              
+            className="w-full accent-[#EA2C00]"                                                                                                                                                                
+          />                                                                                                                                                                                                   
+          <div className="flex gap-2">                                                                                                                                                                         
+            {[                                               
+              { label: 'Conservative', value: 10 },                                                                                                                                                            
+              { label: 'Moderate', value: 20 },         
+              { label: 'Optimistic', value: 30 },                                                                                                                                                              
+            ].map((preset) => (                              
+              <button                                                                                                                                                                                          
+                key={preset.label}                      
+                onClick={() => updateTimeDriverInputs({ edLwbsReduction: preset.value })}                                                                                                                      
+                className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+                  timeDriverInputs.edLwbsReduction === preset.value                                                                                                                                            
+                    ? 'bg-[#EA2C00] text-white'         
+                    : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'                                                                                                                                         
+                }`}                                          
+              >                                                                                                                                                                                                
+                <span className="font-medium">{preset.label}</span>
+                <span className="block text-[10px] mt-0.5 opacity-80">{preset.value}%</span>                                                                                                                   
+              </button>                                   
+            ))}                                                                                                                                                                                                
+          </div>                                             
+          <p className="text-xs text-[#888888]">                                                                                                                                                               
+            Door-to-doc time is the strongest predictor of LWBS rates (Welch et al., Annals of Emergency Medicine). Faster documentation directly reduces door-to-doc time, lowering the probability that
+  patients leave before being seen.                                                                                                                                                                            
+          </p>                                                                                                                                                                                                 
+          <div className="bg-[#F5F0EB] rounded-lg p-3">   
+            <p className="text-xs text-[#666666]">                                                                                                                                                             
+              Your ED currently sees ~<span className="font-semibold text-black">{formatNumber(Math.round(state.annualEncounters * (timeDriverInputs.edLwbsRate / 100)))}</span> LWBS patients/year. At
+  {timeDriverInputs.edLwbsReduction}% reduction, Abridge would recover ~<span className="font-semibold text-black">{formatNumber(Math.round(edRecoveredPatients))}</span> patients.                            
+            </p>                                             
+          </div>                                                                                                                                                                                               
+        </div>                                                                                                                                                                                                 
+                                                             
+        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>                                                                                                      
+                                                                                                                                                                                                               
+        <div className="bg-[#F5F0EB] rounded-lg p-4">     
+          <div className="space-y-2 text-sm">                                                                                                                                                                  
+            <div className="flex justify-between gap-2">     
+              <span className="text-[#666666]">Annual LWBS patients</span>                                                                                                                                     
+              <span className="font-semibold text-black flex-shrink-0">{formatNumber(Math.round(state.annualEncounters * (timeDriverInputs.edLwbsRate / 100)))}</span>
+            </div>                                      
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">× LWBS reduction</span>
+              <span className="font-semibold text-black flex-shrink-0">{timeDriverInputs.edLwbsReduction}%</span>                                                                                              
+            </div>                                           
+                                                                                                                                                                                                               
+            <div className="h-px bg-[#E5E5E5] my-2" />       
+                                                                                                                                                                                                               
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">= Patients recovered</span>                                                                                                                                     
+              <span className="font-semibold text-black flex-shrink-0">{formatNumber(Math.round(edRecoveredPatients))}</span>                                                                                  
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">× Revenue per visit</span>                                                                                                                                      
+              <span className="font-semibold text-black flex-shrink-0">{formatCurrency(timeDriverInputs.edRevenuePerVisit)}</span>                                                                             
+            </div>                                           
+                                                                                                                                                                                                               
+            <div className="h-px bg-[#E5E5E5] my-2" />       
+                                                                                                                                                                                                               
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">= Gross value</span>
+              <span className="font-semibold text-black flex-shrink-0">{formatCurrency(Math.round(edRecoveredPatients * timeDriverInputs.edRevenuePerVisit))}</span>                                           
+            </div>                                                                                                                                                                                             
+                                                                                                                                                                                                               
+            <div className="flex justify-between items-center gap-2">                                                                                                                                          
+              <div>                                                                                                                                                                                            
+                <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" title="Realization rate accounts for the fact that not all
+  gross opportunity converts to captured value — due to workflow variation, payer mix, coder judgment, or partial adoption." /></span>
+                <p className="text-xs text-[#888888]">(Not all recovered patients complete visits)</p>
+              </div>                                                                                                                                                                                           
+              <div className="flex items-center gap-2">                                                                                                                                                        
+                <FormattedNumberInput                                                                                                                                                                          
+                  value={timeDriverInputs.edLwbsRealization}                                                                                                                                                   
+                  onChange={(v: number) => updateTimeDriverInputs({ edLwbsRealization: v })}
+                  className="h-7 w-16 text-center text-base bg-white border border-[#E5E5E5] rounded"                                                                                                          
+                />                                                                                                                                                                                             
+                <span className="text-sm text-[#888888]">%</span>
+              </div>                                                                                                                                                                                           
+            </div>                                           
+                                                                                                                                                                                                               
+            <div className="h-px bg-[#333333] my-2" />                                                                                                                                                         
+                                                             
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="font-semibold text-black">Net LWBS Value</span>                                                                                                                                 
+              <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(edLwbsValue)}</span>                                                                                                    
+            </div>                                                                                                                                                                                             
+          </div>                                             
+        </div>                                                                                                                                                                                                 
+      </div>                                                 
+    );                                                       
+  }                                                                                                                                                                                                            
+                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Create AdmissionCaptureCalc component                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  NEW FILE: client/src/components/explore/drivers/AdmissionCaptureCalc.tsx                                                                                                                                     
+                                                 
+  Source of truth: ExploreValueDrivers.tsx lines 612-700 (the Admission Capture inner content).
+                                                                                                                                                                                                               
+  import { useMemo } from "react";                           
+  import { FormattedNumberInput } from "@/components/FormattedNumberInput";                                                                                                                                    
+  import { type ExploreState } from "@/pages/explore/ExploreFlow";
+                                                        
+  interface Props {                                                                                                                                                                                            
+    state: ExploreState;                                     
+    updateTimeDriverInputs: (updates: Partial<ExploreState['timeDriverInputs']>) => void;                                                                                                                      
+  }                                                     
+                                                                                                                                                                                                               
+  export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs }: Props) {
+    const { timeDriverInputs } = state;                                                                                                                                                                        
+                                                             
+    const edRecoveredPatients = useMemo(() => {                                                                                                                                                                
+      const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
+      return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+    }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction]);                                                                                                               
+                                                          
+    const potentialAdmissions = edRecoveredPatients * (timeDriverInputs.edAdmissionRate / 100);                                                                                                                
+    const grossValue = potentialAdmissions * timeDriverInputs.edAdmissionRevenue;
+    const netValue = Math.round(grossValue * (timeDriverInputs.edAdmissionRealization / 100));                                                                                                                 
+                                                             
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
+    const formatNumber = (n: number) => n.toLocaleString();                                                                                                                                                    
+                                                             
+    return (                                                                                                                                                                                                   
+      <div>                                                                                                                                                                                                    
+        {!timeDriverInputs.edLwbsEnabled && (                                                                                                                                                                  
+          <div className="mb-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">                                                                                               
+            Admission Capture uses LWBS recovered patients as its base. Enable LWBS Recovery above to see this value.                                                                                          
+          </div>                                                                                                                                                                                               
+        )}                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+        <p className="text-sm text-black mb-4">              
+          Of the {formatNumber(Math.round(edRecoveredPatients))} recovered ED patients, some will require inpatient admission — generating additional DRG-based revenue.                                       
+        </p>                                            
+                                                                                                                                                                                                               
+        <div className="bg-[#F5F0EB] rounded-lg p-4">                                                                                                                                                          
+          <div className="space-y-2 text-sm">                                                                                                                                                                  
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">Recovered ED patients</span>                                                                                                                                    
+              <span className="font-semibold text-black">{formatNumber(Math.round(edRecoveredPatients))}</span>
+            </div>                                      
+                                                                                                                                                                                                               
+            <div className="flex justify-between items-center gap-2">
+              <span className="text-[#666666]">× Admission rate</span>                                                                                                                                         
+              <div className="flex items-center gap-2">      
+                <FormattedNumberInput                                                                                                                                                                          
+                  value={timeDriverInputs.edAdmissionRate}
+                  onChange={(v: number) => updateTimeDriverInputs({ edAdmissionRate: v })}                                                                                                                     
+                  className="h-7 w-16 text-center text-base bg-white border border-[#E5E5E5] rounded"
+                />                                                                                                                                                                                             
+                <span className="text-sm text-[#888888]">%</span>
+              </div>                                                                                                                                                                                           
+            </div>                                           
+                                                                                                                                                                                                               
+            <div className="h-px bg-[#E5E5E5] my-2" />       
+                                                                                                                                                                                                               
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">= Potential admissions</span>
+              <span className="font-semibold text-black">{potentialAdmissions.toFixed(1)}</span>                                                                                                               
+            </div>                                                                                                                                                                                             
+                                                             
+            <div className="flex justify-between items-center gap-2">                                                                                                                                          
+              <span className="text-[#666666]">× Avg admission revenue</span>
+              <div className="flex items-center gap-1">      
+                <span className="text-sm text-[#888888]">$</span>                                                                                                                                              
+                <FormattedNumberInput                     
+                  value={timeDriverInputs.edAdmissionRevenue}                                                                                                                                                  
+                  onChange={(v: number) => updateTimeDriverInputs({ edAdmissionRevenue: v })}                                                                                                                  
+                  className="h-7 w-20 text-center text-base bg-white border border-[#E5E5E5] rounded"
+                />                                                                                                                                                                                             
+              </div>                                      
+            </div>                                                                                                                                                                                             
+                                                             
+            <div className="h-px bg-[#E5E5E5] my-2" />                                                                                                                                                         
+                                                          
+            <div className="flex justify-between gap-2">                                                                                                                                                       
+              <span className="text-[#666666]">= Gross value</span>                                                                                                                                            
+              <span className="font-semibold text-black">{formatCurrency(grossValue)}</span>
+            </div>                                                                                                                                                                                             
+                                                          
+            <div className="flex justify-between items-center gap-2">                                                                                                                                          
+              <div>                                          
+                <span className="text-[#666666]">× Realization rate</span>                                                                                                                                     
+                <p className="text-xs text-[#888888]">(Bed availability, payer mix)</p>
+              </div>                                      
+              <div className="flex items-center gap-2">                                                                                                                                                        
+                <FormattedNumberInput                        
+                  value={timeDriverInputs.edAdmissionRealization}                                                                                                                                              
+                  onChange={(v: number) => updateTimeDriverInputs({ edAdmissionRealization: v })}
+                  className="h-7 w-16 text-center text-base bg-white border border-[#E5E5E5] rounded"
+                />                                                                                                                                                                                             
+                <span className="text-sm text-[#888888]">%</span>
+              </div>                                                                                                                                                                                           
+            </div>                                           
+                                                                                                                                                                                                               
+            <div className="h-px bg-[#333333] my-2" />  
+                                                                                                                                                                                                               
+            <div className="flex justify-between gap-2">     
+              <span className="font-semibold text-black">Net Admission Value</span>                                                                                                                            
+              <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(netValue)}</span>
+            </div>                                                                                                                                                                                             
+          </div>                                          
+        </div>                                                                                                                                                                                                 
+      </div>                                                 
+    );                                                                                                                                                                                                         
+  }                                                          
+                                                        
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Wire calc components into ExploreCapacity.tsx
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreCapacity.tsx
+                                                                                                                                                                                                               
+  5.1 — Update the Props interface to accept totalHoursSaved:
+                                                             
+  interface ExploreCapacityProps {                           
+    state: ExploreState;                                     
+    updateState: (updates: Partial<ExploreState>) => void;   
+    totalHoursSaved: number;                                                                                                                                                                                   
+    onNext: () => void;                                                                                                                                                                                        
+    onBack: () => void;                                                                                                                                                                                        
+    onHome: () => void;                                                                                                                                                                                        
+  }                                                          
+                                                                                                                                                                                                               
+  5.2 — Update the function signature:                       
+                                                             
+  export default function ExploreCapacity({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreCapacityProps) {                                                                             
+                                                 
+  5.3 — Add imports at top:                                                                                                                                                                                    
+                                                                                                                                                                                                               
+  import { useMemo } from "react";                           
+  import PatientAccessCalc from "@/components/explore/drivers/PatientAccessCalc";                                                                                                                              
+  import LwbsRecoveryCalc from "@/components/explore/drivers/LwbsRecoveryCalc";
+  import AdmissionCaptureCalc from "@/components/explore/drivers/AdmissionCaptureCalc";
+                                                                                                                                                                                                               
+  5.4 — Add a helper that returns the calc component for a given driver id. Place this above the `return (` statement:
+                                                                                                                                                                                                               
+  const renderCalcForDriver = (driverId: string) => {        
+    switch (driverId) {                                                                                                                                                                                        
+      case 'patientAccess':                                  
+        return <PatientAccessCalc state={state} updateTimeDriverInputs={updateTimeDriverInputs} totalHoursSaved={totalHoursSaved} />;                                                                          
+      case 'lwbsRecovery':                                                                                                                                                                                     
+        return <LwbsRecoveryCalc state={state} updateTimeDriverInputs={updateTimeDriverInputs} />;                                                                                                             
+      case 'admissionCapture':                                                                                                                                                                                 
+        return <AdmissionCaptureCalc state={state} updateTimeDriverInputs={updateTimeDriverInputs} />;
+      default:                                                                                                                                                                                                 
+        return (                                             
+          <div className="bg-[#F5F0EB] rounded-lg p-4">                                                                                                                                                        
+            <p className="text-sm text-[#888888] italic">Calculation logic for "{driverId}" not yet wired.</p>
+          </div>                                                                                                                                                                                               
+        );                                                
+    }                                                                                                                                                                                                          
+  };                                                         
+                                                                                                                                                                                                               
+  5.5 — In the JSX, REPLACE the calc stub for top-level quantified drivers:
+                                                                                                                                                                                                               
+  REPLACE:                                                                                                                                                                                                     
+    ) : (                                                                                                                                                                                                      
+      <div className="bg-[#F5F0EB] rounded-lg p-4">                                                                                                                                                            
+        <p className="text-sm text-[#888888] italic">                                                                                                                                                          
+          Calculation logic wires up in the next sprint.
+        </p>                                              
+      </div>                                                                                                                                                                                                   
+    )}                                                       
+                                                                                                                                                                                                               
+  WITH:                                                      
+    ) : (                                               
+      renderCalcForDriver(driver.id)                                                                                                                                                                           
+    )}                                           
+                                                                                                                                                                                                               
+  5.6 — Same replacement for child driver calc stubs further down:
+                                                                                                                                                                                                               
+  REPLACE:                                                
+    <div className="bg-[#F5F0EB] rounded-lg p-4">            
+      <p className="text-sm text-[#888888] italic">          
+        Calculation logic wires up in the next sprint.                                                                                                                                                         
+      </p>                                                
+    </div>                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  WITH:                                                 
+    {renderCalcForDriver(child.id)}                                                                                                                                                                            
+                                                             
+  5.7 — Add live $ value calculation for the right panel. Add this `useMemo` block after `renderCalcForDriver`:                                                                                                
+                                                        
+  const driverValues = useMemo(() => {                                                                                                                                                                         
+    const result: Record<string, number> = {};               
+    const td = state.timeDriverInputs;                                                                                                                                                                         
+                                                        
+    // Patient Access (OP)                                                                                                                                                                                     
+    if (td.patientAccessEnabled) {                           
+      const effectiveAccessProviders = Math.min(td.accessProviders || state.numberOfProviders, state.numberOfProviders);                                                                                       
+      const hrsPerProvPerWeek = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;
+      const reinvestRate = (td.capacityRealizationPercent ?? 25) / 100;                                                                                                                                        
+      const visitDurationHrs = (td.visitDuration ?? 30) / 60;
+      const visitsPerWeek = visitDurationHrs > 0 ? Math.round((hrsPerProvPerWeek * reinvestRate / visitDurationHrs) * 10) / 10 : 0;                                                                            
+      const annualVisits = visitsPerWeek * effectiveAccessProviders * 48;
+      result.patientAccess = Math.round(annualVisits * td.revenuePerVisit);                                                                                                                                    
+    }                                                        
+                                                                                                                                                                                                               
+    // LWBS Recovery (ED)                                                                                                                                                                                      
+    if (td.edLwbsEnabled) {                                                                                                                                                                                    
+      const lwbsPatients = state.annualEncounters * (td.edLwbsRate / 100);                                                                                                                                     
+      const recovered = lwbsPatients * (td.edLwbsReduction / 100);                                                                                                                                             
+      result.lwbsRecovery = Math.round(recovered * td.edRevenuePerVisit * (td.edLwbsRealization / 100));                                                                                                       
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    // Admission Capture (ED, child of LWBS)                                                                                                                                                                   
+    if (td.edThroughputEnabled && td.edLwbsEnabled) {                                                                                                                                                          
+      const lwbsPatients = state.annualEncounters * (td.edLwbsRate / 100);
+      const recovered = lwbsPatients * (td.edLwbsReduction / 100);                                                                                                                                             
+      const admissions = recovered * (td.edAdmissionRate / 100);
+      result.admissionCapture = Math.round(admissions * td.edAdmissionRevenue * (td.edAdmissionRealization / 100));                                                                                            
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+    return result;                                                                                                                                                                                             
+  }, [state, totalHoursSaved]);                              
+                                                                                                                                                                                                               
+  const annualBenefitsTotal = useMemo(() => {           
+    return benefits.filter(b => b.type === 'annual').reduce((sum, b) => sum + (b.amount || 0), 0);                                                                                                             
+  }, [benefits]);                                         
+                                                                                                                                                                                                               
+  const oneTimeBenefitsTotal = useMemo(() => {               
+    return benefits.filter(b => b.type === 'oneTime').reduce((sum, b) => sum + (b.amount || 0), 0);                                                                                                            
+  }, [benefits]);                                            
+                                                        
+  const quadrantAnnualTotal = useMemo(() => {                                                                                                                                                                  
+    return Object.values(driverValues).reduce((sum, v) => sum + v, 0) + annualBenefitsTotal;
+  }, [driverValues, annualBenefitsTotal]);                                                                                                                                                                     
+                                                             
+  5.8 — Update the right panel to show live values. REPLACE the existing right-panel driver list JSX with:                                                                                                     
+                                                             
+  {drivers.length === 0 ? (                                                                                                                                                                                    
+    <p className="text-sm text-white/50">No drivers for this setting.</p>
+  ) : (                                                                                                                                                                                                        
+    <div className="space-y-3 mb-4">                    
+      {drivers.map(d => {                                                                                                                                                                                      
+        const enabled = isEnabled(d);                        
+        const value = driverValues[d.id];                                                                                                                                                                      
+        return (                                             
+          <div key={d.id} className={`flex justify-between items-center ${d.childOfDriverId ? 'pl-4' : ''}`}>                                                                                                  
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${enabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />                                                                                           
+              <span className="text-sm text-[#888888] truncate">{d.label}</span>
+            </div>                                                                                                                                                                                             
+            <span className={`text-sm font-semibold flex-shrink-0 ${enabled ? 'text-white' : 'text-[#666666]'}`}>
+              {!enabled ? '—' : d.visibility === 'qualitative' ? 'Qualitative' : (typeof value === 'number' ? formatCurrency(value) : '—')}                                                                    
+            </span>                                          
+          </div>                                                                                                                                                                                               
+        );                                                                                                                                                                                                     
+      })}                                                    
+    </div>                                                                                                                                                                                                     
+  )}                                                         
+                                                                                                                                                                                                               
+  5.9 — REPLACE the "Quadrant Total" block at the bottom of the right panel with:                                                                                                                              
+                                                                                                                                                                                                               
+  <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Quadrant Total</p>                                                                                                             
+  <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(quadrantAnnualTotal)}</p>                                                                                                                   
+  <p className="text-xs text-white/50 mt-1">Annual recurring</p>                                                                                                                                               
+  {oneTimeBenefitsTotal > 0 && (                             
+    <p className="text-xs text-white/70 mt-1">+ {formatCurrency(oneTimeBenefitsTotal)} one-time (Y1 only)</p>
+  )}                                                         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  1. TypeScript compiles. The new calc components import from existing paths only.                                                                                                                             
+                                                                                                                                                                                                               
+  2. Outpatient walkthrough to Capacity (step 4/9):                                                                                                                                                            
+     - Toggle Patient Access on                                                                                                                                                                                
+     - The full calc UI renders: reinvestment rate presets (Conservative/Moderate/Optimistic/Custom), providers-with-capacity input, visit duration, revenue per visit, "How we got here" calc card with live  
+  numbers                                                    
+     - Change the reinvestment rate → derived visits/week and final $ both update live                                                                                                                         
+     - Right panel shows the Patient Access $ value live, Quadrant Total reflects it
+     - Add an Other Financial Benefit ($50,000 annual) → Quadrant Total goes up by $50,000                                                                                                                     
+     - Add a one-time benefit → it shows separately as "+ $X one-time (Y1 only)"
+                                                                                                                                                                                                               
+  3. Emergency walkthrough to Capacity (step 4/9):           
+     - Toggle LWBS Recovery on → full calc UI renders (LWBS rate, revenue per visit, reduction slider with presets, calc breakdown with realization rate)                                                      
+     - Right panel shows LWBS $ value live                                                                                                                                                                     
+     - With LWBS still on, toggle Admission Capture on → nested calc UI renders below
+     - Right panel shows Admission Capture indented under LWBS with its own $ value                                                                                                                            
+     - Toggle LWBS off → Admission Capture nested toggle disappears entirely; right panel removes both lines                                                                                                   
+     - Re-enable LWBS, then toggle Admission Capture but leave LWBS off (manually edit) → the amber warning "Admission Capture uses LWBS recovered patients as its base" appears                               
+                                                                                                                                                                                                               
+  4. Inpatient walkthrough to Capacity:                                                                                                                                                                        
+     - Rounding Efficiency toggle works exactly as in 2C1 (qualitative, no calc)                                                                                                                               
+     - Right panel shows "Qualitative" when enabled                                                                                                                                                            
+                                                                                                                                                                                                               
+  5. Nursing walkthrough to Capacity:                                                                                                                                                                          
+     - Bedside / Direct Care Time toggle works as in 2C1 (qualitative)                                                                                                                                         
+                                                                                                                                                                                                               
+  6. Step 9 (Model) — verify the Capacity contribution flows through:                                                                                                                                          
+     - The existing `timeValue` memoizer in ExploreFlow.tsx already sums patientAccessEnabled / edLwbsEnabled / edThroughputEnabled — it should pick up the values from the Capacity page automatically        
+     - Total annual value on Step 9 should match what the Capacity right panel showed (plus other quadrants when wired)                                                                                        
+                                                                                                                                                                                                               
+  7. No console errors. Old ExploreValueDrivers.tsx is still on disk but unused; do not delete.
+                                                                                                                                                                                                               
+  NOTES:                                                     
+  - The calc components share state field names with the legacy ExploreValueDrivers.tsx code, which is intentional — preserves backward compat with timeValue memoizer in ExploreFlow.tsx.                     
+  - One-time Other Financial Benefits flow into Y1 only. The quadrant total in the right panel shows only annual recurring + a separate "+ $X one-time" callout for the spike.                                 
+  - Sprint 2D will replicate the full Capacity page pattern for Workforce, Revenue, Quality. The calc components get added per quadrant as we go. 

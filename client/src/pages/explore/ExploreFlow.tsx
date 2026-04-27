@@ -3,9 +3,10 @@ import ExploreCareSettings from "./ExploreCareSettings";
 import ExploreOpportunity from "./ExploreOpportunity";
 import ExploreTimeSavings from "./ExploreTimeSavings";
 
-import ExploreValueDrivers from "./ExploreValueDrivers";
-import ExploreDocQuality from "./ExploreDocQuality";
-import ExploreCareQuality from "./ExploreCareQuality";
+import ExploreCapacity from "./ExploreCapacity";
+import ExploreWorkforce from "./ExploreWorkforce";
+import ExploreRevenue from "./ExploreRevenue";
+import ExploreQuality from "./ExploreQuality";
 import ExploreInvestment from "./ExploreInvestment";
 import ExploreModel from "./ExploreModel";
 import { ExploreProgressBar } from "@/components/ExploreProgressBar";
@@ -535,9 +536,10 @@ type ExplorePhase =
   | 'careSetting' 
   | 'practice' 
   | 'timeSavings' 
-  | 'valueDrivers' 
-  | 'careQuality'
-  | 'docQuality'
+  | 'capacity'
+  | 'workforce'
+  | 'revenue'
+  | 'quality'
   | 'investment'
   | 'model';
 
@@ -552,7 +554,15 @@ interface ExploreFlowProps {
 }
 
 export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [] }: ExploreFlowProps) {
-  const [phase, setPhase] = useState<ExplorePhase>(initialPhase || (initialExploreState ? 'practice' : 'careSetting'));
+  const [phase, setPhase] = useState<ExplorePhase>(() => {
+    const requested = initialPhase || (initialExploreState ? 'practice' : 'careSetting');
+    const legacyMap: Record<string, ExplorePhase> = {
+      valueDrivers: 'capacity',
+      docQuality: 'revenue',
+      careQuality: 'quality',
+    };
+    return (legacyMap[requested as string] ?? requested) as ExplorePhase;
+  });
   const [state, setState] = useState<ExploreState>(() => {
     if (initialExploreState) {
       return { ...DEFAULT_EXPLORE_STATE, ...initialExploreState };
@@ -627,7 +637,14 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       if (event.state?.view === 'explore' && event.state?.explorePhase) {
-        setPhase(event.state.explorePhase);
+        const requested = event.state.explorePhase as string;
+        const legacyMap: Record<string, ExplorePhase> = {
+          valueDrivers: 'capacity',
+          docQuality: 'revenue',
+          careQuality: 'quality',
+        };
+        const resolved = (legacyMap[requested] ?? requested) as ExplorePhase;
+        setPhase(resolved);
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (event.state?.view === 'journey' || !event.state?.view) {
         if (onBackToJourney) {
@@ -878,16 +895,17 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     careSetting: 1,
     practice: 2,
     timeSavings: 3,
-    valueDrivers: 4,
-    docQuality: 5,
-    careQuality: 5,
-    investment: 6,
-    model: 7,
+    capacity: 4,
+    workforce: 5,
+    revenue: 6,
+    quality: 7,
+    investment: 8,
+    model: 9,
   };
 
   const progressBar = (
     <div className="px-4 pt-4 max-w-2xl mx-auto w-full">
-      <ExploreProgressBar currentStep={phaseToStep[phase]} totalSteps={7} />
+      <ExploreProgressBar currentStep={phaseToStep[phase]} totalSteps={9} />
     </div>
   );
 
@@ -928,7 +946,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           state={state}
           updateState={updateState}
           onNext={() => {
-            navigate('valueDrivers');
+            navigate('capacity');
           }}
           onBack={() => navigate('practice')}
           onHome={goHome}
@@ -936,43 +954,49 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       );
       break;
     
-    case 'valueDrivers':
+    case 'capacity':
       content = (
-        <ExploreValueDrivers
+        <ExploreCapacity
           state={state}
           updateState={updateState}
-          totalHoursSaved={totalHoursSaved}
-          onNext={() => navigate(isNursing ? 'careQuality' : 'docQuality')}
+          onNext={() => navigate('workforce')}
           onBack={() => navigate('timeSavings')}
           onHome={goHome}
         />
       );
       break;
     
-    case 'careQuality':
+    case 'workforce':
       content = (
-        <ExploreCareQuality
+        <ExploreWorkforce
           state={state}
           updateState={updateState}
-          timeDriverInputs={state.timeDriverInputs}
-          updateTimeDriverInputs={(updates) => updateState({ timeDriverInputs: { ...state.timeDriverInputs, ...updates } })}
-          totalHoursSaved={totalHoursSaved}
-          timeValue={timeValue}
-          onNext={() => navigate('investment')}
-          onBack={() => navigate('valueDrivers')}
+          onNext={() => navigate('revenue')}
+          onBack={() => navigate('capacity')}
           onHome={goHome}
         />
       );
       break;
     
-    case 'docQuality':
+    case 'revenue':
       content = (
-        <ExploreDocQuality
+        <ExploreRevenue
           state={state}
           updateState={updateState}
-          timeValue={timeValue}
+          onNext={() => navigate('quality')}
+          onBack={() => navigate('workforce')}
+          onHome={goHome}
+        />
+      );
+      break;
+    
+    case 'quality':
+      content = (
+        <ExploreQuality
+          state={state}
+          updateState={updateState}
           onNext={() => navigate('investment')}
-          onBack={() => navigate('valueDrivers')}
+          onBack={() => navigate('revenue')}
           onHome={goHome}
         />
       );
@@ -987,19 +1011,35 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           timeValue={timeValue}
           docValue={docValue}
           onNext={() => navigate('model')}
-          onBack={() => navigate(isNursing ? 'careQuality' : 'docQuality')}
+          onBack={() => navigate('quality')}
           onHome={goHome}
         />
       );
       break;
     
     case 'model': {
-      const stepPhaseMap: ExplorePhase[] = isNursing
-        ? ['careSetting', 'practice', 'timeSavings', 'valueDrivers', 'careQuality', 'investment', 'model']
-        : ['careSetting', 'practice', 'timeSavings', 'valueDrivers', 'docQuality', 'investment', 'model'];
-      const stepLabels = isNursing
-        ? ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', 'Care Quality', 'Investment', 'Your Model']
-        : ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', 'Doc Quality', 'Investment', 'Your Model'];
+      const stepPhaseMap: ExplorePhase[] = [
+        'careSetting',
+        'practice',
+        'timeSavings',
+        'capacity',
+        'workforce',
+        'revenue',
+        'quality',
+        'investment',
+        'model',
+      ];
+      const stepLabels = [
+        'Care Setting',
+        'Practice',
+        'Time Savings',
+        'Capacity',
+        'Workforce',
+        'Revenue',
+        'Quality',
+        'Investment',
+        'Your Model',
+      ];
       content = (
         <ExploreModel
           state={state}
