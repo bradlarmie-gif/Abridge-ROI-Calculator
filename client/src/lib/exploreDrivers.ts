@@ -969,7 +969,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: [],
   },
 
-  // Nursing Workforce (qualitative)
+  // Nursing Workforce (qualitative — 3 drivers, expanded by R-IA-6)
   {
     id: 'nursingLikelihoodToStay',
     label: 'Likelihood to Stay',
@@ -980,6 +980,54 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingLikelihoodToStayEnabled',
     expandedStateKey: 'nursingLikelihoodToStayExpanded',
     trackedMeasureIds: ['likelihoodToStay'],
+  },
+
+  // Nursing Capacity (qualitative — added by R-IA-6; bedsideTime renders FIRST from earlier in the array)
+  {
+    id: 'nursingDocumentationLag',
+    label: 'Documentation Lag',
+    shortDescription: 'Minutes from a care event to when it appears in the chart. Faster documentation makes patient information available to the next shift, the charge nurse, and the care team without waiting for end-of-shift batch entry.',
+    quadrant: 'Capacity',
+    settings: ['nursing'],
+    visibility: 'qualitative',
+    enabledStateKey: 'nursingDocumentationLagEnabled',
+    expandedStateKey: 'nursingDocumentationLagExpanded',
+    trackedMeasureIds: [],
+  },
+  {
+    id: 'nursingPointOfCareDoc',
+    label: 'Point-of-Care Documentation Rate',
+    shortDescription: 'Share of nursing documentation completed at the moment of care versus batched at the end of shift. The defining shift ambient nursing documentation enables.',
+    quadrant: 'Capacity',
+    settings: ['nursing'],
+    visibility: 'qualitative',
+    enabledStateKey: 'nursingPointOfCareDocEnabled',
+    expandedStateKey: 'nursingPointOfCareDocExpanded',
+    trackedMeasureIds: [],
+  },
+
+  // Nursing Workforce (qualitative — added by R-IA-6)
+  {
+    id: 'nursingBurnout',
+    label: 'Burnout Score',
+    shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory) administered to nursing staff. Tracked as a leading indicator for retention.',
+    quadrant: 'Workforce',
+    settings: ['nursing'],
+    visibility: 'qualitative',
+    enabledStateKey: 'nursingBurnoutEnabled',
+    expandedStateKey: 'nursingBurnoutExpanded',
+    trackedMeasureIds: ['burnoutAssessment'],
+  },
+  {
+    id: 'nursingChartingAfterShift',
+    label: 'Charting After Shift',
+    shortDescription: 'Minutes nurses spend in the EHR after their scheduled shift ends. A direct burden signal — and the lever that ambient nursing documentation reduces.',
+    quadrant: 'Workforce',
+    settings: ['nursing'],
+    visibility: 'qualitative',
+    enabledStateKey: 'nursingChartingAfterShiftEnabled',
+    expandedStateKey: 'nursingChartingAfterShiftExpanded',
+    trackedMeasureIds: ['chartingAfterShift'],
   },
 ];
 

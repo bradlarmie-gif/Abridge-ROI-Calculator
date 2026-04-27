@@ -265,9 +265,18 @@ export interface TimeDriverInputs {
   ipCcMccCaptureExpanded: boolean;
   ipCdiQueryTrendEnabled: boolean;
   ipCdiQueryTrendExpanded: boolean;
-  // Nursing Workforce qualitative
+  // Nursing Capacity qualitative (3 — expanded by R-IA-6)
+  nursingDocumentationLagEnabled: boolean;
+  nursingDocumentationLagExpanded: boolean;
+  nursingPointOfCareDocEnabled: boolean;
+  nursingPointOfCareDocExpanded: boolean;
+  // Nursing Workforce qualitative (3 — expanded by R-IA-6)
   nursingLikelihoodToStayEnabled: boolean;
   nursingLikelihoodToStayExpanded: boolean;
+  nursingBurnoutEnabled: boolean;
+  nursingBurnoutExpanded: boolean;
+  nursingChartingAfterShiftEnabled: boolean;
+  nursingChartingAfterShiftExpanded: boolean;
 }
 
 // Documentation Quality inputs
@@ -631,8 +640,16 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipCcMccCaptureExpanded: false,
     ipCdiQueryTrendEnabled: false,
     ipCdiQueryTrendExpanded: false,
+    nursingDocumentationLagEnabled: false,
+    nursingDocumentationLagExpanded: false,
+    nursingPointOfCareDocEnabled: false,
+    nursingPointOfCareDocExpanded: false,
     nursingLikelihoodToStayEnabled: false,
     nursingLikelihoodToStayExpanded: false,
+    nursingBurnoutEnabled: false,
+    nursingBurnoutExpanded: false,
+    nursingChartingAfterShiftEnabled: false,
+    nursingChartingAfterShiftExpanded: false,
   },
   otherFinancialBenefits: [],
   // Documentation quality inputs
