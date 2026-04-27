@@ -1,0 +1,231 @@
+ 🔧 R-IA-3 — Trim OP qualitative drivers to exactly 3 per quadrant (Replit prompt — paste verbatim)
+                                                                                                                                                                                                               
+  Context: After R-IA-1 and R-IA-2 shipped, Brad reviewed the deployed OP pages and wants the qualitative driver list (under "Other Metrics to Watch") trimmed to EXACTLY 3 items per quadrant. The current    
+  state has too many on Quality (7 items) and the curated picks on the other quadrants don't quite match his strategic focus. This prompt removes 8 OP qualitative drivers and adds 7 new ones to land at 3 per
+   quadrant. ED, IP, and Nursing qualitative drivers are not touched — they're already at or under the 3-item limit.                                                                                           
+                                                                                                                                                                                                               
+  Pre-req: R-IA-1 + R-IA-2 shipped.                         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                   
+  TASK 1 — Remove deprecated OP qualitative state fields                                                                                                                                                       
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                
+  REMOVE these enabled/expanded boolean field pairs from the TimeDriverInputs interface AND from the DEFAULT_EXPLORE_STATE.timeDriverInputs defaults block:                                                    
+                                                                                                                                                                                                               
+    opPatientWaitTimeEnabled / opPatientWaitTimeExpanded                  
+    opLikelihoodToStayEnabled / opLikelihoodToStayExpanded                                                                                                                                                     
+    opDaysInAREnabled / opDaysInARExpanded                                      
+    opAuditDefensibilityEnabled / opAuditDefensibilityExpanded                                                                                                                                                 
+    opCdiQueryReductionEnabled / opCdiQueryReductionExpanded              
+    opCognitiveLoadEnabled / opCognitiveLoadExpanded                                                                                                                                                           
+    opAuditComplianceEnabled / opAuditComplianceExpanded                                                                                                                                                       
+    opDiagnosisSpecificityEnabled / opDiagnosisSpecificityExpanded                                                                                                                                             
+                                                                                                                                                                                                               
+  That's 16 fields total (8 pairs) to remove.                                   
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════             
+  TASK 2 — Add new OP qualitative state fields                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx            
+                                                                                                                                                                                                               
+  ADD these new enabled/expanded boolean pairs to TimeDriverInputs and to DEFAULT_EXPLORE_STATE.timeDriverInputs (default `false` for all):
+                                                                                                                                                                                                               
+    // OP Capacity (new)                                                        
+    opSameDayAccessEnabled: boolean;                                                                                                                                                                           
+    opSameDayAccessExpanded: boolean;                                           
+    opExtendedVisitTimeEnabled: boolean;                                                                                                                                                                       
+    opExtendedVisitTimeExpanded: boolean;                     
+    // OP Workforce (new)                                                                                                                                                                                      
+    opAfterHoursDocEnabled: boolean;                                                                                                                                                                           
+    opAfterHoursDocExpanded: boolean;                         
+    opNotesBeforeLeavingEnabled: boolean;                                                                                                                                                                      
+    opNotesBeforeLeavingExpanded: boolean;                                      
+    // OP Revenue (new)                                                                                                                                                                                        
+    opEmLevelDistributionEnabled: boolean;                                                                                                                                                                     
+    opEmLevelDistributionExpanded: boolean;               
+    opCdiQueryTrendEnabled: boolean;                                                                                                                                                                           
+    opCdiQueryTrendExpanded: boolean;                                                                                                                                                                          
+    opCodingSpecificityEnabled: boolean;                                  
+    opCodingSpecificityExpanded: boolean;                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════             
+  TASK 3 — Remove deprecated OP qualitative driver entries from EXPLORE_DRIVERS                                                                                                                                
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                                          
+  REMOVE these driver entries from the EXPLORE_DRIVERS array (find by id):                                                                                                                                     
+                                                                                                                                                                                                               
+    opPatientWaitTime                                                     
+    opLikelihoodToStay                                                                                                                                                                                         
+    opDaysInAR                                                                  
+    opAuditDefensibility                                                                                                                                                                                       
+    opCdiQueryReduction         ← was OP Quality              
+    opCognitiveLoad              ← was OP Quality                                                                                                                                                              
+    opAuditCompliance            ← was OP Quality                                                                                                                                                              
+    opDiagnosisSpecificity       ← was OP Quality                         
+                                                                                                                                                                                                               
+  KEEP these existing OP qualitative drivers:                                   
+                                                                                                                                                                                                               
+    opThirdNextAvailable         (Capacity — keep)                              
+    opBurnoutTracking            (Workforce — keep)           
+    opNoteStarRating             (Quality — keep)                                                                                                                                                              
+    opCareContinuity             (Quality — keep)         
+    opDiagnosisCapture           (Quality — keep)                                                                                                                                                              
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 4 — Add 7 new OP qualitative driver entries                                                                                                                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                      
+                                                                                                                                                                                                               
+  APPEND these driver entries to the EXPLORE_DRIVERS array. All have `visibility: 'qualitative'`, no calcComponent, no measureDefaults. Voice is neutral.                                                      
+                                                           
+    // ───── OP Capacity (new) ─────                                                                                                                                                                           
+    {                                                                           
+      id: 'opSameDayAccess',                                                                                                                                                                                   
+      label: 'Same-Day or Urgent Access Slots',                                 
+      shortDescription: 'Number of same-day or urgent slots opened on the schedule. A measure of access for patients who need to be seen quickly.',                                                            
+      quadrant: 'Capacity',                                 
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                                
+      enabledStateKey: 'opSameDayAccessEnabled',                                                                                                                                                               
+      expandedStateKey: 'opSameDayAccessExpanded',                              
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                                          
+    {                                                                                                                                                                                                          
+      id: 'opExtendedVisitTime',                                                                                                                                                                               
+      label: 'Extended Visit Time for Complex Patients',                                                                                                                                                       
+      shortDescription: 'Average minutes spent with complex patients during their visit. Tracks whether reclaimed time is reinvested in deeper care for harder cases.',                                        
+      quadrant: 'Capacity',                                                     
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                                
+      enabledStateKey: 'opExtendedVisitTimeEnabled',                                                                                                                                                           
+      expandedStateKey: 'opExtendedVisitTimeExpanded',                          
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                                                                                                                                                                         
+                                                          
+    // ───── OP Workforce (new) ─────                                                                                                                                                                          
+    {                                                                           
+      id: 'opAfterHoursDoc',                                                                                                                                                                                   
+      label: 'After-Hours Documentation',                                       
+      shortDescription: 'Time providers spend in the EHR outside scheduled clinical hours. A widely used signal for documentation burden.',                                                                    
+      quadrant: 'Workforce',              
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opAfterHoursDocEnabled',                          
+      expandedStateKey: 'opAfterHoursDocExpanded',                                                                                                                                                             
+      trackedMeasureIds: ['workOutsideWorkEmpirical'],                          
+    },                                                      
+    {                                                                     
+      id: 'opNotesBeforeLeaving',                                                                                                                                                                              
+      label: 'Notes Completed Before Leaving the Clinic',                                                                                                                                                      
+      shortDescription: 'Share of encounter notes signed before the provider leaves the clinic that day. Tracks the shift away from after-hours charting.',                                                    
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['outpatient'],                                                 
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opNotesBeforeLeavingEnabled',                                                                                                                                                          
+      expandedStateKey: 'opNotesBeforeLeavingExpanded',                                                                                                                                                        
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                                                                                                                                                                         
+                                                                          
+    // ───── OP Revenue (new) ─────                                                                                                                                                                            
+    {                                                                           
+      id: 'opEmLevelDistribution',                                                                                                                                                                             
+      label: 'E&M Level Distribution Shift',                                    
+      shortDescription: 'Distribution of E/M codes assigned across encounters. A shift toward higher-level codes can indicate documentation more fully reflects visit complexity.',                            
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['outpatient'],                            
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opEmLevelDistributionEnabled',                          
+      expandedStateKey: 'opEmLevelDistributionExpanded',                  
+      trackedMeasureIds: ['emLevel'],                       
+    },                                                                                                                                                                                                         
+    {                                                                     
+      id: 'opCdiQueryTrend',                                                                                                                                                                                   
+      label: 'CDI Query Volume Trend',                                          
+      shortDescription: 'Volume of CDI queries returned to providers post-visit. Decreasing query volume often signals more complete documentation at the point of care.',                                     
+      quadrant: 'Revenue',                                                      
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opCdiQueryTrendEnabled',            
+      expandedStateKey: 'opCdiQueryTrendExpanded',                                                                                                                                                             
+      trackedMeasureIds: ['opCdiQueryReduction'],                               
+    },                                                                                                                                                                                                         
+    {                                                      
+      id: 'opCodingSpecificity',                                                                                                                                                                               
+      label: 'Coding Specificity Improvement',                                  
+      shortDescription: 'Share of diagnoses coded to the highest available ICD-10 specificity. Tracked as a downstream signal of clinical detail captured in notes.',                                          
+      quadrant: 'Revenue',                                                      
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                          
+      enabledStateKey: 'opCodingSpecificityEnabled',                                                                                                                                                           
+      expandedStateKey: 'opCodingSpecificityExpanded',                          
+      trackedMeasureIds: ['diagnosisSpecificity'],                                                                                                                                                             
+    },                                                                          
+                                                           
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Sanity check that no other code references the removed drivers
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                
+  Grep for references to the removed driver IDs across client/src/:                                                                                                                                            
+                                                           
+    opPatientWaitTime                                                                                                                                                                                          
+    opLikelihoodToStay                                                          
+    opDaysInAR                                                                                                                                                                                                 
+    opAuditDefensibility                                                        
+    opCdiQueryReduction                                                                                                                                                                                        
+    opCognitiveLoad                                        
+    opAuditCompliance                                                                                                                                                                                          
+    opDiagnosisSpecificity                                                      
+                                                                                                                                                                                                               
+  These IDs should now appear ONLY in the EXPLORE_DRIVERS removals (which are gone) and possibly in the legacy ExploreCareQuality / ExploreDocQuality / ExploreValueDrivers files (which are unwired but still
+  on disk — leave those alone).                            
+                                                                          
+  If any active code path (ExploreFlow, ExploreModel, ExploreCapacity/Workforce/Revenue/Quality, exploreQuadrantValues, allDriverValues calcs) references the removed IDs, it's dead code — remove the         
+  reference.                                                  
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                   
+  VERIFICATION                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                          
+  1. TypeScript compiles. No references to removed state fields or driver IDs remain in active code.                                                                                                           
+                                                                                                                                                                                                               
+  2. Walk OP through each quadrant page:                                  
+     - **Capacity (4/9)**:                                                                                                                                                                                     
+       - Financial Drivers: Patient Access (unchanged)                          
+       - Other Metrics to Watch: 3rd Next Available · Same-Day or Urgent Access Slots · Extended Visit Time for Complex Patients
+       - Total qualitative items: exactly 3 ✓                             
+     - **Workforce (5/9)**:                                                                                                                                                                                    
+       - Financial Drivers: Provider Wellbeing (with Locum/Agency child)                                                                                                                                       
+       - Other Metrics to Watch: After-Hours Documentation · Notes Completed Before Leaving the Clinic · Burnout Score                                                                                         
+       - Total qualitative items: exactly 3 ✓                                                                                                                                                                  
+     - **Revenue (6/9)**:                                                       
+       - Financial Drivers: wRVU Capture · HCC Capture · Denial Prevention                                                                                                                                     
+       - Other Metrics to Watch: E&M Level Distribution Shift · CDI Query Volume Trend · Coding Specificity Improvement
+       - Total qualitative items: exactly 3 ✓                                                                                                                                                                  
+     - **Quality (7/9)**:                                                       
+       - Financial Drivers section is HIDDEN (OP Quality is qualitative-only)                                                                                                                                  
+       - Other Metrics to Watch: Note Quality (Star Rating) · Care Continuity for Handoffs · Diagnosis Capture                                                                                                 
+       - Total qualitative items: exactly 3 ✓                                                                                                                                                                  
+                                                                                                                                                                                                               
+  3. Right-panel summary on each OP page lists the new drivers under "Other Metrics" sub-header. Toggle a few on and confirm they show as "Qualitative" in the panel and add nothing to the Quadrant Total     
+  (they're qualitative — no $ contribution).                                                                                                                                                                   
+                                                                                                                                                                                                               
+  4. Step 9 Model — the 4-quadrant card grid pulls from EXPLORE_DRIVERS. Toggle a couple of new qualitative drivers and confirm they appear as "Qualitative" line items in the matching quadrant card.         
+                                                                                                                                                                                                               
+  5. Walk ED, IP, Nursing — confirm THEIR pages are untouched and still render their existing qualitative drivers correctly (they were already at or under 3 per quadrant, so no trim was needed).             
+                                                                                                                                                                                                               
+  6. Confirm OP Quality page no longer shows: CDI Query Reduction (OP), Cognitive Load Reduction, Audit & Compliance Readiness, Diagnosis Specificity. Those drivers are gone from the registry.               
+                                                                                                                                                                                                               
+  7. Confirm OP Quality DOES still show: Note Quality (Star Rating), Care Continuity for Handoffs, Diagnosis Capture. These three remain.
+                                                                                                                                                                                                               
+  8. No console errors. No TypeScript errors. The DEFAULT_EXPLORE_STATE export still loads cleanly.                                                                                                            
+                                                            
+  NOTES:                                                                                                                                                                                                       
+  - The total OP qualitative driver count drops from 13 (across all 4 quadrants) to 12 — but each quadrant now has exactly 3, the maximum Brad set.
+  - ED, IP, and Nursing are intentionally untouched. If you want similar trimming/curation on those settings later, that's a follow-up sprint.                                                                 
+  - The new opCdiQueryTrend driver in Revenue references the same trackedMeasureIds entry ('opCdiQueryReduction') that the deleted Quality driver used. The catalog measure stays — only the driver placement
+  moved from Quality → Revenue, with new framing emphasizing the volume-trend angle.                                                                                                                           
+  - Same pattern for opCodingSpecificity — it references 'diagnosisSpecificity' in the catalog, which already exists.
+  - Driver content order within each "Other Metrics to Watch" section follows registry order. Drivers will render in the order they appear in the EXPLORE_DRIVERS array. If the visual ordering matters (e.g., 
+  wanting Burnout Score listed first vs last in OP Workforce), reorder the entries within the registry.

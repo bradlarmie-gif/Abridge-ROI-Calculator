@@ -173,21 +173,13 @@ export interface TimeDriverInputs {
   edThroughputExpanded: boolean;
   ipRoundingExpanded: boolean;
 
-  // OP qualitative Quality drivers
-  opCdiQueryReductionEnabled: boolean;
-  opCdiQueryReductionExpanded: boolean;
-  opCognitiveLoadEnabled: boolean;
-  opCognitiveLoadExpanded: boolean;
-  opAuditComplianceEnabled: boolean;
-  opAuditComplianceExpanded: boolean;
+  // OP qualitative Quality drivers (3 — trimmed by R-IA-3)
   opCareContinuityEnabled: boolean;
   opCareContinuityExpanded: boolean;
   opNoteStarRatingEnabled: boolean;
   opNoteStarRatingExpanded: boolean;
   opDiagnosisCaptureEnabled: boolean;
   opDiagnosisCaptureExpanded: boolean;
-  opDiagnosisSpecificityEnabled: boolean;
-  opDiagnosisSpecificityExpanded: boolean;
   // ED qualitative Quality drivers
   edNoteStarRatingEnabled: boolean;
   edNoteStarRatingExpanded: boolean;
@@ -209,22 +201,28 @@ export interface TimeDriverInputs {
   nursingDocCompletionEnabled: boolean;
   nursingDocCompletionExpanded: boolean;
 
-  // ───── R-IA-2 curated qualitative drivers ─────
-  // OP Capacity qualitative
+  // ───── R-IA-2 / R-IA-3 curated qualitative drivers ─────
+  // OP Capacity qualitative (3 — trimmed by R-IA-3)
   opThirdNextAvailableEnabled: boolean;
   opThirdNextAvailableExpanded: boolean;
-  opPatientWaitTimeEnabled: boolean;
-  opPatientWaitTimeExpanded: boolean;
-  // OP Workforce qualitative
+  opSameDayAccessEnabled: boolean;
+  opSameDayAccessExpanded: boolean;
+  opExtendedVisitTimeEnabled: boolean;
+  opExtendedVisitTimeExpanded: boolean;
+  // OP Workforce qualitative (3 — trimmed by R-IA-3)
+  opAfterHoursDocEnabled: boolean;
+  opAfterHoursDocExpanded: boolean;
+  opNotesBeforeLeavingEnabled: boolean;
+  opNotesBeforeLeavingExpanded: boolean;
   opBurnoutTrackingEnabled: boolean;
   opBurnoutTrackingExpanded: boolean;
-  opLikelihoodToStayEnabled: boolean;
-  opLikelihoodToStayExpanded: boolean;
-  // OP Revenue qualitative
-  opDaysInAREnabled: boolean;
-  opDaysInARExpanded: boolean;
-  opAuditDefensibilityEnabled: boolean;
-  opAuditDefensibilityExpanded: boolean;
+  // OP Revenue qualitative (3 — trimmed by R-IA-3)
+  opEmLevelDistributionEnabled: boolean;
+  opEmLevelDistributionExpanded: boolean;
+  opCdiQueryTrendEnabled: boolean;
+  opCdiQueryTrendExpanded: boolean;
+  opCodingSpecificityEnabled: boolean;
+  opCodingSpecificityExpanded: boolean;
   // ED Capacity qualitative
   edDoorToProviderEnabled: boolean;
   edDoorToProviderExpanded: boolean;
@@ -535,21 +533,13 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edLwbsExpanded: false,
     edThroughputExpanded: false,
     ipRoundingExpanded: false,
-    // Quality qualitative driver defaults
-    opCdiQueryReductionEnabled: false,
-    opCdiQueryReductionExpanded: false,
-    opCognitiveLoadEnabled: false,
-    opCognitiveLoadExpanded: false,
-    opAuditComplianceEnabled: false,
-    opAuditComplianceExpanded: false,
+    // Quality qualitative driver defaults (R-IA-3 trim)
     opCareContinuityEnabled: false,
     opCareContinuityExpanded: false,
     opNoteStarRatingEnabled: false,
     opNoteStarRatingExpanded: false,
     opDiagnosisCaptureEnabled: false,
     opDiagnosisCaptureExpanded: false,
-    opDiagnosisSpecificityEnabled: false,
-    opDiagnosisSpecificityExpanded: false,
     edNoteStarRatingEnabled: false,
     edNoteStarRatingExpanded: false,
     edPressGaneyEnabled: false,
@@ -566,19 +556,25 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingCdiResponseExpanded: false,
     nursingDocCompletionEnabled: false,
     nursingDocCompletionExpanded: false,
-    // R-IA-2 curated qualitative driver defaults
+    // R-IA-2 / R-IA-3 curated qualitative driver defaults
     opThirdNextAvailableEnabled: false,
     opThirdNextAvailableExpanded: false,
-    opPatientWaitTimeEnabled: false,
-    opPatientWaitTimeExpanded: false,
+    opSameDayAccessEnabled: false,
+    opSameDayAccessExpanded: false,
+    opExtendedVisitTimeEnabled: false,
+    opExtendedVisitTimeExpanded: false,
+    opAfterHoursDocEnabled: false,
+    opAfterHoursDocExpanded: false,
+    opNotesBeforeLeavingEnabled: false,
+    opNotesBeforeLeavingExpanded: false,
     opBurnoutTrackingEnabled: false,
     opBurnoutTrackingExpanded: false,
-    opLikelihoodToStayEnabled: false,
-    opLikelihoodToStayExpanded: false,
-    opDaysInAREnabled: false,
-    opDaysInARExpanded: false,
-    opAuditDefensibilityEnabled: false,
-    opAuditDefensibilityExpanded: false,
+    opEmLevelDistributionEnabled: false,
+    opEmLevelDistributionExpanded: false,
+    opCdiQueryTrendEnabled: false,
+    opCdiQueryTrendExpanded: false,
+    opCodingSpecificityEnabled: false,
+    opCodingSpecificityExpanded: false,
     edDoorToProviderEnabled: false,
     edDoorToProviderExpanded: false,
     edBurnoutTrackingEnabled: false,

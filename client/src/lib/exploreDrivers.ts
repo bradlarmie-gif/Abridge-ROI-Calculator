@@ -255,37 +255,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     },
   },
   // ───── QUALITY ─────
-  // Outpatient (qualitative)
-  {
-    id: 'opCdiQueryReduction',
-    label: 'CDI Query Reduction',
-    shortDescription: 'Cleaner notes reduce coder/CDI follow-up queries downstream.',
-    quadrant: 'Quality',
-    settings: ['outpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'opCdiQueryReductionEnabled',
-    expandedStateKey: 'opCdiQueryReductionExpanded',
-  },
-  {
-    id: 'opCognitiveLoad',
-    label: 'Cognitive Load Reduction',
-    shortDescription: 'Less time juggling note-taking and listening means more focused clinical thinking.',
-    quadrant: 'Quality',
-    settings: ['outpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'opCognitiveLoadEnabled',
-    expandedStateKey: 'opCognitiveLoadExpanded',
-  },
-  {
-    id: 'opAuditCompliance',
-    label: 'Audit & Compliance Posture',
-    shortDescription: 'Standardized, complete notes improve audit readiness and compliance.',
-    quadrant: 'Quality',
-    settings: ['outpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'opAuditComplianceEnabled',
-    expandedStateKey: 'opAuditComplianceExpanded',
-  },
+  // Outpatient (qualitative — trimmed by R-IA-3 to 3 drivers)
   {
     id: 'opCareContinuity',
     label: 'Care Continuity',
@@ -315,16 +285,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'qualitative',
     enabledStateKey: 'opDiagnosisCaptureEnabled',
     expandedStateKey: 'opDiagnosisCaptureExpanded',
-  },
-  {
-    id: 'opDiagnosisSpecificity',
-    label: 'Diagnosis Specificity',
-    shortDescription: 'Higher coding specificity improves quality reporting and risk adjustment accuracy.',
-    quadrant: 'Quality',
-    settings: ['outpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'opDiagnosisSpecificityEnabled',
-    expandedStateKey: 'opDiagnosisSpecificityExpanded',
   },
   // ED (qualitative)
   {
@@ -692,8 +652,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: ['nursingDocCompletion'],
   },
 
-  // ───── R-IA-2 — Curated qualitative drivers (toggleable, no $ math) ─────
-  // OP Capacity (qualitative)
+  // ───── R-IA-2 / R-IA-3 — Curated qualitative drivers (toggleable, no $ math) ─────
+  // OP Capacity (qualitative — 3 drivers, R-IA-3 trim)
   {
     id: 'opThirdNextAvailable',
     label: '3rd Next Available',
@@ -706,18 +666,51 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: ['thirdNextAvailable'],
   },
   {
-    id: 'opPatientWaitTime',
-    label: 'Patient Wait Time',
-    shortDescription: 'Average minutes patients wait between scheduled appointment time and being seen.',
+    id: 'opSameDayAccess',
+    label: 'Same-Day or Urgent Access Slots',
+    shortDescription: 'Number of same-day or urgent slots opened on the schedule. A measure of access for patients who need to be seen quickly.',
     quadrant: 'Capacity',
     settings: ['outpatient'],
     visibility: 'qualitative',
-    enabledStateKey: 'opPatientWaitTimeEnabled',
-    expandedStateKey: 'opPatientWaitTimeExpanded',
+    enabledStateKey: 'opSameDayAccessEnabled',
+    expandedStateKey: 'opSameDayAccessExpanded',
+    trackedMeasureIds: [],
+  },
+  {
+    id: 'opExtendedVisitTime',
+    label: 'Extended Visit Time for Complex Patients',
+    shortDescription: 'Average minutes spent with complex patients during their visit. Tracks whether reclaimed time is reinvested in deeper care for harder cases.',
+    quadrant: 'Capacity',
+    settings: ['outpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'opExtendedVisitTimeEnabled',
+    expandedStateKey: 'opExtendedVisitTimeExpanded',
     trackedMeasureIds: [],
   },
 
-  // OP Workforce (qualitative)
+  // OP Workforce (qualitative — 3 drivers, R-IA-3 trim; Burnout Score listed last)
+  {
+    id: 'opAfterHoursDoc',
+    label: 'After-Hours Documentation',
+    shortDescription: 'Time providers spend in the EHR outside scheduled clinical hours. A widely used signal for documentation burden.',
+    quadrant: 'Workforce',
+    settings: ['outpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'opAfterHoursDocEnabled',
+    expandedStateKey: 'opAfterHoursDocExpanded',
+    trackedMeasureIds: ['workOutsideWorkEmpirical'],
+  },
+  {
+    id: 'opNotesBeforeLeaving',
+    label: 'Notes Completed Before Leaving the Clinic',
+    shortDescription: 'Share of encounter notes signed before the provider leaves the clinic that day. Tracks the shift away from after-hours charting.',
+    quadrant: 'Workforce',
+    settings: ['outpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'opNotesBeforeLeavingEnabled',
+    expandedStateKey: 'opNotesBeforeLeavingExpanded',
+    trackedMeasureIds: [],
+  },
   {
     id: 'opBurnoutTracking',
     label: 'Burnout Score',
@@ -729,40 +722,40 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'opBurnoutTrackingExpanded',
     trackedMeasureIds: ['burnoutAssessment'],
   },
-  {
-    id: 'opLikelihoodToStay',
-    label: 'Likelihood to Stay',
-    shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',
-    quadrant: 'Workforce',
-    settings: ['outpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'opLikelihoodToStayEnabled',
-    expandedStateKey: 'opLikelihoodToStayExpanded',
-    trackedMeasureIds: ['likelihoodToStay'],
-  },
 
-  // OP Revenue (qualitative)
+  // OP Revenue (qualitative — 3 drivers, R-IA-3 trim — all new)
   {
-    id: 'opDaysInAR',
-    label: 'Days in AR',
-    shortDescription: 'Average days from claim submission to payment. A standard revenue cycle indicator.',
+    id: 'opEmLevelDistribution',
+    label: 'E&M Level Distribution Shift',
+    shortDescription: 'Distribution of E/M codes assigned across encounters. A shift toward higher-level codes can indicate documentation more fully reflects visit complexity.',
     quadrant: 'Revenue',
     settings: ['outpatient'],
     visibility: 'qualitative',
-    enabledStateKey: 'opDaysInAREnabled',
-    expandedStateKey: 'opDaysInARExpanded',
-    trackedMeasureIds: [],
+    enabledStateKey: 'opEmLevelDistributionEnabled',
+    expandedStateKey: 'opEmLevelDistributionExpanded',
+    trackedMeasureIds: ['emLevel'],
   },
   {
-    id: 'opAuditDefensibility',
-    label: 'Audit Defensibility',
-    shortDescription: 'Share of records meeting completeness criteria during internal audit reviews.',
+    id: 'opCdiQueryTrend',
+    label: 'CDI Query Volume Trend',
+    shortDescription: 'Volume of CDI queries returned to providers post-visit. Decreasing query volume often signals more complete documentation at the point of care.',
     quadrant: 'Revenue',
     settings: ['outpatient'],
     visibility: 'qualitative',
-    enabledStateKey: 'opAuditDefensibilityEnabled',
-    expandedStateKey: 'opAuditDefensibilityExpanded',
-    trackedMeasureIds: [],
+    enabledStateKey: 'opCdiQueryTrendEnabled',
+    expandedStateKey: 'opCdiQueryTrendExpanded',
+    trackedMeasureIds: ['opCdiQueryReduction'],
+  },
+  {
+    id: 'opCodingSpecificity',
+    label: 'Coding Specificity Improvement',
+    shortDescription: 'Share of diagnoses coded to the highest available ICD-10 specificity. Tracked as a downstream signal of clinical detail captured in notes.',
+    quadrant: 'Revenue',
+    settings: ['outpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'opCodingSpecificityEnabled',
+    expandedStateKey: 'opCodingSpecificityExpanded',
+    trackedMeasureIds: ['diagnosisSpecificity'],
   },
 
   // ED Capacity (qualitative)
