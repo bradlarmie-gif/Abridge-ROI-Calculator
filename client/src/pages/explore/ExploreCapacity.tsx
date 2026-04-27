@@ -6,18 +6,20 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import DriverCard from "@/components/explore/DriverCard";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
+import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import { type ExploreState, type OtherFinancialBenefitItem } from "./ExploreFlow";
 
 interface ExploreCapacityProps {
   state: ExploreState;
   updateState: (updates: Partial<ExploreState>) => void;
   totalHoursSaved: number;
+  priorQuadrants?: PriorQuadrantEntry[];
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
 }
 
-export default function ExploreCapacity({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreCapacityProps) {
+export default function ExploreCapacity({ state, updateState, totalHoursSaved, priorQuadrants = [], onNext, onBack, onHome }: ExploreCapacityProps) {
   const setting = state.careSetting;
   const drivers = setting ? getDriversForPage('Capacity', setting) : [];
   const topLevelDrivers = drivers.filter(d => !d.childOfDriverId);
@@ -399,6 +401,29 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, o
               <p className="text-xs text-white/50 mt-1">Annual recurring</p>
               {oneTimeBenefitsTotal > 0 && (
                 <p className="text-xs text-white/70 mt-1" data-testid="text-quadrant-onetime">+ {formatCurrency(oneTimeBenefitsTotal)} one-time (Y1 only)</p>
+              )}
+
+              {priorQuadrants.length > 0 && (
+                <>
+                  <div className="h-px bg-[#333333] my-4" />
+                  <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-2">Progress So Far</p>
+                  <div className="space-y-1.5 mb-3">
+                    {priorQuadrants.map(p => (
+                      <div key={p.key} className="flex justify-between items-center" data-testid={`prior-quadrant-${p.key}`}>
+                        <span className="text-sm text-[#888888]">{p.label}</span>
+                        <span className="text-sm text-white">{formatCurrency(p.value)}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-[#888888]">Capacity</span>
+                      <span className="text-sm text-white">{formatCurrency(quadrantAnnualTotal)}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Running Total</p>
+                  <p className="text-xl font-bold text-white" data-testid="text-running-total">
+                    {formatCurrency(priorQuadrants.reduce((s, p) => s + p.value, 0) + quadrantAnnualTotal)}
+                  </p>
+                </>
               )}
 
               <div className="hidden lg:block mt-6">

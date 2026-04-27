@@ -10,6 +10,12 @@ import ExploreQuality from "./ExploreQuality";
 import ExploreInvestment from "./ExploreInvestment";
 import ExploreModel from "./ExploreModel";
 import { ExploreProgressBar } from "@/components/ExploreProgressBar";
+import {
+  computeCapacityBreakdown,
+  computeWorkforceBreakdown,
+  computeRevenueBreakdown,
+  type PriorQuadrantEntry,
+} from "@/lib/exploreQuadrantValues";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -1075,56 +1081,83 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       );
       break;
     
-    case 'capacity':
+    case 'capacity': {
+      const priorQuadrants: PriorQuadrantEntry[] = [];
       content = (
         <ExploreCapacity
           state={state}
           updateState={updateState}
           totalHoursSaved={totalHoursSaved}
+          priorQuadrants={priorQuadrants}
           onNext={() => navigate('workforce')}
           onBack={() => navigate('timeSavings')}
           onHome={goHome}
         />
       );
       break;
+    }
     
-    case 'workforce':
+    case 'workforce': {
+      const capacity = computeCapacityBreakdown(state, totalHoursSaved);
+      const priorQuadrants: PriorQuadrantEntry[] = [
+        { key: 'capacity', label: 'Capacity', value: capacity.quadrantAnnualTotal },
+      ];
       content = (
         <ExploreWorkforce
           state={state}
           updateState={updateState}
           totalHoursSaved={totalHoursSaved}
+          priorQuadrants={priorQuadrants}
           onNext={() => navigate('revenue')}
           onBack={() => navigate('capacity')}
           onHome={goHome}
         />
       );
       break;
+    }
     
-    case 'revenue':
+    case 'revenue': {
+      const capacity = computeCapacityBreakdown(state, totalHoursSaved);
+      const workforce = computeWorkforceBreakdown(state, totalHoursSaved);
+      const priorQuadrants: PriorQuadrantEntry[] = [
+        { key: 'capacity', label: 'Capacity', value: capacity.quadrantAnnualTotal },
+        { key: 'workforce', label: 'Workforce', value: workforce.quadrantAnnualTotal },
+      ];
       content = (
         <ExploreRevenue
           state={state}
           updateState={updateState}
+          priorQuadrants={priorQuadrants}
           onNext={() => navigate('quality')}
           onBack={() => navigate('workforce')}
           onHome={goHome}
         />
       );
       break;
+    }
     
-    case 'quality':
+    case 'quality': {
+      const capacity = computeCapacityBreakdown(state, totalHoursSaved);
+      const workforce = computeWorkforceBreakdown(state, totalHoursSaved);
+      const revenue = computeRevenueBreakdown(state, totalHoursSaved);
+      const priorQuadrants: PriorQuadrantEntry[] = [
+        { key: 'capacity', label: 'Capacity', value: capacity.quadrantAnnualTotal },
+        { key: 'workforce', label: 'Workforce', value: workforce.quadrantAnnualTotal },
+        { key: 'revenue', label: 'Revenue', value: revenue.quadrantAnnualTotal },
+      ];
       content = (
         <ExploreQuality
           state={state}
           updateState={updateState}
           totalHoursSaved={totalHoursSaved}
+          priorQuadrants={priorQuadrants}
           onNext={() => navigate('investment')}
           onBack={() => navigate('revenue')}
           onHome={goHome}
         />
       );
       break;
+    }
     
     case 'investment':
       content = (

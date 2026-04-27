@@ -1,0 +1,145 @@
+import type { ExploreState, OtherFinancialBenefitItem } from "@/pages/explore/ExploreFlow";
+
+export interface QuadrantBreakdown {
+  driverValues: Record<string, number>;
+  annualBenefitsTotal: number;
+  oneTimeBenefitsTotal: number;
+  quadrantAnnualTotal: number;
+}
+
+type Quadrant = OtherFinancialBenefitItem["quadrant"];
+
+function benefitsForQuadrant(state: ExploreState, quadrant: Quadrant): OtherFinancialBenefitItem[] {
+  return (state.otherFinancialBenefits ?? []).filter(b => b.quadrant === quadrant);
+}
+
+function sumBenefits(benefits: OtherFinancialBenefitItem[], type: 'annual' | 'oneTime'): number {
+  return benefits.filter(b => b.type === type).reduce((sum, b) => sum + (b.amount || 0), 0);
+}
+
+function buildResult(driverValues: Record<string, number>, benefits: OtherFinancialBenefitItem[]): QuadrantBreakdown {
+  const annualBenefitsTotal = sumBenefits(benefits, 'annual');
+  const oneTimeBenefitsTotal = sumBenefits(benefits, 'oneTime');
+  const quadrantAnnualTotal =
+    Object.values(driverValues).reduce((sum, v) => sum + v, 0) + annualBenefitsTotal;
+  return { driverValues, annualBenefitsTotal, oneTimeBenefitsTotal, quadrantAnnualTotal };
+}
+
+export function computeCapacityBreakdown(state: ExploreState, totalHoursSaved: number): QuadrantBreakdown {
+  const result: Record<string, number> = {};
+  const td = state.timeDriverInputs;
+
+  if (td.patientAccessEnabled) {
+    const effectiveAccessProviders = Math.min(td.accessProviders || state.numberOfProviders, state.numberOfProviders);
+    const hrsPerProvPerWeek = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;
+    const reinvestRate = (td.capacityRealizationPercent ?? 25) / 100;
+    const visitDurationHrs = (td.visitDuration ?? 30) / 60;
+    const visitsPerWeek = visitDurationHrs > 0 ? Math.round((hrsPerProvPerWeek * reinvestRate / visitDurationHrs) * 10) / 10 : 0;
+    const annualVisits = Math.round(visitsPerWeek * effectiveAccessProviders * 48);
+    result.patientAccess = Math.round(annualVisits * td.revenuePerVisit);
+  }
+
+  if (td.edLwbsEnabled) {
+    const lwbsPatients = state.annualEncounters * (td.edLwbsRate / 100);
+    const recovered = lwbsPatients * (td.edLwbsReduction / 100);
+    result.lwbsRecovery = Math.round(recovered * td.edRevenuePerVisit * (td.edLwbsRealization / 100));
+  }
+
+  if (td.edThroughputEnabled && td.edLwbsEnabled) {
+    const lwbsPatients = state.annualEncounters * (td.edLwbsRate / 100);
+    const recovered = lwbsPatients * (td.edLwbsReduction / 100);
+    const admissions = recovered * (td.edAdmissionRate / 100);
+    result.admissionCapture = Math.round(admissions * td.edAdmissionRevenue * (td.edAdmissionRealization / 100));
+  }
+
+  return buildResult(result, benefitsForQuadrant(state, 'Capacity'));
+}
+
+export function computeWorkforceBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {
+  const result: Record<string, number> = {};
+  const td = state.timeDriverInputs;
+  const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+  const nursingScenarios: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
+
+  if (td.wellbeingEnabled && td.calculateRetentionValue) {
+    const turnover = td.annualTurnoverRate / 100;
+    const burnout = td.burnoutRelatedTurnover / 100;
+    const impact = retentionScenarios[td.retentionImpactScenario] / 100;
+    const retained = state.numberOfProviders * turnover * burnout * impact;
+    result.providerWellbeing = Math.round(retained * td.replacementCost);
+
+    if (td.physicianAgencyEnabled) {
+      result.physicianLocumAgency = Math.round(retained * td.physicianAgencyWeeksPerVacancy * td.physicianAgencyWeeklyPremium);
+    }
+  }
+
+  if (td.nursingRetentionEnabled) {
+    const turnover = td.nursingTurnoverRate / 100;
+    const impact = nursingScenarios[td.retentionImpactScenario] / 100;
+    const burnoutDepartures = state.numberOfProviders * turnover * 0.40;
+    const retained = burnoutDepartures * impact;
+    result.nursingRetention = Math.round(retained * td.nursingReplacementCost);
+
+    if (td.nursingAgencyEnabled) {
+      result.nursingAgency = Math.round(retained * td.nursingAgencyWeeksPerVacancy * td.nursingAgencyWeeklyPremium);
+    }
+  }
+
+  if (td.nursingOtEnabled) {
+    const otHours = td.nursingOtHoursPerNurseWeek * (td.nursingOtReductionPercent / 100) * state.numberOfProviders * 52;
+    result.nursingOvertime = Math.round(otHours * td.nursingOtHourlyRate);
+  }
+
+  return buildResult(result, benefitsForQuadrant(state, 'Workforce'));
+}
+
+export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {
+  // Revenue page is currently a placeholder with no quantitative drivers wired.
+  // Other financial benefits tagged to the Revenue quadrant still roll up.
+  return buildResult({}, benefitsForQuadrant(state, 'Revenue'));
+}
+
+export function computeQualityBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {
+  const result: Record<string, number> = {};
+  const dq = state.docQualityInputs;
+  const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+
+  if (dq.nursingHapiEnabled) {
+    const hapisPerYear = (patientDays / 1000) * dq.nursingHapiRate;
+    const prevented = hapisPerYear * (dq.nursingHapiPreventionRate / 100);
+    result.nursingHapi = Math.round(prevented * dq.nursingHapiCost);
+  }
+  if (dq.nursingFallsEnabled) {
+    const fallsPerYear = (patientDays / 1000) * dq.nursingFallsRate;
+    const prevented = fallsPerYear * (dq.nursingFallsPreventionRate / 100);
+    result.nursingFalls = Math.round(prevented * dq.nursingFallsCost);
+  }
+  if (dq.nursingCautiEnabled) {
+    const catheterDays = patientDays * (dq.nursingCautiUtilizationRatio / 100);
+    const cautisPerYear = (catheterDays / 1000) * dq.nursingCautiRate;
+    const prevented = cautisPerYear * (dq.nursingCautiPreventionRate / 100);
+    result.nursingCauti = Math.round(prevented * dq.nursingCautiCost);
+  }
+  if (dq.nursingClabsiEnabled) {
+    const lineDays = patientDays * (dq.nursingClabsiUtilizationRatio / 100);
+    const clabsiPerYear = (lineDays / 1000) * dq.nursingClabsiRate;
+    const prevented = clabsiPerYear * (dq.nursingClabsiPreventionRate / 100);
+    result.nursingClabsi = Math.round(prevented * dq.nursingClabsiCost);
+  }
+  if (dq.nursingSepsisEnabled) {
+    const sepsisPerYear = (patientDays / 1000) * dq.nursingSepsisRatePerThousand;
+    const nonCompliant = sepsisPerYear * ((100 - dq.nursingSepsisCurrentCompliance) / 100);
+    const docLagCases = nonCompliant * (dq.nursingSepsisDocLagPercent / 100);
+    result.nursingSepsis = Math.round(
+      docLagCases * dq.nursingSepsisExcessCostPerCase * (dq.nursingSepsisRealization / 100)
+    );
+  }
+
+  return buildResult(result, benefitsForQuadrant(state, 'Quality'));
+}
+
+export interface PriorQuadrantEntry {
+  key: 'capacity' | 'workforce' | 'revenue' | 'quality';
+  label: string;
+  value: number;
+}
