@@ -166,6 +166,37 @@ export interface TimeDriverInputs {
   edLwbsExpanded: boolean;
   edThroughputExpanded: boolean;
   ipRoundingExpanded: boolean;
+
+  // OP qualitative Quality drivers
+  opCdiQueryReductionEnabled: boolean;
+  opCdiQueryReductionExpanded: boolean;
+  opCognitiveLoadEnabled: boolean;
+  opCognitiveLoadExpanded: boolean;
+  opAuditComplianceEnabled: boolean;
+  opAuditComplianceExpanded: boolean;
+  opCareContinuityEnabled: boolean;
+  opCareContinuityExpanded: boolean;
+  opNoteStarRatingEnabled: boolean;
+  opNoteStarRatingExpanded: boolean;
+  opDiagnosisCaptureEnabled: boolean;
+  opDiagnosisCaptureExpanded: boolean;
+  opDiagnosisSpecificityEnabled: boolean;
+  opDiagnosisSpecificityExpanded: boolean;
+  // ED qualitative Quality drivers
+  edNoteStarRatingEnabled: boolean;
+  edNoteStarRatingExpanded: boolean;
+  edPressGaneyEnabled: boolean;
+  edPressGaneyExpanded: boolean;
+  // IP qualitative Quality drivers
+  ipNoteStarRatingEnabled: boolean;
+  ipNoteStarRatingExpanded: boolean;
+  ipHcahpsCompositeEnabled: boolean;
+  ipHcahpsCompositeExpanded: boolean;
+  ipReadmissionEnabled: boolean;
+  ipReadmissionExpanded: boolean;
+  // Nursing qualitative Quality (1 new — HCAHPS already exists in docQualityInputs)
+  nursingMedErrorEnabled: boolean;
+  nursingMedErrorExpanded: boolean;
 }
 
 // Documentation Quality inputs
@@ -448,6 +479,33 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edLwbsExpanded: false,
     edThroughputExpanded: false,
     ipRoundingExpanded: false,
+    // Quality qualitative driver defaults
+    opCdiQueryReductionEnabled: false,
+    opCdiQueryReductionExpanded: false,
+    opCognitiveLoadEnabled: false,
+    opCognitiveLoadExpanded: false,
+    opAuditComplianceEnabled: false,
+    opAuditComplianceExpanded: false,
+    opCareContinuityEnabled: false,
+    opCareContinuityExpanded: false,
+    opNoteStarRatingEnabled: false,
+    opNoteStarRatingExpanded: false,
+    opDiagnosisCaptureEnabled: false,
+    opDiagnosisCaptureExpanded: false,
+    opDiagnosisSpecificityEnabled: false,
+    opDiagnosisSpecificityExpanded: false,
+    edNoteStarRatingEnabled: false,
+    edNoteStarRatingExpanded: false,
+    edPressGaneyEnabled: false,
+    edPressGaneyExpanded: false,
+    ipNoteStarRatingEnabled: false,
+    ipNoteStarRatingExpanded: false,
+    ipHcahpsCompositeEnabled: false,
+    ipHcahpsCompositeExpanded: false,
+    ipReadmissionEnabled: false,
+    ipReadmissionExpanded: false,
+    nursingMedErrorEnabled: false,
+    nursingMedErrorExpanded: false,
   },
   otherFinancialBenefits: [],
   // Documentation quality inputs
@@ -1055,6 +1113,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         <ExploreQuality
           state={state}
           updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
           onNext={() => navigate('investment')}
           onBack={() => navigate('revenue')}
           onHome={goHome}

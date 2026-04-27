@@ -1,0 +1,325 @@
+ 🔧 Sprint 3A — Replit prompt (paste verbatim)                                                                                                                                                                
+                                                             
+  Context: Restructures the Measure path's phase machine to mirror Explore's 9-step rhythm. The existing 5-phase flow (data → metrics → journey → financial → next) becomes a 7-phase flow (setup → capacity → 
+  workforce → revenue → quality → forecast → output). Setup keeps the existing MeasureDataEntry component (preserve the deployment-funnel intake — only the phase name changes). The 4 quadrant pages, forecast
+   page, and output page get placeholder components for now. Sprint 3B+ fills in real content. The existing pages (MeasureMetricSelection, MeasureJourney, MeasureAllocate, MeasureOpportunity) stay on disk as
+   logic source for the 3B+ builds — they're just unwired from the active flow.                                                                                                                                
+                                                                                                                                                                                                               
+  Pre-req: None — this is the first sprint of Sprint 3.                                                                                                                                                        
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Create 6 placeholder Measure phase components    
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                             
+  Create these new files in client/src/pages/measure/. All use the same template, only the displayed name and currentStep number differ.                                                                       
+                                                            
+  ────────────────────────────────────────                                                                                                                                                                     
+  File: client/src/pages/measure/MeasureCapacity.tsx         
+  ────────────────────────────────────────                                                                                                                                                                     
+  import { ArrowRight } from "lucide-react";                 
+  import { Button } from "@/components/ui/button";                                                                                                                                                             
+  import { motion } from "framer-motion";                                                                                                                                                                      
+  import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";                                                                                                                             
+  import { type MeasureState } from "./MeasureFlow";                                                                                                                                                           
+                                                                                                                                                                                                               
+  interface MeasureCapacityProps {                           
+    state: MeasureState;                                                                                                                                                                                       
+    updateState: (updates: Partial<MeasureState>) => void;  
+    onNext: () => void;                                                                                                                                                                                        
+    onBack: () => void;                                      
+    onHome: () => void;                                                                                                                                                                                        
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  export default function MeasureCapacity({ state, updateState, onNext, onBack, onHome }: MeasureCapacityProps) {                                                                                              
+    return (                                                                                                                                                                                                   
+      <div className="min-h-screen bg-white">           
+        <UnifiedHeader                                                                                                                                                                                         
+          pathType="measure"                              
+          currentStep={2}                                                                                                                                                                                      
+          totalSteps={7}                                    
+          stepName="Capacity"                             
+          onBack={onBack}                                                                                                                                                                                      
+          onHome={onHome}                                   
+        />                                                                                                                                                                                                     
+        <UnifiedHeaderSpacer />                                                                                                                                                                                
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+          <motion.div className="text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>                                                                                                  
+            <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Prove the Value</p>                                                                                             
+            <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight">Capacity</h1>
+            <p className="text-base md:text-lg text-[#666666] max-w-2xl mx-auto px-2 mb-8">                                                                                                                    
+              Drivers tracked for the Capacity quadrant land here in the next sprint.
+            </p>                                             
+            <Button                                          
+              onClick={onNext}                                                                                                                                                                                 
+              className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"                                                                                                   
+              data-testid="button-continue-measure-capacity"                                                                                                                                                   
+            >                                                                                                                                                                                                  
+              Continue                                                                                                                                                                                         
+              <ArrowRight className="w-4 h-4 ml-2" />                                                                                                                                                          
+            </Button>                                                                                                                                                                                          
+          </motion.div>                                                                                                                                                                                        
+        </div>                                                                                                                                                                                                 
+      </div>                                              
+    );                                                                                                                                                                                                         
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                                                                                                                                                                     
+  File: client/src/pages/measure/MeasureWorkforce.tsx
+  ────────────────────────────────────────
+  Same as MeasureCapacity, with these substitutions:                                                                                                                                                           
+  - Component name: MeasureWorkforce                      
+  - Props interface: MeasureWorkforceProps                                                                                                                                                                     
+  - currentStep: 3                                          
+  - stepName: "Workforce"                                   
+  - h1: "Workforce"                                          
+  - placeholder body: "Drivers tracked for the Workforce quadrant land here in the next sprint."
+  - data-testid: "button-continue-measure-workforce"    
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                                                                                                                                                                     
+  File: client/src/pages/measure/MeasureRevenue.tsx                                                                                                                                                            
+  ────────────────────────────────────────                                                                                                                                                                     
+  Same template:                                             
+  - Component name: MeasureRevenue                                                                                                                                                                             
+  - currentStep: 4                                          
+  - stepName: "Revenue"                                                                                                                                                                                        
+  - h1: "Revenue"                                            
+  - placeholder body: "Drivers tracked for the Revenue quadrant land here in the next sprint."                                                                                                                 
+  - data-testid: "button-continue-measure-revenue"          
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                   
+  File: client/src/pages/measure/MeasureQuality.tsx                                                                                                                                                            
+  ────────────────────────────────────────
+  Same template:                                                                                                                                                                                               
+  - Component name: MeasureQuality                        
+  - currentStep: 5                                                                                                                                                                                             
+  - stepName: "Quality"                                     
+  - h1: "Quality"                                
+  - placeholder body: "Drivers tracked for the Quality quadrant land here in the next sprint."
+  - data-testid: "button-continue-measure-quality"
+                                                          
+  ────────────────────────────────────────                                                                                                                                                                     
+  File: client/src/pages/measure/MeasureForecast.tsx        
+  ────────────────────────────────────────                                                                                                                                                                     
+  Same template:                                             
+  - Component name: MeasureForecast                     
+  - currentStep: 6                                          
+  - stepName: "Forecast"                                                                                                                                                                                       
+  - h1: "Forecast"                                           
+  - Eyebrow text: "Project the Path Forward" (instead of "Prove the Value")                                                                                                                                    
+  - placeholder body: "Multi-axis scenario modeling, care-setting expansion, and pricing comparison land here in upcoming sprints."
+  - data-testid: "button-continue-measure-forecast"                                                                                                                                                            
+                                                            
+  ────────────────────────────────────────                                                                                                                                                                     
+  File: client/src/pages/measure/MeasureOutput.tsx           
+  ────────────────────────────────────────                   
+  Same template structure but the Continue button becomes the final action:
+  - Component name: MeasureOutput                                                                                                                                                                              
+  - currentStep: 7                                                                                                                                                                                             
+  - stepName: "Outcome Summary"                                                                                                                                                                                
+  - Eyebrow text: "Outcome Summary"                                                                                                                                                                            
+  - h1: "Your Outcomes"                                                                                                                                                                                        
+  - placeholder body: "Maturity assessment, value summary, and PDF export land here in the final sprint."
+  - Button label: "Download Evidence Doc" (no functionality yet — just renders, can be a placeholder Button)                                                                                                   
+  - data-testid: "button-measure-export"                    
+  - Add a secondary "Edit" button beside it that calls onBack → routes to setup phase (use the navigate function or similar pattern)                                                                           
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Update MeasurePhase type and routing in MeasureFlow.tsx
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/measure/MeasureFlow.tsx             
+                                                                                                                                                                                                               
+  REPLACE the existing MeasurePhase type with:                                                                                                                                                                 
+                                                                                                                                                                                                               
+  type MeasurePhase =                                                                                                                                                                                          
+    | 'setup'                                                                                                                                                                                                  
+    | 'capacity'                                                                                                                                                                                               
+    | 'workforce'                                                                                                                                                                                              
+    | 'revenue'                                         
+    | 'quality'                                                                                                                                                                                                
+    | 'forecast'                                 
+    | 'output';                                                                                                                                                                                                
+                                         
+  UPDATE imports at top — REMOVE the old phase component imports that are no longer used in routing (MeasureMetricSelection, MeasureJourney, MeasureAllocate, MeasureOpportunity — these files stay on disk but
+   their imports come out of MeasureFlow). Keep MeasureDataEntry import — it gets reused for the new 'setup' phase.                                                                                            
+                                                        
+  ADD these imports:                                                                                                                                                                                           
+    import MeasureCapacity from "./MeasureCapacity";
+    import MeasureWorkforce from "./MeasureWorkforce";       
+    import MeasureRevenue from "./MeasureRevenue";        
+    import MeasureQuality from "./MeasureQuality";      
+    import MeasureForecast from "./MeasureForecast";                                                                                                                                                           
+    import MeasureOutput from "./MeasureOutput";        
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 3 — Replace switch cases in MeasureFlow.tsx           
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                          
+  In the switch (phase) block in MeasureFlow.tsx, REMOVE all existing cases (data, metrics, journey, financial, next). REPLACE WITH the new 7-phase routing:                                                   
+                                                            
+    case 'setup':                                                                                                                                                                                              
+      content = (                                                                                                                                                                                              
+        <MeasureDataEntry                        
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}                                                                                                                                                                            
+          onNext={() => navigate('capacity')}           
+          onBack={onBackToJourney || (() => {})}                                                                                                                                                               
+          onHome={goHome}                        
+        />                                                                                                                                                                                                     
+      );                                                  
+      break;                                                
+                                                                                                                                                                                                               
+    case 'capacity':                                         
+      content = (                                                                                                                                                                                              
+        <MeasureCapacity                 
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}                                                                                                                                                                            
+          onNext={() => navigate('workforce')}                                                                                                                                                                 
+          onBack={() => navigate('setup')}                                                                                                                                                                     
+          onHome={goHome}                                 
+        />                                              
+      );                                                    
+      break;                                     
+                                                             
+    case 'workforce':
+      content = (
+        <MeasureWorkforce                                                                                                                                                                                      
+          state={state}   
+          updateState={updateState}                                                                                                                                                                            
+          onNext={() => navigate('revenue')}            
+          onBack={() => navigate('capacity')}               
+          onHome={goHome}                        
+        />                                                   
+      );                                                  
+      break;                                            
+                                                                                                                                                                                                               
+    case 'revenue':                              
+      content = (                                                                                                                                                                                              
+        <MeasureRevenue                  
+          state={state}
+          updateState={updateState}                                                                                                                                                                            
+          onNext={() => navigate('quality')}
+          onBack={() => navigate('workforce')}                                                                                                                                                                 
+          onHome={goHome}                                 
+        />                                              
+      );                                                    
+      break;                                     
+                                                             
+    case 'quality':
+      content = (
+        <MeasureQuality                                                                                                                                                                                        
+          state={state}   
+          updateState={updateState}                                                                                                                                                                            
+          onNext={() => navigate('forecast')}           
+          onBack={() => navigate('revenue')}                
+          onHome={goHome}                        
+        />                                                   
+      );                                                  
+      break;                                            
+                                                                                                                                                                                                               
+    case 'forecast':                             
+      content = (                                                                                                                                                                                              
+        <MeasureForecast                 
+          state={state}
+          updateState={updateState}                                                                                                                                                                            
+          onNext={() => navigate('output')}
+          onBack={() => navigate('quality')}                                                                                                                                                                   
+          onHome={goHome}                                 
+        />                                              
+      );                                                    
+      break;                                     
+                                                             
+    case 'output':
+      content = (
+        <MeasureOutput                                                                                                                                                                                         
+          state={state}
+          updateState={updateState}                                                                                                                                                                            
+          onNext={() => {}}                               
+          onBack={() => navigate('forecast')}           
+          onHome={goHome}                                   
+        />                                       
+      );                                                     
+      break;     
+                          
+  If MeasureDataEntry's existing onNext was wired to 'metrics', that's now updated to 'capacity'. If MeasureDataEntry's signature differs from the new placeholder pattern (e.g., needs additional props),     
+  preserve that — only the navigate target changes.       
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 4 — Update phaseToStep mapping and progress bar       
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/measure/MeasureFlow.tsx          
+                                                                                                                                                                                                               
+  Find the existing phaseToStep mapping. REPLACE WITH:                                                                                                                                                         
+                                                                                                                                                                                                               
+  const phaseToStep: Record<MeasurePhase, number> = {                                                                                                                                                          
+    setup: 1,                                             
+    capacity: 2,                                             
+    workforce: 3,                                                                                                                                                                                              
+    revenue: 4,                                  
+    quality: 5,                                                                                                                                                                                                
+    forecast: 6,                         
+    output: 7,                                                                                                                                                                                                 
+  };                                                                                                                                                                                                           
+                                                            
+  Find any progress bar render (search for ExploreProgressBar or similar). Update totalSteps from old value to 7.                                                                                              
+                                                             
+  ═══════════════════════════════════════════════════════════
+  TASK 5 — Legacy phase migration for stale URLs and history state
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                             
+  Old URLs and saved sessions may reference the old phase names ('data', 'metrics', 'journey', 'financial', 'next'). Add coercion so the app doesn't crash.                                                    
+                                                            
+  UPDATE the useState initializer for `phase` (or whatever state hook controls the active phase) to migrate old phase names:                                                                                   
+                                                             
+  const [phase, setPhase] = useState<MeasurePhase>(() => {                                                                                                                                                     
+    const requested = initialPhase || 'setup';               
+    const legacyMap: Record<string, MeasurePhase> = {                                                                                                                                                          
+      data: 'setup',                                                                                                                                                                                           
+      metrics: 'capacity',                                                                                                                                                                                     
+      journey: 'capacity',                                                                                                                                                                                     
+      financial: 'forecast',                                                                                                                                                                                   
+      next: 'output',                                        
+    };                                                                                                                                                                                                         
+    return (legacyMap[requested as string] ?? requested) as MeasurePhase;
+  });                                                                                                                                                                                                          
+                                                             
+  Apply the SAME migration to the popstate handler if MeasureFlow has one — the popstate handler reads event.state and sets phase, so migrate the same way.                                                    
+                                                            
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 6 — URL state encoding compatibility                  
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/measureUrlState.ts (or similar)       
+                                                                                                                                                                                                               
+  The audit identified that MeasureState gets serialized into URL state. When a user opens an old URL with an old phase name, the migration in Task 5 handles it client-side. No changes needed to the
+  encoding/decoding logic itself — but VERIFY that decoding doesn't reject unknown phase names. If the decoder validates against MeasurePhase enum and throws on unknown phases, soften the check to accept any
+   string and rely on the runtime migration instead.         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  1. TypeScript compiles. The old phase strings should be unreachable since they're removed from MeasurePhase and the switch.                                                                                  
+                                                                                                                                                                                                               
+  2. Walk through Measure end-to-end:                                                                                                                                                                          
+     - Start at home → click "Expand" → lands on Setup (1/7) which is the existing MeasureDataEntry page (unchanged content)
+     - Continue → Capacity placeholder (2/7) → Continue → Workforce placeholder (3/7) → Continue → Revenue (4/7) → Continue → Quality (5/7) → Continue → Forecast (6/7) → Continue → Outcome Summary (7/7)
+     - Browser back / forward navigates between steps correctly
+     - Each placeholder displays its name in the heading and the eyebrow text reads "Prove the Value" (or "Project the Path Forward" for Forecast, "Outcome Summary" for the final step)                       
+                                                            
+  3. Outcome Summary placeholder shows "Download Evidence Doc" placeholder button (no functionality) and an "Edit" button that returns to Setup.                                                               
+                                                             
+  4. Open a stale URL like ?measure_phase=metrics — the page should load and resolve to the Capacity step (legacy migration).                                                                                  
+                                                             
+  5. The existing MeasureDataEntry page renders identically to before — same form fields, same layout, same data binding. Only the next-step navigation changed (now goes to Capacity instead of Metrics).     
+                                                                                                                                                                                                               
+  6. The old files MeasureMetricSelection, MeasureJourney, MeasureAllocate, MeasureOpportunity still exist on disk but are NOT imported anywhere in MeasureFlow.tsx. They become deletable in a cleanup sprint 
+  after Sprint 3 ships.                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  7. The existing handoff to ForecastFlow (the separate route) remains intact for any other consumer that links to it directly. Sprint 3E will replace this handoff when Forecast functionality lands inside   
+  Measure.                                                                                                                                                                                                     
+                                                             
+  NOTES:                                                                                                                                                                                                       
+  - Setup page is intentionally preserved as-is. A polish pass in a later sprint will inherit Explore's visual treatment (single beige card, sticky right panel, preset+custom inputs). Don't redesign it in
+  3A.                                                                                                                                                                                                          
+  - The 4 quadrant placeholders are minimal on purpose. 3B builds the real driver-tracking workspace pattern using the same DriverCard component from Sprint 2C1.
+  - Forecast and Output placeholders are intentionally separate phases (instead of a single "next steps" page) so 3E-3H have clear targets to build into.                                                      
+  - Legacy MeasureMetricSelection, MeasureJourney, MeasureAllocate, MeasureOpportunity are NOT deleted. Their logic is the source for porting in subsequent sprints.

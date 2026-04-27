@@ -1,0 +1,804 @@
+ Context: Builds the per-driver With/Without entry pattern across all 4 Measure quadrant pages. PS picks drivers from the EXPLORE_DRIVERS catalog, enters Without/With Abridge values, adjusts attribution and
+   realization, and sees realized dollars per driver. Quantifiable drivers carry $ math; qualitative drivers are tracked without $ contribution. The same registry that powers Explore (single source of truth)
+   drives Measure too — through-line locked.                
+                                                                                                                                                                                                               
+  Pre-req: Sprint 3A shipped (7-phase Measure flow with quadrant placeholders).                                                                                                                                
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Add measureDefaults metadata to ExploreDriver                                                                                                                                                       
+  ═══════════════════════════════════════════════════════════
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                 
+  ADD an optional measureDefaults field to the ExploreDriver interface:                                                                                                                                        
+                                                                                                                                                                                                               
+  export interface ExploreDriverMeasureDefaults {           
+    deltaLabel: string;            // e.g., "Visits added per year (across all providers)"                                                                                                                     
+    deltaUnit: string;             // e.g., "visits"         
+    valuePerUnitLabel: string;     // e.g., "Revenue per visit"                                                                                                                                                
+    valuePerUnitDefault: number;   // numeric default   
+    valuePerUnitPrefix?: string;   // e.g., "$"                                                                                                                                                                
+    valuePerUnitSuffix?: string;   // e.g., "/HAPI"                                                                                                                                                            
+    realizationDefault: number;    // 0-100, per-driver realization default                                                                                                                                    
+  }                                                                                                                                                                                                            
+                                                             
+  export interface ExploreDriver {                                                                                                                                                                             
+    // ... existing fields ...                               
+    measureDefaults?: ExploreDriverMeasureDefaults;                                                                                                                                                            
+  }                                                          
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Populate measureDefaults for all quantifiable drivers                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                          
+  For each quantifiable driver in EXPLORE_DRIVERS (visibility: 'quantified'), add a `measureDefaults` entry. Use these per-driver values:
+                                                                                                                                                                                                               
+  CAPACITY:                                             
+  - patientAccess:                                                                                                                                                                                             
+    measureDefaults: { deltaLabel: 'Additional visits per year (across all providers)', deltaUnit: 'visits', valuePerUnitLabel: 'Revenue per visit', valuePerUnitDefault: 250, valuePerUnitPrefix: '$',
+  realizationDefault: 80 }                                   
+  - lwbsRecovery:                                                                                                                                                                                              
+    measureDefaults: { deltaLabel: 'Patients recovered from LWBS per year', deltaUnit: 'patients', valuePerUnitLabel: 'Revenue per ED visit', valuePerUnitDefault: 480, valuePerUnitPrefix: '$',
+  realizationDefault: 75 }                                                                                                                                                                                     
+  - admissionCapture:                                     
+    measureDefaults: { deltaLabel: 'Admissions captured from recovered LWBS', deltaUnit: 'admissions', valuePerUnitLabel: 'Revenue per admission', valuePerUnitDefault: 8000, valuePerUnitPrefix: '$',         
+  realizationDefault: 40 }                                  
+                                                             
+  WORKFORCE:                                                                                                                                                                                                   
+  - providerWellbeing:                                      
+    measureDefaults: { deltaLabel: 'Providers retained per year', deltaUnit: 'providers', valuePerUnitLabel: 'Replacement cost per provider', valuePerUnitDefault: 400000, valuePerUnitPrefix: '$',            
+  realizationDefault: 100 }                                                                                                                                                                                    
+  - physicianLocumAgency:                                                                                                                                                                                      
+    measureDefaults: { deltaLabel: 'Provider-weeks of locum coverage avoided', deltaUnit: 'weeks', valuePerUnitLabel: 'Weekly locum premium', valuePerUnitDefault: 5000, valuePerUnitPrefix: '$',              
+  realizationDefault: 100 }                                                                                                                                                                                    
+  - nursingRetention:                                                                                                                                                                                          
+    measureDefaults: { deltaLabel: 'Nurses retained per year', deltaUnit: 'nurses', valuePerUnitLabel: 'Replacement cost per nurse', valuePerUnitDefault: 56300, valuePerUnitPrefix: '$', realizationDefault:  
+  100 }                                                     
+  - nursingAgency:                                           
+    measureDefaults: { deltaLabel: 'Nurse-weeks of agency coverage avoided', deltaUnit: 'weeks', valuePerUnitLabel: 'Weekly agency premium', valuePerUnitDefault: 2500, valuePerUnitPrefix: '$',               
+  realizationDefault: 100 }                                 
+  - nursingOvertime:                                                                                                                                                                                           
+    measureDefaults: { deltaLabel: 'Overtime hours eliminated per year', deltaUnit: 'hours', valuePerUnitLabel: 'Overtime hourly rate', valuePerUnitDefault: 75, valuePerUnitPrefix: '$', realizationDefault:  
+  100 }                                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  REVENUE:                                                                                                                                                                                                     
+  - wrvu (and edEmLevel which shares the calc):             
+    measureDefaults: { deltaLabel: 'Total wRVU lift per year', deltaUnit: 'wRVU', valuePerUnitLabel: 'Conversion factor', valuePerUnitDefault: 33, valuePerUnitPrefix: '$', realizationDefault: 75 }           
+  - edEmLevel: (same as above)                                                                                                                                                                                 
+  - hccCapture:                                           
+    measureDefaults: { deltaLabel: 'HCC codes recaptured per year', deltaUnit: 'HCCs', valuePerUnitLabel: 'Value per HCC (RAF × annual payment)', valuePerUnitDefault: 1200, valuePerUnitPrefix: '$',          
+  realizationDefault: 40 }                                                                                                                                                                                     
+  - denialPrevention:                                                                                                                                                                                          
+    measureDefaults: { deltaLabel: 'Denials prevented per year', deltaUnit: 'claims', valuePerUnitLabel: 'Average claim value', valuePerUnitDefault: 200, valuePerUnitPrefix: '$', realizationDefault: 60 }    
+  - drgAccuracy:                                             
+    measureDefaults: { deltaLabel: 'Admissions reweighted to accurate DRG', deltaUnit: 'admissions', valuePerUnitLabel: 'Avg DRG payment uplift', valuePerUnitDefault: 2400, valuePerUnitPrefix: '$',          
+  realizationDefault: 65 }                                                                                                                                                                                     
+  - cdiQueryReduction:                                                                                                                                                                                         
+    measureDefaults: { deltaLabel: 'CDI queries avoided per year', deltaUnit: 'queries', valuePerUnitLabel: 'Cost per query', valuePerUnitDefault: 150, valuePerUnitPrefix: '$', realizationDefault: 75 }      
+  - obsDefense:                                                                                                                                                                                                
+    measureDefaults: { deltaLabel: 'Status determinations defended per year', deltaUnit: 'cases', valuePerUnitLabel: 'Avg claim value at risk', valuePerUnitDefault: 10000, valuePerUnitPrefix: '$',
+  realizationDefault: 25 }                                                                                                                                                                                     
+  - emCodingAccuracy:                                                                                                                                                                                          
+    measureDefaults: { deltaLabel: 'Inpatient charges with corrected E/M coding', deltaUnit: 'charges', valuePerUnitLabel: 'Avg revenue lift per charge', valuePerUnitDefault: 50, valuePerUnitPrefix: '$',
+  realizationDefault: 40 }                                                                                                                                                                                     
+                                                             
+  QUALITY (Nursing quantifiable):                                                                                                                                                                              
+  - nursingHapi:                                                                                                                                                                                               
+    measureDefaults: { deltaLabel: 'HAPIs prevented per year', deltaUnit: 'events', valuePerUnitLabel: 'Cost per HAPI', valuePerUnitDefault: 25000, valuePerUnitPrefix: '$', realizationDefault: 85 }          
+  - nursingFalls:                                                                                                                                                                                              
+    measureDefaults: { deltaLabel: 'Falls prevented per year', deltaUnit: 'events', valuePerUnitLabel: 'Cost per fall', valuePerUnitDefault: 6500, valuePerUnitPrefix: '$', realizationDefault: 85 }           
+  - nursingCauti:                                                                                                                                                                                              
+    measureDefaults: { deltaLabel: 'CAUTIs prevented per year', deltaUnit: 'events', valuePerUnitLabel: 'Cost per CAUTI', valuePerUnitDefault: 13000, valuePerUnitPrefix: '$', realizationDefault: 80 }        
+  - nursingClabsi:                                                                                                                                                                                             
+    measureDefaults: { deltaLabel: 'CLABSIs prevented per year', deltaUnit: 'events', valuePerUnitLabel: 'Cost per CLABSI', valuePerUnitDefault: 20000, valuePerUnitPrefix: '$', realizationDefault: 80 }      
+  - nursingSepsis:                                        
+    measureDefaults: { deltaLabel: 'Sepsis bundle non-compliance cases avoided', deltaUnit: 'cases', valuePerUnitLabel: 'Excess cost per case', valuePerUnitDefault: 3500, valuePerUnitPrefix: '$',            
+  realizationDefault: 60 }                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Drivers with visibility: 'qualitative' do NOT get measureDefaults — leave that field undefined.                                                                                                              
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Add MeasureDriverEntry type and trackedDrivers field to MeasureState                                                                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/measure/MeasureFlow.tsx (or wherever MeasureState is defined — likely measureCalculator.ts)                                                                                           
+                                                                                                                                                                                                               
+  ADD this type:                                                                                                                                                                                               
+                                                                                                                                                                                                               
+  export interface MeasureDriverEntry {                      
+    driverId: string;                                                                                                                                                                                          
+    withoutAbridge: number;        // counterfactual baseline value
+    withAbridge: number;           // current state value                                                                                                                                                      
+    valuePerUnit: number;          // financial multiplier (overrideable)
+    attributionPercent: number;    // 0-100, Abridge's share of observed change                                                                                                                                
+    realizationPercent: number;    // 0-100, gross-to-net conversion
+    expanded: boolean;             // UI: card open/closed                                                                                                                                                     
+    notes?: string;                // qualitative drivers may use this                                                                                                                                         
+    // Time-series fields (3C will populate)                
+    isMonthlyMode?: boolean;                                                                                                                                                                                   
+    monthlyData?: Array<{ month: string; withAbridge: number; withoutAbridge: number }>;                                                                                                                       
+  }                                                          
+                                                                                                                                                                                                               
+  ADD this field to MeasureState:                                                                                                                                                                              
+    trackedDrivers: Record<string, MeasureDriverEntry>;                                                                                                                                                        
+                                                                                                                                                                                                               
+  Add the default:                                                                                                                                                                                             
+    trackedDrivers: {},                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Create MeasureDriverCard component                                                                                                                                                                  
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/measure/MeasureDriverCard.tsx
+                                                                                                                                                                                                               
+  import { ChevronDown, Trash2, Info } from "lucide-react";                                                                                                                                                    
+  import { motion, AnimatePresence } from "framer-motion";
+  import { FormattedNumberInput } from "@/components/FormattedNumberInput";                                                                                                                                    
+  import type { ExploreDriver } from "@/lib/exploreDrivers";
+  import type { MeasureDriverEntry } from "@/pages/measure/MeasureFlow";
+                                                                                                                                                                                                               
+  interface MeasureDriverCardProps {                        
+    driver: ExploreDriver;                                                                                                                                                                                     
+    entry: MeasureDriverEntry;                                                                                                                                                                                 
+    onUpdate: (updates: Partial<MeasureDriverEntry>) => void;
+    onRemove: () => void;                                                                                                                                                                                      
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove }: MeasureDriverCardProps) {                                                                                                   
+    const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);                                                                                                              
+    const md = driver.measureDefaults;                      
+                                                                                                                                                                                                               
+    const delta = entry.withAbridge - entry.withoutAbridge;  
+    const realizedValue = isQuantifiable                                                                                                                                                                       
+      ? Math.round(delta * entry.valuePerUnit * (entry.attributionPercent / 100) * (entry.realizationPercent / 100))
+      : 0;                                                                                                                                                                                                     
+                                                          
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();                                                                                                                                
+    const formatNumber = (n: number) => n.toLocaleString();                                                                                                                                                    
+                                                        
+    return (                                                                                                                                                                                                   
+      <div>                                      
+        <div className={`w-full p-4 text-left transition-all ${                                                                                                                                                
+          entry.expanded ? "bg-white rounded-t-lg border border-[#E5E5E5] border-b-0" : "bg-white rounded-lg border border-[#E5E5E5] hover:border-[#D1D5DB]"                                                   
+        }`}>                                              
+          <div className="flex items-start justify-between gap-3">                                                                                                                                             
+            <div className="flex-1 min-w-0">                
+              <div className="flex items-center gap-2">                                                                                                                                                        
+                <p className="font-semibold text-black">{driver.label}</p>
+                {isQuantifiable && (                         
+                  <span                                                                                                                                                                                        
+                    className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#F5F0EB] text-[10px] font-semibold text-[#888888]"                                                             
+                    title="Quantifiable — carries dollar value"                                                                                                                                                
+                    data-testid={`badge-quantifiable-${driver.id}`}                                                                                                                                            
+                  >                                                                                                                                                                                            
+                    $                                        
+                  </span>                                                                                                                                                                                      
+                )}                                           
+              </div>                                                                                                                                                                                           
+              <p className="text-sm text-[#888888] mt-0.5">{driver.shortDescription}</p>
+            </div>                                                                                                                                                                                             
+            <div className="flex items-center gap-2 flex-shrink-0">                                                                                                                                            
+              {isQuantifiable && !entry.expanded && (                                                                                                                                                          
+                <span className="text-sm font-semibold text-[#EA2C00]">                                                                                                                                        
+                  {realizedValue !== 0 ? formatCurrency(realizedValue) : '—'}                                                                                                                                  
+                </span>                                      
+              )}                                            
+              {!isQuantifiable && !entry.expanded && (      
+                <span className="text-xs text-[#888888] italic">Qualitative</span>                                                                                                                             
+              )}                                             
+              <button                                                                                                                                                                                          
+                onClick={() => onUpdate({ expanded: !entry.expanded })}                                                                                                                                        
+                className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"                                                                                                                                   
+                data-testid={`button-expand-${driver.id}`}                                                                                                                                                     
+              >                                                                                                                                                                                                
+                <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${entry.expanded ? 'rotate-0' : '-rotate-90'}`} />                                                                        
+              </button>                                 
+              <button                                                                                                                                                                                          
+                onClick={onRemove}                      
+                className="p-1 hover:bg-[#FCE8E2] rounded transition-colors text-[#888888] hover:text-[#EA2C00]"                                                                                               
+                data-testid={`button-remove-${driver.id}`}                                                                                                                                                     
+                title="Stop tracking this driver"            
+              >                                                                                                                                                                                                
+                <Trash2 className="w-4 h-4" />              
+              </button>                                                                                                                                                                                        
+            </div>                                           
+          </div>                                                                                                                                                                                               
+        </div>                                          
+                                                                                                                                                                                                               
+        <AnimatePresence>                                                                                                                                                                                      
+          {entry.expanded && (                                                                                                                                                                                 
+            <motion.div                                                                                                                                                                                        
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}                                                                                                                                                         
+              exit={{ opacity: 0, height: 0 }}            
+              className="overflow-hidden"                                                                                                                                                                      
+            >                                               
+              <div className="bg-white rounded-b-lg border border-[#E5E5E5] border-t-0 p-5 space-y-5">
+                {isQuantifiable && md ? (                    
+                  <>                                      
+                    {/* With/Without entry */}               
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">                                                                                                                                    
+                      <div>                               
+                        <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">                                                                                            
+                          Without Abridge                   
+                        </label>                                                                                                                                                                               
+                        <FormattedNumberInput                                                                                                                                                                  
+                          value={entry.withoutAbridge}      
+                          onChange={(v: number) => onUpdate({ withoutAbridge: v })}                                                                                                                            
+                          className="h-11 bg-white"                                                                                                                                                            
+                          data-testid={`input-without-${driver.id}`}
+                        />                                                                                                                                                                                     
+                        <p className="text-xs text-[#888888] mt-1">{md.deltaLabel}</p>                                                                                                                         
+                      </div>                                                                                                                                                                                   
+                      <div>                                                                                                                                                                                    
+                        <label className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide mb-1.5 block">                                                                                            
+                          With Abridge                      
+                        </label>                                                                                                                                                                               
+                        <FormattedNumberInput                                                                                                                                                                  
+                          value={entry.withAbridge}                                                                                                                                                            
+                          onChange={(v: number) => onUpdate({ withAbridge: v })}                                                                                                                               
+                          className="h-11 bg-white"                                                                                                                                                            
+                          data-testid={`input-with-${driver.id}`}
+                        />                                                                                                                                                                                     
+                        <p className="text-xs text-[#888888] mt-1">Δ {delta >= 0 ? '+' : ''}{formatNumber(delta)} {md.deltaUnit}</p>                                                                           
+                      </div>                              
+                    </div>                                                                                                                                                                                     
+                                                            
+                    {/* Value per unit */}                  
+                    <div>                                                                                                                                                                                      
+                      <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">
+                        {md.valuePerUnitLabel}                                                                                                                                                                 
+                      </label>                                                                                                                                                                                 
+                      <div className="relative">                                                                                                                                                               
+                        {md.valuePerUnitPrefix && (                                                                                                                                                            
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">{md.valuePerUnitPrefix}</span>                                                                     
+                        )}                                                                                                                                                                                     
+                        <FormattedNumberInput                
+                          value={entry.valuePerUnit}                                                                                                                                                           
+                          onChange={(v: number) => onUpdate({ valuePerUnit: v })}
+                          className={`h-11 bg-white ${md.valuePerUnitPrefix ? 'pl-7' : ''}`}                                                                                                                   
+                          data-testid={`input-value-per-unit-${driver.id}`}
+                        />                                                                                                                                                                                     
+                      </div>                                                                                                                                                                                   
+                    </div>                                                                                                                                                                                     
+                                                                                                                                                                                                               
+                    {/* Attribution slider */}                                                                                                                                                                 
+                    <div>                                 
+                      <div className="flex items-center justify-between mb-1.5">                                                                                                                               
+                        <label className="text-xs font-medium text-[#888888] uppercase tracking-wide">                                                                                                         
+                          Abridge Attribution                                                                                                                                                                  
+                          <Info className="inline w-3 h-3 ml-1 text-[#AAAAAA]" />                                                                                                                              
+                        </label>                        
+                        <span className="text-sm font-semibold text-black">{entry.attributionPercent}%</span>
+                      </div>                                                                                                                                                                                   
+                      <input                                 
+                        type="range"                                                                                                                                                                           
+                        min={0}                              
+                        max={100}                                                                                                                                                                              
+                        step={5}                 
+                        value={entry.attributionPercent}                                                                                                                                                       
+                        onChange={(e) => onUpdate({ attributionPercent: Number(e.target.value) })}
+                        className="w-full accent-[#EA2C00]"                                                                                                                                                    
+                        data-testid={`slider-attribution-${driver.id}`}                                                                                                                                        
+                      />                                
+                      <p className="text-xs text-[#888888] mt-1">Of the observed change, what share is attributable to Abridge? Lower this if other initiatives share credit.</p>                              
+                    </div>                              
+                                                             
+                    {/* Realization slider */}          
+                    <div>                                    
+                      <div className="flex items-center justify-between mb-1.5">                                                                                                                               
+                        <label className="text-xs font-medium text-[#888888] uppercase tracking-wide">
+                          Realization Rate                                                                                                                                                                     
+                        </label>                        
+                        <span className="text-sm font-semibold text-black">{entry.realizationPercent}%</span>                                                                                                  
+                      </div>                            
+                      <input                                                                                                                                                                                   
+                        type="range"             
+                        min={0}                              
+                        max={100}                                                                                                                                                                              
+                        step={5}                        
+                        value={entry.realizationPercent}                                                                                                                                                       
+                        onChange={(e) => onUpdate({ realizationPercent: Number(e.target.value) })}
+                        className="w-full accent-[#EA2C00]"                                                                                                                                                    
+                        data-testid={`slider-realization-${driver.id}`}
+                      />                                
+                      <p className="text-xs text-[#888888] mt-1">What share of gross opportunity converts to captured value (workflow, payer mix, coder judgment).</p>                                         
+                    </div>                       
+                                                                                                                                                                                                               
+                    {/* Realized value calculation breakdown */}
+                    <div className="bg-[#F5F0EB] rounded-lg p-4">
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Realized Impact</p>                                                                                    
+                      <div className="space-y-1 text-sm">    
+                        <div className="flex justify-between">                                                                                                                                                 
+                          <span className="text-[#666666]">Δ {md.deltaUnit}</span>
+                          <span className="font-medium text-black">{formatNumber(delta)}</span>                                                                                                                
+                        </div>                            
+                        <div className="flex justify-between">                                                                                                                                                 
+                          <span className="text-[#666666]">× {md.valuePerUnitLabel}</span>
+                          <span className="font-medium text-black">{md.valuePerUnitPrefix || ''}{formatNumber(entry.valuePerUnit)}</span>                                                                      
+                        </div>                                                                                                                                                                                 
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">× Attribution</span>                                                                                                                                
+                          <span className="font-medium text-black">{entry.attributionPercent}%</span>                                                                                                          
+                        </div>                                                                                                                                                                                 
+                        <div className="flex justify-between">                                                                                                                                                 
+                          <span className="text-[#666666]">× Realization</span>                                                                                                                                
+                          <span className="font-medium text-black">{entry.realizationPercent}%</span>
+                        </div>                                                                                                                                                                                 
+                        <div className="h-px bg-[#E5E5E5] my-2" />
+                        <div className="flex justify-between">                                                                                                                                                 
+                          <span className="font-semibold text-black">Realized impact</span>
+                          <span className="font-bold text-[#EA2C00]">{formatCurrency(realizedValue)}</span>                                                                                                    
+                        </div>                              
+                      </div>                                                                                                                                                                                   
+                    </div>                                                                                                                                                                                     
+                  </>                                     
+                ) : (                                                                                                                                                                                          
+                  <>                                                                                                                                                                                           
+                    {/* Qualitative driver — no $ math */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">                                                                                                                                    
+                      <div>                               
+                        <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">                                                                                            
+                          Without Abridge                                                                                                                                                                      
+                        </label>                          
+                        <FormattedNumberInput                                                                                                                                                                  
+                          value={entry.withoutAbridge}      
+                          onChange={(v: number) => onUpdate({ withoutAbridge: v })}
+                          className="h-11 bg-white"                                                                                                                                                            
+                        />                                  
+                      </div>                                                                                                                                                                                   
+                      <div>                                                                                                                                                                                    
+                        <label className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide mb-1.5 block">
+                          With Abridge                                                                                                                                                                         
+                        </label>                                                                                                                                                                               
+                        <FormattedNumberInput                
+                          value={entry.withAbridge}                                                                                                                                                            
+                          onChange={(v: number) => onUpdate({ withAbridge: v })}
+                          className="h-11 bg-white"                                                                                                                                                            
+                        />                                
+                      </div>                                                                                                                                                                                   
+                    </div>                                                                                                                                                                                     
+                                                 
+                    <div>                                                                                                                                                                                      
+                      <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">
+                        Notes
+                      </label>                                                                                                                                                                                 
+                      <textarea                         
+                        value={entry.notes ?? ''}                                                                                                                                                              
+                        onChange={(e) => onUpdate({ notes: e.target.value })}
+                        placeholder="Qualitative observations about this outcome…"
+                        className="w-full h-20 bg-white border border-[#E5E5E5] rounded-lg p-3 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none resize-none"
+                      />                                    
+                    </div>                                                                                                                                                                                     
+                                                             
+                    <div className="bg-[#F5F0EB] rounded-lg p-3">                                                                                                                                              
+                      <p className="text-xs text-[#666666] italic">
+                        Qualitative outcome — tracked for evidence but not modeled financially.                                                                                                                
+                      </p>                                  
+                    </div>                                                                                                                                                                                     
+                  </>                                                                                                                                                                                          
+                )}                                                                                                                                                                                             
+              </div>                                                                                                                                                                                           
+            </motion.div>                                                                                                                                                                                      
+          )}                                                
+        </AnimatePresence>                                                                                                                                                                                     
+      </div>                                                                                                                                                                                                   
+    );           
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 5 — Create AddMeasureDriverPicker component                                                                                                                                                             
+  ═══════════════════════════════════════════════════════════
+  NEW FILE: client/src/components/measure/AddMeasureDriverPicker.tsx
+                                                        
+  A modal that lists available drivers from EXPLORE_DRIVERS for the current quadrant + setting, excluding already-tracked. PS clicks one to add.
+                                                          
+  import { useState } from "react";                          
+  import { Plus, Search, X } from "lucide-react";                                                                                                                                                              
+  import { motion, AnimatePresence } from "framer-motion";   
+  import { EXPLORE_DRIVERS, type ExploreQuadrant, type ExploreSetting, type ExploreDriver } from "@/lib/exploreDrivers";                                                                                       
+                                                 
+  interface AddMeasureDriverPickerProps {                                                                                                                                                                      
+    quadrant: ExploreQuadrant;                                                                                                                                                                                 
+    setting: ExploreSetting;                                                                                                                                                                                   
+    alreadyTracked: string[];                                                                                                                                                                                  
+    onAdd: (driver: ExploreDriver) => void;                  
+  }                                                                                                                                                                                                            
+                                                        
+  export default function AddMeasureDriverPicker({ quadrant, setting, alreadyTracked, onAdd }: AddMeasureDriverPickerProps) {                                                                                  
+    const [open, setOpen] = useState(false);              
+    const [search, setSearch] = useState('');                                                                                                                                                                  
+                                                            
+    const available = EXPLORE_DRIVERS.filter(d =>         
+      d.quadrant === quadrant &&                                                                                                                                                                               
+      d.settings.includes(setting) &&                       
+      !alreadyTracked.includes(d.id) &&                                                                                                                                                                        
+      (search === '' || d.label.toLowerCase().includes(search.toLowerCase()) || d.shortDescription.toLowerCase().includes(search.toLowerCase()))                                                               
+    );                                                      
+                                                                                                                                                                                                               
+    const handleAdd = (driver: ExploreDriver) => {                                                                                                                                                             
+      onAdd(driver);                                        
+      setOpen(false);                                                                                                                                                                                          
+      setSearch('');                                                                                                                                                                                           
+    };           
+                                                                                                                                                                                                               
+    return (                                                                                                                                                                                                   
+      <>                                                
+        <button                                                                                                                                                                                                
+          onClick={() => setOpen(true)}          
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00]
+  transition-all w-full justify-center"
+          data-testid={`button-add-driver-${quadrant.toLowerCase()}`}
+        >                                                                                                                                                                                                      
+          <Plus className="w-4 h-4" /> Add a driver to track
+        </button>                                                                                                                                                                                              
+                                                             
+        <AnimatePresence>                               
+          {open && (                                        
+            <motion.div                                                                                                                                                                                        
+              initial={{ opacity: 0 }}                       
+              animate={{ opacity: 1 }}                                                                                                                                                                         
+              exit={{ opacity: 0 }}                     
+              onClick={() => setOpen(false)}                                                                                                                                                                   
+              className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+            >                                                                                                                                                                                                  
+              <motion.div                                 
+                initial={{ opacity: 0, scale: 0.95 }}       
+                animate={{ opacity: 1, scale: 1 }}                                                                                                                                                             
+                exit={{ opacity: 0, scale: 0.95 }}           
+                onClick={(e) => e.stopPropagation()}                                                                                                                                                           
+                className="bg-white rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden"
+              >                                                                                                                                                                                                
+                <div className="p-5 border-b border-[#E5E5E5] flex items-center justify-between">                                                                                                              
+                  <div>                                                                                                                                                                                        
+                    <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest">{quadrant}</p>                                                                                               
+                    <h3 className="text-lg font-bold text-black mt-0.5">Add a driver to track</h3>
+                  </div>                                                                                                                                                                                       
+                  <button                                 
+                    onClick={() => setOpen(false)}                                                                                                                                                             
+                    className="p-2 hover:bg-[#F5F0EB] rounded-lg"                                                                                                                                              
+                  >                                                                                                                                                                                            
+                    <X className="w-5 h-5 text-[#888888]" />                                                                                                                                                   
+                  </button>                                 
+                </div>                                    
+                                                                                                                                                                                                               
+                <div className="p-4 border-b border-[#E5E5E5]">
+                  <div className="relative">                                                                                                                                                                   
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888888]" />                                                                                                     
+                    <input                                  
+                      type="text"                                                                                                                                                                              
+                      placeholder="Search drivers…"                                                                                                                                                            
+                      value={search}                        
+                      onChange={(e) => setSearch(e.target.value)}                                                                                                                                              
+                      className="w-full h-10 pl-9 pr-3 bg-[#F5F0EB] border border-transparent rounded-lg text-sm focus:bg-white focus:border-[#EA2C00] outline-none"                                           
+                    />                                    
+                  </div>                                                                                                                                                                                       
+                </div>                                                                                                                                                                                         
+                                                            
+                <div className="flex-1 overflow-y-auto p-3 space-y-2">                                                                                                                                         
+                  {available.length === 0 && (               
+                    <p className="text-sm text-[#888888] text-center py-8 italic">
+                      {alreadyTracked.length > 0 ? 'All drivers in this quadrant are already tracked.' : 'No drivers available for this care setting.'}                                                        
+                    </p>                                                                                                                                                                                       
+                  )}                                                                                                                                                                                           
+                  {available.map(driver => {                                                                                                                                                                   
+                    const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
+                    return (                                                                                                                                                                                   
+                      <button                                
+                        key={driver.id}                                                                                                                                                                        
+                        onClick={() => handleAdd(driver)}                                                                                                                                                      
+                        className="w-full p-3 text-left rounded-lg hover:bg-[#F5F0EB] transition-colors flex items-start gap-3"                                                                                
+                        data-testid={`add-driver-${driver.id}`}                                                                                                                                                
+                      >                                                                                                                                                                                        
+                        <div className="flex-1 min-w-0">                                                                                                                                                       
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-black">{driver.label}</p>                                                                                                                         
+                            {isQuantifiable && (             
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#F5F0EB] text-[10px] font-semibold text-[#888888]">$</span>                                    
+                            )}                   
+                          </div>                                                                                                                                                                               
+                          <p className="text-sm text-[#888888] mt-0.5">{driver.shortDescription}</p>
+                        </div>                                                                                                                                                                                 
+                        <Plus className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-1" />                                                                                                                         
+                      </button>                              
+                    );                                                                                                                                                                                         
+                  })}                                   
+                </div>                                                                                                                                                                                         
+              </motion.div>                               
+            </motion.div>                                                                                                                                                                                      
+          )}                                                
+        </AnimatePresence>                       
+      </>                                                                                                                                                                                                      
+    );           
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 6 — Build out MeasureCapacity (template for the other 3)                                                                                                                                                
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/measure/MeasureCapacity.tsx (REPLACE the placeholder from 3A)
+                                                        
+  import { useMemo } from "react";                          
+  import { ArrowRight } from "lucide-react";            
+  import { Button } from "@/components/ui/button";           
+  import { motion } from "framer-motion";                 
+  import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+  import MeasureDriverCard from "@/components/measure/MeasureDriverCard";                                                                                                                                      
+  import AddMeasureDriverPicker from "@/components/measure/AddMeasureDriverPicker";
+  import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting } from "@/lib/exploreDrivers";                                                                                                             
+  import { type MeasureState, type MeasureDriverEntry } from "./MeasureFlow";
+                                                                                                                                                                                                               
+  interface MeasureCapacityProps {                                                                                                                                                                             
+    state: MeasureState;                                    
+    updateState: (updates: Partial<MeasureState>) => void;                                                                                                                                                     
+    onNext: () => void;                                                                                                                                                                                        
+    onBack: () => void;                                                                                                                                                                                        
+    onHome: () => void;                                                                                                                                                                                        
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  const QUADRANT = 'Capacity' as const;                                                                                                                                                                        
+                                                                                                                                                                                                               
+  export default function MeasureCapacity({ state, updateState, onNext, onBack, onHome }: MeasureCapacityProps) {                                                                                              
+    const setting = (state.careSetting || 'outpatient') as ExploreSetting;
+                                                                                                                                                                                                               
+    const trackedDriverIds = Object.keys(state.trackedDrivers || {});
+    const trackedHere = useMemo(() =>                                                                                                                                                                          
+      EXPLORE_DRIVERS                                       
+        .filter(d => d.quadrant === QUADRANT && d.settings.includes(setting) && trackedDriverIds.includes(d.id))                                                                                               
+        .map(d => ({ driver: d, entry: state.trackedDrivers[d.id] })),
+      [state.trackedDrivers, setting, trackedDriverIds]                                                                                                                                                        
+    );                                                    
+                                                                                                                                                                                                               
+    const updateEntry = (driverId: string, updates: Partial<MeasureDriverEntry>) => {                                                                                                                          
+      updateState({                                                                                                                                                                                            
+        trackedDrivers: {                                                                                                                                                                                      
+          ...state.trackedDrivers,                          
+          [driverId]: { ...state.trackedDrivers[driverId], ...updates },                                                                                                                                       
+        },                                                                                                                                                                                                     
+      });                                                                                                                                                                                                      
+    };                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    const removeEntry = (driverId: string) => {              
+      const next = { ...state.trackedDrivers };                                                                                                                                                                
+      delete next[driverId];             
+      updateState({ trackedDrivers: next });                                                                                                                                                                   
+    };                                                  
+                                                                                                                                                                                                               
+    const addDriver = (driver: ExploreDriver) => {
+      const md = driver.measureDefaults;                     
+      const entry: MeasureDriverEntry = {               
+        driverId: driver.id,                                
+        withoutAbridge: 0,                                                                                                                                                                                     
+        withAbridge: 0,                                      
+        valuePerUnit: md?.valuePerUnitDefault ?? 0,                                                                                                                                                            
+        attributionPercent: 100,                 
+        realizationPercent: md?.realizationDefault ?? 100,                                                                                                                                                     
+        expanded: true,                                   
+      };                                                                                                                                                                                                       
+      updateState({                                                                                                                                                                                            
+        trackedDrivers: { ...state.trackedDrivers, [driver.id]: entry },
+      });                                                                                                                                                                                                      
+    };                                                  
+                                                                                                                                                                                                               
+    const quadrantTotal = useMemo(() => {                                                                                                                                                                      
+      return trackedHere.reduce((sum, { driver, entry }) => {                                                                                                                                                  
+        if (driver.visibility !== 'quantified' || !driver.measureDefaults) return sum;                                                                                                                         
+        const delta = entry.withAbridge - entry.withoutAbridge;
+        const value = delta * entry.valuePerUnit * (entry.attributionPercent / 100) * (entry.realizationPercent / 100);                                                                                        
+        return sum + value;                                  
+      }, 0);                                                                                                                                                                                                   
+    }, [trackedHere]);                                       
+                                                                                                                                                                                                               
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
+                                                                                                                                                                                                               
+    return (                                            
+      <div className="min-h-screen bg-white">                                                                                                                                                                  
+        <UnifiedHeader                                                                                                                                                                                         
+          pathType="measure"                                                                                                                                                                                   
+          currentStep={2}                                                                                                                                                                                      
+          totalSteps={7}                                  
+          stepName="Capacity"                                                                                                                                                                                  
+          onBack={onBack}                                   
+          onHome={onHome}                                                                                                                                                                                      
+        />                                                   
+        <UnifiedHeaderSpacer />                             
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+          <div className="flex flex-col lg:flex-row gap-10">                                                                                                                                                   
+            <div className="flex-1 max-w-[700px]">        
+              <motion.div className="text-center mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>                                                                                         
+                <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">Capacity</h1>                                                                             
+                <p className="text-base text-[#888888]">What's been freed up because of Abridge?</p>
+              </motion.div>                                                                                                                                                                                    
+                                                            
+              <motion.div                                    
+                className="bg-[#F5F0EB] rounded-lg p-5 mb-6"                                                                                                                                                   
+                initial={{ opacity: 0, y: 20 }}              
+                animate={{ opacity: 1, y: 0 }}                                                                                                                                                                 
+                transition={{ delay: 0.1 }}                                                                                                                                                                    
+              >                                                                                                                                                                                                
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">How to Use This Section</p>                                                                                  
+                <p className="text-sm text-black leading-relaxed">                                                                                                                                             
+                  Track the Capacity outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.        
+                </p>                                                                                                                                                                                           
+              </motion.div>                                                                                                                                                                                    
+                                                        
+              <motion.div                                                                                                                                                                                      
+                className="space-y-3 mb-4"                                                                                                                                                                     
+                initial={{ opacity: 0, y: 20 }}              
+                animate={{ opacity: 1, y: 0 }}                                                                                                                                                                 
+                transition={{ delay: 0.15 }}            
+              >                                                                                                                                                                                                
+                {trackedHere.length === 0 && (          
+                  <div className="bg-[#F5F0EB] rounded-lg p-6 text-center">                                                                                                                                    
+                    <p className="text-sm text-[#666666]">No drivers tracked yet for Capacity.</p>
+                    <p className="text-xs text-[#888888] mt-1">Add the ones that matter to this customer below.</p>
+                  </div>                                                                                                                                                                                       
+                )}                                          
+                {trackedHere.map(({ driver, entry }) => (                                                                                                                                                      
+                  <MeasureDriverCard                         
+                    key={driver.id}                                                                                                                                                                            
+                    driver={driver}                          
+                    entry={entry}                                                                                                                                                                              
+                    onUpdate={(updates) => updateEntry(driver.id, updates)}                                                                                                                                    
+                    onRemove={() => removeEntry(driver.id)}                                                                                                                                                    
+                  />                                                                                                                                                                                           
+                ))}                                                                                                                                                                                            
+              </motion.div>                                 
+                                                                                                                                                                                                               
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+                <AddMeasureDriverPicker                                                                                                                                                                        
+                  quadrant={QUADRANT}                   
+                  setting={setting}                                                                                                                                                                            
+                  alreadyTracked={trackedDriverIds}       
+                  onAdd={addDriver}                                                                                                                                                                            
+                />                                          
+              </motion.div>                      
+                                                                                                                                                                                                               
+              <motion.div
+                className="flex justify-center mt-8 lg:hidden"                                                                                                                                                 
+                initial={{ opacity: 0 }}                                                                                                                                                                       
+                animate={{ opacity: 1 }}                  
+                transition={{ delay: 0.25 }}                                                                                                                                                                   
+              >                                             
+                <Button                                     
+                  onClick={onNext}                           
+                  className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full gap-2"
+                >                                         
+                  Continue to Workforce                                                                                                                                                                        
+                  <ArrowRight className="w-4 h-4" />                                                                                                                                                           
+                </Button>                                                                                                                                                                                      
+              </motion.div>                                                                                                                                                                                    
+            </div>                                           
+                                                          
+            {/* Right panel — quadrant total */}                                                                                                                                                               
+            <motion.div                                                                                                                                                                                        
+              className="w-full lg:w-[320px] flex-shrink-0"                                                                                                                                                    
+              initial={{ opacity: 0, x: 20 }}                                                                                                                                                                  
+              animate={{ opacity: 1, x: 0 }}              
+              transition={{ delay: 0.2 }}               
+            >                                                                                                                                                                                                  
+              <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Capacity Realized</p>                                                                                            
+                <p className="text-sm text-white/50 mb-4">Quantifiable drivers, attribution-adjusted</p>
+                                                             
+                <p className="text-3xl font-bold text-[#EA2C00]">{formatCurrency(quadrantTotal)}</p>                                                                                                           
+                <p className="text-xs text-white/50 mt-1">annualized impact</p>
+                                                                                                                                                                                                               
+                <div className="h-px bg-[#333333] my-5" />   
+                                                                                                                                                                                                               
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-3">Drivers Tracked</p>                                                                                              
+                {trackedHere.length === 0 ? (                                                                                                                                                                  
+                  <p className="text-xs text-white/40 italic">None yet</p>                                                                                                                                     
+                ) : (                                                                                                                                                                                          
+                  <ul className="space-y-1.5">                                                                                                                                                                 
+                    {trackedHere.map(({ driver }) => (                                                                                                                                                         
+                      <li key={driver.id} className="text-sm text-white/70 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />                                                                                                                             
+                        {driver.label}                                                                                                                                                                         
+                      </li>                             
+                    ))}                                                                                                                                                                                        
+                  </ul>                                 
+                )}                                                                                                                                                                                             
+                                                                                                                                                                                                               
+                <div className="hidden lg:block mt-6">       
+                  <Button                                                                                                                                                                                      
+                    onClick={onNext}                    
+                    className="w-full h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full gap-2"                                                                                             
+                  >                              
+                    Continue to Workforce                                                                                                                                                                      
+                    <ArrowRight className="w-4 h-4" />  
+                  </Button>                                 
+                </div>                                                                                                                                                                                         
+              </div>                                         
+            </motion.div>                                                                                                                                                                                      
+          </div>                                        
+        </div>                                                                                                                                                                                                 
+      </div>                                     
+    );                                                                                                                                                                                                         
+  }                                      
+
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 7 — Replicate the template for Workforce, Revenue, Quality
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                          
+  For each of the three other quadrant pages (MeasureWorkforce.tsx, MeasureRevenue.tsx, MeasureQuality.tsx), copy MeasureCapacity.tsx body verbatim and apply these per-page substitutions:
+                                                            
+  MeasureWorkforce.tsx:                                 
+  - Component name: MeasureWorkforce                         
+  - QUADRANT constant: 'Workforce'               
+  - currentStep: 3                                           
+  - stepName/H1: "Workforce"                                                                                                                                                                                   
+  - Subtitle: "What's improved for your team because of Abridge?"
+  - Right panel: "Workforce Realized"                                                                                                                                                                          
+  - Continue label: "Continue to Revenue"                    
+                                                                                                                                                                                                               
+  MeasureRevenue.tsx:                                       
+  - Component name: MeasureRevenue                                                                                                                                                                             
+  - QUADRANT constant: 'Revenue'                             
+  - currentStep: 4                                                                                                                                                                                             
+  - stepName/H1: "Revenue"                                                                                                                                                                                     
+  - Subtitle: "How has documentation showed up in revenue capture?"                                                                                                                                            
+  - Right panel: "Revenue Realized"                                                                                                                                                                            
+  - Continue label: "Continue to Quality"                                                                                                                                                                      
+                                                             
+  MeasureQuality.tsx:                                                                                                                                                                                          
+  - Component name: MeasureQuality                        
+  - QUADRANT constant: 'Quality'                                                                                                                                                                               
+  - currentStep: 5                                          
+  - stepName/H1: "Quality"                                                                                                                                                                                     
+  - Subtitle: "What clinical and patient outcomes are tracking with Abridge?"                                                                                                                                  
+  - Right panel: "Quality Realized"
+  - Continue label: "Continue to Forecast"                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+                                                            
+  1. TypeScript compiles. Watch for any usage of `state.trackedDrivers` before defaults flow through.
+                                                                                                                                                                                                               
+  2. Walk Outpatient through Measure to step 2 (Capacity):
+     - Page shows empty state "No drivers tracked yet"                                                                                                                                                         
+     - Click "+ Add a driver to track" → modal opens, search box visible                                                                                                                                       
+     - Modal lists: Patient Access (with $ badge)            
+     - Click Patient Access → modal closes, card appears expanded                                                                                                                                              
+     - Without Abridge field: enter 100,000 (visits)         
+     - With Abridge field: enter 110,000                                                                                                                                                                       
+     - Δ display shows "+10,000 visits"                      
+     - Value per unit field: $250 (default)                                                                                                                                                                    
+     - Attribution slider: 100% default → drag to 80%        
+     - Realization slider: 80% default                                                                                                                                                                         
+     - Realized impact card shows: "Δ 10,000 × $250 × 80% × 80% = $1,600,000"
+     - Right panel "Capacity Realized" shows $1,600,000                                                                                                                                                        
+                                                            
+  3. Walk ED through Capacity:                                                                                                                                                                                 
+     - Pickable drivers: LWBS Recovery, Admission Capture (both with $ badges)                                                                                                                                 
+     - Add LWBS Recovery, enter without/with values, see realized                                                                                                                                              
+     - Add Admission Capture too — both show in card list and right panel                                                                                                                                      
+                                                                                                                                                                                                               
+  4. Walk IP through Capacity:                                                                                                                                                                                 
+     - Pickable: Rounding Efficiency (qualitative — no $ badge)                                                                                                                                                
+     - Add it → expanded card shows With/Without inputs + Notes textarea + "Qualitative outcome — tracked for evidence but not modeled financially"                                                            
+     - No $ math, no calc card                                                                                                                                                                                 
+     - Right panel quadrant total stays $0                                                                                                                                                                     
+                                                                                                                                                                                                               
+  5. Walk Nursing through Capacity:                                                                                                                                                                            
+     - Pickable: Bedside / Direct Care Time (qualitative)                                                                                                                                                      
+     - Same qualitative pattern as IP                                                                                                                                                                          
+                                                                                                                                                                                                               
+  6. Walk through Workforce / Revenue / Quality steps:                                                                                                                                                         
+     - Each shows their own driver pool from EXPLORE_DRIVERS filtered by quadrant + setting                                                                                                                    
+     - Add/edit/remove works on each                                                                                                                                                                           
+     - Quality for Nursing surfaces HAPI, Falls, CAUTI, CLABSI, Sepsis (all with $ badges) plus Med Error and HCAHPS (qualitative)                                                                             
+                                                             
+  7. Subtle quantifiable badge: small "$" icon in a soft beige circle next to driver labels. Should feel informational, not loud — qualitative drivers should not feel demoted.                                
+                                                                                                                                                                                                               
+  8. Remove a tracked driver: trash icon click removes it from state, card disappears, picker re-includes it.                                                                                                  
+                                                                                                                                                                                                               
+  9. Page-level navigation: Back goes to previous quadrant (or Setup), Forward goes to next. Browser back/forward works.                                                                                       
+                                                                                                                                                                                                               
+  10. State persists across navigations: enter a driver on Capacity, navigate to Workforce and back — Capacity values still there.
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - Time-series (monthly trend) entry isn't built yet. Sprint 3C adds the "View as monthly trend" toggle on each MeasureDriverCard.                                                                            
+  - The financial multiplier model is intentionally simple (delta × valuePerUnit × attribution × realization). PS does any necessary unit conversion when entering values. For complex drivers (e.g., HAPI rate
+   calc), PS calculates the prevented count themselves and enters it as the delta.
+  - Existing MeasureMetricSelection / MeasureJourney / MeasureAllocate components stay on disk but are unwired. State they read (state.metricValues, state.enabledMetrics) is unused now but not removed for   
+  backward compat.                                           
+  - The legacy state may have data from prior versions — the new trackedDrivers map starts empty regardless. PS rebuilds tracking selection per customer.  

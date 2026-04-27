@@ -1,0 +1,427 @@
+🔧 Sprint 3C — Replit prompt (paste verbatim)     
+                                                                                                                                                                                                               
+  Context: Adds time-series mode to each MeasureDriverCard. PS picks per driver whether to enter a single snapshot or a monthly trend. When a driver has 2+ monthly data points, a clean trend chart renders   
+  inline. Realized dollar math uses the latest monthly entry as the snapshot when monthly mode is active, so the calc stays consistent across modes. EBR-ready visualization.
+                                                                                                                                                                                                               
+  Pre-req: Sprint 3B shipped (MeasureDriverCard with snapshot mode).                                                                                                                                           
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Create MeasureTrendChart component                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/measure/MeasureTrendChart.tsx
+                                                                                                                                                                                                               
+  Renders a clean line chart of with/without Abridge values over time. Uses recharts (already in the codebase).
+                                                                                                                                                                                                               
+  import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ComposedChart } from "recharts";
+                                                                                                                                                                                                               
+  interface MonthlyDataPoint {                          
+    month: string;        // ISO format YYYY-MM              
+    withAbridge: number;                                                                                                                                                                                       
+    withoutAbridge: number;                                  
+  }                                                                                                                                                                                                            
+                                                             
+  interface MeasureTrendChartProps {                                                                                                                                                                           
+    data: MonthlyDataPoint[];                               
+    unit: string;         // for tooltip ("visits", "events", "wRVU")                                                                                                                                          
+    height?: number;      // default 220                     
+  }                                                                                                                                                                                                            
+                                                          
+  // Format YYYY-MM to "MMM YY" — e.g., "2026-03" → "Mar '26"                                                                                                                                                  
+  function formatMonthLabel(month: string): string {        
+    const [year, mon] = month.split('-');                                                                                                                                                                      
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const idx = parseInt(mon, 10) - 1;                    
+    if (isNaN(idx) || idx < 0 || idx > 11) return month;                                                                                                                                                       
+    return `${monthNames[idx]} '${year.slice(2)}`;                                                                                                                                                             
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  export default function MeasureTrendChart({ data, unit, height = 220 }: MeasureTrendChartProps) {
+    if (data.length < 2) {                                                                                                                                                                                     
+      return (                                                                                                                                                                                                 
+        <div className="bg-[#F5F0EB] rounded-lg p-6 text-center" data-testid="trend-chart-empty">                                                                                                              
+          <p className="text-sm text-[#888888] italic">Add at least two months of data to see the trend.</p>                                                                                                   
+        </div>                                                                                                                                                                                                 
+      );                                                                                                                                                                                                       
+    }                                                       
+                                                                                                                                                                                                               
+    const sorted = [...data].sort((a, b) => a.month.localeCompare(b.month));
+    const chartData = sorted.map(p => ({                                                                                                                                                                       
+      month: formatMonthLabel(p.month),                 
+      'Without Abridge': p.withoutAbridge,                                                                                                                                                                     
+      'With Abridge': p.withAbridge,                                                                                                                                                                           
+      delta: p.withAbridge - p.withoutAbridge,                                                                                                                                                                 
+    }));                                                                                                                                                                                                       
+                                                            
+    const formatTick = (n: number) => {                                                                                                                                                                        
+      if (Math.abs(n) >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+      if (Math.abs(n) >= 1000) return `${(n / 1000).toFixed(1)}K`;                                                                                                                                             
+      return String(n);                                   
+    };                                                                                                                                                                                                         
+                                                            
+    return (                                                                                                                                                                                                   
+      <div className="bg-white border border-[#E5E5E5] rounded-lg p-4" data-testid="trend-chart">                                                                                                              
+        <ResponsiveContainer width="100%" height={height}>
+          <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>                                                                                                                 
+            <defs>                                                                                                                                                                                             
+              <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.18} />                                                                                                                                    
+                <stop offset="100%" stopColor="#EA2C00" stopOpacity={0} />
+              </linearGradient>                                                                                                                                                                                
+            </defs>                                          
+            <CartesianGrid strokeDasharray="3 3" stroke="#F0EBE4" vertical={false} />                                                                                                                          
+            <XAxis dataKey="month" tick={{ fill: '#888888', fontSize: 12 }} axisLine={{ stroke: '#E5E5E5' }} tickLine={false} />
+            <YAxis tick={{ fill: '#888888', fontSize: 12 }} axisLine={{ stroke: '#E5E5E5' }} tickLine={false} tickFormatter={formatTick} />                                                                    
+            <Tooltip                                      
+              contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: 8, color: 'white', fontSize: 12 }}                                                                                     
+              labelStyle={{ color: 'white', fontWeight: 600 }}                                                                                                                                                 
+              formatter={(value: number, name: string) => [`${value.toLocaleString()} ${unit}`, name]}                                                                                                         
+            />                                                                                                                                                                                                 
+            <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+            <Line                                                                                                                                                                                              
+              type="monotone"                                                                                                                                                                                  
+              dataKey="Without Abridge"                                                                                                                                                                        
+              stroke="#888888"                                                                                                                                                                                 
+              strokeWidth={2}                                                                                                                                                                                  
+              strokeDasharray="5 5"                          
+              dot={{ r: 3, fill: '#888888' }}                                                                                                                                                                  
+              activeDot={{ r: 5 }}                        
+            />                                                                                                                                                                                                 
+            <Line                                           
+              type="monotone"                                                                                                                                                                                  
+              dataKey="With Abridge"                         
+              stroke="#EA2C00"                            
+              strokeWidth={2.5}                         
+              dot={{ r: 4, fill: '#EA2C00' }}                                                                                                                                                                  
+              activeDot={{ r: 6 }}               
+            />                                                                                                                                                                                                 
+          </ComposedChart>                              
+        </ResponsiveContainer>                              
+      </div>                                                                                                                                                                                                   
+    );                                                       
+  }                                                                                                                                                                                                            
+                                         
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Update MeasureDriverCard to support monthly mode
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/components/measure/MeasureDriverCard.tsx
+                                                             
+  Add tab switcher and monthly entry UI to the expanded card body. Imports needed:
+                                                            
+    import { Plus, Trash2, ChevronDown, Info } from "lucide-react";                                                                                                                                            
+    import MeasureTrendChart from "./MeasureTrendChart";     
+                                                                                                                                                                                                               
+  ADD a helper at the top of the component:                  
+                                                                                                                                                                                                               
+  const sortedMonthly = useMemo(() => {                      
+    return [...(entry.monthlyData || [])].sort((a, b) => a.month.localeCompare(b.month));                                                                                                                      
+  }, [entry.monthlyData]);                                   
+                                                                                                                                                                                                               
+  const latestMonthlyPoint = sortedMonthly.length > 0 ? sortedMonthly[sortedMonthly.length - 1] : null;
+                                                                                                                                                                                                               
+  // When monthly mode is active and has data, derive the snapshot from the latest month
+  const effectiveWithoutAbridge = entry.isMonthlyMode && latestMonthlyPoint ? latestMonthlyPoint.withoutAbridge : entry.withoutAbridge;                                                                        
+  const effectiveWithAbridge = entry.isMonthlyMode && latestMonthlyPoint ? latestMonthlyPoint.withAbridge : entry.withAbridge;                                                                                 
+                                                             
+  const delta = effectiveWithAbridge - effectiveWithoutAbridge;                                                                                                                                                
+  const realizedValue = isQuantifiable                       
+    ? Math.round(delta * entry.valuePerUnit * (entry.attributionPercent / 100) * (entry.realizationPercent / 100))                                                                                             
+    : 0;                                                     
+                                                                                                                                                                                                               
+  (REPLACE the existing delta and realizedValue calculations with these effective-value versions.)
+                                                                                                                                                                                                               
+  ADD a helper for adding a new month row. Default to the month before the most recent entry, or current month if no entries:                                                                                  
+                                                                                                                                                                                                               
+  const addMonthlyRow = () => {                                                                                                                                                                                
+    let nextMonth: string;                                                                                                                                                                                     
+    if (sortedMonthly.length === 0) {                                                                                                                                                                          
+      const now = new Date();                                                                                                                                                                                  
+      nextMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;                                                                                                                       
+    } else {                                                
+      // Default to the month before the earliest entry                                                                                                                                                        
+      const earliest = sortedMonthly[0].month;               
+      const [y, m] = earliest.split('-').map(Number);                                                                                                                                                          
+      const d = new Date(y, m - 2, 1); // -2 because month is 1-indexed and we want the month before
+      nextMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;                                                                                                                           
+    }                                                       
+                                                                                                                                                                                                               
+    // Seed the new row with the snapshot values (or zero) as a starting point                                                                                                                                 
+    const seed = entry.withAbridge !== 0 || entry.withoutAbridge !== 0
+      ? { withAbridge: entry.withAbridge, withoutAbridge: entry.withoutAbridge }                                                                                                                               
+      : { withAbridge: 0, withoutAbridge: 0 };                                                                                                                                                                 
+                                                          
+    const newPoint = { month: nextMonth, ...seed };                                                                                                                                                            
+    onUpdate({ monthlyData: [...(entry.monthlyData || []), newPoint] });                                                                                                                                       
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  const updateMonthlyRow = (index: number, updates: Partial<{ month: string; withAbridge: number; withoutAbridge: number }>) => {
+    const next = [...(entry.monthlyData || [])];                                                                                                                                                               
+    next[index] = { ...next[index], ...updates };                                                                                                                                                              
+    onUpdate({ monthlyData: next });                                                                                                                                                                           
+  };                                                                                                                                                                                                           
+                                                             
+  const removeMonthlyRow = (index: number) => {                                                                                                                                                                
+    const next = [...(entry.monthlyData || [])];             
+    next.splice(index, 1);                                                                                                                                                                                     
+    onUpdate({ monthlyData: next });                        
+  };                                                                                                                                                                                                           
+                                                             
+  const toggleMonthlyMode = () => {                                                                                                                                                                            
+    const turningOn = !entry.isMonthlyMode;             
+    if (turningOn && (!entry.monthlyData || entry.monthlyData.length === 0)) {                                                                                                                                 
+      // Seed with one row from the snapshot values when first switching to monthly
+      const now = new Date();                                                                                                                                                                                  
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      onUpdate({                                        
+        isMonthlyMode: true,                                                                                                                                                                                   
+        monthlyData: [{                                 
+          month: currentMonth,                                                                                                                                                                                 
+          withAbridge: entry.withAbridge,                                                                                                                                                                      
+          withoutAbridge: entry.withoutAbridge,              
+        }],                                                                                                                                                                                                    
+      });                                        
+    } else {                                                                                                                                                                                                   
+      onUpdate({ isMonthlyMode: turningOn });
+    }                                                                                                                                                                                                          
+  };                                                                                                                                                                                                           
+                                                            
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Add the mode tab switcher inside the expanded card body
+  ═══════════════════════════════════════════════════════════
+  File: client/src/components/measure/MeasureDriverCard.tsx
+                                                                                                                                                                                                               
+  Inside the expanded body (the `entry.expanded && motion.div` block), at the very top of the inner content (before the With/Without inputs), ADD this tab switcher:
+                                                                                                                                                                                                               
+    <div className="flex items-center gap-1 p-1 bg-[#F5F0EB] rounded-lg w-fit">
+      <button                                                
+        onClick={() => onUpdate({ isMonthlyMode: false })}
+        className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${                                                                                                                               
+          !entry.isMonthlyMode ? 'bg-white text-black shadow-sm' : 'text-[#888888] hover:text-black'                                                                                                           
+        }`}                                                                                                                                                                                                    
+        data-testid={`tab-snapshot-${driver.id}`}                                                                                                                                                              
+      >                                                     
+        Snapshot                                                                                                                                                                                               
+      </button>                                              
+      <button                                                                                                                                                                                                  
+        onClick={toggleMonthlyMode}                                                                                                                                                                            
+        className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${                                                                                                                               
+          entry.isMonthlyMode ? 'bg-white text-black shadow-sm' : 'text-[#888888] hover:text-black'                                                                                                            
+        }`}                                                                                                                                                                                                    
+        data-testid={`tab-monthly-${driver.id}`}                                                                                                                                                               
+      >                                                     
+        Monthly trend                                                                                                                                                                                          
+      </button>                                              
+    </div>                                                   
+                                                        
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Conditionally render snapshot vs monthly entry UI                                                                                                                                                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/components/measure/MeasureDriverCard.tsx                                                                                                                                                    
+                                                        
+  Wrap the existing With/Without input grid + value-per-unit + sliders + realized impact card so they show in BOTH modes — the difference is just whether the With/Without inputs are editable (snapshot) or   
+  replaced by a monthly table (monthly).                  
+                                                                                                                                                                                                               
+  PATTERN:                                                  
+  - If `!entry.isMonthlyMode`: render the existing With/Without inputs (editable as before).
+  - If `entry.isMonthlyMode`: render the monthly table + chart in place of the With/Without inputs. Show a small read-only summary: "Latest month: Δ {delta} {unit}".                                          
+                                                            
+  The valuePerUnit input, attribution slider, realization slider, and Realized Impact calculation card render IN BOTH MODES — they stay below the entry section.                                               
+                                                                                                                                                                                                               
+  REPLACE the existing With/Without grid (the `<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">` that currently holds the two inputs) with a conditional:
+                                                                                                                                                                                                               
+  {!entry.isMonthlyMode ? (                                                                                                                                                                                    
+    /* Existing With/Without inputs — keep this exactly as it is in 3B, just wrapped */
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">                                                                                                                                                    
+      <div>                                                                                                                                                                                                    
+        <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">                                                                                                            
+          Without Abridge                                                                                                                                                                                      
+        </label>                                                                                                                                                                                               
+        <FormattedNumberInput                                
+          value={entry.withoutAbridge}                                                                                                                                                                         
+          onChange={(v: number) => onUpdate({ withoutAbridge: v })}
+          className="h-11 bg-white"                                                                                                                                                                            
+          data-testid={`input-without-${driver.id}`}                                                                                                                                                           
+        />                                                                                                                                                                                                     
+        <p className="text-xs text-[#888888] mt-1">{md!.deltaLabel}</p>                                                                                                                                        
+      </div>                                            
+      <div>                                                                                                                                                                                                    
+        <label className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide mb-1.5 block">                                                                                                            
+          With Abridge                                       
+        </label>                                                                                                                                                                                               
+        <FormattedNumberInput                                
+          value={entry.withAbridge}                                                                                                                                                                            
+          onChange={(v: number) => onUpdate({ withAbridge: v })}
+          className="h-11 bg-white"                                                                                                                                                                            
+          data-testid={`input-with-${driver.id}`}         
+        />                                                                                                                                                                                                     
+        <p className="text-xs text-[#888888] mt-1">Δ {delta >= 0 ? '+' : ''}{formatNumber(delta)} {md!.deltaUnit}</p>                                                                                          
+      </div>                                     
+    </div>                                                                                                                                                                                                     
+  ) : (                                                 
+    /* Monthly entry table + trend chart */                 
+    <div className="space-y-4">                                                                                                                                                                                
+      <div className="bg-[#F5F0EB] rounded-lg p-4">          
+        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Monthly entries</p>                                                                                                  
+        {(entry.monthlyData || []).length === 0 && (    
+          <p className="text-sm text-[#666666] italic mb-3">No monthly data yet. Add a month to begin tracking.</p>                                                                                            
+        )}                                              
+        <div className="space-y-2">                                                                                                                                                                            
+          {sortedMonthly.map((point, sortedIdx) => {    
+            // Find the original index in entry.monthlyData (since sortedMonthly is a sorted copy)
+            const originalIdx = (entry.monthlyData || []).findIndex(p => p.month === point.month);                                                                                                             
+            const rowDelta = point.withAbridge - point.withoutAbridge;
+            return (                                                                                                                                                                                           
+              <div key={`${point.month}-${sortedIdx}`} className="bg-white rounded-md p-3 grid grid-cols-12 gap-2 items-center">
+                <input                                                                                                                                                                                         
+                  type="month"                               
+                  value={point.month}                                                                                                                                                                          
+                  onChange={(e) => updateMonthlyRow(originalIdx, { month: e.target.value })}                                                                                                                   
+                  className="col-span-3 h-9 px-2 border border-[#E5E5E5] rounded text-sm focus:border-[#EA2C00] outline-none"                                                                                  
+                  data-testid={`month-${driver.id}-${sortedIdx}`}                                                                                                                                              
+                />                                                                                                                                                                                             
+                <div className="col-span-3">                                                                                                                                                                   
+                  <FormattedNumberInput                                                                                                                                                                        
+                    value={point.withoutAbridge}          
+                    onChange={(v: number) => updateMonthlyRow(originalIdx, { withoutAbridge: v })}                                                                                                             
+                    className="h-9 bg-white text-sm"        
+                    placeholder="Without"                 
+                  />                                                                                                                                                                                           
+                </div>                                      
+                <div className="col-span-3">                                                                                                                                                                   
+                  <FormattedNumberInput                                                                                                                                                                        
+                    value={point.withAbridge}               
+                    onChange={(v: number) => updateMonthlyRow(originalIdx, { withAbridge: v })}                                                                                                                
+                    className="h-9 bg-white text-sm"                                                                                                                                                           
+                    placeholder="With"                    
+                  />                                                                                                                                                                                           
+                </div>                                                                                                                                                                                         
+                <div className="col-span-2 text-xs text-[#666666] text-right">
+                  Δ {rowDelta >= 0 ? '+' : ''}{formatNumber(rowDelta)}                                                                                                                                         
+                </div>                                    
+                <button                                   
+                  onClick={() => removeMonthlyRow(originalIdx)}                                                                                                                                                
+                  className="col-span-1 p-1 text-[#888888] hover:text-[#EA2C00] flex justify-end"
+                >                                                                                                                                                                                              
+                  <Trash2 className="w-3.5 h-3.5" />         
+                </button>                                   
+              </div>                                                                                                                                                                                           
+            );                                                                                                                                                                                                 
+          })}                                                                                                                                                                                                  
+        </div>                                                                                                                                                                                                 
+        <button                                                                                                                                                                                                
+          onClick={addMonthlyRow}                                                                                                                                                                              
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[#EA2C00] hover:text-[#EA2C00]/80"                                                                                         
+          data-testid={`add-month-${driver.id}`}                                                                                                                                                               
+        >                                                   
+          <Plus className="w-4 h-4" /> Add a month        
+        </button>                                            
+      </div>                                                
+                                                             
+      {/* Trend chart */}                                                                                                                                                                                      
+      {isQuantifiable && md && (                        
+        <MeasureTrendChart data={sortedMonthly} unit={md.deltaUnit} />                                                                                                                                         
+      )}                                                                                                                                                                                                       
+      {!isQuantifiable && sortedMonthly.length >= 2 && (                                                                                                                                                       
+        <MeasureTrendChart data={sortedMonthly} unit="value" />                                                                                                                                                
+      )}                                                    
+                                                                                                                                                                                                               
+      {/* Latest-month summary — read-only display so PS sees what's driving the snapshot calc */}
+      {latestMonthlyPoint && (                                                                                                                                                                                 
+        <div className="bg-[#F5F0EB] rounded-lg p-3 text-xs text-[#666666]">
+          Latest entry ({latestMonthlyPoint.month}) feeds the realized impact calculation below.                                                                                                               
+          Latest Δ: {delta >= 0 ? '+' : ''}{formatNumber(delta)} {md?.deltaUnit ?? 'value'}.
+        </div>                                                                                                                                                                                                 
+      )}                                                    
+    </div>                                                                                                                                                                                                     
+  )}                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  The valuePerUnit input + attribution slider + realization slider + Realized Impact card stay exactly as they were in 3B. They render below the conditional and use the `delta` and `realizedValue` variables 
+  which now reflect the effective values.                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Update the collapsed-card preview value                                                                                                                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/components/measure/MeasureDriverCard.tsx
+                                                        
+  In the card header (when `!entry.expanded`), the existing realized-value preview already uses `realizedValue` — which now correctly reflects the effective values from monthly mode if applicable. No change 
+  needed.                                                 
+                                                                                                                                                                                                               
+  But ADD a small mode indicator next to the value — a clock icon or short text — when monthly mode is active, so PS can see at a glance which drivers are tracked monthly:
+                                                             
+  In the header, alongside the realized value display:                                                                                                                                                         
+                                                            
+    {entry.isMonthlyMode && (                                                                                                                                                                                  
+      <span                                                                                                                                                                                                    
+        className="text-[10px] font-medium text-[#888888] bg-[#F5F0EB] px-1.5 py-0.5 rounded"                                                                                                                  
+        title="Tracked monthly"                                                                                                                                                                                
+      >                                                                                                                                                                                                        
+        monthly                                              
+      </span>                                                                                                                                                                                                  
+    )}                                           
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 6 — Apply qualitative mode handling for monthly trend                                                                                                                                                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                             
+  For qualitative drivers (no `measureDefaults`), the monthly tab still works — PS can enter Without/With per month and see a trend chart, but no realized $ math. The existing qualitative path in            
+  MeasureDriverCard already handles this via the conditional rendering. Verify that:
+                                                                                                                                                                                                               
+  - The Snapshot tab shows the qualitative inputs + Notes textarea (existing 3B behavior).
+  - The Monthly tab shows the monthly table + chart (no $ math card).                                                                                                                                          
+  - Switching between modes preserves both data sets.        
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  1. TypeScript compiles. Recharts imports resolve.                                                                                                                                                            
+                                                            
+  2. Outpatient → Capacity → add Patient Access driver, expand card.                                                                                                                                           
+                                                                                                                                                                                                               
+  3. **Snapshot mode (default)**:                                                                                                                                                                              
+     - Tab switcher shows "Snapshot | Monthly trend" with Snapshot active                                                                                                                                      
+     - Without/With inputs work exactly as in 3B                                                                                                                                                               
+     - Realized impact computes from entered values          
+                                                                                                                                                                                                               
+  4. **Click "Monthly trend" tab**:                          
+     - One row pre-populated with the current month and the snapshot values                                                                                                                                    
+     - Without/With inputs in the row are editable           
+     - Δ column auto-computes                                                                                                                                                                                  
+     - "Add a month" button at the bottom                    
+                                                                                                                                                                                                               
+  5. **Click "Add a month"**:                               
+     - New row appears, defaulting to the month BEFORE the earliest existing entry                                                                                                                             
+     - PS edits values                                       
+     - When 2+ rows exist, the trend chart renders below                                                                                                                                                       
+                                                                                                                                                                                                               
+  6. **Trend chart**:                                                                                                                                                                                          
+     - X-axis: month labels formatted as "Mar '26"                                                                                                                                                             
+     - Y-axis: auto-scaled, with K/M abbreviation if values are large                                                                                                                                          
+     - Two lines: gray dashed (Without Abridge), red solid (With Abridge)                                                                                                                                      
+     - Tooltip on hover shows month + values + units      
+     - Legend at bottom                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  7. **Realized impact still works**: scroll below the chart to find the value-per-unit input + attribution + realization sliders + Realized Impact card. Values reflect the LATEST month's data.              
+                                                                                                                                                                                                               
+  8. **Switch back to Snapshot tab**:                        
+     - With/Without inputs reappear                                                                                                                                                                            
+     - Their values are whatever was last manually entered in snapshot mode (NOT the latest month — they're independent)                                                                                       
+     - Monthly data is preserved (visible again on switching back to Monthly tab)                                                                                                                              
+                                                                                                                                                                                                               
+  9. **Collapse the card**:                                                                                                                                                                                    
+     - Header shows realized value + a small "monthly" badge if monthly mode is active                                                                                                                         
+     - Expanding restores the previously-active tab                                                                                                                                                            
+                                                                                                                                                                                                               
+  10. **Qualitative driver** (e.g., Cognitive Load Reduction):
+      - Snapshot tab: Without/With inputs + Notes textarea (existing 3B behavior)                                                                                                                              
+      - Monthly tab: monthly entry table + trend chart (no $ math)                                                                                                                                             
+      - Both modes preserve their data                                                                                                                                                                         
+                                                                                                                                                                                                               
+  11. **Empty state on Monthly tab**: "No monthly data yet. Add a month to begin tracking." Click Add → first row appears.                                                                                     
+                                                                                                                                                                                                               
+  12. **Remove a monthly row**: trash icon click removes it. Chart re-renders with remaining points. Goes back to empty state if all removed.                                                                  
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - PS can use the "Last 6 months" workflow manually by clicking Add a month repeatedly — each click pre-populates the prior month, so 6 clicks gives them 6 sequential months ready to fill in.               
+  - Today's date drives the default first-month entry. (Pulling deployment.monthsLive from Setup state to auto-populate historical months would be a polish enhancement — not in 3C scope.)                    
+  - The trend chart visualization is intentionally minimal. Sprint 3H (Measure PDF) will likely embed it as-is into the evidence doc.
+  - Snapshot mode and Monthly mode hold INDEPENDENT data. PS chooses one as the source of truth per driver. The realized $ calc uses whichever mode is active. This avoids data-sync confusion. 
