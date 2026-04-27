@@ -1,0 +1,317 @@
+🔧 Sprint 2A — Replit prompt (paste verbatim)                                                                                                                                                                
+                                                                                                                                                                                  
+  Context: This is the Abridge ROI Calculator. We're adding metadata to client/src/lib/measureCareSettings.ts so the Explore path can group measures by ROI quadrant (Capacity / Workforce / Revenue / Quality)
+   and the future Measure path can share the same vocabulary. Pure data + interface changes — no UI code in this sprint.                                                                                       
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Extend the MetricDefinition interface             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/measureCareSettings.ts (lines ~3-20)
+                                                                                                                                                                                                               
+  Add four new fields to the MetricDefinition interface. Keep all existing fields unchanged.
+                                                                                                                                                                                                               
+    roiQuadrant: 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
+    shortDescription: string;        // 1-2 sentence neutral narrative for Explore toggle expansion. May be empty string for now — we'll populate in a follow-up sprint.                                       
+    exploreVisibility: 'driver-quantified' | 'driver-qualitative' | 'hidden';
+    childOfDriver?: string;           // Optional. Marks this measure as a sub-toggle of another driver. Example: locum spend is childOfDriver: 'retention' so the UI nests it under the Retention toggle.     
+                                                             
+  Why these fields:                                                                                                                                                                                            
+  - roiQuadrant: canonical grouping for the 4-quadrant Explore restructure.
+  - shortDescription: replaces the use of `whyItMatters` for the Explore tooltip/expansion. Keeps voice tight and consistent.                                                                                  
+  - exploreVisibility: 3 states. 'driver-quantified' = appears as toggle WITH dollar math + scenario presets. 'driver-qualitative' = appears as toggle, narrative only, no dollar math. 'hidden' = does NOT    
+  appear in Explore (still in Measure post-sale catalog). 
+  - childOfDriver: lets the UI render Locum/Agency as a nested sub-toggle under Retention/Wellbeing.                                                                                                           
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Tag every existing measure with roiQuadrant                                                                                                                                                         
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  For every existing measure object in the file, add a `roiQuadrant` property derived from its current `domain` value using this exact mapping:                                                                
+                                                                                                                                                                                                               
+    domain: 'capacity'      → roiQuadrant: 'Capacity'                                                                                                                                                          
+    domain: 'throughput'    → roiQuadrant: 'Capacity'                                                                                                                                                          
+    domain: 'patientFlow'   → roiQuadrant: 'Capacity'                                                                                                                                                          
+    domain: 'staffing'      → roiQuadrant: 'Capacity'                                                                                                                                                          
+    domain: 'workforce'     → roiQuadrant: 'Workforce'                                                                                                                                                         
+    domain: 'revenue'       → roiQuadrant: 'Revenue'                                                                                                                                                           
+    domain: 'quality'       → roiQuadrant: 'Quality'                                                                                                                                                           
+    domain: 'foundational'  → roiQuadrant: 'Capacity'   // OP utilization/retention/consent — adoption metrics, place under Capacity for now                                                                   
+                                                                                                                                                                                                               
+  Do NOT remove or rename the existing `domain` field. Keep it for backward compatibility. roiQuadrant is the new source of truth going forward.
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 3 — Override roiQuadrant for these 5 misclassified measures                                                                                                                                             
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  After Task 2 runs, override roiQuadrant for these specific measures (their `domain` is wrong or ambiguous and the auto-mapping miscategorizes them):                                                         
+                                                                                                                                                                                                               
+  1. ED — Documentation Time per Encounter (around line 508)                                                                                                                                                   
+     Current domain: 'quality' → set roiQuadrant: 'Workforce'                                                                                                                                                  
+     Reason: it's workflow burden, not clinical quality.                                                                                                                                                       
+                                                             
+  2. ED — Words on Workday (WoW) Time (around line 526)                                                                                                                                                        
+     Current domain: 'quality' → set roiQuadrant: 'Workforce'
+     Reason: after-hours documentation burden.                                                                                                                                                                 
+                                                             
+  3. IP — Documentation Time per Note (around line 898)                                                                                                                                                        
+     Current domain: 'quality' → set roiQuadrant: 'Workforce'
+     Reason: workflow burden.                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  4. Nursing — Documentation Time per Shift (around line 1308)                                                                                                                                                 
+     Current domain: 'quality' → set roiQuadrant: 'Workforce'                                                                                                                                                  
+     Reason: workflow burden.                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  5. IP — 30-Day Readmission Rate (around line 1169)      
+     Current domain: 'patientFlow' → set roiQuadrant: 'Quality'                                                                                                                                                
+     Reason: it's a CMS-reportable safety/quality measure (HRRP), only secondarily a flow metric.                                                                                                              
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Promote Locum/Agency Spend for ED + IP and tag as childOfDriver
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                             
+  Locum/Agency Spend is causally downstream of Retention/Wellbeing — Abridge's claim is that reduced burnout leads to better retention which reduces locum reliance. Currently these are buried at Phase 3 in  
+  ED and IP, which means Explore can't surface them. Promote and tag.
+                                                                                                                                                                                                               
+  1. ED — "Agency / Locum Spend" measure (around line 861)                                                                                                                                                     
+     Change `phase: 3` → `phase: 1`                          
+     Change `phase3Roadmap: true` → `phase3Roadmap: false` (or remove the flag entirely)                                                                                                                       
+     Add: `childOfDriver: 'retention'`                                                                                                                                                                         
+                                                             
+  2. IP — "Agency / Locum Spend" measure (around line 1253)                                                                                                                                                    
+     Change `phase: 3` → `phase: 1`                          
+     Change `phase3Roadmap: true` → `phase3Roadmap: false` (or remove the flag entirely)                                                                                                                       
+     Add: `childOfDriver: 'retention'`                                                                                                                                                                         
+                                                        
+  3. Nursing — "Travel / Agency Nurse Annual Spend" (around line 1620)                                                                                                                                         
+     Already promoted earlier; add: `childOfDriver: 'retention'` for consistency.                                                                                                                              
+     Also confirm: Nursing's existing nursingAgencyEnabled state already gates behind nursingRetentionEnabled in client/src/pages/explore/ExploreFlow.tsx — leave that runtime gating alone, it matches the new
+   childOfDriver intent.                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 5 — Add 4 new Outpatient Quality measures                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  Append these 4 new measures to the OUTPATIENT measures array (or whatever the array is called in this file — match existing naming convention). Place them after the existing Quality measures.
+                                                                                                                                                                                                               
+  For each new measure, follow the same shape as existing measures (id, label, domain, phase, inputType, unit, unitLabel, lowerIsBetter, source, sourceLabel, description, whyItMatters, etc.). Use these exact
+   values:                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                   
+  Measure 1 — CDI Query Reduction (Outpatient)                                                                                                                                                                 
+  ────────────────────────────────────────              
+    id: 'opCdiQueryReduction'                                                                                                                                                                                  
+    label: 'CDI Query Reduction'                 
+    domain: 'quality'                                                                                                                                                                                          
+    phase: 2                                                 
+    inputType: 'before-after'                                                                                                                                                                                  
+    unit: '%'                                                
+    unitLabel: 'percentage points'                           
+    lowerIsBetter: true                                 
+    source: 'cdi'                                                                                                                                                                                              
+    sourceLabel: 'CDI / Coding system'                    
+    description: 'Volume of CDI or coding queries returned to providers post-visit.'                                                                                                                           
+    whyItMatters: 'Reductions in query volume are typically associated with documentation that captures clinical reasoning and specificity at the point of care.'
+    roiQuadrant: 'Quality'                                                                                                                                                                                     
+    shortDescription: 'Volume of CDI or coding queries returned to providers post-visit. Reductions are typically associated with more complete documentation captured at the point of care.'
+    exploreVisibility: 'driver-qualitative'                  
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                   
+  Measure 2 — Cognitive Load Reduction                                                                                                                                                                         
+  ────────────────────────────────────────                                                                                                                                                                     
+    id: 'opCognitiveLoadReduction'                                                                                                                                                                             
+    label: 'Cognitive Load Reduction'                                                                                                                                                                          
+    domain: 'quality'                                                                                                                                                                                          
+    phase: 2                                                                                                                                                                                                   
+    inputType: 'before-after'                           
+    unit: 'score'                                                                                                                                                                                              
+    unitLabel: 'self-reported score'                         
+    lowerIsBetter: false                                                                                                                                                                                       
+    source: 'survey'                                    
+    sourceLabel: 'Provider survey'                                                                                                                                                                             
+    description: 'Self-reported reduction in mental effort spent context-switching between patient interaction and documentation during a visit.'
+    whyItMatters: 'Cognitive load is associated with provider burnout, decision fatigue, and patient experience. Captured via brief in-workflow survey instruments.'                                           
+    roiQuadrant: 'Quality'                                   
+    shortDescription: 'Self-reported reduction in mental effort spent context-switching between patient interaction and documentation during a visit. Not modeled as financial value.'                         
+    exploreVisibility: 'driver-qualitative'                  
+                                                             
+  ────────────────────────────────────────                                                                                                                                                                     
+  Measure 3 — Audit & Compliance Readiness                   
+  ────────────────────────────────────────                                                                                                                                                                     
+    id: 'opAuditComplianceReadiness'                                                                                                                                                                           
+    label: 'Audit & Compliance Readiness'                                                                                                                                                                      
+    domain: 'quality'                                                                                                                                                                                          
+    phase: 2                                                                                                                                                                                                   
+    inputType: 'before-after'                                                                                                                                                                                  
+    unit: '%'                                                                                                                                                                                                  
+    unitLabel: 'percentage of records meeting completeness criteria'                                                                                                                                           
+    lowerIsBetter: false                         
+    source: 'cdi'                                         
+    sourceLabel: 'Internal audit / Compliance'                                                                                                                                                                 
+    description: 'Share of encounter records that meet documentation completeness criteria as defined by internal audit or compliance teams.'
+    whyItMatters: 'Higher completeness rates are associated with reduced exposure during payer audits and faster credentialing cycles.'                                                                        
+    roiQuadrant: 'Quality'                                   
+    shortDescription: 'Share of encounter records that meet internal audit or payer completeness criteria. Higher completeness is associated with reduced audit exposure.'
+    exploreVisibility: 'driver-qualitative'                                                                                                                                                                    
+                                                             
+  ────────────────────────────────────────                                                                                                                                                                     
+  Measure 4 — Care Continuity for Handoffs & Referrals       
+  ────────────────────────────────────────                                                                                                                                                                     
+    id: 'opCareContinuity'                                                                                                                                                                                     
+    label: 'Care Continuity for Handoffs & Referrals'                                                                                                                                                          
+    domain: 'quality'                                                                                                                                                                                          
+    phase: 2                                                                                                                                                                                                   
+    inputType: 'before-after'                                                                                                                                                                                  
+    unit: '%'                                                                                                                                                                                                  
+    unitLabel: 'percentage of referrals with complete documentation'                                                                                                                                           
+    lowerIsBetter: false                                                                                                                                                                                       
+    source: 'epic'                                      
+    sourceLabel: 'EHR / referral records'                                                                                                                                                                      
+    description: 'Share of outbound referrals or care handoffs accompanied by structured, complete documentation at time of transition.'
+    whyItMatters: 'Documentation completeness at handoff is associated with reduced rework for receiving providers and improved continuity for patients across care settings.'                                 
+    roiQuadrant: 'Quality'                                
+    shortDescription: 'Share of referrals or care handoffs accompanied by structured documentation at time of transition. Associated with reduced rework for receiving providers.'                             
+    exploreVisibility: 'driver-qualitative'                  
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 6 — Set exploreVisibility for every measure                                                                                                                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  Default rule:                                                                                                                                                                                                
+  - Every existing measure gets `exploreVisibility: 'hidden'` UNLESS it is explicitly listed below as a driver. This keeps Explore pages curated to ~3-5 strategic toggles per quadrant.                       
+                                                                                                                                                                                                               
+  For each new measure created in Task 5, exploreVisibility is already specified — leave those.
+                                                                                                                                                                                                               
+  For these specific existing measures, set `exploreVisibility` to the indicated value. Leave shortDescription as empty string '' for these — Sprint 2A2 will populate.
+                                                                                                                                                                                                               
+  OUTPATIENT — Capacity:                                     
+  - 'patientsPerProvider' (line ~248) → 'driver-quantified'                                                                                                                                                    
+  - 'visitsPerHour'         (line ~265) → 'driver-quantified'
+  - 'timeInNote'            (line ~214) → 'driver-quantified'                                                                                                                                                  
+                                                                                                                                                                                                               
+  OUTPATIENT — Workforce:                                                                                                                                                                                      
+  - 'workOutsideWorkEmpirical' (line ~162) → 'driver-quantified'   [WoW]                                                                                                                                       
+  - 'burnoutAssessment'        (line ~179) → 'driver-qualitative'
+  - 'likelihoodToStay'         (line ~196) → 'driver-quantified'                                                                                                                                               
+                                                          
+  OUTPATIENT — Revenue:                                                                                                                                                                                        
+  - 'wrvu'                  (line ~283) → 'driver-quantified'
+  - 'hccCapture'            (line ~317) → 'driver-quantified'                                                                                                                                                  
+  - 'cleanClaim' or 'initialDenial' (line ~334 or ~351, whichever maps to denialsEnabled) → 'driver-quantified'
+                                                                                                                                                                                                               
+  OUTPATIENT — Quality:                                                                                                                                                                                        
+  - 'noteStarRating'        (line ~76)  → 'driver-qualitative'                                                                                                                                                 
+  - 'diagnosisCapture'      (line ~93)  → 'driver-qualitative'                                                                                                                                                 
+  - 'diagnosisSpecificity'  (line ~110) → 'driver-qualitative'                                                                                                                                                 
+  - (the 4 new measures from Task 5 are already set)                                                                                                                                                           
+                                                                                                                                                                                                               
+  ED — Capacity:                                                                                                                                                                                               
+  - 'lwbsRate'              (line ~662) → 'driver-quantified'                                                                                                                                                  
+  - 'doorToProvider'        (line ~678) → 'driver-qualitative'                                                                                                                                                 
+  - 'patientsPerShift'      (line ~712) → 'driver-quantified'                                                                                                                                                  
+                                                                                                                                                                                                               
+  ED — Workforce:                                            
+  - 'documentationTimePerEncounter' (line ~508) → 'driver-quantified'                                                                                                                                          
+  - 'wowTime'                       (line ~526) → 'driver-quantified'                                                                                                                                          
+  - 'burnoutAssessment'             (line ~595) → 'driver-qualitative'                                                                                                                                         
+  - 'likelihoodToStay'              (line ~612) → 'driver-quantified'                                                                                                                                          
+  - 'agencyLocumSpend'              (line ~861) → 'driver-quantified'   [childOfDriver: 'retention' from Task 4]                                                                                               
+                                                                                                                                                                                                               
+  ED — Revenue:                                                                                                                                                                                                
+  - 'wrvuPerShift'          (line ~628) → 'driver-quantified'                                                                                                                                                  
+  - 'emLevel'               (line ~645) → 'driver-quantified'                                                                                                                                                  
+  - 'medicalNecessityDenial' (line ~761) → 'driver-quantified'
+                                                                                                                                                                                                               
+  ED — Quality:                                                                                                                                                                                                
+  - 'noteStarRating'        (line ~810) → 'driver-qualitative'                                                                                                                                                 
+  - 'pressGaney'            (line ~827) → 'driver-qualitative'                                                                                                                                                 
+                                                                                                                                                                                                               
+  INPATIENT — Capacity:                                                                                                                                                                                        
+  - 'avgLengthOfStay'       (line ~1119) → 'driver-quantified'                                                                                                                                                 
+  - 'dischargeBeforeNoon'   (line ~1136) → 'driver-qualitative'                                                                                                                                                
+  - 'dischargeDelayRate'    (line ~1153) → 'driver-quantified'                                                                                                                                                 
+                                                                                                                                                                                                               
+  INPATIENT — Workforce:                                                                                                                                                                                       
+  - 'documentationTimePerNote' (line ~898) → 'driver-quantified'                                                                                                                                               
+  - 'wowTime'                  (line ~933) → 'driver-quantified'                                                                                                                                               
+  - 'burnoutAssessment'        (line ~986) → 'driver-qualitative'                                                                                                                                              
+  - 'likelihoodToStay'         (line ~1003) → 'driver-quantified'                                                                                                                                              
+  - 'agencyLocumSpend'         (line ~1253) → 'driver-quantified'   [childOfDriver: 'retention' from Task 4]
+                                                                                                                                                                                                               
+  INPATIENT — Revenue:                                       
+  - 'caseMixIndex'          (line ~1019) → 'driver-quantified'                                                                                                                                                 
+  - 'ccMccCapture'          (line ~1036) → 'driver-quantified'
+  - 'drgAccuracy'           (line ~1053) → 'driver-quantified'                                                                                                                                                 
+  - 'cdiQueryReduction' (IP version) (line ~1086 area or wherever it lives) → 'driver-quantified'                                                                                                              
+                                                             
+  INPATIENT — Quality:                                                                                                                                                                                         
+  - 'noteStarRating'        (line ~916)  → 'driver-qualitative'                                                                                                                                                
+  - 'hcahpsComposite'       (line ~1186) → 'driver-qualitative'                                                                                                                                                
+  - 'thirtyDayReadmission'  (line ~1169) → 'driver-qualitative'   [moved from patientFlow → Quality in Task 3]                                                                                                 
+                                                                                                                                                                                                               
+  NURSING — Capacity:                                                                                                                                                                                          
+  - 'bedsideTimeRatio'      (line ~1517) → 'driver-quantified'                                                                                                                                                 
+  - 'openShiftFillRate'     (line ~1551) → 'driver-qualitative'                                                                                                                                                
+                                                                                                                                                                                                               
+  NURSING — Workforce:                                                                                                                                                                                         
+  - 'documentationTimePerShift' (line ~1308) → 'driver-quantified'                                                                                                                                             
+  - 'chartingAfterShift'        (line ~1344) → 'driver-quantified'                                                                                                                                             
+  - 'documentationOvertime'     (line ~1363) → 'driver-quantified'                                                                                                                                             
+  - 'burnoutAssessment'         (line ~1380) → 'driver-qualitative'                                                                                                                                            
+  - 'rnRetention'               (line ~1602) → 'driver-quantified'                                                                                                                                             
+  - 'travelAgencyNurseSpend'    (line ~1620) → 'driver-quantified'   [childOfDriver: 'retention' from Task 4]                                                                                                  
+                                                                                                                                                                                                               
+  NURSING — Revenue:                                                                                                                                                                                           
+  - 'cdiQueryResponseRate'      (line ~1568) → 'driver-qualitative'                                                                                                                                            
+  - 'nursingDocCompletion'      (line ~1585) → 'driver-qualitative'
+                                                                                                                                                                                                               
+  NURSING — Quality:                                                                                                                                                                                           
+  - 'patientFallRate'           (line ~1415) → 'driver-quantified'                                                                                                                                             
+  - 'hapiRate'                  (line ~1432) → 'driver-quantified'                                                                                                                                             
+  - 'cautiRate'                 (line ~1466) → 'driver-quantified'                                                                                                                                             
+  - 'clabsiRate'                (line ~1449) → 'driver-quantified'                                                                                                                                             
+  - 'medicationErrorRate'       (line ~1483) → 'driver-qualitative'                                                                                                                                            
+  - 'hcahpsNurseCommunication'  (line ~1500) → 'driver-qualitative'                                                                                                                                            
+                                                                                                                                                                                                               
+  If a measure ID listed above doesn't exist in the file (because the actual ID name in the source differs slightly), match by `label` field instead and apply exploreVisibility there. Don't fail — just skip 
+  that one and report it back so we can fix.                                                                                                                                                                   
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 7 — Set shortDescription default for everything                                                                                                                                                         
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  For every existing measure that doesn't already have a shortDescription set (i.e., every existing measure):                                                                                                  
+    shortDescription: ''                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Empty string. Sprint 2A2 will populate these with curated copy.                                                                                                                                              
+                                                             
+  For the 4 new OP Quality measures from Task 5: shortDescription is already set per their definitions.
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  After all tasks:                                                                                                                                                                                             
+  1. TypeScript compiles with no errors. The new fields are required (except childOfDriver which is optional), so any measure missing roiQuadrant / shortDescription / exploreVisibility will fail compilation.
+   Fix any that throw.                                                                                                                                                                                         
+  2. Confirm by grep:                                        
+     - `grep -c "roiQuadrant: 'Capacity'" client/src/lib/measureCareSettings.ts`  → should match the count of capacity-tagged measures                                                                         
+     - `grep -c "exploreVisibility: 'driver-quantified'" client/src/lib/measureCareSettings.ts` → should be ~30
+     - `grep -c "exploreVisibility: 'driver-qualitative'" client/src/lib/measureCareSettings.ts` → should be ~20
+     - `grep -c "exploreVisibility: 'hidden'" client/src/lib/measureCareSettings.ts` → should be the rest (~50)                                                                                                
+  3. Search for "childOfDriver: 'retention'" — should return 3 results (ED, IP, Nursing locum/agency).
+  4. Search for the 4 new OP Quality measure IDs (opCdiQueryReduction, opCognitiveLoadReduction, opAuditComplianceReadiness, opCareContinuity) — confirm all 4 exist.                                          
+  5. Confirm `domain` field is unchanged on all existing measures (backward compat).                                                                                                                           
+  6. No runtime behavior changes — Explore UI still works as before because nothing reads roiQuadrant or exploreVisibility yet.
+                                                                                                                                                                                                               
+  If any line numbers are off (the file has shifted since the audit), match by measure label or id, not by line.                                                                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Sprint 2A2 (next, after this lands)                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Once Sprint 2A is in, I'll write the focused prompt that only populates shortDescription for the ~50 visible drivers. I'll write each one in the neutral voice we agreed on, batched by setting (4           
+  mini-prompts you can apply one at a time). Hidden measures stay empty for now.                                                                                                                               
+                                                                                                                                                                                                               
+  Heads-up                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  - Some measure IDs in Task 6 might not match exactly — I worked from the audit, not the source. The instructions tell Replit to match by label if the ID doesn't resolve, and to report any unmatched ones.  
+  We'll patch in 2A2.    

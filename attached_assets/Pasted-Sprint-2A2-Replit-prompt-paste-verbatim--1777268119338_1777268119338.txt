@@ -1,0 +1,240 @@
+Sprint 2A2 — Replit prompt (paste verbatim)                                                                                                                                                               
+                                                                                                                                                                                                               
+  Context: Sprint 2A added a shortDescription field set to '' for every measure. This sprint populates it for the ~50 visible drivers (those where exploreVisibility !== 'hidden'). The voice is intentionally
+  neutral, measurement-grade, no causal claims, no marketing tone — this copy will be reviewed by legal before customer-facing release.                                                                        
+                                                              
+  Instructions: For each entry below, find the matching measure in client/src/lib/measureCareSettings.ts. Match first by `id`; if the id doesn't resolve, match by `label`. Replace the empty string in        
+  shortDescription with the exact text provided. Do not modify any other fields. Do not modify measures whose exploreVisibility is 'hidden' — leave shortDescription as ''.                                    
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  OUTPATIENT                                                                                                                                                                                                   
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  Capacity                                       
+  ────────                                                                                                                                                                                                     
+  id: timeInNote                                             
+  shortDescription: 'Average minutes spent actively documenting per outpatient encounter, captured from EHR audit logs.'                                                                                       
+                                                        
+  id: patientsPerProvider                        
+  shortDescription: 'Average patient encounters per provider per month.'
+                                                                                                                                                                                                               
+  id: visitsPerHour                                          
+  shortDescription: 'Completed patient visits per scheduled clinician hour.'                                                                                                                                   
+                                                             
+  Workforce                                                  
+  ─────────                                                                                                                                                                                                    
+  id: workOutsideWorkEmpirical                            
+  shortDescription: 'EHR activity logged outside scheduled clinical hours, derived from audit logs. A common signal for after-hours documentation work.'                                                       
+                                                                                                                                                                                                               
+  id: burnoutAssessment   (note: there is one per setting — apply to the OP one)
+  shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Used as a leading indicator for retention risk.'                                                             
+                                                             
+  id: likelihoodToStay   (apply to OP one)                                                                                                                                                                     
+  shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe (typically 12 months).'
+                                                                                                                                                                                                               
+  Revenue                                                    
+  ───────                                                                                                                                                                                                      
+  id: wrvu                                                                                                                                                                                                     
+  shortDescription: 'Average work RVU value per outpatient encounter.'                                                                                                                                         
+                                                                                                                                                                                                               
+  id: hccCapture                                                                                                                                                                                               
+  shortDescription: 'Share of known HCC diagnostic gaps documented and coded during the visit. HCC capture contributes to the RAF score that drives Medicare Advantage capitated payment.'                     
+                                                                                                                                                                                                               
+  id: cleanClaim   (or initialDenial — whichever was tagged driver-quantified in Sprint 2A)
+  shortDescription: 'Share of claims accepted on first submission without correction.'                                                                                                                         
+                                                             
+  Quality                                                    
+  ───────                                                                                                                                                                                                      
+  id: noteStarRating   (apply to OP one)                
+  shortDescription: 'Provider-assigned quality rating of generated notes (typically 1-5 scale).'                                                                                                               
+                                                                                                                                                                                                               
+  id: diagnosisCapture   (apply to OP one)                                                                                                                                                                     
+  shortDescription: 'Share of diagnoses discussed during the encounter that appear in the coded record.'                                                                                                       
+                                                                                                                                                                                                               
+  id: diagnosisSpecificity                                   
+  shortDescription: 'Share of diagnoses coded to the highest available ICD-10 specificity.'
+                                                        
+  (The 4 new OP Quality measures from Sprint 2A — opCdiQueryReduction, opCognitiveLoadReduction, opAuditComplianceReadiness, opCareContinuity — already have shortDescription set. Skip them.)                 
+                                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  EMERGENCY DEPARTMENT                                       
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                        
+  Capacity                                                
+  ────────                                                                                                                                                                                                     
+  id: lwbsRate                                                                                                                                                                                                 
+  shortDescription: 'Share of patients leaving the ED before being seen by a provider.'                                                                                                                        
+                                                                                                                                                                                                               
+  id: doorToProvider                             
+  shortDescription: 'Minutes from patient arrival to first provider contact.'                                                                                                                                  
+                                                             
+  id: patientsPerShift                                                                                                                                                                                         
+  shortDescription: 'Average patient volume per provider per shift.'
+                                         
+  Workforce                                      
+  ─────────                                                                                                                                                                                                    
+  id: documentationTimePerEncounter                          
+  shortDescription: 'Average minutes spent actively documenting per ED encounter, captured from EHR audit logs.'                                                                                               
+                                                        
+  id: wowTime   (apply to ED one)                
+  shortDescription: 'EHR documentation activity captured outside scheduled patient-care time.'
+                                                                                                                                                                                                               
+  id: burnoutAssessment   (apply to ED one)                  
+  shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Used as a leading indicator for retention risk.'                                                             
+                                                             
+  id: likelihoodToStay   (apply to ED one)                   
+  shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe (typically 12 months).'                                                                                   
+                                                             
+  id: agencyLocumSpend   (apply to ED one)                                                                                                                                                                     
+  shortDescription: 'Annual spend on contracted locum or agency physician coverage. Often used as a downstream indicator of retention and scheduling stability.'                                               
+                                                             
+  Revenue                                                                                                                                                                                                      
+  ───────                                                                                                                                                                                                      
+  id: wrvuPerShift                                           
+  shortDescription: 'Average work RVU value per ED shift. ED billing is shift-based, distinct from outpatient encounter-based wRVU.'                                                                           
+                                                                                                                                                                                                               
+  id: emLevel   (apply to ED one)                         
+  shortDescription: 'Average E/M level coded across ED encounters (99281-99285).'                                                                                                                              
+                                                                                                                                                                                                               
+  id: medicalNecessityDenial   (apply to ED one)             
+  shortDescription: 'Share of claims denied for insufficient documentation supporting medical necessity.'                                                                                                      
+                                                          
+  Quality                                                                                                                                                                                                      
+  ───────                                                    
+  id: noteStarRating   (apply to ED one)                                                                                                                                                                       
+  shortDescription: 'Provider-assigned quality rating of generated notes (typically 1-5 scale).'
+                                                                                                                                                                                                               
+  id: pressGaney   (apply to ED one)                                                                                                                                                                           
+  shortDescription: 'Patient experience scores from Press Ganey or similar instruments, ED-specific subscale.'
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  INPATIENT                                               
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  Capacity                                              
+  ────────                                                                                                                                                                                                     
+  id: avgLengthOfStay                                        
+  shortDescription: 'Average days per inpatient admission.'                                                                                                                                                    
+                                                        
+  id: dischargeBeforeNoon                                                                                                                                                                                      
+  shortDescription: 'Share of inpatient discharges completed before noon.'
+                                                                                                                                                                                                               
+  id: dischargeDelayRate                                     
+  shortDescription: 'Share of discharges delayed due to incomplete documentation.'                                                                                                                             
+                                                        
+  Workforce                                      
+  ─────────                                               
+  id: documentationTimePerNote                                                                                                                                                                                 
+  shortDescription: 'Average minutes spent actively documenting per inpatient note (H&P, progress notes, discharge summaries).'
+                                                                                                                                                                                                               
+  id: wowTime   (apply to IP one)                
+  shortDescription: 'EHR documentation activity captured outside scheduled hours.'
+                                                                                                                                                                                                               
+  id: burnoutAssessment   (apply to IP one)                  
+  shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Used as a leading indicator for hospitalist retention risk.'                                                 
+                                                          
+  id: likelihoodToStay   (apply to IP one)                   
+  shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe (typically 12 months).'                                                                                   
+                                                             
+  id: agencyLocumSpend   (apply to IP one)                                                                                                                                                                     
+  shortDescription: 'Annual spend on contracted locum hospitalist coverage. Often used as a downstream indicator of retention and scheduling stability.'
+                                                                                                                                                                                                               
+  Revenue                                                    
+  ───────                                                                                                                                                                                                      
+  id: caseMixIndex                                           
+  shortDescription: 'Weighted average of DRG relative weights across discharges.'                                                                                                                              
+                                                        
+  id: ccMccCapture                                                                                                                                                                                             
+  shortDescription: 'Share of admissions with documented complication or comorbidity codes captured.'
+                                                                                                                                                                                                               
+  id: drgAccuracy                                            
+  shortDescription: 'Share of cases where the initial DRG assignment matches the final DRG after coding review.'                                                                                               
+                                         
+  id: cdiQueryReduction   (apply to IP one — OP version is opCdiQueryReduction and is already populated)
+  shortDescription: 'Volume of CDI queries returned to providers per admission.'                                                                                                                               
+                                                             
+  Quality                                                                                                                                                                                                      
+  ───────                                                    
+  id: noteStarRating   (apply to IP one)                     
+  shortDescription: 'Provider-assigned quality rating of generated notes (typically 1-5 scale).'
+                                                                                                                                                                                                               
+  id: hcahpsComposite                                                                                                                                                                                          
+  shortDescription: 'Inpatient patient experience score from the HCAHPS survey.'                                                                                                                               
+                                                                                                                                                                                                               
+  id: thirtyDayReadmission                                   
+  shortDescription: 'Share of inpatient discharges followed by readmission within 30 days. CMS-reportable under HRRP.'                                                                                         
+                                         
+  ═══════════════════════════════════════════════════════════
+  NURSING                                                                                                                                                                                                      
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  Capacity                                                
+  ────────                                                   
+  id: bedsideTimeRatio                                       
+  shortDescription: 'Share of shift time spent in direct patient care versus documentation.'                                                                                                                   
+                                         
+  id: openShiftFillRate                                                                                                                                                                                        
+  shortDescription: 'Share of open shifts filled by staff nurses versus agency or left unfilled.'                                                                                                              
+                                                             
+  Workforce                                                                                                                                                                                                    
+  ─────────                                             
+  id: documentationTimePerShift          
+  shortDescription: 'Total active documentation time per nursing shift, including flowsheets, assessments, care plans, and handoff notes.'
+                                                                                                                                                                                                               
+  id: chartingAfterShift                                     
+  shortDescription: 'Minutes spent in the EHR after scheduled shift end.'                                                                                                                                      
+                                                          
+  id: documentationOvertime                                  
+  shortDescription: 'Overtime hours attributable to documentation completion.'
+                                                                                                                                                                                                               
+  id: burnoutAssessment   (apply to Nursing one) 
+  shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Used as a leading indicator for nursing retention risk.'                                                     
+                                                                                                                                                                                                               
+  id: rnRetention                                            
+  shortDescription: 'Annual share of RN staff retained from the prior period.'                                                                                                                                 
+                                                             
+  id: travelAgencyNurseSpend                                 
+  shortDescription: 'Annual spend on travel or agency nursing coverage. Often used as a downstream financial signal of retention stability.'                                                                   
+                                                             
+  Revenue                                                                                                                                                                                                      
+  ───────                                                                                                                                                                                                      
+  id: cdiQueryResponseRate                                   
+  shortDescription: 'Share of CDI queries answered within established timeframes (typically 24 hours).'                                                                                                        
+                                                                                                                                                                                                               
+  id: nursingDocCompletion               
+  shortDescription: 'Share of required nursing documentation completed within mandated timeframes.'                                                                                                            
+                                                                                                                                                                                                               
+  Quality                                                    
+  ───────                                                                                                                                                                                                      
+  id: patientFallRate                                   
+  shortDescription: 'Falls per 1,000 patient days. NDNQI nursing-sensitive indicator.'
+                                         
+  id: hapiRate                                                                                                                                                                                                 
+  shortDescription: 'Stage 2+ hospital-acquired pressure injuries per 1,000 patient days. NDNQI nursing-sensitive indicator. Typically non-reimbursable under CMS HAC policy.'
+                                                                                                                                                                                                               
+  id: cautiRate                                              
+  shortDescription: 'Catheter-associated urinary tract infections per 1,000 catheter days. NHSN-reportable.'
+                                                             
+  id: clabsiRate                                             
+  shortDescription: 'Central line-associated bloodstream infections per 1,000 line days. NHSN-reportable.'                                                                                                     
+                                                             
+  id: medicationErrorRate                                                                                                                                                                                      
+  shortDescription: 'Medication error and near-miss events per 1,000 patient days.'                                                                                                                            
+                                                             
+  id: hcahpsNurseCommunication                                                                                                                                                                                 
+  shortDescription: 'HCAHPS subscale measuring patient-reported quality of nurse communication.'                                                                                                               
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  After all changes:                                                                                                                                                                                           
+  1. TypeScript compiles cleanly.                       
+  2. Search for "shortDescription: ''" — every match should be a measure with exploreVisibility: 'hidden'. If any match has exploreVisibility != 'hidden', flag it.                                            
+  3. Spot-check 5 random measures by id and confirm the shortDescription text matches what's specified above exactly (no auto-corrected punctuation, no rewording).
+  4. No runtime UI changes — the field isn't read by any component yet.                                                                                                                                        
+  5. Report any measure ids that didn't resolve so they can be matched manually.
+                                                                                                                                                                                                               
+  Note on duplicate ids: several ids (burnoutAssessment, likelihoodToStay, noteStarRating, wowTime, agencyLocumSpend, etc.) appear in multiple settings — apply the description to the matching setting only.
+  The setting can be identified by which array the measure object lives inside (OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS — or whatever the actual array names are in the file). If   
+  unsure, match by both id and the closest enclosing array.

@@ -1,0 +1,411 @@
+🔧 Sprint 2B — Replit prompt (paste verbatim)                                                                                                                                                                
+                                                           
+  Context: This is the Abridge ROI Calculator. We're restructuring the Explore flow from 7 steps to 9 steps by replacing the existing Value Drivers + Doc Quality + Care Quality screens with 4 new quadrant   
+  screens: Capacity, Workforce, Revenue, Quality. This sprint only does the routing skeleton — placeholder pages with a Continue button. No driver content. No state shape changes. The old screen files
+  (ExploreValueDrivers.tsx, ExploreDocQuality.tsx, ExploreCareQuality.tsx) stay on disk for now — we'll port their logic into the new pages in subsequent sprints.                                             
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Create 4 placeholder quadrant screen files                                                                                                                                                        
+  ═══════════════════════════════════════════════════════════
+                                                                                                                                                                                                               
+  Create these new files in client/src/pages/explore/ — they all use the same template, only the displayed name and currentStep number differ.
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                   
+  File: client/src/pages/explore/ExploreCapacity.tsx                                                                                                                                                           
+  ────────────────────────────────────────                                                                                                                                                                     
+  import { ArrowRight } from "lucide-react";            
+  import { Button } from "@/components/ui/button";                                                                                                                                                             
+  import { motion } from "framer-motion";                                                                                                                                                                      
+  import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";                                                                                                                             
+  import { type ExploreState } from "./ExploreFlow";                                                                                                                                                           
+                                                                                                                                                                                                               
+  interface ExploreCapacityProps {                           
+    state: ExploreState;                                                                                                                                                                                       
+    updateState: (updates: Partial<ExploreState>) => void;   
+    onNext: () => void;                                                                                                                                                                                        
+    onBack: () => void;                                 
+    onHome: () => void;                                                                                                                                                                                        
+  }                                                       
+                                                                                                                                                                                                               
+  export default function ExploreCapacity({ state, updateState, onNext, onBack, onHome }: ExploreCapacityProps) {
+    return (                                                                                                                                                                                                   
+      <div className="min-h-screen bg-white">             
+        <UnifiedHeader                                       
+          pathType="explore"                                                                                                                                                                                   
+          currentStep={4}                               
+          totalSteps={9}                                                                                                                                                                                       
+          stepName="Capacity"            
+          onBack={onBack}                                                                                                                                                                                      
+          onHome={onHome}                                 
+        />                                                                                                                                                                                                     
+        <UnifiedHeaderSpacer />                              
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+          <motion.div                    
+            className="text-center"              
+            initial={{ opacity: 0, y: 20 }}                                                                                                                                                                    
+            animate={{ opacity: 1, y: 0 }}                   
+          >                                                                                                                                                                                                    
+            <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
+              Build Your Model                               
+            </p>                                             
+            <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight">                                                                                              
+              Capacity                                       
+            </h1>                                                                                                                                                                                              
+            <p className="text-base md:text-lg text-[#666666] max-w-2xl mx-auto px-2 mb-8">                                                                                                                    
+              Capacity drivers and inputs land here in the next sprint.
+            </p>                                                                                                                                                                                               
+            <Button                                                                                                                                                                                            
+              onClick={onNext}                            
+              className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"                                                                                                   
+              data-testid="button-continue-capacity"                                                                                                                                                           
+            >                                           
+              Continue                                                                                                                                                                                         
+              <ArrowRight className="w-4 h-4 ml-2" />        
+            </Button>                                                                                                                                                                                          
+          </motion.div>                                      
+        </div>                                                                                                                                                                                                 
+      </div>                             
+    );                                                                                                                                                                                                         
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                                                                                                                                                                     
+  File: client/src/pages/explore/ExploreWorkforce.tsx   
+  ────────────────────────────────────────
+  Same as Capacity, with these changes:  
+  - Component name: ExploreWorkforce                                                                                                                                                                           
+  - Props interface: ExploreWorkforceProps                
+  - currentStep: 5                                                                                                                                                                                             
+  - stepName: "Workforce"                                    
+  - h1 text: "Workforce"                                  
+  - placeholder body: "Workforce drivers and inputs land here in the next sprint."
+  - data-testid: "button-continue-workforce"                 
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                   
+  File: client/src/pages/explore/ExploreRevenue.tsx                                                                                                                                                            
+  ────────────────────────────────────────                                                                                                                                                                     
+  Same as Capacity, with these changes:                      
+  - Component name: ExploreRevenue                                                                                                                                                                             
+  - Props interface: ExploreRevenueProps                                                                                                                                                                       
+  - currentStep: 6                                           
+  - stepName: "Revenue"                                                                                                                                                                                        
+  - h1 text: "Revenue"                                  
+  - placeholder body: "Revenue drivers and inputs land here in the next sprint."                                                                                                                               
+  - data-testid: "button-continue-revenue"                
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                   
+  File: client/src/pages/explore/ExploreQuality.tsx                                                                                                                                                            
+  ────────────────────────────────────────                   
+  Same as Capacity, with these changes:                      
+  - Component name: ExploreQuality                                                                                                                                                                             
+  - Props interface: ExploreQualityProps 
+  - currentStep: 7                                                                                                                                                                                             
+  - stepName: "Quality"                                                                                                                                                                                        
+  - h1 text: "Quality"                                       
+  - placeholder body: "Quality drivers and inputs land here in the next sprint."                                                                                                                               
+  - data-testid: "button-continue-quality"              
+                                                 
+  ═══════════════════════════════════════════════════════════
+  TASK 2 — Update ExplorePhase type in ExploreFlow.tsx                                                                                                                                                         
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreFlow.tsx (lines ~534-542)                                                                                                                                              
+                                                          
+  REPLACE:                                                   
+  type ExplorePhase =                                                                                                                                                                                          
+    | 'careSetting'                                          
+    | 'practice'                                                                                                                                                                                               
+    | 'timeSavings'                                       
+    | 'valueDrivers'                                                                                                                                                                                           
+    | 'careQuality'                                          
+    | 'docQuality'                                                                                                                                                                                             
+    | 'investment'                                        
+    | 'model';                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  WITH:                                                 
+  type ExplorePhase =                                                                                                                                                                                          
+    | 'careSetting'                      
+    | 'practice'                                                                                                                                                                                               
+    | 'timeSavings'                              
+    | 'capacity'                                                                                                                                                                                               
+    | 'workforce'                                            
+    | 'revenue'                                              
+    | 'quality'                                         
+    | 'investment'                       
+    | 'model';                                   
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 3 — Update imports at top of ExploreFlow.tsx                                                                                                                                                            
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreFlow.tsx (lines ~1-12)
+                                                          
+  REMOVE these imports:                                                                                                                                                                                        
+    import ExploreValueDrivers from "./ExploreValueDrivers"; 
+    import ExploreDocQuality from "./ExploreDocQuality";                                                                                                                                                       
+    import ExploreCareQuality from "./ExploreCareQuality";   
+                                                          
+  ADD these imports:                                                                                                                                                                                           
+    import ExploreCapacity from "./ExploreCapacity";         
+    import ExploreWorkforce from "./ExploreWorkforce";                                                                                                                                                         
+    import ExploreRevenue from "./ExploreRevenue";           
+    import ExploreQuality from "./ExploreQuality";                                                                                                                                                             
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 4 — Update phaseToStep mapping and progress bar totalSteps                                                                                                                                              
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreFlow.tsx (lines ~877-892)                                                                                                                                              
+                                                          
+  REPLACE:                                                   
+  const phaseToStep: Record<ExplorePhase, number> = {                                                                                                                                                          
+    careSetting: 1,                                          
+    practice: 2,                                                                                                                                                                                               
+    timeSavings: 3,                                     
+    valueDrivers: 4,                                                                                                                                                                                           
+    docQuality: 5,                                           
+    careQuality: 5,                                                                                                                                                                                            
+    investment: 6,                                      
+    model: 7,                                                                                                                                                                                                  
+  };                                                      
+                                                                                                                                                                                                               
+  const progressBar = (                                      
+    <div className="px-4 pt-4 max-w-2xl mx-auto w-full">                                                                                                                                                       
+      <ExploreProgressBar currentStep={phaseToStep[phase]} totalSteps={7} />
+    </div>                                       
+  );                                                                                                                                                                                                           
+                                                             
+  WITH:                                                                                                                                                                                                        
+  const phaseToStep: Record<ExplorePhase, number> = {        
+    careSetting: 1,                                     
+    practice: 2,                         
+    timeSavings: 3,                                                                                                                                                                                            
+    capacity: 4,                                                                                                                                                                                               
+    workforce: 5,                                                                                                                                                                                              
+    revenue: 6,                                                                                                                                                                                                
+    quality: 7,                                         
+    investment: 8,
+    model: 9,                            
+  };                                                                                                                                                                                                           
+                                                          
+  const progressBar = (                                                                                                                                                                                        
+    <div className="px-4 pt-4 max-w-2xl mx-auto w-full">     
+      <ExploreProgressBar currentStep={phaseToStep[phase]} totalSteps={9} />
+    </div>                               
+  );                                             
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 5 — Replace switch cases in ExploreFlow.tsx                                                                                                                                                             
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreFlow.tsx (lines ~894-1021)
+                                                          
+  In the `switch (phase)` block, REMOVE these 3 cases entirely:                                                                                                                                                
+  - case 'valueDrivers':                                     
+  - case 'careQuality':                                                                                                                                                                                        
+  - case 'docQuality':                                       
+                                                             
+  Then UPDATE the existing `case 'timeSavings':` so that onNext navigates to 'capacity':                                                                                                                       
+                                                             
+    case 'timeSavings':                                                                                                                                                                                        
+      content = (                                                                                                                                                                                              
+        <ExploreTimeSavings                                                                                                                                                                                    
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}                                                                                                                                                                            
+          onNext={() => navigate('capacity')}    // was: navigate('valueDrivers')
+          onBack={() => navigate('practice')}                                                                                                                                                                  
+          onHome={goHome}                               
+        />                                                                                                                                                                                                     
+      );                                                     
+      break;                                                                                                                                                                                                   
+                                                             
+  Then ADD these 4 new cases AFTER the timeSavings case and BEFORE the investment case:                                                                                                                        
+                                                 
+    case 'capacity':                                                                                                                                                                                           
+      content = (                                                                                                                                                                                              
+        <ExploreCapacity                                                                                                                                                                                       
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}      
+          onNext={() => navigate('workforce')}
+          onBack={() => navigate('timeSavings')}                                                                                                                                                               
+          onHome={goHome}                        
+        />                                                                                                                                                                                                     
+      );                                                     
+      break;                                                 
+                                                        
+    case 'workforce':                    
+      content = (                                
+        <ExploreWorkforce                                                                                                                                                                                      
+          state={state}                                      
+          updateState={updateState}                                                                                                                                                                            
+          onNext={() => navigate('revenue')}            
+          onBack={() => navigate('capacity')}
+          onHome={goHome}                
+        />                                                                                                                                                                                                     
+      );                                                  
+      break;                                                                                                                                                                                                   
+                                                             
+    case 'revenue':                                     
+      content = (
+        <ExploreRevenue
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}      
+          onNext={() => navigate('quality')}                                                                                                                                                                   
+          onBack={() => navigate('workforce')}            
+          onHome={goHome}                                    
+        />                                                   
+      );                                                
+      break;     
+                                         
+    case 'quality':                                                                                                                                                                                            
+      content = (                                         
+        <ExploreQuality                                                                                                                                                                                        
+          state={state}                                      
+          updateState={updateState}                     
+          onNext={() => navigate('investment')}
+          onBack={() => navigate('revenue')}
+          onHome={goHome}                                                                                                                                                                                      
+        />                                       
+      );                                                                                                                                                                                                       
+      break;                                                 
+                                                             
+  Finally UPDATE the existing `case 'investment':` so onBack navigates to 'quality' regardless of care setting:
+                                                 
+    case 'investment':                                    
+      content = (                                                                                                                                                                                              
+        <ExploreInvestment                                   
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}                          
+          totalHoursSaved={totalHoursSaved}             
+          timeValue={timeValue}                                                                                                                                                                                
+          docValue={docValue}                    
+          onNext={() => navigate('model')}                                                                                                                                                                     
+          onBack={() => navigate('quality')}    // was: navigate(isNursing ? 'careQuality' : 'docQuality')
+          onHome={goHome}                                                                                                                                                                                      
+        />                                                
+      );                                                     
+      break;                                                 
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 6 — Update the model case stepPhaseMap and stepLabels                                                                                                                                                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx (lines ~996-1020, the `case 'model'` block)                                                                                                                   
+                                                                                                                                                                                                               
+  REPLACE the existing isNursing-based stepPhaseMap and stepLabels:                                                                                                                                            
+                                                             
+    const stepPhaseMap: ExplorePhase[] = isNursing           
+      ? ['careSetting', 'practice', 'timeSavings', 'valueDrivers', 'careQuality', 'investment', 'model']
+      : ['careSetting', 'practice', 'timeSavings', 'valueDrivers', 'docQuality', 'investment', 'model'];
+    const stepLabels = isNursing                                                                                                                                                                               
+      ? ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', 'Care Quality', 'Investment', 'Your Model']
+      : ['Care Setting', 'Practice', 'Time Savings', 'Value Drivers', 'Doc Quality', 'Investment', 'Your Model'];                                                                                              
+                                                                                                                                                                                                               
+  WITH a single setting-agnostic version (no more isNursing split):                                                                                                                                            
+                                                                                                                                                                                                               
+    const stepPhaseMap: ExplorePhase[] = [                   
+      'careSetting',                                                                                                                                                                                           
+      'practice',                                            
+      'timeSavings',                                                                                                                                                                                           
+      'capacity',                                                                                                                                                                                              
+      'workforce',                                                                                                                                                                                             
+      'revenue',                                                                                                                                                                                               
+      'quality',                                                                                                                                                                                               
+      'investment',                                                                                                                                                                                            
+      'model',                           
+    ];                                                                                                                                                                                                         
+    const stepLabels = [                 
+      'Care Setting',                            
+      'Practice',                                         
+      'Time Savings',                                        
+      'Capacity',                                            
+      'Workforce',                                      
+      'Revenue', 
+      'Quality',
+      'Investment',                                                                                                                                                                                            
+      'Your Model',                              
+    ];                                                                                                                                                                                                         
+                                                             
+  ═══════════════════════════════════════════════════════════
+  TASK 7 — Add legacy phase migration for stale URLs and history state
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreFlow.tsx 
+                                                                                                                                                                                                               
+  Some existing browser history entries or saved sessions may reference the old phase names ('valueDrivers', 'docQuality', 'careQuality'). Add a coercion so the app doesn't break.
+                                                                                                                                                                                                               
+  UPDATE the useState initializer for `phase` (around line 555) to migrate old phase names:
+                                                             
+  REPLACE:                                                   
+  const [phase, setPhase] = useState<ExplorePhase>(initialPhase || (initialExploreState ? 'practice' : 'careSetting'));                                                                                        
+                                                             
+  WITH:                                                                                                                                                                                                        
+  const [phase, setPhase] = useState<ExplorePhase>(() => {                                                                                                                                                     
+    const requested = initialPhase || (initialExploreState ? 'practice' : 'careSetting');
+    const legacyMap: Record<string, ExplorePhase> = {                                                                                                                                                          
+      valueDrivers: 'capacity',                           
+      docQuality: 'revenue',                                                                                                                                                                                   
+      careQuality: 'quality',                                
+    };                                                                                                                                                                                                         
+    return (legacyMap[requested as string] ?? requested) as ExplorePhase;
+  });                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  UPDATE the popstate handler (around lines 628-637) to apply the same migration:
+                                                                                                                                                                                                               
+  REPLACE:                                                
+  const handlePopState = (event: PopStateEvent) => {                                                                                                                                                           
+    if (event.state?.view === 'explore' && event.state?.explorePhase) {
+      setPhase(event.state.explorePhase);                                                                                                                                                                      
+      window.scrollTo({ top: 0, behavior: 'instant' });   
+    } else if (event.state?.view === 'journey' || !event.state?.view) {                                                                                                                                        
+      if (onBackToJourney) {                                                                                                                                                                                   
+        onBackToJourney();                                   
+      }                                                                                                                                                                                                        
+    }                                                        
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  WITH:                                                                                                                                                                                                        
+  const handlePopState = (event: PopStateEvent) => {                                                                                                                                                           
+    if (event.state?.view === 'explore' && event.state?.explorePhase) {
+      const requested = event.state.explorePhase as string;                                                                                                                                                    
+      const legacyMap: Record<string, ExplorePhase> = {      
+        valueDrivers: 'capacity',                                                                                                                                                                              
+        docQuality: 'revenue',                            
+        careQuality: 'quality',                              
+      };                                                                                                                                                                                                       
+      const resolved = (legacyMap[requested] ?? requested) as ExplorePhase;
+      setPhase(resolved);                                                                                                                                                                                      
+      window.scrollTo({ top: 0, behavior: 'instant' }); 
+    } else if (event.state?.view === 'journey' || !event.state?.view) {                                                                                                                                        
+      if (onBackToJourney) {                                 
+        onBackToJourney();                                                                                                                                                                                     
+      }                                                   
+    }                                                                                                                                                                                                          
+  };                                                         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                             
+  After all tasks:                                                                                                                                                                                             
+                                                        
+  1. TypeScript compiles. Old phase string references should be unreachable since we removed them from the type and the switch.
+                                                 
+  2. Run the app and walk an Outpatient through the full flow:                                                                                                                                                 
+     - Care Setting (1/9) → Practice (2/9) → Time Savings (3/9) → Capacity placeholder (4/9) → Workforce placeholder (5/9) → Revenue placeholder (6/9) → Quality placeholder (7/9) → Investment (8/9) → Model
+  (9/9)                                                                                                                                                                                                        
+     - Confirm the progress bar shows the correct step number out of 9 on every screen
+     - Confirm browser back/forward buttons work between every step
+                                                             
+  3. Run the same walkthrough for Nursing — confirm Capacity / Workforce / Revenue / Quality placeholders all render (no nursing-specific routing remains)                                                     
+                                                             
+  4. On the Model screen, verify the step-click navigator (if present) shows 9 steps with the new labels: Care Setting / Practice / Time Savings / Capacity / Workforce / Revenue / Quality / Investment / Your
+   Model. Click each step number and confirm it navigates to the right placeholder.
+                                                                                                                                                                                                               
+  5. Edit Model button on Step 9 should still navigate to 'practice' (unchanged behavior).
+                                                                                                                                                                                                               
+  6. Confirm nothing is imported from the old removed files (ExploreValueDrivers, ExploreDocQuality, ExploreCareQuality). The files themselves should still exist on disk — we're not deleting them, just      
+  unwiring them from the flow.                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  7. Console should have no errors at any step. Specifically watch for "missing case" warnings or undefined-component warnings.                                                                                
+                                                             
+  8. The model summary card on Step 9 will currently show $0 for value drivers (since no drivers are toggleable yet). That's expected — placeholder pages don't toggle anything. The empty-state from Sprint 1 
+  (Task 9) should kick in and show "Build your value story" when totalValue is 0. Verify that empty state renders correctly.                                                                                   
+                                                             
+  NOTES:                                                                                                                                                                                                       
+  - Do NOT delete ExploreValueDrivers.tsx, ExploreDocQuality.tsx, or ExploreCareQuality.tsx. Sprint 2C/2D will reference them for calc logic and UI patterns. They become deletable in a later cleanup sprint.
+  - Do NOT change anything in ExploreState shape, defaults, or calc memoizers. Those stay exactly as-is for now.                                                                                               
+  - The disabledCareSettings prop and proforma snapshot logic remain unchanged.       
