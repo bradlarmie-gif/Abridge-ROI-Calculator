@@ -1,11 +1,14 @@
-import { useEffect, useMemo } from "react";
-import { ArrowRight, RotateCcw, TrendingUp, TrendingDown } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
-import { type MeasureState, type MeasureDriverEntry, type ForecastScenario } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting } from "@/lib/measureCalculator";
+import { computeAddedSettingValue } from "@/lib/forecastDefaults";
+import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
+import AddedSettingCard from "@/components/measure/AddedSettingCard";
 
 interface MeasureForecastProps {
   state: MeasureState;
@@ -65,6 +68,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     // fields are added to the deployment data model.
     staffedBeds: 0,
     occupancyPercent: 0,
+    addedSettings: [],
   }), [state.deployment]);
 
   const projected: ForecastScenario = state.forecastScenario ?? {
@@ -73,7 +77,11 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     encounters: 0,
     staffedBeds: 0,
     occupancyPercent: 0,
+    addedSettings: [],
   };
+
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const addedSettings = projected.addedSettings ?? [];
 
   useEffect(() => {
     const looksUninitialized =
@@ -89,7 +97,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
       baseline.staffedBeds > 0 ||
       baseline.occupancyPercent > 0;
     if (looksUninitialized && hasBaseline) {
-      updateState({ forecastScenario: { ...baseline } });
+      updateState({ forecastScenario: { ...baseline, addedSettings } });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -98,7 +106,33 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     updateState({ forecastScenario: { ...projected, ...updates } });
   };
 
-  const resetScenario = () => updateState({ forecastScenario: { ...baseline } });
+  const resetScenario = () => updateState({ forecastScenario: { ...baseline, addedSettings } });
+
+  const addCareSetting = (added: ForecastAddedSetting) => {
+    updateState({ forecastScenario: { ...projected, addedSettings: [...addedSettings, added] } });
+  };
+
+  const updateAddedSetting = (id: string, updates: Partial<ForecastAddedSetting>) => {
+    updateState({
+      forecastScenario: {
+        ...projected,
+        addedSettings: addedSettings.map(a => a.id === id ? { ...a, ...updates } : a),
+      },
+    });
+  };
+
+  const removeAddedSetting = (id: string) => {
+    updateState({
+      forecastScenario: {
+        ...projected,
+        addedSettings: addedSettings.filter(a => a.id !== id),
+      },
+    });
+  };
+
+  const addedSettingsTotal = useMemo(() => {
+    return addedSettings.reduce((sum, a) => sum + computeAddedSettingValue(a), 0);
+  }, [addedSettings]);
 
   const trackedDriverIds = Object.keys(state.trackedDrivers || {});
   const trackedDrivers = useMemo(() => {
@@ -132,7 +166,10 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
   const totalRealized = useMemo(() => Object.values(totalsByQuadrant).reduce((s, q) => s + q.realized, 0), [totalsByQuadrant]);
   const totalProjected = useMemo(() => Object.values(totalsByQuadrant).reduce((s, q) => s + q.projected, 0), [totalsByQuadrant]);
-  const totalDelta = totalProjected - totalRealized;
+  // Combined view: realized + projected drivers + added-setting expansions.
+  // The "Change" metric reflects the same combined number shown in the panel.
+  const combinedTotal = totalProjected + addedSettingsTotal;
+  const totalDelta = combinedTotal - totalRealized;
   const totalPctChange = totalRealized > 0 ? ((totalDelta / totalRealized) * 100) : 0;
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
@@ -335,6 +372,41 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               )}
             </motion.div>
 
+            <motion.div
+              className="mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Modeled Expansions</p>
+                {addedSettings.length > 0 && (
+                  <p className="text-xs text-[#666666]" data-testid="text-added-settings-summary">
+                    {addedSettings.length} setting{addedSettings.length === 1 ? '' : 's'} · {formatCurrency(addedSettingsTotal)}/yr
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                {addedSettings.map(added => (
+                  <AddedSettingCard
+                    key={added.id}
+                    added={added}
+                    onUpdate={(updates) => updateAddedSetting(added.id, updates)}
+                    onRemove={() => removeAddedSetting(added.id)}
+                  />
+                ))}
+
+                <button
+                  onClick={() => setAddModalOpen(true)}
+                  className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-1.5"
+                  data-testid="button-add-care-setting"
+                >
+                  <Plus className="w-4 h-4" /> Add a care setting
+                </button>
+              </div>
+            </motion.div>
+
             <motion.div className="flex justify-center mt-8 lg:hidden">
               <Button
                 onClick={onNext}
@@ -354,8 +426,8 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
             transition={{ delay: 0.2 }}
           >
             <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
-              <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Total Annual Value</p>
-              <p className="text-sm text-white/50 mb-5">Realized → Projected</p>
+              <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Combined Annual Value</p>
+              <p className="text-sm text-white/50 mb-5">Realized + projected + expansion</p>
 
               <div className="space-y-3 mb-5">
                 <div className="flex items-center justify-between">
@@ -364,7 +436,17 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-white/50">Projected at scale</span>
-                  <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-total-projected">{formatCurrency(totalProjected)}</span>
+                  <span className="text-base font-medium text-white/80" data-testid="text-total-projected">{formatCurrency(totalProjected)}</span>
+                </div>
+                {addedSettings.length > 0 && (
+                  <div className="flex items-center justify-between" data-testid="row-added-settings">
+                    <span className="text-xs text-white/50">+ {addedSettings.length} setting{addedSettings.length === 1 ? '' : 's'}</span>
+                    <span className="text-base font-medium text-white/80" data-testid="text-added-settings-total">{formatCurrency(addedSettingsTotal)}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between pt-3 border-t border-[#333333]">
+                  <span className="text-xs font-semibold text-white">Combined total</span>
+                  <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-combined-total">{formatCurrency(totalProjected + addedSettingsTotal)}</span>
                 </div>
               </div>
 
@@ -406,6 +488,13 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
           </motion.div>
         </div>
       </div>
+
+      <AddCareSettingModal
+        open={addModalOpen}
+        excludeSettings={[setting, ...addedSettings.map(a => a.setting)]}
+        onClose={() => setAddModalOpen(false)}
+        onAdd={addCareSetting}
+      />
     </div>
   );
 }

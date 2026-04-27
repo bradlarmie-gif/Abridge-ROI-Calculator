@@ -5,12 +5,28 @@ import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATI
 
 export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
+import type { ExploreSetting } from "./exploreDrivers";
+import type { ForecastScenarioLevel } from "./forecastDefaults";
+
+export interface ForecastAddedSetting {
+  id: string;
+  setting: ExploreSetting;
+  providers: number;
+  utilizationPercent: number;
+  encounters: number;
+  staffedBeds: number;
+  occupancyPercent: number;
+  scenario: ForecastScenarioLevel;
+  customValueOverride?: number;
+}
+
 export interface ForecastScenario {
   providers: number;
   utilizationPercent: number;
   encounters: number;
   staffedBeds: number;
   occupancyPercent: number;
+  addedSettings: ForecastAddedSetting[];
 }
 
 export interface MeasureDeployment {
@@ -335,6 +351,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     encounters: 0,
     staffedBeds: 0,
     occupancyPercent: 0,
+    addedSettings: [],
   },
 };
 
