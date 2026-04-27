@@ -1,0 +1,251 @@
+ 🔧 R-IA-1 — Visual restructure: two-section grouping (Replit prompt — paste verbatim)
+                                                                          
+  Context: Each quadrant page (Capacity / Workforce / Revenue / Quality) currently renders all toggleable drivers in a single flat list, mixing quantified ($ math) and qualitative (narrative-only) drivers.
+  This prompt restructures every quadrant page to render them in two clearly-labeled sub-sections — FINANCIAL DRIVERS and OTHER METRICS TO WATCH — making the IA scannable and consistent across settings. No
+  new drivers are added here; that's the next prompt (R-IA-2). The driver registry already classifies drivers by visibility ('quantified' | 'qualitative'), so this is a pure rendering change.
+                                                                       
+  Pre-req: R1 (Revenue rebuild) should be deployed first so ExploreRevenue.tsx has real driver content. If R1 hasn't shipped, apply this prompt to ExploreCapacity/Workforce/Quality only and skip the
+  ExploreRevenue.tsx changes.                                                                                                                                                                                  
+                                                                       
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Refactor ExploreCapacity.tsx driver rendering                        
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreCapacity.tsx                            
+                                                                                                                                                                                                               
+  INSIDE the component body, AFTER the existing `topLevelDrivers` derivation, ADD:                                                                                                                             
+                                                                       
+    const financialDrivers = topLevelDrivers.filter(d => d.visibility === 'quantified');                                                                                                                       
+    const watchMetrics = topLevelDrivers.filter(d => d.visibility === 'qualitative');
+                                                                       
+  Find the existing single Drivers container — typically a `<motion.div className="bg-[#F5F0EB] rounded-lg p-6 space-y-4 mb-6">` block with the inner header `<p className="text-xs font-medium text-[#888888] 
+  uppercase tracking-[1.5px] mb-2">Drivers</p>` followed by the divider and the `topLevelDrivers.map(...)` call.
+                                                                                                                                                                                                               
+  REPLACE that single Drivers container with TWO containers — one per sub-section. Both render the same DriverCard pattern; only the header text and the filter differ.                                        
+                                                                                                                                                                                                               
+  Use this structure:                                                                                                                                                                                          
+                                                                                
+    {/* FINANCIAL DRIVERS */}                                                                                                                                                                                  
+    {financialDrivers.length > 0 && (                                                                                                                                                                          
+      <motion.div                                                                                                                                                                                              
+        className="bg-[#F5F0EB] rounded-lg p-6 space-y-4 mb-6"                                                                                                                                                 
+        initial={{ opacity: 0, y: 20 }}                                                                                                                                                                        
+        animate={{ opacity: 1, y: 0 }}                                 
+        transition={{ delay: 0.15 }}                                                                                                                                                                           
+      >                                                                         
+        <div>                                                                                                                                                                                                  
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Financial Drivers</p>
+          <p className="text-xs text-[#AAAAAA] mb-2">Drivers that build the business case with dollar value.</p>                                                                                               
+          <div className="h-px bg-[#D1D5DB] mb-6" />                                                                                                                                                           
+        </div>                                                         
+        {financialDrivers.map(driver => {                                                                                                                                                                      
+          // Same DriverCard rendering pattern as today — copy verbatim from existing code,                                                                                                                    
+          // including child driver handling and calcComponent/qualitative branching.
+        })}                                                                                                                                                                                                    
+      </motion.div>                                                             
+    )}                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {/* OTHER METRICS TO WATCH */}                                                                                                                                                                             
+    {watchMetrics.length > 0 && (                                                                                                                                                                              
+      <motion.div                                                                                                                                                                                              
+        className="bg-[#F5F0EB] rounded-lg p-6 space-y-4 mb-6"                                                                                                                                                 
+        initial={{ opacity: 0, y: 20 }}                                                                                                                                                                        
+        animate={{ opacity: 1, y: 0 }}                                                                                                                                                                         
+        transition={{ delay: 0.18 }}                                                                                                                                                                           
+      >                                                                         
+        <div>                                                                                                                                                                                                  
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Other Metrics to Watch</p>
+          <p className="text-xs text-[#AAAAAA] mb-2">Outcomes we track post-deployment that don't carry direct dollar value.</p>                                                                               
+          <div className="h-px bg-[#D1D5DB] mb-6" />                            
+        </div>                                                                                                                                                                                                 
+        {watchMetrics.map(driver => {                                  
+          // Same DriverCard rendering pattern.                                                                                                                                                                
+        })}                                                                                                                                                                                                    
+      </motion.div>                                           
+    )}                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    {/* Empty state — only if BOTH groups empty */}                                                                                                                                                            
+    {financialDrivers.length === 0 && watchMetrics.length === 0 && (                                                                                                                                           
+      <motion.div                                                                                                                                                                                              
+        className="bg-[#F5F0EB] rounded-lg p-6 mb-6"                                                                                                                                                           
+        initial={{ opacity: 0, y: 20 }}                                         
+        animate={{ opacity: 1, y: 0 }}                     
+        transition={{ delay: 0.15 }}                                                                                                                                                                           
+      >                                                       
+        <p className="text-sm text-[#888888] italic">No Capacity drivers configured for this care setting.</p>                                                                                                 
+      </motion.div>                                                             
+    )}                                                                                                                                                                                                         
+                                                                       
+  The existing `Other Financial Benefits` section stays unchanged AFTER both new containers. Do NOT modify it.                                                                                                 
+                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Apply the same refactor to ExploreWorkforce.tsx                                                                                                                                                     
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreWorkforce.tsx                                                                                                                                                          
+                                                                                
+  Apply the identical pattern from Task 1. The only differences:                                                                                                                                               
+  - The motion delay values can match Capacity's (0.15 / 0.18) or be slightly different — match the existing page's animation timing                                                                           
+  - The empty-state copy: "No Workforce drivers configured for this care setting."
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                   
+  TASK 3 — Apply the same refactor to ExploreRevenue.tsx (only if R1 has shipped)                                                                                                                              
+  ═══════════════════════════════════════════════════════════
+  File: client/src/pages/explore/ExploreRevenue.tsx                                                                                                                                                            
+                                                                                                                                                                                                               
+  If ExploreRevenue.tsx is still showing the placeholder text "Revenue drivers and inputs land here in the next sprint." → SKIP this task and apply it after R1 ships. Otherwise:                              
+                                                                                                                                                                                                               
+  Apply the identical pattern. Empty state copy: "No Revenue drivers configured for this care setting."                                                                                                        
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Refactor ExploreQuality.tsx — special-case empty Financial section                                                                                                                                  
+  ═══════════════════════════════════════════════════════════          
+  File: client/src/pages/explore/ExploreQuality.tsx                                                                                                                                                            
+                                                                                                                                                                                                               
+  Apply the same two-section pattern WITH ONE TWIST: for OP, ED, and IP, the Financial section is structurally always empty (their financial Quality drivers don't exist by design — those settings express    
+  Quality through qualitative drivers). For Nursing, the Financial section has content (HAPI/Falls/CAUTI/CLABSI/Sepsis).                                                                                       
+                                                                                
+  Use this gate:                                                                                                                                                                                               
+                                                           
+    const isQualityFinanciallyEmpty = state.careSetting !== 'nursing';                                                                                                                                         
+                                                                                
+  Conditional render rule:                                                                                                                                                                                     
+  - If `isQualityFinanciallyEmpty && financialDrivers.length === 0`, do NOT render the Financial Drivers container at all. Just skip straight to "Other Metrics to Watch."                                     
+  - If `!isQualityFinanciallyEmpty` (i.e., nursing) — render both sections normally.
+  - Edge case: if financialDrivers is unexpectedly non-empty for OP/ED/IP, still render it (data should drive the rendering, not the gate).                                                                    
+                                                                                                                                                                                                               
+  Effective behavior:                                                  
+  - OP/ED/IP Quality: only "Other Metrics to Watch" renders                                                                                                                                                    
+  - Nursing Quality: both sections render                                       
+                                                                                                                                                                                                               
+  Empty-state copy for the all-empty case (rare): "No Quality drivers configured for this care setting."
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Update right-panel summary to mirror the two-section grouping                                                                                                                                       
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreCapacity.tsx, ExploreWorkforce.tsx, ExploreRevenue.tsx, ExploreQuality.tsx                                                                                             
+                                                                                                                                                                                                               
+  In each page's right-panel sticky summary, find the current driver list (the one that maps over `drivers` and renders each as a row with a colored dot, label, and value/Qualitative tag).                   
+                                                                                                                                                                                                               
+  REPLACE that single map with two grouped lists — the same partition by visibility, with small sub-headers above each group.                                                                                  
+                                                                                                                                                                                                               
+  Pattern (apply to all 4 pages with appropriate quadrant filtering already in place):
+                                                                                                                                                                                                               
+    {(() => {                                                          
+      const financialDriversInPanel = drivers.filter(d => d.visibility === 'quantified');                                                                                                                      
+      const watchMetricsInPanel = drivers.filter(d => d.visibility === 'qualitative');                                                                                                                         
+      const showFinancialPanelGroup = financialDriversInPanel.length > 0;                                                                                                                                      
+      const showWatchPanelGroup = watchMetricsInPanel.length > 0;                                                                                                                                              
+                                                                                
+      if (!showFinancialPanelGroup && !showWatchPanelGroup) {                                                                                                                                                  
+        return <p className="text-sm text-white/50">No drivers for this setting.</p>;
+      }                                                                                                                                                                                                        
+                                                                                
+      return (                                                                                                                                                                                                 
+        <div className="space-y-4 mb-4">                               
+          {showFinancialPanelGroup && (                                                                                                                                                                        
+            <div>                                                                                                                                                                                              
+              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Financial</p>                                                                                               
+              <div className="space-y-3">                                                                                                                                                                      
+                {financialDriversInPanel.map(d => {                                                                                                                                                            
+                  const enabled = isEnabled(d);                                                                                                                                                                
+                  const value = driverValues[d.id];                                                                                                                                                            
+                  return (                                                                                                                                                                                     
+                    <div key={d.id} className={`flex justify-between items-center ${d.childOfDriverId ? 'pl-4' : ''}`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${enabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />                                                                                 
+                        <span className="text-sm text-[#888888] truncate">{d.label}</span>                                                                                                                     
+                      </div>                                                                                                                                                                                   
+                      <span className={`text-sm font-semibold flex-shrink-0 ${enabled ? 'text-white' : 'text-[#666666]'}`}>                                                                                    
+                        {!enabled ? '—' : (typeof value === 'number' ? formatCurrency(value) : '—')}                                                                                                           
+                      </span>                              
+                    </div>                                                                                                                                                                                     
+                  );                                                                                                                                                                                           
+                })}                                                    
+              </div>                                                                                                                                                                                           
+            </div>                                                                                                                                                                                             
+          )}                                                                                                                                                                                                   
+                                                                                                                                                                                                               
+          {showWatchPanelGroup && (                                                                                                                                                                            
+            <div>                                                                                                                                                                                              
+              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Other Metrics</p>                                                                                           
+              <div className="space-y-3">                                                                                                                                                                      
+                {watchMetricsInPanel.map(d => {                                 
+                  const enabled = isEnabled(d);                        
+                  return (                                 
+                    <div key={d.id} className={`flex justify-between items-center ${d.childOfDriverId ? 'pl-4' : ''}`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${enabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                        <span className="text-sm text-[#888888] truncate">{d.label}</span>
+                      </div>                                                                                                                                                                                   
+                      <span className={`text-sm flex-shrink-0 italic ${enabled ? 'text-white/80' : 'text-[#666666]'}`}>
+                        {!enabled ? '—' : 'Qualitative'}                                                                                                                                                       
+                      </span>                                                   
+                    </div>                                                                                                                                                                                     
+                  );                                                                                                                                                                                           
+                })}                            
+              </div>                                                                                                                                                                                           
+            </div>                                                                                                                                                                                             
+          )}                                                                                                                                                                                                   
+        </div>                                                                                                                                                                                                 
+      );                                                                        
+    })()}                                                                                                                                                                                                      
+                                                                                
+  The Quadrant Total / Other Financial Benefits / Progress So Far blocks below this stay unchanged. Only the driver list rendering changes.
+                                                              
+  ═══════════════════════════════════════════════════════════          
+  TASK 6 — Sanity check: DriverCard internal styling stays the same
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                              
+  Do NOT modify client/src/components/explore/DriverCard.tsx. The card's internal "Qualitative" badge and styling stay as-is. The grouping is conveyed by the section headers, not by per-card styling         
+  differences.                                                                  
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════ 
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                   
+                                                                                                                                                                                                               
+  1. TypeScript compiles. No new imports needed (DriverCard, getDriversForPage already imported).
+                                                                                                                                                                                                               
+  2. Walk Outpatient:                                                           
+     - Capacity (4/9): "Financial Drivers" section with Patient Access. "Other Metrics to Watch" section EMPTY (no qualitative OP Capacity drivers exist yet — R-IA-2 will fill this).                         
+     - Workforce (5/9): "Financial Drivers" section with Provider Wellbeing (and Locum/Agency child). "Other Metrics" empty.
+     - Revenue (6/9): If R1 has shipped, Financial Drivers section with wRVU/HCC/Denials. Otherwise this page is still placeholder.
+     - Quality (7/9): NO Financial Drivers section visible (correctly hidden). "Other Metrics to Watch" populated with all 7 OP qualitative drivers.
+                                                                                                                                                                                                               
+  3. Walk ED:                                                                                                                                                                                                  
+     - Capacity: Financial = LWBS Recovery + Admission Capture. Other Metrics empty.                                                                                                                           
+     - Workforce: Financial = Provider Wellbeing + Locum/Agency. Other Metrics empty.                                                                                                                          
+     - Revenue: Financial = wRVU/E&M + Denials. Other Metrics empty.            
+     - Quality: No Financial section. Other Metrics = Note Star Rating + Press Ganey.                                                                                                                          
+                                                                                                                                                                                                               
+  4. Walk Inpatient:                                                                                                                                                                                           
+     - Same shape — Other Metrics sections empty across Capacity/Workforce/Revenue.                                                                                                                            
+     - Quality: No Financial section. Other Metrics = 3 IP qualitative drivers.                                                                                                                                
+                                                                                                                                                                                                               
+  5. Walk Nursing:                                                                                                                                                                                             
+     - Capacity: Financial = (none currently — Nursing Capacity has Bedside Time which is qualitative). Other Metrics = Bedside Time. Note: Nursing's Capacity driver is qualitative; it will land in Other
+  Metrics. The "Financial Drivers" section will not render for Nursing Capacity. This is fine.                                                                                                                 
+     - Workforce: Financial = RN Retention / Travel Agency / Overtime. Other Metrics empty.                                                                                                                    
+     - Revenue: Financial = (none currently for nursing). Other Metrics = CDI Query Response + Doc Completion. Financial section will not render.                                                              
+     - Quality: BOTH SECTIONS render — Financial = HAPI/Falls/CAUTI/CLABSI/Sepsis. Other Metrics = Med Error / HCAHPS Nurse Communication. This matches Nursing Quality's existing nice IA.                    
+                                                                                                                                                                                                               
+  6. Right-panel summary on every page reflects the same two-group structure. Sub-headers ("Financial" / "Other Metrics") appear only when the corresponding group has at least one driver.
+                                                                                                                                                                                                               
+  7. Other Financial Benefits section remains at the bottom of each page, unchanged.
+                                                                                                                                                                                                               
+  8. Step 9 Model card grid is unaffected — it pulls from the same EXPLORE_DRIVERS registry and renders driver line items the same way.
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - Some pages will have empty "Other Metrics to Watch" sections after this prompt. That's expected — R-IA-2 fills them.                                                                                       
+  - The animation `delay` values for the new motion divs should match the rhythm of the existing page (look at the `transition={{ delay: ... }}` values nearby; pick something between 0.15 and 0.20).         
+  - If the page already has different visual structure than the pattern I described above (e.g., Nursing Quality may already have section dividers that we'd want to preserve), follow the existing visual     
+  treatment and apply the partition logic only.                                                                                                                                                                
+  - The Section Header "Other Metrics to Watch" should feel quieter than "Financial Drivers" — same uppercase tracking but consider whether the secondary description copy ("Outcomes we track
+  post-deployment...") is helpful enough to keep, or if it adds visual noise.                                                                                                                                  
+                                                                                
+  ---                                                                                                                                                                                                          
+  What lands after R-IA-1                                                       
+                                                                                                                                                                                                               
+  ✅ Every quadrant page renders drivers in two clearly-labeled sections                                                                                                                                       
+  ✅ OP/ED/IP Quality pages cleanly hide the empty Financial section                                                                                                                                           
+  ✅ Nursing Quality keeps both sections (matching the IA Brad called out as good)                                                                                                                             
+  ✅ Right-panel summary mirrors the same grouping                                                                                                                                                             
+  ✅ Empty "Other Metrics to Watch" sections will exist on most non-Quality pages until R-IA-2 fills them — this is expected and intentional

@@ -1,0 +1,306 @@
+🔧 R-IA-2 — Curated qualitative drivers (Replit prompt — paste verbatim)                                                                                                                                     
+                                                                                                                                                                                                               
+  Context: After R-IA-1 ships, every quadrant page renders two grouped sections — Financial Drivers and Other Metrics to Watch. Some Other Metrics sections are empty for OP/ED/IP. This prompt fills them with
+   curated qualitative drivers (1-3 per gap, never bloating). All additions are non-financial — visibility 'qualitative', no calcComponent, just toggleable items that PS/customers can use to flag what they  
+  want tracked post-deployment.                                                                                                                                                                                
+                                                                                
+  Pre-req: R-IA-1 shipped.                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                
+  TASK 1 — Add new state fields to TimeDriverInputs                                                                                                                                                            
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                
+  In the TimeDriverInputs interface, ADD these enabled/expanded boolean pairs (group them with other qualitative driver fields for readability):                                                               
+                                                                                                                                                                                                               
+    // OP Capacity qualitative                                               
+    opThirdNextAvailableEnabled: boolean;                                                                                                                                                                      
+    opThirdNextAvailableExpanded: boolean;                                      
+    opPatientWaitTimeEnabled: boolean;                                                                                                                                                                         
+    opPatientWaitTimeExpanded: boolean;                                                                                                                                                                        
+    // OP Workforce qualitative                                                                                                                                                                                
+    opBurnoutTrackingEnabled: boolean;                                                                                                                                                                         
+    opBurnoutTrackingExpanded: boolean;                                                                                                                                                                        
+    opLikelihoodToStayEnabled: boolean;                                                                                                                                                                        
+    opLikelihoodToStayExpanded: boolean;                                        
+    // OP Revenue qualitative                                                                                                                                                                                  
+    opDaysInAREnabled: boolean;                                                 
+    opDaysInARExpanded: boolean;                                                                                                                                                                               
+    opAuditDefensibilityEnabled: boolean;                                       
+    opAuditDefensibilityExpanded: boolean;                                                                                                                                                                     
+    // ED Capacity qualitative                                                  
+    edDoorToProviderEnabled: boolean;                                                                                                                                                                          
+    edDoorToProviderExpanded: boolean;                                                                                                                                                                         
+    // ED Workforce qualitative                                                                                                                                                                                
+    edBurnoutTrackingEnabled: boolean;                                                                                                                                                                         
+    edBurnoutTrackingExpanded: boolean;                                                                                                                                                                        
+    edLikelihoodToStayEnabled: boolean;                    
+    edLikelihoodToStayExpanded: boolean;                                                                                                                                                                       
+    // ED Revenue qualitative                                                                                                                                                                                  
+    edCleanClaimEnabled: boolean;                                                                                                                                                                              
+    edCleanClaimExpanded: boolean;                                                                                                                                                                             
+    // IP Capacity qualitative                                                  
+    ipAlosTrackingEnabled: boolean;                                                                                                                                                                            
+    ipAlosTrackingExpanded: boolean;                                                                                                                                                                           
+    // IP Workforce qualitative                            
+    ipBurnoutTrackingEnabled: boolean;                                                                                                                                                                         
+    ipBurnoutTrackingExpanded: boolean;                                                                                                                                                                        
+    ipLikelihoodToStayEnabled: boolean;                    
+    ipLikelihoodToStayExpanded: boolean;                                                                                                                                                                       
+    // IP Revenue qualitative                                                   
+    ipCmiTrackingEnabled: boolean;                                                                                                                                                                             
+    ipCmiTrackingExpanded: boolean;                                                                                                                                                                            
+    // Nursing Workforce qualitative                       
+    nursingLikelihoodToStayEnabled: boolean;                                                                                                                                                                   
+    nursingLikelihoodToStayExpanded: boolean;                                                                                                                                                                  
+                                                           
+  In DEFAULT_EXPLORE_STATE.timeDriverInputs, ADD all of the above with `false` defaults.                                                                                                                       
+                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Add 14 qualitative drivers to EXPLORE_DRIVERS                                                                                                                                                       
+  ═══════════════════════════════════════════════════════════                
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                                                                                                                                                                               
+  APPEND these 14 entries to the EXPLORE_DRIVERS array. Voice is neutral — describe what's measured, not Abridge claims. Insert them in logical groupings (after existing drivers in the same quadrant, OR at
+  the end of the array — Replit's choice).                                                                                                                                                                     
+                                                                                
+  Each entry uses this shape — visibility: 'qualitative', no calcComponent, no measureDefaults:                                                                                                                
+                                                                                
+    // ───── OP Capacity (qualitative) ─────                                                                                                                                                                   
+    {                                                                                                                                                                                                          
+      id: 'opThirdNextAvailable',              
+      label: '3rd Next Available',                                                                                                                                                                             
+      shortDescription: 'Days until the third next available appointment slot. A standard access metric.',
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                             
+      enabledStateKey: 'opThirdNextAvailableEnabled',                                                                                                                                                          
+      expandedStateKey: 'opThirdNextAvailableExpanded',                         
+      trackedMeasureIds: ['thirdNextAvailable'],              
+    },                                                                       
+    {                                                                                                                                                                                                          
+      id: 'opPatientWaitTime',                                                                                                                                                                                 
+      label: 'Patient Wait Time',                                                                                                                                                                              
+      shortDescription: 'Average minutes patients wait between scheduled appointment time and being seen.',                                                                                                    
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opPatientWaitTimeEnabled',                                                                                                                                                             
+      expandedStateKey: 'opPatientWaitTimeExpanded',                                                                                                                                                           
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                                          
+                                                          
+    // ───── OP Workforce (qualitative) ─────                                                                                                                                                                  
+    {                                                         
+      id: 'opBurnoutTracking',                                                                                                                                                                                 
+      label: 'Burnout Score',                                                   
+      shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Tracked as a leading indicator for retention.',                                                          
+      quadrant: 'Workforce',                                  
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                                
+      enabledStateKey: 'opBurnoutTrackingEnabled',                                                                                                                                                             
+      expandedStateKey: 'opBurnoutTrackingExpanded',      
+      trackedMeasureIds: ['burnoutAssessment'],                                                                                                                                                                
+    },                                                                          
+    {                                                                        
+      id: 'opLikelihoodToStay',                                                                                                                                                                                
+      label: 'Likelihood to Stay',                                                                                                                                                                             
+      shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',                                                                                                    
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['outpatient'],                                                 
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'opLikelihoodToStayEnabled',       
+      expandedStateKey: 'opLikelihoodToStayExpanded',                                                                                                                                                          
+      trackedMeasureIds: ['likelihoodToStay'],                                  
+    },                                                                                                                                                                                                         
+                                                                                
+    // ───── OP Revenue (qualitative) ─────                                                                                                                                                                    
+    {                                                         
+      id: 'opDaysInAR',                                                                                                                                                                                        
+      label: 'Days in AR',                                                      
+      shortDescription: 'Average days from claim submission to payment. A standard revenue cycle indicator.',                                                                                                  
+      quadrant: 'Revenue',                
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                                
+      enabledStateKey: 'opDaysInAREnabled',                                                                                                                                                                    
+      expandedStateKey: 'opDaysInARExpanded',                                   
+      trackedMeasureIds: [],                                  
+    },                                                                       
+    {                                                     
+      id: 'opAuditDefensibility',                                                                                                                                                                              
+      label: 'Audit Defensibility',                           
+      shortDescription: 'Share of records meeting completeness criteria during internal audit reviews.',                                                                                                       
+      quadrant: 'Revenue',                                                      
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'qualitative',                                             
+      enabledStateKey: 'opAuditDefensibilityEnabled',                                                                                                                                                          
+      expandedStateKey: 'opAuditDefensibilityExpanded',                         
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                        
+                                                                                                                                                                                                               
+    // ───── ED Capacity (qualitative) ─────                                                                                                                                                                   
+    {                                                                                                                                                                                                          
+      id: 'edDoorToProvider',                                                                                                                                                                                  
+      label: 'Door-to-Provider Time',                                                                                                                                                                          
+      shortDescription: 'Minutes from patient arrival to first provider contact. An upstream indicator for LWBS and patient experience.',
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['ed'],                                    
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edDoorToProviderEnabled',                               
+      expandedStateKey: 'edDoorToProviderExpanded',       
+      trackedMeasureIds: ['doorToProvider'],                  
+    },                                                                                                                                                                                                         
+                                                                             
+    // ───── ED Workforce (qualitative) ─────                                                                                                                                                                  
+    {                                                                                                                                                                                                          
+      id: 'edBurnoutTracking',                                                                                                                                                                                 
+      label: 'Burnout Score',                                                                                                                                                                                  
+      shortDescription: 'Score from a validated burnout instrument. Tracked as a leading indicator for retention.',
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['ed'],                                    
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edBurnoutTrackingEnabled',                              
+      expandedStateKey: 'edBurnoutTrackingExpanded',
+      trackedMeasureIds: ['burnoutAssessment'],                                                                                                                                                                
+    },                                                                       
+    {                                                                                                                                                                                                          
+      id: 'edLikelihoodToStay',                                                                                                                                                                                
+      label: 'Likelihood to Stay',                                           
+      shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',                                                                                                    
+      quadrant: 'Workforce',                                                    
+      settings: ['ed'],                                                                                                                                                                                        
+      visibility: 'qualitative',                                             
+      enabledStateKey: 'edLikelihoodToStayEnabled',                                                                                                                                                            
+      expandedStateKey: 'edLikelihoodToStayExpanded',                                                                                                                                                          
+      trackedMeasureIds: ['likelihoodToStay'],                
+    },                                                                                                                                                                                                         
+                                                                                
+    // ───── ED Revenue (qualitative) ─────                                                                                                                                                                    
+    {                                                         
+      id: 'edCleanClaim',                                                                                                                                                                                      
+      label: 'Clean Claim Rate',                                                
+      shortDescription: 'Share of ED claims accepted on first submission. Tracked as a downstream signal of documentation completeness.',                                                                      
+      quadrant: 'Revenue',                                    
+      settings: ['ed'],                                                                                                                                                                                        
+      visibility: 'qualitative',                                                
+      enabledStateKey: 'edCleanClaimEnabled',                                                                                                                                                                  
+      expandedStateKey: 'edCleanClaimExpanded',
+      trackedMeasureIds: ['cleanClaim'],                                                                                                                                                                       
+    },                                                                          
+                                                           
+    // ───── IP Capacity (qualitative) ─────                                                                                                                                                                   
+    {                                                         
+      id: 'ipAlosTracking',                                                                                                                                                                                    
+      label: 'Average Length of Stay',                                          
+      shortDescription: 'Average days per inpatient admission. Tracked as a flow indicator alongside discharge timing.',                                                                                       
+      quadrant: 'Capacity',                                
+      settings: ['inpatient'],                                                                                                                                                                                 
+      visibility: 'qualitative',                                                
+      enabledStateKey: 'ipAlosTrackingEnabled',                                                                                                                                                                
+      expandedStateKey: 'ipAlosTrackingExpanded',                               
+      trackedMeasureIds: ['avgLengthOfStay'],                                
+    },                                                    
+                                                                                                                                                                                                               
+    // ───── IP Workforce (qualitative) ─────                                                                                                                                                                  
+    {                                                                                                                                                                                                          
+      id: 'ipBurnoutTracking',                                                                                                                                                                                 
+      label: 'Burnout Score',                                                                                                                                                                                  
+      shortDescription: 'Score from a validated burnout instrument. Tracked as a leading indicator for hospitalist retention.',
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['inpatient'],                                                                                                                                                                                 
+      visibility: 'qualitative',                                             
+      enabledStateKey: 'ipBurnoutTrackingEnabled',                                                                                                                                                             
+      expandedStateKey: 'ipBurnoutTrackingExpanded',                            
+      trackedMeasureIds: ['burnoutAssessment'],                              
+    },                                                                                                                                                                                                         
+    {                                                      
+      id: 'ipLikelihoodToStay',                                                                                                                                                                                
+      label: 'Likelihood to Stay',                                              
+      shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',                                                                                                    
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['inpatient'],                             
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipLikelihoodToStayEnabled',                                                                                                                                                            
+      expandedStateKey: 'ipLikelihoodToStayExpanded',      
+      trackedMeasureIds: ['likelihoodToStay'],                                                                                                                                                                 
+    },                                                                          
+                                                                             
+    // ───── IP Revenue (qualitative) ─────                                                                                                                                                                    
+    {                                          
+      id: 'ipCmiTracking',                                                                                                                                                                                     
+      label: 'Case Mix Index',                                                                                                                                                                                 
+      shortDescription: 'Weighted average of DRG relative weights. Tracked as a downstream signal of CC/MCC capture and DRG accuracy.',
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['inpatient'],                                                  
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipCmiTrackingEnabled',                                  
+      expandedStateKey: 'ipCmiTrackingExpanded',                             
+      trackedMeasureIds: ['caseMixIndex'],                    
+    },                                                                                                                                                                                                         
+                                                                             
+    // ───── Nursing Workforce (qualitative) ─────                                                                                                                                                             
+    {                                                                           
+      id: 'nursingLikelihoodToStay',                                                                                                                                                                           
+      label: 'Likelihood to Stay',                                              
+      shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',                                                                                                    
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['nursing'],                               
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'nursingLikelihoodToStayEnabled',                        
+      expandedStateKey: 'nursingLikelihoodToStayExpanded',
+      trackedMeasureIds: ['likelihoodToStay'],                
+    },                                                                                                                                                                                                         
+                                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Verify Step 9 Model picks up new qualitative drivers                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreModel.tsx                               
+                                                                                                                                                                                                               
+  No code change needed. The Step 9 Model's 4-quadrant card grid (around line 1317) reads from EXPLORE_DRIVERS via `isDriverEnabled(d, state)`. New qualitative drivers will automatically surface as
+  "Qualitative" line items in the matching quadrant card when toggled on. Confirm by walking the flow and observing.                                                                                           
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                          
+  1. TypeScript compiles. New TimeDriverInputs fields are typed; all defaults present in DEFAULT_EXPLORE_STATE.                                                                                                
+                                                                                                                                                                                                               
+  2. Walk Outpatient through each quadrant:                                                                                                                                                                    
+     - Capacity (4/9): Financial = Patient Access. Other Metrics = 3rd Next Available + Patient Wait Time.                                                                                                     
+     - Workforce (5/9): Financial = Provider Wellbeing (+ Locum/Agency child). Other Metrics = Burnout Score + Likelihood to Stay.                                                                             
+     - Revenue (6/9): Financial = wRVU + HCC + Denials (assuming R1 shipped). Other Metrics = Days in AR + Audit Defensibility.
+     - Quality (7/9): No Financial section. Other Metrics = the existing 7 OP qualitative drivers (CDI Reduction, Cognitive Load, Audit Compliance, Care Continuity, Note Star, Diagnosis Capture, Diagnosis   
+  Specificity).                                                                 
+                                                                                                                                                                                                               
+  3. Walk ED:                                                                
+     - Capacity: Financial = LWBS + Admission Capture. Other Metrics = Door-to-Provider.                                                                                                                       
+     - Workforce: Financial = Wellbeing + Locum. Other Metrics = Burnout + Likelihood.
+     - Revenue: Financial = E&M Level + Denials. Other Metrics = Clean Claim Rate.                                                                                                                             
+     - Quality: No Financial. Other Metrics = Note Star + Press Ganey.                                                                                                                                         
+                                                                                                                                                                                                               
+  4. Walk Inpatient:                                                                                                                                                                                           
+     - Capacity: Financial empty (Rounding is qualitative). Other Metrics = Rounding + ALOS.                                                                                                                   
+     - Workforce: Financial = Wellbeing + Locum. Other Metrics = Burnout + Likelihood.                                                                                                                         
+     - Revenue: Financial = DRG + CDI + Obs Defense + EM Coding. Other Metrics = CMI tracking.
+     - Quality: No Financial. Other Metrics = Note Star + HCAHPS Composite + Readmission.                                                                                                                      
+                                                                                                                                                                                                               
+  5. Walk Nursing:                                                                                                                                                                                             
+     - Capacity: Financial empty. Other Metrics = Bedside Time.                                                                                                                                                
+     - Workforce: Financial = RN Retention + Travel Agency + Overtime. Other Metrics = Likelihood to Stay.                                                                                                     
+     - Revenue: Financial empty. Other Metrics = CDI Query Response + Doc Completion.                                                                                                                          
+     - Quality: Financial = HAPI/Falls/CAUTI/CLABSI/Sepsis. Other Metrics = Med Error + HCAHPS Nurse Comm.                                                                                                     
+                                                                                                                                                                                                               
+  6. Toggle 2-3 new qualitative drivers and confirm:                                                                                                                                                           
+     - Right panel summary lists them under "Other Metrics" sub-header                                                                                                                                         
+     - Step 9 quadrant cards pick them up as "Qualitative" line items in the matching quadrant                                                                                                                 
+                                                                                                                                                                                                               
+  7. The Quadrant Total in the right panel and the totalAnnualValue on Step 9 should NOT change when toggling these new qualitative drivers (they don't carry $ value). Verify.                                
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - IP Capacity now has TWO qualitative drivers and zero financial — this is correct. The existing Rounding Efficiency was already qualitative; ALOS adds a tracking-only companion. The page renders only the 
+  Other Metrics section for IP Capacity.                                                                                                                                                                       
+  - Several drivers share `enabledStateKey` patterns (e.g., burnout tracking exists per-setting). They use distinct field names per setting (opBurnoutTrackingEnabled vs edBurnoutTrackingEnabled etc.) so     
+  toggles don't collide.                                                                                                                                                                                       
+  - The trackedMeasureIds on the new drivers point at measure catalog entries where they exist (burnoutAssessment, likelihoodToStay, etc.). For drivers that don't have a corresponding catalog measure        
+  (Patient Wait Time, Days in AR, Audit Defensibility), trackedMeasureIds is an empty array — that's intentional and harmless. A future cleanup sprint may add these to the measure catalog.                   
+  - After this prompt ships, every quadrant page on every setting renders both sections (Financial + Other Metrics) where structurally appropriate. OP/ED/IP Quality pages remain Other-Metrics-only by design.

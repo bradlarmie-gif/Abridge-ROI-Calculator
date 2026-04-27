@@ -203,6 +203,11 @@ export interface TimeDriverInputs {
   // Nursing qualitative Quality (1 new — HCAHPS already exists in docQualityInputs)
   nursingMedErrorEnabled: boolean;
   nursingMedErrorExpanded: boolean;
+  // Nursing qualitative Revenue
+  nursingCdiResponseEnabled: boolean;
+  nursingCdiResponseExpanded: boolean;
+  nursingDocCompletionEnabled: boolean;
+  nursingDocCompletionExpanded: boolean;
 }
 
 // Documentation Quality inputs
@@ -515,6 +520,10 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipReadmissionExpanded: false,
     nursingMedErrorEnabled: false,
     nursingMedErrorExpanded: false,
+    nursingCdiResponseEnabled: false,
+    nursingCdiResponseExpanded: false,
+    nursingDocCompletionEnabled: false,
+    nursingDocCompletionExpanded: false,
   },
   otherFinancialBenefits: [],
   // Documentation quality inputs
@@ -999,6 +1008,17 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       total += obsDefenseGross * (docQualityInputs.ipObsDefenseRealization / 100);
     }
 
+    // Inpatient: E/M Coding Accuracy
+    if (state.careSetting === 'inpatient' && docQualityInputs.ipEmCodingEnabled) {
+      const losVal = state.ipAvgLengthOfStay ?? 4.5;
+      const progressPerAdmission = Math.max(losVal - 2, 1);
+      const totalCharges = eligibleEncounters * (1 + progressPerAdmission + docQualityInputs.ipEmCodingConsultsPerAdmission);
+      const gapMap: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };
+      const gapPct = (gapMap[docQualityInputs.ipEmCodingGapScenario] ?? 12) / 100;
+      const gross = totalCharges * gapPct * docQualityInputs.ipEmCodingAvgRevenueLift;
+      total += gross * (docQualityInputs.ipEmCodingRealization / 100);
+    }
+
     return Math.round(total);
   }, [state.annualEncounters, state.utilizationPercent, state.numberOfProviders, state.docQualityInputs, state.careSetting]);
 
@@ -1127,6 +1147,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         <ExploreRevenue
           state={state}
           updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
           priorQuadrants={priorQuadrants}
           onNext={() => navigate('quality')}
           onBack={() => navigate('workforce')}
