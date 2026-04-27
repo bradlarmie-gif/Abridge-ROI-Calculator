@@ -246,17 +246,25 @@ export interface TimeDriverInputs {
   edEmLevelDistributionExpanded: boolean;
   edCdiQueryTrendEnabled: boolean;
   edCdiQueryTrendExpanded: boolean;
-  // IP Capacity qualitative
-  ipAlosTrackingEnabled: boolean;
-  ipAlosTrackingExpanded: boolean;
-  // IP Workforce qualitative
+  // IP Capacity qualitative (3 — restructured by R-IA-5; ALOS removed)
+  ipDocumentationLagEnabled: boolean;
+  ipDocumentationLagExpanded: boolean;
+  ipDischargeSummaryTimeEnabled: boolean;
+  ipDischargeSummaryTimeExpanded: boolean;
+  // IP Workforce qualitative (3 — restructured by R-IA-5; Likelihood to Stay removed)
+  ipAfterHoursDocEnabled: boolean;
+  ipAfterHoursDocExpanded: boolean;
   ipBurnoutTrackingEnabled: boolean;
   ipBurnoutTrackingExpanded: boolean;
-  ipLikelihoodToStayEnabled: boolean;
-  ipLikelihoodToStayExpanded: boolean;
-  // IP Revenue qualitative
+  ipTimeToSignNoteEnabled: boolean;
+  ipTimeToSignNoteExpanded: boolean;
+  // IP Revenue qualitative (3 — expanded by R-IA-5)
   ipCmiTrackingEnabled: boolean;
   ipCmiTrackingExpanded: boolean;
+  ipCcMccCaptureEnabled: boolean;
+  ipCcMccCaptureExpanded: boolean;
+  ipCdiQueryTrendEnabled: boolean;
+  ipCdiQueryTrendExpanded: boolean;
   // Nursing Workforce qualitative
   nursingLikelihoodToStayEnabled: boolean;
   nursingLikelihoodToStayExpanded: boolean;
@@ -607,14 +615,22 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edEmLevelDistributionExpanded: false,
     edCdiQueryTrendEnabled: false,
     edCdiQueryTrendExpanded: false,
-    ipAlosTrackingEnabled: false,
-    ipAlosTrackingExpanded: false,
+    ipDocumentationLagEnabled: false,
+    ipDocumentationLagExpanded: false,
+    ipDischargeSummaryTimeEnabled: false,
+    ipDischargeSummaryTimeExpanded: false,
+    ipAfterHoursDocEnabled: false,
+    ipAfterHoursDocExpanded: false,
     ipBurnoutTrackingEnabled: false,
     ipBurnoutTrackingExpanded: false,
-    ipLikelihoodToStayEnabled: false,
-    ipLikelihoodToStayExpanded: false,
+    ipTimeToSignNoteEnabled: false,
+    ipTimeToSignNoteExpanded: false,
     ipCmiTrackingEnabled: false,
     ipCmiTrackingExpanded: false,
+    ipCcMccCaptureEnabled: false,
+    ipCcMccCaptureExpanded: false,
+    ipCdiQueryTrendEnabled: false,
+    ipCdiQueryTrendExpanded: false,
     nursingLikelihoodToStayEnabled: false,
     nursingLikelihoodToStayExpanded: false,
   },

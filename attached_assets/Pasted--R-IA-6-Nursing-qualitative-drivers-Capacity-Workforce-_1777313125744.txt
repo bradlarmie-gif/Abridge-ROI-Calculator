@@ -1,0 +1,133 @@
+🔧 R-IA-6 — Nursing qualitative drivers — Capacity / Workforce / Revenue (Replit prompt — paste verbatim)
+                                                                                                                                                                                                               
+  Context: Final IA cleanup pass. Nursing qualitative drivers refined to match nursing's reality (bedside-driven work, 12-hour shifts, documentation-burden as the central narrative, real-time-vs-batch as the
+   Abridge value prop). Adds 4 new drivers, removes 0 (existing drivers all stay). Capacity grows to 3, Workforce grows to 3, Revenue stays at 2 intentionally. Quality is LOCKED — no changes — per Brad's
+  direction.                                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  Pre-req: R-IA-3, R-IA-4, R-IA-5 shipped.                  
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                      
+  TASK 1 — Add new Nursing qualitative state fields                                                                                                                                                            
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                   
+  ADD these enabled/expanded boolean field pairs to the TimeDriverInputs interface AND to DEFAULT_EXPLORE_STATE.timeDriverInputs (default `false`):                                                            
+                                                                                                                                                                                                               
+    // Nursing Capacity (new)                                                      
+    nursingDocumentationLagEnabled: boolean;                                                                                                                                                                   
+    nursingDocumentationLagExpanded: boolean;                                      
+    nursingPointOfCareDocEnabled: boolean;                                                                                                                                                                     
+    nursingPointOfCareDocExpanded: boolean;                                        
+    // Nursing Workforce (new)                                                                                                                                                                                 
+    nursingBurnoutEnabled: boolean;                                                                                                                                                                            
+    nursingBurnoutExpanded: boolean;                                                                                                                                                                           
+    nursingChartingAfterShiftEnabled: boolean;                                                                                                                                                                 
+    nursingChartingAfterShiftExpanded: boolean;                                 
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                   
+  TASK 2 — Add 4 new Nursing qualitative driver entries to EXPLORE_DRIVERS                                                                                                                                     
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                      
+                                                                                                                                                                                                               
+  APPEND these driver entries to the EXPLORE_DRIVERS array. All have `visibility: 'qualitative'`, no calcComponent, no measureDefaults. Voice is neutral.                                                      
+                                                                                   
+    // ───── Nursing Capacity (new) ─────                                                                                                                                                                      
+    {                                                                           
+      id: 'nursingDocumentationLag',                                                                                                                                                                           
+      label: 'Documentation Lag',                                                                                                                                                                              
+      shortDescription: 'Minutes from a care event to when it appears in the chart. Faster documentation makes patient information available to the next shift, the charge nurse, and the care team without
+  waiting for end-of-shift batch entry.',                                                                                                                                                                      
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'nursingDocumentationLagEnabled',                           
+      expandedStateKey: 'nursingDocumentationLagExpanded',                                                                                                                                                     
+      trackedMeasureIds: [],                                                    
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      id: 'nursingPointOfCareDoc',                                                                                                                                                                             
+      label: 'Point-of-Care Documentation Rate',                                                                                                                                                               
+      shortDescription: 'Share of nursing documentation completed at the moment of care versus batched at the end of shift. The defining shift ambient nursing documentation enables.',
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'nursingPointOfCareDocEnabled',                                                                                                                                                         
+      expandedStateKey: 'nursingPointOfCareDocExpanded',                                                                                                                                                       
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                                             
+                                                                                                                                                                                                               
+    // ───── Nursing Workforce (new) ─────                                                                                                                                                                     
+    {                                                                                                                                                                                                          
+      id: 'nursingBurnout',                                                                                                                                                                                    
+      label: 'Burnout Score',                                                   
+      shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory) administered to nursing staff. Tracked as a leading indicator for retention.',                            
+      quadrant: 'Workforce',               
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'nursingBurnoutEnabled',           
+      expandedStateKey: 'nursingBurnoutExpanded',                                                                                                                                                              
+      trackedMeasureIds: ['burnoutAssessment'],                                 
+    },                                                                             
+    {                                                      
+      id: 'nursingChartingAfterShift',                                                                                                                                                                         
+      label: 'Charting After Shift',                        
+      shortDescription: 'Minutes nurses spend in the EHR after their scheduled shift ends. A direct burden signal — and the lever that ambient nursing documentation reduces.',                                
+      quadrant: 'Workforce',                                                    
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'qualitative',                                                   
+      enabledStateKey: 'nursingChartingAfterShiftEnabled',                                                                                                                                                     
+      expandedStateKey: 'nursingChartingAfterShiftExpanded',                       
+      trackedMeasureIds: ['chartingAfterShift'],                                                                                                                                                               
+    },                                                                          
+                                                                                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Sanity check                                       
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                
+  Confirm Nursing Quality is UNCHANGED. The existing nursing quality drivers (HAPI, Falls, CAUTI, CLABSI, Sepsis as quantified financial; Med Error and HCAHPS Nurse Communication as qualitative) all stay    
+  exactly as-is. Do not modify those entries in EXPLORE_DRIVERS.                                                                                                                                               
+                                                                                   
+  Confirm Nursing Revenue intentionally stays at 2 qualitative drivers (nursingCdiResponse + nursingDocCompletion). Do not add a 3rd.                                                                          
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                      
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                   
+                                                                                                                                                                                                               
+  1. TypeScript compiles. New TimeDriverInputs fields are typed; defaults present in DEFAULT_EXPLORE_STATE.
+                                                                                                                                                                                                               
+  2. Walk a Nursing session through each quadrant page:                                                                                                                                                        
+     - **Capacity (4/9)**:                                    
+       - Financial Drivers section is HIDDEN (no financial Capacity drivers for nursing — Bedside Time was always qualitative)                                                                                 
+       - Other Metrics to Watch: Bedside / Direct Care Time · Documentation Lag · Point-of-Care Documentation Rate
+       - Total qualitative items: exactly 3 ✓                                      
+     - **Workforce (5/9)**:                                                                                                                                                                                    
+       - Financial Drivers: RN Retention (with Travel/Agency child) · Overtime Reduction                                                                                                                       
+       - Other Metrics to Watch: Likelihood to Stay · Burnout Score · Charting After Shift                                                                                                                     
+       - Total qualitative items: exactly 3 ✓                                                                                                                                                                  
+     - **Revenue (6/9)**:                                                          
+       - Financial Drivers section is HIDDEN (no financial nursing Revenue drivers — nurses don't directly bill)                                                                                               
+       - Other Metrics to Watch: CDI Query Response · Documentation Completion                                                                                                                                 
+       - Total qualitative items: exactly 2 — intentionally less than 3 ✓                                                                                                                                      
+     - **Quality (7/9)**:                                                                                                                                                                                      
+       - Financial Drivers: HAPI · Falls · CAUTI · CLABSI · Sepsis (5 quantified drivers)                                                                                                                      
+       - Other Metrics to Watch: Med Error · HCAHPS Nurse Communication (2 qualitative)                                                                                                                        
+       - UNCHANGED from current state ✓                                                                                                                                                                        
+                                                                                                                                                                                                               
+  3. Right-panel summary on each Nursing page lists the new drivers under "Other Metrics" sub-header.                                                                                                          
+                                                                                                                                                                                                               
+  4. Step 9 Model — toggle a couple of new Nursing qualitative drivers and confirm they appear as "Qualitative" line items in the matching quadrant card.                                                      
+                                                                                                                                                                                                               
+  5. Walk OP, ED, IP — confirm THEIR pages are untouched.                                                                                                                                                      
+                                                                                                                                                                                                               
+  6. No console errors. No TypeScript errors.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - Nursing Capacity has NO financial driver — all three items are qualitative. The Financial Drivers section is hidden on this page (same pattern as IP Capacity and the OP/ED/IP Quality pages).
+  - Nursing Revenue has only 2 qualitative drivers, intentionally less than 3. The "Financial Drivers" section is also hidden (nurses don't directly bill, so no quantified Revenue drivers exist for nursing).
+   The page shows "Other Metrics to Watch" with 2 items + Other Financial Benefits at the bottom. This is honest UX — forcing a 3rd item would feel artificial.
+  - Nursing Quality is the only quadrant page across ALL settings that has both a Financial Drivers section AND an Other Metrics section populated with multiple items each. That's by design — nursing's      
+  quantified care quality story (HAC events) is uniquely strong, and Brad explicitly directed us not to change it.
+  - The vocabulary "Documentation Lag" (Capacity) and "After-Hours Documentation"-style framing (Workforce) intentionally mirrors OP/ED/IP wording for consistency where the concept genuinely translates.     
+  Charting After Shift is the nursing-specific framing of after-hours work because nursing shifts are bounded differently than physician shifts.
+  - After this prompt ships, ALL FOUR settings have exactly 3 qualitative items per quadrant where structurally appropriate, with two intentional exceptions: Nursing Quality (kept rich at 2 qualitative + 5  
+  quantified per direction) and Nursing Revenue (kept at 2 qualitative — forcing a 3rd would dilute the strategic clarity).

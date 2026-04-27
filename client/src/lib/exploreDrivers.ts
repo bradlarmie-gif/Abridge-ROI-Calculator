@@ -874,20 +874,43 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: [],
   },
 
-  // IP Capacity (qualitative)
+  // IP Capacity (qualitative — 3 drivers, restructured by R-IA-5; ALOS removed)
+  // (roundingEfficiency lives earlier in this array and renders FIRST in the IP Capacity section.)
   {
-    id: 'ipAlosTracking',
-    label: 'Average Length of Stay',
-    shortDescription: 'Average days per inpatient admission. Tracked as a flow indicator alongside discharge timing.',
+    id: 'ipDocumentationLag',
+    label: 'Documentation Lag',
+    shortDescription: 'Hours from clinical event to signed note. Faster documentation makes current information available to consulting physicians, care managers, and discharge planners — capacity follows information flow.',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
-    enabledStateKey: 'ipAlosTrackingEnabled',
-    expandedStateKey: 'ipAlosTrackingExpanded',
-    trackedMeasureIds: ['avgLengthOfStay'],
+    enabledStateKey: 'ipDocumentationLagEnabled',
+    expandedStateKey: 'ipDocumentationLagExpanded',
+    trackedMeasureIds: [],
+  },
+  {
+    id: 'ipDischargeSummaryTime',
+    label: 'Discharge Summary Completion Time',
+    shortDescription: 'Hours from discharge order to signed discharge summary. Bed turnover and downstream care transitions depend on completed documentation.',
+    quadrant: 'Capacity',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipDischargeSummaryTimeEnabled',
+    expandedStateKey: 'ipDischargeSummaryTimeExpanded',
+    trackedMeasureIds: [],
   },
 
-  // IP Workforce (qualitative)
+  // IP Workforce (qualitative — 3 drivers, restructured by R-IA-5; Likelihood to Stay removed)
+  {
+    id: 'ipAfterHoursDoc',
+    label: 'After-Hours Documentation',
+    shortDescription: 'Time hospitalists spend in the EHR outside scheduled shift hours. A widely used signal for documentation burden in hospital medicine.',
+    quadrant: 'Workforce',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipAfterHoursDocEnabled',
+    expandedStateKey: 'ipAfterHoursDocExpanded',
+    trackedMeasureIds: ['workOutsideWorkEmpirical'],
+  },
   {
     id: 'ipBurnoutTracking',
     label: 'Burnout Score',
@@ -900,18 +923,18 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: ['burnoutAssessment'],
   },
   {
-    id: 'ipLikelihoodToStay',
-    label: 'Likelihood to Stay',
-    shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',
+    id: 'ipTimeToSignNote',
+    label: 'Time to Sign Note',
+    shortDescription: 'Hours from encounter completion to signed note. Hospitalists have a CMS 24-hour H&P signature requirement; this metric tracks compliance and workflow burden.',
     quadrant: 'Workforce',
     settings: ['inpatient'],
     visibility: 'qualitative',
-    enabledStateKey: 'ipLikelihoodToStayEnabled',
-    expandedStateKey: 'ipLikelihoodToStayExpanded',
-    trackedMeasureIds: ['likelihoodToStay'],
+    enabledStateKey: 'ipTimeToSignNoteEnabled',
+    expandedStateKey: 'ipTimeToSignNoteExpanded',
+    trackedMeasureIds: [],
   },
 
-  // IP Revenue (qualitative)
+  // IP Revenue (qualitative — 3 drivers, expanded by R-IA-5)
   {
     id: 'ipCmiTracking',
     label: 'Case Mix Index',
@@ -922,6 +945,28 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'ipCmiTrackingEnabled',
     expandedStateKey: 'ipCmiTrackingExpanded',
     trackedMeasureIds: ['caseMixIndex'],
+  },
+  {
+    id: 'ipCcMccCapture',
+    label: 'CC/MCC Capture Trend',
+    shortDescription: 'Trend in complication / major-complication capture rate across admissions. CC and MCC documentation drives DRG weighting and inpatient reimbursement.',
+    quadrant: 'Revenue',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipCcMccCaptureEnabled',
+    expandedStateKey: 'ipCcMccCaptureExpanded',
+    trackedMeasureIds: ['ccMccCapture'],
+  },
+  {
+    id: 'ipCdiQueryTrend',
+    label: 'CDI Query Volume Trend',
+    shortDescription: 'Volume of CDI queries returned to providers per admission. Decreasing query volume often signals more complete documentation at the point of care.',
+    quadrant: 'Revenue',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipCdiQueryTrendEnabled',
+    expandedStateKey: 'ipCdiQueryTrendExpanded',
+    trackedMeasureIds: [],
   },
 
   // Nursing Workforce (qualitative)
