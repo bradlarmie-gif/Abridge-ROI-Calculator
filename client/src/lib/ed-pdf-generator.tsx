@@ -867,7 +867,7 @@ const narrativeContent = {
 const ED_DRIVER_LABELS: Record<string, string> = {
   patientAccess: "Throughput & LWBS Reduction",
   overtime: "Physician Retention",
-  workforce: "Clinician Wellbeing",
+  workforce: "Provider Wellbeing",
   wrvu: "Level of Service Accuracy",
   denials: "Denial Prevention",
 };

@@ -479,7 +479,7 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
     providerTypePlural: "providers",
     coverSubtitle: (d) => `${fmtNum(d.providers)} providers \u00B7 ${fmtNum(d.encounters)} encounters \u00B7 Outpatient`,
     thesisQuestion: "If we give providers time back, what happens to your practice?",
-    thesisParagraph: "Ambient documentation creates value in two distinct ways: by returning time to providers (which translates to capacity and clinician sustainability) and by improving documentation quality (which captures revenue that already exists but isn't being coded).",
+    thesisParagraph: "Ambient documentation creates value in two distinct ways: by returning time to providers (which translates to capacity and provider wellbeing) and by improving documentation quality (which captures revenue that already exists but isn't being coded).",
     source1Label: "TIME RECAPTURED",
     source1Description: "Hours returned to patient care, capacity expansion, and operational efficiency.",
     source1Tagline: "The constraint is time.",
@@ -550,7 +550,7 @@ const SETTING_CONFIGS: Record<ExploreCareSetting, SettingConfig> = {
     source2Tagline: "The notes drive the revenue.",
     strategicObservation: (d) => {
       if (d.totalValue === 0 && d.qualitativeDrivers.length > 0) {
-        return `Your assessment focused on qualitative drivers (${d.qualitativeDrivers.join(", ")}). These represent strategic value\u2014rounding efficiency, hospitalist experience, and retention signal\u2014that is meaningful but not easily dollarized. To build a financial case, consider enabling Clinician Wellbeing with retention modeling, DRG Accuracy, or Denial Prevention.`;
+        return `Your assessment focused on qualitative drivers (${d.qualitativeDrivers.join(", ")}). These represent strategic value\u2014rounding efficiency, hospitalist experience, and retention signal\u2014that is meaningful but not easily dollarized. To build a financial case, consider enabling Provider Wellbeing with retention modeling, DRG Accuracy, or Denial Prevention.`;
       }
       const timePct = d.totalValue > 0 ? Math.round((d.timeValue / d.totalValue) * 100) : 0;
       return timePct > 50
@@ -609,11 +609,11 @@ const getOutpatientObservation = (data: ExplorePDFData): string => {
   const visitsPerWk = safe(data.additionalVisitsPerWeek);
 
   if (data.patientAccessEnabled && hasRetention) {
-    obs = `Your organization modeled ${visitsPerWk} additional visits per provider per week, using ~${capPct}% of recovered time for scheduling capacity. The remaining time flows into documentation quality and clinician sustainability${hasRetention ? ", including a quantified retention model" : ""}. That\u2019s a deliberate balance between near-term revenue and long-term workforce protection.`;
+    obs = `Your organization modeled ${visitsPerWk} additional visits per provider per week, using ~${capPct}% of recovered time for scheduling capacity. The remaining time flows into documentation quality and provider wellbeing${hasRetention ? ", including a quantified retention model" : ""}. That\u2019s a deliberate balance between near-term revenue and long-term workforce protection.`;
   } else if (data.patientAccessEnabled && capPct >= 40) {
     obs = `Your model is capacity-driven \u2014 ${visitsPerWk} additional visits per provider per week uses ~${capPct}% of recovered documentation time. That\u2019s the most direct line from documentation efficiency to revenue. The remaining ${100 - capPct}% adds a buffer against burnout without making it the headline.`;
   } else if (susPct >= 30 || hasRetention) {
-    obs = `You put real weight on clinician sustainability${hasRetention ? ", including a quantified retention model" : ""}. That\u2019s a leadership signal: this isn\u2019t just a revenue initiative. Protecting providers from documentation burden protects the organization from turnover costs that dwarf the investment.`;
+    obs = `You put real weight on provider wellbeing${hasRetention ? ", including a quantified retention model" : ""}. That\u2019s a leadership signal: this isn\u2019t just a revenue initiative. Protecting providers from documentation burden protects the organization from turnover costs that dwarf the investment.`;
   } else if (docPct >= 40 && hasDocDrivers) {
     obs = `Documentation quality is at the center of your model. Better notes require attention in the moment. Abridge creates the space for that. The revenue capture drivers on the right are built on this foundation.`;
   } else if (data.patientAccessEnabled) {
@@ -697,8 +697,8 @@ const getInpatientObservation = (data: ExplorePDFData): string => {
 
   if (clinOpsTotal === 0 && drgVal === 0 && cdiVal === 0) {
     const activeQual = data.qualitativeDrivers || [];
-    const driverList = activeQual.length > 0 ? activeQual.join(", ") : "Rounding Efficiency, Clinician Wellbeing";
-    return `Your model is built on qualitative drivers (${driverList}). These represent strategic value \u2014 rounding efficiency, hospitalist experience, and retention signal \u2014 that is meaningful but not easily dollarized. To build a financial case, consider enabling Clinician Wellbeing with retention modeling or activating documentation quality drivers.`;
+    const driverList = activeQual.length > 0 ? activeQual.join(", ") : "Rounding Efficiency, Provider Wellbeing";
+    return `Your model is built on qualitative drivers (${driverList}). These represent strategic value \u2014 rounding efficiency, hospitalist experience, and retention signal \u2014 that is meaningful but not easily dollarized. To build a financial case, consider enabling Provider Wellbeing with retention modeling or activating documentation quality drivers.`;
   }
 
   const capPct = safe(data.ipDirectPatientCarePct) + safe(data.ipShiftSustainabilityPct);
@@ -816,7 +816,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
         return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. Your organization modeled ${safe(data.additionalVisitsPerWeek)} additional visits per provider per week \u2014 the most direct path from documentation savings to revenue.`;
       }
       if (data.sustainabilityEnabled) {
-        return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. You chose to apply this time to clinician wellbeing \u2014 a signal that retention and sustainability are the priority right now.`;
+        return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually. You chose to apply this time to provider wellbeing \u2014 a signal that retention and sustainability are the priority right now.`;
       }
       return `${fmtNum(data.providers)} providers reclaim ${fmtNum(data.hoursReturned)} hours annually.`;
     })();
@@ -1006,7 +1006,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 <View style={{ width: 3, backgroundColor: data.sustainabilityEnabled ? colors.primary : colors.border, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinician Sustainability</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Provider Wellbeing</Text>
                     <Text style={{ fontSize: 10, fontWeight: "bold", color: data.retentionValueEnabled && safe(data.retentionValue) > 0 ? colors.primary : data.sustainabilityEnabled ? colors.secondary : colors.tertiary }}>
                       {data.retentionValueEnabled && safe(data.retentionValue) > 0
                         ? fmtCurrency(safe(data.retentionValue))
@@ -1362,7 +1362,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 <View style={{ marginBottom: 4 }}>
                   <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>WORKFORCE</Text>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Clinician Sustainability</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Provider Wellbeing</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>
                       {data.retentionValueEnabled ? fmtCurrency(safe(data.retentionValue)) : data.sustainabilityEnabled ? `${hrsPerWkBack.toFixed(1)} hrs/wk` : "Not modeled"}
                     </Text>
@@ -2384,7 +2384,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 <View style={{ width: 3, backgroundColor: (data.retentionValueEnabled && retVal > 0) || data.sustainabilityEnabled ? colors.primary : colors.secondary, marginRight: 10, borderRadius: 1, minHeight: 40 }} />
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Clinician Wellbeing</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Provider Wellbeing</Text>
                     <Text style={{ fontSize: 10, fontWeight: "bold", color: (data.retentionValueEnabled && retVal > 0) || data.sustainabilityEnabled ? colors.primary : colors.secondary }}>
                       {data.retentionValueEnabled && retVal > 0
                         ? fmtCurrency(retVal)
@@ -2739,7 +2739,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 8, marginBottom: 1 }}>
-                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Clinician Wellbeing</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>Provider Wellbeing</Text>
                     <Text style={{ fontSize: 8.5, color: colors.secondary }}>
                       {data.retentionValueEnabled && retVal > 0
                         ? fmtCurrency(retVal)

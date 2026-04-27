@@ -476,7 +476,7 @@ export const outpatientMethodologyData: MethodologyPDFData = {
       measurability: "indirect",
     },
     {
-      title: "Clinician Wellbeing",
+      title: "Provider Wellbeing",
       description: "Reduced documentation burden may improve retention and reduce burnout-related turnover.",
       measurability: "indirect",
     },
@@ -528,7 +528,7 @@ export const edMethodologyData: MethodologyPDFData = {
       measurability: "indirect",
     },
     {
-      title: "Clinician Wellbeing",
+      title: "Provider Wellbeing",
       description: "Reduced documentation burden in high-pressure environment may improve retention.",
       measurability: "indirect",
     },
@@ -575,7 +575,7 @@ export const inpatientMethodologyData: MethodologyPDFData = {
       measurability: "indirect",
     },
     {
-      title: "Clinician Wellbeing",
+      title: "Provider Wellbeing",
       description: "Hospitalist burnout rates are high. Reduced documentation burden may improve retention.",
       measurability: "indirect",
     },

@@ -91,7 +91,7 @@ const DRIVER_CATEGORIES: Record<string, { category: "time" | "documentation"; la
   patient_access: { category: "time", label: "Patient Access" },
   patientAccess: { category: "time", label: "Patient Access" },
   retention: { category: "time", label: "Clinician Retention" },
-  workforce: { category: "time", label: "Clinician Wellbeing" },
+  workforce: { category: "time", label: "Provider Wellbeing" },
   level_of_service: { category: "documentation", label: "Level of Service" },
   levelOfService: { category: "documentation", label: "Level of Service" },
   wrvu: { category: "documentation", label: "Accurate Level of Service" },
@@ -130,7 +130,7 @@ const settingConfig: Record<string, { unitName: string; unitNamePlural: string; 
 const ED_DRIVER_LABELS: Record<string, string> = {
   patientAccess: "Throughput & LWBS Reduction",
   overtime: "Physician Retention",
-  workforce: "Clinician Wellbeing",
+  workforce: "Provider Wellbeing",
   wrvu: "Level of Service Accuracy",
   denials: "Denial Prevention",
 };

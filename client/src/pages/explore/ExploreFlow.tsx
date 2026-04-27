@@ -437,7 +437,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     hccEnabled: false,
     hccScenario: 'typical',
     panelSize: 1500,
-    maPercent: 20,
+    maPercent: 30,
     gapRate: 12,
     avgHccs: 0.5,
     rafImpact: 0.15,

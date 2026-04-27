@@ -257,7 +257,7 @@ export default function ExploreValueDrivers({
       pageSubtitle: `Your providers could reclaim ${formatNumber(totalHoursSaved)} hours. Different organizations use that time in different ways.`,
       driver1Title: 'Patient Access',
       driver1Subtitle: 'If providers use time to see more patients',
-      driver2Title: 'Clinician Sustainability',
+      driver2Title: 'Provider Wellbeing',
       driver2Subtitle: 'If time improves work-life balance and retention',
       driver3Title: '',
       driver3Subtitle: '',
@@ -269,7 +269,7 @@ export default function ExploreValueDrivers({
       driver1Subtitle: 'Recover patients who leave without being seen',
       driver2Title: 'Admission Capture',
       driver2Subtitle: 'Recover revenue when ED admits become inpatient',
-      driver3Title: 'Clinician Wellbeing',
+      driver3Title: 'Provider Wellbeing',
       driver3Subtitle: 'If time improves work-life balance and retention',
     },
     inpatient: {
@@ -277,7 +277,7 @@ export default function ExploreValueDrivers({
       pageSubtitle: `Your hospitalists could reclaim ${formatNumber(totalHoursSaved)} hours. More time for patient care and rounding.`,
       driver1Title: 'Rounding Efficiency',
       driver1Subtitle: 'More time at bedside, less time charting',
-      driver2Title: 'Clinician Wellbeing',
+      driver2Title: 'Provider Wellbeing',
       driver2Subtitle: 'If time improves work-life balance and retention',
       driver3Title: '',
       driver3Subtitle: '',
@@ -508,7 +508,7 @@ export default function ExploreValueDrivers({
                       {[
                         { label: 'Conservative', value: 10, desc: 'Modest wait-time improvement' },
                         { label: 'Moderate', value: 20, desc: 'Consistent with published data' },
-                        { label: 'Aggressive', value: 30, desc: 'Strong adoption + workflow redesign' },
+                        { label: 'Optimistic', value: 30, desc: 'Strong adoption + workflow redesign' },
                       ].map((preset) => (
                         <button
                           key={preset.label}
@@ -897,7 +897,7 @@ export default function ExploreValueDrivers({
                         {[
                           { label: 'Conservative', value: 30 },
                           { label: 'Moderate', value: 40 },
-                          { label: 'Aggressive', value: 50 },
+                          { label: 'Optimistic', value: 50 },
                         ].map((preset) => (
                           <button
                             key={preset.label}
@@ -1022,7 +1022,7 @@ export default function ExploreValueDrivers({
                       {[
                         { label: 'Conservative', value: 15 },
                         { label: 'Moderate', value: 25 },
-                        { label: 'Aggressive', value: 35 },
+                        { label: 'Optimistic', value: 35 },
                       ].map((preset) => (
                         <button
                           key={preset.label}
@@ -2011,7 +2011,7 @@ export default function ExploreValueDrivers({
                       <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
+                          <span className="text-sm text-[#888888]">Provider Wellbeing</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.wellbeingEnabled ? 'text-white' : 'text-[#666666]'}`}>
                           {timeDriverInputs.wellbeingEnabled 
@@ -2064,7 +2064,7 @@ export default function ExploreValueDrivers({
                       <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
+                          <span className="text-sm text-[#888888]">Provider Wellbeing</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.wellbeingEnabled ? 'text-white' : 'text-[#666666]'}`}>
                           {timeDriverInputs.wellbeingEnabled 

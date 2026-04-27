@@ -79,6 +79,7 @@ export default function ExploreModel({
   }, [isNursingForTotal, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const totalValue = timeValue + docValue + nursingCareQualityPotential;
+  const noDriversEnabled = totalValue === 0;
   const netAnnualValue = totalValue - annualInvestment;
   const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
   const valuePerProvider = state.numberOfProviders > 0 ? Math.round(netAnnualValue / state.numberOfProviders) : 0;
@@ -773,12 +774,12 @@ export default function ExploreModel({
 
       const qualitativeDrivers: string[] = [];
       if (state.careSetting === 'outpatient') {
-        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Clinician Wellbeing');
+        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Provider Wellbeing');
       } else if (state.careSetting === 'ed') {
-        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Clinician Wellbeing');
+        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Provider Wellbeing');
       } else if (state.careSetting === 'inpatient') {
         if (timeDriverInputs.ipRoundingEnabled) qualitativeDrivers.push('Rounding Efficiency');
-        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Clinician Wellbeing');
+        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Provider Wellbeing');
       } else if (state.careSetting === 'nursing') {
         if (state.docQualityInputs.nursingHcahpsEnabled) qualitativeDrivers.push('HCAHPS Improvement');
       }
@@ -1259,9 +1260,9 @@ export default function ExploreModel({
   const driverLabels = {
     outpatient: {
       timeCardTitle: 'Efficiency Value',
-      timeCardDescription: 'Time saved on documentation is redirected to patient access and clinician sustainability.',
+      timeCardDescription: 'Time saved on documentation is redirected to patient access and provider wellbeing.',
       driver1: 'Patient Access',
-      driver2: 'Clinician Sustainability',
+      driver2: 'Provider Wellbeing',
       driver3: '',
       docCardTitle: 'Documentation Quality',
       docCardDescription: 'When documentation is complete and accurate, downstream revenue follows.',
@@ -1275,7 +1276,7 @@ export default function ExploreModel({
       timeCardDescription: 'Faster documentation means shorter door-to-doc times, reduced LWBS rates, and shift sustainability.',
       driver1: 'LWBS Recovery',
       driver2: 'Admission Capture',
-      driver3: 'Clinician Wellbeing',
+      driver3: 'Provider Wellbeing',
       docCardTitle: 'Documentation Quality',
       docCardDescription: 'Complete documentation supports accurate coding and reduces claim denials.',
       docDriver1: 'E&M Level Accuracy',
@@ -1287,7 +1288,7 @@ export default function ExploreModel({
       timeCardTitle: 'Clinical Operations',
       timeCardDescription: 'Reduced documentation burden allows hospitalists to focus on patient care and rounding.',
       driver1: 'Rounding Efficiency',
-      driver2: 'Clinician Wellbeing',
+      driver2: 'Provider Wellbeing',
       driver3: '',
       docCardTitle: 'Documentation Quality',
       docCardDescription: 'Accurate documentation drives DRG accuracy and reduces CDI queries.',
@@ -1334,6 +1335,28 @@ export default function ExploreModel({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
+        {noDriversEnabled ? (
+          <div className="max-w-[900px] mx-auto px-4 sm:px-6">
+            <div className="bg-[#1A1A1A] rounded-2xl p-12 text-center">
+              <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
+                Your Model
+              </p>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 font-abridge uppercase tracking-tight">
+                Build your value story
+              </h2>
+              <p className="text-base text-white/60 max-w-md mx-auto mb-6">
+                You haven't enabled any drivers yet. Go back to choose the value drivers that match your organization's strategy.
+              </p>
+              <Button
+                onClick={onEdit}
+                className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
+                data-testid="button-empty-state-edit"
+              >
+                Go back to drivers
+              </Button>
+            </div>
+          </div>
+        ) : (
         <div className="max-w-[900px] mx-auto px-4 sm:px-6 text-center">
           {/* Context Badge */}
           <div className="inline-block bg-[#2A2A2A] rounded-full px-4 py-1.5 mb-6">
@@ -1411,6 +1434,7 @@ export default function ExploreModel({
             These projections reflect conservative assumptions. See Methodology for details.
           </p>
         </div>
+        )}
       </motion.div>
 
       <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-10 md:py-12">
@@ -1708,7 +1732,7 @@ export default function ExploreModel({
                 <div className="h-px bg-[#E5E5E5] mb-3" />
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Clinician Wellbeing</span>
+                    <span className="text-[#666666]">Provider Wellbeing</span>
                     <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
                   </div>
                 </div>
@@ -1859,7 +1883,7 @@ export default function ExploreModel({
                 <div className="h-px bg-[#E5E5E5] mb-3" />
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Clinician Sustainability</span>
+                    <span className="text-[#666666]">Provider Wellbeing</span>
                     <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(clinicianRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
                   </div>
                 </div>
@@ -1930,7 +1954,7 @@ export default function ExploreModel({
                 <div className="h-px bg-[#E5E5E5] mb-3" />
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between gap-1">
-                    <span className="text-[#666666]">Clinician Wellbeing</span>
+                    <span className="text-[#666666]">Provider Wellbeing</span>
                     <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(ipWellbeingRetentionValue) : timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
                   </div>
                 </div>
@@ -2622,6 +2646,7 @@ export default function ExploreModel({
         </motion.div>
 
         {/* GROWTH TRAJECTORY */}
+        {!noDriversEnabled && (
         <motion.div
           className="mb-12"
           initial={{ opacity: 0, y: 20 }}
@@ -2793,8 +2818,10 @@ export default function ExploreModel({
             </p>
           </div>
         </motion.div>
+        )}
 
         {/* 3-YEAR PROJECTION */}
+        {!noDriversEnabled && (
         <motion.div
           className="mb-12"
           initial={{ opacity: 0, y: 20 }}
@@ -2831,6 +2858,7 @@ export default function ExploreModel({
               : 'Years 2-3 assume 10% value growth from improved utilization.'}
           </p>
         </motion.div>
+        )}
 
         {/* EXPORT SECTION */}
         <motion.div
@@ -2857,7 +2885,7 @@ export default function ExploreModel({
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-              {onAddToProforma && (
+              {!noDriversEnabled && onAddToProforma && (
                 <Button
                   onClick={handleAddToProforma}
                   className="gap-2 bg-[#EA2C00] hover:bg-[#D42800] text-white sm:bg-transparent sm:text-[#EA2C00] sm:border sm:border-[#EA2C00] sm:hover:bg-[#EA2C00]/5 order-1 h-11 sm:h-9 text-sm font-semibold"
@@ -2868,6 +2896,7 @@ export default function ExploreModel({
                   Add to Pricing Proposal
                 </Button>
               )}
+              {!noDriversEnabled && (
               <Button
                 onClick={() => setShowExportModal(true)}
                 className={`gap-2 order-2 h-11 sm:h-9 text-sm font-semibold ${onAddToProforma ? "bg-[#1A1A1A] hover:bg-black text-white" : "bg-[#EA2C00] hover:bg-[#D42800] text-white"}`}
@@ -2876,6 +2905,7 @@ export default function ExploreModel({
                 <Download className="w-4 h-4" />
                 Download PDF
               </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={onEdit}

@@ -45,7 +45,7 @@ function Page1() {
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>TIME BACK</Text>
           <Text style={styles.cardText}>
-            Capacity expansion, cost reduction, clinician wellbeing. When documentation is faster, physicians can see more patients, reduce burnout, or both. The time has measurable value.
+            Capacity expansion, cost reduction, provider wellbeing. When documentation is faster, physicians can see more patients, reduce burnout, or both. The time has measurable value.
           </Text>
           <View style={{ marginTop: 6, paddingTop: 5, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Direct, measurable value</Text>
@@ -79,7 +79,7 @@ function Page1() {
         
         <View style={[styles.mechanismCard, styles.column, { borderTopColor: brand.indirectAccent }]}>
           <Badge type="indirect" />
-          <Text style={styles.mechanismTitle}>CLINICIAN WELLBEING</Text>
+          <Text style={styles.mechanismTitle}>PROVIDER WELLBEING</Text>
           <Text style={styles.mechanismText}>
             Documentation burden is the #1 driver of physician burnout. Burnout drives turnover. Reducing burden helps retain physicians.
           </Text>

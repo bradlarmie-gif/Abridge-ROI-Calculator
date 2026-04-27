@@ -263,6 +263,21 @@ export default function ExploreInvestment({
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">/year</span>
               </div>
+              {state.annualLicenseFee > 0 && (
+                <p className="text-xs sm:text-sm text-[#888888] break-words">
+                  ≈ <strong className="text-black">
+                    ${(state.numberOfProviders > 0 && !isNursing
+                      ? Math.round(state.annualLicenseFee / state.numberOfProviders / 12).toLocaleString()
+                      : state.nursingStaffedBeds > 0 && isNursing
+                        ? Math.round(state.annualLicenseFee / state.nursingStaffedBeds / 12).toLocaleString()
+                        : '—')}
+                  </strong>
+                  {' '}/{isNursing ? 'bed' : 'provider'}/mo
+                  {!isNursing && state.annualEncounters > 0 && (
+                    <>{' '}•{' '}<strong className="text-black">${(state.annualLicenseFee / state.annualEncounters).toFixed(2)}</strong>/encounter</>
+                  )}
+                </p>
+              )}
             </div>
           )}
         </motion.div>

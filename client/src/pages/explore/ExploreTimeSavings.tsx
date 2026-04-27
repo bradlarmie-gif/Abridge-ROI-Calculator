@@ -358,7 +358,7 @@ export default function ExploreTimeSavings({
                     {state.minutesSavedPerEncounter > 0
                       ? (isNursing
                           ? `${state.minutesSavedPerEncounter}min/shift per nurse`
-                          : `~${Math.round(hoursPerProvider * 60 / 220)}min/day per provider`)
+                          : `~${Math.round(hoursPerProvider * 60 / 240)}min/day per provider`)
                       : '—'}
                   </span>
                 </div>

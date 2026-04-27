@@ -20,9 +20,9 @@ interface BusynessPreset {
 }
 
 const OUTPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
-  { label: "Lighter", value: 2000 },
-  { label: "Typical", value: 3000 },
-  { label: "Busy", value: 4000 },
+  { label: "Lighter", value: 2500 },
+  { label: "Typical", value: 3500 },
+  { label: "Busy", value: 4500 },
 ];
 
 const ED_BUSYNESS_PRESETS: BusynessPreset[] = [
@@ -64,7 +64,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
     : isED 
       ? ED_BUSYNESS_PRESETS 
       : OUTPATIENT_BUSYNESS_PRESETS;
-  const defaultEncountersPerProvider = isInpatient ? 400 : isED ? 1800 : 3000;
+  const defaultEncountersPerProvider = isInpatient ? 400 : isED ? 1800 : 3500;
   
   const [encountersPerProvider, setEncountersPerProvider] = useState(
     state.encountersPerProvider > 0
@@ -161,7 +161,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const isPresetSelected = (presetValue: number) => encountersPerProvider === presetValue && !usingTotalInput;
   const isUtilizationPresetSelected = (presetValue: number) => state.utilizationPercent === presetValue;
 
-  const pageTitle = isNursing ? "Your Nursing Program" : isInpatient ? "Your Hospitalist Program" : isED ? "Your Emergency Department" : "Your Practice";
+  const pageTitle = isNursing ? "Your Nursing Program" : isInpatient ? "Your Hospitalist Program" : isED ? "Your Emergency Department" : "Your Outpatient Practice";
   const providerLabel = isNursing ? "Nurse FTEs" : isInpatient ? "Hospitalists" : isED ? "ED Physicians" : "Number of Providers";
   const encounterLabel = isInpatient ? "Admissions" : "Encounters";
 

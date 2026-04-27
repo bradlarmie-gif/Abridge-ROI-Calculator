@@ -1,0 +1,233 @@
+TASK 1 — Recalibrate Outpatient busyness presets
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreOpportunity.tsx (lines 22-26)
+                                                                                                                                                                                                               
+  REPLACE:        
+  const OUTPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [                                                                                                                                                      
+    { label: "Lighter", value: 2000 },                                                                                                                                                                         
+    { label: "Typical", value: 3000 },                                                                                                                                                                         
+    { label: "Busy", value: 4000 },                                                                                                                                                                            
+  ];                                                                                                                                                                                                           
+                  
+  WITH:                                                                                                                                                                                                        
+  const OUTPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
+    { label: "Lighter", value: 2500 },                                                                                                                                                                         
+    { label: "Typical", value: 3500 },
+    { label: "Busy", value: 4500 },                                                                                                                                                                            
+  ];              
+                                                                                                                                                                                                               
+  Also update the default at line 67:
+    const defaultEncountersPerProvider = isInpatient ? 400 : isED ? 1800 : 3000;                                                                                                                               
+  WITH:                                                                                                                                                                                                        
+    const defaultEncountersPerProvider = isInpatient ? 400 : isED ? 1800 : 3500;
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 2 — Outpatient page title                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreOpportunity.tsx (line 164)
+                                                                                                                                                                                                               
+  REPLACE the outpatient branch of pageTitle:
+    const pageTitle = isNursing ? "Your Nursing Program" : isInpatient ? "Your Hospitalist Program" : isED ? "Your Emergency Department" : "Your Practice";                                                    
+                                                                                                                                                                                                               
+  WITH:
+    const pageTitle = isNursing ? "Your Nursing Program" : isInpatient ? "Your Hospitalist Program" : isED ? "Your Emergency Department" : "Your Outpatient Practice";                                         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 3 — Standardize on 240 working days                                                                                                                                                                     
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreTimeSavings.tsx (line ~361)
+                                                                                                                                                                                                               
+  Find the line that calculates "Daily impact" using 220:                                                                                                                                                      
+    ? `~${Math.round(hoursPerProvider * 60 / 220)}min/day per provider`                                                                                                                                        
+                                                                                                                                                                                                               
+  REPLACE with:   
+    ? `~${Math.round(hoursPerProvider * 60 / 240)}min/day per provider`                                                                                                                                        
+                                                                                                                                                                                                               
+  Then grep the entire client/src/ directory for "/ 220" and "* 220" to confirm no other working-day denominators of 220 exist. Standard is 240 days = 48 weeks × 5.                                           
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Scenario terminology: "Aggressive" → "Optimistic" (UI labels only, keep enum)
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreDocQuality.tsx
+                                                                                                                                                                                                               
+  DO NOT rename the underlying type or enum value 'aggressive' — keep it. Only change the user-facing label.                                                                                                   
+                                                                                                                                                                                                               
+  Find every place where a scenario button or label uses the word "Aggressive" or capitalizes the enum directly. There are at least 3 places in ExploreDocQuality.tsx (around lines 1953-1965 for wRVU,        
+  2166-2178 for Denials, and inside HccExpandedContent for HCC).
+                                                                                                                                                                                                               
+  For each scenario button, REPLACE patterns like:                                                                                                                                                             
+    <p className="font-medium text-black capitalize">{level}</p>
+                                                                                                                                                                                                               
+  WITH a label map:                                                                                                                                                                                            
+    <p className="font-medium text-black">                                                                                                                                                                     
+      {{ conservative: 'Conservative', typical: 'Typical', aggressive: 'Optimistic' }[level]}                                                                                                                  
+    </p>                                                                                                                                                                                                       
+   
+  Apply the same fix anywhere "Aggressive" appears as a literal string user-facing across:                                                                                                                     
+  - ExploreDocQuality.tsx
+  - ExploreModel.tsx                                                                                                                                                                                           
+  - ExploreValueDrivers.tsx
+  - ExploreInvestment.tsx
+                                                                                                                                                                                                               
+  Verify by searching the codebase for the case-sensitive string "Aggressive" and confirming any remaining matches are in code comments or non-user-facing logic only.                                         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Driver name: "Provider Wellbeing" everywhere
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreValueDrivers.tsx (driverConfig, ~lines 254-295)
+                                                                                                                                                                                                               
+  In the outpatient branch:                                                                                                                                                                                    
+    driver2Title: 'Clinician Sustainability',                                                                                                                                                                  
+  REPLACE WITH:                                                                                                                                                                                                
+    driver2Title: 'Provider Wellbeing',
+                                                                                                                                                                                                               
+  In the ED branch:                                                                                                                                                                                            
+    driver3Title: 'Clinician Wellbeing',
+  REPLACE WITH:                                                                                                                                                                                                
+    driver3Title: 'Provider Wellbeing',
+
+  In the inpatient branch:                                                                                                                                                                                     
+    driver2Title: 'Clinician Wellbeing',
+  REPLACE WITH:                                                                                                                                                                                                
+    driver2Title: 'Provider Wellbeing',
+                                                                                                                                                                                                               
+  Then grep client/src for "Clinician Sustainability" and "Clinician Wellbeing" and replace any remaining user-facing instances with "Provider Wellbeing". (Nursing has its own retention driver — do not touch
+   nursing-specific copy.)                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 6 — HCC default MA% 20 → 30
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx (line ~439)
+                                                                                                                                                                                                               
+  In DEFAULT_EXPLORE_STATE.docQualityInputs:                                                                                                                                                                   
+    maPercent: 20,                                                                                                                                                                                             
+  REPLACE WITH:                                                                                                                                                                                                
+    maPercent: 30,
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 7 — Page title "Documentation Quality" → "Revenue Impact"
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreDocQuality.tsx (docConfig, lines 421-450)
+                                                                                                                                                                                                               
+  Outpatient (line ~423):                                                                                                                                                                                      
+    pageTitle: 'Documentation Quality',                                                                                                                                                                        
+  REPLACE WITH:                                                                                                                                                                                                
+    pageTitle: 'Revenue Impact',
+                                                                                                                                                                                                               
+  ED (line ~433):
+    pageTitle: 'Documentation Quality',                                                                                                                                                                        
+  REPLACE WITH:   
+    pageTitle: 'Revenue Impact',
+                                                                                                                                                                                                               
+  Inpatient (line ~443):
+    pageTitle: 'Documentation Quality',                                                                                                                                                                        
+  REPLACE WITH:   
+    pageTitle: 'Revenue Impact',
+                                                                                                                                                                                                               
+  KEEP nursing as 'Care Quality' (no change).                                                                                                                                                                  
+                                                                                                                                                                                                               
+  Also: REMOVE the duplicate inner section header at line ~1893 (the "REVENUE DRIVERS" eyebrow text and its divider) — the page title now carries that label. Same for the equivalent inner header for         
+  Inpatient at line ~957. Keep the visual container, just delete the eyebrow `<p>` and the `<div className="h-px bg-[#D1D5DB]" />` underneath it.
+                                                                                                                                                                                                               
+  Also update the stepName on the UnifiedHeader at line ~472:                                                                                                                                                  
+    stepName="Documentation Quality"
+  REPLACE WITH:                                                                                                                                                                                                
+    stepName="Revenue Impact"
+
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 8 — Annual License pricing equivalence helper
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreInvestment.tsx (lines ~253-267, the "Annual License" pricing input branch)
+                                                                                                                                                                                                               
+  In the Annual License branch, ADD a helper line below the input that calculates the per-provider-per-month and per-encounter equivalents.                                                                    
+                                                                                                                                                                                                               
+  REPLACE the current Annual License block (the "}: (..." branch) with:                                                                                                                                        
+                  
+  ) : (                                                                                                                                                                                                        
+    <div className="space-y-1.5">
+      <label className="text-sm text-black">Annual license fee</label>                                                                                                                                         
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>                                                                                                             
+        <FormattedNumberInput
+          value={state.annualLicenseFee}                                                                                                                                                                       
+          onChange={(v: number) => updateState({ annualLicenseFee: v })}
+          className="h-11 bg-white pl-7 pr-14 text-base"                                                                                                                                                       
+          data-testid="input-annual-license"                                                                                                                                                                   
+        />                                                                                                                                                                                                     
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">/year</span>                                                                                                        
+      </div>                                                                                                                                                                                                   
+      {state.annualLicenseFee > 0 && (
+        <p className="text-xs sm:text-sm text-[#888888] break-words">                                                                                                                                          
+          ≈ <strong className="text-black">
+            ${(state.numberOfProviders > 0 && !isNursing                                                                                                                                                       
+              ? Math.round(state.annualLicenseFee / state.numberOfProviders / 12).toLocaleString()                                                                                                             
+              : state.nursingStaffedBeds > 0 && isNursing                                                                                                                                                      
+                ? Math.round(state.annualLicenseFee / state.nursingStaffedBeds / 12).toLocaleString()                                                                                                          
+                : '—')}                                                                                                                                                                                        
+          </strong>                                                                                                                                                                                            
+          {' '}/{isNursing ? 'bed' : 'provider'}/mo                                                                                                                                                            
+          {!isNursing && state.annualEncounters > 0 && (                                                                                                                                                       
+            <>{' '}•{' '}<strong className="text-black">${(state.annualLicenseFee / state.annualEncounters).toFixed(2)}</strong>/encounter</>                                                                  
+          )}                                                                                                                                                                                                   
+        </p>                                                                                                                                                                                                   
+      )}                                                                                                                                                                                                       
+    </div>                                                                                                                                                                                                     
+  )               
+
+  ═══════════════════════════════════════════════════════════
+  TASK 9 — Empty state on Step 7 (Model) when no drivers enabled
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreModel.tsx
+                                                                                                                                                                                                               
+  At the top of the component, after totalValue is calculated, add:                                                                                                                                            
+    const noDriversEnabled = totalValue === 0;                                                                                                                                                                 
+                                                                                                                                                                                                               
+  In the Hero section, when `noDriversEnabled === true`, REPLACE the standard hero content with this empty-state card (preserve dark background and brand styling):                                            
+                                                                                                                                                                                                               
+  {noDriversEnabled ? (                                                                                                                                                                                        
+    <div className="bg-[#1A1A1A] rounded-2xl p-12 text-center">
+      <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-3">                                                                                                                       
+        Your Model                                                                                                                                                                                             
+      </p>
+      <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 font-abridge uppercase tracking-tight">                                                                                                    
+        Build your value story                                                                                                                                                                                 
+      </h2>
+      <p className="text-base text-white/60 max-w-md mx-auto mb-6">                                                                                                                                            
+        You haven't enabled any drivers yet. Go back to choose the value drivers that match your organization's strategy.
+      </p>                                                                                                                                                                                                     
+      <Button
+        onClick={onEdit}                                                                                                                                                                                       
+        className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
+        data-testid="button-empty-state-edit"                                                                                                                                                                  
+      >                                                                                                                                                                                                        
+        Go back to drivers                                                                                                                                                                                     
+      </Button>                                                                                                                                                                                                
+    </div>        
+  ) : (
+    /* existing hero */
+  )}                                                                                                                                                                                                           
+   
+  When noDriversEnabled is true, ALSO hide:                                                                                                                                                                    
+  - The "Add to Pricing Proposal" button
+  - The "Download PDF" button                                                                                                                                                                                  
+  - The Growth Trajectory chart
+  - The 3-Year Projection cards                                                                                                                                                                                
+                                                                                                                                                                                                               
+  Keep visible:                                                                                                                                                                                                
+  - "Edit Model" navigation                                                                                                                                                                                    
+  - The Methodology section (since it's general info)
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  After all changes:
+  1. Walk through Outpatient flow start to finish. Confirm:                                                                                                                                                    
+     - Step 2: Title is "Your Outpatient Practice", presets are 2,500 / 3,500 / 4,500                                                                                                                          
+     - Step 3: Daily impact uses 240 working days                                                                                                                                                              
+     - Step 4: Driver 2 reads "Provider Wellbeing"                                                                                                                                                             
+     - Step 5: Title is "Revenue Impact", scenario buttons say "Conservative / Typical / Optimistic"                                                                                                           
+     - HCC default MA% is 30                                                                                                                                                                                   
+     - Step 6: Annual License input shows per-provider and per-encounter equivalence                                                                                                                           
+     - Step 7: With drivers enabled, looks normal. With all drivers disabled, shows the "Build your value story" empty state.                                                                                  
+  2. Spot-check ED, IP, Nursing flows do not regress (especially Provider Wellbeing rename, "Optimistic" rename, Revenue Impact title for ED/IP).                                                              
+  3. No console errors.   

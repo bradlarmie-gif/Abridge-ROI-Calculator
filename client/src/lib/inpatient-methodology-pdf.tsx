@@ -52,7 +52,7 @@ function Page1() {
           </View>
         </View>
         <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>CLINICIAN WELLBEING</Text>
+          <Text style={styles.cardTitle}>PROVIDER WELLBEING</Text>
           <Text style={styles.cardText}>
             Hospitalists document multiple notes per patient--H&P, daily progress, discharge summary. Reducing this burden improves work-life balance and retention.
           </Text>
@@ -112,7 +112,7 @@ function Page2() {
     <Page size="LETTER" style={styles.page}>
       <PageHeader />
       
-      <SectionHeader title="VALUE MECHANISMS — CLINICIAN WELLBEING" isFirst />
+      <SectionHeader title="VALUE MECHANISMS — PROVIDER WELLBEING" isFirst />
       
       <View style={[styles.mechanismCard, { marginBottom: 10, borderTopColor: brand.indirectAccent }]}>
         <Badge type="indirect" />

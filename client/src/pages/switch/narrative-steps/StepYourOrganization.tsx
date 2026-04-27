@@ -36,7 +36,7 @@ export default function StepYourOrganization({
 
   const encountersPerProviderPerDay = useMemo(() => {
     if (inputs.providers <= 0 || inputs.annualEncounters <= 0) return 0;
-    return Math.round((inputs.annualEncounters / inputs.providers) / 220);
+    return Math.round((inputs.annualEncounters / inputs.providers) / 240);
   }, [inputs.providers, inputs.annualEncounters]);
 
   const showGuardrail = inputs.providers > 0 && inputs.annualEncounters > 0 &&

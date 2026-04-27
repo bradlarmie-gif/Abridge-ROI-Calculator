@@ -420,7 +420,7 @@ export default function ExploreDocQuality({
 
   const docConfig = {
     outpatient: {
-      pageTitle: 'Documentation Quality',
+      pageTitle: 'Revenue Impact',
       pageSubtitle: 'Better documentation creates downstream revenue. Select the drivers that apply to your organization.',
       driver1Title: 'wRVU Improvement',
       driver1Subtitle: 'Capture the complexity you\'re already delivering',
@@ -430,7 +430,7 @@ export default function ExploreDocQuality({
       driver3Subtitle: 'Reduce documentation-related claim denials',
     },
     ed: {
-      pageTitle: 'Documentation Quality',
+      pageTitle: 'Revenue Impact',
       pageSubtitle: 'Complete documentation supports accurate coding and faster reimbursement.',
       driver1Title: 'E&M Level Accuracy',
       driver1Subtitle: 'Capture the true complexity of ED visits',
@@ -440,7 +440,7 @@ export default function ExploreDocQuality({
       driver3Subtitle: 'Reduce documentation-related claim denials',
     },
     inpatient: {
-      pageTitle: 'Documentation Quality',
+      pageTitle: 'Revenue Impact',
       pageSubtitle: 'Complete documentation drives revenue integrity.',
       driver1Title: 'DRG Accuracy',
       driver1Subtitle: "Capture clinical complexity that's discussed but not documented",
@@ -469,7 +469,7 @@ export default function ExploreDocQuality({
         pathType="explore"
         currentStep={5}
         totalSteps={7}
-        stepName="Documentation Quality"
+        stepName="Revenue Impact"
         onBack={onBack}
         onHome={onHome}
 
@@ -952,13 +952,6 @@ export default function ExploreDocQuality({
           transition={{ delay: 0.15 }}
           data-testid="card-revenue-drivers-inpatient"
         >
-          <div>
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-              REVENUE DRIVERS
-            </p>
-            <div className="h-px bg-[#D1D5DB]" />
-          </div>
-
         {/* E/M Coding Accuracy */}
         <div className="space-y-0">
           <div
@@ -1888,13 +1881,6 @@ export default function ExploreDocQuality({
           transition={{ delay: 0.15 }}
           data-testid="card-revenue-drivers"
         >
-          <div>
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-              REVENUE DRIVERS
-            </p>
-            <div className="h-px bg-[#D1D5DB]" />
-          </div>
-
         {/* wRVU Improvement */}
         <div className="space-y-0">
           <div
@@ -1960,7 +1946,9 @@ export default function ExploreDocQuality({
                             : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
                         }`}
                       >
-                        <p className="font-medium text-black capitalize">{level}</p>
+                        <p className="font-medium text-black">
+                          {{ conservative: 'Conservative', typical: 'Typical', aggressive: 'Optimistic' }[level]}
+                        </p>
                         <p className="text-sm text-[#888888]">{wrvuScenarios[level]}%</p>
                       </button>
                     ))}
@@ -2174,7 +2162,9 @@ export default function ExploreDocQuality({
                         }`}
                         data-testid={`button-denials-${level}`}
                       >
-                        <p className={`text-xs capitalize mb-1 ${docQualityInputs.denialsScenario === level ? 'text-white/80' : ''}`}>{level}</p>
+                        <p className={`text-xs mb-1 ${docQualityInputs.denialsScenario === level ? 'text-white/80' : ''}`}>
+                          {{ conservative: 'Conservative', typical: 'Typical', aggressive: 'Optimistic' }[level]}
+                        </p>
                         <p className="font-semibold">{denialsScenarios[level]}%</p>
                       </button>
                     ))}

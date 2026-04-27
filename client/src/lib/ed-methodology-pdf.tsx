@@ -92,7 +92,7 @@ function Page1() {
       
       <View style={[styles.mechanismCard, { marginBottom: 8, borderTopColor: brand.connectedAccent }]}>
         <Badge type="connected" />
-        <Text style={styles.mechanismTitle}>CLINICIAN WELLBEING</Text>
+        <Text style={styles.mechanismTitle}>PROVIDER WELLBEING</Text>
         <Text style={styles.mechanismText}>
           ED has the highest burnout rate of any specialty (65%+). Documentation burden is a primary driver. Time saved per shift directly impacts whether physicians finish on time or stay late charting. Same retention model as other settings with ED-specific defaults: 12% turnover, 50% burnout-related, $500K replacement cost.
         </Text>
