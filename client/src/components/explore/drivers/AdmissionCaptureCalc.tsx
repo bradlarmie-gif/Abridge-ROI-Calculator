@@ -1,11 +1,8 @@
 import { useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import { type ExploreState } from "@/pages/explore/ExploreFlow";
+import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 
-interface Props {
-  state: ExploreState;
-  updateTimeDriverInputs: (updates: Partial<ExploreState['timeDriverInputs']>) => void;
-}
+type Props = ExploreCalcComponentProps;
 
 export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs }: Props) {
   const { timeDriverInputs } = state;

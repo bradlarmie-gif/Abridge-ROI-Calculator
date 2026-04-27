@@ -1,12 +1,8 @@
 import { useState, useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import { type ExploreState } from "@/pages/explore/ExploreFlow";
+import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 
-interface Props {
-  state: ExploreState;
-  updateTimeDriverInputs: (updates: Partial<ExploreState['timeDriverInputs']>) => void;
-  totalHoursSaved: number;
-}
+type Props = ExploreCalcComponentProps;
 
 export default function PatientAccessCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs } = state;

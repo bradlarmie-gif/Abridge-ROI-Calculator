@@ -1,6 +1,24 @@
+import type { ComponentType } from "react";
+import type { ExploreState } from "@/pages/explore/ExploreFlow";
+import PatientAccessCalc from "@/components/explore/drivers/PatientAccessCalc";
+import LwbsRecoveryCalc from "@/components/explore/drivers/LwbsRecoveryCalc";
+import AdmissionCaptureCalc from "@/components/explore/drivers/AdmissionCaptureCalc";
+import ProviderWellbeingCalc from "@/components/explore/drivers/ProviderWellbeingCalc";
+import PhysicianLocumAgencyCalc from "@/components/explore/drivers/PhysicianLocumAgencyCalc";
+import NursingRetentionCalc from "@/components/explore/drivers/NursingRetentionCalc";
+import NursingAgencyCalc from "@/components/explore/drivers/NursingAgencyCalc";
+import NursingOvertimeCalc from "@/components/explore/drivers/NursingOvertimeCalc";
+
 export type ExploreQuadrant = 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
 export type ExploreSetting = 'outpatient' | 'ed' | 'inpatient' | 'nursing';
 export type ExploreDriverVisibility = 'quantified' | 'qualitative';
+
+export interface ExploreCalcComponentProps {
+  state: ExploreState;
+  updateTimeDriverInputs: (updates: Partial<ExploreState['timeDriverInputs']>) => void;
+  updateDocQualityInputs: (updates: Partial<ExploreState['docQualityInputs']>) => void;
+  totalHoursSaved: number;
+}
 
 export interface ExploreDriver {
   id: string;
@@ -13,6 +31,7 @@ export interface ExploreDriver {
   expandedStateKey?: string;
   childOfDriverId?: string;
   trackedMeasureIds?: string[];
+  calcComponent?: ComponentType<ExploreCalcComponentProps>;
 }
 
 export const EXPLORE_DRIVERS: ExploreDriver[] = [
@@ -26,6 +45,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'patientAccessEnabled',
     expandedStateKey: 'patientAccessExpanded',
+    calcComponent: PatientAccessCalc,
     trackedMeasureIds: ['patientsPerProvider', 'visitsPerHour', 'timeInNote'],
   },
   {
@@ -37,6 +57,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'edLwbsEnabled',
     expandedStateKey: 'edLwbsExpanded',
+    calcComponent: LwbsRecoveryCalc,
     trackedMeasureIds: ['lwbsRate', 'doorToProvider'],
   },
   {
@@ -49,6 +70,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'edThroughputEnabled',
     expandedStateKey: 'edThroughputExpanded',
     childOfDriverId: 'lwbsRecovery',
+    calcComponent: AdmissionCaptureCalc,
   },
   {
     id: 'roundingEfficiency',
@@ -71,7 +93,69 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'nursingCareTimeExpanded',
     trackedMeasureIds: ['bedsideTimeRatio'],
   },
-  // Workforce / Revenue / Quality drivers added in Sprint 2D
+  // ───── WORKFORCE ─────
+  {
+    id: 'providerWellbeing',
+    label: 'Provider Wellbeing',
+    shortDescription: 'Documentation burden is a leading contributor to provider burnout and turnover. This driver models the avoided replacement cost when retention improves.',
+    quadrant: 'Workforce',
+    settings: ['outpatient', 'ed', 'inpatient'],
+    visibility: 'quantified',
+    enabledStateKey: 'wellbeingEnabled',
+    expandedStateKey: 'wellbeingExpanded',
+    calcComponent: ProviderWellbeingCalc,
+    trackedMeasureIds: ['burnoutAssessment', 'likelihoodToStay', 'workOutsideWorkEmpirical'],
+  },
+  {
+    id: 'physicianLocumAgency',
+    label: 'Locum & Agency Cost Avoidance',
+    shortDescription: 'Reduced reliance on contracted physician coverage as retention improves.',
+    quadrant: 'Workforce',
+    settings: ['outpatient', 'ed', 'inpatient'],
+    visibility: 'quantified',
+    enabledStateKey: 'physicianAgencyEnabled',
+    expandedStateKey: 'physicianAgencyExpanded',
+    childOfDriverId: 'providerWellbeing',
+    calcComponent: PhysicianLocumAgencyCalc,
+    trackedMeasureIds: ['agencyLocumSpend'],
+  },
+  {
+    id: 'nursingRetention',
+    label: 'RN Retention',
+    shortDescription: 'Reduced documentation burden helps retain experienced nurses. Models avoided replacement cost.',
+    quadrant: 'Workforce',
+    settings: ['nursing'],
+    visibility: 'quantified',
+    enabledStateKey: 'nursingRetentionEnabled',
+    expandedStateKey: 'nursingRetentionExpanded',
+    calcComponent: NursingRetentionCalc,
+    trackedMeasureIds: ['rnRetention', 'burnoutAssessment', 'likelihoodToStay'],
+  },
+  {
+    id: 'nursingAgency',
+    label: 'Travel & Agency Cost Avoidance',
+    shortDescription: 'Reduced reliance on travel/agency nurses as retention stabilizes.',
+    quadrant: 'Workforce',
+    settings: ['nursing'],
+    visibility: 'quantified',
+    enabledStateKey: 'nursingAgencyEnabled',
+    expandedStateKey: 'nursingAgencyExpanded',
+    childOfDriverId: 'nursingRetention',
+    calcComponent: NursingAgencyCalc,
+    trackedMeasureIds: ['travelAgencyNurseSpend'],
+  },
+  {
+    id: 'nursingOvertime',
+    label: 'Overtime Reduction',
+    shortDescription: 'Faster charting reduces documentation-related overtime hours.',
+    quadrant: 'Workforce',
+    settings: ['nursing'],
+    visibility: 'quantified',
+    enabledStateKey: 'nursingOtEnabled',
+    expandedStateKey: 'nursingOtExpanded',
+    calcComponent: NursingOvertimeCalc,
+    trackedMeasureIds: ['documentationOvertime', 'chartingAfterShift'],
+  },
 ];
 
 export function getDriversForPage(quadrant: ExploreQuadrant, setting: ExploreSetting): ExploreDriver[] {

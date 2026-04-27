@@ -139,7 +139,13 @@ export interface TimeDriverInputs {
   nursingAvgAgencyHourlyRate: number; // USD/hr (legacy)
   nursingAgencyWeeksPerVacancy: number; // Weeks of agency coverage per vacancy
   nursingAgencyWeeklyPremium: number; // Weekly agency premium (above base cost)
-  
+
+  // Physician Locum/Agency Cost Avoidance (OP/ED/IP) — child of Provider Wellbeing
+  physicianAgencyEnabled: boolean;
+  physicianAgencyExpanded: boolean;
+  physicianAgencyWeeksPerVacancy: number; // weeks of contracted coverage per vacancy
+  physicianAgencyWeeklyPremium: number;   // dollar premium per week above base salary equivalent
+
   nursingAdditionalCostSavings: Array<{ id: string; label: string; amount: number }>;
 
   // Care Quality (Nursing) - HAPI & Falls prevention
@@ -419,6 +425,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingAvgAgencyHourlyRate: 150, // $150/hr default (legacy)
     nursingAgencyWeeksPerVacancy: 12, // 12 weeks average time to fill
     nursingAgencyWeeklyPremium: 2500, // $2,500 weekly premium above base cost
+    // Physician Locum/Agency Cost Avoidance defaults
+    physicianAgencyEnabled: false,
+    physicianAgencyExpanded: false,
+    physicianAgencyWeeksPerVacancy: 16, // 16 weeks average to fill a physician vacancy
+    physicianAgencyWeeklyPremium: 5000, // $5K/week premium for locum coverage
     nursingAdditionalCostSavings: [],
     // Care Quality (HAPI & Falls) defaults
     nursingCareQualityEnabled: false,
@@ -745,6 +756,18 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         const retained = burnoutRelated * impactRate;
         total += retained * timeDriverInputs.replacementCost;
       }
+      if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
+        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
+        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
+        const providersLeaving = numberOfProviders * turnoverRate;
+        const burnoutRelated = providersLeaving * burnoutRate;
+        const retained = burnoutRelated * impactRate;
+        const weeksOfCoverage = timeDriverInputs.physicianAgencyWeeksPerVacancy || 16;
+        const weeklyPremium = timeDriverInputs.physicianAgencyWeeklyPremium || 5000;
+        total += Math.round(retained * weeksOfCoverage * weeklyPremium);
+      }
     } else if (isInpatient) {
       // Inpatient: Rounding is qualitative only (no dollar value)
       if (timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0) {
@@ -759,6 +782,18 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         const burnoutRelated = providersLeaving * burnoutRate;
         const retained = burnoutRelated * impactRate;
         total += retained * timeDriverInputs.replacementCost;
+      }
+      if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
+        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
+        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
+        const providersLeaving = numberOfProviders * turnoverRate;
+        const burnoutRelated = providersLeaving * burnoutRate;
+        const retained = burnoutRelated * impactRate;
+        const weeksOfCoverage = timeDriverInputs.physicianAgencyWeeksPerVacancy || 16;
+        const weeklyPremium = timeDriverInputs.physicianAgencyWeeklyPremium || 5000;
+        total += Math.round(retained * weeksOfCoverage * weeklyPremium);
       }
     } else if (isNursing) {
       if (timeDriverInputs.nursingOtEnabled) {
@@ -808,6 +843,18 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         const burnoutRelated = providersLeaving * burnoutRate;
         const retained = burnoutRelated * impactRate;
         total += retained * timeDriverInputs.replacementCost;
+      }
+      if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
+        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
+        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
+        const providersLeaving = numberOfProviders * turnoverRate;
+        const burnoutRelated = providersLeaving * burnoutRate;
+        const retained = burnoutRelated * impactRate;
+        const weeksOfCoverage = timeDriverInputs.physicianAgencyWeeksPerVacancy || 16;
+        const weeklyPremium = timeDriverInputs.physicianAgencyWeeklyPremium || 5000;
+        total += Math.round(retained * weeksOfCoverage * weeklyPremium);
       }
     }
     
@@ -983,6 +1030,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         <ExploreWorkforce
           state={state}
           updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
           onNext={() => navigate('revenue')}
           onBack={() => navigate('capacity')}
           onHome={goHome}

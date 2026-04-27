@@ -5,9 +5,6 @@ import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import DriverCard from "@/components/explore/DriverCard";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import PatientAccessCalc from "@/components/explore/drivers/PatientAccessCalc";
-import LwbsRecoveryCalc from "@/components/explore/drivers/LwbsRecoveryCalc";
-import AdmissionCaptureCalc from "@/components/explore/drivers/AdmissionCaptureCalc";
 import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
 import { type ExploreState, type OtherFinancialBenefitItem } from "./ExploreFlow";
 
@@ -78,21 +75,8 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, o
 
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
 
-  const renderCalcForDriver = (driverId: string) => {
-    switch (driverId) {
-      case 'patientAccess':
-        return <PatientAccessCalc state={state} updateTimeDriverInputs={updateTimeDriverInputs} totalHoursSaved={totalHoursSaved} />;
-      case 'lwbsRecovery':
-        return <LwbsRecoveryCalc state={state} updateTimeDriverInputs={updateTimeDriverInputs} />;
-      case 'admissionCapture':
-        return <AdmissionCaptureCalc state={state} updateTimeDriverInputs={updateTimeDriverInputs} />;
-      default:
-        return (
-          <div className="bg-[#F5F0EB] rounded-lg p-4">
-            <p className="text-sm text-[#888888] italic">Calculation logic for "{driverId}" not yet wired.</p>
-          </div>
-        );
-    }
+  const updateDocQualityInputs = (updates: Partial<typeof state.docQualityInputs>) => {
+    updateState({ docQualityInputs: { ...state.docQualityInputs, ...updates } });
   };
 
   const driverValues = useMemo(() => {
@@ -222,8 +206,17 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, o
                           </p>
                         </div>
                       </div>
+                    ) : driver.calcComponent ? (
+                      <driver.calcComponent
+                        state={state}
+                        updateTimeDriverInputs={updateTimeDriverInputs}
+                        updateDocQualityInputs={updateDocQualityInputs}
+                        totalHoursSaved={totalHoursSaved}
+                      />
                     ) : (
-                      renderCalcForDriver(driver.id)
+                      <div className="bg-[#F5F0EB] rounded-lg p-4">
+                        <p className="text-sm text-[#888888] italic">Calculation logic for "{driver.id}" not yet wired.</p>
+                      </div>
                     )}
 
                     {/* Child drivers (e.g., Admission Capture under LWBS) */}
@@ -244,7 +237,18 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, o
                               testId={`toggle-${child.id}`}
                               isChild
                             >
-                              {renderCalcForDriver(child.id)}
+                              {child.calcComponent ? (
+                                <child.calcComponent
+                                  state={state}
+                                  updateTimeDriverInputs={updateTimeDriverInputs}
+                                  updateDocQualityInputs={updateDocQualityInputs}
+                                  totalHoursSaved={totalHoursSaved}
+                                />
+                              ) : (
+                                <div className="bg-[#F5F0EB] rounded-lg p-4">
+                                  <p className="text-sm text-[#888888] italic">Calculation logic for "{child.id}" not yet wired.</p>
+                                </div>
+                              )}
                             </DriverCard>
                           );
                         })}
