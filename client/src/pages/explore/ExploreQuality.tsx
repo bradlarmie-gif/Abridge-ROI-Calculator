@@ -23,6 +23,8 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
   const setting = state.careSetting;
   const drivers = setting ? getDriversForPage('Quality', setting) : [];
   const topLevelDrivers = drivers.filter(d => !d.childOfDriverId);
+  const financialDrivers = topLevelDrivers.filter(d => d.visibility === 'quantified');
+  const watchMetrics = topLevelDrivers.filter(d => d.visibility === 'qualitative');
 
   const updateTimeDriverInputs = (updates: Partial<typeof state.timeDriverInputs>) => {
     updateState({ timeDriverInputs: { ...state.timeDriverInputs, ...updates } });
@@ -167,6 +169,84 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
     return Object.values(driverValues).reduce((sum, v) => sum + v, 0) + annualBenefitsTotal;
   }, [driverValues, annualBenefitsTotal]);
 
+  const renderDriverCard = (driver: ExploreDriver) => {
+    const enabled = isEnabled(driver);
+    const expanded = isExpanded(driver);
+    const childDrivers = drivers.filter(d => d.childOfDriverId === driver.id);
+
+    return (
+      <DriverCard
+        key={driver.id}
+        title={driver.label}
+        subtitle={driver.shortDescription}
+        enabled={enabled}
+        expanded={expanded}
+        onToggle={() => toggleEnabled(driver)}
+        onExpand={() => toggleExpand(driver)}
+        testId={`toggle-${driver.id}`}
+      >
+        {driver.visibility === 'qualitative' ? (
+          <div>
+            <p className="text-sm text-black leading-relaxed mb-4">
+              {driver.shortDescription}
+            </p>
+            <div className="bg-[#F5F0EB] rounded-lg p-3">
+              <p className="text-xs text-[#666666] italic">
+                Qualitative driver. No financial value modeled. Tracked post-deployment as a strategic outcome.
+              </p>
+            </div>
+          </div>
+        ) : driver.calcComponent ? (
+          <driver.calcComponent
+            state={state}
+            updateTimeDriverInputs={updateTimeDriverInputs}
+            updateDocQualityInputs={updateDocQualityInputs}
+            totalHoursSaved={totalHoursSaved}
+          />
+        ) : (
+          <div className="bg-[#F5F0EB] rounded-lg p-4">
+            <p className="text-sm text-[#888888] italic">Calculation logic for "{driver.id}" not yet wired.</p>
+          </div>
+        )}
+
+        {childDrivers.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {childDrivers.map(child => {
+              const childEnabled = isEnabled(child);
+              const childExpanded = isExpanded(child);
+              return (
+                <DriverCard
+                  key={child.id}
+                  title={child.label}
+                  subtitle={child.shortDescription}
+                  enabled={childEnabled}
+                  expanded={childExpanded}
+                  onToggle={() => toggleEnabled(child)}
+                  onExpand={() => toggleExpand(child)}
+                  testId={`toggle-${child.id}`}
+                  isChild
+                >
+                  {child.calcComponent ? (
+                    <child.calcComponent
+                      state={state}
+                      updateTimeDriverInputs={updateTimeDriverInputs}
+                      updateDocQualityInputs={updateDocQualityInputs}
+                      totalHoursSaved={totalHoursSaved}
+                    />
+                  ) : (
+                    <div className="bg-[#F5F0EB] rounded-lg p-4">
+                      <p className="text-sm text-[#888888] italic">Calculation logic for "{child.id}" not yet wired.</p>
+                    </div>
+                  )}
+                </DriverCard>
+              );
+            })}
+          </div>
+        )}
+      </DriverCard>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
@@ -208,100 +288,54 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
               </p>
             </motion.div>
 
-            {/* Drivers */}
-            <motion.div
-              className="bg-[#F5F0EB] rounded-lg p-6 space-y-4 mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-            >
-              <div>
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Drivers</p>
-                <div className="h-px bg-[#D1D5DB] mb-6" />
-              </div>
+            {/* FINANCIAL DRIVERS — data-driven: only renders when at least one quantified Quality driver exists.
+                For OP/ED/IP the registry currently has no quantified Quality drivers, so this section stays hidden
+                (matches the spec line: "OP/ED/IP Quality pages cleanly hide the empty Financial section").
+                Nursing is the only setting where quantified Quality drivers may exist. */}
+            {financialDrivers.length > 0 && (
+              <motion.div
+                className="bg-[#F5F0EB] rounded-lg p-6 space-y-4 mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+              >
+                <div>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Financial Drivers</p>
+                  <p className="text-xs text-[#AAAAAA] mb-2">Drivers that build the business case with dollar value.</p>
+                  <div className="h-px bg-[#D1D5DB] mb-6" />
+                </div>
+                {financialDrivers.map(renderDriverCard)}
+              </motion.div>
+            )}
 
-              {topLevelDrivers.length === 0 && (
+            {/* OTHER METRICS TO WATCH */}
+            {watchMetrics.length > 0 && (
+              <motion.div
+                className="bg-[#F5F0EB] rounded-lg p-6 space-y-4 mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18 }}
+              >
+                <div>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Other Metrics to Watch</p>
+                  <p className="text-xs text-[#AAAAAA] mb-2">Outcomes we track post-deployment that don't carry direct dollar value.</p>
+                  <div className="h-px bg-[#D1D5DB] mb-6" />
+                </div>
+                {watchMetrics.map(renderDriverCard)}
+              </motion.div>
+            )}
+
+            {/* Empty state — only if BOTH groups empty */}
+            {financialDrivers.length === 0 && watchMetrics.length === 0 && (
+              <motion.div
+                className="bg-[#F5F0EB] rounded-lg p-6 mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+              >
                 <p className="text-sm text-[#888888] italic">No Quality drivers configured for this care setting.</p>
-              )}
-
-              {topLevelDrivers.map(driver => {
-                const enabled = isEnabled(driver);
-                const expanded = isExpanded(driver);
-                const childDrivers = drivers.filter(d => d.childOfDriverId === driver.id);
-
-                return (
-                  <DriverCard
-                    key={driver.id}
-                    title={driver.label}
-                    subtitle={driver.shortDescription}
-                    enabled={enabled}
-                    expanded={expanded}
-                    onToggle={() => toggleEnabled(driver)}
-                    onExpand={() => toggleExpand(driver)}
-                    testId={`toggle-${driver.id}`}
-                  >
-                    {driver.visibility === 'qualitative' ? (
-                      <div>
-                        <p className="text-sm text-black leading-relaxed mb-4">
-                          {driver.shortDescription}
-                        </p>
-                        <div className="bg-[#F5F0EB] rounded-lg p-3">
-                          <p className="text-xs text-[#666666] italic">
-                            Qualitative driver. No financial value modeled. Tracked post-deployment as a strategic outcome.
-                          </p>
-                        </div>
-                      </div>
-                    ) : driver.calcComponent ? (
-                      <driver.calcComponent
-                        state={state}
-                        updateTimeDriverInputs={updateTimeDriverInputs}
-                        updateDocQualityInputs={updateDocQualityInputs}
-                        totalHoursSaved={totalHoursSaved}
-                      />
-                    ) : (
-                      <div className="bg-[#F5F0EB] rounded-lg p-4">
-                        <p className="text-sm text-[#888888] italic">Calculation logic for "{driver.id}" not yet wired.</p>
-                      </div>
-                    )}
-
-                    {childDrivers.length > 0 && (
-                      <div className="mt-4 space-y-2">
-                        {childDrivers.map(child => {
-                          const childEnabled = isEnabled(child);
-                          const childExpanded = isExpanded(child);
-                          return (
-                            <DriverCard
-                              key={child.id}
-                              title={child.label}
-                              subtitle={child.shortDescription}
-                              enabled={childEnabled}
-                              expanded={childExpanded}
-                              onToggle={() => toggleEnabled(child)}
-                              onExpand={() => toggleExpand(child)}
-                              testId={`toggle-${child.id}`}
-                              isChild
-                            >
-                              {child.calcComponent ? (
-                                <child.calcComponent
-                                  state={state}
-                                  updateTimeDriverInputs={updateTimeDriverInputs}
-                                  updateDocQualityInputs={updateDocQualityInputs}
-                                  totalHoursSaved={totalHoursSaved}
-                                />
-                              ) : (
-                                <div className="bg-[#F5F0EB] rounded-lg p-4">
-                                  <p className="text-sm text-[#888888] italic">Calculation logic for "{child.id}" not yet wired.</p>
-                                </div>
-                              )}
-                            </DriverCard>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </DriverCard>
-                );
-              })}
-            </motion.div>
+              </motion.div>
+            )}
 
             {/* Other Financial Benefits */}
             <motion.div
@@ -397,27 +431,71 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
               <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Quality Value</p>
               <p className="text-sm text-white/50 mb-4">From this quadrant</p>
 
-              {drivers.length === 0 ? (
-                <p className="text-sm text-white/50">No drivers for this setting.</p>
-              ) : (
-                <div className="space-y-3 mb-4">
-                  {drivers.map(d => {
-                    const enabled = isEnabled(d);
-                    const value = driverValues[d.id];
-                    return (
-                      <div key={d.id} className={`flex justify-between items-center ${d.childOfDriverId ? 'pl-4' : ''}`}>
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${enabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888] truncate">{d.label}</span>
+              {(() => {
+                const financialDriversInPanel = drivers.filter(d => {
+                  const parent = d.childOfDriverId ? drivers.find(p => p.id === d.childOfDriverId) : d;
+                  return parent?.visibility === 'quantified';
+                });
+                const watchMetricsInPanel = drivers.filter(d => {
+                  const parent = d.childOfDriverId ? drivers.find(p => p.id === d.childOfDriverId) : d;
+                  return parent?.visibility === 'qualitative';
+                });
+                const showFinancialPanelGroup = financialDriversInPanel.length > 0;
+                const showWatchPanelGroup = watchMetricsInPanel.length > 0;
+
+                if (!showFinancialPanelGroup && !showWatchPanelGroup) {
+                  return <p className="text-sm text-white/50">No drivers for this setting.</p>;
+                }
+
+                return (
+                  <div className="space-y-4 mb-4">
+                    {showFinancialPanelGroup && (
+                      <div>
+                        <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Financial</p>
+                        <div className="space-y-3">
+                          {financialDriversInPanel.map(d => {
+                            const enabled = isEnabled(d);
+                            const value = driverValues[d.id];
+                            return (
+                              <div key={d.id} className={`flex justify-between items-center ${d.childOfDriverId ? 'pl-4' : ''}`}>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${enabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                                  <span className="text-sm text-[#888888] truncate">{d.label}</span>
+                                </div>
+                                <span className={`text-sm font-semibold flex-shrink-0 ${enabled ? 'text-white' : 'text-[#666666]'}`} data-testid={`right-panel-value-${d.id}`}>
+                                  {!enabled ? '—' : (typeof value === 'number' ? formatCurrency(value) : '—')}
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
-                        <span className={`text-sm font-semibold flex-shrink-0 ${enabled ? 'text-white' : 'text-[#666666]'}`} data-testid={`right-panel-value-${d.id}`}>
-                          {!enabled ? '—' : d.visibility === 'qualitative' ? 'Qualitative' : (typeof value === 'number' ? formatCurrency(value) : '—')}
-                        </span>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                    )}
+
+                    {showWatchPanelGroup && (
+                      <div>
+                        <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Other Metrics</p>
+                        <div className="space-y-3">
+                          {watchMetricsInPanel.map(d => {
+                            const enabled = isEnabled(d);
+                            return (
+                              <div key={d.id} className={`flex justify-between items-center ${d.childOfDriverId ? 'pl-4' : ''}`}>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${enabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                                  <span className="text-sm text-[#888888] truncate">{d.label}</span>
+                                </div>
+                                <span className={`text-sm flex-shrink-0 italic ${enabled ? 'text-white/80' : 'text-[#666666]'}`} data-testid={`right-panel-value-${d.id}`}>
+                                  {!enabled ? '—' : 'Qualitative'}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {benefits.length > 0 && (
                 <>
