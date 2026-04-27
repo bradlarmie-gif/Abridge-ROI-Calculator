@@ -102,7 +102,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'Average note star rating improved from {{before}} to {{after}} stars.',
     phase3Roadmap: false,
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Provider-assigned quality rating of generated notes (typically 1-5 scale).',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -122,7 +122,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'Diagnosis capture improved {{delta}} points — more of what\'s discussed in the visit is making it into the record.',
     phase3Roadmap: false,
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Share of diagnoses discussed during the encounter that appear in the coded record.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -142,7 +142,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'Diagnosis specificity improved from {{before}}% to {{after}}% — {{delta}} more percentage points of diagnoses coded to highest specificity.',
     phase3Roadmap: false,
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Share of diagnoses coded to the highest available ICD-10 specificity.',
     exploreVisibility: 'driver-qualitative',
   },
 
@@ -203,7 +203,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'Providers are spending {{delta}} fewer hours per week on documentation outside of work — down from {{before}} to {{after}} hrs/wk.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'EHR activity logged outside scheduled clinical hours, derived from audit logs. A common signal for after-hours documentation work.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -223,7 +223,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'Burnout score improved from {{before}} to {{after}} — a {{delta}}-point improvement on a 100-point scale.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Used as a leading indicator for retention risk.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -243,7 +243,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'Likelihood to stay improved from {{before}}% to {{after}}% — {{delta}} more percentage points of clinicians plan to stay.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe (typically 12 months).',
     exploreVisibility: 'driver-quantified',
   },
 
@@ -264,7 +264,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'Note time dropped {{delta}} minutes per encounter. Across {{encounters}} Abridge encounters, that\'s {{totalHours}} hours of capacity recovered.',
     phase3Roadmap: false,
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Average minutes spent actively documenting per outpatient encounter, captured from EHR audit logs.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -304,7 +304,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'Providers are seeing {{delta}} more patients per month on average — {{providers}} providers \u00d7 {{delta}} patients = {{total}} additional patient visits per month.',
     phase3Roadmap: false,
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Average patient encounters per provider per month.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -324,7 +324,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'Throughput improved from {{before}} to {{after}} visits per clinician hour — a {{delta}} visit improvement per hour scheduled.',
     phase3Roadmap: false,
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Completed patient visits per scheduled clinician hour.',
     exploreVisibility: 'driver-quantified',
   },
 
@@ -345,7 +345,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'wRVU per encounter improved {{delta}} — across {{encounters}} encounters at ${{cf}} conversion, that\'s {{value}} in additional revenue.',
     phase3Roadmap: false,
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Average work RVU value per outpatient encounter.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -385,7 +385,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'HCC capture improved {{delta}} points — more chronic conditions discussed in the visit are making it into the coded record, supporting accurate risk adjustment.',
     phase3Roadmap: false,
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Share of known HCC diagnostic gaps documented and coded during the visit. HCC capture contributes to the RAF score that drives Medicare Advantage capitated payment.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -425,7 +425,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate: 'Initial denial rate dropped from {{before}}% to {{after}}% — {{delta}} points fewer claims denied on first submission.',
     phase3Roadmap: false,
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Share of claims accepted on first submission without correction.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -686,7 +686,7 @@ export const ED_METRICS: MetricDefinition[] = [
       "That's {{delta}} minutes back per encounter — across {{providers}} providers and {{encounters}} annual encounters, " +
       "that's {{totalHours}} hours of documentation time returned annually.",
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Average minutes spent actively documenting per ED encounter, captured from EHR audit logs.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -706,7 +706,7 @@ export const ED_METRICS: MetricDefinition[] = [
       "WoW time is down {{delta}} minutes per encounter. " +
       "For {{providers}} ED providers, that's approximately {{totalHours}} hours of after-hours documentation eliminated annually.",
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'EHR documentation activity captured outside scheduled patient-care time.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -787,7 +787,7 @@ export const ED_METRICS: MetricDefinition[] = [
       'Burnout scores improved from {{before}} to {{after}} on your survey scale. ' +
       'This is a leading indicator for retention. For ED physicians, each turnover event typically costs $500K–$1M+ in replacement costs.',
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Used as a leading indicator for retention risk.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -806,7 +806,7 @@ export const ED_METRICS: MetricDefinition[] = [
     plainEnglishTemplate:
       "Provider retention intent is up {{delta}} points — {{after}}% now say they're likely to stay, vs {{before}}% before Abridge.",
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe (typically 12 months).',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -826,7 +826,7 @@ export const ED_METRICS: MetricDefinition[] = [
       'wRVU per shift is up {{delta}} — from {{before}} to {{after}}. ' +
       "At your conversion rate, that's {{value}} per shift per provider.",
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Average work RVU value per ED shift. ED billing is shift-based, distinct from outpatient encounter-based wRVU.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -846,7 +846,7 @@ export const ED_METRICS: MetricDefinition[] = [
       'Average E/M level has moved from {{before}} to {{after}} on the 99281–99285 scale. ' +
       'Each level step in ED billing is worth approximately $25–$80 per encounter.',
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Average E/M level coded across ED encounters (99281-99285).',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -865,7 +865,7 @@ export const ED_METRICS: MetricDefinition[] = [
     plainEnglishTemplate:
       'LWBS rate is down from {{before}}% to {{after}}% — {{delta}} percentage points.',
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Share of patients leaving the ED before being seen by a provider.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -885,7 +885,7 @@ export const ED_METRICS: MetricDefinition[] = [
       'Door-to-provider time is down {{delta}} minutes — from {{before}} to {{after}} minutes. ' +
       'Faster initial contact drives HCAHPS scores, LWBS reduction, and CMS quality measures.',
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Minutes from patient arrival to first provider contact.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -924,7 +924,7 @@ export const ED_METRICS: MetricDefinition[] = [
     plainEnglishTemplate:
       'Providers are seeing {{after}} patients per shift, up from {{before}} — {{delta}} more per shift per provider.',
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Average patient volume per provider per shift.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -982,7 +982,7 @@ export const ED_METRICS: MetricDefinition[] = [
     plainEnglishTemplate:
       'Medical necessity denial rate is down from {{before}}% to {{after}}% — a {{delta}}-point improvement.',
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Share of claims denied for insufficient documentation supporting medical necessity.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1041,7 +1041,7 @@ export const ED_METRICS: MetricDefinition[] = [
       'Average note quality is now {{after}} stars — up {{delta}} from {{before}}. ' +
       'In the ED, note quality drives coding accuracy, denial rates, and compliance defensibility.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Provider-assigned quality rating of generated notes (typically 1-5 scale).',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1061,7 +1061,7 @@ export const ED_METRICS: MetricDefinition[] = [
       'Patient experience scores have moved from {{before}}th to {{after}}th percentile — a {{delta}}-point improvement. ' +
       'Provider attentiveness accounts for the largest share of the top-box score in the ED.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Patient experience scores from Press Ganey or similar instruments, ED-specific subscale.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1101,7 +1101,7 @@ export const ED_METRICS: MetricDefinition[] = [
       'Agency and locum spend is down from {{before}} to {{after}} — a {{delta}} reduction.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Annual spend on contracted locum or agency physician coverage. Often used as a downstream indicator of retention and scheduling stability.',
     exploreVisibility: 'driver-quantified',
     childOfDriver: 'retention',
   },
@@ -1146,7 +1146,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       "That's {{delta}} minutes back per admission — across {{providers}} providers and {{encounters}} annual admissions, " +
       "that's {{totalHours}} hours of documentation time returned annually.",
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Average minutes spent actively documenting per inpatient note (H&P, progress notes, discharge summaries).',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1166,7 +1166,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       'Average note quality is {{after}} stars — up {{delta}} from {{before}}. ' +
       'In inpatient, documentation quality is the upstream driver of DRG accuracy, CC/MCC capture, and compliance defensibility.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Provider-assigned quality rating of generated notes (typically 1-5 scale).',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1187,7 +1187,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       "For {{providers}} hospitalists, that's {{totalHours}} hours of after-hours documentation eliminated annually — " +
       'a direct driver of overnight burden and on-call burnout.',
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'EHR documentation activity captured outside scheduled hours.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1248,7 +1248,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       'Burnout scores improved from {{before}} to {{after}} on your survey scale. ' +
       'Documentation burden accounts for roughly 40–60% of hospitalist burnout drivers.',
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Used as a leading indicator for hospitalist retention risk.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1267,7 +1267,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate:
       "Provider retention intent is up {{delta}} points — {{after}}% now say they're likely to stay, vs {{before}}% before Abridge.",
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe (typically 12 months).',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1287,7 +1287,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       'Case Mix Index has moved from {{before}} to {{after}} — a {{delta}} point improvement. ' +
       'At your volume of {{encounters}} annual admissions, each 0.1 CMI improvement is worth significant additional net revenue.',
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Weighted average of DRG relative weights across discharges.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1307,7 +1307,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       'CC/MCC capture rate is up {{delta}} points — from {{before}}% to {{after}}%. ' +
       'Each percentage point of CC/MCC improvement drives DRG weight and directly impacts CMI.',
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Share of admissions with documented complication or comorbidity codes captured.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1327,7 +1327,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       'DRG accuracy is up {{delta}} points — from {{before}}% to {{after}}%. ' +
       'Fewer DRG corrections means faster claim submission and reduced coding rework.',
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Share of cases where the initial DRG assignment matches the final DRG after coding review.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1405,7 +1405,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       'Average length of stay is down {{delta}} days — from {{before}} to {{after}} days. ' +
       "At {{encounters}} annual admissions, that's {{totalDays}} patient-days freed annually.",
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Average days per inpatient admission.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1425,7 +1425,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       'Discharge before noon rate is up {{delta}} points — from {{before}}% to {{after}}% of discharges. ' +
       'Earlier discharges free beds for afternoon admits and reduce ED boarding time.',
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Share of inpatient discharges completed before noon.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1444,7 +1444,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     plainEnglishTemplate:
       'Documentation-related discharge delays are down {{delta}} points — from {{before}}% to {{after}}% of cases.',
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Share of discharges delayed due to incomplete documentation.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1464,7 +1464,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       '30-day readmission rate is down {{delta}} points — from {{before}}% to {{after}}%. ' +
       'At {{encounters}} admissions, a {{delta}}-point reduction reduces penalty exposure and uncompensated care.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Share of inpatient discharges followed by readmission within 30 days. CMS-reportable under HRRP.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1484,7 +1484,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       'HCAHPS scores have moved from {{before}}th to {{after}}th percentile — a {{delta}}-point improvement. ' +
       'The "communication with doctors" domain is most directly tied to ambient documentation.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Inpatient patient experience score from the HCAHPS survey.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1563,7 +1563,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
       'Agency and locum spend is down from {{before}} to {{after}} — a {{delta}} reduction.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Annual spend on contracted locum hospitalist coverage. Often used as a downstream indicator of retention and scheduling stability.',
     exploreVisibility: 'driver-quantified',
     childOfDriver: 'retention',
   },
@@ -1629,7 +1629,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       "That's {{delta}} minutes back per shift per nurse. " +
       'Across {{providers}} nurses, that represents significant documentation time returned to patient care.',
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Total active documentation time per nursing shift, including flowsheets, assessments, care plans, and handoff notes.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1672,7 +1672,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       "that's significant unpaid or overtime documentation eliminated. " +
       'This is the most frequently cited burnout driver in nursing workforce surveys.',
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Minutes spent in the EHR after scheduled shift end.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1692,7 +1692,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'Documentation-related overtime is down {{delta}} hours per nurse per month. ' +
       'Across {{providers}} nurses, that represents significant overtime hours reduced monthly.',
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Overtime hours attributable to documentation completion.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1713,7 +1713,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'Documentation burden is the single largest modifiable driver of nursing burnout. ' +
       'At {{providers}} nurses, each point of improvement correlates with measurable reduction in turnover intent.',
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Used as a leading indicator for nursing retention risk.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1753,7 +1753,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'Patient fall rate is down from {{before}} to {{after}} per 1,000 patient days. ' +
       'Each prevented fall avoids an average of $14,000–$30,000 in direct care costs, plus regulatory exposure.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Falls per 1,000 patient days. NDNQI nursing-sensitive indicator.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1773,7 +1773,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'HAPI rate is down from {{before}} to {{after}} per 1,000 patient days. ' +
       'Stage 2+ HAPIs cost $10,700–$151,700 per event and are non-reimbursable under CMS.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Stage 2+ hospital-acquired pressure injuries per 1,000 patient days. NDNQI nursing-sensitive indicator. Typically non-reimbursable under CMS HAC policy.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1793,7 +1793,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'CLABSI rate is down from {{before}} to {{after}} per 1,000 line-days. ' +
       'Each CLABSI event costs approximately $46,000–$68,000 in additional care costs and generates CMS HAC penalty exposure.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Central line-associated bloodstream infections per 1,000 line days. NHSN-reportable.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1813,7 +1813,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'CAUTI rate is down from {{before}} to {{after}} per 1,000 catheter days. ' +
       'Timely documentation of daily necessity review is the primary prevention driver.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Catheter-associated urinary tract infections per 1,000 catheter days. NHSN-reportable.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1833,7 +1833,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'Medication error / near-miss rate is down from {{before}} to {{after}} per 1,000 patient days. ' +
       'Clearer handoff documentation and care plan updates reduce the gaps that create medication errors at shift change.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'Medication error and near-miss events per 1,000 patient days.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1853,7 +1853,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'HCAHPS nurse communication scores have moved from {{before}}th to {{after}}th percentile — a {{delta}}-point improvement. ' +
       'The nurse communication domain carries the highest weight in inpatient patient experience scoring.',
     roiQuadrant: 'Quality',
-    shortDescription: '',
+    shortDescription: 'HCAHPS subscale measuring patient-reported quality of nurse communication.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1873,7 +1873,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'Direct care time has increased from {{before}}% to {{after}}% of shift time — {{delta}} points more time with patients. ' +
       'For {{providers}} nurses, that represents additional hours of bedside care annually without adding staff.',
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Share of shift time spent in direct patient care versus documentation.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1913,7 +1913,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'Open shift fill rate by staff nurses is up from {{before}}% to {{after}}% — {{delta}} points more shifts covered internally. ' +
       'Higher fill rates reflect improved retention and scheduling stability, and directly reduce agency premium spend.',
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Share of open shifts filled by staff nurses versus agency or left unfilled.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1933,7 +1933,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'CDI query response rate is up from {{before}}% to {{after}}% — {{delta}} points. ' +
       'Faster, more complete nursing documentation reduces query volume and accelerates DRG assignment.',
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Share of CDI queries answered within established timeframes (typically 24 hours).',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1953,7 +1953,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'Nursing documentation is now completed on time {{after}}% of the time, up from {{before}}%. ' +
       'A {{delta}}-point improvement means more encounters per year with complete, timely nursing records.',
     roiQuadrant: 'Revenue',
-    shortDescription: '',
+    shortDescription: 'Share of required nursing documentation completed within mandated timeframes.',
     exploreVisibility: 'driver-qualitative',
   },
   {
@@ -1974,7 +1974,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'At your scale, this is likely the largest single financial impact in this analysis.',
     phase3Roadmap: true,
     roiQuadrant: 'Workforce',
-    shortDescription: '',
+    shortDescription: 'Annual share of RN staff retained from the prior period.',
     exploreVisibility: 'driver-quantified',
   },
   {
@@ -1995,7 +1995,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
       'This is the most direct financial expression of improved nursing retention.',
     phase3Roadmap: true,
     roiQuadrant: 'Capacity',
-    shortDescription: '',
+    shortDescription: 'Annual spend on travel or agency nursing coverage. Often used as a downstream financial signal of retention stability.',
     exploreVisibility: 'driver-quantified',
     childOfDriver: 'retention',
   },

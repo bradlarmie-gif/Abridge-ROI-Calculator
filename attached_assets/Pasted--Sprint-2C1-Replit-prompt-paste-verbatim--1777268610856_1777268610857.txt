@@ -1,0 +1,619 @@
+ 🔧 Sprint 2C1 — Replit prompt (paste verbatim)                                                                                                                                                               
+                                                                                                                                                                                                               
+  Context: Building the Capacity quadrant page as the template for the four new Explore pages. This sprint builds the visual + state plumbing — toggle cards, qualitative driver content, Other Financial      
+  Benefits. Quantified driver calculations get wired in the next sprint (2C2). The pattern established here will be replicated for Workforce / Revenue / Quality in Sprint 2D.
+                                                                                                                                                                                                               
+  Pre-req: Sprint 2B has shipped. ExploreCapacity.tsx exists as a placeholder.                                                                                                                                 
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Create the driver registry: client/src/lib/exploreDrivers.ts
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/lib/exploreDrivers.ts            
+                                                                                                                                                                                                               
+  A central definition of all Explore drivers across all 4 quadrants and all 4 settings. This file is the source of truth for what shows up on each Explore page. Catalog measures in measureCareSettings.ts
+  remain the source for what's tracked post-sale; this is what gets toggled in the business case.                                                                                                              
+                                                             
+  export type ExploreQuadrant = 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';                                                                                                                              
+  export type ExploreSetting = 'outpatient' | 'ed' | 'inpatient' | 'nursing';
+  export type ExploreDriverVisibility = 'quantified' | 'qualitative';                                                                                                                                          
+                                                             
+  export interface ExploreDriver {                                                                                                                                                                             
+    id: string;                              // unique driver id (e.g., 'patientAccess')                                                                                                                       
+    label: string;                           // display name (e.g., 'Patient Access')                                                                                                                          
+    shortDescription: string;                // 1-2 sentence neutral description shown in the toggle card and on expand                                                                                        
+    quadrant: ExploreQuadrant;                                                                                                                                                                                 
+    settings: ExploreSetting[];              // which care settings this driver applies to
+    visibility: ExploreDriverVisibility;     // 'quantified' = $ math; 'qualitative' = narrative only                                                                                                          
+    enabledStateKey: string;                 // name of the boolean field in state.timeDriverInputs that toggles this driver                                                                                   
+    expandedStateKey?: string;               // name of the boolean field in state.timeDriverInputs that controls expansion                                                                                    
+    childOfDriverId?: string;                // if set, this driver renders nested under its parent and only when the parent is enabled                                                                        
+    trackedMeasureIds?: string[];            // catalog measure ids this driver corresponds to (for PDF + post-sale linkage)                                                                                   
+  }                                                          
+                                                                                                                                                                                                               
+  export const EXPLORE_DRIVERS: ExploreDriver[] = [          
+    // ───── CAPACITY ─────                                                                                                                                                                                    
+    {                                                                                                                                                                                                          
+      id: 'patientAccess',                                                                                                                                                                                     
+      label: 'Patient Access',                                                                                                                                                                                 
+      shortDescription: 'Reinvest reclaimed documentation time into additional patient visits.',                                                                                                               
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['outpatient'],                                                                                                                                                                                
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'patientAccessEnabled',               
+      expandedStateKey: 'patientAccessExpanded',                                                                                                                                                               
+      trackedMeasureIds: ['patientsPerProvider', 'visitsPerHour', 'timeInNote'],
+    },                                                                                                                                                                                                         
+    {                                                     
+      id: 'lwbsRecovery',                                                                                                                                                                                      
+      label: 'LWBS Recovery',                                
+      shortDescription: 'Recover patients who would otherwise leave the ED before being seen.',                                                                                                                
+      quadrant: 'Capacity',                             
+      settings: ['ed'],                                                                                                                                                                                        
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'edLwbsEnabled',                                                                                                                                                                        
+      expandedStateKey: 'edLwbsExpanded',                                                                                                                                                                      
+      trackedMeasureIds: ['lwbsRate', 'doorToProvider'],                                                                                                                                                       
+    },                                                       
+    {                                                                                                                                                                                                          
+      id: 'admissionCapture',                                                                                                                                                                                  
+      label: 'Admission Capture',                                                                                                                                                                              
+      shortDescription: 'Capture revenue when LWBS-recovered patients require inpatient admission.',                                                                                                           
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['ed'],                                   
+      visibility: 'quantified',                                                                                                                                                                                
+      enabledStateKey: 'edThroughputEnabled',                                                                                                                                                                  
+      expandedStateKey: 'edThroughputExpanded',              
+      childOfDriverId: 'lwbsRecovery',                                                                                                                                                                         
+    },                                                       
+    {                                                                                                                                                                                                          
+      id: 'roundingEfficiency',                                                                                                                                                                                
+      label: 'Rounding Efficiency',                                                                                                                                                                            
+      shortDescription: 'More time at the bedside during rounds rather than in the EHR.',                                                                                                                      
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['inpatient'],                   
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipRoundingEnabled',                                                                                                                                                                    
+      expandedStateKey: 'ipRoundingExpanded',                
+    },                                                                                                                                                                                                         
+    {                                                     
+      id: 'bedsideTime',                                     
+      label: 'Bedside / Direct Care Time',                                                                                                                                                                     
+      shortDescription: 'Reclaimed documentation time spent in direct patient care.',                                                                                                                          
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['nursing'],                                                                                                                                                                                   
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'nursingCareTimeEnabled',             
+      expandedStateKey: 'nursingCareTimeExpanded',                                                                                                                                                             
+      trackedMeasureIds: ['bedsideTimeRatio'],            
+    },                                                       
+    // Workforce / Revenue / Quality drivers added in Sprint 2D                                                                                                                                                
+  ];                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  export function getDriversForPage(quadrant: ExploreQuadrant, setting: ExploreSetting): ExploreDriver[] {                                                                                                     
+    return EXPLORE_DRIVERS.filter(d => d.quadrant === quadrant && d.settings.includes(setting));                                                                                                               
+  }                                                          
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Reusable DriverCard component                     
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILE: client/src/components/explore/DriverCard.tsx
+                                                                                                                                                                                                               
+  A single component for the toggle-and-expand pattern used everywhere. Same visual treatment as today's ExploreValueDrivers cards. Will be used by all 4 quadrant pages.
+                                                                                                                                                                                                               
+  import { ChevronDown } from "lucide-react";                
+  import { motion, AnimatePresence } from "framer-motion";                                                                                                                                                     
+  import { type ReactNode } from "react";                    
+                                                             
+  interface DriverCardProps {                                                                                                                                                                                  
+    title: string;                                           
+    subtitle: string;                                                                                                                                                                                          
+    enabled: boolean;                                   
+    expanded: boolean;                                                                                                                                                                                         
+    onToggle: () => void;                        
+    onExpand: () => void;                                                                                                                                                                                      
+    testId?: string;                                         
+    isChild?: boolean;                                                                                                                                                                                         
+    children: ReactNode;                                
+  }                                      
+                                                 
+  export default function DriverCard({                                                                                                                                                                         
+    title,                                                   
+    subtitle,                                                                                                                                                                                                  
+    enabled,                                            
+    expanded,    
+    onToggle,
+    onExpand,                                                                                                                                                                                                  
+    testId,                              
+    isChild = false,                                                                                                                                                                                           
+    children,                                             
+  }: DriverCardProps) {                                      
+    return (                                                 
+      <div className={isChild ? "ml-6 mt-3" : ""}>      
+        <div className={`w-full p-4 text-left transition-all ${
+          enabled                                
+            ? (expanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")                                                                                                                                     
+            : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
+        }`}>                                                                                                                                                                                                   
+          <div className="flex items-center justify-between">
+            <div className="flex-1">                         
+              <p className="font-semibold text-black">{title}</p>
+              <p className="text-sm text-[#888888]">{subtitle}</p>                                                                                                                                             
+            </div>                                                                                                                                                                                             
+            <div className="flex items-center gap-3">                                                                                                                                                          
+              {enabled && (                                                                                                                                                                                    
+                <button                                                                                                                                                                                        
+                  onClick={onExpand}                                                                                                                                                                           
+                  className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"                                                                                                                                 
+                  data-testid={testId ? `${testId}-expand` : undefined}
+                >                                                                                                                                                                                              
+                  <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${expanded ? "rotate-0" : "-rotate-90"}`} />
+                </button>                                                                                                                                                                                      
+              )}                                             
+              <button                                                                                                                                                                                          
+                onClick={onToggle}                           
+                className={`w-12 h-6 rounded-full relative transition-all ${enabled ? "bg-[#EA2C00]" : "bg-[#D1D5DB]"}`}                                                                                       
+                data-testid={testId}                                                                                                                                                                           
+              >                                  
+                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${enabled ? "right-0.5" : "left-0.5"}`} />                                                                      
+              </button>                                                                                                                                                                                        
+            </div>                                                                                                                                                                                             
+          </div>                                                                                                                                                                                               
+        </div>                                               
+        <AnimatePresence>                                    
+          {enabled && expanded && (                                                                                                                                                                            
+            <motion.div                                      
+              initial={{ opacity: 0, height: 0 }}                                                                                                                                                              
+              animate={{ opacity: 1, height: "auto" }}                                                                                                                                                         
+              exit={{ opacity: 0, height: 0 }}   
+              className="overflow-hidden"                                                                                                                                                                      
+            >                                                
+              <div className="bg-white rounded-b-lg p-5">{children}</div>                                                                                                                                      
+            </motion.div>                               
+          )}                                              
+        </AnimatePresence>                                   
+      </div>                                                                                                                                                                                                   
+    );                                                  
+  }                                                                                                                                                                                                            
+                                                             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — State additions in ExploreFlow.tsx           
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx 
+                                                                                                                                                                                                               
+  Add 3 things:                                              
+                                                                                                                                                                                                               
+  1. EXPORT a new type for the Other Financial Benefits item. Place it near the other exported types (around line 13-22):
+                                                             
+  export interface OtherFinancialBenefitItem {               
+    id: string;                                                                                                                                                                                                
+    label: string;                                           
+    amount: number;                                                                                                                                                                                            
+    type: 'annual' | 'oneTime';   // 'oneTime' = Year-1 spike only, excluded from Y2/Y3                                                                                                                        
+    quadrant: 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
+  }                                                                                                                                                                                                            
+                                                          
+  2. Add a new field to ExploreState (around lines 266-312, after the calculatedValues field):                                                                                                                 
+                                                             
+    otherFinancialBenefits: OtherFinancialBenefitItem[];                                                                                                                                                       
+                                                             
+  3. Add the default value to DEFAULT_EXPLORE_STATE (around lines 314-532):
+                                                                                                                                                                                                               
+    otherFinancialBenefits: [],                                                                                                                                                                                
+                                                                                                                                                                                                               
+  4. Add a missing expand field. The driver registry references `edThroughputExpanded` but that field does not yet exist in TimeDriverInputs. ADD it:                                                          
+                                                        
+  In the TimeDriverInputs interface around line 61-154, near where edThroughputEnabled is declared:                                                                                                            
+    edThroughputExpanded: boolean;                           
+                                                                                                                                                                                                               
+  In DEFAULT_EXPLORE_STATE.timeDriverInputs around line 348: 
+    edThroughputExpanded: false,                                                                                                                                                                               
+                                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Replace ExploreCapacity.tsx placeholder with the real page
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreCapacity.tsx (REPLACE FULL CONTENTS)
+                                                                                                                                                                                                               
+  import { ArrowRight, Plus, Trash2 } from "lucide-react";                                                                                                                                                     
+  import { Button } from "@/components/ui/button";        
+  import { motion } from "framer-motion";                                                                                                                                                                      
+  import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";                                                                                                                             
+  import DriverCard from "@/components/explore/DriverCard";  
+  import { FormattedNumberInput } from "@/components/FormattedNumberInput";                                                                                                                                    
+  import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
+  import { type ExploreState, type OtherFinancialBenefitItem } from "./ExploreFlow";                                                                                                                           
+                                                                                                                                                                                                               
+  interface ExploreCapacityProps {                                                                                                                                                                             
+    state: ExploreState;                                                                                                                                                                                       
+    updateState: (updates: Partial<ExploreState>) => void;                                                                                                                                                     
+    onNext: () => void;                                                                                                                                                                                        
+    onBack: () => void;                                                                                                                                                                                        
+    onHome: () => void;                                                                                                                                                                                        
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  export default function ExploreCapacity({ state, updateState, onNext, onBack, onHome }: ExploreCapacityProps) {                                                                                              
+    const setting = state.careSetting;                  
+    const drivers = setting ? getDriversForPage('Capacity', setting) : [];                                                                                                                                     
+    const topLevelDrivers = drivers.filter(d => !d.childOfDriverId);
+                                                                                                                                                                                                               
+    const updateTimeDriverInputs = (updates: Partial<typeof state.timeDriverInputs>) => {
+      updateState({ timeDriverInputs: { ...state.timeDriverInputs, ...updates } });                                                                                                                            
+    };                                                       
+                                                                                                                                                                                                               
+    const isEnabled = (driver: ExploreDriver): boolean => {  
+      return Boolean((state.timeDriverInputs as any)[driver.enabledStateKey]);                                                                                                                                 
+    };                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    const isExpanded = (driver: ExploreDriver): boolean => {                                                                                                                                                   
+      return driver.expandedStateKey ? Boolean((state.timeDriverInputs as any)[driver.expandedStateKey]) : false;                                                                                              
+    };                                                                                                                                                                                                         
+                                                        
+    const toggleEnabled = (driver: ExploreDriver) => {                                                                                                                                                         
+      const current = isEnabled(driver);                     
+      const updates: any = { [driver.enabledStateKey]: !current };                                                                                                                                             
+      if (!current && driver.expandedStateKey) {             
+        updates[driver.expandedStateKey] = true;                                                                                                                                                               
+      }                                                   
+      updateTimeDriverInputs(updates);                                                                                                                                                                         
+    };                                                       
+                                                                                                                                                                                                               
+    const toggleExpand = (driver: ExploreDriver) => {   
+      if (!driver.expandedStateKey) return;                                                                                                                                                                    
+      updateTimeDriverInputs({ [driver.expandedStateKey]: !isExpanded(driver) } as any);                                                                                                                       
+    };                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    // Other Financial Benefits filtered to Capacity                                                                                                                                                           
+    const benefits = (state.otherFinancialBenefits ?? []).filter(b => b.quadrant === 'Capacity');
+                                                             
+    const addBenefit = () => {                                                                                                                                                                                 
+      const newItem: OtherFinancialBenefitItem = {           
+        id: `cap-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,                                                                                                                                     
+        label: '',                                                                                                                                                                                             
+        amount: 0,                                      
+        type: 'annual',                                                                                                                                                                                        
+        quadrant: 'Capacity',                                
+      };                                                                                                                                                                                                       
+      updateState({ otherFinancialBenefits: [...(state.otherFinancialBenefits ?? []), newItem] });
+    };                                                                                                                                                                                                         
+                                                 
+    const updateBenefit = (id: string, updates: Partial<OtherFinancialBenefitItem>) => {                                                                                                                       
+      updateState({                                                                                                                                                                                            
+        otherFinancialBenefits: (state.otherFinancialBenefits ?? []).map(b => b.id === id ? { ...b, ...updates } : b),                                                                                         
+      });                                                                                                                                                                                                      
+    };                                                    
+                                                             
+    const removeBenefit = (id: string) => {                                                                                                                                                                    
+      updateState({                                          
+        otherFinancialBenefits: (state.otherFinancialBenefits ?? []).filter(b => b.id !== id),                                                                                                                 
+      });                                               
+    };                                                                                                                                                                                                         
+                                                          
+    const formatCurrency = (n: number) => '$' + n.toLocaleString();                                                                                                                                            
+                                                             
+    return (                                                                                                                                                                                                   
+      <div className="min-h-screen bg-white">
+        <UnifiedHeader                   
+          pathType="explore"                                                                                                                                                                                   
+          currentStep={4}                                 
+          totalSteps={9}                                                                                                                                                                                       
+          stepName="Capacity"                                
+          onBack={onBack}                                 
+          onHome={onHome}                                    
+        />                                                   
+        <UnifiedHeaderSpacer />                                                                                                                                                                                
+                                                          
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">                                                                                                                                    
+          <div className="flex flex-col lg:flex-row gap-10">                                                                                                                                                   
+            {/* Main Content */}                          
+            <div className="flex-1 min-w-0 max-w-[700px]">                                                                                                                                                     
+              <motion.div                                    
+                className="text-center mb-6"                                                                                                                                                                   
+                initial={{ opacity: 0, y: 20 }}              
+                animate={{ opacity: 1, y: 0 }}                                                                                                                                                                 
+              >                                                                                                                                                                                                
+                <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
+                  Capacity                                                                                                                                                                                     
+                </h1>                                        
+                <p className="text-base text-[#888888]">                                                                                                                                                       
+                  What could you do with the time Abridge gives back?
+                </p>                                                                                                                                                                                           
+              </motion.div>                                                                                                                                                                                    
+                                                          
+              <motion.div                                                                                                                                                                                      
+                className="bg-[#F5F0EB] rounded-lg p-5 mb-6"                                                                                                                                                   
+                initial={{ opacity: 0, y: 20 }}         
+                animate={{ opacity: 1, y: 0 }}                                                                                                                                                                 
+                transition={{ delay: 0.1 }}               
+              >                                                                                                                                                                                                
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">How to Use This Section</p>
+                <p className="text-sm text-black leading-relaxed">                                                                                                                                             
+                  Engage with the drivers that match your strategic priorities. Skip the ones that don't apply.
+                </p>                                      
+              </motion.div>                                                                                                                                                                                    
+                                                             
+              {/* Drivers */}                                                                                                                                                                                  
+              <motion.div                                    
+                className="bg-[#F5F0EB] rounded-lg p-6 space-y-4 mb-6"                                                                                                                                         
+                initial={{ opacity: 0, y: 20 }}                                                                                                                                                                
+                animate={{ opacity: 1, y: 0 }}   
+                transition={{ delay: 0.15 }}                                                                                                                                                                   
+              >                                              
+                <div>                                                                                                                                                                                          
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Drivers</p>
+                  <div className="h-px bg-[#D1D5DB] mb-6" /> 
+                </div>                                  
+                                                                                                                                                                                                               
+                {topLevelDrivers.length === 0 && (           
+                  <p className="text-sm text-[#888888] italic">No Capacity drivers configured for this care setting.</p>                                                                                       
+                )}                                           
+                                                                                                                                                                                                               
+                {topLevelDrivers.map(driver => {          
+                  const enabled = isEnabled(driver);                                                                                                                                                           
+                  const expanded = isExpanded(driver);                                                                                                                                                         
+                  const childDrivers = drivers.filter(d => d.childOfDriverId === driver.id);                                                                                                                   
+                                                                                                                                                                                                               
+                  return (                              
+                    <DriverCard                                                                                                                                                                                
+                      key={driver.id}                        
+                      title={driver.label}                                                                                                                                                                     
+                      subtitle={driver.shortDescription}
+                      enabled={enabled}                                                                                                                                                                        
+                      expanded={expanded}        
+                      onToggle={() => toggleEnabled(driver)}                                                                                                                                                   
+                      onExpand={() => toggleExpand(driver)}  
+                      testId={`toggle-${driver.id}`}                                                                                                                                                           
+                    >                                   
+                      {driver.visibility === 'qualitative' ? (
+                        <div>                                
+                          <p className="text-sm text-black leading-relaxed mb-4">                                                                                                                              
+                            {driver.shortDescription}     
+                          </p>                                                                                                                                                                                 
+                          <div className="bg-[#F5F0EB] rounded-lg p-3">
+                            <p className="text-xs text-[#666666] italic">                                                                                                                                      
+                              Qualitative driver. No financial value modeled. Tracked post-deployment as a strategic outcome.
+                            </p>                                                                                                                                                                               
+                          </div>                                                                                                                                                                               
+                        </div>                               
+                      ) : (                                                                                                                                                                                    
+                        <div className="bg-[#F5F0EB] rounded-lg p-4">
+                          <p className="text-sm text-[#888888] italic">                                                                                                                                        
+                            Calculation logic wires up in the next sprint.                                                                                                                                     
+                          </p>                            
+                        </div>                                                                                                                                                                                 
+                      )}                                     
+                                                                                                                                                                                                               
+                      {/* Child drivers (e.g., Admission Capture under LWBS) */}
+                      {childDrivers.length > 0 && (     
+                        <div className="mt-4 space-y-2">                                                                                                                                                       
+                          {childDrivers.map(child => {                                                                                                                                                         
+                            const childEnabled = isEnabled(child);                                                                                                                                             
+                            const childExpanded = isExpanded(child);                                                                                                                                           
+                            return (                                                                                                                                                                           
+                              <DriverCard               
+                                key={child.id}                                                                                                                                                                 
+                                title={child.label}          
+                                subtitle={child.shortDescription}                                                                                                                                              
+                                enabled={childEnabled}  
+                                expanded={childExpanded}                                                                                                                                                       
+                                onToggle={() => toggleEnabled(child)}
+                                onExpand={() => toggleExpand(child)}                                                                                                                                           
+                                testId={`toggle-${child.id}`}
+                                isChild                                                                                                                                                                        
+                              >                           
+                                <div className="bg-[#F5F0EB] rounded-lg p-4">
+                                  <p className="text-sm text-[#888888] italic">
+                                    Calculation logic wires up in the next sprint.                                                                                                                             
+                                  </p>                    
+                                </div>                                                                                                                                                                         
+                              </DriverCard>                                                                                                                                                                    
+                            );                          
+                          })}                                                                                                                                                                                  
+                        </div>                            
+                      )}                                                                                                                                                                                       
+                    </DriverCard>                            
+                  );                                                                                                                                                                                           
+                })}                      
+              </motion.div>
+                                                                                                                                                                                                               
+              {/* Other Financial Benefits */}
+              <motion.div                                                                                                                                                                                      
+                className="bg-[#F5F0EB] rounded-lg p-6 mb-6"
+                initial={{ opacity: 0, y: 20 }}              
+                animate={{ opacity: 1, y: 0 }}               
+                transition={{ delay: 0.2 }}             
+              >                                           
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Other Financial Benefits</p>
+                <div className="h-px bg-[#D1D5DB] mb-4" />                                                                                                                                                     
+                                                        
+                {benefits.length === 0 ? (                                                                                                                                                                     
+                  <p className="text-sm text-[#888888] mb-3">
+                    Add custom Capacity-related financial benefits specific to your organization.                                                                                                              
+                  </p>                                       
+                ) : (                                                                                                                                                                                          
+                  <div className="space-y-3 mb-3">        
+                    {benefits.map(benefit => (                                                                                                                                                                 
+                      <div key={benefit.id} className="bg-white rounded-lg p-3 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">                                                                 
+                        <input                                                                                                                                                                                 
+                          type="text"                                                                                                                                                                          
+                          placeholder="Description"       
+                          value={benefit.label}                                                                                                                                                                
+                          onChange={e => updateBenefit(benefit.id, { label: e.target.value })}
+                          className="flex-1 h-10 px-3 border border-[#E5E5E5] rounded text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"                                        
+                          data-testid={`benefit-label-${benefit.id}`}
+                        />                                   
+                        <div className="relative w-full sm:w-32">                                                                                                                                              
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                          <FormattedNumberInput                                                                                                                                                                
+                            value={benefit.amount}                                                                                                                                                             
+                            onChange={(v: number) => updateBenefit(benefit.id, { amount: v })}
+                            className="h-10 pl-7"                                                                                                                                                              
+                            data-testid={`benefit-amount-${benefit.id}`}                                                                                                                                       
+                          />                                                                                                                                                                                   
+                        </div>                                                                                                                                                                                 
+                        <select                                                                                                                                                                                
+                          value={benefit.type}                                                                                                                                                                 
+                          onChange={e => updateBenefit(benefit.id, { type: e.target.value as 'annual' | 'oneTime' })}
+                          className="h-10 px-3 border border-[#E5E5E5] rounded text-sm bg-white focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"                                      
+                          data-testid={`benefit-type-${benefit.id}`}                                                                                                                                           
+                        >                                                                                                                                                                                      
+                          <option value="annual">Annual</option>                                                                                                                                               
+                          <option value="oneTime">One-Time (Y1 only)</option>                                                                                                                                  
+                        </select>                            
+                        <button                              
+                          onClick={() => removeBenefit(benefit.id)}
+                          className="p-2 text-[#888888] hover:text-[#EA2C00] transition-colors"                                                                                                                
+                          data-testid={`benefit-remove-${benefit.id}`}                                                                                                                                         
+                        >                                                                                                                                                                                      
+                          <Trash2 className="w-4 h-4" />                                                                                                                                                       
+                        </button>                                                                                                                                                                              
+                      </div>                                                                                                                                                                                   
+                    ))}                                 
+                  </div>                                                                                                                                                                                       
+                )}                                                                                                                                                                                             
+                                                                                                                                                                                                               
+                <button                                                                                                                                                                                        
+                  onClick={addBenefit}                                                                                                                                                                         
+                  className="text-sm font-medium text-[#EA2C00] hover:text-[#EA2C00]/80 flex items-center gap-1.5 transition-colors"
+                  data-testid="button-add-benefit"
+                >                                                                                                                                                                                              
+                  <Plus className="w-4 h-4" /> Add a benefit
+                </button>                                                                                                                                                                                      
+              </motion.div>                                  
+                                                             
+              {/* Continue Button - Mobile */}          
+              <motion.div                        
+                className="flex justify-center lg:hidden"                                                                                                                                                      
+                initial={{ opacity: 0 }}                                                                                                                                                                       
+                animate={{ opacity: 1 }}                                                                                                                                                                       
+                transition={{ delay: 0.25 }}                                                                                                                                                                   
+              >                                           
+                <Button                                      
+                  onClick={onNext}                                                                                                                                                                             
+                  className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full gap-2"
+                  data-testid="button-continue"                                                                                                                                                                
+                >                                
+                  Continue to Workforce                                                                                                                                                                        
+                  <ArrowRight className="w-4 h-4" />         
+                </Button>                                                                                                                                                                                      
+              </motion.div>                             
+            </div>                                        
+                                                             
+            {/* Right Panel */}                                                                                                                                                                                
+            <motion.div                                 
+              className="w-full lg:w-[320px] flex-shrink-0"                                                                                                                                                    
+              initial={{ opacity: 0, x: 20 }}    
+              animate={{ opacity: 1, x: 0 }}                                                                                                                                                                   
+              transition={{ delay: 0.2 }}                    
+            >                                                                                                                                                                                                  
+              <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Capacity Value</p>
+                <p className="text-sm text-white/50 mb-4">From this quadrant</p>
+                                                                                                                                                                                                               
+                {drivers.length === 0 ? (                    
+                  <p className="text-sm text-white/50">No drivers for this setting.</p>                                                                                                                        
+                ) : (                                                                                                                                                                                          
+                  <div className="space-y-3 mb-4">           
+                    {drivers.map(d => {                                                                                                                                                                        
+                      const enabled = isEnabled(d);                                                                                                                                                            
+                      return (                                                                                                                                                                                 
+                        <div key={d.id} className={`flex justify-between items-center ${d.childOfDriverId ? 'pl-4' : ''}`}>                                                                                    
+                          <div className="flex items-center gap-2 min-w-0">                                                                                                                                    
+                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${enabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />                                                                             
+                            <span className="text-sm text-[#888888] truncate">{d.label}</span>                                                                                                                 
+                          </div>                                                                                                                                                                               
+                          <span className={`text-sm font-semibold ${enabled ? 'text-white' : 'text-[#666666]'}`}>
+                            {enabled && d.visibility === 'qualitative' ? 'Qualitative' : '—'}                                                                                                                  
+                          </span>                            
+                        </div>                                                                                                                                                                                 
+                      );                                                                                                                                                                                       
+                    })}                                                                                                                                                                                        
+                  </div>                                                                                                                                                                                       
+                )}                                      
+                                                                                                                                                                                                               
+                {benefits.length > 0 && (                                                                                                                                                                      
+                  <>                                                                                                                                                                                           
+                    <div className="h-px bg-[#333333] my-3" />                                                                                                                                                 
+                    <div className="space-y-2">                                                                                                                                                                
+                      {benefits.map(b => (                   
+                        <div key={b.id} className="flex justify-between items-center">
+                          <span className="text-sm text-[#888888] truncate">{b.label || 'Other benefit'}</span>
+                          <span className="text-sm text-white">
+                            {formatCurrency(b.amount)}                                                                                                                                                         
+                            <span className="text-xs text-white/40 ml-1">{b.type === 'oneTime' ? 'Y1' : '/yr'}</span>
+                          </span>                                                                                                                                                                              
+                        </div>                               
+                      ))}                                    
+                    </div>                                                                                                                                                                                     
+                  </>                                        
+                )}                                                                                                                                                                                             
+                                                             
+                <div className="h-px bg-[#333333] my-4" />                                                                                                                                                     
+                                                                                                                                                                                                               
+                <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Quadrant Total</p>                                                                                               
+                <p className="text-2xl font-bold text-[#EA2C00]">$0</p>                                                                                                                                        
+                <p className="text-xs text-white/50 mt-1">Calculations wire up in the next sprint.</p>                                                                                                         
+                                                             
+                <div className="hidden lg:block mt-6">                                                                                                                                                         
+                  <Button                                    
+                    onClick={onNext}                         
+                    className="w-full h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full gap-2"
+                    data-testid="button-panel-continue"                                                                                                                                                        
+                  >                                     
+                    Continue to Workforce                                                                                                                                                                      
+                    <ArrowRight className="w-4 h-4" />                                                                                                                                                         
+                  </Button>                                                                                                                                                                                    
+                </div>                                                                                                                                                                                         
+              </div>                                                                                                                                                                                           
+            </motion.div>                                    
+          </div>                                                                                                                                                                                               
+        </div>                                          
+      </div>                                                                                                                                                                                                   
+    );                                   
+  }                                                                                                                                                                                                            
+                                         
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  VERIFICATION                                            
+  ═══════════════════════════════════════════════════════════
+                                                             
+  After all tasks:                                      
+                                                 
+  1. TypeScript compiles. Watch for strict-mode warnings on the `(state.timeDriverInputs as any)` casts — these are intentional, the dynamic state-key access is what makes the registry pattern work.
+                                                                                                                                                                                                               
+  2. Walk an Outpatient through to Capacity (step 4/9):      
+     - "Patient Access" toggle appears                                                                                                                                                                         
+     - Toggle on → card expands → shows "Calculation logic wires up in the next sprint" stub. That's expected.
+     - Toggle off → card collapses                           
+     - Click chevron → expand/collapse without changing enabled state                                                                                                                                          
+     - Subtitle reads: "Reinvest reclaimed documentation time into additional patient visits."
+                                                                                                                                                                                                               
+  3. Walk an ED through Capacity:                            
+     - "LWBS Recovery" toggle appears                                                                                                                                                                          
+     - Toggle on → "Admission Capture" appears NESTED below it (indented, child styling)
+     - Toggle LWBS off → Admission Capture nested toggle disappears entirely                                                                                                                                   
+     - Each shows the same calc-stub message when expanded                                                                                                                                                     
+                                                                                                                                                                                                               
+  4. Walk an Inpatient through Capacity:                                                                                                                                                                       
+     - "Rounding Efficiency" toggle appears                                                                                                                                                                    
+     - Toggle on → expand shows the qualitative description + "Qualitative driver. No financial value modeled." callout. NOT the calc stub.                                                                    
+                                                                                                                                                                                                               
+  5. Walk Nursing through Capacity:                                                                                                                                                                            
+     - "Bedside / Direct Care Time" toggle appears                                                                                                                                                             
+     - Toggle on → qualitative content (same pattern as IP Rounding)                                                                                                                                           
+                                                                                                                                                                                                               
+  6. Other Financial Benefits section:                                                                                                                                                                         
+     - Click "+ Add a benefit" → row appears with text input, $ input, dropdown (Annual/One-Time Y1), and trash icon                                                                                           
+     - Add multiple → all persist                                                                                                                                                                              
+     - Edit values → persist                                                                                                                                                                                   
+     - Click trash → row removed                          
+     - Right panel reflects the benefits live (label + $ amount + Y1 or /yr suffix)                                                                                                                            
+                                                                                                                                                                                                               
+  7. Right panel sticky summary:                                                                                                                                                                               
+     - Shows each driver with its enabled-state dot (red when on, gray when off)                                                                                                                               
+     - Enabled qualitative drivers show "Qualitative"; quantified drivers show — for now (calc not wired)                                                                                                      
+     - Quadrant Total shows $0 with "Calculations wire up in the next sprint" caption                                                                                                                          
+                                                                                                                                                                                                               
+  8. Navigation: Continue button advances to Workforce placeholder. Back returns to Time Savings. Browser back/forward work.                                                                                   
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - ExploreValueDrivers.tsx, ExploreCareQuality.tsx, ExploreDocQuality.tsx are NOT touched in this sprint. They remain in the codebase as the source for calc logic that 2C2 will port over.                   
+  - The new ExploreDriver schema is intentionally minimal. Sprint 2D will add Workforce / Revenue / Quality drivers to the same EXPLORE_DRIVERS array.                                                         
+  - The childOfDriver pattern is exercised in this sprint via Admission Capture under LWBS in ED. Workforce will use it again in 2D for Locum/Agency under Retention. 
