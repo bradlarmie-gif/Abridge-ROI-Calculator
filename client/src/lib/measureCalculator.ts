@@ -7,6 +7,7 @@ export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
 import type { ExploreSetting } from "./exploreDrivers";
 import type { ForecastScenarioLevel } from "./forecastDefaults";
+import type { PricingScenario } from "./forecastPricing";
 
 export interface ForecastAddedSetting {
   id: string;
@@ -27,6 +28,7 @@ export interface ForecastScenario {
   staffedBeds: number;
   occupancyPercent: number;
   addedSettings: ForecastAddedSetting[];
+  pricingScenarios: PricingScenario[];
 }
 
 export interface MeasureDeployment {
@@ -352,6 +354,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     staffedBeds: 0,
     occupancyPercent: 0,
     addedSettings: [],
+    pricingScenarios: [],
   },
 };
 

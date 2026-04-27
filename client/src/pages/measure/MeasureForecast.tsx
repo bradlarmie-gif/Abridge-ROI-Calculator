@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus } from "lucide-react";
+import { ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -7,8 +7,10 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
 import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting } from "@/lib/measureCalculator";
 import { computeAddedSettingValue } from "@/lib/forecastDefaults";
+import { computeScenarioInvestment, makeDefaultTiers, type PricingScenario } from "@/lib/forecastPricing";
 import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
 import AddedSettingCard from "@/components/measure/AddedSettingCard";
+import PricingScenarioCard from "@/components/measure/PricingScenarioCard";
 
 interface MeasureForecastProps {
   state: MeasureState;
@@ -69,6 +71,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     staffedBeds: 0,
     occupancyPercent: 0,
     addedSettings: [],
+    pricingScenarios: [],
   }), [state.deployment]);
 
   const projected: ForecastScenario = state.forecastScenario ?? {
@@ -78,10 +81,12 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     staffedBeds: 0,
     occupancyPercent: 0,
     addedSettings: [],
+    pricingScenarios: [],
   };
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const addedSettings = projected.addedSettings ?? [];
+  const pricingScenarios = projected.pricingScenarios ?? [];
 
   useEffect(() => {
     const looksUninitialized =
@@ -97,7 +102,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
       baseline.staffedBeds > 0 ||
       baseline.occupancyPercent > 0;
     if (looksUninitialized && hasBaseline) {
-      updateState({ forecastScenario: { ...baseline, addedSettings } });
+      updateState({ forecastScenario: { ...baseline, addedSettings, pricingScenarios } });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -106,7 +111,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     updateState({ forecastScenario: { ...projected, ...updates } });
   };
 
-  const resetScenario = () => updateState({ forecastScenario: { ...baseline, addedSettings } });
+  const resetScenario = () => updateState({ forecastScenario: { ...baseline, addedSettings, pricingScenarios } });
 
   const addCareSetting = (added: ForecastAddedSetting) => {
     updateState({ forecastScenario: { ...projected, addedSettings: [...addedSettings, added] } });
@@ -133,6 +138,47 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
   const addedSettingsTotal = useMemo(() => {
     return addedSettings.reduce((sum, a) => sum + computeAddedSettingValue(a), 0);
   }, [addedSettings]);
+
+  const combinedProviders = useMemo(() => {
+    return projected.providers + addedSettings.reduce((sum, a) => sum + a.providers, 0);
+  }, [projected.providers, addedSettings]);
+
+  const combinedEncounters = useMemo(() => {
+    return projected.encounters + addedSettings.reduce((sum, a) => sum + a.encounters, 0);
+  }, [projected.encounters, addedSettings]);
+
+  const addPricingScenario = () => {
+    const newScenario: PricingScenario = {
+      id: `pricing-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      label: pricingScenarios.length === 0 ? 'Current contract' : `Alternative ${pricingScenarios.length}`,
+      model: 'perProvider',
+      tiers: makeDefaultTiers('perProvider'),
+    };
+    updateState({
+      forecastScenario: {
+        ...projected,
+        pricingScenarios: [...pricingScenarios, newScenario],
+      },
+    });
+  };
+
+  const updatePricingScenario = (id: string, updates: Partial<PricingScenario>) => {
+    updateState({
+      forecastScenario: {
+        ...projected,
+        pricingScenarios: pricingScenarios.map(s => s.id === id ? { ...s, ...updates } : s),
+      },
+    });
+  };
+
+  const removePricingScenario = (id: string) => {
+    updateState({
+      forecastScenario: {
+        ...projected,
+        pricingScenarios: pricingScenarios.filter(s => s.id !== id),
+      },
+    });
+  };
 
   const trackedDriverIds = Object.keys(state.trackedDrivers || {});
   const trackedDrivers = useMemo(() => {
@@ -170,6 +216,21 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
   // The "Change" metric reflects the same combined number shown in the panel.
   const combinedTotal = totalProjected + addedSettingsTotal;
   const totalDelta = combinedTotal - totalRealized;
+
+  // Determine the best-value scenario (lowest investment among scenarios that price)
+  const bestValueScenarioId = useMemo(() => {
+    if (pricingScenarios.length < 2) return null;
+    const evaluated = pricingScenarios.map(s => {
+      const scale = s.model === 'perProvider' ? combinedProviders
+                  : s.model === 'perEncounter' ? combinedEncounters
+                  : 0;
+      const { value, warning } = computeScenarioInvestment(s, scale);
+      return { id: s.id, investment: value, warning };
+    }).filter(e => !e.warning && e.investment > 0);
+    if (evaluated.length === 0) return null;
+    evaluated.sort((a, b) => a.investment - b.investment);
+    return evaluated[0].id;
+  }, [pricingScenarios, combinedProviders, combinedEncounters]);
   const totalPctChange = totalRealized > 0 ? ((totalDelta / totalRealized) * 100) : 0;
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
@@ -407,6 +468,53 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               </div>
             </motion.div>
 
+            <motion.div
+              className="mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Pricing Comparison</p>
+                {pricingScenarios.length > 0 && (
+                  <p className="text-xs text-[#666666]" data-testid="text-combined-scale">
+                    Combined scale: {combinedProviders.toLocaleString()} providers · {combinedEncounters.toLocaleString()} encounters
+                  </p>
+                )}
+              </div>
+
+              {pricingScenarios.length === 0 && (
+                <div className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-3" data-testid="text-no-pricing-scenarios">
+                  <DollarSign className="w-8 h-8 text-[#888888] mx-auto mb-2" />
+                  <p className="text-sm text-[#666666] mb-1">Compare pricing models at projected scale.</p>
+                  <p className="text-xs text-[#888888]">Add the customer's current contract terms and any alternatives you want to model.</p>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {pricingScenarios.map(scenario => (
+                  <PricingScenarioCard
+                    key={scenario.id}
+                    scenario={scenario}
+                    combinedProviders={combinedProviders}
+                    combinedEncounters={combinedEncounters}
+                    combinedValue={combinedTotal}
+                    isBestValue={bestValueScenarioId === scenario.id}
+                    onUpdate={(updates) => updatePricingScenario(scenario.id, updates)}
+                    onRemove={() => removePricingScenario(scenario.id)}
+                  />
+                ))}
+
+                <button
+                  onClick={addPricingScenario}
+                  className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-1.5"
+                  data-testid="button-add-pricing-scenario"
+                >
+                  <Plus className="w-4 h-4" /> Add a pricing scenario
+                </button>
+              </div>
+            </motion.div>
+
             <motion.div className="flex justify-center mt-8 lg:hidden">
               <Button
                 onClick={onNext}
@@ -449,6 +557,33 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                   <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-combined-total">{formatCurrency(totalProjected + addedSettingsTotal)}</span>
                 </div>
               </div>
+
+              {pricingScenarios.length >= 2 && bestValueScenarioId && (() => {
+                const best = pricingScenarios.find(s => s.id === bestValueScenarioId);
+                if (!best) return null;
+                const scale = best.model === 'perProvider' ? combinedProviders
+                            : best.model === 'perEncounter' ? combinedEncounters
+                            : 0;
+                const { value: investment } = computeScenarioInvestment(best, scale);
+                const net = combinedTotal - investment;
+                return (
+                  <div data-testid="panel-best-pricing">
+                    <div className="h-px bg-[#333333] my-4" />
+                    <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Best Pricing</p>
+                    <p className="text-sm text-white/50 mb-3" data-testid="text-best-pricing-label">{best.label}</p>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-white/50">Investment</span>
+                        <span className="text-sm font-medium text-white/80" data-testid="text-best-pricing-investment">{formatCurrency(investment)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-white/50">Net annual</span>
+                        <span className="text-base font-bold text-[#EA2C00]" data-testid="text-best-pricing-net">{formatCurrency(net)}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="h-px bg-[#333333] my-4" />
 
