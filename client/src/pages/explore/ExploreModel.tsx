@@ -1388,6 +1388,97 @@ export default function ExploreModel({
           </div>
         </motion.div>
 
+        {/* Outpatient-specific Connected Value narrative section */}
+        {state.careSetting === 'outpatient' && (
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+          >
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
+                  <Link className="w-5 h-5 text-[#EA2C00]" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
+                  <p className="text-sm text-[#888888] italic">The OP visit is where the chart starts</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-[#666666] mb-5">
+                Outpatient is the front door for most patient relationships. Documentation that starts
+                in primary care or specialty visits flows into ED encounters, hospital admissions,
+                referrals, and payer audits. Every adjacent care setting inherits the quality — or the
+                gaps — of the OP note.
+              </p>
+
+              <p className="text-sm font-semibold text-black mb-3">Better OP documentation directly impacts:</p>
+
+              <div className="space-y-3 mb-5">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <BarChart3 className="w-4 h-4 text-[#888888]" />
+                    <span className="font-semibold text-black">MA Risk Capture & RAF</span>
+                  </div>
+                  <p className="text-sm text-[#666666]">
+                    HCCs documented during OP visits feed the patient's annual RAF score. Each captured
+                    condition compounds across every downstream setting that touches that patient for
+                    the rest of the year.
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FileText className="w-4 h-4 text-[#888888]" />
+                    <span className="font-semibold text-black">Specialist Referral Velocity</span>
+                  </div>
+                  <p className="text-sm text-[#666666]">
+                    Complete referral notes accelerate specialist intake and reduce the back-and-forth.
+                    Specialty teams see the patient sooner with a clearer picture.
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Check className="w-4 h-4 text-[#888888]" />
+                    <span className="font-semibold text-black">Care Continuity Across Settings</span>
+                  </div>
+                  <p className="text-sm text-[#666666]">
+                    When the OP note is complete, the ED clinician, the hospitalist, and the care team
+                    seeing the same patient downstream spend less time piecing together history. Inbox
+                    burden drops across the organization.
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FileCheck className="w-4 h-4 text-[#888888]" />
+                    <span className="font-semibold text-black">Audit & Compliance Posture</span>
+                  </div>
+                  <p className="text-sm text-[#666666]">
+                    Documentation completeness in OP sets the floor for audit defensibility. Payer
+                    reviews of any encounter pull the OP record into context.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
+                <div className="flex items-start gap-3">
+                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">
+                      OP value compounds when Abridge is also used in <span className="font-bold">ED</span> and <span className="font-bold">Inpatient</span>.
+                    </p>
+                    <p className="text-sm opacity-80 mt-1">
+                      The chart that starts here flows into every downstream encounter — better OP
+                      documentation makes everything else easier.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* ED-specific Downstream Value narrative section */}
         {state.careSetting === 'ed' && (
           <motion.div
