@@ -4,20 +4,28 @@ import {
   Text,
   View,
   StyleSheet,
+  Svg,
+  Polyline,
+  Line,
+  Circle,
   pdf,
   Font,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
-import type { MeasureState, MeasureCareSetting } from "@/lib/measureCalculator";
-import { getActiveMetrics, getMonthsFromGoLive, EM_TO_WRVU, CONFIDENCE_LABELS } from "@/lib/measureCalculator";
-import {
-  OUTPATIENT_METRICS,
-  ED_METRICS,
-  INPATIENT_METRICS,
-  NURSING_METRICS,
-  type MetricDefinition,
-} from "@/lib/measureCareSettings";
+import type { MeasureState } from "@/lib/measureCalculator";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
+import {
+  EXPLORE_DRIVERS,
+  type ExploreSetting,
+  type ExploreQuadrant,
+} from "@/lib/exploreDrivers";
+import { computeAddedSettingValue, SETTING_LABELS } from "@/lib/forecastDefaults";
+import {
+  computeScenarioInvestment,
+  PRICING_MODEL_LABELS,
+  PRICING_MODEL_RATE_SUFFIX,
+  PRICING_MODEL_SCALE_LABEL,
+} from "@/lib/forecastPricing";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
 
@@ -54,10 +62,11 @@ const s = StyleSheet.create({
   eyebrow: { fontSize: 8, color: C.orange, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 },
   headline: { fontSize: 20, fontWeight: "bold", color: C.dark, lineHeight: 1.2, marginBottom: 4 },
   subline: { fontSize: 9, color: C.muted, marginBottom: 14 },
-  narrative: { fontSize: 10, color: C.mid, lineHeight: 1.65, marginBottom: 12 },
+  narrative: { fontSize: 10, color: C.mid, lineHeight: 1.65, marginBottom: 10 },
+  sectionHeading: { fontSize: 13, fontWeight: "bold", color: C.dark, marginBottom: 8, marginTop: 4 },
   rule: { borderBottomWidth: 1, borderBottomColor: C.border, marginVertical: 10 },
-  card: { backgroundColor: C.card, borderRadius: 4, padding: 14, marginBottom: 8 },
-  cardOutline: { backgroundColor: C.bg, borderWidth: 1, borderColor: C.border, borderRadius: 4, padding: 12, marginBottom: 8 },
+  card: { backgroundColor: C.card, borderRadius: 4, padding: 12, marginBottom: 8 },
+  cardOutline: { backgroundColor: C.bg, borderWidth: 1, borderColor: C.border, borderRadius: 4, padding: 10, marginBottom: 6 },
   callout: { backgroundColor: C.card, borderLeftWidth: 3, borderLeftColor: C.orange, padding: 12, marginBottom: 8, borderRadius: 4 },
   footer: { marginTop: "auto", flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTopWidth: 1, borderTopColor: C.border },
   footerLeft: { fontSize: 9, color: C.orange, fontWeight: "bold" },
@@ -66,452 +75,159 @@ const s = StyleSheet.create({
   confHeader: { fontSize: 7.5, color: C.muted, textTransform: "uppercase", letterSpacing: 1.5, textAlign: "right", marginBottom: 14 },
   statRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
   statCard: { flex: 1, backgroundColor: C.card, padding: 12, borderRadius: 4, alignItems: "center" },
-  statNum: { fontSize: 20, fontWeight: "bold", color: C.dark, marginBottom: 2 },
-  statLabel: { fontSize: 8, color: C.muted, textAlign: "center" },
-  metricRowHeader: { flexDirection: "row", paddingVertical: 6, paddingHorizontal: 10, backgroundColor: C.card, borderBottomWidth: 2, borderBottomColor: C.border, alignItems: "center" },
-  metricRow: { flexDirection: "row", paddingVertical: 7, paddingHorizontal: 10, borderBottomWidth: 1, borderBottomColor: C.border, alignItems: "flex-start" },
-  mName: { fontSize: 10, fontWeight: "bold", color: C.dark, flex: 1 },
-  mBefore: { fontSize: 10, color: C.mid, width: 72, textAlign: "right" },
-  mArrow: { fontSize: 10, color: C.muted, width: 18, textAlign: "center" },
-  mAfter: { fontSize: 10, fontWeight: "bold", color: C.dark, width: 72, textAlign: "right" },
-  mDelta: { fontSize: 10, fontWeight: "bold", color: C.orange, width: 60, textAlign: "right" },
-  finRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 },
-  finLabel: { fontSize: 11, fontWeight: "bold", color: C.dark, flex: 1 },
-  finValue: { fontSize: 11, fontWeight: "bold", color: C.orange },
-  finCat: { fontSize: 8, color: C.muted, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
-  finDetail: { fontSize: 9.5, color: C.mid, lineHeight: 1.5, marginBottom: 3 },
-  finFormula: { fontSize: 8.5, color: C.mid, lineHeight: 1.5, backgroundColor: C.card, padding: 8, borderRadius: 3, marginBottom: 6 },
-  signalCard: { backgroundColor: C.card, borderRadius: 4, padding: 12, marginBottom: 8 },
-  signalDomain: { fontSize: 8, color: C.orange, textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 },
-  signalTitle: { fontSize: 10, fontWeight: "bold", color: C.dark, marginBottom: 4 },
-  signalChange: { fontSize: 9, color: C.muted, marginBottom: 5 },
-  signalText: { fontSize: 9.5, color: C.mid, lineHeight: 1.55 },
-  pipRow: { flexDirection: "row", gap: 4, marginBottom: 8 },
-  pip: { flex: 1, height: 4, borderRadius: 2, backgroundColor: C.border },
-  pipOn: { flex: 1, height: 4, borderRadius: 2, backgroundColor: C.orange },
-  bulletRow: { flexDirection: "row", gap: 8, marginBottom: 6, alignItems: "flex-start" },
-  bullet: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.orange, marginTop: 3 },
+  statNum: { fontSize: 18, fontWeight: "bold", color: C.dark, marginBottom: 2 },
+  statLabel: { fontSize: 8, color: C.muted, textAlign: "center", textTransform: "uppercase", letterSpacing: 1 },
+  quadHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6, marginTop: 6 },
+  quadName: { fontSize: 11, fontWeight: "bold", color: C.orange, textTransform: "uppercase", letterSpacing: 1.2 },
+  quadTotal: { fontSize: 10, fontWeight: "bold", color: C.dark },
+  driverHeaderRow: { flexDirection: "row", alignItems: "center", marginBottom: 2 },
+  driverLabel: { fontSize: 10, fontWeight: "bold", color: C.dark, flex: 1 },
+  badgeQuant: { fontSize: 8, fontWeight: "bold", color: C.bg, backgroundColor: C.orange, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3, marginLeft: 6 },
+  badgeQual: { fontSize: 8, fontWeight: "bold", color: C.muted, backgroundColor: C.border, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3, marginLeft: 6 },
+  driverDescription: { fontSize: 8.5, color: C.mid, marginBottom: 4 },
+  calcLine: { fontSize: 9, color: C.mid, lineHeight: 1.45 },
+  calcDelta: { fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 2 },
+  calcResult: { fontSize: 11, fontWeight: "bold", color: C.orange, marginTop: 4 },
+  notesText: { fontSize: 9, color: C.mid, fontStyle: "italic", marginTop: 4 },
+  qualNote: { fontSize: 8, color: C.muted, marginTop: 3 },
+  emptyQuad: { fontSize: 9, color: C.muted, fontStyle: "italic" },
+  axisRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: C.border },
+  axisLabel: { fontSize: 9, color: C.mid, flex: 1 },
+  axisValue: { fontSize: 10, fontWeight: "bold", color: C.dark },
+  pricingTierRow: { flexDirection: "row", paddingVertical: 4, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: C.border },
+  pricingTierRowApplied: { flexDirection: "row", paddingVertical: 4, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: C.border, backgroundColor: C.card },
+  tierCell: { fontSize: 9, color: C.mid, flex: 1 },
+  tierCellRate: { fontSize: 9, fontWeight: "bold", color: C.dark, flex: 1, textAlign: "right" },
+  bestBadge: { fontSize: 8, fontWeight: "bold", color: C.bg, backgroundColor: C.orange, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3, marginLeft: 6 },
+  warning: { fontSize: 9, color: C.orange, marginTop: 4 },
+  bulletRow: { flexDirection: "row", gap: 8, marginBottom: 5, alignItems: "flex-start" },
+  bullet: { width: 4, height: 4, borderRadius: 2, backgroundColor: C.orange, marginTop: 5 },
   bulletText: { fontSize: 9.5, color: C.mid, flex: 1, lineHeight: 1.5 },
-  methRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: C.border },
-  methKey: { fontSize: 9, color: C.mid },
-  methVal: { fontSize: 9, fontWeight: "bold", color: C.dark },
 });
 
-const ALL_METRICS: MetricDefinition[] = [
-  ...OUTPATIENT_METRICS,
-  ...ED_METRICS,
-  ...INPATIENT_METRICS,
-  ...NURSING_METRICS,
-];
-const METRIC_MAP = new Map<string, MetricDefinition>();
-for (const m of ALL_METRICS) {
-  if (!METRIC_MAP.has(m.id)) METRIC_MAP.set(m.id, m);
+export interface MeasurePDFDriver {
+  id: string;
+  label: string;
+  shortDescription: string;
+  visibility: "quantified" | "qualitative";
+  isMonthlyMode: boolean;
+  withoutAbridge: number;
+  withAbridge: number;
+  delta: number;
+  valuePerUnit: number;
+  attributionPercent: number;
+  realizationPercent: number;
+  realizedValue: number;
+  notes?: string;
+  monthlyData?: Array<{ month: string; withAbridge: number; withoutAbridge: number }>;
+  deltaUnit?: string;
+  deltaLabel?: string;
+  valuePerUnitLabel?: string;
+  valuePerUnitPrefix?: string;
 }
 
-const FINANCIAL_IDS = new Set([
-  "wrvu", "wrvuPerEncounter",
-  "em_level", "emLevel",
-  "caseMixIndex", "cmi", "cc_mcc_capture", "ccMccCaptureRate",
-  "lwbsRate", "lwbs_rate",
-  "initial_denial_rate", "initialDenialRate", "medicalNecessityDenialRate",
-  "work_outside_work_empirical", "workAfterHours", "wow_time", "wowTime",
-  "burnout_assessment", "burnoutAssessment",
-  "likelihood_to_stay", "likelihoodToStay",
-  "lengthOfStay", "length_of_stay", "alos",
-  "patients_per_provider_month", "patientsPerProviderMonth",
-  "agencyLocumSpend", "agency_locum_spend",
-  "physician_retention", "physicianRetention",
-]);
+export interface MeasurePDFQuadrantSection {
+  quadrant: ExploreQuadrant;
+  realizedTotal: number;
+  drivers: MeasurePDFDriver[];
+}
 
-const DEFAULT_ASMP = {
-  attribution: 62,
-  realization: 80,
-  conversionFactor: 33,
-  otPremiumRate: 75,
-  edRevenuePerVisit: 480,
-  drgBaseRate: 6800,
-  costPerBedDay: 2500,
-  revenuePerVisit: 200,
-};
+export interface MeasurePDFAddedSetting {
+  settingLabel: string;
+  providers: number;
+  utilizationPercent: number;
+  encounters: number;
+  staffedBeds: number;
+  occupancyPercent: number;
+  scenarioLabel: string;
+  estimatedValue: number;
+  isOverridden: boolean;
+  isNursing: boolean;
+}
 
-function computeFinancials(state: MeasureState, streamStates?: Record<string, boolean>) {
-  const activeSettings = state.activeCareSettings?.length
-    ? state.activeCareSettings
-    : [state.careSetting || "outpatient"];
-  const setting = activeSettings[0];
-  const isED = activeSettings.includes("ed");
-  const isIP = activeSettings.includes("inpatient");
-  const providers = state.deployment.providers || state.deployment.mruProviders || 0;
-  const totalEncounters = state.deployment.totalEncounters || 0;
-  const utilRate = state.deployment.utilizationRate || 0;
-  const adopted = Math.round(totalEncounters * (utilRate / 100));
-  const cf = state.calibration.conversionFactor || DEFAULT_ASMP.conversionFactor;
-  const activeMetrics = getActiveMetrics(state);
+export interface MeasurePDFPricingTier {
+  thresholdFrom: number;
+  thresholdTo: number | null;
+  rate: number;
+}
 
-  const attrMid = DEFAULT_ASMP.attribution / 100;
-  const attrLo = Math.max(0.50, attrMid - 0.12);
-  const attrHi = Math.min(0.75, attrMid + 0.12);
-  const realLo = Math.max(0.40, DEFAULT_ASMP.realization / 100 - 0.10);
-  const realHi = Math.min(0.99, DEFAULT_ASMP.realization / 100 + 0.10);
-  const multiSetting = activeSettings.length > 1;
+export interface MeasurePDFPricingScenario {
+  label: string;
+  modelLabel: string;
+  rateSuffix: string;
+  tiers: MeasurePDFPricingTier[];
+  appliedTier: MeasurePDFPricingTier | null;
+  scale: number;
+  scaleLabel: string;
+  investment: number;
+  netAnnual: number;
+  roi: number;
+  isBestValue: boolean;
+  warning?: string;
+}
 
-  const providerSettings = activeSettings.filter(s => s !== 'nursing');
-  const providerSettingCount = Math.max(1, providerSettings.length);
+export interface MeasurePDFData {
+  organizationName?: string;
+  preparedFor?: string;
+  preparedBy?: string;
+  date: string;
+  careSettingLabel: string;
+  monthsLive?: number;
 
-  const resolveSettingCounts = (s: MeasureCareSetting | string) => {
-    const sData = state.settingData?.[s as MeasureCareSetting] || {};
-    const splitCount = s === 'nursing' ? 1 : providerSettingCount;
-    const sProviders = sData.deploy_providers
-      ?? (multiSetting ? Math.round(providers / splitCount) : providers);
-    const sEncounters = sData.deploy_totalEncounters
-      ?? (multiSetting ? Math.round(totalEncounters / splitCount) : totalEncounters);
-    const sAdopted = Math.round(sEncounters * (utilRate / 100));
-    return { sProviders, sEncounters, sAdopted };
+  careSetting: ExploreSetting;
+  numberOfProviders: number;
+  utilizationPercent: number;
+  annualEncounters: number;
+  staffedBeds?: number;
+  occupancyPercent?: number;
+
+  totalRealized: number;
+  totalProjected: number;
+  addedSettingsTotal: number;
+  combinedAnnualTotal: number;
+  driversTrackedCount: number;
+
+  quadrants: MeasurePDFQuadrantSection[];
+
+  forecastBaseline: {
+    providers: number;
+    utilizationPercent: number;
+    encounters: number;
+    staffedBeds: number;
+    occupancyPercent: number;
+  };
+  forecastProjected: {
+    providers: number;
+    utilizationPercent: number;
+    encounters: number;
+    staffedBeds: number;
+    occupancyPercent: number;
   };
 
-  const pdfSettingTotals: Record<string, { providers: number; encounters: number; low: number; high: number }> = {};
-  for (const s of activeSettings) {
-    const { sProviders, sEncounters } = resolveSettingCounts(s);
-    pdfSettingTotals[s] = { providers: sProviders, encounters: sEncounters, low: 0, high: 0 };
-  }
+  addedSettings: MeasurePDFAddedSetting[];
 
-  let billLo = 0, billHi = 0;
-  const billDetails: { label: string; formula: string }[] = [];
-
-  for (const cs of activeSettings) {
-    const sd = state.settingData?.[cs] || {};
-    const { sAdopted } = resolveSettingCounts(cs);
-
-    const wrvuMetric = activeMetrics.find(m =>
-      ['wrvu', 'wrvuPerEncounter'].includes(m.metricId) && (!m.setting || m.setting === cs)
-    );
-    const measuredWrvuD = wrvuMetric
-      ? (wrvuMetric.after ?? 0) - (wrvuMetric.before ?? 0)
-      : cs === setting ? (state.documentationQuality.wrvuWith - state.documentationQuality.wrvuWithout) : 0;
-
-    const emMetric = activeMetrics.find(m =>
-      ['em_level', 'emLevel'].includes(m.metricId) && (!m.setting || m.setting === cs)
-    );
-    const emB = emMetric
-      ? (emMetric.before ?? 0)
-      : cs === setting ? state.documentationQuality.emLevelWithout : 0;
-    const emA = emMetric
-      ? (emMetric.after ?? 0)
-      : cs === setting ? state.documentationQuality.emLevelWith : 0;
-    const impliedWrvuDelta = (EM_TO_WRVU[Math.round(emA)] ?? 0) - (EM_TO_WRVU[Math.round(emB)] ?? 0);
-
-    const wrvuD = measuredWrvuD > 0 ? measuredWrvuD : Math.max(0, impliedWrvuDelta);
-    const wrvuSource = measuredWrvuD > 0 ? 'measured' : (impliedWrvuDelta > 0 ? 'implied from E/M levels' : null);
-
-    if (wrvuD > 0 && sAdopted > 0) {
-      const base = wrvuD * sAdopted * cf;
-      const lo = base * attrLo * realLo;
-      const hi = base * attrHi * realHi;
-      billLo += lo;
-      billHi += hi;
-      if (pdfSettingTotals[cs]) { pdfSettingTotals[cs].low += lo; pdfSettingTotals[cs].high += hi; }
-      const sourceNote = wrvuSource === 'implied from E/M levels'
-        ? ` (implied from E/M ${emB.toFixed(0)}\u2192${emA.toFixed(0)})`
-        : '';
-      billDetails.push({
-        label: `wRVU lift: +${wrvuD.toFixed(2)} per encounter${sourceNote}${activeSettings.length > 1 ? ` (${settingShort(cs)})` : ''}`,
-        formula: `+${wrvuD.toFixed(2)} wRVU \u00D7 ${fmtN(sAdopted)} encounters \u00D7 $${cf}/wRVU \u00D7 ${DEFAULT_ASMP.realization}% realization`,
-      });
-    }
-
-    if (cs === 'inpatient') {
-      const cmiB = sd.cmi_before ?? 0;
-      const cmiA = sd.cmi_after ?? 0;
-      const cmiD = Math.max(0, cmiA - cmiB);
-      const discharges = sd.deploy_totalEncounters || resolveSettingCounts(cs).sEncounters;
-      if (cmiD > 0 && discharges > 0) {
-        const base = cmiD * discharges * DEFAULT_ASMP.drgBaseRate;
-        const cLo = base * attrLo * realLo;
-        const cHi = base * attrHi * realHi;
-        billLo += cLo;
-        billHi += cHi;
-        if (pdfSettingTotals[cs]) { pdfSettingTotals[cs].low += cLo; pdfSettingTotals[cs].high += cHi; }
-        billDetails.push({
-          label: `CMI improvement: +${cmiD.toFixed(3)}`,
-          formula: `+${cmiD.toFixed(3)} CMI \u00D7 ${fmtN(discharges)} discharges \u00D7 $${fmtN(DEFAULT_ASMP.drgBaseRate)} DRG base rate`,
-        });
-      }
-    }
-  }
-
-  let recLo = 0, recHi = 0;
-  const recDetails: { label: string; formula: string }[] = [];
-
-  if (isED) {
-    const edSD = state.settingData?.ed || {};
-    const edEnc = edSD.deploy_totalEncounters || resolveSettingCounts('ed').sEncounters;
-    const lwbsD = (edSD.lwbsRate_before ?? 0) - (edSD.lwbsRate_after ?? 0);
-    if (lwbsD > 0 && edEnc > 0) {
-      const annualVisits = edEnc * 12;
-      const recovered = (lwbsD / 100) * annualVisits;
-      const lwLo = recovered * DEFAULT_ASMP.edRevenuePerVisit * attrLo;
-      const lwHi = recovered * DEFAULT_ASMP.edRevenuePerVisit * attrHi;
-      recLo += lwLo;
-      recHi += lwHi;
-      if (pdfSettingTotals.ed) { pdfSettingTotals.ed.low += lwLo; pdfSettingTotals.ed.high += lwHi; }
-      recDetails.push({
-        label: `LWBS reduction: \u2212${lwbsD.toFixed(1)} percentage points`,
-        formula: `${lwbsD.toFixed(1)}pp \u00D7 ${fmtN(annualVisits)} annual visits \u00D7 $${DEFAULT_ASMP.edRevenuePerVisit}/visit`,
-      });
-    }
-  }
-
-  for (const cs of activeSettings) {
-    const sd = state.settingData?.[cs] || {};
-    const effectiveEnc = sd.deploy_totalEncounters || resolveSettingCounts(cs).sEncounters;
-
-    const denialMetric = activeMetrics.find(m =>
-      ['initialDenialRate', 'initial_denial_rate', 'medicalNecessityDenialRate', 'denialRate', 'claimDenialRate'].includes(m.metricId)
-      && (!m.setting || m.setting === cs)
-    );
-    const denialB = denialMetric?.before ??
-      (sd.initial_denial_rate_before ?? sd.medicalNecessityDenialRate_before ?? sd.denialRate_before ?? 0);
-    const denialA = denialMetric?.after ??
-      (sd.initial_denial_rate_after ?? sd.medicalNecessityDenialRate_after ?? sd.denialRate_after ?? 0);
-    const denialD = denialB - denialA;
-    if (denialD > 0 && effectiveEnc > 0) {
-      const avgCost = cs === 'inpatient' ? 3_500 : cs === 'ed' ? 500 : 350;
-      const base = (denialD / 100) * effectiveEnc * avgCost;
-      const dLo = base * attrLo;
-      const dHi = base * attrHi;
-      recLo += dLo;
-      recHi += dHi;
-      if (pdfSettingTotals[cs]) { pdfSettingTotals[cs].low += dLo; pdfSettingTotals[cs].high += dHi; }
-      recDetails.push({
-        label: `Denial rate reduction: \u2212${denialD.toFixed(1)} pts${activeSettings.length > 1 ? ` (${settingShort(cs)})` : ''}`,
-        formula: `${denialD.toFixed(1)}pp \u00D7 ${fmtN(effectiveEnc)} encounters \u00D7 $${avgCost.toLocaleString()}/denial`,
-      });
-    }
-  }
-
-  let pfLo = 0, pfHi = 0;
-  const pfDetails: { label: string; formula: string }[] = [];
-  if (isIP) {
-    const ipData = state.settingData?.inpatient || {};
-    const alosMetric = activeMetrics.find(m =>
-      ['lengthOfStay', 'alos', 'averageLengthOfStay'].includes(m.metricId)
-    );
-    const alosBefore = alosMetric?.before ?? (ipData.lengthOfStay_before ?? 0);
-    const alosAfter = alosMetric?.after ?? (ipData.lengthOfStay_after ?? 0);
-    const alosD = Math.max(0, alosBefore - alosAfter);
-    const ipEnc = ipData.deploy_totalEncounters || resolveSettingCounts('inpatient').sEncounters;
-    if (alosD > 0 && ipEnc > 0) {
-      const costBase = alosD * ipEnc * DEFAULT_ASMP.costPerBedDay;
-      const acLo = costBase * attrLo;
-      const acHi = costBase * attrHi;
-      pfLo += acLo;
-      pfHi += acHi;
-      if (pdfSettingTotals.inpatient) { pdfSettingTotals.inpatient.low += acLo; pdfSettingTotals.inpatient.high += acHi; }
-      pfDetails.push({
-        label: `ALOS cost avoidance: ${alosBefore.toFixed(1)} \u2192 ${alosAfter.toFixed(1)} days`,
-        formula: `${alosD.toFixed(1)} days \u00D7 ${fmtN(ipEnc)} admissions \u00D7 $${DEFAULT_ASMP.costPerBedDay.toLocaleString()}/bed day`,
-      });
-
-      const censusConstrained = state.censusConstrained ?? false;
-      if (censusConstrained) {
-        const revPerAdmission = 8000;
-        const revBase = alosD * ipEnc * revPerAdmission * 0.3;
-        const rvLo = revBase * attrLo;
-        const rvHi = revBase * attrHi;
-        pfLo += rvLo;
-        pfHi += rvHi;
-        if (pdfSettingTotals.inpatient) { pdfSettingTotals.inpatient.low += rvLo; pdfSettingTotals.inpatient.high += rvHi; }
-        pfDetails.push({
-          label: `ALOS throughput revenue (census-constrained)`,
-          formula: `${alosD.toFixed(1)} days \u00D7 ${fmtN(ipEnc)} \u00D7 $${revPerAdmission.toLocaleString()} \u00D7 30% refill`,
-        });
-      }
-    }
-  }
-
-  let capLo = 0, capHi = 0;
-  if (activeSettings.includes('outpatient')) {
-    const patientsMetric = activeMetrics.find(m =>
-      ['patients_per_provider_month', 'patientsPerProviderMonth'].includes(m.metricId)
-    );
-    if (patientsMetric && patientsMetric.before != null && patientsMetric.after != null) {
-      const patientD = patientsMetric.after - patientsMetric.before;
-      const opProv = resolveSettingCounts('outpatient').sProviders;
-      if (patientD > 0 && opProv > 0) {
-        const annualVisits = patientD * opProv * 12;
-        const base = annualVisits * DEFAULT_ASMP.revenuePerVisit;
-        capLo = base * attrLo * realLo;
-        capHi = base * attrHi * realHi;
-        if (pdfSettingTotals.outpatient) { pdfSettingTotals.outpatient.low += capLo; pdfSettingTotals.outpatient.high += capHi; }
-      }
-    }
-  }
-
-  let costLo = 0, costHi = 0;
-  const costDetails: { label: string; formula: string }[] = [];
-
-  const ahMetric = activeMetrics.find(m =>
-    ['work_after_hours_perceived', 'workAfterHours', 'work_outside_work_empirical', 'afterHours', 'chartingAfterShift', 'afterHoursWork', 'workOutsideHours'].includes(m.metricId)
-  );
-  const ahWithout = ahMetric?.before ?? state.timeEfficiency.workOutsideWithout ?? 0;
-  const ahWith = ahMetric?.after ?? state.timeEfficiency.workOutsideWith ?? 0;
-  const ahDelta = Math.max(0, ahWithout - ahWith);
-  const isHourlyWorkforce = activeSettings.includes('nursing');
-  if (ahDelta > 0 && providers > 0) {
-    const metricDef = ahMetric ? METRIC_MAP.get(ahMetric.metricId) : undefined;
-    const metricUnit = metricDef?.unit || '';
-    costDetails.push({
-      label: `After-hours documentation eliminated: \u2212${ahDelta.toFixed(1)} ${metricUnit || 'hrs/day'}/provider`,
-      formula: `Tracked as capacity recovered and wellbeing signal \u2014 not monetized for salaried providers`,
-    });
-  }
-
-  const agencyMetric = activeMetrics.find(m =>
-    ['agencyLocumSpend', 'agency_locum_spend'].includes(m.metricId)
-  );
-  if (agencyMetric && agencyMetric.before != null && agencyMetric.after != null) {
-    const agencySavings = Math.max(0, agencyMetric.before - agencyMetric.after);
-    if (agencySavings > 0) {
-      costLo += agencySavings * attrLo;
-      costHi += agencySavings * attrHi;
-      costDetails.push({
-        label: `Agency/locum spend reduction: \u2212${fmtC(agencySavings)}`,
-        formula: `Observed reduction ${fmtC(agencySavings)} \u00D7 ${DEFAULT_ASMP.attribution}% attribution`,
-      });
-    }
-  }
-
-  const mv = state.metricValues || {};
-  let burnoutD = 0, stayD = 0;
-  let retentionLo = 0, retentionHi = 0;
-  for (const k of Object.keys(mv)) {
-    const e = mv[k];
-    if (!e || e.before == null || e.after == null) continue;
-    if (k.startsWith("burnout") && e.before > e.after) burnoutD = Math.max(burnoutD, e.before - e.after);
-    if (k.startsWith("likelihood") && e.after > e.before) stayD = Math.max(stayD, e.after - e.before);
-  }
-  const replacementRange: { low: number; high: number } = ({
-    outpatient: { low: 300_000, high: 500_000 },
-    ed:         { low: 350_000, high: 500_000 },
-    inpatient:  { low: 300_000, high: 500_000 },
-    nursing:    { low: 50_000,  high: 100_000 },
-  } as Record<string, { low: number; high: number }>)[setting] ?? { low: 250_000, high: 500_000 };
-
-  if (burnoutD > 0 || stayD > 0) {
-    retentionLo = 1 * replacementRange.low * attrLo;
-    retentionHi = 3 * replacementRange.high * attrHi;
-    costLo += retentionLo;
-    costHi += retentionHi;
-    const signal = burnoutD > 0
-      ? `Burnout score improved ${burnoutD.toFixed(0)} pts`
-      : `Likelihood to stay improved ${stayD.toFixed(0)} pts`;
-    costDetails.push({
-      label: "Physician retention signal",
-      formula: `${signal} \u2192 1\u20133 avoided departures \u00D7 $250K\u2013$500K replacement cost (AMGA benchmark)`,
-    });
-  }
-
-  const physRetMetric = activeMetrics.find(m =>
-    ['physicianRetention', 'physician_retention'].includes(m.metricId)
-  );
-  if (physRetMetric && physRetMetric.before != null && physRetMetric.after != null) {
-    const retD = physRetMetric.after - physRetMetric.before;
-    if (retD > 0 && providers > 0) {
-      const turnoversAvoided = (retD / 100) * providers;
-      const newLo = turnoversAvoided * replacementRange.low * attrLo;
-      const newHi = turnoversAvoided * replacementRange.high * attrHi;
-      if (newLo > retentionLo) {
-        costLo = costLo - retentionLo + newLo;
-        costHi = costHi - retentionHi + newHi;
-        costDetails.push({
-          label: `Physician retention: +${retD} pts across ${providers} providers`,
-          formula: `${turnoversAvoided.toFixed(1)} turnovers avoided \u00D7 ${fmtC(replacementRange.low)}\u2013${fmtC(replacementRange.high)} replacement cost`,
-        });
-      }
-    }
-  }
-
-  if (streamStates) {
-    if (streamStates.billingCapture === false) { billLo = 0; billHi = 0; }
-    if (streamStates.revenueRecovery === false) { recLo = 0; recHi = 0; }
-    if (streamStates.patientFlow === false) { pfLo = 0; pfHi = 0; }
-    if (streamStates.capacityRevenue === false) { capLo = 0; capHi = 0; }
-    if (streamStates.costReduction === false) { costLo = 0; costHi = 0; }
-  }
-
-  const totalLo = billLo + recLo + pfLo + capLo + costLo;
-  const totalHi = billHi + recHi + pfHi + capHi + costHi;
-
-  const enabledStreams: string[] = [];
-  const excludedStreams: string[] = [];
-  const streamDataMap: { key: string; label: string; has: boolean }[] = [
-    { key: 'billingCapture', label: 'Billing Capture', has: billLo > 0 },
-    { key: 'revenueRecovery', label: 'Revenue Recovery', has: recLo > 0 },
-    { key: 'patientFlow', label: 'Patient Flow', has: pfLo > 0 },
-    { key: 'capacityRevenue', label: 'Capacity Revenue', has: capLo > 0 },
-    { key: 'costReduction', label: 'Cost Reduction', has: costLo > 0 },
-  ];
-  for (const sd of streamDataMap) {
-    if (!sd.has && !(streamStates && streamStates[sd.key] === false)) continue;
-    if (streamStates && streamStates[sd.key] === false) excludedStreams.push(sd.label);
-    else enabledStreams.push(sd.label);
-  }
-
-  const settingBreakdown = multiSetting ? activeSettings.map(s => {
-    const st = pdfSettingTotals[s] || { providers: 0, encounters: 0, low: 0, high: 0 };
-    return {
-      setting: s,
-      label: s === 'ed' ? 'Emergency Dept' : s === 'inpatient' ? 'Inpatient' : s === 'nursing' ? 'Nursing' : 'Outpatient',
-      providers: st.providers,
-      encounters: st.encounters,
-      totalLow: st.low,
-      totalHigh: st.high,
-    };
-  }) : [];
-
-  return {
-    hasBill: billLo > 0, billLo, billHi, billDetails,
-    hasRec: recLo > 0, recLo, recHi, recDetails,
-    hasPF: pfLo > 0, pfLo, pfHi, pfDetails,
-    hasCap: capLo > 0, capLo, capHi,
-    hasCost: costLo > 0, costLo, costHi, costDetails,
-    totalLo, totalHi, totalMid: Math.round((totalLo + totalHi) / 2), hasAny: totalLo > 0,
-    attrRange: `${Math.round(attrLo * 100)}\u2013${Math.round(attrHi * 100)}%`,
-    enabledStreams,
-    excludedStreams,
-    settingBreakdown,
-  };
+  pricingScenarios: MeasurePDFPricingScenario[];
+  bestPricingScenarioLabel?: string;
+  bestPricingInvestment?: number;
+  bestPricingNet?: number;
 }
 
 function fmtC(n: number): string {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
-  return `$${Math.round(n)}`;
+  if (!Number.isFinite(n)) return "$0";
+  if (Math.abs(n) >= 1_000_000) return `${n < 0 ? "-" : ""}$${(Math.abs(n) / 1_000_000).toFixed(1)}M`;
+  if (Math.abs(n) >= 1_000) return `${n < 0 ? "-" : ""}$${Math.round(Math.abs(n) / 1_000)}K`;
+  return `${n < 0 ? "-" : ""}$${Math.round(Math.abs(n))}`;
 }
-function fmtRange(lo: number, hi: number): string {
-  const a = fmtC(lo), b = fmtC(hi);
-  return a === b ? a : `${a} \u2013 ${b}`;
+function fmtN(n: number): string {
+  if (!Number.isFinite(n)) return "0";
+  return Math.round(n).toLocaleString();
 }
-function fmtN(n: number): string { return Math.round(n).toLocaleString(); }
-function fmtDelta(before: number, after: number, unit: string): string {
-  const d = after - before;
-  const sign = d > 0 ? "+" : "";
-  const val = Math.abs(d) < 10 ? d.toFixed(2) : Math.round(d).toString();
-  const suffix = unit === "%" ? "pp" : ` ${unit}`;
-  const pctStr = before !== 0 ? ` (${sign}${Math.round((d / before) * 100)}%)` : "";
-  return `${sign}${val}${suffix}${pctStr}`;
+function fmtRate(n: number): string {
+  if (n >= 1) return `$${n.toFixed(2)}`;
+  return `$${n.toFixed(2)}`;
 }
-function settingShort(sv: MeasureCareSetting | string): string {
-  if (sv === "ed") return "ED";
-  if (sv === "inpatient") return "IP";
-  if (sv === "nursing") return "NR";
-  return "OP";
-}
-function settingFull(sv: string): string {
-  if (sv === "ed") return "Emergency Department";
-  if (sv === "inpatient") return "Inpatient";
-  if (sv === "nursing") return "Nursing";
-  return "Outpatient";
+function fmtPct(n: number): string {
+  return `${Math.round(n)}%`;
 }
 
 const Conf = ({ org }: { org: string }) => (
@@ -521,349 +237,616 @@ const Conf = ({ org }: { org: string }) => (
 const Footer = ({ n, total, org }: { n: number; total: number; org: string }) => (
   <View style={s.footer}>
     <Text style={s.footerLeft}>ABRIDGE</Text>
-    <Text style={s.footerCenter}>{org} \u00B7 Executive Business Review</Text>
+    <Text style={s.footerCenter}>{org} \u00B7 Evidence \u0026 Forecast</Text>
     <Text style={s.footerRight}>Page {n} of {total}</Text>
   </View>
 );
 
-const MeasureEBR = ({ state }: { state: MeasureState }) => {
-  const orgName = state.deployment.organizationName || "Your Organization";
-  const months = getMonthsFromGoLive(state.goLiveDate, state.deployment.monthsOnAbridge);
-  const providers = state.deployment.providers || state.deployment.mruProviders || 0;
-  const totalProviders = state.deployment.totalProviders || providers;
-  const totalEncounters = state.deployment.totalEncounters || 0;
-  const utilRate = state.deployment.utilizationRate || 0;
-  const annualContractValue = state.deployment.annualContractValue ?? 0;
-  const activeCareSettings = state.activeCareSettings?.length
-    ? state.activeCareSettings
-    : [state.careSetting || "outpatient"];
-  const settingLabel = activeCareSettings.map(settingFull).join(" \u00B7 ");
+function MonthlySparkline({ data }: { data: Array<{ month: string; withAbridge: number; withoutAbridge: number }> }) {
+  if (data.length < 2) return null;
+  const sorted = [...data].sort((a, b) => a.month.localeCompare(b.month));
+  const w = 320;
+  const h = 60;
+  const pad = 4;
+  const allVals = sorted.flatMap((d) => [d.withAbridge, d.withoutAbridge]);
+  const min = Math.min(...allVals);
+  const max = Math.max(...allVals);
+  const range = max - min || 1;
+  const xStep = (w - pad * 2) / (sorted.length - 1);
+  const toY = (v: number) => h - pad - ((v - min) / range) * (h - pad * 2);
+  const ptsWith = sorted.map((d, i) => `${pad + i * xStep},${toY(d.withAbridge)}`).join(" ");
+  const ptsWithout = sorted.map((d, i) => `${pad + i * xStep},${toY(d.withoutAbridge)}`).join(" ");
+  return (
+    <View style={{ marginTop: 6, marginBottom: 4 }}>
+      <Svg width={w} height={h}>
+        <Line x1={pad} y1={h - pad} x2={w - pad} y2={h - pad} stroke={C.border} strokeWidth={0.5} />
+        <Polyline points={ptsWithout} stroke={C.muted} strokeWidth={1} fill="none" strokeDasharray="2,2" />
+        <Polyline points={ptsWith} stroke={C.orange} strokeWidth={1.5} fill="none" />
+        {sorted.map((d, i) => (
+          <Circle key={`with-${i}`} cx={pad + i * xStep} cy={toY(d.withAbridge)} r={1.5} fill={C.orange} />
+        ))}
+      </Svg>
+      <Text style={{ fontSize: 7, color: C.muted, marginTop: 2 }}>
+        Solid \u2014 With Abridge   Dashed \u2014 Without
+      </Text>
+    </View>
+  );
+}
 
-  const activeMetrics = getActiveMetrics(state);
-  const fin = computeFinancials(state, state.streamStates);
-  const hasFinancials = fin.hasAny;
+function DriverCard({ d }: { d: MeasurePDFDriver }) {
+  const isQuant = d.visibility === "quantified";
+  const showMonthly = d.isMonthlyMode && d.monthlyData && d.monthlyData.length >= 2;
+  const unit = d.deltaUnit || "";
+  const valLabel = d.valuePerUnitLabel || "value per unit";
+  const valPrefix = d.valuePerUnitPrefix || "";
 
-  const TOTAL = 4 + (hasFinancials ? 1 : 0);
+  return (
+    <View style={s.cardOutline} wrap={false}>
+      <View style={s.driverHeaderRow}>
+        <Text style={s.driverLabel}>{d.label}</Text>
+        {isQuant ? (
+          <Text style={s.badgeQuant}>$</Text>
+        ) : (
+          <Text style={s.badgeQual}>QUAL</Text>
+        )}
+      </View>
+      <Text style={s.driverDescription}>{d.shortDescription}</Text>
+
+      {isQuant ? (
+        <>
+          <Text style={s.calcDelta}>
+            {fmtN(d.withoutAbridge)} \u2192 {fmtN(d.withAbridge)} {unit}
+            {"  ("}\u0394 {d.delta >= 0 ? "+" : ""}{fmtN(d.delta)} {unit}{")"}
+          </Text>
+          <Text style={s.calcLine}>
+            \u0394 {fmtN(d.delta)} {unit} \u00D7 {valPrefix}{fmtN(d.valuePerUnit)} {valLabel} \u00D7 {fmtPct(d.attributionPercent)} attribution \u00D7 {fmtPct(d.realizationPercent)} realization
+          </Text>
+          <Text style={s.calcResult}>= {fmtC(d.realizedValue)}</Text>
+          {showMonthly && d.monthlyData ? <MonthlySparkline data={d.monthlyData} /> : null}
+          {d.notes ? <Text style={s.notesText}>Notes: {d.notes}</Text> : null}
+        </>
+      ) : (
+        <>
+          {d.notes ? <Text style={s.notesText}>{d.notes}</Text> : null}
+          <Text style={s.qualNote}>Tracked qualitatively \u2014 no financial value modeled.</Text>
+        </>
+      )}
+    </View>
+  );
+}
+
+const MeasureEvidenceDoc = ({ data }: { data: MeasurePDFData }) => {
+  const orgName = data.organizationName || "Your Organization";
+  const monthsLive = data.monthsLive ?? 0;
+  const isNursing = data.careSetting === "nursing";
+
+  const hasForecast = data.totalProjected > 0 || data.combinedAnnualTotal > 0;
+  const hasExpansions = data.addedSettings.length > 0;
+  const hasPricing = data.pricingScenarios.length > 0;
+
+  let pageCount = 3;
+  if (hasForecast) pageCount += 1;
+  if (hasExpansions) pageCount += 1;
+  if (hasPricing) pageCount += 1;
+  pageCount += 1;
   let pageN = 0;
   const P = () => ++pageN;
 
-  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-
-  const activeDomains = new Set(
-    activeMetrics.map((m) => METRIC_MAP.get(m.metricId)?.domain).filter(Boolean)
-  ).size;
-
-  let maturityIdx = 0;
-  if (utilRate >= 20 && activeMetrics.length >= 1) maturityIdx = 1;
-  if (activeDomains >= 3 && utilRate >= 60) maturityIdx = 2;
-  if (activeDomains >= 4 && utilRate >= 70 && hasFinancials) maturityIdx = 3;
-  const maturityLabels = ["Unmeasured", "Signaling", "Validated", "Strategic"];
-  const maturityDescs = [
-    "Adoption is still ramping or baselines haven\u2019t been established yet.",
-    "One or two domains are showing before/after trends. Baselines are confirmed.",
-    "Three or more domains have confirmed trends with at least 60% utilization.",
-    "Abridge is embedded in organizational strategy with board-ready proof.",
-  ];
-
-  const domainBuckets: Record<string, typeof activeMetrics> = {
-    "Documentation Quality": [],
-    "Time Efficiency": [],
-    "Patient Access & Throughput": [],
-    "Workforce & Retention": [],
-    "Other Metrics": [],
-  };
-  for (const am of activeMetrics) {
-    const def = METRIC_MAP.get(am.metricId);
-    const d = (def?.domain || "").toLowerCase();
-    if (d.includes("documentation") || d.includes("billing") || d.includes("coding")) {
-      domainBuckets["Documentation Quality"].push(am);
-    } else if (d.includes("time") || d.includes("efficiency") || d.includes("after")) {
-      domainBuckets["Time Efficiency"].push(am);
-    } else if (d.includes("access") || d.includes("throughput") || d.includes("patient") || d.includes("flow")) {
-      domainBuckets["Patient Access & Throughput"].push(am);
-    } else if (d.includes("retention") || d.includes("burnout") || d.includes("workforce") || d.includes("satisfaction")) {
-      domainBuckets["Workforce & Retention"].push(am);
-    } else {
-      domainBuckets["Other Metrics"].push(am);
-    }
-  }
-  const domainOrder = ["Documentation Quality", "Time Efficiency", "Patient Access & Throughput", "Workforce & Retention", "Other Metrics"];
-
-  const streamDescriptions: Record<string, string> = {
-    "Billing Capture": "Improved documentation quality drives higher wRVU coding accuracy and E/M level capture.",
-    "Revenue Recovery": "Faster, cleaner notes reduce left-without-being-seen events and denial rates.",
-    "Patient Flow": "Shorter documentation time enables faster discharge decisions and lower length of stay.",
-    "Capacity Revenue": "Time recovered per provider translates to additional appointment capacity.",
-    "Workforce": "Burnout and retention signals suggest reduced turnover risk \u2014 modeled against replacement costs.",
-  };
-  const streamValues: { name: string; lo: number; hi: number }[] = [];
-  if (fin.hasBill) streamValues.push({ name: "Billing Capture", lo: fin.billLo, hi: fin.billHi });
-  if (fin.hasRec) streamValues.push({ name: "Revenue Recovery", lo: fin.recLo, hi: fin.recHi });
-  if (fin.hasPF) streamValues.push({ name: "Patient Flow", lo: fin.pfLo, hi: fin.pfHi });
-  if (fin.hasCap) streamValues.push({ name: "Capacity Revenue", lo: fin.capLo, hi: fin.capHi });
-  if (fin.hasCost) streamValues.push({ name: "Workforce", lo: fin.costLo, hi: fin.costHi });
-
-  const nextSteps: string[][] = [
-    [
-      "Establish before/after data in at least one domain before the next EBR.",
-      "Drive adoption to 20% \u2014 the minimum threshold for measurable signal.",
-      "Identify one provider champion to anchor the internal measurement narrative.",
-    ],
-    [
-      `Expand before/after tracking to ${Math.max(0, 3 - activeDomains)} more domain${3 - activeDomains !== 1 ? "s" : ""} \u2014 3 domains is the Validated threshold.`,
-      "Run a structured Abridge vs. non-Abridge encounter analysis for CMO review.",
-      "Share a one-page findings brief with your finance team \u2014 the data is there.",
-    ],
-    [
-      "Prepare a formal outcomes report for CFO and CMO \u2014 you have board-ready data.",
-      "Drive adoption to 70%+ to reach Strategic maturity.",
-      "Set one specific expansion target \u2014 adoption depth or provider count \u2014 and name an owner.",
-    ],
-    [
-      "Publish findings internally \u2014 this report is board-level proof.",
-      "Explore a second care setting to add a new measurement category.",
-      "Partner with Abridge to document this as a case study.",
-    ],
-  ];
+  const subtitleParts = [
+    `${data.numberOfProviders} ${isNursing ? "FTEs" : "providers"}`,
+    monthsLive > 0 ? `${monthsLive} months live` : null,
+    data.careSettingLabel,
+  ].filter(Boolean);
 
   return (
     <Document>
       <PDFCoverPage
         reportLabel="Executive Business Review"
         title={orgName}
-        subtitle={`${providers} providers \u00B7 ${months} months \u00B7 ${settingLabel}`}
+        subtitle={subtitleParts.join(" \u00B7 ")}
         preparedBy="Abridge Partner Success"
         disclaimerText="This EBR reflects actual deployment data and Abridge methodology. Estimates are ranges, not audited projections."
       />
 
-      {/* PAGE 1: Scorecard */}
+      {/* PAGE 1: Executive Summary */}
       <Page size="LETTER" style={s.page} wrap={false}>
         <View style={s.wrap}>
           <Conf org={orgName} />
-          <Text style={s.eyebrow}>Executive Business Review</Text>
-          <Text style={s.headline}>{orgName}</Text>
-          <Text style={s.subline}>{settingLabel} {"\u00B7"} {months} months with Abridge {"\u00B7"} Generated {today}</Text>
-
-          <View style={s.statRow}>
-            <View style={s.statCard}>
-              <Text style={s.statNum}>{providers}</Text>
-              <Text style={s.statLabel}>Providers on Abridge</Text>
-            </View>
-            <View style={s.statCard}>
-              <Text style={s.statNum}>{totalProviders}</Text>
-              <Text style={s.statLabel}>Total Providers</Text>
-            </View>
-          </View>
-          <View style={s.statRow}>
-            <View style={s.statCard}>
-              <Text style={s.statNum}>{utilRate}%</Text>
-              <Text style={s.statLabel}>Utilization Rate</Text>
-            </View>
-            <View style={s.statCard}>
-              <Text style={s.statNum}>{activeDomains}</Text>
-              <Text style={s.statLabel}>Domains Measured</Text>
-            </View>
-          </View>
-
-          {annualContractValue > 0 && fin.totalMid > 0 && (() => {
-            const roiRatio = (fin.totalMid / annualContractValue).toFixed(1);
-            const payback = Math.round((annualContractValue / fin.totalMid) * 12);
-            const netVal = fin.totalMid - annualContractValue;
-            return (
-              <View style={{ backgroundColor: C.dark, borderRadius: 4, padding: 14, marginBottom: 10 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                  <View style={{ alignItems: "center", flex: 1 }}>
-                    <Text style={{ fontSize: 20, fontWeight: "bold", color: C.orange }}>{roiRatio}{"\u00D7"}</Text>
-                    <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>ROI ratio</Text>
-                  </View>
-                  <View style={{ alignItems: "center", flex: 1 }}>
-                    <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF" }}>{payback}mo</Text>
-                    <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>Payback period</Text>
-                  </View>
-                  <View style={{ alignItems: "center", flex: 1 }}>
-                    <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF" }}>{fmtC(netVal)}</Text>
-                    <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>Net value / yr</Text>
-                  </View>
-                </View>
-              </View>
-            );
-          })()}
-
-          <Text style={s.narrative}>
-            {orgName} has been running Abridge for {months} months across {settingLabel.toLowerCase()}, with {utilRate}% of encounters now using the tool. Data has been collected across {activeDomains} measurement domain{activeDomains !== 1 ? "s" : ""}, placing {orgName} at the {maturityLabels[maturityIdx]} stage of the Abridge measurement journey.
+          <Text style={s.eyebrow}>Executive Summary</Text>
+          <Text style={s.headline}>Here\u2019s what we\u2019re delivering.</Text>
+          <Text style={s.subline}>
+            {monthsLive > 0 ? `${monthsLive} months live on Abridge \u00B7 ` : ""}{data.careSettingLabel} \u00B7 Generated {data.date}
           </Text>
 
-          <Footer n={P()} total={TOTAL} org={orgName} />
+          <View style={s.statRow}>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>{fmtC(data.totalRealized)}</Text>
+              <Text style={s.statLabel}>Realized today</Text>
+            </View>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>{fmtC(data.combinedAnnualTotal)}</Text>
+              <Text style={s.statLabel}>Projected at scale</Text>
+            </View>
+            <View style={s.statCard}>
+              <Text style={s.statNum}>{data.driversTrackedCount}</Text>
+              <Text style={s.statLabel}>Drivers tracked</Text>
+            </View>
+          </View>
+
+          {data.bestPricingNet !== undefined ? (
+            <View style={s.callout}>
+              <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>
+                Net under recommended pricing
+              </Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: C.orange, marginBottom: 4 }}>
+                {fmtC(data.bestPricingNet)} / yr
+              </Text>
+              {data.bestPricingScenarioLabel ? (
+                <Text style={{ fontSize: 9, color: C.mid }}>
+                  Pricing scenario: {data.bestPricingScenarioLabel}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+
+          <Text style={s.narrative}>
+            {orgName} has tracked {data.driversTrackedCount} value driver{data.driversTrackedCount === 1 ? "" : "s"} across {data.quadrants.filter((q) => q.drivers.length > 0).length} of 4 measurement quadrants. Realized value to date is {fmtC(data.totalRealized)}. At the modeled forecast scale {hasExpansions ? `(including ${data.addedSettings.length} additional care setting${data.addedSettings.length === 1 ? "" : "s"})` : ""}, combined annual value reaches {fmtC(data.combinedAnnualTotal)}.
+          </Text>
+
+          <Footer n={P()} total={pageCount} org={orgName} />
         </View>
       </Page>
 
-      {/* PAGE 2: What Changed */}
-      <Page size="LETTER" style={s.page} wrap={false}>
-        <View style={s.wrap}>
-          <Conf org={orgName} />
-          <Text style={s.eyebrow}>Your Data</Text>
-          <Text style={s.headline}>What Changed Since Abridge</Text>
-          <Text style={s.subline}>{activeMetrics.length} metric{activeMetrics.length !== 1 ? "s" : ""} tracked {"\u00B7"} {activeDomains} domain{activeDomains !== 1 ? "s" : ""}</Text>
-
-          {domainOrder.map((domainName) => {
-            const metrics = domainBuckets[domainName];
-            if (!metrics || metrics.length === 0) return null;
-            return (
-              <View key={domainName} style={{ marginBottom: 10 }}>
-                <Text style={[s.eyebrow, { marginBottom: 2 }]}>{domainName}</Text>
-                {metrics.map((am, idx) => {
-                  const def = METRIC_MAP.get(am.metricId);
-                  const label = def?.label || am.metricId;
-                  const unit = def?.unit || "";
-                  const hasBoth = am.before != null && am.after != null;
-                  const settingTag = am.setting && activeCareSettings.length > 1 ? ` (${settingShort(am.setting)})` : "";
-                  const delta = hasBoth ? fmtDelta(am.before!, am.after!, unit) : "";
-                  return (
-                    <View key={`${am.metricId}-${am.setting}-${idx}`} style={[s.cardOutline, { marginBottom: 6 }]}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                        <Text style={s.mName}>{label}{settingTag}</Text>
-                        {delta ? <Text style={{ fontSize: 10, fontWeight: "bold", color: C.orange }}>{delta}</Text> : null}
-                      </View>
-                      {hasBoth && (
-                        <Text style={{ fontSize: 8, color: C.muted, marginTop: 3 }}>
-                          Before: {am.before}{unit === "%" ? "%" : ` ${unit}`} {"\u2192"} After: {am.after}{unit === "%" ? "%" : ` ${unit}`}
-                        </Text>
-                      )}
-                    </View>
-                  );
-                })}
-              </View>
-            );
-          })}
-
-          <Footer n={P()} total={TOTAL} org={orgName} />
-        </View>
-      </Page>
-
-      {/* PAGE 3: The Financial Case (conditional) */}
-      {hasFinancials && (
-        <Page size="LETTER" style={s.page} wrap={false}>
+      {/* PAGES 2-3: Realized Value by Quadrant (Capacity, Workforce on one; Revenue, Quality on next) */}
+      {[
+        { qs: data.quadrants.filter((q) => q.quadrant === "Capacity" || q.quadrant === "Workforce"), label: "Capacity \u0026 Workforce" },
+        { qs: data.quadrants.filter((q) => q.quadrant === "Revenue" || q.quadrant === "Quality"), label: "Revenue \u0026 Quality" },
+      ].map((group, gi) => (
+        <Page key={gi} size="LETTER" style={s.page}>
           <View style={s.wrap}>
             <Conf org={orgName} />
-            <Text style={s.eyebrow}>Financial Impact</Text>
-            <Text style={s.headline}>What the Numbers Add Up To</Text>
+            <Text style={s.eyebrow}>Realized Value by Quadrant</Text>
+            <Text style={s.headline}>{group.label}</Text>
+            <Text style={s.subline}>What\u2019s already happening at {orgName}.</Text>
 
-            <View style={[s.card, { alignItems: "center", paddingVertical: 20, marginBottom: 10 }]}>
-              <Text style={{ fontSize: 28, fontWeight: "bold", color: C.orange }}>{fmtRange(Math.round(fin.totalLo), Math.round(fin.totalHi))}</Text>
-              <Text style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>estimated annual value {"\u00B7"} {activeDomains} domain{activeDomains !== 1 ? "s" : ""} measured</Text>
-            </View>
-
-            {annualContractValue > 0 && fin.totalMid > 0 && (() => {
-              const roiRatio = (fin.totalMid / annualContractValue).toFixed(1);
-              const payback = Math.round((annualContractValue / fin.totalMid) * 12);
-              const netVal = fin.totalMid - annualContractValue;
-              return (
-                <View style={{ backgroundColor: C.dark, borderRadius: 4, padding: 14, marginBottom: 10 }}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <View style={{ alignItems: "center", flex: 1 }}>
-                      <Text style={{ fontSize: 20, fontWeight: "bold", color: C.orange }}>{roiRatio}{"\u00D7"}</Text>
-                      <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>ROI ratio</Text>
-                    </View>
-                    <View style={{ alignItems: "center", flex: 1 }}>
-                      <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF" }}>{payback}mo</Text>
-                      <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>Payback period</Text>
-                    </View>
-                    <View style={{ alignItems: "center", flex: 1 }}>
-                      <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF" }}>{fmtC(netVal)}</Text>
-                      <Text style={{ fontSize: 8, color: "#FFFFFF66", marginTop: 2 }}>Net value / yr</Text>
-                    </View>
-                  </View>
+            {group.qs.map((q) => (
+              <View key={q.quadrant} style={{ marginBottom: 10 }}>
+                <View style={s.quadHeader}>
+                  <Text style={s.quadName}>{q.quadrant}</Text>
+                  <Text style={s.quadTotal}>
+                    {q.realizedTotal > 0 ? `${fmtC(q.realizedTotal)} realized` : "Tracked qualitatively"}
+                  </Text>
                 </View>
-              );
-            })()}
 
-            {streamValues.map((sv, i) => (
-              <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 6, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: C.border }}>
-                <Text style={{ flex: 2, fontSize: 10, fontWeight: "bold", color: C.dark }}>{sv.name}</Text>
-                <Text style={{ flex: 1.5, fontSize: 10, fontWeight: "bold", color: C.orange, textAlign: "right" }}>{fmtRange(Math.round(sv.lo), Math.round(sv.hi))} / yr</Text>
-                <Text style={{ flex: 3, fontSize: 8, color: C.muted, paddingLeft: 10 }}>{streamDescriptions[sv.name] || ""}</Text>
+                {q.drivers.length === 0 ? (
+                  <Text style={s.emptyQuad}>No drivers tracked in this quadrant.</Text>
+                ) : (
+                  q.drivers.map((d) => <DriverCard key={d.id} d={d} />)
+                )}
               </View>
             ))}
 
-            <View style={[s.callout, { marginTop: 10 }]}>
-              <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>What this doesn{"\u2019"}t include</Text>
-              <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.55 }}>
-                After-hours documentation burden (not monetized for salaried staff), recruitment advantage, prior auth delays, and audit defensibility.
-              </Text>
-            </View>
-
-            <Text style={{ fontSize: 7, color: C.muted, marginTop: 8, lineHeight: 1.4 }}>
-              Estimates use {fin.attrRange} attribution and {DEFAULT_ASMP.realization}% realization. See methodology for assumptions.
-            </Text>
-
-            <Footer n={P()} total={TOTAL} org={orgName} />
+            <Footer n={P()} total={pageCount} org={orgName} />
           </View>
         </Page>
-      )}
+      ))}
 
-      {/* PAGE 4: What's Next */}
-      <Page size="LETTER" style={s.page} wrap={false}>
-        <View style={s.wrap}>
-          <Conf org={orgName} />
-          <Text style={s.eyebrow}>Your Path Forward</Text>
-          <Text style={s.headline}>Where {orgName} Goes From Here</Text>
+      {/* PAGE: Forecast at Scale */}
+      {hasForecast ? (
+        <Page size="LETTER" style={s.page} wrap={false}>
+          <View style={s.wrap}>
+            <Conf org={orgName} />
+            <Text style={s.eyebrow}>Forecast</Text>
+            <Text style={s.headline}>Here\u2019s what\u2019s possible at scale.</Text>
+            <Text style={s.subline}>Your tracked drivers, projected against a larger footprint.</Text>
 
-          <View style={s.card}>
-            <View style={s.pipRow}>
-              {[0, 1, 2, 3].map((i) => (
-                <View key={i} style={i <= maturityIdx ? s.pipOn : s.pip} />
-              ))}
-            </View>
-            <Text style={{ fontSize: 12, fontWeight: "bold", color: C.orange, marginBottom: 4 }}>{maturityLabels[maturityIdx]}</Text>
-            <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.5 }}>{maturityDescs[maturityIdx]}</Text>
-          </View>
-
-          {(utilRate < 75 || providers < totalProviders) && (
-            <View style={[s.card, { marginTop: 4 }]}>
-              <Text style={[s.eyebrow, { marginBottom: 6 }]}>Expansion Opportunity</Text>
-              {utilRate < 75 && utilRate > 0 && fin.totalLo > 0 && (
-                <View style={{ marginBottom: 6 }}>
-                  <Text style={{ fontSize: 10, color: C.dark, lineHeight: 1.5 }}>
-                    Deepen to 75% adoption {"\u2192"} additional {fmtRange(Math.round(fin.totalLo * (75 / utilRate - 1)), Math.round(fin.totalHi * (75 / utilRate - 1)))} / yr
+            <View style={[s.card, { marginBottom: 12 }]}>
+              <View style={s.axisRow}>
+                <Text style={s.axisLabel}>{isNursing ? "Nurse FTEs" : "Providers"}</Text>
+                <Text style={s.axisValue}>
+                  {fmtN(data.forecastBaseline.providers)} \u2192 {fmtN(data.forecastProjected.providers)}
+                </Text>
+              </View>
+              <View style={s.axisRow}>
+                <Text style={s.axisLabel}>Utilization</Text>
+                <Text style={s.axisValue}>
+                  {fmtPct(data.forecastBaseline.utilizationPercent)} \u2192 {fmtPct(data.forecastProjected.utilizationPercent)}
+                </Text>
+              </View>
+              {!isNursing ? (
+                <View style={s.axisRow}>
+                  <Text style={s.axisLabel}>Annual encounters</Text>
+                  <Text style={s.axisValue}>
+                    {fmtN(data.forecastBaseline.encounters)} \u2192 {fmtN(data.forecastProjected.encounters)}
                   </Text>
                 </View>
-              )}
-              {providers < totalProviders && providers > 0 && fin.totalLo > 0 && (() => {
-                const perProvLo = fin.totalLo / providers;
-                const perProvHi = fin.totalHi / providers;
-                const addCount = totalProviders - providers;
-                return (
-                  <View style={{ marginBottom: 6 }}>
-                    <Text style={{ fontSize: 10, color: C.dark, lineHeight: 1.5 }}>
-                      Expand to {totalProviders} providers {"\u2192"} additional {fmtRange(Math.round(perProvLo * addCount), Math.round(perProvHi * addCount))} / yr
+              ) : (
+                <>
+                  <View style={s.axisRow}>
+                    <Text style={s.axisLabel}>Staffed beds</Text>
+                    <Text style={s.axisValue}>
+                      {fmtN(data.forecastBaseline.staffedBeds)} \u2192 {fmtN(data.forecastProjected.staffedBeds)}
                     </Text>
                   </View>
-                );
-              })()}
+                  <View style={s.axisRow}>
+                    <Text style={s.axisLabel}>Occupancy</Text>
+                    <Text style={s.axisValue}>
+                      {fmtPct(data.forecastBaseline.occupancyPercent)} \u2192 {fmtPct(data.forecastProjected.occupancyPercent)}
+                    </Text>
+                  </View>
+                </>
+              )}
             </View>
-          )}
 
-          <View style={s.rule} />
-          <Text style={{ fontSize: 11, fontWeight: "bold", color: C.dark, marginBottom: 8 }}>Concrete Next Steps</Text>
-
-          {nextSteps[maturityIdx].map((step, i) => (
-            <View key={i} style={s.bulletRow}>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: C.orange, width: 16 }}>{i + 1}.</Text>
-              <Text style={[s.bulletText, { fontSize: 10 }]}>{step}</Text>
+            <View style={s.callout}>
+              <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>Projected combined annual value</Text>
+              <Text style={{ fontSize: 22, fontWeight: "bold", color: C.orange, marginBottom: 6 }}>
+                {fmtC(data.combinedAnnualTotal)}
+              </Text>
+              {data.addedSettingsTotal > 0 ? (
+                <Text style={{ fontSize: 9, color: C.mid, lineHeight: 1.5 }}>
+                  {fmtC(data.totalProjected)} from current setting + {fmtC(data.addedSettingsTotal)} from modeled expansions = {fmtC(data.combinedAnnualTotal)} combined.
+                </Text>
+              ) : (
+                <Text style={{ fontSize: 9, color: C.mid }}>
+                  Current setting only \u2014 no expansions modeled.
+                </Text>
+              )}
             </View>
-          ))}
 
-          <Footer n={P()} total={TOTAL} org={orgName} />
+            <Text style={s.narrative}>
+              Each tracked driver scales according to its dimension \u2014 some scale with provider count, some with encounter volume, some with patient days. The forecast above applies the right scaling to each driver and sums the result.
+            </Text>
+
+            <Footer n={P()} total={pageCount} org={orgName} />
+          </View>
+        </Page>
+      ) : null}
+
+      {/* PAGE: Modeled Expansions */}
+      {hasExpansions ? (
+        <Page size="LETTER" style={s.page}>
+          <View style={s.wrap}>
+            <Conf org={orgName} />
+            <Text style={s.eyebrow}>Modeled Expansions</Text>
+            <Text style={s.headline}>Layering in additional care settings.</Text>
+            <Text style={s.subline}>Estimated value from new settings beyond {data.careSettingLabel}.</Text>
+
+            {data.addedSettings.map((a, i) => (
+              <View key={i} style={s.card} wrap={false}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                  <Text style={{ fontSize: 11, fontWeight: "bold", color: C.dark }}>{a.settingLabel}</Text>
+                  <Text style={{ fontSize: 8, color: C.bg, backgroundColor: C.dark, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3 }}>{a.scenarioLabel}</Text>
+                </View>
+                <Text style={{ fontSize: 9, color: C.mid, marginBottom: 6 }}>
+                  {a.isNursing
+                    ? `${fmtN(a.providers)} FTEs \u00B7 ${fmtN(a.staffedBeds)} beds \u00B7 ${fmtPct(a.occupancyPercent)} occupancy \u00B7 ${fmtPct(a.utilizationPercent)} utilization`
+                    : `${fmtN(a.providers)} providers \u00B7 ${fmtN(a.encounters)} annual encounters \u00B7 ${fmtPct(a.utilizationPercent)} utilization`}
+                </Text>
+                <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+                  <Text style={{ fontSize: 16, fontWeight: "bold", color: C.orange }}>{fmtC(a.estimatedValue)}</Text>
+                  <Text style={{ fontSize: 8, color: C.muted }}>
+                    estimated annual value{a.isOverridden ? " (overridden)" : ""}
+                  </Text>
+                </View>
+              </View>
+            ))}
+
+            <Footer n={P()} total={pageCount} org={orgName} />
+          </View>
+        </Page>
+      ) : null}
+
+      {/* PAGE: Pricing Comparison */}
+      {hasPricing ? (
+        <Page size="LETTER" style={s.page}>
+          <View style={s.wrap}>
+            <Conf org={orgName} />
+            <Text style={s.eyebrow}>Pricing Comparison</Text>
+            <Text style={s.headline}>Investment scenarios at the projected scale.</Text>
+            <Text style={s.subline}>Stepped tier math \u2014 all units price at the matched tier rate.</Text>
+
+            {data.pricingScenarios.map((sc, i) => (
+              <View key={i} style={s.card}>
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                  <Text style={{ fontSize: 11, fontWeight: "bold", color: C.dark }}>{sc.label}</Text>
+                  {sc.isBestValue ? <Text style={s.bestBadge}>\u2605 BEST VALUE</Text> : null}
+                </View>
+                <Text style={{ fontSize: 9, color: C.mid, marginBottom: 6 }}>{sc.modelLabel}</Text>
+
+                {sc.tiers.length > 0 ? (
+                  <View style={{ borderWidth: 1, borderColor: C.border, borderRadius: 3, marginBottom: 8 }}>
+                    {sc.tiers.map((t, ti) => {
+                      const isApplied = sc.appliedTier && t.thresholdFrom === sc.appliedTier.thresholdFrom && t.thresholdTo === sc.appliedTier.thresholdTo && t.rate === sc.appliedTier.rate;
+                      const toStr = t.thresholdTo === null ? "+" : `\u2013 ${fmtN(t.thresholdTo)}`;
+                      return (
+                        <View key={ti} style={isApplied ? s.pricingTierRowApplied : s.pricingTierRow}>
+                          <Text style={s.tierCell}>
+                            {fmtN(t.thresholdFrom)} {toStr}
+                          </Text>
+                          <Text style={s.tierCellRate}>
+                            {fmtRate(t.rate)} {sc.rateSuffix}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ) : null}
+
+                <Text style={{ fontSize: 8, color: C.muted, marginBottom: 6 }}>
+                  At {fmtN(sc.scale)} {sc.scaleLabel}{sc.appliedTier ? `, applies tier ${fmtN(sc.appliedTier.thresholdFrom)}${sc.appliedTier.thresholdTo === null ? "+" : `\u2013${fmtN(sc.appliedTier.thresholdTo)}`} @ ${fmtRate(sc.appliedTier.rate)}` : ""}
+                </Text>
+
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 8, color: C.muted, textTransform: "uppercase", letterSpacing: 1 }}>Investment</Text>
+                    <Text style={{ fontSize: 13, fontWeight: "bold", color: C.dark }}>{fmtC(sc.investment)}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 8, color: C.muted, textTransform: "uppercase", letterSpacing: 1 }}>Net</Text>
+                    <Text style={{ fontSize: 13, fontWeight: "bold", color: C.orange }}>{fmtC(sc.netAnnual)}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 8, color: C.muted, textTransform: "uppercase", letterSpacing: 1 }}>ROI</Text>
+                    <Text style={{ fontSize: 13, fontWeight: "bold", color: C.dark }}>{sc.roi.toFixed(1)}\u00D7</Text>
+                  </View>
+                </View>
+
+                {sc.warning ? <Text style={s.warning}>\u26A0 {sc.warning}</Text> : null}
+              </View>
+            ))}
+
+            {data.bestPricingScenarioLabel ? (
+              <View style={s.callout}>
+                <Text style={{ fontSize: 9, fontWeight: "bold", color: C.dark, marginBottom: 4 }}>Recommended at this scale</Text>
+                <Text style={{ fontSize: 10, color: C.mid, lineHeight: 1.5 }}>
+                  {data.bestPricingScenarioLabel}. Investment {fmtC(data.bestPricingInvestment ?? 0)}, net {fmtC(data.bestPricingNet ?? 0)} annual.
+                </Text>
+              </View>
+            ) : null}
+
+            <Footer n={P()} total={pageCount} org={orgName} />
+          </View>
+        </Page>
+      ) : null}
+
+      {/* PAGE: Methodology */}
+      <Page size="LETTER" style={s.page}>
+        <View style={s.wrap}>
+          <Conf org={orgName} />
+          <Text style={s.eyebrow}>Methodology</Text>
+          <Text style={s.headline}>How these numbers are calculated.</Text>
+
+          <View style={s.bulletRow}>
+            <View style={s.bullet} />
+            <Text style={s.bulletText}>
+              Each quantified driver computes realized value as: \u0394 (With \u2212 Without) \u00D7 value-per-unit \u00D7 attribution\u202F% \u00D7 realization\u202F%. Attribution captures how much of the change is reasonably tied to Abridge; realization captures what fraction of the value is actually captured by the business.
+            </Text>
+          </View>
+          <View style={s.bulletRow}>
+            <View style={s.bullet} />
+            <Text style={s.bulletText}>
+              Drivers tracked in monthly mode use the latest month\u2019s With/Without values for the financial calculation. The trend line is shown for context and to verify direction of travel.
+            </Text>
+          </View>
+          <View style={s.bulletRow}>
+            <View style={s.bullet} />
+            <Text style={s.bulletText}>
+              Forecast projections scale each driver according to its scaleAxis \u2014 providers, encounters, or patient days. The base scale is taken from your deployment; the projected scale comes from the forecast inputs you set.
+            </Text>
+          </View>
+          <View style={s.bulletRow}>
+            <View style={s.bullet} />
+            <Text style={s.bulletText}>
+              Modeled expansions for added care settings use per-setting heuristic value-per-provider estimates (Conservative / Typical / Optimistic). These are starting points pending your validation, not committed numbers.
+            </Text>
+          </View>
+          <View style={s.bulletRow}>
+            <View style={s.bullet} />
+            <Text style={s.bulletText}>
+              Pricing scenarios use stepped tier math: every unit prices at the rate of the matched tier, not graduated. The tier matched depends on the combined projected scale.
+            </Text>
+          </View>
+          <View style={s.bulletRow}>
+            <View style={s.bullet} />
+            <Text style={s.bulletText}>
+              Qualitative drivers are tracked but not assigned a financial value. They appear in the quadrant view to ensure the full picture of impact is represented.
+            </Text>
+          </View>
+
+          <Footer n={P()} total={pageCount} org={orgName} />
         </View>
       </Page>
     </Document>
   );
 };
 
-export async function generateMeasurePDF(state: MeasureState): Promise<void> {
-  const doc = <MeasureEBR state={state} />;
+const QUADRANT_ORDER: ExploreQuadrant[] = ["Capacity", "Workforce", "Revenue", "Quality"];
+
+export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFData {
+  const setting = (state.careSetting || "outpatient") as ExploreSetting;
+  const dep: any = state.deployment || {};
+
+  const baseline = {
+    providers: dep.providers ?? 0,
+    utilizationPercent: dep.utilizationRate ?? 0,
+    encounters: dep.totalEncounters ?? 0,
+    staffedBeds: dep.staffedBeds ?? 0,
+    occupancyPercent: dep.occupancyPercent ?? 0,
+  };
+  const fc = state.forecastScenario || ({} as any);
+  const projected = {
+    providers: fc.providers ?? 0,
+    utilizationPercent: fc.utilizationPercent ?? 0,
+    encounters: fc.encounters ?? 0,
+    staffedBeds: fc.staffedBeds ?? 0,
+    occupancyPercent: fc.occupancyPercent ?? 0,
+  };
+
+  const quadrants: MeasurePDFQuadrantSection[] = QUADRANT_ORDER.map((q) => {
+    const drivers = EXPLORE_DRIVERS.filter(
+      (d) => d.quadrant === q && d.settings.includes(setting) && state.trackedDrivers && state.trackedDrivers[d.id]
+    ).map((d) => {
+      const entry = state.trackedDrivers[d.id];
+      const md = d.measureDefaults;
+      const sortedMonthly = [...(entry.monthlyData || [])].sort((a, b) => a.month.localeCompare(b.month));
+      const latest = sortedMonthly[sortedMonthly.length - 1];
+      const effWith = entry.isMonthlyMode && latest ? latest.withAbridge : entry.withAbridge;
+      const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;
+      const delta = effWith - effWithout;
+      const isQuant = d.visibility === "quantified" && Boolean(md);
+      const realizedValue = isQuant
+        ? Math.round(delta * entry.valuePerUnit * (entry.attributionPercent / 100) * (entry.realizationPercent / 100))
+        : 0;
+      const driver: MeasurePDFDriver = {
+        id: d.id,
+        label: d.label,
+        shortDescription: d.shortDescription,
+        visibility: d.visibility,
+        isMonthlyMode: Boolean(entry.isMonthlyMode),
+        withoutAbridge: effWithout,
+        withAbridge: effWith,
+        delta,
+        valuePerUnit: entry.valuePerUnit,
+        attributionPercent: entry.attributionPercent,
+        realizationPercent: entry.realizationPercent,
+        realizedValue,
+        notes: entry.notes,
+        monthlyData: sortedMonthly.length > 0 ? sortedMonthly : undefined,
+        deltaUnit: md?.deltaUnit,
+        deltaLabel: md?.deltaLabel,
+        valuePerUnitLabel: md?.valuePerUnitLabel,
+        valuePerUnitPrefix: md?.valuePerUnitPrefix,
+      };
+      return driver;
+    });
+    const realizedTotal = drivers.reduce((sum, d) => sum + d.realizedValue, 0);
+    return { quadrant: q, realizedTotal, drivers };
+  });
+
+  const totalRealized = quadrants.reduce((sum, q) => sum + q.realizedTotal, 0);
+  const driversTrackedCount = quadrants.reduce((sum, q) => sum + q.drivers.length, 0);
+
+  const totalProjected = quadrants.reduce((sum, q) => {
+    return (
+      sum +
+      q.drivers.reduce((qSum, drv) => {
+        const driverDef = EXPLORE_DRIVERS.find((d) => d.id === drv.id);
+        if (!driverDef?.measureDefaults) return qSum + drv.realizedValue;
+        const axis = driverDef.measureDefaults.scaleAxis;
+        let scale = 1;
+        if (axis === "providers") {
+          const baseScale = baseline.providers * (baseline.utilizationPercent / 100);
+          const projScale = projected.providers * (projected.utilizationPercent / 100);
+          scale = baseScale > 0 ? projScale / baseScale : 1;
+        } else if (axis === "encounters") {
+          const baseScale = baseline.encounters * (baseline.utilizationPercent / 100);
+          const projScale = projected.encounters * (projected.utilizationPercent / 100);
+          scale = baseScale > 0 ? projScale / baseScale : 1;
+        } else if (axis === "patientDays") {
+          const baseScale = baseline.staffedBeds * (baseline.occupancyPercent / 100);
+          const projScale = projected.staffedBeds * (projected.occupancyPercent / 100);
+          scale = baseScale > 0 ? projScale / baseScale : 1;
+        }
+        return qSum + Math.round(drv.realizedValue * scale);
+      }, 0)
+    );
+  }, 0);
+
+  const addedSettings = fc.addedSettings ?? [];
+  const addedSettingsTotal = addedSettings.reduce((sum: number, a: any) => sum + computeAddedSettingValue(a), 0);
+  const combinedAnnualTotal = totalProjected + addedSettingsTotal;
+
+  const pricingScenarios = fc.pricingScenarios ?? [];
+  const combinedProviders = projected.providers + addedSettings.reduce((s: number, a: any) => s + (a.providers || 0), 0);
+  const combinedEncounters = projected.encounters + addedSettings.reduce((s: number, a: any) => s + (a.encounters || 0), 0);
+
+  const evaluated = pricingScenarios.map((sc: any) => {
+    const scale = sc.model === "perProvider" ? combinedProviders : sc.model === "perEncounter" ? combinedEncounters : 0;
+    const { value: investment, tier, warning } = computeScenarioInvestment(sc, scale);
+    const net = combinedAnnualTotal - investment;
+    const roi = investment > 0 ? combinedAnnualTotal / investment : 0;
+    return { scenario: sc, scale, investment, tier, warning, net, roi };
+  });
+
+  let bestId: string | null = null;
+  if (evaluated.length >= 2) {
+    const valid = evaluated.filter((e: any) => !e.warning && e.investment > 0);
+    if (valid.length > 0) {
+      valid.sort((a: any, b: any) => a.investment - b.investment);
+      bestId = valid[0].scenario.id;
+    }
+  }
+  const bestEntry = bestId ? evaluated.find((e: any) => e.scenario.id === bestId) : null;
+
+  const titleScenario = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  return {
+    organizationName: dep.organizationName || undefined,
+    date: new Date().toLocaleDateString(),
+    careSettingLabel: SETTING_LABELS[setting],
+    monthsLive: dep.monthsOnAbridge ?? undefined,
+
+    careSetting: setting,
+    numberOfProviders: baseline.providers,
+    utilizationPercent: baseline.utilizationPercent,
+    annualEncounters: baseline.encounters,
+    staffedBeds: setting === "nursing" ? baseline.staffedBeds : undefined,
+    occupancyPercent: setting === "nursing" ? baseline.occupancyPercent : undefined,
+
+    totalRealized,
+    totalProjected,
+    addedSettingsTotal,
+    combinedAnnualTotal,
+    driversTrackedCount,
+
+    quadrants,
+
+    forecastBaseline: baseline,
+    forecastProjected: projected,
+
+    addedSettings: addedSettings.map((a: any) => ({
+      settingLabel: SETTING_LABELS[a.setting as ExploreSetting] || String(a.setting),
+      providers: a.providers || 0,
+      utilizationPercent: a.utilizationPercent || 0,
+      encounters: a.encounters || 0,
+      staffedBeds: a.staffedBeds || 0,
+      occupancyPercent: a.occupancyPercent || 0,
+      scenarioLabel: titleScenario(a.scenario || "typical"),
+      estimatedValue: computeAddedSettingValue(a),
+      isOverridden: a.customValueOverride !== undefined && a.customValueOverride > 0,
+      isNursing: a.setting === "nursing",
+    })),
+
+    pricingScenarios: evaluated.map((e: any) => ({
+      label: e.scenario.label,
+      modelLabel: PRICING_MODEL_LABELS[e.scenario.model as keyof typeof PRICING_MODEL_LABELS],
+      rateSuffix: PRICING_MODEL_RATE_SUFFIX[e.scenario.model as keyof typeof PRICING_MODEL_RATE_SUFFIX],
+      tiers: (e.scenario.tiers || []).map((t: any) => ({ thresholdFrom: t.thresholdFrom, thresholdTo: t.thresholdTo, rate: t.rate })),
+      appliedTier: e.tier ? { thresholdFrom: e.tier.thresholdFrom, thresholdTo: e.tier.thresholdTo, rate: e.tier.rate } : null,
+      scale: e.scale,
+      scaleLabel: PRICING_MODEL_SCALE_LABEL[e.scenario.model as keyof typeof PRICING_MODEL_SCALE_LABEL],
+      investment: e.investment,
+      netAnnual: e.net,
+      roi: e.roi,
+      isBestValue: e.scenario.id === bestId,
+      warning: e.warning,
+    })),
+
+    bestPricingScenarioLabel: bestEntry?.scenario.label,
+    bestPricingInvestment: bestEntry?.investment,
+    bestPricingNet: bestEntry?.net,
+  };
+}
+
+export async function generateMeasurePDF(input: MeasurePDFData | MeasureState): Promise<void> {
+  const data: MeasurePDFData =
+    "quadrants" in input && Array.isArray((input as MeasurePDFData).quadrants)
+      ? (input as MeasurePDFData)
+      : buildMeasurePDFDataFromState(input as MeasureState);
+  const doc = <MeasureEvidenceDoc data={data} />;
   const blob = await pdf(doc).toBlob();
-  const orgName = state.deployment.organizationName || "EBR";
+  const orgName = data.organizationName || "Evidence";
   const dateStr = new Date().toISOString().slice(0, 10);
-  await savePdfBlob(blob, `${orgName.replace(/\s+/g, "-")}_EBR_${dateStr}.pdf`);
+  await savePdfBlob(blob, `${orgName.replace(/\s+/g, "-")}_Evidence_${dateStr}.pdf`);
 }
