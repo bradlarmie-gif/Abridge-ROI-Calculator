@@ -9,7 +9,7 @@ import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
 import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import { generateExplorePDF, type ExploreDriver, type ExplorePDFData } from "@/components/explore/ExplorePDFExport";
+import { generateExplorePDF, type ExplorePDFData } from "@/components/explore/ExplorePDFExport";
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 
@@ -748,727 +748,131 @@ export default function ExploreModel({
   const formatNumber = (n: number) => n.toLocaleString();
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
-    setIsExporting(true);
-    try {
-      const drivers: ExploreDriver[] = [];
-      const fmtK = (n: number) => Math.abs(n) >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`;
+      setIsExporting(true);
+      try {
+        const careSettingLabels: Record<string, string> = {
+          outpatient: 'Outpatient',
+          ed: 'Emergency',
+          inpatient: 'Inpatient',
+          nursing: 'Nursing',
+        };
 
-      if (state.careSetting === 'outpatient') {
-        if (timeDriverInputs.patientAccessEnabled && patientAccessValue > 0) {
-          const annualVisits = derivedVisitsPerWeek * effectiveAccessProviders * 48;
-          const providerLabel = effectiveAccessProviders < state.numberOfProviders
-            ? `${effectiveAccessProviders} of ${state.numberOfProviders} providers`
-            : `${effectiveAccessProviders} providers`;
-          drivers.push({
-            id: 'patientAccess', name: 'Patient Access', value: patientAccessValue, category: 'time',
-            calcSteps: [
-              `${derivedVisitsPerWeek} visits/wk × ${providerLabel} × 48 wks = ${annualVisits.toLocaleString()} visits`,
-              `${annualVisits.toLocaleString()} visits × $${timeDriverInputs.revenuePerVisit}/visit = ${fmtK(patientAccessValue)}/year`,
-            ],
-          });
-        }
-        if (docQualityInputs.wrvuEnabled && wrvuValue > 0) {
-          const wrvuLiftPct = wrvuScenarios[docQualityInputs.wrvuScenario];
-          drivers.push({
-            id: 'wrvu', name: 'wRVU Improvement', value: wrvuValue, category: 'documentation',
-            calcSteps: [
-              `${docQualityInputs.currentWrvu} wRVU/enc \u00D7 ${wrvuLiftPct}% lift \u00D7 ${eligibleEncounters.toLocaleString()} encounters`,
-              `\u00D7 $${docQualityInputs.conversionFactor}/wRVU \u00D7 ${docQualityInputs.wrvuRealization}% realization`,
-              `= ${fmtK(wrvuValue)}/year`,
-            ],
-            inputs: { realizationRate: docQualityInputs.wrvuRealization },
-          });
-        }
-        if (docQualityInputs.hccEnabled && hccValue > 0) {
-          drivers.push({
-            id: 'hcc', name: 'HCC Capture', value: hccValue, category: 'documentation',
-            calcSteps: [
-              `MA patients \u00D7 gap rate \u00D7 recapture rate \u00D7 RAF value`,
-              `\u00D7 ${docQualityInputs.hccRealization}% realization`,
-              `= ${fmtK(hccValue)}/year`,
-            ],
-            inputs: { realizationRate: docQualityInputs.hccRealization },
-          });
-        }
-        if (docQualityInputs.denialsEnabled && denialsValue > 0) {
-          drivers.push({
-            id: 'denials', name: 'Denial Prevention', value: denialsValue, category: 'documentation',
-            calcSteps: [
-              `${eligibleEncounters.toLocaleString()} enc \u00D7 ${docQualityInputs.denialRate}% denial rate`,
-              `\u00D7 ${docQualityInputs.unappealableRate}% doc-related \u00D7 ${denialsScenarios[docQualityInputs.denialsScenario]}% prevented`,
-              `\u00D7 $${docQualityInputs.avgClaimValue.toLocaleString()}/claim = ${fmtK(denialsValue)}/year`,
-            ],
-            inputs: { realizationRate: docQualityInputs.denialsRealization },
-          });
-        }
-        if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0) {
-          const impactPct = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
-          drivers.push({
-            id: 'clinicianRetention', name: 'Clinician Retention', value: clinicianRetentionValue, category: 'time',
-            calcSteps: [
-              `${state.numberOfProviders} providers \u00D7 ${timeDriverInputs.annualTurnoverRate}% turnover \u00D7 ${timeDriverInputs.burnoutRelatedTurnover}% burnout-related`,
-              `\u00D7 ${impactPct}% Abridge impact \u00D7 $${timeDriverInputs.replacementCost.toLocaleString()} replacement cost`,
-              `= ${fmtK(clinicianRetentionValue)}/year`,
-            ],
-          });
-        }
-      } else if (state.careSetting === 'ed') {
-        if (timeDriverInputs.edLwbsEnabled && (edLwbsValue > 0 || edAdmissionCaptureValue > 0)) {
-          const combined = edLwbsValue + edAdmissionCaptureValue;
-          drivers.push({
-            id: 'edThroughput', name: 'Patient Throughput (LWBS)', value: combined, category: 'time',
-            calcSteps: [
-              `${state.annualEncounters.toLocaleString()} enc \u00D7 ${timeDriverInputs.edLwbsRate}% LWBS \u00D7 ${timeDriverInputs.edLwbsReduction}% reduction`,
-              `${Math.round(edRecoveredPatients).toLocaleString()} recovered \u00D7 $${timeDriverInputs.edRevenuePerVisit}/visit`,
-              `LWBS: ${fmtK(edLwbsValue)} + Admissions: ${fmtK(edAdmissionCaptureValue)} = ${fmtK(combined)}/year`,
-            ],
-            inputs: { realizationRate: timeDriverInputs.edLwbsRealization },
-          });
-        }
-        if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && clinicianRetentionValue > 0) {
-          const impactPct = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
-          drivers.push({
-            id: 'edRetention', name: 'Clinician Retention', value: clinicianRetentionValue, category: 'time',
-            calcSteps: [
-              `${state.numberOfProviders} physicians \u00D7 ${timeDriverInputs.annualTurnoverRate}% turnover \u00D7 ${timeDriverInputs.burnoutRelatedTurnover}% burnout-related`,
-              `\u00D7 ${impactPct}% Abridge impact \u00D7 $${timeDriverInputs.replacementCost.toLocaleString()} replacement cost`,
-              `= ${fmtK(clinicianRetentionValue)}/year`,
-            ],
-          });
-        }
-        if (docQualityInputs.wrvuEnabled && wrvuValue > 0) {
-          const wrvuLiftPct = wrvuScenarios[docQualityInputs.wrvuScenario];
-          drivers.push({
-            id: 'edLevelOfService', name: 'Level-of-Service Accuracy', value: wrvuValue, category: 'documentation',
-            calcSteps: [
-              `${docQualityInputs.currentWrvu} wRVU/enc \u00D7 ${wrvuLiftPct}% lift \u00D7 ${eligibleEncounters.toLocaleString()} encounters`,
-              `\u00D7 $${docQualityInputs.conversionFactor}/wRVU \u00D7 ${docQualityInputs.wrvuRealization}% realization`,
-              `= ${fmtK(wrvuValue)}/year`,
-            ],
-            inputs: { realizationRate: docQualityInputs.wrvuRealization },
-          });
-        }
-        if (docQualityInputs.denialsEnabled && denialsValue > 0) {
-          drivers.push({
-            id: 'edDenials', name: 'Denial Prevention', value: denialsValue, category: 'documentation',
-            calcSteps: [
-              `${eligibleEncounters.toLocaleString()} enc \u00D7 ${docQualityInputs.denialRate}% denial rate`,
-              `\u00D7 ${docQualityInputs.unappealableRate}% doc-related \u00D7 ${denialsScenarios[docQualityInputs.denialsScenario]}% prevented`,
-              `\u00D7 $${docQualityInputs.avgClaimValue.toLocaleString()}/claim = ${fmtK(denialsValue)}/year`,
-            ],
-            inputs: { realizationRate: docQualityInputs.denialsRealization },
-          });
-        }
-      } else if (state.careSetting === 'inpatient') {
-        if (timeDriverInputs.costReductionEnabled && costReductionValue > 0) {
-          drivers.push({
-            id: 'ipCostReduction', name: 'Cost Reduction', value: costReductionValue, category: 'time',
-            calcSteps: [`Estimated annual cost reduction: ${fmtK(costReductionValue)}/year`],
-          });
-        }
-        if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && ipWellbeingRetentionValue > 0) {
-          const impactPct = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
-          drivers.push({
-            id: 'inpatientRetention', name: 'Hospitalist Retention', value: ipWellbeingRetentionValue, category: 'time',
-            calcSteps: [
-              `${state.numberOfProviders} hospitalists \u00D7 ${timeDriverInputs.annualTurnoverRate}% turnover \u00D7 ${timeDriverInputs.burnoutRelatedTurnover}% burnout-related`,
-              `\u00D7 ${impactPct}% Abridge impact \u00D7 $${timeDriverInputs.replacementCost.toLocaleString()} replacement cost`,
-              `= ${fmtK(ipWellbeingRetentionValue)}/year`,
-            ],
-          });
-        }
-        if (docQualityInputs.ipEmCodingEnabled && ipEmCodingValue > 0) {
-          const los = state.ipAvgLengthOfStay ?? 4.5;
-          const progressPerAdm = Math.max(los - 2, 1);
-          const totalCharges = Math.round(eligibleEncounters * (1 + progressPerAdm + docQualityInputs.ipEmCodingConsultsPerAdmission));
-          const gapPct = docQualityInputs.ipEmCodingGapScenario === 'conservative' ? 8 : docQualityInputs.ipEmCodingGapScenario === 'optimistic' ? 18 : 12;
-          const chargesCaptured = Math.round(totalCharges * (gapPct / 100));
-          drivers.push({
-            id: 'ipEmCoding',
-            name: 'E/M Coding Accuracy',
-            value: ipEmCodingValue,
-            category: 'documentation',
-            calcSteps: [
-              `${eligibleEncounters.toLocaleString()} admissions \u00D7 (1 H&P + ${progressPerAdm.toFixed(1)} progress notes + ${docQualityInputs.ipEmCodingConsultsPerAdmission} consults) = ${totalCharges.toLocaleString()} charges`,
-              `\u00D7 ${gapPct}% coding gap \u00D7 $${docQualityInputs.ipEmCodingAvgRevenueLift}/charge = $${Math.round(chargesCaptured * docQualityInputs.ipEmCodingAvgRevenueLift).toLocaleString()} gross`,
-              `\u00D7 ${docQualityInputs.ipEmCodingRealization}% realization = ${fmtK(ipEmCodingValue)}/year`,
-            ],
-            inputs: { realizationRate: docQualityInputs.ipEmCodingRealization },
-          });
-        }
-        if (docQualityInputs.ipDrgEnabled && ipDrgValue > 0) {
-          const captureRate = docQualityInputs.ipDrgScenario === 'conservative' ? 15 : docQualityInputs.ipDrgScenario === 'typical' ? 20 : 25;
-          drivers.push({
-            id: 'inpatientDRG', name: 'DRG Accuracy', value: ipDrgValue, category: 'documentation',
-            calcSteps: [
-              `${eligibleEncounters.toLocaleString()} enc \u00D7 ${docQualityInputs.ipDrgAtRiskRate}% at-risk \u00D7 ${captureRate}% captured`,
-              `\u00D7 ${docQualityInputs.ipDrgWeightIncrease} wt increase \u00D7 $${docQualityInputs.ipDrgBasePayment.toLocaleString()} base`,
-              `\u00D7 ${docQualityInputs.ipDrgRealization}% realization = ${fmtK(ipDrgValue)}/year`,
-            ],
-            inputs: { realizationRate: docQualityInputs.ipDrgRealization },
-          });
-        }
-        if (docQualityInputs.ipObsDefenseEnabled && ipObsDefenseValue > 0) {
-          drivers.push({
-            id: 'inpatientObsDefense', name: 'Obs/IP Status Defense', value: ipObsDefenseValue, category: 'documentation',
-            calcSteps: [
-              `${eligibleEncounters.toLocaleString()} admissions \u00D7 ${docQualityInputs.ipObsDefenseDenialRate}% denial rate \u00D7 $${docQualityInputs.ipObsDefenseClaimValue.toLocaleString()} avg claim`,
-              `\u00D7 ${docQualityInputs.ipObsDefenseDocContribution}% doc contribution = ${fmtK(Math.round(eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100)))} gross`,
-              `\u00D7 ${docQualityInputs.ipObsDefenseRealization}% realization = ${fmtK(ipObsDefenseValue)}/year`,
-            ],
-            inputs: { realizationRate: docQualityInputs.ipObsDefenseRealization },
-          });
-        }
-        if (docQualityInputs.ipCdiEnabled && ipCdiValue > 0) {
-          const reductionRate = docQualityInputs.ipCdiScenario === 'conservative' ? 15 : docQualityInputs.ipCdiScenario === 'typical' ? 25 : 35;
-          drivers.push({
-            id: 'inpatientCDI', name: 'CDI Query Reduction', value: ipCdiValue, category: 'documentation',
-            calcSteps: [
-              `${eligibleEncounters.toLocaleString()} enc \u00D7 ${docQualityInputs.ipCdiQueryRate}% query rate \u00D7 ${reductionRate}% reduced`,
-              `\u00D7 $${docQualityInputs.ipCdiCostPerQuery}/query \u00D7 ${docQualityInputs.ipCdiRealization}% realization = ${fmtK(ipCdiValue)}/year`,
-            ],
-          });
-        }
-      } else if (state.careSetting === 'nursing') {
-        if (timeDriverInputs.nursingOtEnabled && nursingOtValue > 0) {
-          const totalPostShiftHrs = Math.round(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52);
-          const otHoursElim = Math.round(totalPostShiftHrs * (timeDriverInputs.nursingOtReductionPercent / 100));
-          drivers.push({
-            id: 'nursingOT', name: 'OT Reduction', value: nursingOtValue, category: 'time',
-            calcSteps: [
-              `${state.numberOfProviders} nurses \u00D7 ${timeDriverInputs.nursingOtHoursPerNurseWeek} post-shift hrs/wk \u00D7 52 wks = ${totalPostShiftHrs.toLocaleString()} hrs/yr`,
-              `\u00D7 ${timeDriverInputs.nursingOtReductionPercent}% eliminated by Abridge = ${otHoursElim.toLocaleString()} hrs/yr`,
-              `\u00D7 $${timeDriverInputs.nursingOtHourlyRate}/hr = ${fmtK(nursingOtValue)}/year`,
-            ],
-          });
-        }
-        if (timeDriverInputs.nursingRetentionEnabled && nursingRetentionValue > 0) {
-          drivers.push({
-            id: 'nursingRetention', name: 'Retention Savings', value: nursingRetentionValue, category: 'time',
-            calcSteps: [
-              `${state.numberOfProviders} FTEs \u00D7 ${timeDriverInputs.nursingTurnoverRate}% turnover \u00D7 40% burnout-related`,
-              `\u00D7 ${timeDriverInputs.retentionImpactScenario} impact \u00D7 $${timeDriverInputs.nursingReplacementCost.toLocaleString()} replacement`,
-              `= ${fmtK(nursingRetentionValue)}/year`,
-            ],
-          });
-        }
-        if (timeDriverInputs.nursingAgencyEnabled && nursingAgencyValue > 0) {
-          drivers.push({
-            id: 'nursingAgency', name: 'Agency Cost Avoidance', value: nursingAgencyValue, category: 'time',
-            calcSteps: [
-              `${nursingRetainedCount.toFixed(1)} retained \u00D7 ${timeDriverInputs.nursingAgencyWeeksPerVacancy} wks \u00D7 $${timeDriverInputs.nursingAgencyWeeklyPremium.toLocaleString()}/wk`,
-              `= ${fmtK(nursingAgencyValue)}/year`,
-            ],
-          });
-        }
-        for (const item of timeDriverInputs.nursingAdditionalCostSavings) {
-          if (item.amount > 0 && item.label) {
-            drivers.push({
-              id: `additionalCost-${item.id}`, name: item.label, value: item.amount, category: 'time',
-              calcSteps: [`Organization-identified saving: ${fmtK(item.amount)}`],
-            });
+        const buildQuadrantData = (quadrant: ExploreQuadrant): import("@/components/explore/ExplorePDFExport").ExplorePDFQuadrantData => {
+          if (!state.careSetting) {
+            return { quadrant, annualTotal: 0, oneTimeTotal: 0, drivers: [], otherFinancialBenefits: [] };
           }
-        }
-        if (nursingCareQualityPotential > 0) {
-          const parts: string[] = [];
-          if (nursingHapiValue > 0) parts.push(`HAPI risk reduction: ${fmtK(nursingHapiValue)}`);
-          if (nursingFallsValue > 0) parts.push(`Fall risk visibility gap: ${fmtK(nursingFallsValue)}`);
-          if (nursingCautiValue > 0) parts.push(`CAUTI bundle compliance: ${fmtK(nursingCautiValue)}`);
-          if (nursingClabsiValue > 0) parts.push(`CLABSI bundle compliance: ${fmtK(nursingClabsiValue)}`);
-          if (nursingSepsisValue > 0) parts.push(`Sepsis SEP-1 bundle: ${fmtK(nursingSepsisValue)}`);
+          const drivers = EXPLORE_DRIVERS
+            .filter(d => d.quadrant === quadrant && d.settings.includes(state.careSetting!) && isDriverEnabled(d, state))
+            .map(d => ({
+              id: d.id,
+              label: d.label,
+              shortDescription: d.shortDescription,
+              visibility: d.visibility,
+              value: allDriverValues[d.id] || 0,
+              isChild: Boolean(d.childOfDriverId),
+            }));
 
-          parts.push(`= ${fmtK(nursingCareQualityPotential)}/year`);
-          drivers.push({
-            id: 'nursingCareQuality', name: 'Care Quality (Potential)', value: nursingCareQualityPotential, category: 'documentation',
-            calcSteps: parts,
-            calibrationNote: 'Potential value based on documentation-attributable risk reduction rates.',
-          });
-        }
+          const benefits = (state.otherFinancialBenefits ?? [])
+            .filter(b => b.quadrant === quadrant && b.label.trim() && b.amount > 0)
+            .map(b => ({ label: b.label, amount: b.amount, type: b.type }));
+
+          const driverAnnualSum = drivers
+            .filter(d => d.visibility === 'quantified')
+            .reduce((s, d) => s + d.value, 0);
+          const benefitsAnnual = benefits.filter(b => b.type === 'annual').reduce((s, b) => s + b.amount, 0);
+          const benefitsOneTime = benefits.filter(b => b.type === 'oneTime').reduce((s, b) => s + b.amount, 0);
+
+          return {
+            quadrant,
+            annualTotal: driverAnnualSum + benefitsAnnual,
+            oneTimeTotal: benefitsOneTime,
+            drivers,
+            otherFinancialBenefits: benefits,
+          };
+        };
+
+        const careSettingForData = (state.careSetting ?? 'outpatient') as ExplorePDFData['careSetting'];
+
+        const pdfData: ExplorePDFData = {
+          // Cover page
+          clientName,
+          preparedBy,
+          date: new Date().toLocaleDateString(),
+          careSettingLabel: state.careSetting ? (careSettingLabels[state.careSetting] || state.careSetting) : '',
+
+          // Practice
+          careSetting: careSettingForData,
+          numberOfProviders: state.numberOfProviders,
+          nursingStaffedBeds: state.careSetting === 'nursing' ? state.nursingStaffedBeds : undefined,
+          nursingOccupancyRate: state.careSetting === 'nursing' ? state.nursingOccupancyRate : undefined,
+          annualEncounters: state.annualEncounters,
+          utilizationPercent: state.utilizationPercent,
+
+          // Time savings
+          totalHoursSaved,
+          minutesSavedPerEncounter: state.minutesSavedPerEncounter,
+          timePathScenario: state.timePathScenario || 'custom',
+
+          // Quadrants
+          quadrants: [
+            buildQuadrantData('Capacity'),
+            buildQuadrantData('Workforce'),
+            buildQuadrantData('Revenue'),
+            buildQuadrantData('Quality'),
+          ],
+          totalAnnualValue,
+          totalOneTimeValue,
+
+          // Investment
+          pricingModel: state.pricingModel,
+          costPerProvider: state.pricingModel === 'perProvider' ? state.costPerProvider : undefined,
+          costPerEncounter: state.pricingModel === 'perEncounter' ? state.costPerEncounter : undefined,
+          annualLicenseFee: state.pricingModel === 'annual' ? state.annualLicenseFee : undefined,
+          implementationFee: state.implementationFee,
+          includeImplementation: state.includeImplementation,
+          annualInvestment,
+
+          // 3-Year Projection
+          year2GrowthPercent: state.year2GrowthPercent,
+          year3GrowthPercent: state.year3GrowthPercent,
+          year1Value,
+          year2Value,
+          year3Value,
+          year1Investment,
+          year2Investment,
+          year3Investment,
+          year1Net,
+          year2Net,
+          year3Net,
+          threeYearGrossTotal,
+          threeYearInvestmentTotal,
+          threeYearNetTotal,
+
+          // Headline
+          netAnnualValue: year1Net,
+          roi: annualInvestment > 0 ? totalAnnualValue / annualInvestment : 0,
+          valuePerProvider: state.numberOfProviders > 0 ? Math.round(year1Net / state.numberOfProviders) : 0,
+        };
+
+        await generateExplorePDF(pdfData);
+
+        setShowExportModal(false);
+        toast({
+          title: "PDF Downloaded",
+          description: "Your ROI model has been saved.",
+          variant: "brand",
+        });
+      } catch (error: any) {
+        console.error("PDF generation error:", error?.message || error?.toString?.() || JSON.stringify(error), error);
+        toast({
+          title: "Export Failed",
+          description: error?.message || "Unable to generate PDF. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsExporting(false);
       }
-
-      const fullScaleValue = state.careSetting === 'nursing'
-        ? Math.round(netAnnualValue * (expandedProviders / state.nursingStaffedBeds) * (expandedUtilization / state.utilizationPercent))
-        : Math.round(netAnnualValue * (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent));
-
-      const qualitativeDrivers: string[] = [];
-      if (state.careSetting === 'outpatient') {
-        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Provider Wellbeing');
-      } else if (state.careSetting === 'ed') {
-        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Provider Wellbeing');
-      } else if (state.careSetting === 'inpatient') {
-        if (timeDriverInputs.ipRoundingEnabled) qualitativeDrivers.push('Rounding Efficiency');
-        if (timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue) qualitativeDrivers.push('Provider Wellbeing');
-      } else if (state.careSetting === 'nursing') {
-        if (state.docQualityInputs.nursingHcahpsEnabled) qualitativeDrivers.push('HCAHPS Improvement');
-      }
-
-      const retentionImpactPct = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
-      const providersLeaving = state.numberOfProviders * (timeDriverInputs.annualTurnoverRate / 100);
-      const burnoutDep = providersLeaving * (timeDriverInputs.burnoutRelatedTurnover / 100);
-      const providersRet = burnoutDep * (retentionImpactPct / 100);
-
-      const wrvuLiftPctVal = wrvuScenarios[docQualityInputs.wrvuScenario] || 5;
-      const wrvuLift = docQualityInputs.currentWrvu * (wrvuLiftPctVal / 100);
-      const totalWrvusVal = eligibleEncounters * wrvuLift;
-
-      const hccRecapturePct = hccScenarios[docQualityInputs.hccScenario] || 10;
-      const maPatients = state.numberOfProviders * docQualityInputs.panelSize * (docQualityInputs.maPercent / 100);
-      const gapPatients = maPatients * (docQualityInputs.gapRate / 100);
-      const hccsRecapturedVal = gapPatients * (hccRecapturePct / 100) * docQualityInputs.avgHccs;
-      const hccGrossVal = hccsRecapturedVal * docQualityInputs.rafImpact * docQualityInputs.annualPayment;
-
-      const denialsPreventionPct = denialsScenarios[docQualityInputs.denialsScenario] || 50;
-      const totalDenialsVal = eligibleEncounters * (docQualityInputs.denialRate / 100);
-      const unappealableDenialsVal = totalDenialsVal * (docQualityInputs.unappealableRate / 100);
-      const denialsPrevVal = unappealableDenialsVal * (denialsPreventionPct / 100);
-      const denialGrossVal = denialsPrevVal * docQualityInputs.avgClaimValue;
-
-      const annualVisits = derivedVisitsPerWeek * effectiveAccessProviders * 48;
-      const capHrsRaw = derivedVisitsPerWeek * (timeDriverInputs.visitDuration / 60) * effectiveAccessProviders * 48;
-      const capHrs = Math.round(Math.min(capHrsRaw, totalHoursSaved));
-      const remainingHrs = Math.max(0, totalHoursSaved - (timeDriverInputs.patientAccessEnabled ? capHrs : 0));
-      const docQualHrs = Math.round(remainingHrs * 0.4);
-      const susHrs = remainingHrs - docQualHrs;
-      const burdenReliefHrs = docQualHrs + susHrs;
-      const hrsPerWkBack = state.numberOfProviders > 0 ? burdenReliefHrs / state.numberOfProviders / 48 : 0;
-      const capPctDerived = totalHoursSaved > 0 ? Math.min(100, Math.round((capHrsRaw / totalHoursSaved) * 100)) : 0;
-
-      const pdfData: ExplorePDFData = {
-        careSetting: state.careSetting as ExplorePDFData['careSetting'],
-        clientName,
-        preparedBy,
-        providers: state.numberOfProviders,
-        encounters: state.annualEncounters,
-        utilizationPercent: state.utilizationPercent,
-        hoursReturned: totalHoursSaved,
-        nursingStaffedBeds: state.nursingStaffedBeds,
-        nursingFTEs: state.numberOfProviders,
-        totalValue: totalAnnualValue,
-        timeValue,
-        docValue,
-        annualInvestment,
-        netAnnualValue,
-        roi,
-        drivers,
-        qualitativeDrivers,
-        fullScaleProviders: expandedProviders,
-        fullScaleUtilization: expandedUtilization,
-        implementationCost: state.includeImplementation ? state.implementationFee : 0,
-        minutesSavedPerEncounter: state.minutesSavedPerEncounter,
-
-        eligibleEncounters,
-        encountersPerProvider: state.numberOfProviders > 0 ? Math.round(state.annualEncounters / state.numberOfProviders) : 0,
-        efficiencyValue: timeValue,
-        documentationQualityValue: docValue,
-
-        capacityAllocationPct: capPctDerived,
-        docQualityAllocationPct: totalHoursSaved > 0 ? Math.round((docQualHrs / totalHoursSaved) * 100) : 0,
-        sustainabilityAllocationPct: totalHoursSaved > 0 ? Math.max(0, 100 - capPctDerived - Math.round((docQualHrs / totalHoursSaved) * 100)) : 0,
-        capacityHours: capHrs,
-        docQualityHours: docQualHrs,
-        sustainabilityHours: susHrs,
-        additionalVisitsPerWeek: derivedVisitsPerWeek,
-        accessProviders: effectiveAccessProviders,
-
-        patientAccessEnabled: timeDriverInputs.patientAccessEnabled,
-        accessConversionPct: capPctDerived,
-        avgVisitDurationMin: timeDriverInputs.visitDuration,
-        revenuePerVisit: timeDriverInputs.revenuePerVisit,
-        projectedAdditionalVisits: annualVisits,
-        patientAccessValue,
-
-        sustainabilityEnabled: timeDriverInputs.wellbeingEnabled,
-        retentionValueEnabled: timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue,
-        hoursPerProviderPerWeekBack: hrsPerWkBack,
-        annualTurnoverRate: timeDriverInputs.annualTurnoverRate,
-        burnoutRelatedTurnoverPct: timeDriverInputs.burnoutRelatedTurnover,
-        replacementCostPerProvider: timeDriverInputs.replacementCost,
-        abridgeRetentionImpactPct: retentionImpactPct,
-        abridgeRetentionImpactLabel: timeDriverInputs.retentionImpactScenario,
-        providersLeavingPerYear: providersLeaving,
-        burnoutDepartures: burnoutDep,
-        providersRetained: providersRet,
-        retentionValue: clinicianRetentionValue,
-
-        wrvuEnabled: docQualityInputs.wrvuEnabled,
-        wrvuScenario: docQualityInputs.wrvuScenario,
-        wrvuImprovementPct: wrvuLiftPctVal,
-        currentAvgWrvuPerVisit: docQualityInputs.currentWrvu,
-        wrvuLiftPerVisit: wrvuLift,
-        totalAdditionalWrvus: Math.round(totalWrvusVal),
-        wrvuConversionFactor: docQualityInputs.conversionFactor,
-        wrvuRealizationRate: docQualityInputs.wrvuRealization,
-        annualWrvuValue: wrvuValue,
-
-        hccEnabled: docQualityInputs.hccEnabled,
-        hccRecaptureScenario: docQualityInputs.hccScenario,
-        panelSizePerProvider: docQualityInputs.panelSize,
-        totalPatients: state.numberOfProviders * docQualityInputs.panelSize,
-        medicareAdvantagePct: docQualityInputs.maPercent,
-        maPatientPanel: Math.round(maPatients),
-        documentationGapRate: docQualityInputs.gapRate,
-        patientsWithGaps: Math.round(gapPatients),
-        avgMissedHccsPerPatient: docQualityInputs.avgHccs,
-        totalRecaptureOpportunity: Math.round(gapPatients * docQualityInputs.avgHccs),
-        hccRecaptureTargetPct: hccRecapturePct,
-        hccsDocumented: Math.round(hccsRecapturedVal),
-        rafImpactPerHcc: docQualityInputs.rafImpact,
-        annualPaymentPerRaf: docQualityInputs.annualPayment,
-        hccGrossValue: Math.round(hccGrossVal),
-        hccRealizationRate: docQualityInputs.hccRealization,
-        annualHccValue: hccValue,
-
-        denialEnabled: docQualityInputs.denialsEnabled,
-        denialPreventionScenario: docQualityInputs.denialsScenario,
-        baselineDenialRate: docQualityInputs.denialRate,
-        totalDenials: Math.round(totalDenialsVal),
-        unappealableDenialRate: docQualityInputs.unappealableRate,
-        unrecoverableDenials: Math.round(unappealableDenialsVal),
-        preventionTargetPct: denialsPreventionPct,
-        denialsPrevented: Math.round(denialsPrevVal),
-        avgDeniedClaimValue: docQualityInputs.avgClaimValue,
-        denialGrossValue: Math.round(denialGrossVal),
-        denialRealizationRate: docQualityInputs.denialsRealization,
-        annualDenialValue: denialsValue,
-
-        costPerProviderPerMonth: state.costPerUnit,
-
-        ...(state.careSetting === 'inpatient' ? (() => {
-          const ipDirectPct = timeDriverInputs.ipAllocQualityPercent;
-          const ipDocQPct = timeDriverInputs.ipAllocCostPercent;
-          const ipShiftPct = timeDriverInputs.ipAllocWellbeingPercent;
-          const ipRoundingHrsTotal = Math.round(totalHoursSaved * (ipDirectPct / 100));
-          const ipRoundingHrsPerProv = state.numberOfProviders > 0 ? Math.round(ipRoundingHrsTotal / state.numberOfProviders) : 0;
-          const ipHrsPerProvPerYear = state.numberOfProviders > 0 ? Math.round(totalHoursSaved / state.numberOfProviders) : 0;
-          const ipHrsPerWk = state.numberOfProviders > 0 ? parseFloat((totalHoursSaved / state.numberOfProviders / 48).toFixed(1)) : 0;
-          const ipMinPerDay = parseFloat((ipHrsPerWk * 60 / 5).toFixed(0));
-          const ipProvLeaving = state.numberOfProviders * (timeDriverInputs.annualTurnoverRate / 100);
-          const ipBurnoutDep = ipProvLeaving * (timeDriverInputs.burnoutRelatedTurnover / 100);
-          const ipRetImpactPct = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
-          const ipProvRetained = ipBurnoutDep * (ipRetImpactPct / 100);
-
-          const ipDrgProtScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
-          const ipDrgCapRate = ipDrgProtScenarios[docQualityInputs.ipDrgScenario] || 20;
-          const ipAdmGaps = Math.round(eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100));
-          const ipAdmCaptured = Math.round(ipAdmGaps * (ipDrgCapRate / 100));
-
-          const ipCdiRedScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
-          const ipCdiRedRate = ipCdiRedScenarios[docQualityInputs.ipCdiScenario] || 25;
-          const ipTotalQueries = Math.round(eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100));
-          const ipQueriesAvoided = Math.round(ipTotalQueries * (ipCdiRedRate / 100));
-
-          const ipEmLos = state.ipAvgLengthOfStay ?? 4.5;
-          const ipEmProgressPerAdm = Math.max(ipEmLos - 2, 1);
-          const ipEmHAndPs = Math.round(eligibleEncounters);
-          const ipEmProgressNotes = Math.round(eligibleEncounters * ipEmProgressPerAdm);
-          const ipEmConsults = Math.round(eligibleEncounters * docQualityInputs.ipEmCodingConsultsPerAdmission);
-          const ipEmTotalCharges = ipEmHAndPs + ipEmProgressNotes + ipEmConsults;
-          const ipEmGapPct = docQualityInputs.ipEmCodingGapScenario === 'conservative' ? 8 : docQualityInputs.ipEmCodingGapScenario === 'optimistic' ? 18 : 12;
-          const ipEmChargesCaptured = Math.round(ipEmTotalCharges * (ipEmGapPct / 100));
-
-          const ipFullScaleProvs = expandedProviders;
-          const ipFullScaleMult = (ipFullScaleProvs / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
-          const ipRetValOnly = clinicianRetentionValue;
-          const ipCostRedOnly = costReductionValue;
-          const ipPrimaryTotal = ipRetValOnly + ipCostRedOnly + ipEmCodingValue + ipDrgValue + ipCdiValue + ipObsDefenseValue;
-          const ipPrimaryNet = ipPrimaryTotal - annualInvestment;
-          const ipFullScaleNetValue = Math.round(ipPrimaryNet * ipFullScaleMult);
-          const ipFullScaleInv = Math.round(annualInvestment * (ipFullScaleProvs / state.numberOfProviders));
-          const ipFullScaleGross = Math.round(ipPrimaryTotal * ipFullScaleMult);
-          const ipFullScaleRoi = ipFullScaleInv > 0 ? parseFloat((ipFullScaleGross / ipFullScaleInv).toFixed(1)) : 0;
-          const ipFullScalePerProv = ipFullScaleProvs > 0 ? Math.round(ipFullScaleNetValue / ipFullScaleProvs) : 0;
-
-          return {
-            ipDirectPatientCarePct: ipDirectPct,
-            ipDocQualityPct: ipDocQPct,
-            ipShiftSustainabilityPct: ipShiftPct,
-            ipRoundingHoursTotal: ipRoundingHrsTotal,
-            ipRoundingHoursPerProvider: ipRoundingHrsPerProv,
-            ipHoursPerProviderPerYear: ipHrsPerProvPerYear,
-            ipHoursPerWeek: ipHrsPerWk,
-            ipMinutesPerDayPerProvider: ipMinPerDay,
-            ipProvidersLeavingPerYear: ipProvLeaving,
-            ipBurnoutDepartures: ipBurnoutDep,
-            ipProvidersRetained: ipProvRetained,
-            ipDrgOpportunityRate: docQualityInputs.ipDrgAtRiskRate,
-            ipAdmissionsWithGaps: ipAdmGaps,
-            ipAbridgeCaptureRate: ipDrgCapRate,
-            ipAdmissionsCaptured: ipAdmCaptured,
-            ipAvgDRGWeightLift: docQualityInputs.ipDrgWeightIncrease,
-            ipBaseDRGPayment: docQualityInputs.ipDrgBasePayment,
-            ipDrgRealizationRate: docQualityInputs.ipDrgRealization,
-            ipDrgValue: ipDrgValue,
-            ipEmCodingEnabled: docQualityInputs.ipEmCodingEnabled,
-            ipEmCodingValue: ipEmCodingValue,
-            ipEmCodingGapScenario: docQualityInputs.ipEmCodingGapScenario,
-            ipEmCodingAvgRevenueLift: docQualityInputs.ipEmCodingAvgRevenueLift,
-            ipEmCodingRealization: docQualityInputs.ipEmCodingRealization,
-            ipEmCodingTotalCharges: ipEmTotalCharges,
-            ipEmCodingChargesCaptured: ipEmChargesCaptured,
-            ipEmCodingHAndPs: ipEmHAndPs,
-            ipEmCodingProgressNotes: ipEmProgressNotes,
-            ipEmCodingConsults: ipEmConsults,
-            ipAvgLengthOfStay: state.ipAvgLengthOfStay,
-            ipDrgEnabled: docQualityInputs.ipDrgEnabled,
-            ipCdiQueryRate: docQualityInputs.ipCdiQueryRate,
-            ipTotalCDIQueries: ipTotalQueries,
-            ipQueriesAvoidedRate: ipCdiRedRate,
-            ipQueriesAvoided: ipQueriesAvoided,
-            ipCostPerQuery: docQualityInputs.ipCdiCostPerQuery,
-            ipCdiValue: ipCdiValue,
-            ipCdiEnabled: docQualityInputs.ipCdiEnabled,
-            ipCdiScenario: docQualityInputs.ipCdiScenario,
-            ipDrgScenario: docQualityInputs.ipDrgScenario,
-            ipObsDefenseEnabled: docQualityInputs.ipObsDefenseEnabled,
-            ipObsDefenseValue: ipObsDefenseValue,
-            ipObsDefenseRealization: docQualityInputs.ipObsDefenseRealization,
-            ipCdiRealization: docQualityInputs.ipCdiRealization,
-            ipCostReductionValue: costReductionValue,
-            ipCostReductionEnabled: timeDriverInputs.costReductionEnabled,
-            ipWellbeingHoursPerWeek: ipHrsPerWk,
-            ipRoundingEnabled: timeDriverInputs.ipRoundingEnabled,
-            ipFullScaleValue: ipFullScaleNetValue,
-            ipFullScaleROI: ipFullScaleRoi,
-            ipFullScalePerProvider: ipFullScalePerProv,
-            sustainabilityEnabled: timeDriverInputs.wellbeingEnabled,
-            retentionValueEnabled: timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue,
-            efficiencyValue: timeValue,
-            documentationQualityValue: docValue,
-          };
-        })() : {}),
-
-      ...(state.careSetting === 'ed' ? (() => {
-          const edThroughputPct = timeDriverInputs.edAllocThroughputPercent;
-          const edDocPct = timeDriverInputs.edAllocDocQualityPercent;
-          const edWellPct = timeDriverInputs.edAllocWellbeingPercent;
-          const edThroughputHrs = totalHoursSaved * (edThroughputPct / 100);
-          const edDocHrs = totalHoursSaved * (edDocPct / 100);
-          const edWellHrs = totalHoursSaved * (edWellPct / 100);
-          const edBurdenReliefHrs = edDocHrs + edWellHrs;
-          const edHrsPerWkBack = state.numberOfProviders > 0 ? edBurdenReliefHrs / state.numberOfProviders / 48 : 0;
-          const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-          const lwbsRecovered = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
-          const lwbsGross = lwbsRecovered * timeDriverInputs.edRevenuePerVisit;
-          const lwbsNet = Math.round(lwbsGross * (timeDriverInputs.edLwbsRealization / 100));
-          const admittedPatients = lwbsRecovered * (timeDriverInputs.edAdmissionRate / 100);
-          const admissionGross = admittedPatients * timeDriverInputs.edAdmissionRevenue;
-          const admissionNet = Math.round(admissionGross * (timeDriverInputs.edAdmissionRealization / 100));
-          const edCapacityVal = edLwbsValue + edAdmissionCaptureValue;
-          const edWorkforceVal = clinicianRetentionValue;
-
-          return {
-            throughputAllocationPct: edThroughputPct,
-            docQualityAllocationPct: edDocPct,
-            wellbeingAllocationPct: edWellPct,
-            throughputHours: Math.round(edThroughputHrs),
-            docQualityHours: Math.round(edDocHrs),
-            wellbeingHours: Math.round(edWellHrs),
-            hoursPerProviderPerWeekBack: edHrsPerWkBack,
-            sustainabilityEnabled: timeDriverInputs.wellbeingEnabled,
-            retentionValueEnabled: timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue,
-            throughputValue: edCapacityVal,
-            efficiencyValue: edCapacityVal,
-            edCapacityValue: edCapacityVal,
-            edWorkforceValue: edWorkforceVal,
-            documentationQualityValue: docValue,
-
-            lwbsEnabled: timeDriverInputs.edLwbsEnabled,
-            currentLwbsRatePct: timeDriverInputs.edLwbsRate,
-            expectedLwbsReductionPct: timeDriverInputs.edLwbsReduction,
-            revenuePerEdVisit: timeDriverInputs.edRevenuePerVisit,
-            annualLwbsPatients: Math.round(lwbsPatients),
-            patientsRecovered: Math.round(lwbsRecovered),
-            lwbsGrossValue: Math.round(lwbsGross),
-            lwbsRealizationRate: timeDriverInputs.edLwbsRealization,
-            netLwbsValue: lwbsNet,
-
-            admissionCaptureEnabled: timeDriverInputs.edThroughputEnabled,
-            admissionRate: timeDriverInputs.edAdmissionRate,
-            avgAdmissionRevenue: timeDriverInputs.edAdmissionRevenue,
-            recoveredEdPatients: Math.round(lwbsRecovered),
-            potentialAdmissions: admittedPatients,
-            admissionGrossValue: Math.round(admissionGross),
-            admissionRealizationRate: timeDriverInputs.edAdmissionRealization,
-            annualAdmissionCaptureValue: admissionNet,
-
-            emAccuracyEnabled: docQualityInputs.wrvuEnabled,
-            emScenario: docQualityInputs.wrvuScenario,
-            emImprovementPct: wrvuLiftPctVal,
-            currentAvgWrvuPerVisit: docQualityInputs.currentWrvu,
-            emWrvuLiftPerVisit: wrvuLift,
-            totalAdditionalWrvus: Math.round(totalWrvusVal),
-            emConversionFactor: docQualityInputs.conversionFactor,
-            emRealizationRate: docQualityInputs.wrvuRealization,
-            annualEmValue: wrvuValue,
-          };
-        })() : {}),
-
-      ...(state.careSetting === 'nursing' ? (() => {
-          const beds = state.nursingStaffedBeds;
-          const ftes = state.numberOfProviders;
-          const occRate = state.nursingOccupancyRate;
-          const adoptRate = state.utilizationPercent;
-          const patientDays = Math.round(beds * (occRate / 100) * 365);
-          const enabledShifts = Math.round(ftes * state.nursingShiftsPerNurseYear * (adoptRate / 100));
-          const minsPerShift = state.minutesSavedPerEncounter;
-          const otPct = timeDriverInputs.nursingOtReductionPercent;
-          const currentOtPerYear = ftes * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
-          const otHrsElim = Math.round(currentOtPerYear * (otPct / 100));
-          const hrsPerNurse = ftes > 0 ? Math.round(totalHoursSaved / ftes) : 0;
-          const hrsPerWk = ftes > 0 ? parseFloat((totalHoursSaved / ftes / 52).toFixed(1)) : 0;
-
-          const nOtRate = timeDriverInputs.nursingOtHourlyRate;
-          const nTurnover = timeDriverInputs.nursingTurnoverRate;
-          const nBurnoutPct = 40;
-          const nReplaceCost = timeDriverInputs.nursingReplacementCost;
-          const nImpactPct = nursingRetentionImpactRates[timeDriverInputs.retentionImpactScenario] || 15;
-          const nLeaving = ftes * (nTurnover / 100);
-          const nBurnoutDep = nLeaving * (nBurnoutPct / 100);
-          const nRetained = nBurnoutDep * (nImpactPct / 100);
-
-          const nAgencyOn = timeDriverInputs.nursingAgencyEnabled && timeDriverInputs.nursingRetentionEnabled;
-          const nAgencyWeeks = timeDriverInputs.nursingAgencyWeeksPerVacancy || 12;
-          const nAgencyPrem = timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
-          const nAdditionalSavingsTotal = timeDriverInputs.nursingAdditionalCostSavings.filter(item => item.label.trim()).reduce((sum, item) => sum + (item.amount || 0), 0);
-          const nStaffingTotal = nursingOtValue + nursingRetentionValue + nursingAgencyValue + nAdditionalSavingsTotal;
-
-          const hapiRate = docQualityInputs.nursingHapiRate;
-          const hapiPerYr = parseFloat(((patientDays / 1000) * hapiRate).toFixed(1));
-          const hapiPrevRate = docQualityInputs.nursingHapiPreventionRate;
-          const hapiCost = docQualityInputs.nursingHapiCost;
-          const hapiAddressed = parseFloat((hapiPerYr * (hapiPrevRate / 100)).toFixed(2));
-
-          const fallsRate = docQualityInputs.nursingFallsRate;
-          const fallsPerYr = parseFloat(((patientDays / 1000) * fallsRate).toFixed(1));
-          const fallsGapRate = docQualityInputs.nursingFallsPreventionRate;
-          const fallsCost = docQualityInputs.nursingFallsCost;
-          const fallsAddressed = parseFloat((fallsPerYr * (fallsGapRate / 100)).toFixed(2));
-
-          const hacMedRev = docQualityInputs.nursingHacMedicareRevenue;
-          const hacPenalty = Math.round(hacMedRev * 0.01);
-
-          const cautiCathDays = Math.round(patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100));
-          const cautiPerYr = parseFloat(((cautiCathDays / 1000) * docQualityInputs.nursingCautiRate).toFixed(1));
-          const cautiPrevented = parseFloat((cautiPerYr * (docQualityInputs.nursingCautiPreventionRate / 100)).toFixed(2));
-
-          const clabsiClDays = Math.round(patientDays * (docQualityInputs.nursingClabsiUtilizationRatio / 100));
-          const clabsiPerYr = parseFloat(((clabsiClDays / 1000) * docQualityInputs.nursingClabsiRate).toFixed(1));
-          const clabsiPrevented = parseFloat((clabsiPerYr * (docQualityInputs.nursingClabsiPreventionRate / 100)).toFixed(2));
-
-          const sepsisPerYr = parseFloat(((patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand).toFixed(1));
-          const sepsisNonCompliant = parseFloat((sepsisPerYr * ((100 - docQualityInputs.nursingSepsisCurrentCompliance) / 100)).toFixed(1));
-          const sepsisDocLagCases = parseFloat((sepsisNonCompliant * (docQualityInputs.nursingSepsisDocLagPercent / 100)).toFixed(1));
-
-          const nFullScaleBeds = expandedProviders;
-          const nFullScaleAdoption = expandedUtilization;
-          const nFullScaleMult = beds > 0 ? (nFullScaleBeds / beds) * (nFullScaleAdoption / adoptRate) : 1;
-          const nFullScaleHard = Math.round(nStaffingTotal * nFullScaleMult);
-          const nFullScalePerBed = nFullScaleBeds > 0 ? Math.round(nFullScaleHard / nFullScaleBeds) : 0;
-
-          return {
-            nursingOccupancyRate: occRate,
-            nursingPatientDays: patientDays,
-            nursingAdoptionRate: adoptRate,
-            nursingEnabledShifts: enabledShifts,
-            nursingMinutesPerShift: minsPerShift,
-            nursingOtAllocationPct: otPct,
-            nursingOtHoursPerNurseWeek: timeDriverInputs.nursingOtHoursPerNurseWeek,
-            nursingCurrentOtPerYear: currentOtPerYear,
-            nursingOtHoursEliminated: otHrsElim,
-            nursingHoursPerNurse: hrsPerNurse,
-            nursingHoursPerWeek: hrsPerWk,
-            nursingOtHourlyRate: nOtRate,
-            nursingOtValue: nursingOtValue,
-            nursingTurnoverRate: nTurnover,
-            nursingBurnoutPct: nBurnoutPct,
-            nursingReplacementCost: nReplaceCost,
-            nursingRetentionImpactPct: nImpactPct,
-            nursingNursesLeaving: nLeaving,
-            nursingBurnoutDepartures: nBurnoutDep,
-            nursingNursesRetained: nRetained,
-            nursingRetentionValue: nursingRetentionValue,
-            nursingAgencyEnabled: nAgencyOn,
-            nursingAgencyWeeks: nAgencyWeeks,
-            nursingAgencyPremium: nAgencyPrem,
-            nursingAgencyValue: nursingAgencyValue,
-            nursingStaffingTotal: nStaffingTotal,
-            nursingHapiEnabled: docQualityInputs.nursingHapiEnabled,
-            nursingHapiRatePer1000: hapiRate,
-            nursingHapiPerYear: hapiPerYr,
-            nursingHapiPreventionRate: hapiPrevRate,
-            nursingHapiCostPer: hapiCost,
-            nursingHapiAddressed: hapiAddressed,
-            nursingHapiValue: nursingHapiValue,
-            nursingFallsEnabled: docQualityInputs.nursingFallsEnabled,
-            nursingFallsRatePer1000: fallsRate,
-            nursingFallsPerYear: fallsPerYr,
-            nursingFallsDocGapRate: fallsGapRate,
-            nursingFallsCostPer: fallsCost,
-            nursingFallsAddressed: fallsAddressed,
-            nursingFallsValue: nursingFallsValue,
-            nursingHacEnabled: docQualityInputs.nursingHacEnabled,
-            nursingHacBottomQuartile: docQualityInputs.nursingHacBottomQuartile,
-            nursingHacMedicareRevenue: hacMedRev,
-            nursingHacPenalty: hacPenalty,
-            nursingHcahpsEnabled: docQualityInputs.nursingHcahpsEnabled,
-            nursingCautiEnabled: docQualityInputs.nursingCautiEnabled,
-            nursingCautiUtilizationRatio: docQualityInputs.nursingCautiUtilizationRatio,
-            nursingCautiDaysPerYear: cautiCathDays,
-            nursingCautiRatePer1000: docQualityInputs.nursingCautiRate,
-            nursingCautiPerYear: cautiPerYr,
-            nursingCautiPreventionRate: docQualityInputs.nursingCautiPreventionRate,
-            nursingCautiCostPer: docQualityInputs.nursingCautiCost,
-            nursingCautiPrevented: cautiPrevented,
-            nursingCautiValue: nursingCautiValue,
-            nursingClabsiEnabled: docQualityInputs.nursingClabsiEnabled,
-            nursingClabsiUtilizationRatio: docQualityInputs.nursingClabsiUtilizationRatio,
-            nursingClabsiDaysPerYear: clabsiClDays,
-            nursingClabsiRatePer1000: docQualityInputs.nursingClabsiRate,
-            nursingClabsiPerYear: clabsiPerYr,
-            nursingClabsiPreventionRate: docQualityInputs.nursingClabsiPreventionRate,
-            nursingClabsiCostPer: docQualityInputs.nursingClabsiCost,
-            nursingClabsiPrevented: clabsiPrevented,
-            nursingClabsiValue: nursingClabsiValue,
-            nursingSepsisEnabled: docQualityInputs.nursingSepsisEnabled,
-            nursingSepsisRatePerThousand: docQualityInputs.nursingSepsisRatePerThousand,
-            nursingSepsisPerYear: sepsisPerYr,
-            nursingSepsisCurrentCompliance: docQualityInputs.nursingSepsisCurrentCompliance,
-            nursingSepsisNonCompliant: sepsisNonCompliant,
-            nursingSepsisDocLagPercent: docQualityInputs.nursingSepsisDocLagPercent,
-            nursingSepsisDocLagCases: sepsisDocLagCases,
-            nursingSepsisExcessCostPerCase: docQualityInputs.nursingSepsisExcessCostPerCase,
-            nursingSepsisRealization: docQualityInputs.nursingSepsisRealization,
-            nursingSepsisValue: nursingSepsisValue,
-
-            nursingPotentialTotal: nursingCareQualityPotential,
-            nursingFullScaleBeds: nFullScaleBeds,
-            nursingFullScaleAdoption: nFullScaleAdoption,
-            nursingFullScaleValue: nFullScaleHard,
-            nursingFullScalePerBed: nFullScalePerBed,
-            nursingAdditionalCostSavings: timeDriverInputs.nursingAdditionalCostSavings.filter(item => item.amount > 0 && item.label),
-          };
-        })() : {}),
-      };
-
-      await generateExplorePDF(pdfData);
-
-      setShowExportModal(false);
-      toast({
-        title: "PDF Downloaded",
-        description: "Your ROI model has been saved.",
-        variant: "brand",
-      });
-    } catch (error: any) {
-      console.error("PDF generation error:", error?.message || error?.toString?.() || JSON.stringify(error), error);
-      toast({
-        title: "Export Failed",
-        description: error?.message || "Unable to generate PDF. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
+    };
 
   const careSettingLabel = state.careSetting === 'outpatient' ? 'Outpatient' :
     state.careSetting === 'ed' ? 'Emergency Department' :
