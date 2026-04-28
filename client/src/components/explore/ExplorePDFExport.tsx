@@ -130,6 +130,7 @@ export interface ExplorePDFQuadrantDriver {
   visibility: "quantified" | "qualitative";
   value: number;
   isChild?: boolean;
+  calcSummary?: string;
 }
 
 export interface ExplorePDFOtherBenefit {
@@ -310,6 +311,19 @@ const DriverRow = ({ driver }: { driver: ExplorePDFQuadrantDriver }) => {
         <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.4 }}>
           {driver.shortDescription}
         </Text>
+        {driver.visibility === "quantified" && driver.calcSummary ? (
+          <Text
+            style={{
+              fontSize: 8,
+              color: colors.tertiary,
+              fontStyle: "italic",
+              marginTop: 3,
+              lineHeight: 1.3,
+            }}
+          >
+            {driver.calcSummary}
+          </Text>
+        ) : null}
       </View>
       <View style={{ width: 110, alignItems: "flex-end" }}>
         {driver.visibility === "quantified" ? (
@@ -819,6 +833,28 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
             translates into operational and financial outcomes. Some drivers
             carry quantified financial models; others are qualitative outcomes
             tracked post-deployment.
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 10.5,
+              color: colors.secondary,
+              lineHeight: 1.5,
+              marginBottom: 14,
+            }}
+          >
+            {(
+              {
+                outpatient:
+                  "Ambient documentation reduces per-visit charting burden — fueling throughput (Capacity), retention (Workforce), and complete coding (Revenue), with Quality outcomes tracked post-deployment.",
+                ed:
+                  "Faster, cleaner documentation in the ED supports throughput recovery (Capacity), reduces burnout-driven turnover (Workforce), and protects clean-claim rates (Revenue). Quality outcomes are tracked post-deployment.",
+                inpatient:
+                  "Inpatient documentation lift centers on the H&P and progress notes — driving rounding capacity, retention, and CMI integrity. Quality outcomes are tracked post-deployment.",
+                nursing:
+                  "For nursing, ambient documentation lift translates into more bedside time (Capacity), stronger retention (Workforce), and measurable improvements in care quality (HAPI, Falls, CAUTI/CLABSI, Sepsis).",
+              } as Record<ExploreCareSetting, string>
+            )[data.careSetting]}
           </Text>
 
           {data.quadrants.map((q) => (

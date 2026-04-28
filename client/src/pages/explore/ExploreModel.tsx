@@ -192,6 +192,130 @@ export default function ExploreModel({
     return result;
   }, [state, totalHoursSaved]);
 
+  const allDriverCalcSummaries = useMemo(() => {
+    const out: Record<string, string> = {};
+    const td = state.timeDriverInputs as any;
+    const dq = state.docQualityInputs as any;
+    const setting = state.careSetting;
+    const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
+    const isED = setting === 'ed';
+    const isIP = setting === 'inpatient';
+    const isOP = setting === 'outpatient';
+    const isNursing = setting === 'nursing';
+    const isPhysician = isOP || isED || isIP;
+
+    const fmtN = (n: number) => Math.round(n).toLocaleString();
+    const fmtNd = (n: number) => Number(n).toLocaleString(undefined, { maximumFractionDigits: 1 });
+    const fmt$ = (n: number) => `$${Math.round(n).toLocaleString()}`;
+
+    // Capacity
+    if (isOP && td.patientAccessEnabled) {
+      const eff = Math.min(td.accessProviders || state.numberOfProviders, state.numberOfProviders);
+      const hrsPerProvWk = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;
+      const reinvest = (td.capacityRealizationPercent ?? 25) / 100;
+      const visitHrs = (td.visitDuration ?? 30) / 60;
+      const visitsPerWk = visitHrs > 0 ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10 : 0;
+      out.patientAccess = `${fmtN(eff)} providers × ${fmtNd(visitsPerWk)} visits/wk × 48 wks × ${fmt$(td.revenuePerVisit)}/visit`;
+    }
+    if (isED && td.edLwbsEnabled) {
+      out.lwbsRecovery = `${fmtN(state.annualEncounters)} encounters × ${td.edLwbsRate}% LWBS × ${td.edLwbsReduction}% reduction × ${fmt$(td.edRevenuePerVisit)}/visit × ${td.edLwbsRealization}% realization`;
+      if (td.edThroughputEnabled) {
+        const recovered = Math.round(state.annualEncounters * (td.edLwbsRate / 100) * (td.edLwbsReduction / 100));
+        out.admissionCapture = `${fmtN(recovered)} recovered visits × ${td.edAdmissionRate}% admit rate × ${fmt$(td.edAdmissionRevenue)}/admit × ${td.edAdmissionRealization}% realization`;
+      }
+    }
+
+    // Workforce
+    const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+    const nursingScenariosWf: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
+    if (isPhysician && td.wellbeingEnabled && td.calculateRetentionValue) {
+      const impactPct = retentionScenarios[td.retentionImpactScenario] ?? 0;
+      out.providerWellbeing = `${fmtN(state.numberOfProviders)} providers × ${td.annualTurnoverRate}% turnover × ${td.burnoutRelatedTurnover}% burnout × ${impactPct}% impact × ${fmt$(td.replacementCost)}/replacement`;
+      if (td.physicianAgencyEnabled) {
+        const retained = state.numberOfProviders * (td.annualTurnoverRate / 100) * (td.burnoutRelatedTurnover / 100) * (impactPct / 100);
+        out.physicianLocumAgency = `${fmtNd(retained)} retained × ${td.physicianAgencyWeeksPerVacancy} wks/vacancy × ${fmt$(td.physicianAgencyWeeklyPremium)}/wk`;
+      }
+    }
+    if (isNursing && td.nursingRetentionEnabled) {
+      const impactPct = nursingScenariosWf[td.retentionImpactScenario] ?? 0;
+      out.nursingRetention = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingTurnoverRate}% turnover × 40% burnout × ${impactPct}% impact × ${fmt$(td.nursingReplacementCost)}/replacement`;
+      if (td.nursingAgencyEnabled) {
+        const retained = state.numberOfProviders * (td.nursingTurnoverRate / 100) * 0.40 * (impactPct / 100);
+        out.nursingAgency = `${fmtNd(retained)} retained × ${td.nursingAgencyWeeksPerVacancy} wks/vacancy × ${fmt$(td.nursingAgencyWeeklyPremium)}/wk`;
+      }
+    }
+    if (isNursing && td.nursingOtEnabled) {
+      out.nursingOvertime = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingOtHoursPerNurseWeek} OT hrs/wk × ${td.nursingOtReductionPercent}% reduction × 52 wks × ${fmt$(td.nursingOtHourlyRate)}/hr`;
+    }
+
+    // Revenue
+    const wrvuScenariosLocal: Record<string, number> = isED ? { conservative: 1, typical: 2.5, aggressive: 4 } : { conservative: 2, typical: 5, aggressive: 7 };
+    const denialsScenariosLocal: Record<string, number> = isED ? { conservative: 15, typical: 30, aggressive: 50 } : { conservative: 25, typical: 50, aggressive: 75 };
+    const hccScenariosLocal: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
+
+    if (dq.wrvuEnabled && (isOP || isED)) {
+      const liftPct = wrvuScenariosLocal[dq.wrvuScenario] ?? 0;
+      const summary = `${fmtN(eligibleEncounters)} encounters × ${dq.currentWrvu} current wRVU × ${liftPct}% lift × ${fmt$(dq.conversionFactor)}/wRVU × ${dq.wrvuRealization}% realization`;
+      if (isED) out.edEmLevel = summary;
+      else out.wrvu = summary;
+    }
+    if (dq.hccEnabled && isOP) {
+      const recapPct = hccScenariosLocal[dq.hccScenario] ?? 0;
+      const perHcc = Math.round(dq.rafImpact * dq.annualPayment);
+      out.hccCapture = `${fmtN(state.numberOfProviders)} providers × ${fmtN(dq.panelSize)} panel × ${dq.maPercent}% MA × ${dq.gapRate}% gap × ${recapPct}% recapture × ${dq.avgHccs} HCCs × ${fmt$(perHcc)}/HCC × ${dq.hccRealization}% realization`;
+    }
+    if (dq.denialsEnabled && (isOP || isED)) {
+      const prevPct = denialsScenariosLocal[dq.denialsScenario] ?? 0;
+      out.denialPrevention = `${fmtN(eligibleEncounters)} encounters × ${dq.denialRate}% denial rate × ${dq.unappealableRate}% unappealable × ${prevPct}% prevention × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% realization`;
+    }
+    if (isIP && dq.ipDrgEnabled) {
+      const protectScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
+      const protectPct = protectScenarios[dq.ipDrgScenario] ?? 0;
+      out.drgAccuracy = `${fmtN(eligibleEncounters)} encounters × ${dq.ipDrgAtRiskRate}% at-risk × ${protectPct}% protect × ${dq.ipDrgWeightIncrease} weight × ${fmt$(dq.ipDrgBasePayment)}/case × ${dq.ipDrgRealization}% realization`;
+    }
+    if (isIP && dq.ipCdiEnabled) {
+      const cdiScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
+      const reductionPct = cdiScenarios[dq.ipCdiScenario] ?? 0;
+      out.cdiQueryReduction = `${fmtN(eligibleEncounters)} encounters × ${dq.ipCdiQueryRate}% query rate × ${reductionPct}% reduction × ${fmt$(dq.ipCdiCostPerQuery)}/query × ${dq.ipCdiRealization}% realization`;
+    }
+    if (isIP && dq.ipObsDefenseEnabled) {
+      out.obsDefense = `${fmtN(eligibleEncounters)} encounters × ${dq.ipObsDefenseDenialRate}% denial × ${fmt$(dq.ipObsDefenseClaimValue)}/claim × ${dq.ipObsDefenseDocContribution}% doc contribution × ${dq.ipObsDefenseRealization}% realization`;
+    }
+    if (isIP && dq.ipEmCodingEnabled) {
+      const losVal = (state as any).ipAvgLengthOfStay ?? 4.5;
+      const progressPerAdm = Math.max(losVal - 2, 1);
+      const totalCharges = Math.round(eligibleEncounters * (1 + progressPerAdm + dq.ipEmCodingConsultsPerAdmission));
+      const gapMap: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };
+      const gapPct = gapMap[dq.ipEmCodingGapScenario] ?? 12;
+      out.emCodingAccuracy = `${fmtN(totalCharges)} charges × ${gapPct}% gap × ${fmt$(dq.ipEmCodingAvgRevenueLift)}/charge lift × ${dq.ipEmCodingRealization}% realization`;
+    }
+
+    // Quality (Nursing only quantified)
+    if (isNursing && state.nursingStaffedBeds && state.nursingOccupancyRate) {
+      const patientDays = Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365);
+      if (dq.nursingHapiEnabled) {
+        out.nursingHapi = `${fmtN(patientDays)} patient-days × ${dq.nursingHapiRate}/1k HAPI × ${dq.nursingHapiPreventionRate}% prevention × ${fmt$(dq.nursingHapiCost)}/case`;
+      }
+      if (dq.nursingFallsEnabled) {
+        out.nursingFalls = `${fmtN(patientDays)} patient-days × ${dq.nursingFallsRate}/1k falls × ${dq.nursingFallsPreventionRate}% prevention × ${fmt$(dq.nursingFallsCost)}/case`;
+      }
+      if (dq.nursingCautiEnabled) {
+        const cathDays = Math.round(patientDays * (dq.nursingCautiUtilizationRatio / 100));
+        out.nursingCauti = `${fmtN(cathDays)} cath-days × ${dq.nursingCautiRate}/1k CAUTI × ${dq.nursingCautiPreventionRate}% prevention × ${fmt$(dq.nursingCautiCost)}/case`;
+      }
+      if (dq.nursingClabsiEnabled) {
+        const lineDays = Math.round(patientDays * (dq.nursingClabsiUtilizationRatio / 100));
+        out.nursingClabsi = `${fmtN(lineDays)} line-days × ${dq.nursingClabsiRate}/1k CLABSI × ${dq.nursingClabsiPreventionRate}% prevention × ${fmt$(dq.nursingClabsiCost)}/case`;
+      }
+      if (dq.nursingSepsisEnabled) {
+        const nonCompPct = Math.max(0, 100 - dq.nursingSepsisCurrentCompliance);
+        out.nursingSepsis = `${fmtN(patientDays)} patient-days × ${dq.nursingSepsisRatePerThousand}/1k sepsis × ${nonCompPct}% non-compliance × ${dq.nursingSepsisDocLagPercent}% doc lag × ${fmt$(dq.nursingSepsisExcessCostPerCase)}/case × ${dq.nursingSepsisRealization}% realization`;
+      }
+    }
+
+    return out;
+  }, [state, totalHoursSaved]);
+
   const valueByQuadrant = useMemo(() => {
     const totals: Record<ExploreQuadrant, number> = { Capacity: 0, Workforce: 0, Revenue: 0, Quality: 0 };
     if (!state.careSetting) return totals;
@@ -770,6 +894,7 @@ export default function ExploreModel({
               visibility: d.visibility,
               value: allDriverValues[d.id] || 0,
               isChild: Boolean(d.childOfDriverId),
+              calcSummary: allDriverCalcSummaries[d.id],
             }));
 
           const benefits = (state.otherFinancialBenefits ?? [])
