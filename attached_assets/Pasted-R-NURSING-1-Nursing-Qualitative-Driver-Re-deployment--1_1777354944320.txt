@@ -1,0 +1,108 @@
+R-NURSING-1 — Nursing Qualitative Driver Re-deployment       
+                                                        
+  Paste into Replit AI as a single prompt.                                                                                                                                                                     
+                                                                           
+  Why this exists                                                                                                                                                                                              
+                                                                                
+  The R-IA-6 nursing qualitative driver pass did not deploy. Today the deployed state is:                                                                                                                      
+  - Nursing Capacity: only bedsideTime (1 qualitative)                          
+  - Nursing Workforce: 3 financial drivers, 0 qualitative                  
+  - Nursing Revenue: handled separately by R-RECOVER (do not touch)                                                                                                                                            
+  - Nursing Quality: 5 financial + 2 qualitative (HCAHPS + Med Error) — LOCKED, do not modify
+                                                                                                                                                                                                               
+  This prompt adds the 5 missing qualitative drivers across Capacity and Workforce. Nursing Quality stays untouched.
+                                                                                                                                                                                                               
+  Task 1 — Add state fields to client/src/pages/explore/ExploreFlow.tsx                                                                                                                                        
+                                                                           
+  In the TimeDriverInputs interface, add these 10 boolean fields (5 enabled/expanded pairs):                                                                                                                   
+                                                                                
+  // Nursing Capacity qualitative (R-NURSING-1)                                                                                                                                                                
+  nursingDocumentationLagEnabled: boolean;                                                                                                                                                                     
+  nursingDocumentationLagExpanded: boolean;                                                                                                                                                                    
+  nursingPointOfCareDocEnabled: boolean;                                                                                                                                                                       
+  nursingPointOfCareDocExpanded: boolean;                                                                                                                                                                      
+                                                                                                                                                                                                               
+  // Nursing Workforce qualitative (R-NURSING-1)                                                                                                                                                               
+  nursingBurnoutEnabled: boolean;                                               
+  nursingBurnoutExpanded: boolean;                                                                                                                                                                             
+  nursingChartingAfterShiftEnabled: boolean;                                                                                                                                                                   
+  nursingChartingAfterShiftExpanded: boolean;               
+  nursingLikelihoodToStayEnabled: boolean;                                                                                                                                                                     
+  nursingLikelihoodToStayExpanded: boolean;                                     
+                                                                                                                                                                                                               
+  In DEFAULT_EXPLORE_STATE, default all 10 fields to false.                                                                                                                                                    
+                                                                           
+  Task 2 — Add 5 driver entries to client/src/lib/exploreDrivers.ts                                                                                                                                            
+                                                                                
+  Append these to EXPLORE_DRIVERS. All have visibility: 'qualitative' and no calcComponent.                                                                                                                    
+                                                           
+  {                                                                                                                                                                                                            
+    id: 'nursingDocumentationLag',                                                                                                                                                                             
+    label: 'Documentation Lag',                                                                                                                                                                                
+    shortDescription: 'Time between care delivered and charted. Tracked post-deployment.',                                                                                                                     
+    quadrant: 'Capacity',                                                                                                                                                                                      
+    settings: ['nursing'],                                                      
+    visibility: 'qualitative',                                                                                                                                                                                 
+    enabledStateKey: 'nursingDocumentationLagEnabled',                          
+    expandedStateKey: 'nursingDocumentationLagExpanded',                                                                                                                                                       
+  },                                                                                                                                                                                                           
+  {                                                        
+    id: 'nursingPointOfCareDoc',                                                                                                                                                                               
+    label: 'Point-of-Care Documentation Rate',                                                                                                                                                                 
+    shortDescription: 'Share of charting completed at the bedside vs. deferred. Tracked post-deployment.',
+    quadrant: 'Capacity',                                                                                                                                                                                      
+    settings: ['nursing'],                                                                                                                                                                                     
+    visibility: 'qualitative',                                             
+    enabledStateKey: 'nursingPointOfCareDocEnabled',                                                                                                                                                           
+    expandedStateKey: 'nursingPointOfCareDocExpanded',                          
+  },                                                                                                                                                                                                           
+  {                                                                             
+    id: 'nursingBurnout',                                                                                                                                                                                      
+    label: 'Burnout Score',                                                                                                                                                                                    
+    shortDescription: 'Survey-based burnout measure (e.g., Maslach, Mini-Z). Tracked post-deployment.',                                                                                                        
+    quadrant: 'Workforce',                                                                                                                                                                                     
+    settings: ['nursing'],                                                                                                                                                                                     
+    visibility: 'qualitative',                                             
+    enabledStateKey: 'nursingBurnoutEnabled',                                                                                                                                                                  
+    expandedStateKey: 'nursingBurnoutExpanded',                                 
+  },                                                                                                                                                                                                           
+  {                                                                             
+    id: 'nursingChartingAfterShift',                                       
+    label: 'Charting After Shift',                                                                                                                                                                             
+    shortDescription: 'Minutes of charting completed off-shift. Tracked post-deployment.',                                                                                                                     
+    quadrant: 'Workforce',                                                                                                                                                                                     
+    settings: ['nursing'],                                                                                                                                                                                     
+    visibility: 'qualitative',                                                  
+    enabledStateKey: 'nursingChartingAfterShiftEnabled',                                                                                                                                                       
+    expandedStateKey: 'nursingChartingAfterShiftExpanded',  
+  },                                                                                                                                                                                                           
+  {                                                                             
+    id: 'nursingLikelihoodToStay',                                         
+    label: 'Likelihood to Stay',                                                                                                                                                                               
+    shortDescription: 'Self-reported intent to remain in role over the next 12 months. Tracked post-deployment.',
+    quadrant: 'Workforce',                                                                                                                                                                                     
+    settings: ['nursing'],                                                                                                                                                                                     
+    visibility: 'qualitative',                                             
+    enabledStateKey: 'nursingLikelihoodToStayEnabled',                                                                                                                                                         
+    expandedStateKey: 'nursingLikelihoodToStayExpanded',                        
+  },                                                                                                                                                                                                           
+                                                                                
+  Do not modify any existing nursing driver entries.                       
+                                                                                                                                                                                                               
+  Task 3 — Verify                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  1. TypeScript compiles, no console errors.                                                                                                                                                                   
+  2. Walk Nursing setting through each Explore quadrant page:                   
+    - Capacity: 0 financial drivers, 3 qualitative (Bedside Time + Documentation Lag + Point-of-Care Documentation Rate)                                                                                       
+    - Workforce: 3 financial (Retention, Agency, Overtime), 3 qualitative (Burnout Score + Charting After Shift + Likelihood to Stay)
+    - Revenue: untouched by this prompt (R-RECOVER owns it)                                                                                                                                                    
+    - Quality: 5 financial + 2 qualitative (HCAHPS, Med Error) — must be unchanged
+  3. Toggle each new qualitative driver on; confirm right-panel summary lists it under "Other Metrics" sub-header without a dollar value.                                                                      
+  4. Confirm Step 9 Model still renders the 4-quadrant cards correctly with new qualitative items appearing as line items in their quadrant card.
+                                                                                                                                                                                                               
+  Constraints                                                              
+                                                                                                                                                                                                               
+  - Do not touch Nursing Quality. It is locked.                                                                                                                                                                
+  - Do not add calcComponent or any quantitative math to these 5 drivers.                                                                                                                                      
+  - Do not modify exploreQuadrantValues.ts — qualitative drivers contribute $0 by design.                                                                                                                      
+  - Defaults stay false so toggling is opt-in.                                                    
