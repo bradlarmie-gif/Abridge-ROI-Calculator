@@ -430,7 +430,7 @@ function buildChoicesReveal(data: NursingPDFInput): string {
 
 // ───────────────────────── Document ─────────────────────────
 
-const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
+export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
   const orgName = data.clientName || "Organization";
   const subtitle = `${fmtNum(data.staffedBeds)} beds · ${fmtNum(data.nurseFTEs)} nurse FTEs · Inpatient Nursing`;
 
