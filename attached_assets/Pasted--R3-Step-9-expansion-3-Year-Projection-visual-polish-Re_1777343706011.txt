@@ -1,0 +1,254 @@
+ 🔧 R3 — Step 9 expansion / 3-Year Projection visual polish (Replit prompt — paste verbatim)
+                                                                                                                                                                                                               
+  Context: The Growth Trajectory section + 3-Year Projection section on Step 9 (ExploreModel.tsx) currently has weak visual hierarchy: a tiny pace selector (3 small pills with "18mo / 24mo / 36mo"), a     
+  separate custom-growth row that feels academic, the chart, then a row of cramped year cards in a separate section with the 3-Year Total card using a different background that breaks the rhythm. This prompt
+   elevates the section into a single cohesive "Growth & Projection" experience with prominent pace presets, integrated growth controls, and beefed-up year cards in a unified style.
+                                                                                                                                                                                                               
+  Pre-req: All prior R-IA-* prompts shipped. No data model changes — pure visual refactor.                                                                                                                     
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Replace the pace selector + custom growth with a unified Growth Profile card                                                                                                                        
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/pages/explore/ExploreModel.tsx (around lines 1647-1698)                                                                                                                                     
+                                                                                
+  Find the existing `{/* Pace Selector */}` and `{/* Custom growth overrides */}` blocks inside the Growth Trajectory card.                                                                                    
+                                                                                                                                                                                                               
+  REPLACE both blocks with a unified "Growth Profile" treatment — three prominent preset tiles + an inline custom override row. Drop the "Expansion pace:" / "Custom growth:" labels (the section now speaks
+  for itself).                                                                                                                                                                                                 
+                                                                                
+    {/* Growth Profile: pace presets + Y2/Y3 overrides */}                                                                                                                                                     
+    <div className="mb-6">                                  
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">                                                                                                                                 
+        <p className="text-xs font-semibold text-[#888888] uppercase tracking-[1.5px]">Growth Profile</p>                                                                                                      
+        <div className="flex items-center gap-3 text-xs text-[#666666]">                                                                                                                                       
+          <div className="flex items-center gap-1.5">                                                                                                                                                          
+            <span className="text-[#888888]">Year 2</span>                      
+            <input                                                                                                                                                                                             
+              type="number"                                                                                                                                                                                    
+              value={state.year2GrowthPercent}                
+              onChange={(e) => updateState({ year2GrowthPercent: parseFloat(e.target.value) || 0 })}                                                                                                           
+              className="w-14 h-7 text-center bg-white border border-[#E5E5E5] rounded text-sm font-semibold text-black focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"              
+              data-testid="input-y2-growth"                                                                                                                                                                    
+            />                                                                                                                                                                                                 
+            <span className="text-[#888888]">%</span>                                                                                                                                                          
+          </div>                                                                                                                                                                                               
+          <div className="flex items-center gap-1.5">                           
+            <span className="text-[#888888]">Year 3</span>                                                                                                                                                     
+            <input                                                              
+              type="number"                                                                                                                                                                                    
+              value={state.year3GrowthPercent}                                                                                                                                                                 
+              onChange={(e) => updateState({ year3GrowthPercent: parseFloat(e.target.value) || 0 })}                                                                                                           
+              className="w-14 h-7 text-center bg-white border border-[#E5E5E5] rounded text-sm font-semibold text-black focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"              
+              data-testid="input-y3-growth"                                     
+            />                                                
+            <span className="text-[#888888]">%</span>                                                                                                                                                          
+          </div>                                            
+        </div>                                                                                                                                                                                                 
+      </div>                                                                    
+                  
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">                                                                                                                                                  
+        {(['measured', 'steady', 'aggressive'] as const).map((pace) => {                                                                                                                                       
+          const isActive = selectedPace === pace;                                                                                                                                                              
+          const paceLabels: Record<string, { title: string; subtitle: string }> = {                                                                                                                            
+            measured: { title: 'Measured', subtitle: 'Conservative growth' },   
+            steady: { title: 'Steady', subtitle: 'Typical adoption' },
+            aggressive: { title: 'Aggressive', subtitle: 'High momentum' },
+          };                                                
+          return (                                                                                                                                                                                             
+            <button                                           
+              key={pace}                                                                                                                                                                                       
+              onClick={() => handlePaceChange(pace)}                                                                                                                                                           
+              className={`p-4 rounded-lg border-2 text-left transition-all ${                                                                                                                                  
+                isActive                                                                                                                                                                                       
+                  ? 'border-[#EA2C00] bg-white shadow-[0_2px_12px_rgba(234,44,0,0.08)]'                                                                                                                        
+                  : 'border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]'                                                                                                                                   
+              }`}                                                                                                                                                                                              
+              data-testid={`pace-${pace}`}                                                                                                                                                                     
+            >                                                                   
+              <p className={`text-sm font-bold mb-0.5 ${isActive ? 'text-black' : 'text-[#666666]'}`}>
+                {paceLabels[pace].title}                      
+              </p>                                                                                                                                                                                             
+              <p className="text-xs text-[#888888] mb-2">{paceLabels[pace].subtitle}</p>
+              <div className="flex items-center gap-3 text-xs">                                                                                                                                                
+                <span className={isActive ? 'text-[#EA2C00] font-semibold' : 'text-[#888888]'}>                                                                                                                
+                  {paceConfig[pace].months} mo to full scale                                                                                                                                                   
+                </span>                                                                                                                                                                                        
+              </div>                                                            
+              <p className="text-[10px] text-[#AAAAAA] mt-1">                                                                                                                                                  
+                Y2 +{PACE_GROWTH_PRESETS[pace].y2}% · Y3 +{PACE_GROWTH_PRESETS[pace].y3}%
+              </p>                                                                                                                                                                                             
+            </button>                                                                                                                                                                                          
+          );                                                  
+        })}                                                                                                                                                                                                    
+      </div>                                                                                                                                                                                                   
+    </div>                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Beef up the 4 year cards on the 3-Year Projection                                                                                                                                                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreModel.tsx (around lines 1844-1907)                                                                                                                                     
+                                                                                
+  Find the existing 3-Year Projection section that starts with `<p className="text-center text-xl font-bold text-black mb-6">3-Year Projection</p>` and contains the 4-card grid.
+                                                              
+  REPLACE the entire 3-Year Projection grid (the `<div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">` block and the methodology caption below it) with a more substantial treatment. The 3-Year
+  Total card stays visually distinct (it's the summary) but in a unified design language.
+                                                              
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">                                                                                                                       
+      {/* Year 1 */}                                        
+      <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-1">                                                                                          
+        <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">Year 1</p>                                                                                                     
+        <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year1Value)}</p>                                                                                                                     
+        <p className="text-xs text-[#888888]">gross value</p>                                                                                                                                                  
+        {totalOneTimeValue > 0 && (                                             
+          <p className="text-[11px] text-[#666666] mt-1">includes {formatCurrency(totalOneTimeValue)} one-time</p>                                                                                             
+        )}                                                                                                                                                                                                     
+        <div className="h-px bg-[#F0EBE4] my-3" />            
+        <div className="flex justify-between items-center text-sm mt-auto">                                                                                                                                    
+          <span className="text-[#888888]">Net</span>                                                                                                                                                          
+          <span className={`font-semibold ${year1Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-1-net">{formatCurrency(year1Net)}</span>                                       
+        </div>                                                                                                                                                                                                 
+        {state.pricingModel === 'perEncounter' && (                                                                                                                                                            
+          <div className="flex justify-between items-center text-xs mt-1">                                                                                                                                     
+            <span className="text-[#AAAAAA]">Investment</span>                                                                                                                                                 
+            <span className="text-[#888888]">{formatCurrency(year1Investment)}</span>                                                                                                                          
+          </div>                                                                                                                                                                                               
+        )}                                                                                                                                                                                                     
+      </div>                                                                                                                                                                                                   
+                                                                                                                                                                                                               
+      {/* Year 2 */}                                                            
+      <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-2">                                                                                          
+        <div className="flex items-center justify-between mb-2">                                                                                                                                               
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Year 2</p>                                                                                                        
+          <span className="text-[10px] font-semibold text-[#666666] bg-[#F5F0EB] px-1.5 py-0.5 rounded">+{state.year2GrowthPercent}%</span>                                                                    
+        </div>                                                                  
+        <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year2Value)}</p>                                                                                                                     
+        <p className="text-xs text-[#888888]">gross value</p>                   
+        <div className="h-px bg-[#F0EBE4] my-3" />          
+        <div className="flex justify-between items-center text-sm mt-auto">
+          <span className="text-[#888888]">Net</span>                                                                                                                                                          
+          <span className={`font-semibold ${year2Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-2-net">{formatCurrency(year2Net)}</span>
+        </div>                                                                                                                                                                                                 
+        {state.pricingModel === 'perEncounter' && (                                                                                                                                                            
+          <div className="flex justify-between items-center text-xs mt-1">                                                                                                                                     
+            <span className="text-[#AAAAAA]">Investment</span>                                                                                                                                                 
+            <span className="text-[#888888]">{formatCurrency(year2Investment)}</span>                                                                                                                          
+          </div>                                              
+        )}                                                                                                                                                                                                     
+      </div>                                                                                                                                                                                                   
+                                                                                                                                                                                                               
+      {/* Year 3 */}                                                                                                                                                                                           
+      <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-3">                                                                                          
+        <div className="flex items-center justify-between mb-2">                                                                                                                                               
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Year 3</p>
+          <span className="text-[10px] font-semibold text-[#666666] bg-[#F5F0EB] px-1.5 py-0.5 rounded">+{state.year3GrowthPercent}%</span>                                                                    
+        </div>                                                                  
+        <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year3Value)}</p>                                                                                                                     
+        <p className="text-xs text-[#888888]">gross value</p>                   
+        <div className="h-px bg-[#F0EBE4] my-3" />          
+        <div className="flex justify-between items-center text-sm mt-auto">
+          <span className="text-[#888888]">Net</span>                                                                                                                                                          
+          <span className={`font-semibold ${year3Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-3-net">{formatCurrency(year3Net)}</span>
+        </div>                                                                                                                                                                                                 
+        {state.pricingModel === 'perEncounter' && (                                                                                                                                                            
+          <div className="flex justify-between items-center text-xs mt-1">                                                                                                                                     
+            <span className="text-[#AAAAAA]">Investment</span>                                                                                                                                                 
+            <span className="text-[#888888]">{formatCurrency(year3Investment)}</span>
+          </div>                                                                                                                                                                                               
+        )}                                                                      
+      </div>                                                                                                                                                                                                   
+                                                                                                                                                                                                               
+      {/* 3-Year Total — same shape, distinct treatment */}                                                                                                                                                    
+      <div className="bg-[#1A1A1A] rounded-xl p-5 flex flex-col" data-testid="projection-three-year-total">                                                                                                    
+        <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">3-Year Total</p>                                                                                               
+        <p className="text-2xl font-bold text-white mb-1">{formatCurrency(threeYearGrossTotal)}</p>                                                                                                            
+        <p className="text-xs text-white/60">gross value</p>  
+        <div className="h-px bg-white/10 my-3" />                                                                                                                                                              
+        <div className="flex justify-between items-center text-sm mt-auto">     
+          <span className="text-white/60">Net</span>          
+          <span className={`font-semibold ${threeYearNetTotal >= 0 ? 'text-[#EA2C00]' : 'text-white/70'}`} data-testid="projection-three-year-net">{formatCurrency(threeYearNetTotal)}</span>                  
+        </div>                                              
+        <div className="flex justify-between items-center text-xs mt-1">                                                                                                                                       
+          <span className="text-white/40">Investment</span>                                                                                                                                                    
+          <span className="text-white/60">{formatCurrency(threeYearInvestmentTotal)}</span>                                                                                                                    
+        </div>                                                                                                                                                                                                 
+      </div>                                                                                                                                                                                                   
+    </div>                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+    <p className="text-sm text-[#888888] text-center max-w-3xl mx-auto">                                                                                                                                       
+      Years 2 and 3 apply {state.year2GrowthPercent}% and {state.year3GrowthPercent}% growth to annual recurring value. {state.pricingModel === 'perEncounter'                                                 
+        ? 'For per-encounter pricing, encounter volume scales by the same percentages, so investment grows alongside value.'                                                                                   
+        : 'For per-provider or annual-license pricing, investment is held constant across years.'}
+    </p>                                                                                                                                                                                                       
+                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Connect Growth Trajectory and 3-Year Projection visually             
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreModel.tsx           
+                                                                                                                                                                                                               
+  The two sections are currently separate (one motion.div for Growth Trajectory, another for 3-Year Projection). Tighten the visual relationship by reducing the bottom margin between them.                   
+                                                                                                                                                                                                               
+  Find the closing `</motion.div>` of the Growth Trajectory section (around line 1834) and the opening of the 3-Year Projection (around line 1837).                                                            
+                                                                                                                                                                                                               
+  UPDATE both:                                                                                                                                                                                                 
+  - Growth Trajectory's outer motion.div: change `className="mb-12"` to `className="mb-6"` (less gap between chart and projection cards)                                                                       
+  - 3-Year Projection's outer motion.div: keep `className="mb-12"` (preserve gap before next section)
+                                                                                                                                                                                                               
+  ALSO update the section header for the 3-Year Projection:                                                                                                                                                    
+                                                              
+  REPLACE:                                                                                                                                                                                                     
+    <p className="text-center text-xl font-bold text-black mb-6">               
+      3-Year Projection                                                                                                                                                                                        
+    </p>                                                                        
+                                                                                                                                                                                                               
+  WITH (more elegant header that reads as continuation):                                                                                                                                                       
+    <div className="text-center mb-6">                                                                                                                                                                         
+      <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">Year by Year</p>                                                                                                      
+      <p className="text-xl font-bold text-black">3-Year Projection</p>         
+    </div>                                                    
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                          
+  1. TypeScript compiles. No new state or behavior — just JSX refactor.                                                                                                                                        
+                                                                                                                                                                                                               
+  2. Walk to Step 9 (Your Model) on any setting with drivers enabled.                                                                                                                                          
+                                                                                                                                                                                                               
+  3. **Growth Profile** section above the chart:                                                                                                                                                               
+     - Section header reads "GROWTH PROFILE" (small uppercase, gray) on the left
+     - Two compact Y2/Y3 % override inputs on the right of the same row                                                                                                                                        
+     - Three large preset tiles below in a 1-col mobile / 3-col desktop grid:   
+       - Each tile shows: title (Measured/Steady/Aggressive), subtitle, "X mo to full scale", and Y2/Y3 % captions                                                                                             
+       - Active tile has red border + soft shadow             
+       - Inactive tiles have soft beige bg                                                                                                                                                                     
+     - Tiles feel substantial, not pill-sized                                   
+                                                                                                                                                                                                               
+  4. Click a different pace tile — the Y2/Y3 inputs update to match the preset's percentages (existing behavior preserved).
+                                                                                                                                                                                                               
+  5. Edit Y2 % directly — the projection recomputes (existing behavior preserved).                                                                                                                             
+                                                                                                                                                                                                               
+  6. **3-Year Projection** section below the chart:                                                                                                                                                            
+     - Section header reads "YEAR BY YEAR" (red eyebrow) above "3-Year Projection" title                                                                                                                       
+     - 4 cards in a row (1-col mobile, 2-col tablet, 4-col desktop):                                                                                                                                           
+       - Year 1, Year 2, Year 3 — all white background with subtle border       
+       - 3-Year Total — DARK background (#1A1A1A) with white text — clearly the summary card                                                                                                                   
+       - All 4 share the same shape, padding, typography hierarchy: small red eyebrow → big number → "gross value" caption → divider → Net line → Investment line (if perEncounter)
+       - Year 2 and Year 3 cards show a small "+10%" pill in the top-right (or whatever growth % is configured)                                                                                                
+     - Cards are taller and more readable than before                           
+                                                                                                                                                                                                               
+  7. Caption below the cards reads at `max-w-3xl mx-auto` so it doesn't span the full width on large screens.
+                                                                                                                                                                                                               
+  8. The gap between the chart and the year cards feels tighter — the two sections read as one cohesive "Growth & Projection" experience.                                                                      
+                                                                                                                                                                                                               
+  9. Mobile: cards stack 1 per row, then 2x2, then 4 in a row at lg breakpoint. Pace tiles stack to 1 column on mobile and 3 columns on tablet+.                                                               
+                                                                                                                                                                                                               
+  10. Existing behavior unchanged: chart still works, pace presets still drive growth %, custom override still works, all calculations identical.                                                              
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - The Growth Profile header section uses justify-between with the override inputs on the right. On narrow screens they wrap below.
+  - The 3-Year Total dark card is a deliberate hierarchy choice — it's the summary and stands out, but uses the same 5-zone layout (eyebrow / big number / caption / divider / net / investment) as the year   
+  cards. Visual rhythm preserved.                                               
+  - The "+{growth}%" pill on Year 2/3 cards is a subtle redundancy with the Growth Profile section above — but it's the kind of redundancy that helps the reader connect cause (pace selector) to effect (year 
+  card values).                                                                 
+  - Methodology caption is unchanged; just constrained to max-w-3xl for better readability on wide screens.                                                                                                    
+  - This is a JSX-only change. No state, no calc, no behavior. If anything looks broken, it's a CSS conflict — inspect with devtools.

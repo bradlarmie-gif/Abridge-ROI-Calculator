@@ -1,0 +1,318 @@
+🔧 R-RECOVER — Comprehensive Revenue rebuild (Replit prompt — paste verbatim) 
+                                                                         
+  Context: A previous R1 prompt to rebuild Revenue partially deployed — state fields and ExploreModel calc logic landed, but the 7 Revenue calc components, 10 EXPLORE_DRIVERS registry entries,
+  ExploreRevenue.tsx page UI, and computeRevenueBreakdown helper all failed to deploy. As a result: Revenue page still shows "next sprint" placeholder, Step 9's Revenue quadrant card is empty, PDF Revenue   
+  chapter is empty. This prompt re-deploys all four pieces in one pass.                                                                                                                                        
+                                                                                                                                                                                                               
+  Pre-req: All other recent prompts (R-IA-1 through R-IA-6, R3) shipped or queued. This prompt is independent of R3 and can ship in any order relative to R3.                                                  
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Verify state fields exist (skip if already in place)                                                                                                                                                
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                
+  These fields should ALREADY exist in DocQualityInputs from the original R1 partial deploy:                                                                                                                   
+    wrvuEnabled, wrvuExpanded, wrvuScenario, currentWrvu, conversionFactor, wrvuRealization                                                                                                                    
+    hccEnabled, hccExpanded, hccScenario, panelSize, maPercent, gapRate, avgHccs, rafImpact, annualPayment, hccRealization
+    denialsEnabled, denialsExpanded, denialsScenario, denialRate, unappealableRate, avgClaimValue, denialsRealization                                                                                          
+    ipDrgEnabled, ipDrgExpanded, ipDrgScenario, ipDrgAtRiskRate, ipDrgWeightIncrease, ipDrgBasePayment, ipDrgRealization
+    ipObsDefenseEnabled, ipObsDefenseExpanded, ipObsDefenseDenialRate, ipObsDefenseClaimValue, ipObsDefenseDocContribution, ipObsDefenseRealization                                                            
+    ipCdiEnabled, ipCdiExpanded, ipCdiScenario, ipCdiQueryRate, ipCdiCostPerQuery, ipCdiRealization                                                                                                            
+    ipEmCodingEnabled, ipEmCodingExpanded, ipEmCodingGapScenario, ipEmCodingAvgRevenueLift, ipEmCodingRealization, ipEmCodingConsultsPerAdmission
+                                                                                                                                                                                                               
+  Verify these all exist in TimeDriverInputs/DocQualityInputs interface and DEFAULT_EXPLORE_STATE. If any are missing, add them.
+                                                                                                                                                                                                               
+  ALSO verify these new nursing qualitative Revenue state fields exist (added in original R1 Task 1):                                                                                                          
+    nursingCdiResponseEnabled / nursingCdiResponseExpanded                                                                                                                                                     
+    nursingDocCompletionEnabled / nursingDocCompletionExpanded                                                                                                                                                 
+                                                                                                                                                                                                               
+  If missing, add to TimeDriverInputs interface and DEFAULT_EXPLORE_STATE with `false` defaults.                                                                                                               
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Create the 7 Revenue calc components                                                                                                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  NEW FILES in client/src/components/explore/drivers/:                          
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                                                                                                                                                                     
+  WrvuCalc.tsx                                                                                                                                                                                                 
+  ────────────────────────────────────────                                                                                                                                                                     
+  import { Info } from "lucide-react";                                                                                                                                                                         
+  import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";        
+                                                                                                                                                                                                               
+  const SCENARIO_LABELS: Record<string, string> = { conservative: 'Conservative', typical: 'Typical', aggressive: 'Optimistic' };
+  type Props = ExploreCalcComponentProps;                                                                                                                                                                      
+                                                                                                                                                                                                               
+  export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {                                                                                                                                 
+    const { docQualityInputs, careSetting, annualEncounters, utilizationPercent } = state;                                                                                                                     
+    const isED = careSetting === 'ed';                                          
+    const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));                                                                                                                      
+    const wrvuScenarios: Record<string, number> = isED                                                                                                                                                         
+      ? { conservative: 1, typical: 2.5, aggressive: 4 }                                                                                                                                                       
+      : { conservative: 2, typical: 5, aggressive: 7 };                                                                                                                                                        
+    const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];                                                                                                                                      
+    const wrvuLiftPerVisit = (docQualityInputs.currentWrvu * wrvuLiftPercent) / 100;                                                                                                                           
+    const totalAdditionalWrvus = eligibleEncounters * wrvuLiftPerVisit;
+    const wrvuRevenueNet = totalAdditionalWrvus * docQualityInputs.conversionFactor * (docQualityInputs.wrvuRealization / 100);                                                                                
+    const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();                                                                                                                                
+    const formatNumber = (n: number) => n.toLocaleString();                                                                                                                                                    
+                                                                                                                                                                                                               
+    return (                                                                                                                                                                                                   
+      <div>                                                                                                                                                                                                    
+        <p className="text-sm text-black mb-4">                                                                                                                                                                
+          When notes fully reflect visit complexity, E/M levels often code higher. Industry data shows {isED ? '1-4%' : '2-7%'} {isED ? 'E&M' : 'wRVU'} lift from better documentation.                        
+        </p>                                                                                                                                                                                                   
+        <p className="text-sm font-medium text-black mb-2">Choose your scenario:</p>                                                                                                                           
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">                                                                                                                                                 
+          {(['conservative', 'typical', 'aggressive'] as const).map((level) => (                                                                                                                               
+            <button                                                             
+              key={level}                                                                                                                                                                                      
+              onClick={() => updateDocQualityInputs({ wrvuScenario: level })}   
+              className={`p-2 sm:p-3 rounded-lg border-2 transition-all text-center ${                                                                                                                         
+                docQualityInputs.wrvuScenario === level ? "border-[#EA2C00] bg-white" : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"                                                               
+              }`}                                                                                                                                                                                              
+            >                                                                                                                                                                                                  
+              <p className="font-medium text-black">{SCENARIO_LABELS[level]}</p>                                                                                                                               
+              <p className="text-sm text-[#888888]">{wrvuScenarios[level]}%</p>                                                                                                                                
+            </button>                                                                                                                                                                                          
+          ))}                                                                   
+        </div>                                                                                                                                                                                                 
+        <div className="bg-[#F5F0EB] rounded-lg p-4">                                                                                                                                                          
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>                                                                                                    
+          <div className="space-y-2 text-sm">                                                                                                                                                                  
+            <div className="flex justify-between"><span className="text-[#666666]">Eligible encounters</span><span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span></div>        
+            <div className="flex justify-between items-center">                                                                                                                                                
+              <span className="text-[#666666]">Current avg wRVU/visit</span>                                                                                                                                   
+              <div className="flex items-center gap-1">                                                                                                                                                        
+                <input type="number" step="0.1" value={docQualityInputs.currentWrvu} onChange={(e) => updateDocQualityInputs({ currentWrvu: parseFloat(e.target.value) || 0 })} className="w-16 h-7 text-right 
+  bg-white border border-[#E5E5E5] rounded px-2 text-sm" />                     
+                <span className="text-[#888888]">wRVU</span>                                                                                                                                                   
+              </div>                                                                                                                                                                                           
+            </div>                                                                                                                                                                                             
+            <div className="flex justify-between"><span className="text-[#666666]">Documentation improvement</span><span className="font-semibold text-black">{wrvuLiftPercent}%</span></div>                  
+            <div className="flex justify-between"><span className="text-[#666666]">= Total additional wRVUs</span><span className="font-semibold                                                               
+  text-black">{formatNumber(Math.round(totalAdditionalWrvus))}</span></div>                                                                                                                                    
+            <div className="flex justify-between items-center">                                                                                                                                                
+              <span className="text-[#666666]">× Conversion factor</span>                                                                                                                                      
+              <div className="flex items-center gap-1"><span className="text-[#888888]">$</span><input type="number" value={docQualityInputs.conversionFactor} onChange={(e) => updateDocQualityInputs({       
+  conversionFactor: parseFloat(e.target.value) || 0 })} className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm" /></div>                                                         
+            </div>                                                              
+            <div className="flex justify-between items-center">       
+              <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" /></span>                                                      
+              <div className="flex items-center gap-1"><input type="number" value={docQualityInputs.wrvuRealization} onChange={(e) => updateDocQualityInputs({ wrvuRealization: parseFloat(e.target.value) || 0
+   })} className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm" /><span className="text-[#888888]">%</span></div>                                                                 
+            </div>                                                                                                                                                                                             
+            <div className="h-px bg-[#E5E5E5] my-2" />                          
+            <div className="flex justify-between"><span className="font-semibold text-black">Annual {isED ? 'E&M' : 'wRVU'} Value</span><span className="font-bold                                             
+  text-[#EA2C00]">{formatCurrency(wrvuRevenueNet)}</span></div>                 
+          </div>                                                                                                                                                                                               
+        </div>                                                                  
+      </div>                                                                                                                                                                                                   
+    );                                                                                                                                                                                                         
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  ────────────────────────────────────────                                                                                                                                                                     
+  HccCaptureCalc.tsx, DenialPreventionCalc.tsx, DrgAccuracyCalc.tsx, CdiQueryReductionCalc.tsx, ObsDefenseCalc.tsx, EmCodingCalc.tsx                                                                           
+  ────────────────────────────────────────                                                                                                                                                                     
+  For these 6 calc components, use the SAME structural pattern as WrvuCalc above:                                                                                                                              
+  - Component takes ExploreCalcComponentProps                                   
+  - Reads from state.docQualityInputs                      
+  - Uses updateDocQualityInputs to write                              
+  - Renders: description + scenario buttons (where applicable, with Conservative/Typical/Optimistic labels NOT "Aggressive") + calc card with editable inputs + final value in red
+                                                                                                                                                                                                               
+  PORT the JSX/math from the existing legacy file `client/src/pages/explore/ExploreDocQuality.tsx` (still on disk). Specific source ranges:
+  - HccCaptureCalc.tsx: port HccExpandedContent helper (around lines 27-279 of ExploreDocQuality.tsx)                                                                                                          
+  - DenialPreventionCalc.tsx: port the Denials expanded content (around lines 2156-2306)
+  - DrgAccuracyCalc.tsx: port DRG Accuracy section (around lines 1250-1486)                                                                                                                                    
+  - CdiQueryReductionCalc.tsx: port CDI Query Reduction section (around lines 1720-1880)
+  - ObsDefenseCalc.tsx: port Obs/IP Status Defense section (around lines 1523-1683) — note this driver has NO scenario presets                                                                                 
+  - EmCodingCalc.tsx: port E/M Coding Accuracy section (around lines 1006-1213) — uses LOS-derived progress note count
+                                                                                                                                                                                                               
+  For each, ensure scenario button labels render via SCENARIO_LABELS map ({ conservative: 'Conservative', typical: 'Typical', aggressive: 'Optimistic' }). The underlying enum value `aggressive` stays in     
+  code, only the display label changes.                                                                                                                                                                        
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Add 10 Revenue drivers to EXPLORE_DRIVERS                                                                                                                                                           
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ADD imports near the existing calc component imports:                                                                                                                                                        
+    import WrvuCalc from "@/components/explore/drivers/WrvuCalc";                                                                                                                                              
+    import HccCaptureCalc from "@/components/explore/drivers/HccCaptureCalc";                                                                                                                                  
+    import DenialPreventionCalc from "@/components/explore/drivers/DenialPreventionCalc";                                                                                                                      
+    import DrgAccuracyCalc from "@/components/explore/drivers/DrgAccuracyCalc";
+    import CdiQueryReductionCalc from "@/components/explore/drivers/CdiQueryReductionCalc";                                                                                                                    
+    import ObsDefenseCalc from "@/components/explore/drivers/ObsDefenseCalc";   
+    import EmCodingCalc from "@/components/explore/drivers/EmCodingCalc";                                                                                                                                      
+                                                                                                                                                                                                               
+  APPEND these 10 driver entries to EXPLORE_DRIVERS (typically just before the final `]` closing the array, or organized after the Workforce drivers):
+                                                                                                                                                                                                               
+    // ───── REVENUE ─────                                                      
+    { id: 'wrvu', label: 'wRVU Capture', shortDescription: 'When notes fully reflect visit complexity, E/M levels often code higher.', quadrant: 'Revenue', settings: ['outpatient'], visibility: 'quantified',
+   enabledStateKey: 'wrvuEnabled', expandedStateKey: 'wrvuExpanded', calcComponent: WrvuCalc, trackedMeasureIds: ['wrvu'] },                                                                                   
+    { id: 'edEmLevel', label: 'E&M Level Accuracy', shortDescription: 'Capture the true complexity of ED visits supporting accurate E/M leveling.', quadrant: 'Revenue', settings: ['ed'], visibility:         
+  'quantified', enabledStateKey: 'wrvuEnabled', expandedStateKey: 'wrvuExpanded', calcComponent: WrvuCalc, trackedMeasureIds: ['wrvuPerShift', 'emLevel'] },                                                   
+    { id: 'hccCapture', label: 'HCC Capture', shortDescription: 'Recapture missed diagnoses for the Medicare Advantage population.', quadrant: 'Revenue', settings: ['outpatient'], visibility: 'quantified',
+  enabledStateKey: 'hccEnabled', expandedStateKey: 'hccExpanded', calcComponent: HccCaptureCalc, trackedMeasureIds: ['hccCapture'] },                                                                          
+    { id: 'denialPrevention', label: 'Denial Prevention', shortDescription: 'Reduce documentation-related claim denials.', quadrant: 'Revenue', settings: ['outpatient', 'ed'], visibility: 'quantified',
+  enabledStateKey: 'denialsEnabled', expandedStateKey: 'denialsExpanded', calcComponent: DenialPreventionCalc, trackedMeasureIds: ['cleanClaim', 'medicalNecessityDenial'] },                                  
+    { id: 'drgAccuracy', label: 'DRG Accuracy', shortDescription: 'Capture clinical complexity discussed during care that affects DRG assignment.', quadrant: 'Revenue', settings: ['inpatient'], visibility:
+  'quantified', enabledStateKey: 'ipDrgEnabled', expandedStateKey: 'ipDrgExpanded', calcComponent: DrgAccuracyCalc, trackedMeasureIds: ['drgAccuracy', 'ccMccCapture', 'caseMixIndex'] },                      
+    { id: 'cdiQueryReduction', label: 'CDI Query Reduction', shortDescription: 'Fewer queries when documentation is complete upfront.', quadrant: 'Revenue', settings: ['inpatient'], visibility: 'quantified',
+   enabledStateKey: 'ipCdiEnabled', expandedStateKey: 'ipCdiExpanded', calcComponent: CdiQueryReductionCalc, trackedMeasureIds: ['cdiQueryReduction'] },                                                       
+    { id: 'obsDefense', label: 'Observation / IP Status Defense', shortDescription: 'Defensible documentation supporting admission status determinations.', quadrant: 'Revenue', settings: ['inpatient'],
+  visibility: 'quantified', enabledStateKey: 'ipObsDefenseEnabled', expandedStateKey: 'ipObsDefenseExpanded', calcComponent: ObsDefenseCalc, trackedMeasureIds: ['medicalNecessityDenial'] },                  
+    { id: 'emCodingAccuracy', label: 'E/M Coding Accuracy', shortDescription: 'Right-code clinical complexity from ambient capture, including consults and progress notes.', quadrant: 'Revenue', settings:
+  ['inpatient'], visibility: 'quantified', enabledStateKey: 'ipEmCodingEnabled', expandedStateKey: 'ipEmCodingExpanded', calcComponent: EmCodingCalc, trackedMeasureIds: ['emLevel'] },                        
+    { id: 'nursingCdiResponse', label: 'CDI Query Response', shortDescription: 'Faster, more complete nursing documentation supports DRG accuracy and timeliness.', quadrant: 'Revenue', settings: ['nursing'],
+   visibility: 'qualitative', enabledStateKey: 'nursingCdiResponseEnabled', expandedStateKey: 'nursingCdiResponseExpanded', trackedMeasureIds: ['cdiQueryResponseRate'] },                                     
+    { id: 'nursingDocCompletion', label: 'Documentation Completion', shortDescription: 'Timely nursing documentation reduces billing delays and discharge holds.', quadrant: 'Revenue', settings: ['nursing'],
+  visibility: 'qualitative', enabledStateKey: 'nursingDocCompletionEnabled', expandedStateKey: 'nursingDocCompletionExpanded', trackedMeasureIds: ['nursingDocCompletion'] },                                  
+                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Replace ExploreRevenue.tsx with the real driver workspace UI         
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreRevenue.tsx (REPLACE entire file)       
+                                                                                                                                                                                                               
+  Use the deployed ExploreCapacity.tsx as the reference template for the page structure and DriverCard rendering pattern. The Revenue page is similar but reads enabled-state from BOTH state.docQualityInputs
+  (most Revenue drivers live there) AND state.timeDriverInputs (nursing qualitative drivers live there).                                                                                                       
+                                                                                
+  The full file content is the same as the existing ExploreCapacity.tsx with these adaptations:                                                                                                                
+  - Component name: ExploreCapacity → ExploreRevenue                            
+  - Quadrant filter: getDriversForPage('Capacity', setting) → getDriversForPage('Revenue', setting)                                                                                                            
+  - Other Financial Benefits filter: 'Capacity' → 'Revenue'
+  - UnifiedHeader: currentStep={4} → currentStep={6}, stepName="Capacity" → stepName="Revenue"                                                                                                                 
+  - Page H1/subtitle: "Capacity" / "What could you do..." → "Revenue" / "How does better documentation show up financially?"                                                                                   
+  - Right panel header: "Capacity Value" → "Revenue Value"                                                                                                                                                     
+  - Continue button label: "Continue to Workforce" → "Continue to Quality"                                                                                                                                     
+  - `data-testid` prefix: cap- → rev-                                                                                                                                                                          
+                                                                      
+  CRITICAL: The toggle helpers must read BOTH state objects. REPLACE the simple `state.timeDriverInputs as any` access pattern with the dual-state lookup:                                                     
+                                                                                                                                                                                                               
+    const updateTimeDriverInputs = (updates: Partial<typeof state.timeDriverInputs>) => updateState({ timeDriverInputs: { ...state.timeDriverInputs, ...updates } });                                          
+    const updateDocQualityInputs = (updates: Partial<typeof state.docQualityInputs>) => updateState({ docQualityInputs: { ...state.docQualityInputs, ...updates } });                                          
+                                                                                                                                                                                                               
+    const isEnabled = (driver: ExploreDriver): boolean => {                                                                                                                                                    
+      const td = state.timeDriverInputs as any;                                                                                                                                                                
+      const dq = state.docQualityInputs as any;                                                                                                                                                                
+      return Boolean(td[driver.enabledStateKey] ?? dq[driver.enabledStateKey]);                                                                                                                                
+    };                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    const isExpanded = (driver: ExploreDriver): boolean => {                    
+      if (!driver.expandedStateKey) return false;                                                                                                                                                              
+      const td = state.timeDriverInputs as any;                                                                                                                                                                
+      const dq = state.docQualityInputs as any;                                                                                                                                                                
+      return Boolean(td[driver.expandedStateKey] ?? dq[driver.expandedStateKey]);                                                                                                                              
+    };                                                                          
+                                                                                                                                                                                                               
+    const toggleEnabled = (driver: ExploreDriver) => {                          
+      const td = state.timeDriverInputs as any;                                                                                                                                                                
+      const dq = state.docQualityInputs as any;                                 
+      const inTd = driver.enabledStateKey in td;                                                                                                                                                               
+      const current = inTd ? td[driver.enabledStateKey] : dq[driver.enabledStateKey];
+      const updates: any = { [driver.enabledStateKey]: !current };                                                                                                                                             
+      if (!current && driver.expandedStateKey) updates[driver.expandedStateKey] = true;                                                                                                                        
+      if (inTd) updateTimeDriverInputs(updates);                      
+      else updateDocQualityInputs(updates);                                                                                                                                                                    
+    };                                                                          
+                                                                                                                                                                                                               
+    const toggleExpand = (driver: ExploreDriver) => {                           
+      if (!driver.expandedStateKey) return;                                                                                                                                                                    
+      const td = state.timeDriverInputs as any;                                                                                                                                                                
+      const dq = state.docQualityInputs as any;                                                                                                                                                                
+      const inTd = driver.expandedStateKey in td;                                                                                                                                                              
+      const current = inTd ? td[driver.expandedStateKey] : dq[driver.expandedStateKey];                                                                                                                        
+      if (inTd) updateTimeDriverInputs({ [driver.expandedStateKey]: !current } as any);                                                                                                                        
+      else updateDocQualityInputs({ [driver.expandedStateKey]: !current } as any);                                                                                                                             
+    };                                                                                                                                                                                                         
+                                                                      
+  The driverValues useMemo for Revenue should match the math in ExploreModel.tsx allDriverValues for Revenue (lines 114-161). Keep the same logic.                                                             
+                                                                                
+  When rendering each driver in the JSX, pass updateDocQualityInputs to driver.calcComponent (calc components write to docQualityInputs):
+                                                                                                                                                                                                               
+    {driver.calcComponent ? (                                         
+      <driver.calcComponent state={state} updateTimeDriverInputs={updateTimeDriverInputs} updateDocQualityInputs={updateDocQualityInputs} totalHoursSaved={totalHoursSaved} />                                 
+    ) : ...}                                                                                                                                                                                                   
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Fix computeRevenueBreakdown helper                                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreQuadrantValues.ts (around lines 96-100)           
+                                                                                                                                                                                                               
+  REPLACE the placeholder computeRevenueBreakdown:                              
+    export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {                                                                                                
+      return buildResult({}, benefitsForQuadrant(state, 'Revenue'));                                                                                                                                           
+    }                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  WITH a real implementation that mirrors the Revenue calc logic from ExploreModel.tsx allDriverValues. Use the same math used in TASK 4 for Revenue page's driverValues — extract it into this helper.        
+                                                            
+  (Full code here matches the calc logic in ExploreModel.tsx lines 114-161 with the same ED/OP/IP branching for wRVU, HCC, Denials, DRG, CDI, Obs Defense, EM Coding.)                                         
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 6 — Verify ExploreFlow case 'revenue' wiring                                                                                                                                                            
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                                                                                                                                               
+  Verify the case 'revenue' branch passes totalHoursSaved AND priorQuadrants props to ExploreRevenue, matching the pattern of the case 'capacity' branch. If missing, add them. The page expects:
+                                                                                                                                                                                                               
+    case 'revenue':                                                             
+      content = (                                                                                                                                                                                              
+        <ExploreRevenue                                                         
+          state={state}                                                                                                                                                                                        
+          updateState={updateState}
+          totalHoursSaved={totalHoursSaved}                                                                                                                                                                    
+          priorQuadrants={[...]}  // same shape as Capacity case computes                                                                                                                                      
+          onNext={() => navigate('quality')}                          
+          onBack={() => navigate('workforce')}                                                                                                                                                                 
+          onHome={goHome}                                                       
+        />                                                            
+      );                                                    
+      break;                                                
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                                                                                                                                               
+  1. TypeScript compiles. Files exist at:                                                                                                                                                                      
+     - client/src/components/explore/drivers/WrvuCalc.tsx                                                                                                                                                      
+     - HccCaptureCalc.tsx, DenialPreventionCalc.tsx, DrgAccuracyCalc.tsx, CdiQueryReductionCalc.tsx, ObsDefenseCalc.tsx, EmCodingCalc.tsx (all in same folder)
+                                                                                                                                                                                                               
+  2. Grep `client/src/lib/exploreDrivers.ts` for "id: 'wrvu'" — returns at least 1 match. Same for hccCapture, denialPrevention, drgAccuracy, cdiQueryReduction, obsDefense, emCodingAccuracy, edEmLevel,
+  nursingCdiResponse, nursingDocCompletion. All 10 should be present. 
+                                                                      
+  3. Walk Outpatient → Revenue (step 6/9):                                                                                                                                                                     
+     - Three financial drivers visible: wRVU Capture, HCC Capture, Denial Prevention
+     - Toggle wRVU on → scenario buttons (Conservative 2% / Typical 5% / Optimistic 7%) + full calc card with editable currentWrvu / conversionFactor / wrvuRealization                                        
+     - Toggle HCC on → population inputs (panel size, MA%, gap rate) + advanced collapsible                                                                                                                    
+     - Toggle Denials on → scenario + denial breakdown + calc card                                                                                                                                             
+     - Right-panel Quadrant Total reflects the sum of enabled driver values (NOT $0)                                                                                                                           
+     - "next sprint" placeholder text is GONE                                                                                                                                                                  
+                                                                                                                                                                                                               
+  4. Walk ED → Revenue:                                                                                                                                                                                        
+     - Two financial drivers: E&M Level Accuracy (uses ED-tuned scenarios) + Denial Prevention (ED-tuned)
+                                                                                                                                                                                                               
+  5. Walk IP → Revenue:                                                                                                                                                                                        
+     - Four financial drivers: DRG Accuracy + CDI Query Reduction + Observation/IP Status Defense + E/M Coding Accuracy                                                                                        
+                                                                                                                                                                                                               
+  6. Walk Nursing → Revenue:                                                                                                                                                                                   
+     - Two qualitative drivers: CDI Query Response + Documentation Completion                                                                                                                                  
+                                                                                                                                                                                                               
+  7. Step 9 Model — the Revenue card in the 4-quadrant grid shows:                                                                                                                                             
+     - Driver line items (wRVU, HCC, Denial Prevention with their dollar values for OP)                                                                                                                        
+     - Quadrant annual sum at top                                                                                                                                                                              
+     - NOT empty / NOT "No drivers selected"                                                                                                                                                                   
+                                                                                                                                                                                                               
+  8. Click Download PDF on Step 9. The Revenue chapter in the PDF shows:        
+     - Quadrant header with annual total                                                                                                                                                                       
+     - Each enabled Revenue driver with its calculated dollar value                                                                                                                                            
+     - NOT empty / NOT placeholder                                                                                                                                                                             
+                                                                                                                                                                                                               
+  9. The Quality page's "Progress So Far" block (right panel) shows Revenue value (not $0) when navigating from Revenue to Quality.                                                                            
+                                                                                                                                                                                                               
+  10. No TypeScript errors. No console errors.                                                                                                                                                                 
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - This consolidates the original R1 + the proposed R-FIX-1 into a single deployment unit.                                                                                                                    
+  - The 7 calc components are all deliberately written to share a common visual pattern (description → scenario buttons → calc card with editable inputs → final value in red). They're roughly 80-150 lines
+  each.                                                                                                                                                                                                        
+  - The legacy file ExploreDocQuality.tsx is unwired but still on disk. It's the source for porting calc UI patterns. Leave it alone — don't delete.                                                           
+  - After this prompt ships, Revenue will be live end-to-end across the Revenue page, Step 9 Model, AND PDF export. 

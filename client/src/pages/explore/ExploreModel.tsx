@@ -1722,7 +1722,7 @@ export default function ExploreModel({
         {/* GROWTH TRAJECTORY */}
         {!noDriversEnabled && (
         <motion.div
-          className="mb-12"
+          className="mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -1735,56 +1735,70 @@ export default function ExploreModel({
           </p>
 
           <div className="bg-white rounded-xl border border-[#E5E5E5] p-3 sm:p-6">
-            {/* Pace Selector */}
-            <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
-              <span className="text-sm text-[#888888]">Expansion pace:</span>
-              <div className="flex gap-1">
-                {(['measured', 'steady', 'aggressive'] as const).map((pace) => (
-                  <Button
-                    key={pace}
-                    variant={selectedPace === pace ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => handlePaceChange(pace)}
-                    className={`rounded-full min-h-[40px] min-w-[64px] flex-col px-3 py-1 h-auto ${
-                      selectedPace === pace 
-                        ? "bg-[#EA2C00] text-white" 
-                        : "bg-[#F5F0EB] text-[#888888]"
-                    }`}
-                    data-testid={`pace-${pace}`}
-                  >
-                    <span>{paceConfig[pace].months}mo</span>
-                    <span className={`block text-[10px] mt-0.5 ${selectedPace === pace ? 'text-white/80' : 'text-[#888888]'}`}>
-                      Y2 +{PACE_GROWTH_PRESETS[pace].y2}% · Y3 +{PACE_GROWTH_PRESETS[pace].y3}%
-                    </span>
-                  </Button>
-                ))}
+            {/* Growth Profile: pace presets + Y2/Y3 overrides */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <p className="text-xs font-semibold text-[#888888] uppercase tracking-[1.5px]">Growth Profile</p>
+                <div className="flex items-center gap-3 text-xs text-[#666666]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#888888]">Year 2</span>
+                    <input
+                      type="number"
+                      value={state.year2GrowthPercent}
+                      onChange={(e) => updateState({ year2GrowthPercent: parseFloat(e.target.value) || 0 })}
+                      className="w-14 h-7 text-center bg-white border border-[#E5E5E5] rounded text-sm font-semibold text-black focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                      data-testid="input-y2-growth"
+                    />
+                    <span className="text-[#888888]">%</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#888888]">Year 3</span>
+                    <input
+                      type="number"
+                      value={state.year3GrowthPercent}
+                      onChange={(e) => updateState({ year3GrowthPercent: parseFloat(e.target.value) || 0 })}
+                      className="w-14 h-7 text-center bg-white border border-[#E5E5E5] rounded text-sm font-semibold text-black focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                      data-testid="input-y3-growth"
+                    />
+                    <span className="text-[#888888]">%</span>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Custom growth overrides */}
-            <div className="flex items-center justify-center gap-4 mb-4 text-sm flex-wrap">
-              <span className="text-[#888888]">Custom growth:</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#666666]">Y2</span>
-                <input
-                  type="number"
-                  value={state.year2GrowthPercent}
-                  onChange={(e) => updateState({ year2GrowthPercent: parseFloat(e.target.value) || 0 })}
-                  className="w-14 h-7 text-center bg-white border border-[#E5E5E5] rounded text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
-                  data-testid="input-y2-growth"
-                />
-                <span className="text-[#888888]">%</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#666666]">Y3</span>
-                <input
-                  type="number"
-                  value={state.year3GrowthPercent}
-                  onChange={(e) => updateState({ year3GrowthPercent: parseFloat(e.target.value) || 0 })}
-                  className="w-14 h-7 text-center bg-white border border-[#E5E5E5] rounded text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
-                  data-testid="input-y3-growth"
-                />
-                <span className="text-[#888888]">%</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {(['measured', 'steady', 'aggressive'] as const).map((pace) => {
+                  const isActive = selectedPace === pace;
+                  const paceLabels: Record<string, { title: string; subtitle: string }> = {
+                    measured: { title: 'Measured', subtitle: 'Conservative growth' },
+                    steady: { title: 'Steady', subtitle: 'Typical adoption' },
+                    aggressive: { title: 'Aggressive', subtitle: 'High momentum' },
+                  };
+                  return (
+                    <button
+                      key={pace}
+                      onClick={() => handlePaceChange(pace)}
+                      className={`p-4 rounded-lg border-2 text-left transition-all ${
+                        isActive
+                          ? 'border-[#EA2C00] bg-white shadow-[0_2px_12px_rgba(234,44,0,0.08)]'
+                          : 'border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]'
+                      }`}
+                      data-testid={`pace-${pace}`}
+                    >
+                      <p className={`text-sm font-bold mb-0.5 ${isActive ? 'text-black' : 'text-[#666666]'}`}>
+                        {paceLabels[pace].title}
+                      </p>
+                      <p className="text-xs text-[#888888] mb-2">{paceLabels[pace].subtitle}</p>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className={isActive ? 'text-[#EA2C00] font-semibold' : 'text-[#888888]'}>
+                          {paceConfig[pace].months} mo to full scale
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-[#AAAAAA] mt-1">
+                        Y2 +{PACE_GROWTH_PRESETS[pace].y2}% · Y3 +{PACE_GROWTH_PRESETS[pace].y3}%
+                      </p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1932,66 +1946,93 @@ export default function ExploreModel({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
-          <p className="text-center text-xl font-bold text-black mb-6">
-            3-Year Projection
-          </p>
+          <div className="text-center mb-6">
+            <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">Year by Year</p>
+            <p className="text-xl font-bold text-black">3-Year Projection</p>
+          </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center" data-testid="projection-year-1">
-              <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 1</p>
-              <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year1Value)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            {/* Year 1 */}
+            <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-1">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">Year 1</p>
+              <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year1Value)}</p>
+              <p className="text-xs text-[#888888]">gross value</p>
               {totalOneTimeValue > 0 && (
-                <p className="text-xs text-[#888888] mt-1">Includes {formatCurrency(totalOneTimeValue)} one-time</p>
+                <p className="text-[11px] text-[#666666] mt-1">includes {formatCurrency(totalOneTimeValue)} one-time</p>
               )}
               <div className="h-px bg-[#F0EBE4] my-3" />
-              <p className="text-sm">
-                <span className="text-[#888888]">Net: </span>
+              <div className="flex justify-between items-center text-sm mt-auto">
+                <span className="text-[#888888]">Net</span>
                 <span className={`font-semibold ${year1Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-1-net">{formatCurrency(year1Net)}</span>
-              </p>
+              </div>
               {state.pricingModel === 'perEncounter' && (
-                <p className="text-xs text-[#AAAAAA] mt-1">Investment: {formatCurrency(year1Investment)}</p>
+                <div className="flex justify-between items-center text-xs mt-1">
+                  <span className="text-[#AAAAAA]">Investment</span>
+                  <span className="text-[#888888]">{formatCurrency(year1Investment)}</span>
+                </div>
               )}
             </div>
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center" data-testid="projection-year-2">
-              <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 2</p>
-              <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year2Value)}</p>
-              <p className="text-xs text-[#888888] mt-1">+{state.year2GrowthPercent}% growth</p>
+
+            {/* Year 2 */}
+            <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-2">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Year 2</p>
+                <span className="text-[10px] font-semibold text-[#666666] bg-[#F5F0EB] px-1.5 py-0.5 rounded">+{state.year2GrowthPercent}%</span>
+              </div>
+              <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year2Value)}</p>
+              <p className="text-xs text-[#888888]">gross value</p>
               <div className="h-px bg-[#F0EBE4] my-3" />
-              <p className="text-sm">
-                <span className="text-[#888888]">Net: </span>
+              <div className="flex justify-between items-center text-sm mt-auto">
+                <span className="text-[#888888]">Net</span>
                 <span className={`font-semibold ${year2Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-2-net">{formatCurrency(year2Net)}</span>
-              </p>
+              </div>
               {state.pricingModel === 'perEncounter' && (
-                <p className="text-xs text-[#AAAAAA] mt-1">Investment: {formatCurrency(year2Investment)}</p>
+                <div className="flex justify-between items-center text-xs mt-1">
+                  <span className="text-[#AAAAAA]">Investment</span>
+                  <span className="text-[#888888]">{formatCurrency(year2Investment)}</span>
+                </div>
               )}
             </div>
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-3 sm:p-5 text-center" data-testid="projection-year-3">
-              <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">Year 3</p>
-              <p className="text-lg sm:text-xl font-bold text-black">{formatCurrency(year3Value)}</p>
-              <p className="text-xs text-[#888888] mt-1">+{state.year3GrowthPercent}% growth</p>
+
+            {/* Year 3 */}
+            <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Year 3</p>
+                <span className="text-[10px] font-semibold text-[#666666] bg-[#F5F0EB] px-1.5 py-0.5 rounded">+{state.year3GrowthPercent}%</span>
+              </div>
+              <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year3Value)}</p>
+              <p className="text-xs text-[#888888]">gross value</p>
               <div className="h-px bg-[#F0EBE4] my-3" />
-              <p className="text-sm">
-                <span className="text-[#888888]">Net: </span>
+              <div className="flex justify-between items-center text-sm mt-auto">
+                <span className="text-[#888888]">Net</span>
                 <span className={`font-semibold ${year3Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-3-net">{formatCurrency(year3Net)}</span>
-              </p>
+              </div>
               {state.pricingModel === 'perEncounter' && (
-                <p className="text-xs text-[#AAAAAA] mt-1">Investment: {formatCurrency(year3Investment)}</p>
+                <div className="flex justify-between items-center text-xs mt-1">
+                  <span className="text-[#AAAAAA]">Investment</span>
+                  <span className="text-[#888888]">{formatCurrency(year3Investment)}</span>
+                </div>
               )}
             </div>
-            <div className="bg-[#F5F0EB] rounded-lg p-3 sm:p-5 text-center" data-testid="projection-three-year-total">
-              <p className="text-xs sm:text-sm text-[#888888] mb-1 sm:mb-2">3-Year Value</p>
-              <p className="text-lg sm:text-xl font-bold text-[#EA2C00]">{formatCurrency(threeYearGrossTotal)}</p>
-              <p className="text-xs text-[#888888] mt-1">gross value</p>
-              <div className="h-px bg-[#E5DCD0] my-3" />
-              <p className="text-base">
-                <span className="text-[#888888]">Net: </span>
-                <span className={`font-semibold ${threeYearNetTotal >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-three-year-net">{formatCurrency(threeYearNetTotal)}</span>
-              </p>
-              <p className="text-xs text-[#AAAAAA] mt-1">Investment: {formatCurrency(threeYearInvestmentTotal)}</p>
+
+            {/* 3-Year Total — same shape, distinct treatment */}
+            <div className="bg-[#1A1A1A] rounded-xl p-5 flex flex-col" data-testid="projection-three-year-total">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">3-Year Total</p>
+              <p className="text-2xl font-bold text-white mb-1">{formatCurrency(threeYearGrossTotal)}</p>
+              <p className="text-xs text-white/60">gross value</p>
+              <div className="h-px bg-white/10 my-3" />
+              <div className="flex justify-between items-center text-sm mt-auto">
+                <span className="text-white/60">Net</span>
+                <span className={`font-semibold ${threeYearNetTotal >= 0 ? 'text-[#EA2C00]' : 'text-white/70'}`} data-testid="projection-three-year-net">{formatCurrency(threeYearNetTotal)}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs mt-1">
+                <span className="text-white/40">Investment</span>
+                <span className="text-white/60">{formatCurrency(threeYearInvestmentTotal)}</span>
+              </div>
             </div>
           </div>
 
-          <p className="text-sm text-[#888888] text-center mt-4">
+          <p className="text-sm text-[#888888] text-center max-w-3xl mx-auto">
             Years 2 and 3 apply {state.year2GrowthPercent}% and {state.year3GrowthPercent}% growth to annual recurring value. {state.pricingModel === 'perEncounter'
               ? 'For per-encounter pricing, encounter volume scales by the same percentages, so investment grows alongside value.'
               : 'For per-provider or annual-license pricing, investment is held constant across years.'}
