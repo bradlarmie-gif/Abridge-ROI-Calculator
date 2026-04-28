@@ -225,7 +225,7 @@ const fmtCurrency = (n: number): string => {
 const fmtCurrencyExact = (n: number): string => `$${Math.round(n).toLocaleString()}`;
 const fmtNum = (n: number): string => Math.round(n).toLocaleString();
 
-const TOTAL_PAGES = 7; // Cover unnumbered, numbered pages 1..7
+const TOTAL_PAGES = 6; // Cover unnumbered, numbered pages 1..6
 
 // ───────────────────────── Reusable components ─────────────────────────
 
@@ -344,6 +344,41 @@ const QuadrantThesisCard = ({
   </View>
 );
 
+// Bloomberg-style compact key/value math grid
+const MathGrid = ({ rows }: { rows: { label: string; value: string }[] }) => (
+  <View
+    style={{
+      backgroundColor: "#FFFFFF",
+      borderWidth: 1,
+      borderColor: colors.separatorHeavy,
+      borderRadius: 3,
+      marginTop: 6,
+      marginBottom: 4,
+    }}
+  >
+    {rows.map((r, i) => (
+      <View
+        key={i}
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          paddingHorizontal: 8,
+          paddingVertical: 3,
+          borderTopWidth: i === 0 ? 0 : 0.5,
+          borderTopColor: colors.separator,
+        }}
+      >
+        <Text style={{ fontSize: 8.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 0.5 }}>
+          {r.label}
+        </Text>
+        <Text style={{ fontSize: 9, color: colors.primaryText, fontWeight: "bold" }}>
+          {r.value}
+        </Text>
+      </View>
+    ))}
+  </View>
+);
+
 const TrackedPill = () => (
   <View
     style={{
@@ -401,7 +436,6 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
   const clabsiEvents = (lineDays / 1000) * data.clabsi.rate;
   const sepsisCases = (data.patientDaysAnnual / 1000) * data.sepsis.ratePerThousand;
 
-  const hasBundleCompliance = data.cauti.enabled || data.clabsi.enabled || data.sepsis.enabled;
   const hasTrackedMetrics = data.hcahpsEnabled || data.medErrorEnabled;
 
   // Year math (recurring, investment held constant)
@@ -506,75 +540,20 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         </View>
       </Page>
 
-      {/* PAGE 3 — CAPACITY */}
+      {/* PAGE 2 — WORKFORCE & CAPACITY (combined) */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>CAPACITY</Text>
-          <Text style={styles.sectionHeadline}>
-            Bedside time is what nurses say they don't have enough of.
-          </Text>
-          <Text style={styles.body}>
-            Capacity for nursing isn't a billable line — it's a leading indicator. When
-            nurses finish charting before the end of their shift, more of the next hour
-            goes to direct patient care instead of catch-up documentation. We track this
-            post-deployment to confirm the model is producing the behavior change it
-            predicts.
-          </Text>
-
-          <View style={[styles.cardBg, { flexDirection: "row", paddingVertical: 16, marginBottom: 16 }]}>
-            <StatBlock
-              label="Hours Returned"
-              value={fmtNum(data.hoursReturnedAnnual)}
-              caption="annually"
-              emphasis
-            />
-            <StatBlock
-              label="Patient Days"
-              value={fmtNum(data.patientDaysAnnual)}
-              caption="per year"
-            />
-            <StatBlock
-              label="Min/Shift"
-              value={fmtNum(data.minutesSavedPerShift)}
-              caption="saved per shift"
-            />
-          </View>
-
-          {data.bedsideTimeEnabled ? (
-            <View style={styles.driverCard}>
-              <View style={styles.driverHeaderRow}>
-                <Text style={styles.driverHeader}>Bedside / Direct Care Time</Text>
-                <TrackedPill />
-              </View>
-              <Text style={styles.driverBody}>
-                Reclaimed documentation time spent in direct patient care. Track the
-                ratio post-deployment as the leading indicator that ambient documentation
-                is producing the behavior change.
-              </Text>
-            </View>
-          ) : (
-            <Text style={{ fontSize: 10, fontStyle: "italic", color: colors.tertiary, marginTop: 10 }}>
-              This indicator is not currently selected. Recommended for tracking
-              post-deployment.
-            </Text>
-          )}
-
-          <PageFooter pageNum={2} orgName={orgName} />
-        </View>
-      </Page>
-
-      {/* PAGE 4 — WORKFORCE */}
-      <Page size="LETTER" style={styles.page}>
-        <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>WORKFORCE</Text>
+          <Text style={styles.sectionLabel}>WORKFORCE &amp; CAPACITY</Text>
           <Text style={styles.sectionHeadline}>
             Documentation burden is the reason nurses leave. And the reason they stay late.
           </Text>
           <Text style={styles.body}>
-            Three distinct budget lines — turnover cost, agency premium, and overtime —
-            all driven by how long it takes to finish charting at the end of a shift.
-            Reducing the documentation burden moves all three.
+            Three labor lines — turnover, agency premium, and overtime — and one
+            leading-indicator capacity line, all driven by the same root cause: how long
+            it takes to finish charting at the end of a shift.
           </Text>
+
+          <Text style={styles.subSectionHeader}>Workforce</Text>
 
           {data.retention.enabled ? (
             <View style={styles.driverCard}>
@@ -583,13 +562,19 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 <Text style={styles.driverValue}>{fmtCurrency(data.retention.value)}</Text>
               </View>
               <Text style={styles.driverBody}>
-                Documentation burden is a leading driver of nurse burnout. Burnout drives
-                turnover. Reducing burden helps retain experienced nurses who would
-                otherwise leave.
+                Documentation burden drives burnout drives turnover. Reducing burden
+                helps retain experienced nurses who would otherwise leave.
               </Text>
-              <Text style={styles.driverCalc}>
-                {`${fmtNum(data.nurseFTEs)} nurses × ${data.retention.turnoverPct}% turnover × ${data.retention.burnoutRelatedPct}% burnout-related × ${data.retention.impactPct}% impact × ${fmtCurrencyExact(data.retention.replacementCost)}/replacement`}
-              </Text>
+              <MathGrid
+                rows={[
+                  { label: "Nurse FTEs", value: fmtNum(data.nurseFTEs) },
+                  { label: "Annual turnover rate", value: `${data.retention.turnoverPct}%` },
+                  { label: "Burnout-related share", value: `${data.retention.burnoutRelatedPct}%` },
+                  { label: "Documentation impact on burnout turnover", value: `${data.retention.impactPct}%` },
+                  { label: "Replacement cost per nurse", value: fmtCurrencyExact(data.retention.replacementCost) },
+                  { label: "= Retention savings", value: fmtCurrency(data.retention.value) },
+                ]}
+              />
               <Text style={styles.driverSource}>
                 Source: NSI Nursing Solutions 2024 turnover benchmark.
               </Text>
@@ -606,9 +591,13 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 When nurses leave, hospitals fill gaps with agency at 2–3× the cost.
                 Improved retention directly reduces premium-labor dependency.
               </Text>
-              <Text style={styles.driverCalc}>
-                {`Nurses retained × ${data.agency.weeksPerVacancy} weeks coverage × ${fmtCurrencyExact(data.agency.weeklyPremium)}/week premium`}
-              </Text>
+              <MathGrid
+                rows={[
+                  { label: "Weeks of agency coverage avoided per vacancy", value: `${data.agency.weeksPerVacancy} wks` },
+                  { label: "Weekly agency premium", value: fmtCurrencyExact(data.agency.weeklyPremium) },
+                  { label: "= Agency cost avoided", value: fmtCurrency(data.agency.value) },
+                ]}
+              />
             </View>
           ) : null}
 
@@ -620,11 +609,18 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               </View>
               <Text style={styles.driverBody}>
                 When nurses spend less time documenting at end of shift, OT hours
-                decrease. Direct, measurable line item in the payroll budget.
+                decrease. The most directly measurable line in the payroll budget.
               </Text>
-              <Text style={styles.driverCalc}>
-                {`${fmtNum(data.nurseFTEs)} nurses × ${data.overtime.otHrsPerNurseWeek} OT hrs/week × ${data.overtime.reductionPct}% reduction × 52 weeks × $${data.overtime.otHourlyRate}/hr`}
-              </Text>
+              <MathGrid
+                rows={[
+                  { label: "Nurse FTEs", value: fmtNum(data.nurseFTEs) },
+                  { label: "OT hrs per nurse per week", value: `${data.overtime.otHrsPerNurseWeek} hrs` },
+                  { label: "Documentation-driven OT reduction", value: `${data.overtime.reductionPct}%` },
+                  { label: "OT hourly rate", value: `$${data.overtime.otHourlyRate}/hr` },
+                  { label: "Weeks per year", value: "52" },
+                  { label: "= OT savings", value: fmtCurrency(data.overtime.value) },
+                ]}
+              />
             </View>
           ) : null}
 
@@ -632,11 +628,12 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             style={{
               borderTopWidth: 1,
               borderTopColor: colors.separatorHeavy,
-              marginTop: 12,
-              paddingTop: 10,
+              marginTop: 6,
+              paddingTop: 8,
               flexDirection: "row",
               justifyContent: "flex-end",
               alignItems: "center",
+              marginBottom: 14,
             }}
           >
             <Text
@@ -655,7 +652,35 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </Text>
           </View>
 
-          <PageFooter pageNum={3} orgName={orgName} />
+          {/* CAPACITY subsection */}
+          <Text style={styles.subSectionHeader}>Capacity (Leading Indicator)</Text>
+          <Text style={[styles.body, { marginBottom: 8 }]}>
+            Capacity for nursing isn't a billable line — it's a leading indicator. When
+            nurses finish charting on shift, the next hour goes to direct patient care
+            instead of catch-up documentation.
+          </Text>
+
+          <View style={[styles.cardBg, { flexDirection: "row", paddingVertical: 12, marginBottom: 0 }]}>
+            <StatBlock
+              label="Patient days/yr"
+              value={fmtNum(data.patientDaysAnnual)}
+            />
+            <StatBlock
+              label="Hrs returned/yr"
+              value={fmtNum(data.hoursReturnedAnnual)}
+              emphasis
+            />
+            <StatBlock
+              label="Min saved/shift"
+              value={fmtNum(data.minutesSavedPerShift)}
+            />
+            <StatBlock
+              label="Staffed beds"
+              value={fmtNum(data.staffedBeds)}
+            />
+          </View>
+
+          <PageFooter pageNum={2} orgName={orgName} />
         </View>
       </Page>
 
@@ -684,9 +709,6 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </Text>
           </View>
 
-          {/* HARM EVENTS */}
-          <Text style={styles.subSectionHeader}>Harm Events</Text>
-
           {data.hapi.enabled ? (
             <View style={styles.driverCard}>
               <View style={styles.driverHeaderRow}>
@@ -694,8 +716,20 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 <Text style={styles.driverValue}>{fmtCurrency(data.hapi.value)} (potential)</Text>
               </View>
               <Text style={styles.driverBody}>
-                {`At ${data.hapi.rate}/1,000 patient days across ${fmtNum(data.patientDaysAnnual)} patient days, your program sees approximately ${hapiEvents.toFixed(1)} HAPIs per year. The hypothesis we model: when skin assessments are captured at the point of care rather than reconstructed at shift end, the visibility for earlier intervention improves. At a ${data.hapi.preventionPct}% documentation-attributable prevention rate and ${fmtCurrencyExact(data.hapi.costPerEvent)}/event, that translates to ${fmtCurrency(data.hapi.value)} — a potential to validate against your wound-care team's baseline.`}
+                Skin assessments captured at the point of care surface risk earlier than
+                charts reconstructed at shift end. The model isolates the
+                documentation-attributable share of preventable HAPIs.
               </Text>
+              <MathGrid
+                rows={[
+                  { label: "Patient days/yr", value: fmtNum(data.patientDaysAnnual) },
+                  { label: "HAPI rate per 1,000 patient days", value: `${data.hapi.rate}` },
+                  { label: "Estimated HAPIs/yr", value: hapiEvents.toFixed(1) },
+                  { label: "Documentation-attributable prevention", value: `${data.hapi.preventionPct}%` },
+                  { label: "Cost per event", value: fmtCurrencyExact(data.hapi.costPerEvent) },
+                  { label: "= Potential value", value: fmtCurrency(data.hapi.value) },
+                ]}
+              />
               <Text style={styles.driverSource}>Source: Dowding et al., JAMIA 2012.</Text>
             </View>
           ) : null}
@@ -707,19 +741,21 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 <Text style={styles.driverValue}>{fmtCurrency(data.falls.value)} (potential)</Text>
               </View>
               <Text style={styles.driverBody}>
-                {`At ${data.falls.rate}/1,000 patient days, your program sees approximately ${fallsEvents.toFixed(1)} falls per year. The hypothesis we model: when Morse Fall Scale assessments are completed in real time rather than deferred to end of shift, risk escalations become visible to the care team when they matter. At a ${data.falls.preventionPct}% documentation-attributable prevention rate and ${fmtCurrencyExact(data.falls.costPerEvent)}/event, that translates to ${fmtCurrency(data.falls.value)} — a potential to validate against your falls-prevention committee's data.`}
+                Morse Fall Scale assessments completed in real time make risk
+                escalations visible when they matter, not at shift end.
               </Text>
+              <MathGrid
+                rows={[
+                  { label: "Patient days/yr", value: fmtNum(data.patientDaysAnnual) },
+                  { label: "Falls rate per 1,000 patient days", value: `${data.falls.rate}` },
+                  { label: "Estimated falls/yr", value: fallsEvents.toFixed(1) },
+                  { label: "Documentation-attributable prevention", value: `${data.falls.preventionPct}%` },
+                  { label: "Cost per event", value: fmtCurrencyExact(data.falls.costPerEvent) },
+                  { label: "= Potential value", value: fmtCurrency(data.falls.value) },
+                ]}
+              />
               <Text style={styles.driverSource}>Source: AHRQ inpatient fall cost benchmarks.</Text>
             </View>
-          ) : null}
-
-          {/* BUNDLE COMPLIANCE — always show header */}
-          <Text style={styles.subSectionHeader}>Bundle Compliance</Text>
-
-          {!hasBundleCompliance ? (
-            <Text style={{ fontSize: 10, fontStyle: "italic", color: colors.tertiary, marginBottom: 10 }}>
-              No bundle-compliance drivers selected for this assessment.
-            </Text>
           ) : null}
 
           {data.cauti.enabled ? (
@@ -730,12 +766,19 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               </View>
               <Text style={styles.driverBody}>
                 Daily catheter-necessity documentation supports earlier removal and
-                bundle adherence. Real-time capture removes the lag between clinical
-                decision and chart entry.
+                bundle adherence — the timing-driven half of CAUTI prevention.
               </Text>
-              <Text style={styles.driverCalc}>
-                {`${fmtNum(cathDays)} cath-days/yr (${data.cauti.utilizationPct}% of patient days) × ${data.cauti.rate}/1k → ${cautiEvents.toFixed(1)} cases × ${data.cauti.preventionPct}% doc-attributable × ${fmtCurrencyExact(data.cauti.costPerEvent)}/event`}
-              </Text>
+              <MathGrid
+                rows={[
+                  { label: "Catheter utilization (% of patient days)", value: `${data.cauti.utilizationPct}%` },
+                  { label: "Cath-days/yr", value: fmtNum(cathDays) },
+                  { label: "CAUTI rate per 1,000 cath-days", value: `${data.cauti.rate}` },
+                  { label: "Estimated CAUTIs/yr", value: cautiEvents.toFixed(1) },
+                  { label: "Documentation-attributable prevention", value: `${data.cauti.preventionPct}%` },
+                  { label: "Cost per event", value: fmtCurrencyExact(data.cauti.costPerEvent) },
+                  { label: "= Potential value", value: fmtCurrency(data.cauti.value) },
+                ]}
+              />
               <Text style={styles.driverSource}>Source: Meddings et al., JAMA Internal Medicine 2014.</Text>
             </View>
           ) : null}
@@ -747,13 +790,20 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 <Text style={styles.driverValue}>{fmtCurrency(data.clabsi.value)} (potential)</Text>
               </View>
               <Text style={styles.driverBody}>
-                Bundle compliance and timely line documentation reduce central line
-                bloodstream infections. The model assumes a documentation-attributable
-                share of preventable cases.
+                Timely line documentation supports bundle compliance and reduces central
+                line bloodstream infections.
               </Text>
-              <Text style={styles.driverCalc}>
-                {`${fmtNum(lineDays)} line-days/yr (${data.clabsi.utilizationPct}% of patient days) × ${data.clabsi.rate}/1k → ${clabsiEvents.toFixed(1)} cases × ${data.clabsi.preventionPct}% doc-attributable × ${fmtCurrencyExact(data.clabsi.costPerEvent)}/event`}
-              </Text>
+              <MathGrid
+                rows={[
+                  { label: "Line utilization (% of patient days)", value: `${data.clabsi.utilizationPct}%` },
+                  { label: "Line-days/yr", value: fmtNum(lineDays) },
+                  { label: "CLABSI rate per 1,000 line-days", value: `${data.clabsi.rate}` },
+                  { label: "Estimated CLABSIs/yr", value: clabsiEvents.toFixed(1) },
+                  { label: "Documentation-attributable prevention", value: `${data.clabsi.preventionPct}%` },
+                  { label: "Cost per event", value: fmtCurrencyExact(data.clabsi.costPerEvent) },
+                  { label: "= Potential value", value: fmtCurrency(data.clabsi.value) },
+                ]}
+              />
               <Text style={styles.driverSource}>Source: CDC CLABSI cost-of-illness estimates.</Text>
             </View>
           ) : null}
@@ -766,12 +816,19 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               </View>
               <Text style={styles.driverBody}>
                 Time-stamped vitals and antibiotic documentation lift SEP-1 bundle
-                compliance. The model captures the documentation-lag share of
-                non-compliant cases.
+                compliance. The model captures only the documentation-lag share.
               </Text>
-              <Text style={styles.driverCalc}>
-                {`${sepsisCases.toFixed(1)} cases/yr × ${data.sepsis.complianceGapPct}% non-compliant × ${data.sepsis.docLagPct}% doc-lag share × ${fmtCurrencyExact(data.sepsis.excessCostPerCase)}/case × ${data.sepsis.realizationPct}% realization`}
-              </Text>
+              <MathGrid
+                rows={[
+                  { label: "Sepsis cases per 1,000 patient days", value: `${data.sepsis.ratePerThousand}` },
+                  { label: "Estimated cases/yr", value: sepsisCases.toFixed(1) },
+                  { label: "Non-compliant share", value: `${data.sepsis.complianceGapPct}%` },
+                  { label: "Documentation-lag share of non-compliant", value: `${data.sepsis.docLagPct}%` },
+                  { label: "Excess cost per case", value: fmtCurrencyExact(data.sepsis.excessCostPerCase) },
+                  { label: "Realization rate", value: `${data.sepsis.realizationPct}%` },
+                  { label: "= Potential value", value: fmtCurrency(data.sepsis.value) },
+                ]}
+              />
             </View>
           ) : null}
 
@@ -816,7 +873,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </>
           ) : null}
 
-          <PageFooter pageNum={4} orgName={orgName} />
+          <PageFooter pageNum={3} orgName={orgName} />
         </View>
       </Page>
 
@@ -890,7 +947,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </Text>
           </View>
 
-          <PageFooter pageNum={5} orgName={orgName} />
+          <PageFooter pageNum={4} orgName={orgName} />
         </View>
       </Page>
 
@@ -1020,7 +1077,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             ))}
           </View>
 
-          <PageFooter pageNum={6} orgName={orgName} />
+          <PageFooter pageNum={5} orgName={orgName} />
         </View>
       </Page>
 
@@ -1053,6 +1110,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               { label: "CAUTI Prevention", value: data.cauti.enabled ? fmtCurrency(data.cauti.value) : "—" },
               { label: "CLABSI Prevention", value: data.clabsi.enabled ? fmtCurrency(data.clabsi.value) : "—" },
               { label: "Sepsis Bundle Compliance", value: data.sepsis.enabled ? fmtCurrency(data.sepsis.value) : "—" },
+              { label: "HAC Penalty Exposure", value: "Risk display only" },
               { label: "HCAHPS / Patient Experience", value: data.hcahpsEnabled ? "Qualitative" : "—" },
               { label: "Medication Error Reduction", value: data.medErrorEnabled ? "Qualitative" : "—" },
             ]}
@@ -1098,7 +1156,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             }}
           >
             <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 1 }}>
-              Net Annual Value
+              Net Annual Value (Hard)
             </Text>
             <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary }}>
               {fmtCurrency(data.netAnnualValue)}
@@ -1159,6 +1217,9 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               />
             ) : null}
             <MethodologyLine
+              text="HAC Penalty: 1% of Medicare revenue if in bottom quartile. Risk display only — not included in ROI total."
+            />
+            <MethodologyLine
               text="Revenue: Not applicable. Nursing documentation does not generate billing revenue."
             />
           </View>
@@ -1178,7 +1239,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             causal chain. Validate with your organization's data post-implementation.
           </Text>
 
-          <PageFooter pageNum={7} orgName={orgName} />
+          <PageFooter pageNum={6} orgName={orgName} />
         </View>
       </Page>
     </Document>
