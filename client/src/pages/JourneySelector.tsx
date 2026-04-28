@@ -216,45 +216,42 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               </Button>
             </motion.div>
 
-            {/* CARD 4: FORECAST */}
+            {/* CARD 4: FORECAST — temporarily disabled ("coming soon"). The
+                onSelectForecast handler is intentionally NOT wired up to the
+                card or button so the journey is unreachable until it's ready.
+                Visuals are desaturated and the button reads "Coming Soon"
+                in a muted, non-interactive state. Restore the click/keyboard
+                handlers and the brand-red styling to re-enable. */}
             {onSelectForecast && (
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
-                whileHover={{ y: -4 }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => handleCardKey(e, onSelectForecast)}
-                className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
-                onClick={onSelectForecast}
+                aria-disabled="true"
+                className="group relative flex flex-col rounded-xl p-8 min-h-[320px] bg-[#F5F0EB] opacity-60 cursor-not-allowed select-none"
                 data-testid="card-forecast"
               >
                 <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
-                  <LineChart className="w-6 h-6 text-[#EA2C00]" />
+                  <LineChart className="w-6 h-6 text-[#999999]" />
                 </div>
 
-                <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-forecast-tagline">
+                <p className="text-[13px] text-[#999999] font-medium mb-1.5" data-testid="text-forecast-tagline">
                   For existing partners
                 </p>
-                <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5" data-testid="text-forecast-title">
+                <h3 className="text-2xl font-bold text-[#666666] mb-2.5" data-testid="text-forecast-title">
                   Forecast
                 </h3>
-                <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6" data-testid="text-forecast-description">
+                <p className="text-sm text-[#999999] leading-relaxed flex-1 mb-6" data-testid="text-forecast-description">
                   Model the road ahead for existing partners.
                 </p>
 
                 <Button
-                  className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
+                  className="w-full bg-[#E5E5E5] text-[#999999] border-[#E5E5E5] hover:bg-[#E5E5E5] hover:text-[#999999] cursor-not-allowed"
                   size="lg"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectForecast();
-                  }}
+                  disabled
                   data-testid="card-forecast-button"
                 >
-                  Open Forecast
-                  <ChevronRight className="w-4 h-4 ml-1" />
+                  Coming Soon
                 </Button>
               </motion.div>
             )}
