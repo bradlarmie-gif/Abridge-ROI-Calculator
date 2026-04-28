@@ -736,13 +736,19 @@ export default function ExploreModel({
   const threeYearInvestmentTotal = useMemo(() => year1Investment + year2Investment + year3Investment, [year1Investment, year2Investment, year3Investment]);
 
   // Expansion opportunity (use fullScaleProviders from state, editable utilization)
+  // For nursing, the baseline unit is staffed beds (not nurse FTEs, which is what
+  // numberOfProviders stores). Using the wrong baseline made the trajectory point down.
+  const expansionBaselineCount = isNursing ? state.nursingStaffedBeds : state.numberOfProviders;
   const expandedProviders = state.fullScaleProviders;
   const [expandedUtilization, setExpandedUtilization] = useState(80);
-  const expansionMultiplier = (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
+  const expansionMultiplier = expansionBaselineCount > 0
+    ? (expandedProviders / expansionBaselineCount) * (expandedUtilization / state.utilizationPercent)
+    : 0;
   const expandedValue = Math.round(netAnnualValue * expansionMultiplier);
-  
-  // Full scale investment scales with provider count (not utilization - you pay per provider)
-  const providerExpansionRatio = expandedProviders / state.numberOfProviders;
+
+  // Full scale investment scales with the baseline unit (you pay per provider, or
+  // per bed-equivalent for nursing — both stored in fullScaleProviders).
+  const providerExpansionRatio = expansionBaselineCount > 0 ? expandedProviders / expansionBaselineCount : 0;
   const expandedInvestment = annualInvestment * providerExpansionRatio;
   const expandedRoi = expandedInvestment > 0 ? (totalAnnualValue * expansionMultiplier) / expandedInvestment : 0;
 
@@ -897,7 +903,8 @@ export default function ExploreModel({
 
     const totalMonths = currentPace.months;
     const pilotValue = netAnnualValue;
-    const pilotProviders = state.numberOfProviders;
+    // For nursing, the pilot baseline is staffed beds; for everyone else, providers.
+    const pilotProviders = expansionBaselineCount;
     const pilotUtil = state.utilizationPercent;
     const fullScaleProviders = expandedProviders;
     const fullScaleUtil = expandedUtilization;
@@ -937,7 +944,7 @@ export default function ExploreModel({
     });
 
     return points;
-  }, [netAnnualValue, state.numberOfProviders, state.utilizationPercent, expandedProviders, expandedUtilization, currentPace]);
+  }, [netAnnualValue, expansionBaselineCount, state.utilizationPercent, expandedProviders, expandedUtilization, currentPace]);
 
   const formatCurrency = (n: number) => {
     if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
