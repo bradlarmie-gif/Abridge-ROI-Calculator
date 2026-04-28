@@ -54,6 +54,7 @@ export interface ExploreDriver {
   enabledStateKey: string;
   expandedStateKey?: string;
   childOfDriverId?: string;
+  subGroup?: string;
   trackedMeasureIds?: string[];
   calcComponent?: ComponentType<ExploreCalcComponentProps>;
   measureDefaults?: ExploreDriverMeasureDefaults;
@@ -328,6 +329,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'nursingHapiEnabled',
     expandedStateKey: 'nursingHapiExpanded',
+    subGroup: 'Harm Events',
     calcComponent: NursingHapiCalc,
     measureDefaults: {
       deltaLabel: 'HAPIs prevented per year',
@@ -348,6 +350,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'nursingFallsEnabled',
     expandedStateKey: 'nursingFallsExpanded',
+    subGroup: 'Harm Events',
     calcComponent: NursingFallsCalc,
     measureDefaults: {
       deltaLabel: 'Falls prevented per year',
@@ -368,6 +371,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'nursingCautiEnabled',
     expandedStateKey: 'nursingCautiExpanded',
+    subGroup: 'Bundle Compliance',
     calcComponent: NursingCautiCalc,
     measureDefaults: {
       deltaLabel: 'CAUTIs prevented per year',
@@ -388,6 +392,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'nursingClabsiEnabled',
     expandedStateKey: 'nursingClabsiExpanded',
+    subGroup: 'Bundle Compliance',
     calcComponent: NursingClabsiCalc,
     measureDefaults: {
       deltaLabel: 'CLABSIs prevented per year',
@@ -408,6 +413,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'nursingSepsisEnabled',
     expandedStateKey: 'nursingSepsisExpanded',
+    subGroup: 'Bundle Compliance',
     calcComponent: NursingSepsisCalc,
     measureDefaults: {
       deltaLabel: 'Sepsis bundle non-compliance cases avoided',

@@ -1,0 +1,135 @@
+                                                                                                                                                                                          
+  R-IA-7 — Nursing Quality Sub-grouping (Harm Events / Bundle Compliance)       
+                                                                                                                                                                                                               
+  Paste into Replit AI as a single prompt.                     
+                                                                                                                                                                                                               
+  Why this exists                                                               
+                                                                                                                                                                                                               
+  The Nursing Quality page currently renders all 5 quantified drivers (HAPI, Falls, CAUTI, CLABSI, Sepsis) as one flat list under "FINANCIAL DRIVERS." Per the original spec, these should sub-group inside    
+  Financial Drivers as:                                                                                                                                                                                        
+                                                                                                                                                                                                               
+  - Harm Events: HAPI Prevention, Falls Prevention                                                                                                                                                             
+  - Bundle Compliance: CAUTI Prevention, CLABSI Prevention, Sepsis Bundle Compliance
+                                                                                                                                                                                                               
+  This grouping makes the Quality story much easier to scan for a CNO. Today's flat list works but reads as undifferentiated.
+                                                                                                                                                                                                               
+  Task 1 — Add subGroup field to the driver type                                                                                                                                                               
+                                                            
+  In client/src/lib/exploreDrivers.ts, extend the ExploreDriver interface (around line 47):                                                                                                                    
+                                                                                                                                                                                                               
+  export interface ExploreDriver {                                         
+    id: string;                                                                                                                                                                                                
+    label: string;                                                                                                                                                                                             
+    shortDescription: string;                                                                                                                                                                                  
+    quadrant: ExploreQuadrant;                                                                                                                                                                                 
+    settings: ExploreSetting[];                                                 
+    visibility: ExploreDriverVisibility;                                                                                                                                                                       
+    enabledStateKey: string;                                                    
+    expandedStateKey?: string;                                                                                                                                                                                 
+    childOfDriverId?: string;                                                   
+    subGroup?: string;  // NEW — optional sub-grouping label inside a visibility group
+    trackedMeasureIds?: string[];                         
+    calcComponent?: ComponentType<ExploreCalcComponentProps>;                                                                                                                                                  
+    measureDefaults?: ExploreDriverMeasureDefaults;                        
+  }                                                                                                                                                                                                            
+                                                                                
+  Task 2 — Set subGroup on the 5 nursing Quality driver entries                                                                                                                                                
+                                                                                
+  Still in exploreDrivers.ts, locate each of these 5 entries and add a subGroup field:                                                                                                                         
+                                                                                                                                                                                                               
+  ┌───────────────┬─────────────────────┐                                                                                                                                                                      
+  │   Driver id   │   subGroup value    │                                                                                                                                                                      
+  ├───────────────┼─────────────────────┤                                                                                                                                                                      
+  │ nursingHapi   │ 'Harm Events'       │                                                                                                                                                                      
+  ├───────────────┼─────────────────────┤                                                                                                                                                                      
+  │ nursingFalls  │ 'Harm Events'       │                                       
+  ├───────────────┼─────────────────────┤                                                                                                                                                                      
+  │ nursingCauti  │ 'Bundle Compliance' │                  
+  ├───────────────┼─────────────────────┤                                                                                                                                                                      
+  │ nursingClabsi │ 'Bundle Compliance' │                                       
+  ├───────────────┼─────────────────────┤                                                                                                                                                                      
+  │ nursingSepsis │ 'Bundle Compliance' │                                       
+  └───────────────┴─────────────────────┘  
+                                                           
+  Do NOT add subGroup to any other drivers (OP/ED/IP entries, qualitative drivers, etc.) — leave them undefined. The rendering logic in Task 3 will fall back to ungrouped behavior when subGroup is missing.  
+                                                           
+  Task 3 — Render sub-groups in ExploreQuality.tsx                                                                                                                                                             
+                                                                                
+  In client/src/pages/explore/ExploreQuality.tsx, the Financial Drivers section currently renders flat (around lines 295–309):
+                                                           
+  {financialDrivers.length > 0 && (                                                                                                                                                                            
+    <motion.div ...>                                      
+      <div>                                                                                                                                                                                                    
+        <p className="...">Financial Drivers</p>                                
+        <p className="...">Drivers that build the business case with dollar value.</p>                                                                                                                         
+        <div className="..." />                                                 
+      </div>                                                                                                                                                                                                   
+      {financialDrivers.map(renderDriverCard)}                                  
+    </motion.div>                                                                                                                                                                                              
+  )}                                                                            
+                                                                           
+  Replace the {financialDrivers.map(renderDriverCard)} line with a partition-and-render pattern that:                                                                                                          
+                                                            
+  1. Builds a list of unique subGroup values from financialDrivers (preserve insertion order, drop duplicates).                                                                                                
+  2. If there are zero distinct subGroups (i.e., none of the visible financial drivers have a subGroup set), render the flat list as today.                                                                    
+  3. Otherwise, for each distinct subGroup, render a small sub-sub-header followed by the drivers that share that subGroup. Drivers without a subGroup field should render last under no header.               
+                                                                                                                                                                                                               
+  Sketch:                                                                       
+                                                                                                                                                                                                               
+  const subGroupOrder: string[] = [];                                                                                                                                                                          
+  financialDrivers.forEach(d => {                           
+    if (d.subGroup && !subGroupOrder.includes(d.subGroup)) subGroupOrder.push(d.subGroup);                                                                                                                     
+  });                                                                           
+  const ungrouped = financialDrivers.filter(d => !d.subGroup);                                                                                                                                                 
+                                                                                                                                                                                                               
+  return subGroupOrder.length === 0 ? (                                                                                                                                                                        
+    financialDrivers.map(renderDriverCard)                                                                                                                                                                     
+  ) : (                                                                                                                                                                                                        
+    <>                                                                          
+      {subGroupOrder.map(sg => {                            
+        const inGroup = financialDrivers.filter(d => d.subGroup === sg);                                                                                                                                       
+        return (                           
+          <div key={sg} className="space-y-3">                                                                                                                                                                 
+            <p className="text-[10px] font-semibold text-[#666666] uppercase tracking-[1.5px] mt-2 mb-1">                                                                                                      
+              {sg}                                                                                                                                                                                             
+            </p>                                                                                                                                                                                               
+            {inGroup.map(renderDriverCard)}                                     
+          </div>                                            
+        );                                                  
+      })}                                                                                                                                                                                                      
+      {ungrouped.length > 0 && ungrouped.map(renderDriverCard)}            
+    </>                                                                                                                                                                                                        
+  );                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Style the sub-sub-header smaller and lighter than the parent "Financial Drivers" header so it reads as a third-level grouping (sub-section inside a sub-section). Tracking and font-weight in the snippet    
+  above are tuned for that.                                                     
+                                                                                                                                                                                                               
+  Task 4 — Mirror the sub-grouping in the right panel summary
+                                                                                                                                                                                                               
+  Same file, around lines 452–473, the right panel renders financialDriversInPanel flat under a single "FINANCIAL" header. Apply the same partition logic there:
+                                                           
+  - If financialDriversInPanel has any drivers with subGroup, render two (or more) tiny sub-headers inside the FINANCIAL block.
+  - Use even smaller text than the main page sub-headers (e.g., text-[9px], text-white/40, with 1–2px less margin) so the panel doesn't get cramped.                                                           
+  - Drivers without subGroup render last under no sub-header.              
+                                                                                                                                                                                                               
+  Task 5 — Verify                                                                                                                                                                                              
+                                                          
+  1. TypeScript compiles, no console errors.                                                                                                                                                                   
+  2. Walk Nursing → Quality in the Explore flow. Under "FINANCIAL DRIVERS" you should now see:
+    - HARM EVENTS sub-header → HAPI Prevention card → Falls Prevention card                                                                                                                                    
+    - BUNDLE COMPLIANCE sub-header → CAUTI Prevention card → CLABSI Prevention card → Sepsis Bundle Compliance card
+  3. Toggle HAPI + Falls ON. Confirm the right panel "FINANCIAL" block shows both sub-headers (HARM EVENTS with HAPI/Falls listed) — Bundle Compliance sub-header should NOT render if all 3 of                
+  CAUTI/CLABSI/Sepsis are off (only render a sub-header when at least one driver in that group is visible/enabled — actually, render whenever drivers exist; just leave the toggle states reflecting on/off as
+  today).                                                                                                                                                                                                      
+                                                                                
+  3. Actually let's keep this simple: render the sub-header whenever at least one driver in that subGroup is in the visible list, regardless of enabled state. That matches today's behavior for the parent    
+  FINANCIAL header.                                         
+  4. Walk OP/ED/IP through Quality — these should be unchanged (no quantified Quality drivers exist for them, so the FINANCIAL section stays hidden).                                                          
+  5. Walk Nursing through Capacity, Workforce, Revenue — these should be unchanged (no subGroup set on those drivers, so the existing flat-list rendering applies).                                            
+                                                                                                                                                                                                               
+  Constraints                                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  - Do not change any other quadrant pages (ExploreCapacity.tsx, ExploreWorkforce.tsx, ExploreRevenue.tsx).                                                                                                    
+  - Do not add subGroup to drivers outside of nursing Quality.                                                                                                                                                 
+  - Do not touch the qualitative ("OTHER METRICS TO WATCH") rendering — that stays flat for now.
+  - Do not modify EXPLORE_DRIVERS ordering — only add the subGroup field on the 5 entries listed.    

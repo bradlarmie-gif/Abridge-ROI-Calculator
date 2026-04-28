@@ -304,7 +304,32 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
                   <p className="text-xs text-[#AAAAAA] mb-2">Drivers that build the business case with dollar value.</p>
                   <div className="h-px bg-[#D1D5DB] mb-6" />
                 </div>
-                {financialDrivers.map(renderDriverCard)}
+                {(() => {
+                  const subGroupOrder: string[] = [];
+                  financialDrivers.forEach(d => {
+                    if (d.subGroup && !subGroupOrder.includes(d.subGroup)) subGroupOrder.push(d.subGroup);
+                  });
+                  if (subGroupOrder.length === 0) {
+                    return financialDrivers.map(renderDriverCard);
+                  }
+                  const ungrouped = financialDrivers.filter(d => !d.subGroup);
+                  return (
+                    <>
+                      {subGroupOrder.map(sg => {
+                        const inGroup = financialDrivers.filter(d => d.subGroup === sg);
+                        return (
+                          <div key={sg} className="space-y-3">
+                            <p className="text-[10px] font-semibold text-[#666666] uppercase tracking-[1.5px] mt-2 mb-1" data-testid={`subgroup-header-${sg.toLowerCase().replace(/\s+/g, '-')}`}>
+                              {sg}
+                            </p>
+                            {inGroup.map(renderDriverCard)}
+                          </div>
+                        );
+                      })}
+                      {ungrouped.length > 0 && ungrouped.map(renderDriverCard)}
+                    </>
+                  );
+                })()}
               </motion.div>
             )}
 
@@ -452,8 +477,8 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
                     {showFinancialPanelGroup && (
                       <div>
                         <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Financial</p>
-                        <div className="space-y-3">
-                          {financialDriversInPanel.map(d => {
+                        {(() => {
+                          const renderPanelRow = (d: typeof financialDriversInPanel[number]) => {
                             const enabled = isEnabled(d);
                             const value = driverValues[d.id];
                             return (
@@ -467,8 +492,32 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
                                 </span>
                               </div>
                             );
-                          })}
-                        </div>
+                          };
+                          const subGroupOrder: string[] = [];
+                          financialDriversInPanel.forEach(d => {
+                            if (d.subGroup && !subGroupOrder.includes(d.subGroup)) subGroupOrder.push(d.subGroup);
+                          });
+                          if (subGroupOrder.length === 0) {
+                            return <div className="space-y-3">{financialDriversInPanel.map(renderPanelRow)}</div>;
+                          }
+                          const ungrouped = financialDriversInPanel.filter(d => !d.subGroup);
+                          return (
+                            <div className="space-y-3">
+                              {subGroupOrder.map(sg => {
+                                const inGroup = financialDriversInPanel.filter(d => d.subGroup === sg);
+                                return (
+                                  <div key={sg} className="space-y-2">
+                                    <p className="text-[9px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1" data-testid={`right-panel-subgroup-${sg.toLowerCase().replace(/\s+/g, '-')}`}>
+                                      {sg}
+                                    </p>
+                                    {inGroup.map(renderPanelRow)}
+                                  </div>
+                                );
+                              })}
+                              {ungrouped.length > 0 && ungrouped.map(renderPanelRow)}
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
 
