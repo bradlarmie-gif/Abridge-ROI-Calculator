@@ -1075,15 +1075,29 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               } else {
                 pricingPhrase = `${beds} staffed beds`;
               }
+              // The implementation fee is intentionally NOT folded into the
+              // recurring Year 1–3 rows so the multi-year ROI math compares
+              // apples-to-apples (a one-time setup charge would otherwise
+              // distort Year 1 economics and the 3-year cumulative multiple).
+              // Instead it surfaces as its own row at the top of the table
+              // and a "true Year 1 outlay" footnote below — see also
+              // pdf_layout_guidelines.md and replit.md > Implementation Fee
+              // Treatment for the cross-surface convention.
               const implPhrase = data.implementationFee > 0
-                ? ` A one-time implementation fee of ${fmtCurrency(data.implementationFee)} applies separately.`
+                ? ` A one-time implementation fee of ${fmtCurrency(data.implementationFee)} is shown separately on its own row above the recurring stream so the Year 1–3 economics below stay comparable.`
                 : "";
-              return `The investment is ${annual} annually — ${pricingPhrase}.${implPhrase} Years 2–3 assume ${data.year2GrowthPct}% growth as adoption matures and documentation habits stabilize across the unit.`;
+              return `Recurring investment is ${annual} annually — ${pricingPhrase}.${implPhrase} Years 2–3 assume ${data.year2GrowthPct}% growth as adoption matures and documentation habits stabilize across the unit.`;
             })()}
           </Text>
 
-          {/* 3-Year Projection table */}
-          <View style={{ marginBottom: 14 }}>
+          {/* 3-Year Projection table.
+              When an implementation fee is configured, a dedicated "One-Time
+              · Implementation" row renders ABOVE Year 1 with a tinted
+              background and italic "tracked separately" cells in the Net /
+              Cumulative columns. This makes the fee visually unmissable
+              (users were searching the Year 1 row for it before this
+              change) without folding it into recurring multi-year math. */}
+          <View style={{ marginBottom: 10 }}>
             {/* Header row */}
             <View
               style={{
@@ -1095,12 +1109,45 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 borderTopRightRadius: 4,
               }}
             >
-              <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 1 }}>Period</Text>
+              <Text style={{ flex: 1.4, fontSize: 8.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 1 }}>Period</Text>
               <Text style={{ flex: 1.2, fontSize: 8.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, textAlign: "right" }}>Value</Text>
               <Text style={{ flex: 1.2, fontSize: 8.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, textAlign: "right" }}>Investment</Text>
               <Text style={{ flex: 1.2, fontSize: 8.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, textAlign: "right" }}>Net Value</Text>
               <Text style={{ flex: 1.2, fontSize: 8.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, textAlign: "right" }}>Cumulative</Text>
             </View>
+
+            {/* One-Time Implementation row — only renders when impl fee > 0.
+                Visually demarcated with cardBg tint + italic Net/Cumulative
+                cells reading "tracked separately" so it cannot be misread
+                as a recurring annual line. */}
+            {data.implementationFee > 0 && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  paddingVertical: 8,
+                  paddingHorizontal: 10,
+                  backgroundColor: colors.cards,
+                  borderBottomWidth: 1,
+                  borderBottomColor: colors.separator,
+                }}
+                wrap={false}
+              >
+                <Text style={{ flex: 1.4, fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>
+                  One-Time
+                  <Text style={{ fontSize: 9, fontWeight: "normal", color: colors.secondary }}> · Implementation</Text>
+                </Text>
+                <Text style={{ flex: 1.2, fontSize: 10, color: colors.secondary, textAlign: "right" }}>—</Text>
+                <Text style={{ flex: 1.2, fontSize: 10, color: colors.primaryText, textAlign: "right", fontWeight: "bold" }}>
+                  {fmtCurrency(data.implementationFee)}
+                </Text>
+                <Text style={{ flex: 1.2, fontSize: 9, fontStyle: "italic", color: colors.secondary, textAlign: "right" }}>
+                  Setup investment
+                </Text>
+                <Text style={{ flex: 1.2, fontSize: 9, fontStyle: "italic", color: colors.secondary, textAlign: "right" }}>
+                  Tracked separately
+                </Text>
+              </View>
+            )}
 
             {[
               { label: "Year 1", value: y1Recurring, inv: data.annualInvestment, net: data.year1Net, cum: cumY1 },
@@ -1117,7 +1164,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                   borderBottomColor: colors.separator,
                 }}
               >
-                <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{row.label}</Text>
+                <Text style={{ flex: 1.4, fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{row.label}</Text>
                 <Text style={{ flex: 1.2, fontSize: 10, color: colors.primaryText, textAlign: "right" }}>{fmtCurrency(row.value)}</Text>
                 <Text style={{ flex: 1.2, fontSize: 10, color: colors.secondary, textAlign: "right" }}>{fmtCurrency(row.inv)}</Text>
                 <Text style={{ flex: 1.2, fontSize: 10, color: colors.primary, fontWeight: "bold", textAlign: "right" }}>{fmtCurrency(row.net)}</Text>
@@ -1125,6 +1172,34 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               </View>
             ))}
           </View>
+
+          {/* True Year 1 outlay footnote — only renders when an impl fee
+              exists. Directly answers the most common reader question:
+              "why isn't the implementation fee in Year 1?" Pre-computes
+              the sum so the reader doesn't have to do mental math. */}
+          {data.implementationFee > 0 && (
+            <View
+              style={{
+                marginBottom: 14,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                backgroundColor: colors.cards,
+                borderRadius: 4,
+                borderLeftWidth: 2,
+                borderLeftColor: colors.secondary,
+              }}
+              wrap={false}
+            >
+              <Text style={{ fontSize: 9, color: colors.primaryText, lineHeight: 1.55 }}>
+                <Text style={{ fontWeight: "bold" }}>True Year 1 cash outlay:</Text>
+                {` ${fmtCurrency(data.annualInvestment + data.implementationFee)} `}
+                <Text style={{ color: colors.secondary }}>
+                  ({fmtCurrency(data.annualInvestment)} recurring + {fmtCurrency(data.implementationFee)} one-time implementation).
+                  The Year 1 row above shows recurring economics only so the 3-year cumulative multiple isn't distorted by a one-time setup charge.
+                </Text>
+              </Text>
+            </View>
+          )}
 
           <View style={[styles.redBorderCallout, { marginBottom: 14 }]}>
             <Text style={{ fontSize: 10.5, color: colors.primaryText, lineHeight: 1.5 }}>
