@@ -511,7 +511,8 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           <Text style={styles.sectionHeadline}>Where Nursing Value Actually Lives</Text>
           <Text style={styles.body}>
             Ambient documentation creates value across four distinct buckets. For nursing,
-            three of them carry real dollars — and one of them, honestly, doesn't apply.
+            three of them carry real dollars in this model — and the fourth, revenue, is
+            tracked separately in the physician and APP models where billing originates.
             We separate them because the strategic implications of each are different.
           </Text>
 
@@ -524,13 +525,14 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 marginBottom: 6,
               }}
             >
-              Nurses don't bill. So where does the value live?
+              Where the nursing value sits
             </Text>
             <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              Nursing documentation creates value through quality (preventable harm and
-              bundle compliance), workforce (retention, agency, and overtime), and
-              capacity (more time at the bedside). Revenue — the fourth bucket — is where
-              nursing intentionally doesn't play.
+              Nursing documentation creates measurable value across three buckets:
+              quality (preventable harm and bundle compliance), workforce (retention,
+              agency, and overtime), and capacity (more time at the bedside). The
+              fourth bucket — revenue — is tracked in the physician and APP models,
+              where billing actually originates.
             </Text>
           </View>
 
@@ -556,9 +558,9 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             />
             <QuadrantThesisCard
               label="REVENUE"
-              bigNumber="Not Applicable"
+              bigNumber="Tracked Separately"
               bigNumberLight
-              framing="Nursing documentation doesn't generate billing revenue. The value lives in labor economics and care quality — which is where we've modeled it."
+              framing="Revenue impact from documentation is captured in the physician and APP models, where billing originates. Nursing's measurable value lives in quality outcomes and labor economics — which is what this model focuses on."
             />
           </View>
 
@@ -946,52 +948,33 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         </View>
       </Page>
 
-      {/* PAGE 6 — REVENUE (Not Applicable) */}
+      {/* PAGE 5 — REVENUE (Tracked Separately) */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>REVENUE</Text>
           <Text style={styles.sectionHeadline}>
-            Nursing documentation doesn't generate billing revenue.
+            Why revenue lives elsewhere in this model.
           </Text>
           <Text style={styles.subHeadline}>
-            That's by design — and it's worth saying directly.
+            The nursing ROI story is a quality and workforce story.
           </Text>
 
           <Text style={styles.body}>
-            Every other care setting in this model has a revenue optimization story —
-            wRVU lift, DRG accuracy, denial prevention. Nursing doesn't. Nurses don't
-            bill. Their documentation drives care quality and labor economics, not the
-            revenue cycle.
+            In the physician and APP care settings, ambient documentation creates a
+            measurable revenue story — wRVU capture, DRG accuracy, denial prevention.
+            For nursing, the picture is different: nursing documentation primarily
+            informs care decisions and shapes labor outcomes rather than driving the
+            revenue cycle, so the financial impact shows up in quality and workforce
+            instead of billing.
           </Text>
 
           <Text style={styles.body}>
-            We've modeled the value where it actually lives: in the QUALITY bucket
-            (preventable harm events, sepsis bundle compliance) and the WORKFORCE bucket
-            (retention, agency cost avoidance, overtime reduction). Presenting a nursing
-            revenue story that doesn't exist would undermine the credibility of the
-            model that does.
+            This model focuses on the value drivers where nursing has the strongest,
+            most defensible footprint: the QUALITY bucket (preventable harm events,
+            sepsis bundle compliance) and the WORKFORCE bucket (retention, agency cost
+            avoidance, overtime reduction). Keeping the revenue narrative with the
+            care settings that actually drive billing makes both stories more credible.
           </Text>
-
-          <View style={styles.redBorderCallout}>
-            <Text
-              style={{
-                fontSize: 9,
-                color: colors.primary,
-                textTransform: "uppercase",
-                letterSpacing: 1.5,
-                fontWeight: "bold",
-                marginBottom: 6,
-              }}
-            >
-              What This Means For Your Presentation
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              When a CFO asks where the nursing revenue story is, the answer is: there
-              isn't one — and that's the point. The ROI case for nursing ambient AI is a
-              labor economics and care quality story. It stands on its own. You don't
-              need to manufacture a billing narrative to make it compelling.
-            </Text>
-          </View>
 
           <View style={styles.redBorderCallout}>
             <Text
@@ -1010,9 +993,9 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               Complete nursing documentation does create downstream organizational value:
               HCAHPS performance affects Value-Based Purchasing scores. HAC scores affect
               Medicare payment rates. Sepsis SEP-1 compliance affects public reporting
-              and payer relationships. These are real — they're just not direct billing
-              revenue, and we've modeled them as quality outcomes rather than revenue
-              line items, which is the more defensible framing.
+              and payer relationships. These flow through the model as quality outcomes
+              rather than revenue line items — which keeps the framing both honest and
+              defensible.
             </Text>
           </View>
 
@@ -1205,9 +1188,9 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
 
           <SummaryGroup
             label="REVENUE"
-            total="Not Applicable"
+            total="Tracked Separately"
             rows={[
-              { label: "Nursing documentation does not generate billing revenue.", value: "" },
+              { label: "Revenue impact is captured in the physician and APP models, where billing originates.", value: "" },
             ]}
           />
 
@@ -1289,7 +1272,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               text="HAC Penalty: 1% of Medicare revenue if in bottom quartile. Risk display only — not included in ROI total."
             />
             <MethodologyLine
-              text="Revenue: Not applicable. Nursing documentation does not generate billing revenue."
+              text="Revenue: Tracked separately in the physician and APP models, where billing originates."
             />
           </View>
 

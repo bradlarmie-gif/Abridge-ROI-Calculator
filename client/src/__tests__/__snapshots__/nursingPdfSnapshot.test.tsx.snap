@@ -282,7 +282,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Ambient documentation creates value across four distinct buckets. For nursing, three of them carry real dollars — and one of them, honestly, doesn't apply. We separate them because the strategic implications of each are different.",
+                        "value": "Ambient documentation creates value across four distinct buckets. For nursing, three of them carry real dollars in this model — and the fourth, revenue, is tracked separately in the physician and APP models where billing originates. We separate them because the strategic implications of each are different.",
                       },
                     ],
                     "kind": "primitive",
@@ -302,7 +302,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "Nurses don't bill. So where does the value live?",
+                            "value": "Where the nursing value sits",
                           },
                         ],
                         "kind": "primitive",
@@ -320,7 +320,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "Nursing documentation creates value through quality (preventable harm and bundle compliance), workforce (retention, agency, and overtime), and capacity (more time at the bedside). Revenue — the fourth bucket — is where nursing intentionally doesn't play.",
+                            "value": "Nursing documentation creates measurable value across three buckets: quality (preventable harm and bundle compliance), workforce (retention, agency, and overtime), and capacity (more time at the bedside). The fourth bucket — revenue — is tracked in the physician and APP models, where billing actually originates.",
                           },
                         ],
                         "kind": "primitive",
@@ -624,7 +624,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Not Applicable",
+                                    "value": "Tracked Separately",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -643,7 +643,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Nursing documentation doesn't generate billing revenue. The value lives in labor economics and care quality — which is where we've modeled it.",
+                                    "value": "Revenue impact from documentation is captured in the physician and APP models, where billing originates. Nursing's measurable value lives in quality outcomes and labor economics — which is what this model focuses on.",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -850,7 +850,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "WORKFORCE & CAPACITY",
+                        "value": "WORKFORCE",
                       },
                     ],
                     "kind": "primitive",
@@ -889,7 +889,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Three labor lines — turnover, agency premium, and overtime — and one leading-indicator capacity line, all driven by the same root cause: how long it takes to finish charting at the end of a shift.",
+                        "value": "Three labor lines — turnover, agency premium, and overtime — all driven by the same root cause: how long it takes to finish charting at the end of a shift.",
                       },
                     ],
                     "kind": "primitive",
@@ -899,27 +899,6 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "fontSize": 10.5,
                         "lineHeight": 1.5,
                         "marginBottom": 12,
-                      },
-                    },
-                    "tag": "TEXT",
-                  },
-                  {
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "Workforce",
-                      },
-                    ],
-                    "kind": "primitive",
-                    "props": {
-                      "style": {
-                        "color": "#666666",
-                        "fontSize": 9,
-                        "fontWeight": "bold",
-                        "letterSpacing": 1.5,
-                        "marginBottom": 8,
-                        "marginTop": 8,
-                        "textTransform": "uppercase",
                       },
                     },
                     "tag": "TEXT",
@@ -2087,19 +2066,123 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                   {
                     "children": [
                       {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "abridge",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#EA2C00",
+                                "fontSize": 10,
+                                "fontWeight": "bold",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Mercy Health System",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " · Nursing Value Assessment",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#666666",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [],
+                            "kind": "primitive",
+                            "props": {
+                              "render": "[render→ Page 0 of 7]",
+                              "style": {
+                                "color": "#999999",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "fixed": true,
+                          "style": {
+                            "alignItems": "center",
+                            "borderTopColor": "#E0E0E0",
+                            "borderTopWidth": 1,
+                            "bottom": 24,
+                            "flexDirection": "row",
+                            "justifyContent": "space-between",
+                            "left": 54,
+                            "paddingTop": 8,
+                            "position": "absolute",
+                            "right": 54,
+                          },
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "PageFooter",
+                  },
+                ],
+                "kind": "primitive",
+                "props": {
+                  "style": {
+                    "flex": 1,
+                    "flexDirection": "column",
+                  },
+                },
+                "tag": "VIEW",
+              },
+            ],
+            "kind": "primitive",
+            "props": {
+              "size": "LETTER",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "color": "#1A1A1A",
+                "fontFamily": "Manrope",
+                "fontSize": 10.5,
+                "padding": 54,
+                "paddingBottom": 50,
+              },
+            },
+            "tag": "PAGE",
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
                         "kind": "text",
-                        "value": "Capacity (Leading Indicator)",
+                        "value": "CAPACITY",
                       },
                     ],
                     "kind": "primitive",
                     "props": {
                       "style": {
-                        "color": "#666666",
+                        "color": "#EA2C00",
                         "fontSize": 9,
                         "fontWeight": "bold",
-                        "letterSpacing": 1.5,
+                        "letterSpacing": 2,
                         "marginBottom": 8,
-                        "marginTop": 8,
                         "textTransform": "uppercase",
                       },
                     },
@@ -2109,22 +2192,36 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Capacity for nursing isn't a billable line — it's a leading indicator. When nurses finish charting on shift, the next hour goes to direct patient care instead of catch-up documentation.",
+                        "value": "A leading indicator, not a billable line.",
                       },
                     ],
                     "kind": "primitive",
                     "props": {
-                      "style": [
-                        {
-                          "color": "#666666",
-                          "fontSize": 10.5,
-                          "lineHeight": 1.5,
-                          "marginBottom": 12,
-                        },
-                        {
-                          "marginBottom": 8,
-                        },
-                      ],
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 22,
+                        "fontWeight": "bold",
+                        "lineHeight": 1.2,
+                        "marginBottom": 8,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "When nurses finish charting on shift, the next hour goes to direct patient care instead of catch-up documentation. We track the ratio of bedside-to- charting time as the leading indicator that the model is working — the workforce and quality outcomes follow from it.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
                     },
                     "tag": "TEXT",
                   },
@@ -2361,12 +2458,153 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         },
                         {
                           "flexDirection": "row",
-                          "marginBottom": 0,
-                          "paddingVertical": 12,
+                          "marginBottom": 14,
+                          "paddingVertical": 18,
                         },
                       ],
                     },
                     "tag": "VIEW",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "How To Read It",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 9,
+                        "fontWeight": "bold",
+                        "letterSpacing": 1.5,
+                        "marginBottom": 8,
+                        "marginTop": 8,
+                        "textTransform": "uppercase",
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "Hours returned/yr",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#1A1A1A",
+                            "fontWeight": "bold",
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " is the headline — it's what reclaimed end-of-shift documentation time looks like when aggregated across the unit. ",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "Minutes saved/shift",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#1A1A1A",
+                            "fontWeight": "bold",
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " ",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "is the per-nurse experience that drives adoption. ",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "Patient days/yr",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#1A1A1A",
+                            "fontWeight": "bold",
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " ",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "and ",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "staffed beds",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#1A1A1A",
+                            "fontWeight": "bold",
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " anchor the math to your actual operating footprint.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "We deliberately don't price capacity. Translating reclaimed minutes into dollars requires assumptions about what the next hour gets used for — assumptions that vary by unit, shift, and patient mix. Tracking the leading indicator is more defensible than monetizing it.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
                   },
                   {
                     "children": [
@@ -5022,7 +5260,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Nursing documentation doesn't generate billing revenue.",
+                        "value": "Why revenue lives elsewhere in this model.",
                       },
                     ],
                     "kind": "primitive",
@@ -5041,7 +5279,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "That's by design — and it's worth saying directly.",
+                        "value": "The nursing ROI story is a quality and workforce story.",
                       },
                     ],
                     "kind": "primitive",
@@ -5058,7 +5296,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Every other care setting in this model has a revenue optimization story — wRVU lift, DRG accuracy, denial prevention. Nursing doesn't. Nurses don't bill. Their documentation drives care quality and labor economics, not the revenue cycle.",
+                        "value": "In the physician and APP care settings, ambient documentation creates a measurable revenue story — wRVU capture, DRG accuracy, denial prevention. For nursing, the picture is different: nursing documentation primarily informs care decisions and shapes labor outcomes rather than driving the revenue cycle, so the financial impact shows up in quality and workforce instead of billing.",
                       },
                     ],
                     "kind": "primitive",
@@ -5076,7 +5314,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "We've modeled the value where it actually lives: in the QUALITY bucket (preventable harm events, sepsis bundle compliance) and the WORKFORCE bucket (retention, agency cost avoidance, overtime reduction). Presenting a nursing revenue story that doesn't exist would undermine the credibility of the model that does.",
+                        "value": "This model focuses on the value drivers where nursing has the strongest, most defensible footprint: the QUALITY bucket (preventable harm events, sepsis bundle compliance) and the WORKFORCE bucket (retention, agency cost avoidance, overtime reduction). Keeping the revenue narrative with the care settings that actually drive billing makes both stories more credible.",
                       },
                     ],
                     "kind": "primitive",
@@ -5089,59 +5327,6 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       },
                     },
                     "tag": "TEXT",
-                  },
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "What This Means For Your Presentation",
-                          },
-                        ],
-                        "kind": "primitive",
-                        "props": {
-                          "style": {
-                            "color": "#EA2C00",
-                            "fontSize": 9,
-                            "fontWeight": "bold",
-                            "letterSpacing": 1.5,
-                            "marginBottom": 6,
-                            "textTransform": "uppercase",
-                          },
-                        },
-                        "tag": "TEXT",
-                      },
-                      {
-                        "children": [
-                          {
-                            "kind": "text",
-                            "value": "When a CFO asks where the nursing revenue story is, the answer is: there isn't one — and that's the point. The ROI case for nursing ambient AI is a labor economics and care quality story. It stands on its own. You don't need to manufacture a billing narrative to make it compelling.",
-                          },
-                        ],
-                        "kind": "primitive",
-                        "props": {
-                          "style": {
-                            "color": "#666666",
-                            "fontSize": 10,
-                            "lineHeight": 1.5,
-                          },
-                        },
-                        "tag": "TEXT",
-                      },
-                    ],
-                    "kind": "primitive",
-                    "props": {
-                      "style": {
-                        "backgroundColor": "#F5F0EB",
-                        "borderLeftColor": "#EA2C00",
-                        "borderLeftWidth": 3,
-                        "borderRadius": 4,
-                        "marginBottom": 10,
-                        "padding": 14,
-                      },
-                    },
-                    "tag": "VIEW",
                   },
                   {
                     "children": [
@@ -5169,7 +5354,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "Complete nursing documentation does create downstream organizational value: HCAHPS performance affects Value-Based Purchasing scores. HAC scores affect Medicare payment rates. Sepsis SEP-1 compliance affects public reporting and payer relationships. These are real — they're just not direct billing revenue, and we've modeled them as quality outcomes rather than revenue line items, which is the more defensible framing.",
+                            "value": "Complete nursing documentation does create downstream organizational value: HCAHPS performance affects Value-Based Purchasing scores. HAC scores affect Medicare payment rates. Sepsis SEP-1 compliance affects public reporting and payer relationships. These flow through the model as quality outcomes rather than revenue line items — which keeps the framing both honest and defensible.",
                           },
                         ],
                         "kind": "primitive",
@@ -7165,7 +7350,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Not Applicable",
+                                    "value": "Tracked Separately",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -7199,7 +7384,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Nursing documentation does not generate billing revenue.",
+                                    "value": "Revenue impact is captured in the physician and APP models, where billing originates.",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -7595,7 +7780,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "• Revenue: Not applicable. Nursing documentation does not generate billing revenue.",
+                                "value": "• Revenue: Tracked separately in the physician and APP models, where billing originates.",
                               },
                             ],
                             "kind": "primitive",

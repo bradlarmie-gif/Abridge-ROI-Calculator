@@ -300,17 +300,20 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     expect(buildTree()).toMatchSnapshot();
   });
 
-  it("contains exactly 7 top-level pages (1 cover + 6 content)", () => {
+  it("contains exactly 8 top-level pages (1 cover + 7 content)", () => {
     // Sanity check independent of the snapshot — guards against a Page being
     // accidentally added or removed even if the rest of the structure churns
     // enough that a snapshot diff is hard to read.
     //
-    // Note: the in-source page comments label sections "PAGE 1 — COVER",
-    // "PAGE 2 — THE THESIS", "PAGE 2 — WORKFORCE & CAPACITY (combined)",
-    // "PAGE 5 — QUALITY", "PAGE 6", "PAGE 7", "PAGE 8". Those labels are
-    // historical — pages 3 and 4 were intentionally merged into the combined
-    // "Workforce & Capacity" page. The actual emitted-Page count is 7
-    // (1 cover from PDFCoverPage + 6 from NursingValueAssessmentPDF).
+    // Page lineup (1 cover + 7 content):
+    //   1. Cover                       (PDFCoverPage)
+    //   2. The Thesis / 2x2 grid
+    //   3. Workforce
+    //   4. Capacity
+    //   5. Quality (wraps)
+    //   6. Revenue (tracked separately)
+    //   7. Investment & Net Value
+    //   8. Summary (wraps)
     const tree = buildTree();
 
     let pageCount = 0;
@@ -320,7 +323,7 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     };
     tree.forEach(visit);
 
-    expect(pageCount).toBe(7);
+    expect(pageCount).toBe(8);
   });
 
   it("includes the headline copy + driver totals as printed text", () => {
