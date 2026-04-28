@@ -837,7 +837,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                 "fontFamily": "Manrope",
                 "fontSize": 10.5,
                 "padding": 54,
-                "paddingBottom": 50,
+                "paddingBottom": 72,
               },
             },
             "tag": "PAGE",
@@ -2159,7 +2159,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                 "fontFamily": "Manrope",
                 "fontSize": 10.5,
                 "padding": 54,
-                "paddingBottom": 50,
+                "paddingBottom": 72,
               },
             },
             "tag": "PAGE",
@@ -2702,7 +2702,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                 "fontFamily": "Manrope",
                 "fontSize": 10.5,
                 "padding": 54,
-                "paddingBottom": 50,
+                "paddingBottom": 72,
               },
             },
             "tag": "PAGE",
@@ -5226,7 +5226,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                 "fontFamily": "Manrope",
                 "fontSize": 10.5,
                 "padding": 54,
-                "paddingBottom": 50,
+                "paddingBottom": 72,
               },
               "wrap": true,
             },
@@ -5477,7 +5477,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                 "fontFamily": "Manrope",
                 "fontSize": 10.5,
                 "padding": 54,
-                "paddingBottom": 50,
+                "paddingBottom": 72,
               },
             },
             "tag": "PAGE",
@@ -6446,7 +6446,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                 "fontFamily": "Manrope",
                 "fontSize": 10.5,
                 "padding": 54,
-                "paddingBottom": 50,
+                "paddingBottom": 72,
               },
             },
             "tag": "PAGE",
@@ -7514,6 +7514,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     ],
                     "kind": "primitive",
                     "props": {
+                      "minPresenceAhead": 60,
                       "style": {
                         "color": "#666666",
                         "fontSize": 9,
@@ -7533,20 +7534,29 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• HAPI: 2.5/1,000 patient days. 6.5% documentation-attributable prevention rate. $25,000/event. Source: Dowding et al., JAMIA 2012.",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "• HAPI: 2.5/1,000 patient days. 6.5% documentation-attributable prevention rate. $25,000/event. Source: Dowding et al., JAMIA 2012.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8.5,
+                                    "lineHeight": 1.5,
+                                    "marginBottom": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
                         "kind": "component",
@@ -7557,20 +7567,29 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• Falls: 3.5/1,000 patient days. 10% documentation-attributable prevention rate. $6,500/event. Source: AHRQ inpatient fall cost benchmarks.",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "• Falls: 3.5/1,000 patient days. 10% documentation-attributable prevention rate. $6,500/event. Source: AHRQ inpatient fall cost benchmarks.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8.5,
+                                    "lineHeight": 1.5,
+                                    "marginBottom": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
                         "kind": "component",
@@ -7581,20 +7600,29 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• CAUTI: 1.8/1,000 cath-days at 30% catheter utilization. 12% documentation-attributable prevention rate. $13,000/event. Source: Meddings et al., JAMA Internal Medicine 2014.",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "• CAUTI: 1.8/1,000 cath-days at 30% catheter utilization. 12% documentation-attributable prevention rate. $13,000/event. Source: Meddings et al., JAMA Internal Medicine 2014.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8.5,
+                                    "lineHeight": 1.5,
+                                    "marginBottom": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
                         "kind": "component",
@@ -7605,20 +7633,29 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• CLABSI: 0.8/1,000 line-days at 20% central-line utilization. 8% documentation-attributable prevention rate. $20,000/event. Source: CDC CLABSI cost-of-illness estimates.",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "• CLABSI: 0.8/1,000 line-days at 20% central-line utilization. 8% documentation-attributable prevention rate. $20,000/event. Source: CDC CLABSI cost-of-illness estimates.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8.5,
+                                    "lineHeight": 1.5,
+                                    "marginBottom": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
                         "kind": "component",
@@ -7629,20 +7666,29 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• Sepsis SEP-1: 2/1,000 sepsis cases. 25% non-compliant × 30% doc-lag share. $3,500 excess cost per case. 60% realization.",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "• Sepsis SEP-1: 2/1,000 sepsis cases. 25% non-compliant × 30% doc-lag share. $3,500 excess cost per case. 60% realization.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8.5,
+                                    "lineHeight": 1.5,
+                                    "marginBottom": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
                         "kind": "component",
@@ -7653,20 +7699,29 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• HCAHPS: Tracked qualitatively. Patient-experience scores affect Value-Based Purchasing but the causal chain to documentation is indirect; no monetary impact is modeled.",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "• HCAHPS: Tracked qualitatively. Patient-experience scores affect Value-Based Purchasing but the causal chain to documentation is indirect; no monetary impact is modeled.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8.5,
+                                    "lineHeight": 1.5,
+                                    "marginBottom": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
                         "kind": "component",
@@ -7677,20 +7732,29 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• Medication Errors: Tracked qualitatively. Real-time MAR documentation supports earlier interception; outcome is unit-specific and not monetized in this assessment.",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "• Medication Errors: Tracked qualitatively. Real-time MAR documentation supports earlier interception; outcome is unit-specific and not monetized in this assessment.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8.5,
+                                    "lineHeight": 1.5,
+                                    "marginBottom": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
                         "kind": "component",
@@ -7701,20 +7765,29 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• Retention: 22% annual turnover, 40% burnout-related. 15% impact scenario. $56,000 replacement cost. Source: NSI Nursing Solutions 2024.",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "• Retention: 22% annual turnover, 40% burnout-related. 15% impact scenario. $56,000 replacement cost. Source: NSI Nursing Solutions 2024.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8.5,
+                                    "lineHeight": 1.5,
+                                    "marginBottom": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
                         "kind": "component",
@@ -7725,20 +7798,29 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• Agency: 8 weeks coverage per vacancy at $4,200/week premium.",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "• Agency: 8 weeks coverage per vacancy at $4,200/week premium.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8.5,
+                                    "lineHeight": 1.5,
+                                    "marginBottom": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
                         "kind": "component",
@@ -7749,20 +7831,29 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• OT Reduction: 4 OT hrs/nurse/week at 25% reduction. $78/hour.",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "• OT Reduction: 4 OT hrs/nurse/week at 25% reduction. $78/hour.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8.5,
+                                    "lineHeight": 1.5,
+                                    "marginBottom": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
                         "kind": "component",
@@ -7773,72 +7864,99 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "• HAC Penalty: 1% of Medicare revenue if in bottom quartile. Risk display only — not included in ROI total.",
+                                "children": [
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "• HAC Penalty: 1% of Medicare revenue if in bottom quartile. Risk display only — not included in ROI total.",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#666666",
+                                        "fontSize": 8.5,
+                                        "lineHeight": 1.5,
+                                        "marginBottom": 4,
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "wrap": false,
+                                },
+                                "tag": "VIEW",
                               },
                             ],
-                            "kind": "primitive",
-                            "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
-                                "lineHeight": 1.5,
-                                "marginBottom": 4,
-                              },
-                            },
-                            "tag": "TEXT",
+                            "kind": "component",
+                            "name": "MethodologyLine",
                           },
-                        ],
-                        "kind": "component",
-                        "name": "MethodologyLine",
-                      },
-                      {
-                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "• Revenue: Tracked separately in the physician and APP models, where billing originates.",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#666666",
+                                        "fontSize": 8.5,
+                                        "lineHeight": 1.5,
+                                        "marginBottom": 4,
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "wrap": false,
+                                },
+                                "tag": "VIEW",
+                              },
+                            ],
+                            "kind": "component",
+                            "name": "MethodologyLine",
+                          },
                           {
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "• Revenue: Tracked separately in the physician and APP models, where billing originates.",
+                                "value": "This assessment is for planning purposes. Hard value projections are based on user-provided staffing inputs. Potential value uses published clinical rates with documentation-attributable prevention rates that reflect the indirect causal chain. Validate with your organization's data post-implementation.",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#666666",
+                                "color": "#999999",
                                 "fontSize": 8.5,
+                                "fontStyle": "italic",
                                 "lineHeight": 1.5,
-                                "marginBottom": 4,
+                                "marginTop": 14,
                               },
                             },
                             "tag": "TEXT",
                           },
                         ],
-                        "kind": "component",
-                        "name": "MethodologyLine",
+                        "kind": "primitive",
+                        "props": {
+                          "wrap": false,
+                        },
+                        "tag": "VIEW",
                       },
                     ],
                     "kind": "primitive",
                     "props": {},
                     "tag": "VIEW",
-                  },
-                  {
-                    "children": [
-                      {
-                        "kind": "text",
-                        "value": "This assessment is for planning purposes. Hard value projections are based on user-provided staffing inputs. Potential value uses published clinical rates with documentation-attributable prevention rates that reflect the indirect causal chain. Validate with your organization's data post-implementation.",
-                      },
-                    ],
-                    "kind": "primitive",
-                    "props": {
-                      "style": {
-                        "color": "#999999",
-                        "fontSize": 8.5,
-                        "fontStyle": "italic",
-                        "lineHeight": 1.5,
-                        "marginTop": 14,
-                      },
-                    },
-                    "tag": "TEXT",
                   },
                   {
                     "children": [
@@ -7936,7 +8054,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                 "fontFamily": "Manrope",
                 "fontSize": 10.5,
                 "padding": 54,
-                "paddingBottom": 50,
+                "paddingBottom": 72,
               },
               "wrap": true,
             },

@@ -35,6 +35,8 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 -   **Ambient Assessment PDF (Domain Maturity)**: A 9-page PDF for the Assess path capturing L1-L4 maturity across 4 domains.
 
 ### System Design Choices
+-   **PDF Layout Guardrails**: All `@react-pdf/renderer` components must follow the conventions in `pdf_layout_guidelines.md` — fixed page-chrome contract (paddingBottom ≥ 72 with the standard footer), `wrap={false}` on atomic units (bullets, cards, closing tails), `minPresenceAhead` on section headers, and a manual visual review on every PDF copy/layout change. Snapshot tests catch tree/text drift but do not catch footer collisions or orphan content; visual review is required.
+-   **Implementation Fee Treatment**: The implementation fee is "called out separately" — it is **not** folded into Year 1 recurring investment, ROI multiples, or 3-year cumulative denominators. It is surfaced as its own labeled line / prose disclosure on every surface (Nursing PDF, Explore on-screen 3-Year card, SummaryCommandCenter, ModelBuilder, LiveReceipt, InvestmentPage). Lifetime TCO calculations (e.g., `ObjectiveSelectionScreen.lifetimeWithImpl`) intentionally include it; the variable name signals the inclusion.
 -   **Calculation Engines**: Two primary engines for driver-level and narrative flow pillar calculations.
 -   **Data Management**: Utilizes confidence haircuts, consolidated benchmarks, and supports variable contract terms (1-6 years).
 -   **Adoption Model**: Employs an S-curve adoption model for projections.

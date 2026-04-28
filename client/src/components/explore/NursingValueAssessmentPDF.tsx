@@ -44,7 +44,10 @@ const colors = {
 const styles = StyleSheet.create({
   page: {
     padding: 54,
-    paddingBottom: 50,
+    // paddingBottom must reserve room for the fixed footer:
+    //   footer.bottom (24) + footer height (~border 1 + paddingTop 8 + text ~12) ≈ 45pt
+    // Add ~24pt of visual breathing room above the footer to prevent content collisions.
+    paddingBottom: 72,
     fontFamily: "Manrope",
     fontSize: 10.5,
     color: colors.primaryText,
@@ -1224,7 +1227,10 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           </View>
 
           {/* METHODOLOGY — only enabled drivers */}
-          <Text style={styles.subSectionHeader}>Methodology</Text>
+          {/* minPresenceAhead keeps the section header from orphaning at the
+              bottom of a page; if there isn't 60pt of room below it, react-pdf
+              will break before the header instead of after. */}
+          <Text style={styles.subSectionHeader} minPresenceAhead={60}>Methodology</Text>
           <View>
             {data.hapi.enabled ? (
               <MethodologyLine
@@ -1276,28 +1282,32 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 text={`OT Reduction: ${data.overtime.otHrsPerNurseWeek} OT hrs/nurse/week at ${data.overtime.reductionPct}% reduction. $${data.overtime.otHourlyRate}/hour.`}
               />
             ) : null}
-            <MethodologyLine
-              text="HAC Penalty: 1% of Medicare revenue if in bottom quartile. Risk display only — not included in ROI total."
-            />
-            <MethodologyLine
-              text="Revenue: Tracked separately in the physician and APP models, where billing originates."
-            />
+            {/* Closing tail: keep the last two universal methodology lines and
+                the planning-purposes disclaimer together so they break to a
+                new page as one block. Prevents single-bullet orphan pages. */}
+            <View wrap={false}>
+              <MethodologyLine
+                text="HAC Penalty: 1% of Medicare revenue if in bottom quartile. Risk display only — not included in ROI total."
+              />
+              <MethodologyLine
+                text="Revenue: Tracked separately in the physician and APP models, where billing originates."
+              />
+              <Text
+                style={{
+                  fontSize: 8.5,
+                  fontStyle: "italic",
+                  color: colors.tertiary,
+                  lineHeight: 1.5,
+                  marginTop: 14,
+                }}
+              >
+                This assessment is for planning purposes. Hard value projections are based on
+                user-provided staffing inputs. Potential value uses published clinical rates
+                with documentation-attributable prevention rates that reflect the indirect
+                causal chain. Validate with your organization's data post-implementation.
+              </Text>
+            </View>
           </View>
-
-          <Text
-            style={{
-              fontSize: 8.5,
-              fontStyle: "italic",
-              color: colors.tertiary,
-              lineHeight: 1.5,
-              marginTop: 14,
-            }}
-          >
-            This assessment is for planning purposes. Hard value projections are based on
-            user-provided staffing inputs. Potential value uses published clinical rates
-            with documentation-attributable prevention rates that reflect the indirect
-            causal chain. Validate with your organization's data post-implementation.
-          </Text>
 
           <PageFooter orgName={orgName} />
         </View>
@@ -1351,17 +1361,22 @@ const SummaryGroup = ({
   </View>
 );
 
+// Wrap in a wrap={false} View so an individual bullet never splits across pages.
+// This keeps multi-line bullets atomic and prevents the half-line collisions
+// we saw when react-pdf broke a Text node across the page boundary.
 const MethodologyLine = ({ text }: { text: string }) => (
-  <Text
-    style={{
-      fontSize: 8.5,
-      color: colors.secondary,
-      lineHeight: 1.5,
-      marginBottom: 4,
-    }}
-  >
-    {`• ${text}`}
-  </Text>
+  <View wrap={false}>
+    <Text
+      style={{
+        fontSize: 8.5,
+        color: colors.secondary,
+        lineHeight: 1.5,
+        marginBottom: 4,
+      }}
+    >
+      {`• ${text}`}
+    </Text>
+  </View>
 );
 
 // ───────────────────────── Public API ─────────────────────────
