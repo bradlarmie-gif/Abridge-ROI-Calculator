@@ -475,6 +475,17 @@ export default function InvestmentPage({
                           <p className="text-4xl font-bold text-[#F07B5F]" data-testid="net-gain">
                             +${netGainAnnual.toLocaleString()}
                           </p>
+                          {includeImplementation && implementationFee > 0 && (
+                            <div className="mt-3 pt-3 border-t border-[#F07B5F]/15">
+                              <p className="text-[11px] font-medium text-[#F07B5F]/70 uppercase tracking-wider mb-0.5">Year 1 Net</p>
+                              <p className="text-lg font-semibold text-[#F07B5F]/90" data-testid="year1-net">
+                                {netGainAnnual - implementationFee >= 0 ? '+' : '-'}${Math.abs(netGainAnnual - implementationFee).toLocaleString()}
+                              </p>
+                              <p className="text-[10px] text-[#F07B5F]/50 mt-1">
+                                After ${implementationFee.toLocaleString()} one-time implementation fee
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
 
