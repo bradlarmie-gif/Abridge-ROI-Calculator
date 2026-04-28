@@ -1,0 +1,95 @@
+ R-PDF-2 — Two-section grouping + qualitative parity (P1)                                                                                                                                                     
+                                                                                                                                                                                                               
+  Paste after R-PDF-1 ships and verifies.                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Why this exists                                          
+                                                                                                                                                                                                               
+  The UI quadrant pages already group drivers into "FINANCIAL DRIVERS" and "OTHER METRICS TO WATCH" — but the PDF mushes them into one inline list. A reader scanning the PDF can't tell which drivers are     
+  funded business case vs. tracked metrics. This prompt brings the UI's grouping into the PDF and gives qualitative drivers visual parity.                                                                     
+                                                                                                                                                                                                               
+  Task 1 — Partition drivers inside QuadrantSection                                                                                                                                                            
+                                                            
+  In client/src/components/explore/ExplorePDFExport.tsx, modify QuadrantSection (around lines 390–442). Inside the non-empty branch (currently maps q.drivers then q.otherFinancialBenefits), partition drivers
+   by visibility and render two labeled sub-sections:                           
+                                                                                                                                                                                                               
+  const quantified = q.drivers.filter(d => d.visibility === 'quantified');                                                                                                                                     
+  const qualitative = q.drivers.filter(d => d.visibility === 'qualitative');
+                                                                                                                                                                                                               
+  Render order inside the section body:                                                                                                                                                                        
+                                                           
+  1. If quantified.length > 0 OR q.otherFinancialBenefits.length > 0 — render a SubSectionHeader with text "FINANCIAL DRIVERS", followed by all quantified DriverRows, followed by all BenefitRows.            
+  2. If qualitative.length > 0 — render a SubSectionHeader with text "OTHER METRICS TO WATCH", followed by all qualitative DriverRows.
+  3. If neither group has anything, fall through to the existing empty placeholder (unchanged from R-PDF-1).                                                                                                   
+                                                                                
+  Add a new SubSectionHeader component above QuadrantSection:                                                                                                                                                  
+                                                                           
+  const SubSectionHeader = ({ children }: { children: string }) => (                                                                                                                                           
+    <Text                                                                       
+      style={{                                                                                                                                                                                                 
+        fontSize: 8.5,                                                          
+        fontWeight: "bold",                                                                                                                                                                                    
+        color: colors.secondary,                                                                                                                                                                               
+        textTransform: "uppercase",                                                                                                                                                                            
+        letterSpacing: 1.2,                                                                                                                                                                                    
+        marginTop: 8,                                                                                                                                                                                          
+        marginBottom: 4,                                                        
+      }}                                                                                                                                                                                                       
+    >                                                      
+      {children}                                                                                                                                                                                               
+    </Text>                                                                     
+  );                                                                                                                                                                                                           
+                                                 
+  If both sub-sections render, add a small spacer (marginTop: 6) before the second SubSectionHeader.                                                                                                           
+                                                                                
+  Task 2 — Replace italic-gray "Qualitative" text with a badge                                                                                                                                                 
+                                                           
+  In DriverRow (around lines 285–339), replace the qualitative branch (currently lines 326–334, italic gray "Qualitative" text) with a small pill-style badge:                                                 
+                                                                                
+  <View                                                                    
+    style={{                                              
+      paddingHorizontal: 8,                                                                                                                                                                                    
+      paddingVertical: 3,                        
+      borderRadius: 10,                                                                                                                                                                                        
+      backgroundColor: colors.cards,                                            
+      borderWidth: 0.5,                                                                                                                                                                                        
+      borderColor: colors.separatorHeavy,                                       
+    }}                                                                                                                                                                                                         
+  >                                                                             
+    <Text                                                                  
+      style={{                                            
+        fontSize: 8,                                                                                                                                                                                           
+        fontWeight: "bold",                      
+        color: colors.secondary,                                                                                                                                                                               
+        textTransform: "uppercase",                                             
+        letterSpacing: 0.8,                                                                                                                                                                                    
+      }}                                                    
+    >                                                                                                                                                                                                          
+      Tracked                                                                   
+    </Text>                                               
+  </View>                                                                                                                                                                                                      
+                                                 
+  Wrap it in the same View style={{ width: 110, alignItems: "flex-end" }} container as the quantified $ amount so column alignment is preserved.                                                               
+                                                                                
+  The label "Tracked" reads cleaner than "Qualitative" for a non-technical hospital exec; it reinforces "we're watching this post-deployment."                                                                 
+                                                           
+  Task 3 — Verify                                                                                                                                                                                              
+                                                                                
+  1. TypeScript compiles, no console errors.                
+  2. Walk OP O2 scenario (realistic mix): patientAccess + 1 Capacity qualitative; providerWellbeing + physicianLocumAgency (Workforce, quantified) + 1 Workforce qualitative; wrvu + 1 Revenue qualitative; 2
+  Quality qualitative drivers; +1 Other Financial Benefit ($25K one-time, Revenue).                                                                                                                            
+    - Each populated quadrant should show TWO clearly labeled sub-sections.
+    - Quality should show only "OTHER METRICS TO WATCH" (no Financial sub-header since quantified.length === 0 and otherFinancialBenefits.length === 0).                                                       
+    - Other Financial Benefit ($25K one-time) should appear under "FINANCIAL DRIVERS" in Revenue.
+  3. Walk Nursing N2 scenario: nursingRetention + nursingOvertime (Workforce quantified), bedsideTime (Capacity qualitative), HAPI + Falls (Quality quantified), HCAHPS (Quality qualitative), $50K annual     
+  benefit on Workforce.                                                         
+    - Capacity should show ONLY "OTHER METRICS TO WATCH" with bedsideTime under it (no Financial sub-header).                                                                                                  
+    - Workforce should show both sub-headers — quantified drivers + benefit under Financial, none under Other Metrics.
+    - Quality should show both sub-headers.                                                                                                                                                                    
+  4. Verify the qualitative badge ("Tracked") renders as a pill/chip with border and looks visually equal-citizen to the $ amount column.
+  5. Empty quadrants (R-PDF-1 fixed) still show "Not modeled in this assessment." with no sub-headers.                                                                                                         
+                                                                                                                                                                                                               
+  Constraints                                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  - Do not change buildQuadrantData, ExplorePDFQuadrantData, or any types.                                                                                                                                     
+  - Do not alter the BenefitRow component itself — just where it's rendered.                                                                                                                                   
+  - Preserve the indentation logic for child drivers (isChild). 

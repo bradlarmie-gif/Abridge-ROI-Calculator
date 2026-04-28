@@ -1,0 +1,61 @@
+ R-PDF-1 — Story-breaker fixes (P0)                         
+                                                                                                                                                                                                               
+  Paste into Replit AI as a single prompt.                                                                                                                                                                     
+                                                                           
+  Why this exists                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  The PDF is mathematically correct but reads as broken in two specific cases that hurt the "forwarded around the hospital" use case:
+                                                                                                                                                                                                               
+  1. When 2–3 quadrants are empty (user focused their assessment), the PDF shows "No drivers selected for this quadrant." which reads as "user forgot something."
+  2. For OP/ED/IP, the Quality quadrant is structurally qualitative-only (no $ drivers ever exist there). When users enable qualitative drivers, the section still shows "$0 annual" headline — which reads as 
+  "this section has no value" when it actually means "tracked post-deployment as a leading indicator."
+                                                                                                                                                                                                               
+  This prompt fixes both with copy and conditional headline logic. No structural changes.
+                                                                                                                                                                                                               
+  Task 1 — Soften the empty-quadrant placeholder                                                                                                                                                               
+                                                           
+  In client/src/components/explore/ExplorePDFExport.tsx, find QuadrantSection (around line 390). Replace the empty-state text:                                                                                 
+                                                                                
+  // OLD (around line 429):                                                                                                                                                                                    
+  No drivers selected for this quadrant.                                        
+                                                                                                                                                                                                               
+  // NEW:                                                                       
+  Not modeled in this assessment.                                                                                                                                                                              
+                                                                                
+  Keep the same styling (italic, tertiary gray, paddingVertical: 6). Only the copy changes.                                                                                                                    
+                                                                                
+  Task 2 — Reframe Quality-qualitative-only as "Tracked post-deployment"                                                                                                                                       
+                                                                                                                                                                                                               
+  Still in QuadrantSection (around lines 402–417), the headline currently always renders {fmtCurrency(q.annualTotal)} annual. Change it so that when:
+  - q.quadrant === 'Quality' AND                                                                                                                                                                               
+  - q.annualTotal === 0 AND                                                     
+  - there is at least one driver enabled (i.e., q.drivers.length > 0)                                                                                                                                          
+                                                                                                                                                                                                               
+  …the headline renders "Tracked post-deployment" in primary text color (same size/weight as the $ headline, no "annual" suffix), instead of "$0 annual."                                                      
+                                                                                                                                                                                                               
+  Also add a one-line subtitle directly under the headline in this same conditional case:
+                                                                                                                                                                                                               
+  ▎ "Quality outcomes are measured after go-live to validate documentation lift translates to clinical impact."
+                                                                                                                                                                                                               
+  Style the subtitle: fontSize 9, color colors.tertiary, lineHeight 1.4, marginTop 2, marginBottom 4.
+                                                                                                                                                                                                               
+  In all other cases (any quadrant with annualTotal > 0, or any quadrant that's fully empty and falls through to the placeholder), behavior is unchanged.                                                      
+                                                                                                                                                                                                               
+  Task 3 — Verify                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  1. TypeScript compiles, no console errors.                                                                                                                                                                   
+  2. Walk OP through Step 9 and download PDF with: patientAccess ON, all Quality qualitative drivers ON, all other quadrants OFF.
+    - Capacity should show its $ headline normally.                                                                                                                                                            
+    - Workforce + Revenue should show "Not modeled in this assessment." (the new copy).
+    - Quality should show "Tracked post-deployment" + the subtitle, then the qualitative drivers listed below.                                                                                                 
+  3. Walk Nursing through Step 9 with HAPI + Falls ON (quantified Quality), Capacity/Workforce/Revenue all OFF.
+    - Quality should still show its $ amount headline (NOT the new "Tracked post-deployment" — because annualTotal > 0 there).                                                                                 
+    - Capacity/Workforce/Revenue should show "Not modeled in this assessment."  
+  4. Walk OP with everything OFF in all four quadrants — every quadrant should show "Not modeled in this assessment." and no Quality reframing kicks in (because q.drivers.length === 0).                      
+  5. Math is unchanged — totals, 3-year projection, Y1/recurring all identical. 
+                                                                                                                                                                                                               
+  Constraints                                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  - Do not change buildQuadrantData in ExploreModel.tsx — this is purely a renderer-side change.                                                                                                               
+  - Do not add new fields to ExplorePDFQuadrantData.                                                                                                                                                           
+  - Keep all existing styling intact except where this prompt explicitly says to change it

@@ -1,0 +1,119 @@
+R-PDF-3 — Math transparency + setting-specific narrative (P2 + P3)                                                                                                                                           
+                                                                                                                                                                                                               
+  Paste after R-PDF-2 ships and verifies.                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Why this exists                                          
+                                                                                                                                                                                                               
+  A CFO reviewing the PDF can't audit how a $185K Patient Access number was derived. And the Value-by-Quadrant section uses identical copy across OP/ED/IP/Nursing — leaving the setting-specific story for the
+   reader to infer. This prompt adds (a) one-line calc detail under each quantified driver, and (b) a per-setting intro paragraph above the quadrant list.                                                     
+                                                                                                                                                                                                               
+  Task 1 — Add calcSummary field to PDF driver type                             
+                                                            
+  In client/src/components/explore/ExplorePDFExport.tsx, extend the ExplorePDFQuadrantDriver interface (around line 126):                                                                                      
+                                                           
+  export interface ExplorePDFQuadrantDriver {                                                                                                                                                                  
+    id: string;                                                                                                                                                                                                
+    label: string;                                                         
+    shortDescription: string;                                                                                                                                                                                  
+    visibility: "quantified" | "qualitative";                                                                                                                                                                  
+    value: number;                               
+    isChild?: boolean;                                                                                                                                                                                         
+    calcSummary?: string;  // NEW — only set for quantified drivers             
+  }                                                                                                                                                                                                            
+                                                                                
+  Task 2 — Generate calc strings in ExploreModel.tsx                                                                                                                                                           
+                                                                                
+  In client/src/pages/explore/ExploreModel.tsx, the allDriverValues map already contains the math (lines ~55–193). Add a parallel allDriverCalcSummaries: Record<string, string> that captures the inputs in a
+  single line per quantified driver. For each quantified driver, write the summary as plain inputs × multipliers — match the format below.                                                                     
+                                                                           
+  Examples (write the equivalent for ALL quantified drivers in the codebase — patientAccess, wrvu, providerWellbeing, physicianLocumAgency, nursingRetention, nursingAgency, nursingOvertime, nursingHapi,     
+  nursingFalls, nursingCauti, nursingClabsi, nursingSepsis, edLwbsRecovery, edAdmissionCapture, ipHpCompletion, etc. — check the registry):                                                                    
+                                                                           
+  - patientAccess: ${effectiveAccessProviders} providers × ${visitsPerWeek} visits/wk × 48 wks × $${revenuePerVisit}/visit                                                                                     
+  - wrvu: ${eligibleEncounters} encounters × ${liftPercent}% lift × $${perWrvu} per wRVU × ${realization}% realization
+  - providerWellbeing: ${numProviders} × ${turnoverPct}% turnover × ${burnoutPct}% burnout × ${impactPct}% impact × $${replacementCost}                                                                        
+  - nursingRetention: ${numNurses} × ${turnoverPct}% turnover × 40% burnout × ${impactPct}% impact × $${replacementCost}
+                                                                                                                                                                                                               
+  Use real values pulled from state.timeDriverInputs etc. — do NOT hardcode. Format whole numbers without decimals; format $ with $ prefix and thousands separators; format percentages with % suffix.         
+                                                                           
+  For each driver missing a calcComponent or that's qualitative, leave it out of allDriverCalcSummaries.                                                                                                       
+                                                                                                                                                                                                               
+  Task 3 — Wire calc summary into buildQuadrantData                        
+                                                                                                                                                                                                               
+  In buildQuadrantData (around line 760), extend the driver .map to include calcSummary:                                                                                                                       
+                                                                                                                                                                                                               
+  .map(d => ({                                                                                                                                                                                                 
+    id: d.id,                                                                                                                                                                                                  
+    label: d.label,                                                                                                                                                                                            
+    shortDescription: d.shortDescription,                                       
+    visibility: d.visibility,                                                                                                                                                                                  
+    value: allDriverValues[d.id] || 0,                                          
+    isChild: Boolean(d.childOfDriverId),                                                                                                                                                                       
+    calcSummary: allDriverCalcSummaries[d.id],  // NEW                          
+  }))                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  Task 4 — Render calc summary in DriverRow                                
+                                                                                                                                                                                                               
+  In ExplorePDFExport.tsx DriverRow (lines 285–339), inside the left-side View style={{ flex: 1, paddingRight: 12 }} block (after the shortDescription Text), conditionally render the calc summary:
+                                                           
+  {driver.visibility === "quantified" && driver.calcSummary ? (                                                                                                                                                
+    <Text                                                 
+      style={{                                                                                                                                                                                                 
+        fontSize: 8,                                                            
+        color: colors.tertiary,                                                                                                                                                                                
+        fontStyle: "italic",                                                    
+        marginTop: 3,                                                                                                                                                                                          
+        lineHeight: 1.3,                                                        
+      }}                                                                                                                                                                                                       
+    >                                                                           
+      {driver.calcSummary}                                                                                                                                                                                     
+    </Text>                                                 
+  ) : null}                                                                                                                                                                                                    
+                                                                                
+  Task 5 — Setting-specific intro paragraph on the Value-by-Quadrant page
+                                                                                                                                                                                                               
+  In ExplorePDFExport.tsx, find the Value-by-Quadrant page intro (search for the quadrants.map(...) call inside the Page component — likely around line 740). Above the .map call but below the page title, add
+   a setting-specific intro:                                                                                                                                                                                   
+                                                                                
+  const settingIntro: Record<typeof data.careSetting, string> = {
+    outpatient:                                             
+      "Ambient documentation reduces per-visit charting burden — fueling throughput (Capacity), retention (Workforce), and complete coding (Revenue), with Quality outcomes tracked post-deployment.",
+    ed:                                                                                                                                                                                                        
+      "Faster, cleaner documentation in the ED supports throughput recovery (Capacity), reduces burnout-driven turnover (Workforce), and protects clean-claim rates (Revenue). Quality outcomes are tracked 
+  post-deployment.",                                                                                                                                                                                           
+    inpatient:                                                                  
+      "Inpatient documentation lift centers on the H&P and progress notes — driving rounding capacity, retention, and CMI integrity. Quality outcomes are tracked post-deployment.",                           
+    nursing:                                                                    
+      "For nursing, ambient documentation lift translates into more bedside time (Capacity), stronger retention (Workforce), and measurable improvements in care quality (HAPI, Falls, CAUTI/CLABSI, Sepsis).",
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  <Text                                                                                                                                                                                                        
+    style={{                                                                                                                                                                                                   
+      fontSize: 10.5,                                                           
+      color: colors.secondary,                                                                                                                                                                                 
+      lineHeight: 1.5,                                                                                                                                                                                         
+      marginBottom: 14,                                    
+    }}                                                                                                                                                                                                         
+  >                                                                             
+    {settingIntro[data.careSetting]}                                                                                                                                                                           
+  </Text>                                                                       
+                                                           
+  Task 6 — Verify                                                          
+                                                                                                                                                                                                               
+  1. TypeScript compiles, no console errors.                
+  2. Walk OP O2 scenario and confirm:                                                                                                                                                                          
+    - Each quantified driver row now shows an italic calc-summary line under the description (e.g., "10 providers × 4.2 visits/wk × 48 wks × $200/visit").
+    - Qualitative drivers show NO calc summary (no extra line).
+    - Page 3 starts with the OP-specific intro paragraph.                                                                                                                                                      
+  3. Walk Nursing N2 scenario and confirm:                                 
+    - HAPI / Falls / Retention / Overtime each show calc summaries.                                                                                                                                            
+    - HCAHPS / bedsideTime show no calc summary (qualitative).                  
+    - Page 3 starts with the nursing-specific intro paragraph.             
+  4. Walk ED and IP with realistic mixes — confirm setting-specific intros render correctly per setting.
+  5. Math, totals, 3-year projection unchanged.                                                                                                                                                                
+                                                                                                                                                                                                               
+  Constraints                                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  - Calc summaries are descriptive strings, not re-derivations — they reflect the same inputs the math already uses.                                                                                           
+  - Do not add the calc-summary line to qualitative drivers, child drivers' parents, or BenefitRow.                                                                                                            
+  - The intro paragraph is per-setting; do not make it dynamic on driver state.     

@@ -389,6 +389,8 @@ const BenefitRow = ({ benefit }: { benefit: ExplorePDFOtherBenefit }) => (
 
 const QuadrantSection = ({ q }: { q: ExplorePDFQuadrantData }) => {
   const isEmpty = q.drivers.length === 0 && q.otherFinancialBenefits.length === 0;
+  const isQualityPostDeployment =
+    q.quadrant === "Quality" && q.annualTotal === 0 && q.drivers.length > 0;
   return (
     <View style={{ marginBottom: 18 }} wrap>
       <View style={{ marginBottom: 8 }}>
@@ -407,7 +409,13 @@ const QuadrantSection = ({ q }: { q: ExplorePDFQuadrantData }) => {
               color: colors.primaryText,
             }}
           >
-            {fmtCurrency(q.annualTotal)} <Text style={{ fontSize: 10, color: colors.secondary, fontWeight: 400 }}>annual</Text>
+            {isQualityPostDeployment ? (
+              "Tracked post-deployment"
+            ) : (
+              <>
+                {fmtCurrency(q.annualTotal)} <Text style={{ fontSize: 10, color: colors.secondary, fontWeight: 400 }}>annual</Text>
+              </>
+            )}
           </Text>
           {q.oneTimeTotal > 0 ? (
             <Text style={{ fontSize: 9.5, color: colors.tertiary }}>
@@ -415,6 +423,19 @@ const QuadrantSection = ({ q }: { q: ExplorePDFQuadrantData }) => {
             </Text>
           ) : null}
         </View>
+        {isQualityPostDeployment ? (
+          <Text
+            style={{
+              fontSize: 9,
+              color: colors.tertiary,
+              lineHeight: 1.4,
+              marginTop: 2,
+              marginBottom: 4,
+            }}
+          >
+            Quality outcomes are measured after go-live to validate documentation lift translates to clinical impact.
+          </Text>
+        ) : null}
       </View>
 
       {isEmpty ? (
@@ -426,7 +447,7 @@ const QuadrantSection = ({ q }: { q: ExplorePDFQuadrantData }) => {
             paddingVertical: 6,
           }}
         >
-          No drivers selected for this quadrant.
+          Not modeled in this assessment.
         </Text>
       ) : (
         <View>
