@@ -138,7 +138,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   footer: {
-    marginTop: "auto",
+    position: "absolute",
+    bottom: 24,
+    left: 54,
+    right: 54,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -225,25 +228,21 @@ const fmtCurrency = (n: number): string => {
 const fmtCurrencyExact = (n: number): string => `$${Math.round(n).toLocaleString()}`;
 const fmtNum = (n: number): string => Math.round(n).toLocaleString();
 
-const TOTAL_PAGES = 6; // Cover unnumbered, numbered pages 1..6
-
 // ───────────────────────── Reusable components ─────────────────────────
 
-const PageFooter = ({
-  pageNum,
-  orgName,
-}: {
-  pageNum: number;
-  orgName: string;
-}) => (
+const PageFooter = ({ orgName }: { orgName: string }) => (
   <View style={styles.footer} fixed>
     <Text style={styles.footerLeft}>abridge</Text>
     <Text style={styles.footerCenter}>
       {orgName} · Nursing Value Assessment
     </Text>
-    <Text style={styles.footerRight}>
-      Page {pageNum} of {TOTAL_PAGES}
-    </Text>
+    {/* Subtract 1 to skip the unnumbered cover page (currently always page 1). */}
+    <Text
+      style={styles.footerRight}
+      render={({ pageNumber, totalPages }) =>
+        `Page ${pageNumber - 1} of ${totalPages - 1}`
+      }
+    />
   </View>
 );
 
@@ -536,7 +535,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </Text>
           </View>
 
-          <PageFooter pageNum={1} orgName={orgName} />
+          <PageFooter orgName={orgName} />
         </View>
       </Page>
 
@@ -680,7 +679,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             />
           </View>
 
-          <PageFooter pageNum={2} orgName={orgName} />
+          <PageFooter orgName={orgName} />
         </View>
       </Page>
 
@@ -873,7 +872,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </>
           ) : null}
 
-          <PageFooter pageNum={3} orgName={orgName} />
+          <PageFooter orgName={orgName} />
         </View>
       </Page>
 
@@ -947,7 +946,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </Text>
           </View>
 
-          <PageFooter pageNum={4} orgName={orgName} />
+          <PageFooter orgName={orgName} />
         </View>
       </Page>
 
@@ -1077,7 +1076,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             ))}
           </View>
 
-          <PageFooter pageNum={5} orgName={orgName} />
+          <PageFooter orgName={orgName} />
         </View>
       </Page>
 
@@ -1239,7 +1238,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             causal chain. Validate with your organization's data post-implementation.
           </Text>
 
-          <PageFooter pageNum={6} orgName={orgName} />
+          <PageFooter orgName={orgName} />
         </View>
       </Page>
     </Document>
