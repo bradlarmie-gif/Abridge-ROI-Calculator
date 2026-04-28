@@ -1,0 +1,200 @@
+Context: Each Measure quadrant page (MeasureCapacity, MeasureWorkforce, MeasureRevenue, MeasureQuality) currently renders all tracked drivers in a single flat list. The Explore equivalent already separates
+   them into FINANCIAL DRIVERS and OTHER METRICS TO WATCH sections (R-IA-1). Apply the same grouping to Measure for visual consistency between the two paths — same vocabulary, same through-line. The driver  
+  classification comes from EXPLORE_DRIVERS.visibility ('quantified' | 'qualitative'), which is the shared registry.                                                                                           
+                                                                                                                                                                                                               
+  Pre-req: Sprint 3 fully shipped (it is, per audit).                                                                                                                                                          
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 1 — Refactor MeasureCapacity.tsx driver list into two sections                                                                                                                                          
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/pages/measure/MeasureCapacity.tsx                                                                                                                                                           
+                                                                                
+  Find the current driver list rendering (the block where it iterates tracked drivers and renders MeasureDriverCard for each — typically around lines 100-130).                                                
+                                                                                                                                                                                                               
+  The page currently has a single section. REPLACE it with two grouped sub-sections:
+                                                                                                                                                                                                               
+  INSIDE the component body, AFTER the existing `trackedHere` derivation (the one that maps driver IDs to { driver, entry } pairs), ADD:
+                                                                                                                                                                                                               
+    const financialDrivers = trackedHere.filter(({ driver }) => driver.visibility === 'quantified');
+    const watchMetrics = trackedHere.filter(({ driver }) => driver.visibility === 'qualitative');                                                                                                              
+                                                                                                                                                                                                               
+  REPLACE the existing single-section render (the `<motion.div>` block holding all drivers in a flat list) with this two-section pattern:                                                                      
+                                                                                                                                                                                                               
+    {/* FINANCIAL DRIVERS — only render if at least one tracked */}             
+    {financialDrivers.length > 0 && (                                                                                                                                                                          
+      <motion.div                                                               
+        className="bg-[#F5F0EB] rounded-lg p-6 mb-4"                                                                                                                                                           
+        initial={{ opacity: 0, y: 20 }}                                         
+        animate={{ opacity: 1, y: 0 }}                                                                                                                                                                         
+        transition={{ delay: 0.15 }}                                                                                                                                                                           
+      >                                                                                                                                                                                                        
+        <div className="mb-4">                                                                                                                                                                                 
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Financial Drivers</p>
+          <p className="text-xs text-[#AAAAAA]">Drivers that build the business case with dollar value.</p>                                                                                                    
+        </div>                                                                                                                                                                                                 
+        <div className="space-y-3">                                                                                                                                                                            
+          {financialDrivers.map(({ driver, entry }) => (                                                                                                                                                       
+            <MeasureDriverCard                                                                                                                                                                                 
+              key={driver.id}                                                   
+              driver={driver}                                                                                                                                                                                  
+              entry={entry}                                                     
+              onUpdate={(updates) => updateEntry(driver.id, updates)}                                                                                                                                          
+              onRemove={() => removeEntry(driver.id)}                                                                                                                                                          
+            />                                                                                                                                                                                                 
+          ))}                                                                                                                                                                                                  
+        </div>                                                                  
+      </motion.div>                                                                                                                                                                                            
+    )}                                                                          
+                                                                                                                                                                                                               
+    {/* OTHER METRICS TO WATCH — only render if at least one tracked */}
+    {watchMetrics.length > 0 && (                                                                                                                                                                              
+      <motion.div                                                                                                                                                                                              
+        className="bg-[#F5F0EB] rounded-lg p-6 mb-4"      
+        initial={{ opacity: 0, y: 20 }}                                                                                                                                                                        
+        animate={{ opacity: 1, y: 0 }}                                          
+        transition={{ delay: 0.18 }}                       
+      >                                                                         
+        <div className="mb-4">                                                                                                                                                                                 
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Other Metrics to Watch</p>
+          <p className="text-xs text-[#AAAAAA]">Outcomes tracked post-deployment that don't carry direct dollar value.</p>                                                                                     
+        </div>                                                                  
+        <div className="space-y-3">                        
+          {watchMetrics.map(({ driver, entry }) => (                                                                                                                                                           
+            <MeasureDriverCard                            
+              key={driver.id}                                                                                                                                                                                  
+              driver={driver}                                                   
+              entry={entry}                                                                                                                                                                                    
+              onUpdate={(updates) => updateEntry(driver.id, updates)}
+              onRemove={() => removeEntry(driver.id)}                                                                                                                                                          
+            />                                                                  
+          ))}                                                                                                                                                                                                  
+        </div>                                                                  
+      </motion.div>                                                                                                                                                                                            
+    )}                                                      
+                                                                                                                                                                                                               
+    {/* Empty state — only when BOTH groups empty */}                           
+    {financialDrivers.length === 0 && watchMetrics.length === 0 && (
+      <motion.div                                                                                                                                                                                              
+        className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-4"
+        initial={{ opacity: 0, y: 20 }}                                                                                                                                                                        
+        animate={{ opacity: 1, y: 0 }}                                          
+        transition={{ delay: 0.15 }}                        
+      >                                                                         
+        <p className="text-sm text-[#666666]">No drivers tracked yet for Capacity.</p>                                                                                                                         
+        <p className="text-xs text-[#888888] mt-1">Add the ones that matter to this customer below.</p>
+      </motion.div>                                                                                                                                                                                            
+    )}                                                                          
+                                                                                                                                                                                                               
+  The "+ Add a driver to track" picker (AddMeasureDriverPicker) and the right-panel quadrant total stay UNCHANGED in this task — only the driver list rendering changes.                                       
+                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Apply the same refactor to MeasureWorkforce.tsx                      
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/measure/MeasureWorkforce.tsx                                                                                                                                                          
+                                                                                                                                                                                                               
+  Apply identical pattern. Empty state copy: "No drivers tracked yet for Workforce."                                                                                                                           
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Apply the same refactor to MeasureRevenue.tsx                                                                                                                                                       
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/pages/measure/MeasureRevenue.tsx                                                                                                                                                            
+                                                                                                                                                                                                               
+  Apply identical pattern. Empty state copy: "No drivers tracked yet for Revenue."
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                   
+  TASK 4 — Apply the same refactor to MeasureQuality.tsx                                                                                                                                                       
+  ═══════════════════════════════════════════════════════════                   
+  File: client/src/pages/measure/MeasureQuality.tsx                                                                                                                                                            
+                                                                                
+  Apply identical pattern. Empty state copy: "No drivers tracked yet for Quality."                                                                                                                             
+                                                                                
+  NOTE: For nursing on the Quality page, both sections will likely render — Financial Drivers (HAPI/Falls/CAUTI/CLABSI/Sepsis) AND Other Metrics to Watch (Med Error / HCAHPS Nurse Communication). For        
+  OP/ED/IP on Quality, only Other Metrics will render since their financial Quality story is empty. The pattern handles both correctly via the `length > 0` gates.
+                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 5 — Mirror the grouping in the right-panel summary   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/measure/MeasureCapacity.tsx, MeasureWorkforce.tsx, MeasureRevenue.tsx, MeasureQuality.tsx                                                                                             
+                                                                                
+  In each page's right-panel sticky summary, find the current "Drivers Tracked" list (the one that maps over trackedHere and renders each driver's row).                                                       
+                                                                                
+  REPLACE that single list with two grouped sub-lists, each with a small uppercase sub-header. Apply this pattern:                                                                                             
+                                                                                
+    {(() => {                                                                   
+      const financialPanel = trackedHere.filter(({ driver }) => driver.visibility === 'quantified');                                                                                                           
+      const watchPanel = trackedHere.filter(({ driver }) => driver.visibility === 'qualitative');
+                                                                                                                                                                                                               
+      if (financialPanel.length === 0 && watchPanel.length === 0) {                                                                                                                                            
+        return <p className="text-xs text-white/40 italic">None yet</p>;                                                                                                                                       
+      }                                                                                                                                                                                                        
+                                                                                
+      return (                                                                                                                                                                                                 
+        <div className="space-y-4">                                             
+          {financialPanel.length > 0 && (                                                                                                                                                                      
+            <div>                                
+              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Financial</p>                                                                                               
+              <ul className="space-y-1.5">                                      
+                {financialPanel.map(({ driver }) => (                                                                                                                                                          
+                  <li key={driver.id} className="text-sm text-white/70 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00] flex-shrink-0" />                                                                                                                   
+                    <span className="truncate">{driver.label}</span>            
+                  </li>                                                         
+                ))}                                                             
+              </ul>                                                                                                                                                                                            
+            </div>                                                                                                                                                                                             
+          )}                                                                                                                                                                                                   
+          {watchPanel.length > 0 && (                                                                                                                                                                          
+            <div>                                                                                                                                                                                              
+              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Other Metrics</p>                                                                                           
+              <ul className="space-y-1.5">                                                                                                                                                                     
+                {watchPanel.map(({ driver }) => (                                                                                                                                                              
+                  <li key={driver.id} className="text-sm text-white/70 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
+                    <span className="truncate">{driver.label}</span>
+                  </li>                                                         
+                ))}                                                                                                                                                                                            
+              </ul>                                                             
+            </div>                                                                                                                                                                                             
+          )}                                                                    
+        </div>                                                                                                                                                                                                 
+      );                                                                                                                                                                                                       
+    })()}
+                                                                                                                                                                                                               
+  The Quadrant Realized total / Annual Recurring caption / Continue button stay unchanged.
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                   
+  VERIFICATION                                            
+  ═══════════════════════════════════════════════════════════
+                                                 
+  1. TypeScript compiles. No new imports needed (MeasureDriverCard, AddMeasureDriverPicker, EXPLORE_DRIVERS already imported).
+                                                                                
+  2. Walk Outpatient through Measure:                                                                                                                                                                          
+     - Capacity (2/7): Add Patient Access (quantified) + 3rd Next Available (qualitative). Verify two sections render, Patient Access in Financial Drivers, 3rd Next Available in Other Metrics.
+     - Workforce (3/7): Add Provider Wellbeing (quantified) + Burnout Score (qualitative). Same two-section pattern.                                                                                           
+     - Revenue (4/7): Add wRVU (quantified) + Days in AR (qualitative). Same.   
+     - Quality (5/7): All 7 OP qualitative drivers in Other Metrics; Financial Drivers section hidden (no quantified Quality drivers exist for OP).
+                                                                                                                                                                                                               
+  3. Walk Nursing through Measure → Quality:                                                                                                                                                                   
+     - Add HAPI (quantified) + Med Error (qualitative)                                                                                                                                                         
+     - BOTH sections render — Financial Drivers has HAPI, Other Metrics has Med Error                                                                                                                          
+     - This matches the Explore Quality nursing pattern Brad explicitly liked.  
+                                                                                                                                                                                                               
+  4. Right-panel summary on each page shows two grouped lists:                                                                                                                                                 
+     - "Financial" sub-header above quantified drivers (red dots)                                                                                                                                              
+     - "Other Metrics" sub-header above qualitative drivers (gray/white dots)                                                                                                                                  
+     - Sub-headers only appear if their group has at least one driver                                                                                                                                          
+                                                                                                                                                                                                               
+  5. Empty state: with no drivers tracked yet, the page shows "No drivers tracked yet for [Quadrant]" instead of either section.                                                                               
+                                                                                
+  6. The "+ Add a driver to track" picker still works exactly as before — it shows all available drivers from EXPLORE_DRIVERS for the current quadrant + setting, regardless of visibility.                    
+                                                                                                                                                                                                               
+  7. Quadrant Realized total in the right panel still computes correctly (sum of quantified drivers' realized values + Other Financial Benefits annual sum, if any).                                           
+                                                                                                                                                                                                               
+  8. No console errors. No TypeScript errors.                                   
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - This is purely a JSX restructure — no state, calc, or behavior changes.                                                                                                                                    
+  - The driver classification comes from EXPLORE_DRIVERS.visibility (the shared registry between Explore and Measure). When Brad changes a driver's visibility in the registry (e.g., promotes a qualitative   
+  driver to quantified by adding measureDefaults), it'll automatically move sections in both Explore and Measure.
+  - After this prompt ships, Measure quadrant pages match Explore's IA exactly. The through-line is consistent end-to-end.                                                                                     
+  - Audit also flagged EngagementContextBar.tsx and NarrativePanel.tsx as orphaned components not integrated into the active flow. Worth deleting in a separate cleanup pass — but not in scope here.

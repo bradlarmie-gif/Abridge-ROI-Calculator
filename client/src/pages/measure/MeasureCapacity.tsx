@@ -31,6 +31,9 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
     [tracked, setting]
   );
 
+  const financialDrivers = trackedHere.filter(({ driver }) => driver.visibility === 'quantified');
+  const watchMetrics = trackedHere.filter(({ driver }) => driver.visibility === 'qualitative');
+
   const updateEntry = (driverId: string, updates: Partial<MeasureDriverEntry>) => {
     updateState({
       trackedDrivers: {
@@ -102,28 +105,68 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
               </p>
             </motion.div>
 
-            <motion.div
-              className="space-y-3 mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-            >
-              {trackedHere.length === 0 && (
-                <div className="bg-[#F5F0EB] rounded-lg p-6 text-center" data-testid="empty-state-capacity">
-                  <p className="text-sm text-[#666666]">No drivers tracked yet for Capacity.</p>
-                  <p className="text-xs text-[#888888] mt-1">Add the ones that matter to this customer below.</p>
+            {financialDrivers.length > 0 && (
+              <motion.div
+                className="bg-[#F5F0EB] rounded-lg p-6 mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+              >
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Financial Drivers</p>
+                  <p className="text-xs text-[#AAAAAA]">Drivers that build the business case with dollar value.</p>
                 </div>
-              )}
-              {trackedHere.map(({ driver, entry }) => (
-                <MeasureDriverCard
-                  key={driver.id}
-                  driver={driver}
-                  entry={entry}
-                  onUpdate={(updates) => updateEntry(driver.id, updates)}
-                  onRemove={() => removeEntry(driver.id)}
-                />
-              ))}
-            </motion.div>
+                <div className="space-y-3">
+                  {financialDrivers.map(({ driver, entry }) => (
+                    <MeasureDriverCard
+                      key={driver.id}
+                      driver={driver}
+                      entry={entry}
+                      onUpdate={(updates) => updateEntry(driver.id, updates)}
+                      onRemove={() => removeEntry(driver.id)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {watchMetrics.length > 0 && (
+              <motion.div
+                className="bg-[#F5F0EB] rounded-lg p-6 mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18 }}
+              >
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Other Metrics to Watch</p>
+                  <p className="text-xs text-[#AAAAAA]">Outcomes tracked post-deployment that don't carry direct dollar value.</p>
+                </div>
+                <div className="space-y-3">
+                  {watchMetrics.map(({ driver, entry }) => (
+                    <MeasureDriverCard
+                      key={driver.id}
+                      driver={driver}
+                      entry={entry}
+                      onUpdate={(updates) => updateEntry(driver.id, updates)}
+                      onRemove={() => removeEntry(driver.id)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {financialDrivers.length === 0 && watchMetrics.length === 0 && (
+              <motion.div
+                className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                data-testid="empty-state-capacity"
+              >
+                <p className="text-sm text-[#666666]">No drivers tracked yet for Capacity.</p>
+                <p className="text-xs text-[#888888] mt-1">Add the ones that matter to this customer below.</p>
+              </motion.div>
+            )}
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
               <AddMeasureDriverPicker
@@ -167,17 +210,37 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
               <div className="h-px bg-[#333333] my-5" />
 
               <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-3">Drivers Tracked</p>
-              {trackedHere.length === 0 ? (
+              {financialDrivers.length === 0 && watchMetrics.length === 0 ? (
                 <p className="text-xs text-white/40 italic">None yet</p>
               ) : (
-                <ul className="space-y-1.5">
-                  {trackedHere.map(({ driver }) => (
-                    <li key={driver.id} className="text-sm text-white/70 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
-                      {driver.label}
-                    </li>
-                  ))}
-                </ul>
+                <div className="space-y-4">
+                  {financialDrivers.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Financial</p>
+                      <ul className="space-y-1.5">
+                        {financialDrivers.map(({ driver }) => (
+                          <li key={driver.id} className="text-sm text-white/70 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00] flex-shrink-0" />
+                            <span className="truncate">{driver.label}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {watchMetrics.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Other Metrics</p>
+                      <ul className="space-y-1.5">
+                        {watchMetrics.map(({ driver }) => (
+                          <li key={driver.id} className="text-sm text-white/70 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
+                            <span className="truncate">{driver.label}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               )}
 
               <div className="hidden lg:block mt-6">
