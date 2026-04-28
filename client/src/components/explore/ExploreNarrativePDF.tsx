@@ -3,12 +3,14 @@ import {
   Page,
   Text,
   View,
+  Image,
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
+import abridgeWordmark from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import type {
   ExplorePDFData,
   ExploreCareSetting,
@@ -27,6 +29,9 @@ Font.register({
   ],
 });
 
+// Palette mirrors NursingValueAssessmentPDF.tsx so the Explore family of PDFs
+// is visually indistinguishable from the Nursing reference. Any palette tweak
+// must be applied to both files in lockstep.
 const colors = {
   background: "#FFFFFF",
   cards: "#F5F0EB",
@@ -37,12 +42,19 @@ const colors = {
   border: "#E0E0E0",
   separator: "#F0EBE4",
   separatorHeavy: "#E5DCD0",
+  footerRule: "#DDD5C8",
+  footerMeta: "#5C5751",
+  footerMetaSoft: "#8F8A82",
 };
 
 const styles = StyleSheet.create({
   page: {
     padding: 54,
-    paddingBottom: 50,
+    // paddingBottom must reserve room for the fixed footer:
+    //   footer.bottom (28) + footer height (~border 1 + paddingTop 10 + content ~12) ≈ 51pt.
+    // Leave ~21pt of breathing room above the footer to prevent collisions.
+    // See pdf_layout_guidelines.md §1 for the canonical math check.
+    paddingBottom: 72,
     fontFamily: "Manrope",
     fontSize: 10.5,
     color: colors.primaryText,
@@ -52,13 +64,27 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
   },
+  // Section label is restrained near-black with strong tracking, rendered by
+  // the SectionLabel component below alongside a small red square accent.
+  // Brand red is reserved for accent moments (figures, callouts, dividers)
+  // so it lands when it appears instead of shouting on every page header.
   sectionLabel: {
-    fontSize: 9,
-    color: colors.primary,
+    fontSize: 8.5,
+    color: colors.primaryText,
     textTransform: "uppercase",
-    letterSpacing: 2,
-    marginBottom: 8,
+    letterSpacing: 2.5,
     fontWeight: "bold",
+  },
+  sectionLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  sectionLabelMark: {
+    width: 5,
+    height: 5,
+    backgroundColor: colors.primary,
+    marginRight: 9,
   },
   sectionHeadline: {
     fontSize: 22,
@@ -132,30 +158,52 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary,
     marginBottom: 10,
   },
+  // Footer mirrors the Nursing PDF's executive-document chrome:
+  //   • Left: rendered Abridge wordmark image (NOT lowercase text — the brand
+  //     mark must read as a logo, not as un-capitalized prose).
+  //   • Center: small-caps `ORG · DOCUMENT TITLE` with the org bolded.
+  //   • Right: `Page X / Y` with the numerals bolded.
+  // bottom: 28 matches NursingValueAssessmentPDF and pdf_layout_guidelines.md §1.
   footer: {
     position: "absolute",
-    bottom: 24,
+    bottom: 28,
     left: 54,
     right: 54,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 8,
+    paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.footerRule,
   },
-  footerLeft: {
-    fontSize: 10,
-    color: colors.primary,
-    fontWeight: "bold",
+  footerLogo: {
+    width: 56,
+    height: 12,
+    objectFit: "contain",
   },
   footerCenter: {
-    fontSize: 8.5,
-    color: colors.secondary,
+    fontSize: 7.5,
+    color: colors.footerMeta,
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
+  },
+  footerCenterOrg: {
+    fontWeight: "bold",
+    color: colors.primaryText,
+  },
+  footerCenterDot: {
+    color: colors.footerMetaSoft,
   },
   footerRight: {
-    fontSize: 8.5,
-    color: colors.tertiary,
+    fontSize: 7.5,
+    color: colors.footerMeta,
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
+  },
+  footerRightNum: {
+    color: colors.primaryText,
+    fontWeight: "bold",
+    letterSpacing: 0.4,
   },
 });
 
@@ -251,23 +299,16 @@ const settingQuadrantFraming: Record<
   },
 };
 
-const settingMetricsToTrack: Record<Exclude<ExploreCareSetting, "nursing">, string[]> = {
-  outpatient: [
-    "Documentation time per encounter (target: −40%)",
-    "Provider burnout / likelihood-to-stay score (target: +15 pts)",
-    "After-hours EHR time per provider per week (target: −30%)",
-  ],
-  ed: [
-    "Door-to-provider time (target: −10%)",
-    "End-of-shift note completion rate (target: +20 pts)",
-    "Provider burnout / likelihood-to-stay score (target: +15 pts)",
-  ],
-  inpatient: [
-    "H&P completion within 24 hours (target: ≥ 95%)",
-    "After-hours EHR time per hospitalist per week (target: −30%)",
-    "Discharge summary completion time (target: −25%)",
-  ],
-};
+// NOTE: A `settingMetricsToTrack` dictionary used to live here, feeding a
+// "Key Metrics To Track" section on the Investment Case page with hardcoded
+// targets like "−40%", "+15 pts", "−25%". Both were removed for the same
+// reason the equivalent block was removed from the Nursing PDF: those
+// numbers were fabricated placeholder targets, not partner data. The
+// premium-aesthetic rule in pdf_layout_guidelines.md §9 forbids
+// "illustrative target percentages" — if we don't have real benchmarks for
+// a given partner, we don't fabricate them. The cumulative-multiple
+// callout on the Investment Case page is now the page's punchline; nothing
+// else is needed.
 
 const buildChoicesReveal = (
   data: ExplorePDFData,
@@ -307,6 +348,13 @@ const buildChoicesReveal = (
 
 // ───────────────────────── Reusable components ─────────────────────────
 
+// PageFooter mirrors NursingValueAssessmentPDF.tsx — Bloomberg/McKinsey
+// executive-document chrome:
+//   • Left: rendered Abridge wordmark image (NOT lowercase text — the brand
+//     mark must read as a logo, not as un-capitalized prose).
+//   • Center: small-caps `ORG · DOCUMENT TITLE` with the org name bolded
+//     in near-black so it anchors the line.
+//   • Right: small-caps `Page X / Y` with the numerals bolded.
 const PageFooter = ({
   orgName,
   setting,
@@ -315,17 +363,35 @@ const PageFooter = ({
   setting: Exclude<ExploreCareSetting, "nursing">;
 }) => (
   <View style={styles.footer} fixed>
-    <Text style={styles.footerLeft}>abridge</Text>
+    <Image src={abridgeWordmark} style={styles.footerLogo} />
     <Text style={styles.footerCenter}>
-      {orgName} · {settingFooterLabel[setting]}
+      <Text style={styles.footerCenterOrg}>{orgName}</Text>
+      <Text style={styles.footerCenterDot}>{"   ·   "}</Text>
+      {settingFooterLabel[setting]}
     </Text>
     {/* Subtract 1 to skip the unnumbered cover page (currently always page 1). */}
     <Text
       style={styles.footerRight}
-      render={({ pageNumber, totalPages }) =>
-        `Page ${pageNumber - 1} of ${totalPages - 1}`
-      }
+      render={({ pageNumber, totalPages }) => (
+        <>
+          <Text>Page </Text>
+          <Text style={styles.footerRightNum}>
+            {`${pageNumber - 1} / ${totalPages - 1}`}
+          </Text>
+        </>
+      )}
     />
+  </View>
+);
+
+// SectionLabel: small red square accent + near-black uppercase text. Used at
+// the top of every page section. Replaces the previous loud-red text-only
+// label that competed with section headlines for visual weight. Mirrors
+// the Nursing PDF's SectionLabel one-for-one — see pdf_layout_guidelines §9.
+const SectionLabel = ({ children }: { children: string }) => (
+  <View style={styles.sectionLabelRow}>
+    <View style={styles.sectionLabelMark} />
+    <Text style={styles.sectionLabel}>{children}</Text>
   </View>
 );
 
@@ -400,7 +466,7 @@ const CalcCallout = ({ calcSummary }: { calcSummary: string }) => (
       backgroundColor: "#FFFFFF",
       borderWidth: 1,
       borderColor: colors.separatorHeavy,
-      borderRadius: 3,
+      borderRadius: 4,
       paddingHorizontal: 8,
       paddingVertical: 5,
       marginTop: 6,
@@ -424,57 +490,67 @@ const CalcCallout = ({ calcSummary }: { calcSummary: string }) => (
   </View>
 );
 
-const TrackedPill = () => (
-  <View
+// "Tracked" tag for qualitative drivers — small uppercase text in the
+// secondary palette, italicized for the same restrained-but-clear treatment
+// the Nursing PDF uses for "Tracked" zero-state cells. Replaces the
+// previous red-background pill, which competed with brand-red value
+// figures for visual weight on the same page.
+const TrackedTag = () => (
+  <Text
     style={{
-      backgroundColor: colors.primary,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: 10,
+      fontSize: 8,
+      color: colors.secondary,
+      textTransform: "uppercase",
+      letterSpacing: 1.2,
+      fontWeight: "bold",
+      fontStyle: "italic",
     }}
   >
-    <Text
-      style={{
-        fontSize: 7.5,
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        textTransform: "uppercase",
-        letterSpacing: 1,
-      }}
-    >
-      Tracked
-    </Text>
-  </View>
+    Tracked
+  </Text>
 );
 
 const QuantifiedDriverCard = ({ driver }: { driver: ExplorePDFQuadrantDriver }) => (
   <View style={styles.driverCard} wrap={false}>
     <View style={styles.driverHeaderRow}>
-      <Text style={styles.driverHeader}>
-        {driver.isChild ? "↳ " : ""}
-        {driver.label}
-      </Text>
+      <Text style={styles.driverHeader}>{driver.label}</Text>
       <Text style={styles.driverValue}>{fmtCurrency(driver.value)}</Text>
     </View>
+    {/* Linked-driver tag (nursing-PDF convention): when a child driver
+        depends on its parent's economics, surface the relationship as a
+        small uppercase tag in the secondary palette instead of an indent +
+        "↳" glyph hack. Reads cleaner and keeps the figure column aligned. */}
+    {driver.isChild ? (
+      <Text
+        style={{
+          fontSize: 7.5,
+          color: colors.primary,
+          textTransform: "uppercase",
+          letterSpacing: 1.2,
+          fontWeight: "bold",
+          marginBottom: 4,
+        }}
+      >
+        ↳ Linked driver
+      </Text>
+    ) : null}
     <Text style={styles.driverBody}>{driver.shortDescription}</Text>
     {driver.calcSummary ? <CalcCallout calcSummary={driver.calcSummary} /> : null}
   </View>
 );
 
+// QualitativeDriverCard renders the same flat geometry as
+// QuantifiedDriverCard. Child drivers used to be indented + prefixed with a
+// "↳ " glyph, which created a misaligned column on the right side of the
+// page (the figure/tag would no longer line up with the parent rows). The
+// parent/child relationship is communicated through driver ordering and the
+// flat rhythm reads cleaner — matches the linked-driver convention in the
+// Nursing PDF (§9 in pdf_layout_guidelines.md).
 const QualitativeDriverCard = ({ driver }: { driver: ExplorePDFQuadrantDriver }) => (
-  <View
-    style={[
-      styles.driverCard,
-      driver.isChild ? { marginLeft: 18 } : {},
-    ]}
-    wrap={false}
-  >
+  <View style={styles.driverCard} wrap={false}>
     <View style={styles.driverHeaderRow}>
-      <Text style={styles.driverHeader}>
-        {driver.isChild ? "↳ " : ""}
-        {driver.label}
-      </Text>
-      <TrackedPill />
+      <Text style={styles.driverHeader}>{driver.label}</Text>
+      <TrackedTag />
     </View>
     <Text style={styles.driverBody}>{driver.shortDescription}</Text>
   </View>
@@ -531,7 +607,7 @@ const QuadrantPage = ({
   return (
     <Page size="LETTER" style={styles.page} wrap>
       <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>{q.quadrant.toUpperCase()}</Text>
+        <SectionLabel>{q.quadrant.toUpperCase()}</SectionLabel>
         <Text style={styles.sectionHeadline}>{headlineForQuadrant[q.quadrant]}</Text>
         <Text style={styles.body}>{settingQuadrantFraming[setting][q.quadrant]}</Text>
 
@@ -635,7 +711,7 @@ const SummaryGroup = ({
         style={{
           fontSize: 10,
           fontWeight: "bold",
-          color: colors.primary,
+          color: colors.primaryText,
           textTransform: "uppercase",
           letterSpacing: 1.2,
         }}
@@ -674,14 +750,19 @@ const SummaryGroup = ({
   </View>
 );
 
+// Methodology bullets render at 9pt (not 8.5) — the reference Nursing PDF
+// settled on 9pt as the readable floor for executive-document body copy.
+// Each bullet is wrap={false}'d so a single bullet never splits across
+// pages; the parent View is what wraps when the methodology section grows.
 const MethodologyLine = ({ text }: { text: string }) => (
   <Text
     style={{
-      fontSize: 8.5,
+      fontSize: 9,
       color: colors.secondary,
       lineHeight: 1.5,
       marginBottom: 4,
     }}
+    wrap={false}
   >
     {`• ${text}`}
   </Text>
@@ -760,12 +841,17 @@ export const ExploreNarrativePDFDocument = ({
     return `${annual} annually`;
   })();
 
-  const implPhrase =
-    data.includeImplementation && data.implementationFee > 0
-      ? ` A one-time implementation fee of ${fmtCurrency(
-          data.implementationFee,
-        )} applies separately.`
-      : "";
+  // The impl-fee phrase tells the reader exactly WHERE the fee shows up
+  // (its own row above the recurring stream) rather than the vague
+  // "applies separately." This matches the Nursing PDF prose convention
+  // codified in replit.md > Implementation Fee Treatment.
+  const showImplFeeRow =
+    data.includeImplementation && data.implementationFee > 0;
+  const implPhrase = showImplFeeRow
+    ? ` A one-time implementation fee of ${fmtCurrency(
+        data.implementationFee,
+      )} is shown separately on its own row above the recurring stream so the Year 1–3 economics below stay comparable.`
+    : "";
 
   return (
     <Document>
@@ -779,7 +865,7 @@ export const ExploreNarrativePDFDocument = ({
       {/* PAGE — THESIS */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>THE THESIS</Text>
+          <SectionLabel>THE THESIS</SectionLabel>
           <Text style={styles.sectionHeadline}>{settingThesisHeadline[setting]}</Text>
           <Text style={styles.body}>{settingThesisIntro[setting]}</Text>
 
@@ -853,7 +939,7 @@ export const ExploreNarrativePDFDocument = ({
       {/* PAGE — PRACTICE & SETUP + TIME SAVINGS */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>PRACTICE & SETUP</Text>
+          <SectionLabel>PRACTICE &amp; SETUP</SectionLabel>
           <Text style={styles.sectionHeadline}>The unit we're modeling</Text>
           <Text style={styles.body}>
             All financial drivers in this assessment scale off the same
@@ -879,7 +965,7 @@ export const ExploreNarrativePDFDocument = ({
             </Text>
           </View>
 
-          <Text style={styles.sectionLabel}>TIME SAVINGS</Text>
+          <SectionLabel>TIME SAVINGS</SectionLabel>
           <Text style={styles.sectionHeadline}>
             {fmtNum(data.totalHoursSaved)} hours returned annually
           </Text>
@@ -933,14 +1019,28 @@ export const ExploreNarrativePDFDocument = ({
       {/* PAGE — INVESTMENT CASE */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>THE INVESTMENT CASE</Text>
+          <SectionLabel>THE INVESTMENT CASE</SectionLabel>
           <Text style={styles.sectionHeadline}>Infrastructure, Not Expense.</Text>
           <Text style={styles.body}>
-            {`The investment is ${pricingPhrase}.${implPhrase} Years 2–3 apply ${data.year2GrowthPercent}% and ${data.year3GrowthPercent}% growth to recurring annual value as adoption matures and documentation habits stabilize.`}
+            {/* Implementation fee is intentionally NOT folded into the
+                recurring Year 1–3 rows so multi-year ROI math compares
+                apples-to-apples (a one-time setup charge would distort Year 1
+                economics and the 3-year cumulative multiple). It surfaces as
+                its own row at the top of the table and a "true Year 1
+                outlay" footnote below — see replit.md > Implementation Fee
+                Treatment for the canonical three-part articulation pattern. */}
+            {`Recurring investment is ${pricingPhrase}.${implPhrase} Years 2–3 apply ${data.year2GrowthPercent}% and ${data.year3GrowthPercent}% growth to recurring annual value as adoption matures and documentation habits stabilize.`}
           </Text>
 
-          {/* 3-Year Projection table */}
-          <View style={{ marginBottom: 14 }}>
+          {/* 3-Year Projection table.
+              When an implementation fee is configured, a dedicated "One-Time
+              · Implementation" row renders ABOVE Year 1 with a tinted
+              background and italic "tracked separately" cells in the Net /
+              Cumulative columns. This makes the fee visually unmissable
+              (users were searching the Year 1 row for it before this
+              change) without folding it into the recurring multi-year
+              math — see the canonical implementation on the Nursing PDF. */}
+          <View style={{ marginBottom: 10 }}>
             <View
               style={{
                 flexDirection: "row",
@@ -1016,6 +1116,40 @@ export const ExploreNarrativePDFDocument = ({
                 Cumulative
               </Text>
             </View>
+
+            {/* One-Time Implementation row — only renders when impl fee > 0.
+                Visually demarcated with cardBg tint + italic Net/Cumulative
+                cells reading "tracked separately" so it cannot be misread
+                as a recurring annual line. Bold investment figure makes it
+                the first thing the eye lands on. */}
+            {showImplFeeRow && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  paddingVertical: 8,
+                  paddingHorizontal: 10,
+                  backgroundColor: colors.cards,
+                  borderBottomWidth: 1,
+                  borderBottomColor: colors.separator,
+                }}
+                wrap={false}
+              >
+                <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>
+                  One-Time
+                  <Text style={{ fontSize: 9, fontWeight: "normal", color: colors.secondary }}> · Implementation</Text>
+                </Text>
+                <Text style={{ flex: 1.2, fontSize: 10, color: colors.secondary, textAlign: "right" }}>—</Text>
+                <Text style={{ flex: 1.2, fontSize: 10, color: colors.primaryText, textAlign: "right", fontWeight: "bold" }}>
+                  {fmtCurrency(data.implementationFee)}
+                </Text>
+                <Text style={{ flex: 1.2, fontSize: 9, fontStyle: "italic", color: colors.secondary, textAlign: "right" }}>
+                  Setup investment
+                </Text>
+                <Text style={{ flex: 1.2, fontSize: 9, fontStyle: "italic", color: colors.secondary, textAlign: "right" }}>
+                  Tracked separately
+                </Text>
+              </View>
+            )}
 
             {[
               {
@@ -1105,6 +1239,37 @@ export const ExploreNarrativePDFDocument = ({
             ))}
           </View>
 
+          {/* True Year 1 outlay footnote — only renders when an impl fee
+              exists. Directly answers the most common reader question:
+              "why isn't the implementation fee in Year 1?" Pre-computes
+              the sum so the reader doesn't have to do mental math. This
+              footnote + the One-Time row above + the named-location prose
+              are the three-part articulation pattern codified in
+              replit.md > Implementation Fee Treatment. */}
+          {showImplFeeRow && (
+            <View
+              style={{
+                marginBottom: 14,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                backgroundColor: colors.cards,
+                borderRadius: 4,
+                borderLeftWidth: 2,
+                borderLeftColor: colors.secondary,
+              }}
+              wrap={false}
+            >
+              <Text style={{ fontSize: 9, color: colors.primaryText, lineHeight: 1.55 }}>
+                <Text style={{ fontWeight: "bold" }}>True Year 1 cash outlay:</Text>
+                {` ${fmtCurrency(data.year1Investment + data.implementationFee)} `}
+                <Text style={{ color: colors.secondary }}>
+                  ({fmtCurrency(data.year1Investment)} recurring + {fmtCurrency(data.implementationFee)} one-time implementation).
+                  The Year 1 row above shows recurring economics only so the 3-year cumulative multiple isn't distorted by a one-time setup charge.
+                </Text>
+              </Text>
+            </View>
+          )}
+
           {cumulativeMultiple > 0 ? (
             <View style={[styles.redBorderCallout, { marginBottom: 14 }]}>
               <Text
@@ -1127,22 +1292,12 @@ export const ExploreNarrativePDFDocument = ({
             </View>
           ) : null}
 
-          {/* KEY METRICS */}
-          <Text style={styles.subSectionHeader}>Key Metrics To Track</Text>
-          <View>
-            {settingMetricsToTrack[setting].map((line, i) => (
-              <Text
-                key={i}
-                style={{
-                  fontSize: 10,
-                  color: colors.primaryText,
-                  marginBottom: 4,
-                }}
-              >
-                {`${i + 1}. ${line}`}
-              </Text>
-            ))}
-          </View>
+          {/* The previous version of this page included a "Key Metrics To
+              Track" section with hardcoded targets like "−40%", "+15 pts",
+              "≥ 95%". Removed for the same reason the equivalent block was
+              removed from the Nursing PDF: those numbers were placeholder
+              targets, not partner data. The cumulative-multiple callout
+              above is the page's punchline; nothing else is needed. */}
 
           <PageFooter orgName={orgName} setting={setting} />
         </View>
@@ -1151,26 +1306,43 @@ export const ExploreNarrativePDFDocument = ({
       {/* PAGE — ASSESSMENT SUMMARY + METHODOLOGY */}
       <Page size="LETTER" style={styles.page} wrap>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>YOUR ASSESSMENT SUMMARY</Text>
+          <SectionLabel>YOUR ASSESSMENT SUMMARY</SectionLabel>
 
-          <View style={[styles.cardBg, { marginBottom: 14 }]}>
-            <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 4 }}>
-              {`${fmtNum(data.numberOfProviders)} providers · ${fmtNum(
-                data.annualEncounters,
-              )} encounters · ${settingLabel}.`}
+          {/* Hero card — eyebrow / headline number / footnote pattern. The
+              figure stands alone at hero size (36pt) so it can carry the
+              page; descriptive context lives in the eyebrow above and the
+              metadata footer below. Previously the figure was glued inline
+              to the words "projected net value" in a single 24pt Text
+              node, which capped how big the number could go without
+              wrapping. Mirrors the Nursing PDF's hero geometry exactly. */}
+          <View style={[styles.cardBg, { marginBottom: 16, paddingVertical: 18 }]}>
+            <Text
+              style={{
+                fontSize: 8.5,
+                color: colors.secondary,
+                textTransform: "uppercase",
+                letterSpacing: 2.5,
+                fontWeight: "bold",
+                marginBottom: 8,
+              }}
+            >
+              Projected Net Annual Value
             </Text>
             <Text
               style={{
-                fontSize: 24,
+                fontSize: 36,
                 fontWeight: "bold",
                 color: colors.primary,
-                marginBottom: 4,
+                lineHeight: 1.0,
+                marginBottom: 10,
               }}
             >
-              {`${fmtCurrency(data.netAnnualValue)} projected net value`}
+              {fmtCurrency(data.netAnnualValue)}
             </Text>
-            <Text style={{ fontSize: 10, color: colors.tertiary }}>
-              {`${fmtCurrency(data.valuePerProvider)}/provider per year · ${data.roi.toFixed(1)}× Year 1 ROI`}
+            <Text style={{ fontSize: 9.5, color: colors.secondary }}>
+              {`${fmtNum(data.numberOfProviders)} providers · ${fmtNum(
+                data.annualEncounters,
+              )} encounters · ${fmtCurrency(data.valuePerProvider)}/provider per year · ${data.roi.toFixed(1)}× Year 1 ROI`}
             </Text>
           </View>
 
