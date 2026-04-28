@@ -1,0 +1,3278 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Explore (non-nursing) PDF — structural snapshot > renders the multi-page document tree deterministically (Lakeside outpatient fixture) 1`] = `
+[
+  {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [],
+                    "kind": "primitive",
+                    "props": {
+                      "src": "stub://asset",
+                      "style": {
+                        "left": 54,
+                        "position": "absolute",
+                        "top": 54,
+                        "width": 90,
+                      },
+                    },
+                    "tag": "IMAGE",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "OUTPATIENT VALUE ASSESSMENT",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#666666",
+                            "fontSize": 9,
+                            "letterSpacing": 3,
+                            "marginBottom": 12,
+                            "textTransform": "uppercase",
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "Lakeside Outpatient Network",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#1A1A1A",
+                            "fontFamily": "Abridge",
+                            "fontSize": 36,
+                            "fontWeight": "bold",
+                            "letterSpacing": -0.5,
+                            "lineHeight": 1.2,
+                            "marginBottom": 16,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "backgroundColor": "#EA2C00",
+                            "height": 2,
+                            "marginBottom": 16,
+                            "width": 60,
+                          },
+                        },
+                        "tag": "VIEW",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "50 providers · 120,000 encounters · Outpatient",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#666666",
+                            "fontSize": 14,
+                            "marginBottom": 32,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "PREPARED BY",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#999999",
+                                "fontSize": 9,
+                                "letterSpacing": 1.5,
+                                "marginBottom": 4,
+                                "textTransform": "uppercase",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Abridge Value Engineering",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "·",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "January 15, 2026",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#666666",
+                                "fontSize": 12,
+                                "marginBottom": 4,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {},
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "flex": 1,
+                        "justifyContent": "center",
+                        "paddingHorizontal": 54,
+                        "paddingTop": 54,
+                        "position": "relative",
+                        "zIndex": 10,
+                      },
+                    },
+                    "tag": "VIEW",
+                  },
+                  {
+                    "children": [],
+                    "kind": "primitive",
+                    "props": {
+                      "src": "stub://asset",
+                      "style": {
+                        "bottom": 80,
+                        "height": 260,
+                        "opacity": 0.06,
+                        "position": "absolute",
+                        "right": 20,
+                        "width": 260,
+                      },
+                    },
+                    "tag": "IMAGE",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "This assessment is for planning purposes. Calculations are based on actual deployment data and Abridge methodology.",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#999999",
+                            "fontSize": 8.5,
+                            "lineHeight": 1.5,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "borderTopColor": "#E0E0E0",
+                        "borderTopWidth": 1,
+                        "bottom": 36,
+                        "left": 54,
+                        "paddingTop": 10,
+                        "position": "absolute",
+                        "right": 54,
+                      },
+                    },
+                    "tag": "VIEW",
+                  },
+                ],
+                "kind": "primitive",
+                "props": {
+                  "size": "LETTER",
+                  "style": {
+                    "backgroundColor": "#FFFFFF",
+                    "padding": 0,
+                    "position": "relative",
+                  },
+                },
+                "tag": "PAGE",
+              },
+            ],
+            "kind": "component",
+            "name": "PDFCoverPage",
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "EXECUTIVE SUMMARY",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#EA2C00",
+                        "fontSize": 9,
+                        "fontWeight": "bold",
+                        "letterSpacing": 2,
+                        "marginBottom": 8,
+                        "textTransform": "uppercase",
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Projected ROI for ",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "Lakeside Outpatient Network",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 18,
+                        "fontWeight": "bold",
+                        "marginBottom": 6,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "This model translates Abridge documentation efficiency into quantified financial impact across four ROI quadrants — Capacity, Workforce, Revenue, and Quality. Year-over-year projections apply user-configured growth rates to the recurring annual value.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Net Annual Value",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 4,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$1.18M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#EA2C00",
+                                    "fontSize": 22,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 2,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Year 1, including one-time benefits",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8.5,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "flex": 1,
+                                "paddingHorizontal": 6,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "StatBlock",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "3-Year Net Value",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 4,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$3.77M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontSize": 18,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 2,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Cumulative, after investment",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8.5,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "flex": 1,
+                                "paddingHorizontal": 6,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "StatBlock",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Return on Investment",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 4,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "8.3×",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontSize": 18,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 2,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Year 1 value / investment",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8.5,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "flex": 1,
+                                "paddingHorizontal": 6,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "StatBlock",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": [
+                        {
+                          "backgroundColor": "#F5F0EB",
+                          "borderRadius": 4,
+                          "padding": 14,
+                        },
+                        {
+                          "flexDirection": "row",
+                          "marginBottom": 16,
+                          "paddingVertical": 18,
+                        },
+                      ],
+                    },
+                    "tag": "VIEW",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Total Annual Value",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 4,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$1.25M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontSize": 18,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 2,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Recurring across drivers + benefits",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8.5,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "flex": 1,
+                                "paddingHorizontal": 6,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "StatBlock",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Total Investment (Y1)",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 4,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$150K",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontSize": 18,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 2,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Per provider, per month",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8.5,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "flex": 1,
+                                "paddingHorizontal": 6,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "StatBlock",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Value per Provider",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 4,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$24K",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontSize": 18,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 2,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "5,200 hours returned",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8.5,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "flex": 1,
+                                "paddingHorizontal": 6,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "StatBlock",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": [
+                        {
+                          "backgroundColor": "#F5F0EB",
+                          "borderRadius": 4,
+                          "padding": 14,
+                        },
+                        {
+                          "flexDirection": "row",
+                          "paddingVertical": 14,
+                        },
+                      ],
+                    },
+                    "tag": "VIEW",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Abridge",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#EA2C00",
+                                "fontSize": 10,
+                                "fontWeight": "bold",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Lakeside Outpatient Network",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " · ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "Outpatient",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ROI Model",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#666666",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Page ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "1",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " of ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "6",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#999999",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "fixed": true,
+                          "style": {
+                            "alignItems": "center",
+                            "borderTopColor": "#E0E0E0",
+                            "borderTopWidth": 1,
+                            "flexDirection": "row",
+                            "justifyContent": "space-between",
+                            "marginTop": "auto",
+                            "paddingTop": 8,
+                          },
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "PageFooter",
+                  },
+                ],
+                "kind": "primitive",
+                "props": {
+                  "style": {
+                    "flex": 1,
+                    "flexDirection": "column",
+                  },
+                },
+                "tag": "VIEW",
+              },
+            ],
+            "kind": "primitive",
+            "props": {
+              "size": "LETTER",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "color": "#1A1A1A",
+                "fontFamily": "Manrope",
+                "fontSize": 10.5,
+                "padding": 54,
+                "paddingBottom": 50,
+              },
+            },
+            "tag": "PAGE",
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "PRACTICE & SETUP",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#EA2C00",
+                        "fontSize": 9,
+                        "fontWeight": "bold",
+                        "letterSpacing": 2,
+                        "marginBottom": 8,
+                        "textTransform": "uppercase",
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Outpatient",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " engagement",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 18,
+                        "fontWeight": "bold",
+                        "marginBottom": 6,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Providers:",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "fontWeight": "bold",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "kind": "text",
+                            "value": " ",
+                          },
+                          {
+                            "kind": "text",
+                            "value": "50",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "fontSize": 10.5,
+                            "marginBottom": 4,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Annual encounters:",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "fontWeight": "bold",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "kind": "text",
+                            "value": " ",
+                          },
+                          {
+                            "kind": "text",
+                            "value": "120,000",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "fontSize": 10.5,
+                            "marginBottom": 4,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Adoption / utilization:",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "fontWeight": "bold",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "kind": "text",
+                            "value": " ",
+                          },
+                          {
+                            "kind": "text",
+                            "value": "65",
+                          },
+                          {
+                            "kind": "text",
+                            "value": "%",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "fontSize": 10.5,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": [
+                        {
+                          "backgroundColor": "#F5F0EB",
+                          "borderRadius": 4,
+                          "padding": 14,
+                        },
+                        {
+                          "marginBottom": 18,
+                        },
+                      ],
+                    },
+                    "tag": "VIEW",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "TIME SAVINGS",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#EA2C00",
+                        "fontSize": 9,
+                        "fontWeight": "bold",
+                        "letterSpacing": 2,
+                        "marginBottom": 8,
+                        "textTransform": "uppercase",
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "5,200",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " hours returned annually",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 18,
+                        "fontWeight": "bold",
+                        "marginBottom": 6,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Modeled at ",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "5",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " minutes saved per encounter using a ",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "typical",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " time-savings scenario. Recovered time fuels each of the quadrant value drivers on the following pages.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Abridge",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#EA2C00",
+                                "fontSize": 10,
+                                "fontWeight": "bold",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Lakeside Outpatient Network",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " · ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "Outpatient",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ROI Model",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#666666",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Page ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "2",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " of ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "6",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#999999",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "fixed": true,
+                          "style": {
+                            "alignItems": "center",
+                            "borderTopColor": "#E0E0E0",
+                            "borderTopWidth": 1,
+                            "flexDirection": "row",
+                            "justifyContent": "space-between",
+                            "marginTop": "auto",
+                            "paddingTop": 8,
+                          },
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "PageFooter",
+                  },
+                ],
+                "kind": "primitive",
+                "props": {
+                  "style": {
+                    "flex": 1,
+                    "flexDirection": "column",
+                  },
+                },
+                "tag": "VIEW",
+              },
+            ],
+            "kind": "primitive",
+            "props": {
+              "size": "LETTER",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "color": "#1A1A1A",
+                "fontFamily": "Manrope",
+                "fontSize": 10.5,
+                "padding": 54,
+                "paddingBottom": 50,
+              },
+            },
+            "tag": "PAGE",
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "VALUE BY QUADRANT",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#EA2C00",
+                        "fontSize": 9,
+                        "fontWeight": "bold",
+                        "letterSpacing": 2,
+                        "marginBottom": 8,
+                        "textTransform": "uppercase",
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Where the ",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "$1.25M",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " comes from",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 18,
+                        "fontWeight": "bold",
+                        "marginBottom": 6,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Each quadrant reflects how Abridge's documentation efficiency translates into operational and financial outcomes. Some drivers carry quantified financial models; others are qualitative outcomes tracked post-deployment.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Ambient documentation reduces per-visit charting burden — fueling throughput (Capacity), retention (Workforce), and complete coding (Revenue), with Quality outcomes tracked post-deployment.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 14,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Capacity",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#EA2C00",
+                                    "fontSize": 9,
+                                    "fontWeight": "bold",
+                                    "letterSpacing": 2,
+                                    "marginBottom": 8,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "children": [],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#1A1A1A",
+                                        "fontSize": 16,
+                                        "fontWeight": "bold",
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "alignItems": "baseline",
+                                    "flexDirection": "row",
+                                    "justifyContent": "space-between",
+                                  },
+                                },
+                                "tag": "VIEW",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "marginBottom": 8,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                          {
+                            "children": [],
+                            "kind": "primitive",
+                            "props": {},
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "marginBottom": 18,
+                          },
+                          "wrap": true,
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "QuadrantSection",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Workforce",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#EA2C00",
+                                    "fontSize": 9,
+                                    "fontWeight": "bold",
+                                    "letterSpacing": 2,
+                                    "marginBottom": 8,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "children": [],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#1A1A1A",
+                                        "fontSize": 16,
+                                        "fontWeight": "bold",
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "+ ",
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": "$80K",
+                                      },
+                                      {
+                                        "kind": "text",
+                                        "value": " one-time (Y1)",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#999999",
+                                        "fontSize": 9.5,
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "alignItems": "baseline",
+                                    "flexDirection": "row",
+                                    "justifyContent": "space-between",
+                                  },
+                                },
+                                "tag": "VIEW",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "marginBottom": 8,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                          {
+                            "children": [],
+                            "kind": "primitive",
+                            "props": {},
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "marginBottom": 18,
+                          },
+                          "wrap": true,
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "QuadrantSection",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Revenue",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#EA2C00",
+                                    "fontSize": 9,
+                                    "fontWeight": "bold",
+                                    "letterSpacing": 2,
+                                    "marginBottom": 8,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "children": [],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#1A1A1A",
+                                        "fontSize": 16,
+                                        "fontWeight": "bold",
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "alignItems": "baseline",
+                                    "flexDirection": "row",
+                                    "justifyContent": "space-between",
+                                  },
+                                },
+                                "tag": "VIEW",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "marginBottom": 8,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                          {
+                            "children": [],
+                            "kind": "primitive",
+                            "props": {},
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "marginBottom": 18,
+                          },
+                          "wrap": true,
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "QuadrantSection",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Quality",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#EA2C00",
+                                    "fontSize": 9,
+                                    "fontWeight": "bold",
+                                    "letterSpacing": 2,
+                                    "marginBottom": 8,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "Tracked post-deployment",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#1A1A1A",
+                                        "fontSize": 16,
+                                        "fontWeight": "bold",
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "alignItems": "baseline",
+                                    "flexDirection": "row",
+                                    "justifyContent": "space-between",
+                                  },
+                                },
+                                "tag": "VIEW",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Quality outcomes are measured after go-live to validate documentation lift translates to clinical impact.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 9,
+                                    "lineHeight": 1.4,
+                                    "marginBottom": 4,
+                                    "marginTop": 2,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "marginBottom": 8,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                          {
+                            "children": [],
+                            "kind": "primitive",
+                            "props": {},
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "marginBottom": 18,
+                          },
+                          "wrap": true,
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "QuadrantSection",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Abridge",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#EA2C00",
+                                "fontSize": 10,
+                                "fontWeight": "bold",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Lakeside Outpatient Network",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " · ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "Outpatient",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ROI Model",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#666666",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Page ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "3",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " of ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "6",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#999999",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "fixed": true,
+                          "style": {
+                            "alignItems": "center",
+                            "borderTopColor": "#E0E0E0",
+                            "borderTopWidth": 1,
+                            "flexDirection": "row",
+                            "justifyContent": "space-between",
+                            "marginTop": "auto",
+                            "paddingTop": 8,
+                          },
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "PageFooter",
+                  },
+                ],
+                "kind": "primitive",
+                "props": {
+                  "style": {
+                    "flex": 1,
+                    "flexDirection": "column",
+                  },
+                },
+                "tag": "VIEW",
+              },
+            ],
+            "kind": "primitive",
+            "props": {
+              "size": "LETTER",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "color": "#1A1A1A",
+                "fontFamily": "Manrope",
+                "fontSize": 10.5,
+                "padding": 54,
+                "paddingBottom": 50,
+              },
+              "wrap": true,
+            },
+            "tag": "PAGE",
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "INVESTMENT",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#EA2C00",
+                        "fontSize": 9,
+                        "fontWeight": "bold",
+                        "letterSpacing": 2,
+                        "marginBottom": 8,
+                        "textTransform": "uppercase",
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "$150K",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " annual investment",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 18,
+                        "fontWeight": "bold",
+                        "marginBottom": 6,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Pricing model: ",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "Per provider, per month",
+                      },
+                      {
+                        "kind": "text",
+                        "value": ".",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "50 providers × $250/mo × 12 = $150,000/year",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "fontSize": 10.5,
+                            "marginBottom": 6,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "A one-time implementation fee of",
+                          },
+                          {
+                            "kind": "text",
+                            "value": " ",
+                          },
+                          {
+                            "kind": "text",
+                            "value": "$25,000",
+                          },
+                          {
+                            "kind": "text",
+                            "value": " applies separately from recurring investment shown above.",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#999999",
+                            "fontSize": 9.5,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": [
+                        {
+                          "backgroundColor": "#F5F0EB",
+                          "borderRadius": 4,
+                          "padding": 14,
+                        },
+                        {
+                          "marginBottom": 14,
+                        },
+                      ],
+                    },
+                    "tag": "VIEW",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Total Annual Value",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 4,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$1.25M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontSize": 18,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 0,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "flex": 1,
+                                "paddingHorizontal": 6,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "StatBlock",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Annual Investment",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 4,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$150K",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontSize": 18,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 0,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "flex": 1,
+                                "paddingHorizontal": 6,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "StatBlock",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Net Annual Value",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 4,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$1.10M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#EA2C00",
+                                    "fontSize": 22,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 0,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "flex": 1,
+                                "paddingHorizontal": 6,
+                              },
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "StatBlock",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "flexDirection": "row",
+                      },
+                    },
+                    "tag": "VIEW",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Abridge",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#EA2C00",
+                                "fontSize": 10,
+                                "fontWeight": "bold",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Lakeside Outpatient Network",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " · ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "Outpatient",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ROI Model",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#666666",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Page ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "4",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " of ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "6",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#999999",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "fixed": true,
+                          "style": {
+                            "alignItems": "center",
+                            "borderTopColor": "#E0E0E0",
+                            "borderTopWidth": 1,
+                            "flexDirection": "row",
+                            "justifyContent": "space-between",
+                            "marginTop": "auto",
+                            "paddingTop": 8,
+                          },
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "PageFooter",
+                  },
+                ],
+                "kind": "primitive",
+                "props": {
+                  "style": {
+                    "flex": 1,
+                    "flexDirection": "column",
+                  },
+                },
+                "tag": "VIEW",
+              },
+            ],
+            "kind": "primitive",
+            "props": {
+              "size": "LETTER",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "color": "#1A1A1A",
+                "fontFamily": "Manrope",
+                "fontSize": 10.5,
+                "padding": 54,
+                "paddingBottom": 50,
+              },
+            },
+            "tag": "PAGE",
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "3-YEAR PROJECTION",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#EA2C00",
+                        "fontSize": 9,
+                        "fontWeight": "bold",
+                        "letterSpacing": 2,
+                        "marginBottom": 8,
+                        "textTransform": "uppercase",
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "$3.77M",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " cumulative net value",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 18,
+                        "fontWeight": "bold",
+                        "marginBottom": 6,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Years 2 and 3 apply ",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "10",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "% and",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " ",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "10",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "% growth to annual recurring value. For per-encounter pricing, encounter volume scales by the same percentages, so investment grows alongside value.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Year 1",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 6,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$1.33M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontSize": 16,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 2,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Includes $80K one-time",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8,
+                                    "marginBottom": 6,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "borderBottomColor": "#F0EBE4",
+                                    "borderBottomWidth": 1,
+                                    "marginVertical": 4,
+                                  },
+                                },
+                                "tag": "VIEW",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Net: ",
+                                  },
+                                  {
+                                    "kind": "text",
+                                    "value": "$1.18M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#EA2C00",
+                                    "fontSize": 10.5,
+                                    "fontWeight": "bold",
+                                    "marginTop": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "backgroundColor": "#F5F0EB",
+                                "borderRadius": 4,
+                                "flex": 1,
+                                "marginHorizontal": 4,
+                                "padding": 12,
+                              },
+                              "wrap": false,
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "YearCard",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Year 2",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 6,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$1.38M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontSize": 16,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 2,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "+10% growth",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8,
+                                    "marginBottom": 6,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "borderBottomColor": "#F0EBE4",
+                                    "borderBottomWidth": 1,
+                                    "marginVertical": 4,
+                                  },
+                                },
+                                "tag": "VIEW",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Net: ",
+                                  },
+                                  {
+                                    "kind": "text",
+                                    "value": "$1.23M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#EA2C00",
+                                    "fontSize": 10.5,
+                                    "fontWeight": "bold",
+                                    "marginTop": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "backgroundColor": "#F5F0EB",
+                                "borderRadius": 4,
+                                "flex": 1,
+                                "marginHorizontal": 4,
+                                "padding": 12,
+                              },
+                              "wrap": false,
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "YearCard",
+                      },
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Year 3",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#666666",
+                                    "fontSize": 8,
+                                    "letterSpacing": 1,
+                                    "marginBottom": 6,
+                                    "textTransform": "uppercase",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "$1.51M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontSize": 16,
+                                    "fontWeight": "bold",
+                                    "marginBottom": 2,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "+10% growth",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8,
+                                    "marginBottom": 6,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "borderBottomColor": "#F0EBE4",
+                                    "borderBottomWidth": 1,
+                                    "marginVertical": 4,
+                                  },
+                                },
+                                "tag": "VIEW",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Net: ",
+                                  },
+                                  {
+                                    "kind": "text",
+                                    "value": "$1.36M",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#EA2C00",
+                                    "fontSize": 10.5,
+                                    "fontWeight": "bold",
+                                    "marginTop": 4,
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "backgroundColor": "#F5F0EB",
+                                "borderRadius": 4,
+                                "flex": 1,
+                                "marginHorizontal": 4,
+                                "padding": 12,
+                              },
+                              "wrap": false,
+                            },
+                            "tag": "VIEW",
+                          },
+                        ],
+                        "kind": "component",
+                        "name": "YearCard",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "flexDirection": "row",
+                        "marginBottom": 14,
+                      },
+                    },
+                    "tag": "VIEW",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "3-Year Total",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#666666",
+                            "fontSize": 8,
+                            "letterSpacing": 1,
+                            "marginBottom": 4,
+                            "textTransform": "uppercase",
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "$4.22M",
+                          },
+                          {
+                            "kind": "text",
+                            "value": " ",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "gross value",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#666666",
+                                "fontSize": 10,
+                                "fontWeight": 400,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#1A1A1A",
+                            "fontSize": 18,
+                            "fontWeight": "bold",
+                            "marginBottom": 4,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "borderBottomColor": "#E5DCD0",
+                            "borderBottomWidth": 1,
+                            "marginVertical": 8,
+                          },
+                        },
+                        "tag": "VIEW",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "Net: ",
+                          },
+                          {
+                            "kind": "text",
+                            "value": "$3.77M",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#EA2C00",
+                            "fontSize": 12,
+                            "fontWeight": "bold",
+                            "marginBottom": 4,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "Investment: ",
+                          },
+                          {
+                            "kind": "text",
+                            "value": "$450K",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#999999",
+                            "fontSize": 10,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": [
+                        {
+                          "backgroundColor": "#F5F0EB",
+                          "borderRadius": 4,
+                          "padding": 14,
+                        },
+                        {
+                          "borderLeftColor": "#EA2C00",
+                          "borderLeftWidth": 3,
+                          "paddingVertical": 16,
+                        },
+                      ],
+                    },
+                    "tag": "VIEW",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Abridge",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#EA2C00",
+                                "fontSize": 10,
+                                "fontWeight": "bold",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Lakeside Outpatient Network",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " · ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "Outpatient",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ROI Model",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#666666",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Page ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "5",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " of ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "6",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#999999",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "fixed": true,
+                          "style": {
+                            "alignItems": "center",
+                            "borderTopColor": "#E0E0E0",
+                            "borderTopWidth": 1,
+                            "flexDirection": "row",
+                            "justifyContent": "space-between",
+                            "marginTop": "auto",
+                            "paddingTop": 8,
+                          },
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "PageFooter",
+                  },
+                ],
+                "kind": "primitive",
+                "props": {
+                  "style": {
+                    "flex": 1,
+                    "flexDirection": "column",
+                  },
+                },
+                "tag": "VIEW",
+              },
+            ],
+            "kind": "primitive",
+            "props": {
+              "size": "LETTER",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "color": "#1A1A1A",
+                "fontFamily": "Manrope",
+                "fontSize": 10.5,
+                "padding": 54,
+                "paddingBottom": 50,
+              },
+            },
+            "tag": "PAGE",
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "METHODOLOGY",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#EA2C00",
+                        "fontSize": 9,
+                        "fontWeight": "bold",
+                        "letterSpacing": 2,
+                        "marginBottom": 8,
+                        "textTransform": "uppercase",
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "How these numbers were built",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 18,
+                        "fontWeight": "bold",
+                        "marginBottom": 6,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Quadrant structure",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 10.5,
+                        "fontWeight": "bold",
+                        "marginBottom": 4,
+                        "marginTop": 8,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Value is organized into four ROI quadrants: Capacity, Workforce, Revenue, and Quality. Each quadrant reflects how Abridge's documentation efficiency translates into operational and financial outcomes. Some drivers carry quantified financial models; others are qualitative outcomes tracked post-deployment.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Time-savings scenarios",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 10.5,
+                        "fontWeight": "bold",
+                        "marginBottom": 4,
+                        "marginTop": 8,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Time savings are modeled across three scenarios — Conservative, Typical, and Optimistic — based on the minutes saved per encounter you provided. The ",
+                      },
+                      {
+                        "kind": "text",
+                        "value": "typical",
+                      },
+                      {
+                        "kind": "text",
+                        "value": " scenario was used for this model.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Year-over-year growth",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 10.5,
+                        "fontWeight": "bold",
+                        "marginBottom": 4,
+                        "marginTop": 8,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Annual recurring value is projected forward using growth rates you configured (Year 2 default 10%, Year 3 default 10%). For per-encounter pricing, encounter volume scales by the same percentages, so investment grows alongside value. For per-provider and annual-fee pricing, investment is held constant across all three years.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Realization & confidence",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#1A1A1A",
+                        "fontSize": 10.5,
+                        "fontWeight": "bold",
+                        "marginBottom": 4,
+                        "marginTop": 8,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Each driver applies a realization rate that haircuts the gross modeled value to reflect operational adoption, billing capture, and partner-specific factors. Validate against historical performance data when available.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#666666",
+                        "fontSize": 10.5,
+                        "lineHeight": 1.5,
+                        "marginBottom": 12,
+                      },
+                    },
+                    "tag": "TEXT",
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Abridge",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#EA2C00",
+                                "fontSize": 10,
+                                "fontWeight": "bold",
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Lakeside Outpatient Network",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " · ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "Outpatient",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " ROI Model",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#666666",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "text",
+                                "value": "Page ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "6",
+                              },
+                              {
+                                "kind": "text",
+                                "value": " of ",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "6",
+                              },
+                            ],
+                            "kind": "primitive",
+                            "props": {
+                              "style": {
+                                "color": "#999999",
+                                "fontSize": 8.5,
+                              },
+                            },
+                            "tag": "TEXT",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "fixed": true,
+                          "style": {
+                            "alignItems": "center",
+                            "borderTopColor": "#E0E0E0",
+                            "borderTopWidth": 1,
+                            "flexDirection": "row",
+                            "justifyContent": "space-between",
+                            "marginTop": "auto",
+                            "paddingTop": 8,
+                          },
+                        },
+                        "tag": "VIEW",
+                      },
+                    ],
+                    "kind": "component",
+                    "name": "PageFooter",
+                  },
+                ],
+                "kind": "primitive",
+                "props": {
+                  "style": {
+                    "flex": 1,
+                    "flexDirection": "column",
+                  },
+                },
+                "tag": "VIEW",
+              },
+            ],
+            "kind": "primitive",
+            "props": {
+              "size": "LETTER",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "color": "#1A1A1A",
+                "fontFamily": "Manrope",
+                "fontSize": 10.5,
+                "padding": 54,
+                "paddingBottom": 50,
+              },
+            },
+            "tag": "PAGE",
+          },
+        ],
+        "kind": "primitive",
+        "props": {},
+        "tag": "DOCUMENT",
+      },
+    ],
+    "kind": "component",
+    "name": "ExplorePDFDocument",
+  },
+]
+`;

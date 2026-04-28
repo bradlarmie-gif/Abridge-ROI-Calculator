@@ -614,7 +614,7 @@ const YearCard = ({
 
 const TOTAL_PAGES = 6; // Cover page is unnumbered; numbered pages are 1..6
 
-const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
+export const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
   const orgName = data.clientName || "Organization";
   const settingLabel = data.careSettingLabel || "";
 
