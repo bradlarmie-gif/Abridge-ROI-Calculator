@@ -9,6 +9,13 @@ import {
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
+import {
+  calcHapi,
+  calcFalls,
+  calcCauti,
+  calcClabsi,
+  calcSepsis,
+} from "@/lib/nursingQualityCalcs";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
 
@@ -427,13 +434,51 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
   const orgName = data.clientName || "Organization";
   const subtitle = `${fmtNum(data.staffedBeds)} beds · ${fmtNum(data.nurseFTEs)} nurse FTEs · Inpatient Nursing`;
 
-  const hapiEvents = (data.patientDaysAnnual / 1000) * data.hapi.rate;
-  const fallsEvents = (data.patientDaysAnnual / 1000) * data.falls.rate;
-  const cathDays = data.patientDaysAnnual * (data.cauti.utilizationPct / 100);
-  const lineDays = data.patientDaysAnnual * (data.clabsi.utilizationPct / 100);
-  const cautiEvents = (cathDays / 1000) * data.cauti.rate;
-  const clabsiEvents = (lineDays / 1000) * data.clabsi.rate;
-  const sepsisCases = (data.patientDaysAnnual / 1000) * data.sepsis.ratePerThousand;
+  // Derived event counts come from the same shared math helpers used by the
+  // engine, so the printed formula is guaranteed to reconcile with the
+  // engine-computed `value` shown next to each driver header.
+  const hapiCalc = calcHapi({
+    patientDays: data.patientDaysAnnual,
+    rate: data.hapi.rate,
+    preventionPct: data.hapi.preventionPct,
+    cost: data.hapi.costPerEvent,
+  });
+  const fallsCalc = calcFalls({
+    patientDays: data.patientDaysAnnual,
+    rate: data.falls.rate,
+    preventionPct: data.falls.preventionPct,
+    cost: data.falls.costPerEvent,
+  });
+  const cautiCalc = calcCauti({
+    patientDays: data.patientDaysAnnual,
+    utilizationPct: data.cauti.utilizationPct,
+    rate: data.cauti.rate,
+    preventionPct: data.cauti.preventionPct,
+    cost: data.cauti.costPerEvent,
+  });
+  const clabsiCalc = calcClabsi({
+    patientDays: data.patientDaysAnnual,
+    utilizationPct: data.clabsi.utilizationPct,
+    rate: data.clabsi.rate,
+    preventionPct: data.clabsi.preventionPct,
+    cost: data.clabsi.costPerEvent,
+  });
+  const sepsisCalc = calcSepsis({
+    patientDays: data.patientDaysAnnual,
+    ratePerThousand: data.sepsis.ratePerThousand,
+    currentCompliancePct: 100 - data.sepsis.complianceGapPct,
+    docLagPct: data.sepsis.docLagPct,
+    excessCostPerCase: data.sepsis.excessCostPerCase,
+    realizationPct: data.sepsis.realizationPct,
+  });
+
+  const hapiEvents = hapiCalc.events;
+  const fallsEvents = fallsCalc.events;
+  const cathDays = cautiCalc.catheterDays;
+  const lineDays = clabsiCalc.lineDays;
+  const cautiEvents = cautiCalc.events;
+  const clabsiEvents = clabsiCalc.events;
+  const sepsisCases = sepsisCalc.events;
 
   const hasTrackedMetrics = data.hcahpsEnabled || data.medErrorEnabled;
 

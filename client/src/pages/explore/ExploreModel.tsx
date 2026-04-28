@@ -11,6 +11,13 @@ import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, 
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateExplorePDF, type ExplorePDFData } from "@/components/explore/ExplorePDFExport";
 import { generateNursingValueAssessmentPDF, type NursingPDFInput } from "@/components/explore/NursingValueAssessmentPDF";
+import {
+  calcHapi,
+  calcFalls,
+  calcCauti,
+  calcClabsi,
+  calcSepsis,
+} from "@/lib/nursingQualityCalcs";
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 
@@ -162,31 +169,53 @@ export default function ExploreModel({
     }
 
     // ─── Quality (Nursing only quantified) ───
+    // Math is delegated to the shared helpers in @/lib/nursingQualityCalcs
+    // so the engine, the live UI, and the printed PDF stay in lockstep.
     if (isNursing) {
       const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
       if (dq.nursingHapiEnabled) {
-        const hapis = (patientDays / 1000) * dq.nursingHapiRate;
-        result.nursingHapi = Math.round(hapis * (dq.nursingHapiPreventionRate / 100) * dq.nursingHapiCost);
+        result.nursingHapi = Math.round(calcHapi({
+          patientDays,
+          rate: dq.nursingHapiRate,
+          preventionPct: dq.nursingHapiPreventionRate,
+          cost: dq.nursingHapiCost,
+        }).value);
       }
       if (dq.nursingFallsEnabled) {
-        const falls = (patientDays / 1000) * dq.nursingFallsRate;
-        result.nursingFalls = Math.round(falls * (dq.nursingFallsPreventionRate / 100) * dq.nursingFallsCost);
+        result.nursingFalls = Math.round(calcFalls({
+          patientDays,
+          rate: dq.nursingFallsRate,
+          preventionPct: dq.nursingFallsPreventionRate,
+          cost: dq.nursingFallsCost,
+        }).value);
       }
       if (dq.nursingCautiEnabled) {
-        const cathDays = patientDays * (dq.nursingCautiUtilizationRatio / 100);
-        const cautis = (cathDays / 1000) * dq.nursingCautiRate;
-        result.nursingCauti = Math.round(cautis * (dq.nursingCautiPreventionRate / 100) * dq.nursingCautiCost);
+        result.nursingCauti = Math.round(calcCauti({
+          patientDays,
+          utilizationPct: dq.nursingCautiUtilizationRatio,
+          rate: dq.nursingCautiRate,
+          preventionPct: dq.nursingCautiPreventionRate,
+          cost: dq.nursingCautiCost,
+        }).value);
       }
       if (dq.nursingClabsiEnabled) {
-        const lineDays = patientDays * (dq.nursingClabsiUtilizationRatio / 100);
-        const clabsi = (lineDays / 1000) * dq.nursingClabsiRate;
-        result.nursingClabsi = Math.round(clabsi * (dq.nursingClabsiPreventionRate / 100) * dq.nursingClabsiCost);
+        result.nursingClabsi = Math.round(calcClabsi({
+          patientDays,
+          utilizationPct: dq.nursingClabsiUtilizationRatio,
+          rate: dq.nursingClabsiRate,
+          preventionPct: dq.nursingClabsiPreventionRate,
+          cost: dq.nursingClabsiCost,
+        }).value);
       }
       if (dq.nursingSepsisEnabled) {
-        const sepsis = (patientDays / 1000) * dq.nursingSepsisRatePerThousand;
-        const nonComp = sepsis * ((100 - dq.nursingSepsisCurrentCompliance) / 100);
-        const docLag = nonComp * (dq.nursingSepsisDocLagPercent / 100);
-        result.nursingSepsis = Math.round(docLag * dq.nursingSepsisExcessCostPerCase * (dq.nursingSepsisRealization / 100));
+        result.nursingSepsis = Math.round(calcSepsis({
+          patientDays,
+          ratePerThousand: dq.nursingSepsisRatePerThousand,
+          currentCompliancePct: dq.nursingSepsisCurrentCompliance,
+          docLagPct: dq.nursingSepsisDocLagPercent,
+          excessCostPerCase: dq.nursingSepsisExcessCostPerCase,
+          realizationPct: dq.nursingSepsisRealization,
+        }).value);
       }
     }
 
@@ -291,9 +320,11 @@ export default function ExploreModel({
       out.emCodingAccuracy = `${fmtN(totalCharges)} charges × ${gapPct}% gap × ${fmt$(dq.ipEmCodingAvgRevenueLift)}/charge lift × ${dq.ipEmCodingRealization}% realization`;
     }
 
-    // Quality (Nursing only quantified)
+    // Quality (Nursing only quantified) — derive every multiplicand from the
+    // shared helpers so the displayed formula and the engine value can never
+    // disagree, even if a future haircut/multiplier is added to the math.
     if (isNursing && state.nursingStaffedBeds && state.nursingOccupancyRate) {
-      const patientDays = Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365);
+      const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
       if (dq.nursingHapiEnabled) {
         out.nursingHapi = `${fmtN(patientDays)} patient-days × ${dq.nursingHapiRate}/1k HAPI × ${dq.nursingHapiPreventionRate}% prevention × ${fmt$(dq.nursingHapiCost)}/case`;
       }
@@ -301,16 +332,35 @@ export default function ExploreModel({
         out.nursingFalls = `${fmtN(patientDays)} patient-days × ${dq.nursingFallsRate}/1k falls × ${dq.nursingFallsPreventionRate}% prevention × ${fmt$(dq.nursingFallsCost)}/case`;
       }
       if (dq.nursingCautiEnabled) {
-        const cathDays = Math.round(patientDays * (dq.nursingCautiUtilizationRatio / 100));
-        out.nursingCauti = `${fmtN(cathDays)} cath-days × ${dq.nursingCautiRate}/1k CAUTI × ${dq.nursingCautiPreventionRate}% prevention × ${fmt$(dq.nursingCautiCost)}/case`;
+        const cautiCalc = calcCauti({
+          patientDays,
+          utilizationPct: dq.nursingCautiUtilizationRatio,
+          rate: dq.nursingCautiRate,
+          preventionPct: dq.nursingCautiPreventionRate,
+          cost: dq.nursingCautiCost,
+        });
+        out.nursingCauti = `${fmtN(cautiCalc.catheterDays)} cath-days × ${dq.nursingCautiRate}/1k CAUTI × ${dq.nursingCautiPreventionRate}% prevention × ${fmt$(dq.nursingCautiCost)}/case`;
       }
       if (dq.nursingClabsiEnabled) {
-        const lineDays = Math.round(patientDays * (dq.nursingClabsiUtilizationRatio / 100));
-        out.nursingClabsi = `${fmtN(lineDays)} line-days × ${dq.nursingClabsiRate}/1k CLABSI × ${dq.nursingClabsiPreventionRate}% prevention × ${fmt$(dq.nursingClabsiCost)}/case`;
+        const clabsiCalc = calcClabsi({
+          patientDays,
+          utilizationPct: dq.nursingClabsiUtilizationRatio,
+          rate: dq.nursingClabsiRate,
+          preventionPct: dq.nursingClabsiPreventionRate,
+          cost: dq.nursingClabsiCost,
+        });
+        out.nursingClabsi = `${fmtN(clabsiCalc.lineDays)} line-days × ${dq.nursingClabsiRate}/1k CLABSI × ${dq.nursingClabsiPreventionRate}% prevention × ${fmt$(dq.nursingClabsiCost)}/case`;
       }
       if (dq.nursingSepsisEnabled) {
-        const nonCompPct = Math.max(0, 100 - dq.nursingSepsisCurrentCompliance);
-        out.nursingSepsis = `${fmtN(patientDays)} patient-days × ${dq.nursingSepsisRatePerThousand}/1k sepsis × ${nonCompPct}% non-compliance × ${dq.nursingSepsisDocLagPercent}% doc lag × ${fmt$(dq.nursingSepsisExcessCostPerCase)}/case × ${dq.nursingSepsisRealization}% realization`;
+        const sepsisCalc = calcSepsis({
+          patientDays,
+          ratePerThousand: dq.nursingSepsisRatePerThousand,
+          currentCompliancePct: dq.nursingSepsisCurrentCompliance,
+          docLagPct: dq.nursingSepsisDocLagPercent,
+          excessCostPerCase: dq.nursingSepsisExcessCostPerCase,
+          realizationPct: dq.nursingSepsisRealization,
+        });
+        out.nursingSepsis = `${fmtN(patientDays)} patient-days × ${dq.nursingSepsisRatePerThousand}/1k sepsis × ${sepsisCalc.complianceGapPct}% non-compliance × ${dq.nursingSepsisDocLagPercent}% doc lag × ${fmt$(dq.nursingSepsisExcessCostPerCase)}/case × ${dq.nursingSepsisRealization}% realization`;
       }
     }
 
@@ -563,18 +613,29 @@ export default function ExploreModel({
   const valuePerBed = isNursing && state.nursingStaffedBeds > 0 ? Math.round(totalAnnualValue / state.nursingStaffedBeds) : 0;
   const netPerBedYear = isNursing && state.nursingStaffedBeds > 0 ? Math.round(netAnnualValue / state.nursingStaffedBeds) : 0;
 
+  // The five nursing-quality driver values share their math with the printed
+  // Mercy PDF via the helpers in @/lib/nursingQualityCalcs. Keep them as the
+  // single source of truth — see allDriverValues above.
   const nursingHapiValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingHapiEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-    const hapIs = (patientDays / 1000) * state.docQualityInputs.nursingHapiRate;
-    return Math.round(hapIs * (state.docQualityInputs.nursingHapiPreventionRate / 100) * state.docQualityInputs.nursingHapiCost);
+    return Math.round(calcHapi({
+      patientDays,
+      rate: state.docQualityInputs.nursingHapiRate,
+      preventionPct: state.docQualityInputs.nursingHapiPreventionRate,
+      cost: state.docQualityInputs.nursingHapiCost,
+    }).value);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const nursingFallsValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingFallsEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-    const falls = (patientDays / 1000) * state.docQualityInputs.nursingFallsRate;
-    return Math.round(falls * (state.docQualityInputs.nursingFallsPreventionRate / 100) * state.docQualityInputs.nursingFallsCost);
+    return Math.round(calcFalls({
+      patientDays,
+      rate: state.docQualityInputs.nursingFallsRate,
+      preventionPct: state.docQualityInputs.nursingFallsPreventionRate,
+      cost: state.docQualityInputs.nursingFallsCost,
+    }).value);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const nursingHacPenalty = useMemo(() => {
@@ -585,24 +646,38 @@ export default function ExploreModel({
   const nursingCautiValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingCautiEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-    const cathDays = patientDays * (state.docQualityInputs.nursingCautiUtilizationRatio / 100);
-    return Math.round((cathDays / 1000) * state.docQualityInputs.nursingCautiRate * (state.docQualityInputs.nursingCautiPreventionRate / 100) * state.docQualityInputs.nursingCautiCost);
+    return Math.round(calcCauti({
+      patientDays,
+      utilizationPct: state.docQualityInputs.nursingCautiUtilizationRatio,
+      rate: state.docQualityInputs.nursingCautiRate,
+      preventionPct: state.docQualityInputs.nursingCautiPreventionRate,
+      cost: state.docQualityInputs.nursingCautiCost,
+    }).value);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const nursingClabsiValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingClabsiEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-    const clDays = patientDays * (state.docQualityInputs.nursingClabsiUtilizationRatio / 100);
-    return Math.round((clDays / 1000) * state.docQualityInputs.nursingClabsiRate * (state.docQualityInputs.nursingClabsiPreventionRate / 100) * state.docQualityInputs.nursingClabsiCost);
+    return Math.round(calcClabsi({
+      patientDays,
+      utilizationPct: state.docQualityInputs.nursingClabsiUtilizationRatio,
+      rate: state.docQualityInputs.nursingClabsiRate,
+      preventionPct: state.docQualityInputs.nursingClabsiPreventionRate,
+      cost: state.docQualityInputs.nursingClabsiCost,
+    }).value);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   const nursingSepsisValue = useMemo(() => {
     if (!isNursing || !state.docQualityInputs.nursingSepsisEnabled) return 0;
     const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-    const sepsisPerYear = (patientDays / 1000) * state.docQualityInputs.nursingSepsisRatePerThousand;
-    const nonCompliant = sepsisPerYear * ((100 - state.docQualityInputs.nursingSepsisCurrentCompliance) / 100);
-    const docLagCases = nonCompliant * (state.docQualityInputs.nursingSepsisDocLagPercent / 100);
-    return Math.round(docLagCases * state.docQualityInputs.nursingSepsisExcessCostPerCase * (state.docQualityInputs.nursingSepsisRealization / 100));
+    return Math.round(calcSepsis({
+      patientDays,
+      ratePerThousand: state.docQualityInputs.nursingSepsisRatePerThousand,
+      currentCompliancePct: state.docQualityInputs.nursingSepsisCurrentCompliance,
+      docLagPct: state.docQualityInputs.nursingSepsisDocLagPercent,
+      excessCostPerCase: state.docQualityInputs.nursingSepsisExcessCostPerCase,
+      realizationPct: state.docQualityInputs.nursingSepsisRealization,
+    }).value);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
   // 3-year projection (Y2/Y3 growth driven by state, one-time benefits in Y1 only)
@@ -981,7 +1056,10 @@ export default function ExploreModel({
         };
 
         if (state.careSetting === 'nursing') {
-          const patientDaysAnnual = Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365);
+          // Pass unrounded patient-days so the PDF's helper-derived event
+          // counts use the same operand as the engine's value math; the PDF
+          // formats with rounding only at display time via fmtNum.
+          const patientDaysAnnual = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
           const td = state.timeDriverInputs;
           const dq = state.docQualityInputs;
 
