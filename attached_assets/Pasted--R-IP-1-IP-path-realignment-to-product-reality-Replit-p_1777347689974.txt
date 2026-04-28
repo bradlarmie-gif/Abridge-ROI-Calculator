@@ -1,0 +1,164 @@
+🔧 R-IP-1 — IP path realignment to product reality (Replit prompt — paste verbatim)                                                                                                                          
+                                                                                                                                                                                                               
+  Context: Realigns IP (Inpatient) Explore drivers to product reality. Abridge in IP focuses on (1) H&P notes — primary use case, CMS 24-hour signature requirement — and (2) progress notes — secondary, lower
+   adoption expected. NOT focused on E/M coding optimization. Three quadrant changes:                                                                                                                          
+                                                                                
+  - Capacity: Replace "Rounding Efficiency" with "H&P Completion Within 24 Hours" (centers H&P as primary, CMS-relevant, directly Abridge-moveable)                                                            
+  - Revenue: Drop the "E/M Coding Accuracy" financial driver entirely (Abridge isn't focused on or directly influencing IP E/M coding)
+  - Quality: Replace "HCAHPS Composite" and "30-Day Readmission" with three new qualitative items (Hand-Off Completeness, Discharge Documentation Completeness, Leapfrog Hospital Safety Grade) — INTENTIONAL  
+  EXCEPTION to the 3-per-quadrant rule, IP Quality lands at 4 items. All four are qualitative (no $ math).
+                                                                                                                                                                                                               
+  Workforce stays unchanged (After-Hours Documentation · Burnout Score · Time to Sign Note — all apply to both H&P and progress notes).
+                                                                                                                                                                                                               
+  Pre-req: All R-IA-* and R-RECOVER prompts shipped.                            
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                   
+  TASK 1 — Add new state fields for the 4 new IP qualitative drivers                                                                                                                                           
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                               
+                                                                                                                                                                                                               
+  ADD these enabled/expanded boolean field pairs to the TimeDriverInputs interface AND to DEFAULT_EXPLORE_STATE.timeDriverInputs (default `false`):
+                                                                                                                                                                                                               
+    // IP Capacity (new — replaces roundingEfficiency)                          
+    ipHnpCompletion24hEnabled: boolean;                                                                                                                                                                        
+    ipHnpCompletion24hExpanded: boolean;                                        
+    // IP Quality (new — three additions)                                                                                                                                                                      
+    ipHandoffCompletenessEnabled: boolean;                                                                                                                                                                     
+    ipHandoffCompletenessExpanded: boolean;                                                                                                                                                                    
+    ipDischargeDocCompletenessEnabled: boolean;                                                                                                                                                                
+    ipDischargeDocCompletenessExpanded: boolean;                                                                                                                                                               
+    ipLeapfrogEnabled: boolean;                                                                                                                                                                                
+    ipLeapfrogExpanded: boolean;                                                
+                                                                                                                                                                                                               
+  LEAVE the existing ipRoundingEnabled / ipRoundingExpanded / ipEmCodingEnabled / ipEmCodingExpanded fields in TimeDriverInputs and DocQualityInputs UNTOUCHED. They become orphans (no driver references them)
+   but removing them is risky — leave for a later cleanup sprint.                                                                                                                                              
+                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Remove orphaned IP drivers from EXPLORE_DRIVERS                                                                                                                                                     
+  ═══════════════════════════════════════════════════════════
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                                                                                                                                                                               
+  REMOVE these driver entries from the EXPLORE_DRIVERS array (find by id):                                                                                                                                     
+                                                                                                                                                                                                               
+    roundingEfficiency       (was IP Capacity qualitative — replaced by ipHnpCompletion24h)                                                                                                                    
+    emCodingAccuracy         (was IP Revenue financial — Abridge not focused on IP E/M coding)                                                                                                                 
+    ipHcahpsComposite        (was IP Quality qualitative — replaced by Hand-Off + Discharge Doc + Leapfrog)
+    ipReadmission            (was IP Quality qualitative — multi-factor, replaced)                                                                                                                             
+                                                                                                                                                                                                               
+  KEEP all other IP drivers as-is (DRG Accuracy, CDI Query Reduction, Obs/IP Status Defense, Documentation Lag, Discharge Summary Completion Time, After-Hours Documentation, Burnout Score, Time to Sign Note,
+   Case Mix Index, CC/MCC Capture Trend, CDI Query Volume Trend, Note Star Rating).                                                                                                                            
+                                                                                
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Add 4 new IP qualitative driver entries to EXPLORE_DRIVERS           
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                                                                                                                                                                               
+  APPEND these driver entries to the EXPLORE_DRIVERS array. All have `visibility: 'qualitative'`, no calcComponent, no measureDefaults. Voice is neutral.                                                      
+                                                                                                                                                                                                               
+    // ───── IP Capacity (replaces roundingEfficiency) ─────                                                                                                                                                   
+    {                                                                           
+      id: 'ipHnpCompletion24h',                             
+      label: 'H&P Completion Within 24 Hours',                                                                                                                                                                 
+      shortDescription: 'Share of inpatient admissions with the H&P note signed within the CMS-required 24-hour window. A direct compliance and capacity signal — late H&Ps delay care plans, consults, and
+  downstream actions.',                                                                                                                                                                                        
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['inpatient'],                              
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipHnpCompletion24hEnabled',                             
+      expandedStateKey: 'ipHnpCompletion24hExpanded',                                                                                                                                                          
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                      
+                                                                                                                                                                                                               
+    // ───── IP Quality (replaces HCAHPS Composite + 30-Day Readmission) ─────  
+    {                                                                                                                                                                                                          
+      id: 'ipHandoffCompleteness',                                                                                                                                                                             
+      label: 'Hand-Off Completeness',                     
+      shortDescription: 'Share of provider hand-offs (shift-change, consult, transfer) with complete documentation at time of transition. Faster, more complete progress notes feed cleaner hand-offs.',       
+      quadrant: 'Quality',                                                      
+      settings: ['inpatient'],                                                                                                                                                                                 
+      visibility: 'qualitative',                                                
+      enabledStateKey: 'ipHandoffCompletenessEnabled',                                                                                                                                                         
+      expandedStateKey: 'ipHandoffCompletenessExpanded',                        
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                                          
+    {                                              
+      id: 'ipDischargeDocCompleteness',                                                                                                                                                                        
+      label: 'Discharge Documentation Completeness',        
+      shortDescription: 'Share of discharges with complete summary documentation supporting post-acute care, payer review, and readmission risk reduction.',                                                   
+      quadrant: 'Quality',                                                      
+      settings: ['inpatient'],                                                                                                                                                                                 
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipDischargeDocCompletenessEnabled', 
+      expandedStateKey: 'ipDischargeDocCompletenessExpanded',                                                                                                                                                  
+      trackedMeasureIds: [],                                                    
+    },                                                     
+    {                                                                                                                                                                                                          
+      id: 'ipLeapfrog',                                                                                                                                                                                        
+      label: 'Leapfrog Hospital Safety Grade',                                                                                                                                                                 
+      shortDescription: 'Composite hospital safety grade from The Leapfrog Group. Tracked as a quality posture indicator; documentation completeness is one of several inputs.',                               
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['inpatient'],                                                  
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'ipLeapfrogEnabled',                 
+      expandedStateKey: 'ipLeapfrogExpanded',                                                                                                                                                                  
+      trackedMeasureIds: [],                                                    
+    },                                             
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 4 — Sanity check downstream code paths                                                                                                                                                                  
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                                                
+  The following calculations may reference removed driver IDs or their state fields. They're safe to LEAVE AS-IS because the corresponding state fields stay false (drivers gone from registry, no UI to toggle
+   them on), but flag if any active code path renders something that references them:
+                                                                                                                                                                                                               
+  - ExploreFlow.tsx docValue memoizer — has an ipEmCoding contribution branch. With the driver gone, ipEmCodingEnabled will always be false and the branch becomes dead code. SAFE — leave alone.
+  - ExploreModel.tsx allDriverValues — same situation for emCodingAccuracy. SAFE.                                                                                                                              
+  - exploreQuadrantValues.ts computeRevenueBreakdown — same. SAFE.
+                                                                                                                                                                                                               
+  If you want belt-and-suspenders, you can REMOVE the ipEmCoding branch from these three calc paths since they're dead code now. But not required — the toggle never flips on so the branches never execute.
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                   
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                          
+  1. TypeScript compiles. New TimeDriverInputs fields are typed; defaults present in DEFAULT_EXPLORE_STATE.                                                                                                    
+                                                                                                                                                                                                               
+  2. Walk Inpatient through each quadrant page:                                                                                                                                                                
+     - **Capacity (4/9)**:                                                                                                                                                                                     
+       - Financial Drivers section is HIDDEN (IP Capacity has no financial drivers — all qualitative)                                                                                                          
+       - Other Metrics to Watch: H&P Completion Within 24 Hours · Documentation Lag · Discharge Summary Completion Time
+       - Total qualitative items: exactly 3 ✓                                                                                                                                                                  
+       - "Rounding Efficiency" is NO LONGER visible                             
+     - **Workforce (5/9)**:                                                                                                                                                                                    
+       - UNCHANGED — Financial Drivers (Provider Wellbeing + Locum/Agency child) + Other Metrics (After-Hours Doc · Burnout · Time to Sign Note)
+     - **Revenue (6/9)**:                                                                                                                                                                                      
+       - Financial Drivers: DRG Accuracy · CDI Query Reduction · Observation/IP Status Defense (3 items — E/M Coding Accuracy is GONE)
+       - Other Metrics: Case Mix Index · CC/MCC Capture Trend · CDI Query Volume Trend (unchanged, 3 items)                                                                                                    
+       - "E/M Coding Accuracy" is NO LONGER visible as a toggleable financial driver                                                                                                                           
+     - **Quality (7/9)**:                                                                                                                                                                                      
+       - Financial Drivers section is HIDDEN                                                                                                                                                                   
+       - Other Metrics to Watch: Note Quality (Star Rating) · Hand-Off Completeness · Discharge Documentation Completeness · Leapfrog Hospital Safety Grade                                                    
+       - Total qualitative items: exactly 4 ✓ (intentional exception to the 3-per-quadrant rule)                                                                                                               
+       - HCAHPS Composite and 30-Day Readmission are NO LONGER visible                                                                                                                                         
+                                                                                                                                                                                                               
+  3. Step 9 Model — quadrant cards reflect the new lineup. Toggle the new IP qualitative drivers and confirm they show as "Qualitative" line items in the matching quadrant card.                              
+                                                                                                                                                                                                               
+  4. Walk OP, ED, Nursing — confirm THEIR pages are untouched.                                                                                                                                                 
+                                                                                                                                                                                                               
+  5. PDF export — generate a PDF for an IP session. The Revenue chapter no longer lists E/M Coding Accuracy. The Capacity chapter shows H&P Completion Within 24 Hours. The Quality chapter lists the four new 
+  items. Cover page intact.                                                                                                                                                                                    
+                                                                                                                                                                                                               
+  6. No console errors. No TypeScript errors.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - IP Quality intentionally lands at 4 items. This breaks the 3-per-quadrant rule deliberately — Leapfrog is a quality-posture metric customers ask about (even though Abridge isn't the primary lever), and  
+  each of the other three has a clear Abridge causal pathway. Exception is documented here so future audits don't try to "normalize" back to 3.
+  - ipEmCoding state fields and calc-memoizer branches are intentionally LEFT in the codebase. They're dead code (no UI to toggle them on) but removing them adds risk. Cleanup deferred.                      
+  - ipRoundingEnabled / ipRoundingExpanded state fields are similarly orphaned. Same logic — leave for later cleanup.
+  - The emCodingAccuracy entry in EXPLORE_DRIVERS is the only thing being actively removed for the E/M Coding driver. The EmCodingCalc.tsx component file (which exists after R-RECOVER) becomes orphaned on   
+  disk — leave it there.                                                                                                                                                                                       
+  - "H&P Completion Within 24 Hours" is the strongest Capacity framing because:
+    • CMS requirement = real compliance pressure customers already track                                                                                                                                       
+    • Directly Abridge-moveable (faster H&P creation = better compliance)       
+    • Centers H&P as the primary product use case (vs. Rounding which over-indexed on progress notes)                                                                                                          
+    • Capacity-themed (late H&Ps delay downstream care plan / consults / discharge prep)

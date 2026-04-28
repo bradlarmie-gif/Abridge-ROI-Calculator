@@ -19,7 +19,6 @@ import DenialPreventionCalc from "@/components/explore/drivers/DenialPreventionC
 import DrgAccuracyCalc from "@/components/explore/drivers/DrgAccuracyCalc";
 import CdiQueryReductionCalc from "@/components/explore/drivers/CdiQueryReductionCalc";
 import ObsDefenseCalc from "@/components/explore/drivers/ObsDefenseCalc";
-import EmCodingCalc from "@/components/explore/drivers/EmCodingCalc";
 
 export type ExploreQuadrant = 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
 
@@ -124,16 +123,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       realizationDefault: 40,
       scaleAxis: 'encounters',
     },
-  },
-  {
-    id: 'roundingEfficiency',
-    label: 'Rounding Efficiency',
-    shortDescription: 'More time at the bedside during rounds rather than in the EHR.',
-    quadrant: 'Capacity',
-    settings: ['inpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'ipRoundingEnabled',
-    expandedStateKey: 'ipRoundingExpanded',
   },
   {
     id: 'bedsideTime',
@@ -328,26 +317,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'qualitative',
     enabledStateKey: 'ipNoteStarRatingEnabled',
     expandedStateKey: 'ipNoteStarRatingExpanded',
-  },
-  {
-    id: 'ipHcahpsComposite',
-    label: 'HCAHPS Composite',
-    shortDescription: 'Doctor-communication composite improves with attentive bedside time.',
-    quadrant: 'Quality',
-    settings: ['inpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'ipHcahpsCompositeEnabled',
-    expandedStateKey: 'ipHcahpsCompositeExpanded',
-  },
-  {
-    id: 'ipReadmission',
-    label: '30-Day Readmission',
-    shortDescription: 'Better discharge documentation supports lower 30-day readmissions.',
-    quadrant: 'Quality',
-    settings: ['inpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'ipReadmissionEnabled',
-    expandedStateKey: 'ipReadmissionExpanded',
   },
   // Nursing (5 quantified + 2 qualitative)
   {
@@ -620,27 +589,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     },
   },
   {
-    id: 'emCodingAccuracy',
-    label: 'E/M Coding Accuracy',
-    shortDescription: 'Right-code clinical complexity from ambient capture, including consults and progress notes.',
-    quadrant: 'Revenue',
-    settings: ['inpatient'],
-    visibility: 'quantified',
-    enabledStateKey: 'ipEmCodingEnabled',
-    expandedStateKey: 'ipEmCodingExpanded',
-    calcComponent: EmCodingCalc,
-    trackedMeasureIds: ['emLevel'],
-    measureDefaults: {
-      deltaLabel: 'Encounters captured',
-      deltaUnit: 'encounters',
-      valuePerUnitLabel: 'Avg revenue lift per encounter',
-      valuePerUnitDefault: 35,
-      valuePerUnitPrefix: '$',
-      realizationDefault: 75,
-      scaleAxis: 'encounters',
-    },
-  },
-  {
     id: 'nursingCdiResponse',
     label: 'CDI Query Response',
     shortDescription: 'Faster, more complete nursing documentation supports DRG accuracy and timeliness.',
@@ -875,7 +823,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
 
   // IP Capacity (qualitative — 3 drivers, restructured by R-IA-5; ALOS removed)
-  // (roundingEfficiency lives earlier in this array and renders FIRST in the IP Capacity section.)
+  // (R-IP-1: roundingEfficiency removed; ipHnpCompletion24h is appended at end of array and now renders FIRST in IP Capacity.)
   {
     id: 'ipDocumentationLag',
     label: 'Documentation Lag',
@@ -1028,6 +976,52 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingChartingAfterShiftEnabled',
     expandedStateKey: 'nursingChartingAfterShiftExpanded',
     trackedMeasureIds: ['chartingAfterShift'],
+  },
+  // ───── R-IP-1: IP Capacity (replaces roundingEfficiency) ─────
+  {
+    id: 'ipHnpCompletion24h',
+    label: 'H&P Completion Within 24 Hours',
+    shortDescription: 'Share of inpatient admissions with the H&P note signed within the CMS-required 24-hour window. A direct compliance and capacity signal — late H&Ps delay care plans, consults, and downstream actions.',
+    quadrant: 'Capacity',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipHnpCompletion24hEnabled',
+    expandedStateKey: 'ipHnpCompletion24hExpanded',
+    trackedMeasureIds: [],
+  },
+  // ───── R-IP-1: IP Quality (replaces HCAHPS Composite + 30-Day Readmission) ─────
+  {
+    id: 'ipHandoffCompleteness',
+    label: 'Hand-Off Completeness',
+    shortDescription: 'Share of provider hand-offs (shift-change, consult, transfer) with complete documentation at time of transition. Faster, more complete progress notes feed cleaner hand-offs.',
+    quadrant: 'Quality',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipHandoffCompletenessEnabled',
+    expandedStateKey: 'ipHandoffCompletenessExpanded',
+    trackedMeasureIds: [],
+  },
+  {
+    id: 'ipDischargeDocCompleteness',
+    label: 'Discharge Documentation Completeness',
+    shortDescription: 'Share of discharges with complete summary documentation supporting post-acute care, payer review, and readmission risk reduction.',
+    quadrant: 'Quality',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipDischargeDocCompletenessEnabled',
+    expandedStateKey: 'ipDischargeDocCompletenessExpanded',
+    trackedMeasureIds: [],
+  },
+  {
+    id: 'ipLeapfrog',
+    label: 'Leapfrog Hospital Safety Grade',
+    shortDescription: 'Composite hospital safety grade from The Leapfrog Group. Tracked as a quality posture indicator; documentation completeness is one of several inputs.',
+    quadrant: 'Quality',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipLeapfrogEnabled',
+    expandedStateKey: 'ipLeapfrogExpanded',
+    trackedMeasureIds: [],
   },
 ];
 

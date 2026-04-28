@@ -194,6 +194,16 @@ export interface TimeDriverInputs {
   ipHcahpsCompositeExpanded: boolean;
   ipReadmissionEnabled: boolean;
   ipReadmissionExpanded: boolean;
+  // IP Capacity (R-IP-1 — replaces roundingEfficiency)
+  ipHnpCompletion24hEnabled: boolean;
+  ipHnpCompletion24hExpanded: boolean;
+  // IP Quality (R-IP-1 — replaces HCAHPS Composite + 30-Day Readmission, lands at 4 items intentionally)
+  ipHandoffCompletenessEnabled: boolean;
+  ipHandoffCompletenessExpanded: boolean;
+  ipDischargeDocCompletenessEnabled: boolean;
+  ipDischargeDocCompletenessExpanded: boolean;
+  ipLeapfrogEnabled: boolean;
+  ipLeapfrogExpanded: boolean;
   // Nursing qualitative Quality (1 new — HCAHPS already exists in docQualityInputs)
   nursingMedErrorEnabled: boolean;
   nursingMedErrorExpanded: boolean;
@@ -581,6 +591,16 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipHcahpsCompositeExpanded: false,
     ipReadmissionEnabled: false,
     ipReadmissionExpanded: false,
+    // IP Capacity (R-IP-1)
+    ipHnpCompletion24hEnabled: false,
+    ipHnpCompletion24hExpanded: false,
+    // IP Quality (R-IP-1)
+    ipHandoffCompletenessEnabled: false,
+    ipHandoffCompletenessExpanded: false,
+    ipDischargeDocCompletenessEnabled: false,
+    ipDischargeDocCompletenessExpanded: false,
+    ipLeapfrogEnabled: false,
+    ipLeapfrogExpanded: false,
     nursingMedErrorEnabled: false,
     nursingMedErrorExpanded: false,
     nursingCdiResponseEnabled: false,

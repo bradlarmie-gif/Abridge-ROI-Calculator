@@ -46,6 +46,7 @@ The application adheres to Material Design principles, utilizing Abridge's brand
 -   **Architecture**: Component-driven UI, configuration-driven ROI levers, pure functions for calculation logic, and handling of qualitative drivers.
 -   **Explore Quadrant Information Architecture**: Each Explore quadrant page categorizes drivers into "Financial Drivers" (quantified) and "Other Metrics to Watch" (qualitative), with corresponding groupings in the right-side sticky panel. Qualitative drivers are curated and setting-specific, and do not impact monetary calculations.
 -   **Explore Step 9 OP Connected Value**: An Outpatient-specific "Connected Value" narrative section rendered in `ExploreModel.tsx` Step 9, providing insights into value generation for Outpatient settings.
+-   **Explore IP Driver Lineup (R-IP-1)**: The Inpatient Explore path is realigned to product reality. Capacity centers on H&P Completion Within 24 Hours (replacing Rounding Efficiency); Revenue drops the E/M Coding Accuracy financial driver entirely; Quality lands at four qualitative items — Note Quality (Star Rating), Hand-Off Completeness, Discharge Documentation Completeness, and Leapfrog Hospital Safety Grade (intentional exception to the 3-per-quadrant rule). Workforce is unchanged.
 
 ## External Dependencies
 
