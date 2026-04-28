@@ -591,12 +591,12 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>WORKFORCE</Text>
           <Text style={styles.sectionHeadline}>
-            Documentation burden is the reason nurses leave. And the reason they stay late.
+            Documentation burden is among the top reasons nurses leave — and stay late.
           </Text>
           <Text style={styles.body}>
-            Three labor lines — turnover, agency premium, and overtime — all driven by
-            the same root cause: how long it takes to finish charting at the end of a
-            shift.
+            Three labor lines — turnover, agency premium, and overtime — all linked
+            to the same upstream factor: how long it takes to finish charting at the
+            end of a shift.
           </Text>
 
           {data.retention.enabled ? (
@@ -606,8 +606,9 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 <Text style={styles.driverValue}>{fmtCurrency(data.retention.value)}</Text>
               </View>
               <Text style={styles.driverBody}>
-                Documentation burden drives burnout drives turnover. Reducing burden
-                helps retain experienced nurses who would otherwise leave.
+                Documentation burden is among the factors associated with burnout and
+                turnover. Reducing burden is modeled to help retain experienced nurses
+                who might otherwise leave.
               </Text>
               <MathGrid
                 rows={[
@@ -632,8 +633,9 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 <Text style={styles.driverValue}>{fmtCurrency(data.agency.value)}</Text>
               </View>
               <Text style={styles.driverBody}>
-                When nurses leave, hospitals fill gaps with agency at 2–3× the cost.
-                Improved retention directly reduces premium-labor dependency.
+                When nurses leave, hospitals typically fill gaps with agency labor at
+                2–3× the cost. Improved retention is modeled to reduce that
+                premium-labor dependency.
               </Text>
               <MathGrid
                 rows={[
@@ -708,10 +710,11 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             A leading indicator, not a billable line.
           </Text>
           <Text style={styles.body}>
-            When nurses finish charting on shift, the next hour goes to direct patient
-            care instead of catch-up documentation. We track the ratio of bedside-to-
-            charting time as the leading indicator that the model is working — the
-            workforce and quality outcomes follow from it.
+            When nurses finish charting on shift, more of the next hour can go to
+            direct patient care rather than catch-up documentation. We track the
+            ratio of bedside-to-charting time as a leading indicator that the model
+            is taking hold — workforce and quality outcomes are typically downstream
+            of that shift, though the magnitude is unit-specific.
           </Text>
 
           <View style={[styles.cardBg, { flexDirection: "row", paddingVertical: 18, marginBottom: 14 }]}>
@@ -739,7 +742,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Hours returned/yr</Text> is the
             headline — it's what reclaimed end-of-shift documentation time looks like
             when aggregated across the unit. <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Minutes saved/shift</Text>{" "}
-            is the per-nurse experience that drives adoption. <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Patient days/yr</Text>{" "}
+            is the per-nurse experience that supports adoption. <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Patient days/yr</Text>{" "}
             and <Text style={{ fontWeight: "bold", color: colors.primaryText }}>staffed beds</Text> anchor
             the math to your actual operating footprint.
           </Text>
@@ -812,8 +815,8 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 <Text style={styles.driverValue}>{fmtCurrency(data.falls.value)} (potential)</Text>
               </View>
               <Text style={styles.driverBody}>
-                Morse Fall Scale assessments completed in real time make risk
-                escalations visible when they matter, not at shift end.
+                Morse Fall Scale assessments completed in real time can make risk
+                escalations visible when they matter, rather than at shift end.
               </Text>
               <MathGrid
                 rows={[
@@ -861,8 +864,8 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 <Text style={styles.driverValue}>{fmtCurrency(data.clabsi.value)} (potential)</Text>
               </View>
               <Text style={styles.driverBody}>
-                Timely line documentation supports bundle compliance and reduces central
-                line bloodstream infections.
+                Timely line documentation supports bundle compliance and is associated
+                with reductions in central line bloodstream infections.
               </Text>
               <MathGrid
                 rows={[
@@ -918,10 +921,11 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                   </View>
                   <Text style={styles.driverBody}>
                     Patient experience scores are sensitive to nursing presence and
-                    communication — both of which improve when nurses spend less time at
-                    the workstation. HCAHPS performance affects Value-Based Purchasing
-                    scores and thus Medicare reimbursement, but the causal chain is
-                    indirect and organization-specific to size precisely.
+                    communication — both of which can improve when nurses spend less
+                    time at the workstation. HCAHPS performance affects Value-Based
+                    Purchasing scores and thus Medicare reimbursement, but the causal
+                    chain is indirect and organization-specific, so we surface this as
+                    a tracked metric rather than a modeled dollar figure.
                   </Text>
                 </View>
               ) : null}
@@ -935,9 +939,9 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                     </Text>
                   </View>
                   <Text style={styles.driverBody}>
-                    Cleaner real-time documentation reduces medication-related near misses
-                    and errors. Track post-deployment via your safety-event reporting
-                    system.
+                    Cleaner real-time documentation is associated with fewer
+                    medication-related near misses and errors. Track post-deployment
+                    via your safety-event reporting system.
                   </Text>
                 </View>
               ) : null}
@@ -1075,7 +1079,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
 
           <View style={[styles.redBorderCallout, { marginBottom: 14 }]}>
             <Text style={{ fontSize: 10.5, color: colors.primaryText, lineHeight: 1.5 }}>
-              {`By Year 3, the program is generating ${cumulativeMultiple.toFixed(1)}× cumulative net for every $1 invested — while your nursing staff spends more time at the bedside and less time charting after their shift.`}
+              {`Under the modeled assumptions, by Year 3 the program projects ${cumulativeMultiple.toFixed(1)}× cumulative net for every $1 invested — alongside more time at the bedside and less end-of-shift charting for nursing staff.`}
             </Text>
           </View>
 
@@ -1119,15 +1123,19 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           <Text style={styles.subSectionHeader}>Key Metrics To Track</Text>
           <View>
             {[
-              "Documentation time per shift (target: −40%)",
-              "Nurse satisfaction / burnout score (target: +15 pts)",
-              "Overtime hours per FTE per week (target: −25%)",
+              "Documentation time per shift (illustrative target: −40%)",
+              "Nurse satisfaction / burnout score (illustrative target: +15 pts)",
+              "Overtime hours per FTE per week (illustrative target: −25%)",
             ].map((line, i) => (
               <Text key={i} style={{ fontSize: 10, color: colors.primaryText, marginBottom: 4 }}>
                 {`${i + 1}. ${line}`}
               </Text>
             ))}
           </View>
+          <Text style={{ fontSize: 8.5, fontStyle: "italic", color: colors.tertiary, marginTop: 6 }}>
+            Targets are illustrative reference points — calibrate to your unit baseline
+            during implementation.
+          </Text>
 
           <PageFooter orgName={orgName} />
         </View>

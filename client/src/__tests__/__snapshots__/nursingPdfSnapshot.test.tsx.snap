@@ -870,7 +870,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Documentation burden is the reason nurses leave. And the reason they stay late.",
+                        "value": "Documentation burden is among the top reasons nurses leave — and stay late.",
                       },
                     ],
                     "kind": "primitive",
@@ -889,7 +889,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Three labor lines — turnover, agency premium, and overtime — all driven by the same root cause: how long it takes to finish charting at the end of a shift.",
+                        "value": "Three labor lines — turnover, agency premium, and overtime — all linked to the same upstream factor: how long it takes to finish charting at the end of a shift.",
                       },
                     ],
                     "kind": "primitive",
@@ -960,7 +960,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "Documentation burden drives burnout drives turnover. Reducing burden helps retain experienced nurses who would otherwise leave.",
+                            "value": "Documentation burden is among the factors associated with burnout and turnover. Reducing burden is modeled to help retain experienced nurses who might otherwise leave.",
                           },
                         ],
                         "kind": "primitive",
@@ -1392,7 +1392,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "When nurses leave, hospitals fill gaps with agency at 2–3× the cost. Improved retention directly reduces premium-labor dependency.",
+                            "value": "When nurses leave, hospitals typically fill gaps with agency labor at 2–3× the cost. Improved retention is modeled to reduce that premium-labor dependency.",
                           },
                         ],
                         "kind": "primitive",
@@ -2211,7 +2211,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "When nurses finish charting on shift, the next hour goes to direct patient care instead of catch-up documentation. We track the ratio of bedside-to- charting time as the leading indicator that the model is working — the workforce and quality outcomes follow from it.",
+                        "value": "When nurses finish charting on shift, more of the next hour can go to direct patient care rather than catch-up documentation. We track the ratio of bedside-to-charting time as a leading indicator that the model is taking hold — workforce and quality outcomes are typically downstream of that shift, though the magnitude is unit-specific.",
                       },
                     ],
                     "kind": "primitive",
@@ -2530,7 +2530,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       },
                       {
                         "kind": "text",
-                        "value": "is the per-nurse experience that drives adoption. ",
+                        "value": "is the per-nurse experience that supports adoption. ",
                       },
                       {
                         "children": [
@@ -3327,7 +3327,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "Morse Fall Scale assessments completed in real time make risk escalations visible when they matter, not at shift end.",
+                            "value": "Morse Fall Scale assessments completed in real time can make risk escalations visible when they matter, rather than at shift end.",
                           },
                         ],
                         "kind": "primitive",
@@ -4242,7 +4242,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "Timely line documentation supports bundle compliance and reduces central line bloodstream infections.",
+                            "value": "Timely line documentation supports bundle compliance and is associated with reductions in central line bloodstream infections.",
                           },
                         ],
                         "kind": "primitive",
@@ -5998,7 +5998,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "By Year 3, the program is generating 7.5× cumulative net for every $1 invested — while your nursing staff spends more time at the bedside and less time charting after their shift.",
+                            "value": "Under the modeled assumptions, by Year 3 the program projects 7.5× cumulative net for every $1 invested — alongside more time at the bedside and less end-of-shift charting for nursing staff.",
                           },
                         ],
                         "kind": "primitive",
@@ -6280,7 +6280,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "1. Documentation time per shift (target: −40%)",
+                            "value": "1. Documentation time per shift (illustrative target: −40%)",
                           },
                         ],
                         "kind": "primitive",
@@ -6297,7 +6297,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "2. Nurse satisfaction / burnout score (target: +15 pts)",
+                            "value": "2. Nurse satisfaction / burnout score (illustrative target: +15 pts)",
                           },
                         ],
                         "kind": "primitive",
@@ -6314,7 +6314,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "3. Overtime hours per FTE per week (target: −25%)",
+                            "value": "3. Overtime hours per FTE per week (illustrative target: −25%)",
                           },
                         ],
                         "kind": "primitive",
@@ -6331,6 +6331,24 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "kind": "primitive",
                     "props": {},
                     "tag": "VIEW",
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "text",
+                        "value": "Targets are illustrative reference points — calibrate to your unit baseline during implementation.",
+                      },
+                    ],
+                    "kind": "primitive",
+                    "props": {
+                      "style": {
+                        "color": "#999999",
+                        "fontSize": 8.5,
+                        "fontStyle": "italic",
+                        "marginTop": 6,
+                      },
+                    },
+                    "tag": "TEXT",
                   },
                   {
                     "children": [
