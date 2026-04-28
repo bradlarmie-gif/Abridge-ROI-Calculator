@@ -950,10 +950,16 @@ export default function ModelBuilder({
     return enterpriseAnnual;
   }, [pricingModel, providers, costPerMonth, enterpriseAnnual, isNursingSetting, staffedBeds, costPerBedPerMonth]);
   
+  // totalInvestment retains the all-in (recurring + one-time) figure for any
+  // TCO display. ROI multiple and payback months, however, are reported
+  // against the recurring annual investment only — the implementation fee is
+  // "called out separately" (see replit.md) so a one-time cost cannot
+  // distort a recurring-period ratio. Downstream consumers receive the impl
+  // fee on its own field (`implementationFee`) and disclose it independently.
   const totalInvestment = annualInvestment + (includeImplementation ? implementationFee : 0);
   const netGain = totalBenefit - totalInvestment;
-  const roiMultiple = totalInvestment > 0 ? totalBenefit / totalInvestment : 0;
-  const paybackMonths = totalBenefit > 0 ? Math.round((totalInvestment / totalBenefit) * 12) : 0;
+  const roiMultiple = annualInvestment > 0 ? totalBenefit / annualInvestment : 0;
+  const paybackMonths = totalBenefit > 0 ? Math.round((annualInvestment / totalBenefit) * 12) : 0;
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {

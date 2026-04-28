@@ -434,7 +434,10 @@ export default function SummaryCommandCenter({
   const year2 = Math.round(totalAnnualValue * 1.10);
   const year3 = Math.round(totalAnnualValue * 1.21);
   const threeYearValue = year1 + year2 + year3;
-  const year1Cost = annualInvestment + implementationFee;
+  // Implementation fee is "called out separately" (see replit.md / pdf_layout_guidelines.md):
+  // it is NOT folded into Year 1 recurring investment, so the 3-Year card shows
+  // recurring-only net values. The one-time fee is disclosed beneath the card.
+  const year1Cost = annualInvestment;
   const year2Cost = annualInvestment;
   const year3Cost = annualInvestment;
   const threeYearCost = year1Cost + year2Cost + year3Cost;
@@ -1246,6 +1249,14 @@ export default function SummaryCommandCenter({
                       <div className="text-[#EA2C00] font-bold text-lg">{formatCompactCurrency(threeYearNet)}</div>
                     </div>
                   </div>
+                  {implementationFee > 0 && (
+                    <p
+                      className="text-white/40 text-[11px] mt-3 italic"
+                      data-testid="text-implementation-fee-disclosure"
+                    >
+                      Excludes one-time implementation fee of {formatCompactCurrency(implementationFee)} (called out separately).
+                    </p>
+                  )}
                 </div>
               </div>
               
