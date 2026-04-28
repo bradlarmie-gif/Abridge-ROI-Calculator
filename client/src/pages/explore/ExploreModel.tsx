@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateExplorePDF, type ExplorePDFData } from "@/components/explore/ExplorePDFExport";
+import { generateNursingValueAssessmentPDF, type NursingPDFInput } from "@/components/explore/NursingValueAssessmentPDF";
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 
@@ -979,7 +980,107 @@ export default function ExploreModel({
           valuePerProvider: state.numberOfProviders > 0 ? Math.round(year1Net / state.numberOfProviders) : 0,
         };
 
-        await generateExplorePDF(pdfData);
+        if (state.careSetting === 'nursing') {
+          const patientDaysAnnual = Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365);
+          const td = state.timeDriverInputs;
+          const dq = state.docQualityInputs;
+
+          const nursingInput: NursingPDFInput = {
+            clientName,
+            preparedBy,
+            dateLabel: new Date().toLocaleDateString(),
+            staffedBeds: state.nursingStaffedBeds,
+            nurseFTEs: state.numberOfProviders,
+            occupancyPercent: state.nursingOccupancyRate,
+            utilizationPercent: state.utilizationPercent,
+            minutesSavedPerShift: state.minutesSavedPerEncounter,
+            hoursReturnedAnnual: totalHoursSaved,
+            patientDaysAnnual,
+            bedsideTimeEnabled: td.nursingCareTimeEnabled,
+            retention: {
+              enabled: td.nursingRetentionEnabled,
+              value: allDriverValues.nursingRetention || 0,
+              turnoverPct: td.nursingTurnoverRate,
+              replacementCost: td.nursingReplacementCost,
+              impactPct: ({ conservative: 10, typical: 15, optimistic: 25 } as Record<string, number>)[td.retentionImpactScenario] || 15,
+            },
+            agency: {
+              enabled: td.nursingAgencyEnabled,
+              value: allDriverValues.nursingAgency || 0,
+              weeksPerVacancy: td.nursingAgencyWeeksPerVacancy,
+              weeklyPremium: td.nursingAgencyWeeklyPremium,
+            },
+            overtime: {
+              enabled: td.nursingOtEnabled,
+              value: allDriverValues.nursingOvertime || 0,
+              otHrsPerNurseWeek: td.nursingOtHoursPerNurseWeek,
+              reductionPct: td.nursingOtReductionPercent,
+              otHourlyRate: td.nursingOtHourlyRate,
+            },
+            hapi: {
+              enabled: dq.nursingHapiEnabled,
+              value: allDriverValues.nursingHapi || 0,
+              rate: dq.nursingHapiRate,
+              preventionPct: dq.nursingHapiPreventionRate,
+              costPerEvent: dq.nursingHapiCost,
+            },
+            falls: {
+              enabled: dq.nursingFallsEnabled,
+              value: allDriverValues.nursingFalls || 0,
+              rate: dq.nursingFallsRate,
+              preventionPct: dq.nursingFallsPreventionRate,
+              costPerEvent: dq.nursingFallsCost,
+            },
+            cauti: {
+              enabled: dq.nursingCautiEnabled,
+              value: allDriverValues.nursingCauti || 0,
+              rate: dq.nursingCautiRate,
+              preventionPct: dq.nursingCautiPreventionRate,
+              costPerEvent: dq.nursingCautiCost,
+              utilizationPct: dq.nursingCautiUtilizationRatio,
+            },
+            clabsi: {
+              enabled: dq.nursingClabsiEnabled,
+              value: allDriverValues.nursingClabsi || 0,
+              rate: dq.nursingClabsiRate,
+              preventionPct: dq.nursingClabsiPreventionRate,
+              costPerEvent: dq.nursingClabsiCost,
+              utilizationPct: dq.nursingClabsiUtilizationRatio,
+            },
+            sepsis: {
+              enabled: dq.nursingSepsisEnabled,
+              value: allDriverValues.nursingSepsis || 0,
+              ratePerThousand: dq.nursingSepsisRatePerThousand,
+              complianceGapPct: Math.max(0, 100 - dq.nursingSepsisCurrentCompliance),
+              docLagPct: dq.nursingSepsisDocLagPercent,
+              excessCostPerCase: dq.nursingSepsisExcessCostPerCase,
+              realizationPct: dq.nursingSepsisRealization,
+            },
+            hcahpsEnabled: dq.nursingHcahpsEnabled,
+            medErrorEnabled: td.nursingMedErrorEnabled,
+            pricingModel: state.pricingModel,
+            costPerBedPerMonth: state.costPerProvider,
+            costPerEncounter: state.pricingModel === 'perEncounter' ? state.costPerEncounter : undefined,
+            annualLicenseFee: state.pricingModel === 'annual' ? state.annualLicenseFee : undefined,
+            annualInvestment,
+            implementationFee: state.includeImplementation ? state.implementationFee : 0,
+            year1Net,
+            year2Net,
+            year3Net,
+            threeYearCumulativeNet: threeYearNetTotal,
+            year2GrowthPct: state.year2GrowthPercent,
+            year3GrowthPct: state.year3GrowthPercent,
+            workforceTotal: valueByQuadrant.Workforce || 0,
+            qualityTotal: valueByQuadrant.Quality || 0,
+            totalAnnualValue,
+            netAnnualValue: year1Net,
+            costPerBedPerYear: state.nursingStaffedBeds > 0 ? Math.round(year1Net / state.nursingStaffedBeds) : 0,
+          };
+
+          await generateNursingValueAssessmentPDF(nursingInput);
+        } else {
+          await generateExplorePDF(pdfData);
+        }
 
         setShowExportModal(false);
         toast({
