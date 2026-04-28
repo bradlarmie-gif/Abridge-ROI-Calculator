@@ -323,15 +323,28 @@ const DriverRow = ({ driver }: { driver: ExplorePDFQuadrantDriver }) => {
             {fmtCurrency(driver.value)}
           </Text>
         ) : (
-          <Text
+          <View
             style={{
-              fontSize: 9.5,
-              color: colors.tertiary,
-              fontStyle: "italic",
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+              borderRadius: 10,
+              backgroundColor: colors.cards,
+              borderWidth: 0.5,
+              borderColor: colors.separatorHeavy,
             }}
           >
-            Qualitative
-          </Text>
+            <Text
+              style={{
+                fontSize: 8,
+                fontWeight: "bold",
+                color: colors.secondary,
+                textTransform: "uppercase",
+                letterSpacing: 0.8,
+              }}
+            >
+              Tracked
+            </Text>
+          </View>
         )}
       </View>
     </View>
@@ -387,10 +400,30 @@ const BenefitRow = ({ benefit }: { benefit: ExplorePDFOtherBenefit }) => (
   </View>
 );
 
+const SubSectionHeader = ({ children }: { children: string }) => (
+  <Text
+    style={{
+      fontSize: 8.5,
+      fontWeight: "bold",
+      color: colors.secondary,
+      textTransform: "uppercase",
+      letterSpacing: 1.2,
+      marginTop: 8,
+      marginBottom: 4,
+    }}
+  >
+    {children}
+  </Text>
+);
+
 const QuadrantSection = ({ q }: { q: ExplorePDFQuadrantData }) => {
   const isEmpty = q.drivers.length === 0 && q.otherFinancialBenefits.length === 0;
   const isQualityPostDeployment =
     q.quadrant === "Quality" && q.annualTotal === 0 && q.drivers.length > 0;
+  const quantified = q.drivers.filter((d) => d.visibility === "quantified");
+  const qualitative = q.drivers.filter((d) => d.visibility === "qualitative");
+  const hasFinancialGroup = quantified.length > 0 || q.otherFinancialBenefits.length > 0;
+  const hasQualitativeGroup = qualitative.length > 0;
   return (
     <View style={{ marginBottom: 18 }} wrap>
       <View style={{ marginBottom: 8 }}>
@@ -451,12 +484,26 @@ const QuadrantSection = ({ q }: { q: ExplorePDFQuadrantData }) => {
         </Text>
       ) : (
         <View>
-          {q.drivers.map((d) => (
-            <DriverRow key={d.id} driver={d} />
-          ))}
-          {q.otherFinancialBenefits.map((b, i) => (
-            <BenefitRow key={`b-${i}`} benefit={b} />
-          ))}
+          {hasFinancialGroup ? (
+            <>
+              <SubSectionHeader>FINANCIAL DRIVERS</SubSectionHeader>
+              {quantified.map((d) => (
+                <DriverRow key={d.id} driver={d} />
+              ))}
+              {q.otherFinancialBenefits.map((b, i) => (
+                <BenefitRow key={`b-${i}`} benefit={b} />
+              ))}
+            </>
+          ) : null}
+          {hasQualitativeGroup ? (
+            <>
+              {hasFinancialGroup ? <View style={{ height: 6 }} /> : null}
+              <SubSectionHeader>OTHER METRICS TO WATCH</SubSectionHeader>
+              {qualitative.map((d) => (
+                <DriverRow key={d.id} driver={d} />
+              ))}
+            </>
+          ) : null}
         </View>
       )}
     </View>
