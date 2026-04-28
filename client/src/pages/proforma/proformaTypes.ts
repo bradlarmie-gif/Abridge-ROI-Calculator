@@ -208,10 +208,10 @@ export const SCENARIO_DASHES = ["", "8 4", "4 4", "8 2 2 2"];
 export const MAX_SCENARIOS = 4;
 
 export const ONSET_DELAY_MONTHS: Record<DriverOnset, number> = {
-  immediate: 2,
-  delayed: 5,
+  immediate: 1,
+  delayed: 3,
   phased: 6,
-  longTerm: 15,
+  longTerm: 12,
 };
 
 export const ONSET_LABELS: Record<DriverOnset, string> = {

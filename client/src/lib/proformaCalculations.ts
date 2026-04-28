@@ -112,8 +112,8 @@ function sigmoidRamp(progress: number): number {
 
 function getAdoptionRamp(monthsSinceOnset: number, rampMonths: number): number {
   if (monthsSinceOnset < 0) return 0;
-  if (monthsSinceOnset >= rampMonths) return 1;
-  const progress = monthsSinceOnset / rampMonths;
+  if (rampMonths <= 0) return 1;
+  const progress = Math.min((monthsSinceOnset + 1) / rampMonths, 1);
   return sigmoidRamp(progress);
 }
 
@@ -374,7 +374,7 @@ export function buildMonthlyCashFlows(
       for (const driver of effectiveDrivers) {
         const onset = driver.onset || (driver.category === "documentation" ? "immediate" : "delayed");
         const delayMonths = ONSET_DELAY_MONTHS[onset] || 0;
-        const rampMonths = onset === "phased" ? implRampMonths : 3;
+        const rampMonths = implRampMonths;
         const monthsSinceOnset = monthsSinceGoLive - delayMonths;
         const adoptionRamp = getAdoptionRamp(monthsSinceOnset, rampMonths);
         const retentionPhasingToUse = (onset === "phased" && setting.careSetting === "nursing" && config.nursingRetentionPhasing)
@@ -454,7 +454,6 @@ export function buildMonthlyCashFlows(
 
       if (m === setting.goLiveMonth) {
         cumulativeNet -= setting.implementationFee;
-        totalInvestment += setting.implementationFee;
       }
     }
 
