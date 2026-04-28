@@ -62,13 +62,28 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
   },
+  // Section label uses near-black with strong letter-spacing — restrained,
+  // publication-grade. Brand red is reserved for accent moments (figures,
+  // callouts, dividers) so it lands when it appears instead of shouting on
+  // every page header. A 4pt red square sits to the left of the text as the
+  // visual brand mark (rendered by the SectionLabel component below).
   sectionLabel: {
-    fontSize: 9,
-    color: colors.primary,
+    fontSize: 8.5,
+    color: colors.primaryText,
     textTransform: "uppercase",
-    letterSpacing: 2,
-    marginBottom: 8,
+    letterSpacing: 2.5,
     fontWeight: "bold",
+  },
+  sectionLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  sectionLabelMark: {
+    width: 5,
+    height: 5,
+    backgroundColor: colors.primary,
+    marginRight: 9,
   },
   sectionHeadline: {
     fontSize: 22,
@@ -393,6 +408,16 @@ const QuadrantThesisCard = ({
   </View>
 );
 
+// SectionLabel: small red square accent + near-black uppercase text. Used
+// at the top of every page section. Replaces the previous loud-red text-only
+// label that competed with section headlines for visual weight.
+const SectionLabel = ({ children }: { children: string }) => (
+  <View style={styles.sectionLabelRow}>
+    <View style={styles.sectionLabelMark} />
+    <Text style={styles.sectionLabel}>{children}</Text>
+  </View>
+);
+
 // Bloomberg-style compact key/value math grid
 const MathGrid = ({ rows }: { rows: { label: string; value: string }[] }) => (
   <View
@@ -400,7 +425,7 @@ const MathGrid = ({ rows }: { rows: { label: string; value: string }[] }) => (
       backgroundColor: "#FFFFFF",
       borderWidth: 1,
       borderColor: colors.separatorHeavy,
-      borderRadius: 3,
+      borderRadius: 4,
       marginTop: 6,
       marginBottom: 4,
     }}
@@ -425,29 +450,6 @@ const MathGrid = ({ rows }: { rows: { label: string; value: string }[] }) => (
         </Text>
       </View>
     ))}
-  </View>
-);
-
-const TrackedPill = () => (
-  <View
-    style={{
-      backgroundColor: colors.primary,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: 10,
-    }}
-  >
-    <Text
-      style={{
-        fontSize: 7.5,
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        textTransform: "uppercase",
-        letterSpacing: 1,
-      }}
-    >
-      Tracked
-    </Text>
   </View>
 );
 
@@ -550,7 +552,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
       {/* PAGE 2 — THE THESIS */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>THE THESIS</Text>
+          <SectionLabel>THE THESIS</SectionLabel>
           <Text style={styles.sectionHeadline}>Where Nursing Value Actually Lives</Text>
           <Text style={styles.body}>
             Ambient documentation creates value across four distinct buckets. For nursing,
@@ -559,27 +561,10 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             We separate them because the strategic implications of each are different.
           </Text>
 
-          <View style={[styles.cardBg, { marginBottom: 14 }]}>
-            <Text
-              style={{
-                fontSize: 11,
-                fontWeight: "bold",
-                color: colors.primaryText,
-                marginBottom: 6,
-              }}
-            >
-              Where the nursing value sits
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              Nursing documentation creates measurable value across three buckets:
-              quality (preventable harm and bundle compliance), workforce (retention,
-              agency, and overtime), and capacity (more time at the bedside). The
-              fourth bucket — revenue — is tracked in the physician and APP models,
-              where billing actually originates.
-            </Text>
-          </View>
-
-          {/* 2x2 grid */}
+          {/* 2x2 quadrant grid. Each cell adapts to whether the underlying drivers
+              are enabled — a quadrant with no enabled drivers shows "Tracked" in
+              italic accent rather than a literal "$0", which would otherwise
+              make a perfectly valid scenario read as broken. */}
           <View style={{ flexDirection: "row" }}>
             <QuadrantThesisCard
               label="CAPACITY"
@@ -589,14 +574,20 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             />
             <QuadrantThesisCard
               label="WORKFORCE"
-              bigNumber={fmtCurrency(data.workforceTotal)}
+              bigNumber={data.workforceTotal > 0 ? fmtCurrency(data.workforceTotal) : "Tracked"}
+              bigNumberItalic={data.workforceTotal === 0}
               framing="Documentation burden is among the top drivers of nurse turnover. The hypothesis we model: reducing end-of-shift charting moves retention, the agency spend that follows every vacancy, and the overtime budget — three distinct labor lines that all share one root cause."
             />
           </View>
           <View style={{ flexDirection: "row" }}>
             <QuadrantThesisCard
               label="QUALITY"
-              bigNumber={`${fmtCurrency(data.qualityTotal)} (potential)`}
+              bigNumber={
+                data.qualityTotal > 0
+                  ? `${fmtCurrency(data.qualityTotal)} (potential)`
+                  : "Tracked"
+              }
+              bigNumberItalic={data.qualityTotal === 0}
               framing="Preventable harm events — HAPIs, falls, CAUTI, CLABSI — and sepsis bundle compliance are sensitive to documentation timing. The hypothesis we model: real-time flowsheet capture surfaces the visibility for earlier intervention, with each unit's actual outcome shaped by clinical practice."
             />
             <QuadrantThesisCard
@@ -632,7 +623,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
       {/* PAGE 2 — WORKFORCE */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>WORKFORCE</Text>
+          <SectionLabel>WORKFORCE</SectionLabel>
           <Text style={styles.sectionHeadline}>
             Documentation burden is among the top reasons nurses leave — and stay late.
           </Text>
@@ -643,7 +634,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           </Text>
 
           {data.retention.enabled ? (
-            <View style={styles.driverCard}>
+            <View style={styles.driverCard} wrap={false}>
               <View style={styles.driverHeaderRow}>
                 <Text style={styles.driverHeader}>RN Retention</Text>
                 <Text style={styles.driverValue}>{fmtCurrency(data.retention.value)}</Text>
@@ -670,11 +661,26 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           ) : null}
 
           {data.agency.enabled ? (
-            <View style={data.retention.enabled ? [styles.driverCard, { marginLeft: 18 }] : styles.driverCard}>
+            <View style={styles.driverCard} wrap={false}>
               <View style={styles.driverHeaderRow}>
-                <Text style={styles.driverHeader}>{data.retention.enabled ? "↳ " : ""}Agency &amp; Travel Nurse Reduction</Text>
+                <Text style={styles.driverHeader}>Agency &amp; Travel Nurse Reduction</Text>
                 <Text style={styles.driverValue}>{fmtCurrency(data.agency.value)}</Text>
               </View>
+              {data.retention.enabled ? (
+                <Text
+                  style={{
+                    fontSize: 7.5,
+                    color: colors.primary,
+                    textTransform: "uppercase",
+                    letterSpacing: 1.2,
+                    fontWeight: "bold",
+                    marginTop: -2,
+                    marginBottom: 6,
+                  }}
+                >
+                  ↳ Linked to retention
+                </Text>
+              ) : null}
               <Text style={styles.driverBody}>
                 When nurses leave, hospitals typically fill gaps with agency labor at
                 2–3× the cost. Improved retention is modeled to reduce that
@@ -691,7 +697,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           ) : null}
 
           {data.overtime.enabled ? (
-            <View style={styles.driverCard}>
+            <View style={styles.driverCard} wrap={false}>
               <View style={styles.driverHeaderRow}>
                 <Text style={styles.driverHeader}>Overtime Reduction</Text>
                 <Text style={styles.driverValue}>{fmtCurrency(data.overtime.value)}</Text>
@@ -748,7 +754,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
       {/* PAGE 3 — CAPACITY (Leading Indicator) */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>CAPACITY</Text>
+          <SectionLabel>CAPACITY</SectionLabel>
           <Text style={styles.sectionHeadline}>
             A leading indicator, not a billable line.
           </Text>
@@ -804,7 +810,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
       {/* PAGE 4 — QUALITY */}
       <Page size="LETTER" style={styles.page} wrap>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>QUALITY</Text>
+          <SectionLabel>QUALITY</SectionLabel>
           <Text style={styles.sectionHeadline}>
             Real-time documentation is the visibility layer that makes early intervention possible.
           </Text>
@@ -827,7 +833,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           </View>
 
           {data.hapi.enabled ? (
-            <View style={styles.driverCard}>
+            <View style={styles.driverCard} wrap={false}>
               <View style={styles.driverHeaderRow}>
                 <Text style={styles.driverHeader}>HAPI Risk Reduction</Text>
                 <Text style={styles.driverValue}>{fmtCurrency(data.hapi.value)} (potential)</Text>
@@ -852,7 +858,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           ) : null}
 
           {data.falls.enabled ? (
-            <View style={styles.driverCard}>
+            <View style={styles.driverCard} wrap={false}>
               <View style={styles.driverHeaderRow}>
                 <Text style={styles.driverHeader}>Fall Risk Visibility</Text>
                 <Text style={styles.driverValue}>{fmtCurrency(data.falls.value)} (potential)</Text>
@@ -876,7 +882,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           ) : null}
 
           {data.cauti.enabled ? (
-            <View style={styles.driverCard}>
+            <View style={styles.driverCard} wrap={false}>
               <View style={styles.driverHeaderRow}>
                 <Text style={styles.driverHeader}>CAUTI Prevention</Text>
                 <Text style={styles.driverValue}>{fmtCurrency(data.cauti.value)} (potential)</Text>
@@ -901,7 +907,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           ) : null}
 
           {data.clabsi.enabled ? (
-            <View style={styles.driverCard}>
+            <View style={styles.driverCard} wrap={false}>
               <View style={styles.driverHeaderRow}>
                 <Text style={styles.driverHeader}>CLABSI Prevention</Text>
                 <Text style={styles.driverValue}>{fmtCurrency(data.clabsi.value)} (potential)</Text>
@@ -926,7 +932,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           ) : null}
 
           {data.sepsis.enabled ? (
-            <View style={styles.driverCard}>
+            <View style={styles.driverCard} wrap={false}>
               <View style={styles.driverHeaderRow}>
                 <Text style={styles.driverHeader}>Sepsis Bundle Compliance</Text>
                 <Text style={styles.driverValue}>{fmtCurrency(data.sepsis.value)} (potential)</Text>
@@ -955,7 +961,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               <Text style={styles.subSectionHeader}>Tracked Metrics</Text>
 
               {data.hcahpsEnabled ? (
-                <View style={styles.driverCard}>
+                <View style={styles.driverCard} wrap={false}>
                   <View style={styles.driverHeaderRow}>
                     <Text style={styles.driverHeader}>HCAHPS / Patient Experience</Text>
                     <Text style={{ fontSize: 9.5, fontStyle: "italic", color: colors.tertiary }}>
@@ -974,7 +980,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               ) : null}
 
               {data.medErrorEnabled ? (
-                <View style={styles.driverCard}>
+                <View style={styles.driverCard} wrap={false}>
                   <View style={styles.driverHeaderRow}>
                     <Text style={styles.driverHeader}>Medication Error Reduction</Text>
                     <Text style={{ fontSize: 9.5, fontStyle: "italic", color: colors.tertiary }}>
@@ -998,7 +1004,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
       {/* PAGE 5 — REVENUE (Tracked Separately) */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>REVENUE</Text>
+          <SectionLabel>REVENUE</SectionLabel>
           <Text style={styles.sectionHeadline}>
             Why revenue lives elsewhere in this model.
           </Text>
@@ -1053,7 +1059,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
       {/* PAGE 7 — INVESTMENT CASE */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>THE INVESTMENT CASE</Text>
+          <SectionLabel>THE INVESTMENT CASE</SectionLabel>
           <Text style={styles.sectionHeadline}>Infrastructure, Not Expense.</Text>
           <Text style={styles.body}>
             {(() => {
@@ -1126,59 +1132,13 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </Text>
           </View>
 
-          {/* AT SCALE */}
-          <Text style={styles.subSectionHeader}>At Scale</Text>
-          <View style={{ flexDirection: "row", marginBottom: 14 }}>
-            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 12, borderRadius: 4, marginRight: 6 }}>
-              <Text style={{ fontSize: 8, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
-                Current Model
-              </Text>
-              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
-                {`${fmtCurrency(data.totalAnnualValue)}/yr`}
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>
-                {`${fmtNum(data.staffedBeds)} beds · ${data.utilizationPercent}% adoption`}
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.tertiary, marginTop: 2 }}>
-                {`Per bed: $${fmtNum(data.costPerBedPerYear)}/yr`}
-              </Text>
-            </View>
-            <View style={{ flex: 1, backgroundColor: colors.cards, padding: 12, borderRadius: 4, marginLeft: 6 }}>
-              <Text style={{ fontSize: 8, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>
-                At Full Scale
-              </Text>
-              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>
-                {`${fmtCurrency(data.totalAnnualValue * 4)}/yr`}
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.secondary }}>
-                {`${fmtNum(data.staffedBeds * 4)} beds · 80% adoption`}
-              </Text>
-              <Text style={{ fontSize: 9, color: colors.tertiary, marginTop: 2 }}>
-                {`Per bed: $${fmtNum(data.costPerBedPerYear)}/yr`}
-              </Text>
-              <Text style={{ fontSize: 8, fontStyle: "italic", color: colors.tertiary, marginTop: 4 }}>
-                Illustrative scaling, not a hard projection.
-              </Text>
-            </View>
-          </View>
-
-          {/* KEY METRICS */}
-          <Text style={styles.subSectionHeader}>Key Metrics To Track</Text>
-          <View>
-            {[
-              "Documentation time per shift (illustrative target: −40%)",
-              "Nurse satisfaction / burnout score (illustrative target: +15 pts)",
-              "Overtime hours per FTE per week (illustrative target: −25%)",
-            ].map((line, i) => (
-              <Text key={i} style={{ fontSize: 10, color: colors.primaryText, marginBottom: 4 }}>
-                {`${i + 1}. ${line}`}
-              </Text>
-            ))}
-          </View>
-          <Text style={{ fontSize: 8.5, fontStyle: "italic", color: colors.tertiary, marginTop: 6 }}>
-            Targets are illustrative reference points — calibrate to your unit baseline
-            during implementation.
-          </Text>
+          {/* The previous version of this page included an "At Scale" projection
+              (multiplied by a hardcoded 4×) and a "Key Metrics To Track" list with
+              illustrative target percentages. Both were removed because they
+              presented fabricated/placeholder figures alongside the real,
+              data-driven 3-year table — creating exactly the "AI slop" feel a
+              premium executive document must avoid. The cumulative-multiple
+              callout above is the page's punchline; nothing else is needed. */}
 
           <PageFooter orgName={orgName} />
         </View>
@@ -1187,26 +1147,58 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
       {/* PAGE 8 — ASSESSMENT SUMMARY + METHODOLOGY */}
       <Page size="LETTER" style={styles.page} wrap>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>YOUR ASSESSMENT SUMMARY</Text>
+          <SectionLabel>YOUR ASSESSMENT SUMMARY</SectionLabel>
 
-          <View style={[styles.cardBg, { marginBottom: 14 }]}>
-            <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 4 }}>
-              {`${fmtNum(data.staffedBeds)} staffed beds · ${fmtNum(data.nurseFTEs)} nurse FTEs.`}
+          {/* Hero card — eyebrow / headline number / footnote pattern. The
+              figure stands alone at hero size (36pt) so it can carry the page;
+              descriptive context lives in the eyebrow above and the metadata
+              footer below. Previously the figure was glued inline to the words
+              "projected net value" in a single 24pt Text node, which capped
+              how big the number could go without wrapping. */}
+          <View style={[styles.cardBg, { marginBottom: 16, paddingVertical: 18 }]}>
+            <Text
+              style={{
+                fontSize: 8.5,
+                color: colors.secondary,
+                textTransform: "uppercase",
+                letterSpacing: 2.5,
+                fontWeight: "bold",
+                marginBottom: 8,
+              }}
+            >
+              Projected Net Annual Value
             </Text>
-            <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
-              {`${fmtCurrency(data.netAnnualValue)} projected net value`}
+            <Text
+              style={{
+                fontSize: 36,
+                fontWeight: "bold",
+                color: colors.primary,
+                lineHeight: 1.0,
+                marginBottom: 10,
+              }}
+            >
+              {fmtCurrency(data.netAnnualValue)}
             </Text>
-            <Text style={{ fontSize: 10, color: colors.tertiary }}>
-              {`$${fmtNum(data.costPerBedPerYear)}/bed per year`}
+            <Text style={{ fontSize: 9.5, color: colors.secondary }}>
+              {`${fmtNum(data.staffedBeds)} staffed beds · ${fmtNum(data.nurseFTEs)} nurse FTEs · $${fmtNum(data.costPerBedPerYear)}/bed per year`}
             </Text>
           </View>
 
           <Text style={styles.subSectionHeader}>Value Summary</Text>
 
+          {/* Group totals must obey the same zero-state rule as the Page 2
+              quadrants: when no quality/workforce drivers are enabled, render
+              "Tracked" / "—" rather than literal "$0 (potential)" / "$0".
+              Mismatched zero handling between Page 2 and Page 8 was an
+              architect-flagged inconsistency. */}
           {/* QUALITY group */}
           <SummaryGroup
             label="QUALITY"
-            total={`${fmtCurrency(data.qualityTotal)} (potential)`}
+            total={
+              data.qualityTotal > 0
+                ? `${fmtCurrency(data.qualityTotal)} (potential)`
+                : "Tracked"
+            }
             rows={[
               { label: "HAPI Prevention", value: data.hapi.enabled ? fmtCurrency(data.hapi.value) : "—" },
               { label: "Falls Prevention", value: data.falls.enabled ? fmtCurrency(data.falls.value) : "—" },
@@ -1221,7 +1213,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
 
           <SummaryGroup
             label="WORKFORCE"
-            total={fmtCurrency(data.workforceTotal)}
+            total={data.workforceTotal > 0 ? fmtCurrency(data.workforceTotal) : "Tracked"}
             rows={[
               { label: "RN Retention", value: data.retention.enabled ? fmtCurrency(data.retention.value) : "—" },
               { label: "Agency & Travel Nurse Reduction", value: data.agency.enabled ? fmtCurrency(data.agency.value) : "—" },
@@ -1237,11 +1229,15 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             ]}
           />
 
+          {/* REVENUE summary group: the explanatory sentence does not belong
+              inside a label/value row — it broke the visual rhythm of the
+              other groups. The group total carries the message; explanatory
+              prose lives on Page 5 (Revenue) where it has room to breathe. */}
           <SummaryGroup
             label="REVENUE"
             total="Tracked Separately"
             rows={[
-              { label: "Revenue impact is captured in the physician and APP models, where billing originates.", value: "" },
+              { label: "Captured in the physician & APP models", value: "—" },
             ]}
           />
 
@@ -1358,6 +1354,10 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
 
 // ───────────────────────── Summary Group helper ─────────────────────────
 
+// SummaryGroup wraps as a single atomic block — splitting a 3-row summary
+// across pages produces the orphan label / dangling-row layouts the visual
+// review explicitly forbids. The wrap protection here is per-group, not per-
+// row, because each group is small enough to always fit on one page.
 const SummaryGroup = ({
   label,
   total,
@@ -1367,7 +1367,7 @@ const SummaryGroup = ({
   total: string;
   rows: { label: string; value: string }[];
 }) => (
-  <View style={{ marginBottom: 10 }}>
+  <View style={{ marginBottom: 10 }} wrap={false}>
     <View
       style={{
         flexDirection: "row",
@@ -1404,14 +1404,15 @@ const SummaryGroup = ({
 // Wrap in a wrap={false} View so an individual bullet never splits across pages.
 // This keeps multi-line bullets atomic and prevents the half-line collisions
 // we saw when react-pdf broke a Text node across the page boundary.
+// Body sits at 9pt (was 8.5pt — borderline unreadable on a Letter page).
 const MethodologyLine = ({ text }: { text: string }) => (
   <View wrap={false}>
     <Text
       style={{
-        fontSize: 8.5,
+        fontSize: 9,
         color: colors.secondary,
         lineHeight: 1.5,
-        marginBottom: 4,
+        marginBottom: 5,
       }}
     >
       {`• ${text}`}

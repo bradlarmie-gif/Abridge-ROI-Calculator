@@ -18,11 +18,11 @@ Every page in every PDF must obey this contract:
 |---|---|---|
 | `page.padding` (top/left/right) | 54 | Standard margin |
 | `page.paddingBottom` | **72** | Must be ≥ `footer.bottom + footer height + 24pt clearance` |
-| `footer.position` | `absolute` with `bottom: 24` | Pinned to physical page bottom |
-| `footer.height` | ~24pt (border 1 + paddingTop 8 + text ~14 + line-height) | Don't grow this without bumping `paddingBottom` |
+| `footer.position` | `absolute` with `bottom: 28` | Pinned to physical page bottom |
+| `footer.height` | ~23pt (border 1 + paddingTop 7 + text ~14 + line-height) | Don't grow this without bumping `paddingBottom` |
 | `<View style={styles.footer} fixed>` | `fixed` prop required | Footer must repeat on every wrapped page |
 
-**Math check:** `paddingBottom (72) − footer.bottom (24) − footer height (~24) = ~24pt visual buffer`. Anything less and content collides with the footer text.
+**Math check:** `paddingBottom (72) − footer.bottom (28) − footer height (~23) = ~21pt visual buffer`. Anything less and content collides with the footer text.
 
 If you change any of these numbers, change them all together and re-eyeball every page.
 
@@ -70,6 +70,7 @@ For closing sequences (last bullet + disclaimer), wrap them in a single
 ## 4. Forbidden patterns
 
 - ❌ `paddingBottom < 70` on any page that contains a `fixed` footer
+- ❌ A driver card, summary group, or KPI tile inside a `<Page wrap>` without `wrap={false}` — these are atomic units; splitting them across pages is the exact "dumb PDF issue" we exist to prevent
 - ❌ `<View style={{ flex: 1 }}>` as a direct child of `<Page wrap>` without an explicit height — flex sizing confuses pagination
 - ❌ Repeating the same calculations in two places (driver value here, methodology footnote there) — derive both from the same input field on `NursingPDFInput`
 - ❌ Adding a new bullet/paragraph to a wrap-enabled page without re-running the visual review (rule 6)
@@ -146,7 +147,67 @@ introduces the driver.
 
 ---
 
-## 9. Files governed by these rules
+## 9. Premium aesthetic conventions (Nursing PDF and forward)
+
+These are the typographic and content conventions the Nursing PDF was
+overhauled to match (McKinsey/Bloomberg-style executive document). Apply
+these as the default for any new PDF section unless there's a specific
+reason not to.
+
+### Section labels
+- Near-black (`colors.primaryText`), 8.5pt, **letterSpacing: 2.5**, bold,
+  uppercase. Brand red is reserved for true accent moments.
+- A 5pt red square sits to the left of the label as the visual brand mark
+  (`<SectionLabel>` component). Don't stack red on red on red — when red
+  appears it should mean something.
+
+### Hero numbers
+- Eyebrow (8.5pt uppercase secondary) → number (32–40pt bold primary,
+  `lineHeight: 1.0`) → footnote (9.5pt secondary). Three separate `<Text>`
+  nodes. Never glue the figure inline with descriptive words in a single
+  Text node — that caps how big the number can go without wrapping.
+
+### Edge-case numerics
+- Any quadrant/summary/total that can legitimately be `$0` (because the
+  underlying drivers are off) must show **"Tracked"** (or "—" / "Tracked
+  Separately") with italic accent styling — never `$0` or `$0 (potential)`,
+  which read as broken.
+
+### Driver relationships
+- When two drivers are conceptually linked (e.g., Agency follows
+  Retention), use a small uppercase tag *under* the header
+  (`↳ LINKED TO RETENTION`, 7.5pt red bold). **Do not** indent the card
+  with `marginLeft` or prefix the header text with a glyph — both are
+  visual hacks that fight the grid.
+
+### Card geometry
+- `borderRadius: 4` everywhere. No 3, no 8, no 10. One shape language.
+- Card padding: 12 (driver cards) or 14 (callouts/cardBg). Pick one of
+  those two; don't invent a third.
+
+### Methodology
+- Bullet text minimum **9pt** (not 8.5pt — borderline unreadable on
+  Letter). `lineHeight: 1.5`, `marginBottom: 5`.
+
+### Forbidden content patterns
+- ❌ **Hardcoded "At Scale" / "At Full Scale" projections** that multiply
+  real numbers by an arbitrary scaling factor. If we don't have a real
+  multi-site projection, don't fabricate one.
+- ❌ **"Illustrative target" lists** with hand-picked percentages
+  (`−40%`, `+15 pts`, etc.) followed by a tiny disclaimer admitting they
+  aren't real. This is "AI slop" and it kills the document's credibility.
+- ❌ **Restating the body paragraph in a card immediately below it.**
+  If you find two adjacent blocks saying the same thing in slightly
+  different words, delete the second one.
+- ❌ **Long sentences as `SummaryGroup` row labels.** The label/value row
+  is for short label + short value. Explanatory prose belongs in body
+  paragraphs, not in a table cell.
+- ❌ **Dead helper components** (`TrackedPill` was defined and never
+  referenced). Delete what you don't use.
+
+---
+
+## 10. Files governed by these rules
 
 - `client/src/components/explore/NursingValueAssessmentPDF.tsx`
 - `client/src/components/explore/ExplorePDFExport.tsx`
@@ -154,4 +215,5 @@ introduces the driver.
 - Any future `*PDF*.tsx` files
 
 If you add a new PDF component, mirror the page-chrome contract from
-section 1 and reference this doc in the file header.
+section 1 and the premium aesthetic conventions from section 9, and
+reference this doc in the file header.
