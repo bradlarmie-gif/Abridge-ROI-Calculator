@@ -1,0 +1,531 @@
+R-PDF-MERCY-V2 — Recreate Mercy-quality nursing PDF, aligned to current quadrants
+                                                                                   
+  Paste into Replit AI as a single prompt. This is large. Read all of it before starting.                                                                                                                      
+                                                                                                                                                                                                               
+  Why this exists                                                                                                                                                                                              
+                                                                                                                                                                                                               
+  Brad's reference: Abridge_Inpatient_Nursing_Analysis_Mercy.pdf — a narrative-rich nursing assessment with a "THE THESIS" page, a "Documentation burden is the reason nurses leave" workforce page, an
+  explicit "Nursing documentation doesn't generate billing revenue" framing, an "Infrastructure, Not Expense" investment case, and a per-bed scaling page. The current ExplorePDFExport.tsx produces a thin    
+  dashboard-style PDF that lacks all of that narrative. We need to rebuild Mercy's quality — but mapped to the current calculator quadrants, NOT Mercy's old quadrant assignments (Mercy put OT in Capacity;
+  current calculator puts OT in Workforce).                                                                                                                                                                    
+                                                            
+  Architecture                                                                                                                                                                                                 
+                                                                                
+  Create a new file client/src/components/explore/NursingValueAssessmentPDF.tsx. It exports generateNursingValueAssessmentPDF(data). ExploreModel.tsx routes nursing → this new generator; OP/ED/IP keep using 
+  generateExplorePDF. Do NOT modify ExplorePDFExport.tsx.                                                                                                                                                      
+                                                                           
+  Quadrant mapping (locked — do not deviate)                                                                                                                                                                   
+                                                                                
+  ┌───────────┬──────────────────────────────────────────────────────────────────────────────────────────────────┬─────────────────────────────────────────────────────────┐
+  │ Quadrant  │                                       Drivers (financial)                                        │                  Drivers (qualitative)                  │
+  ├───────────┼──────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────┤
+  │ Capacity  │ (none — qualitative-only by design)                                                              │ Bedside / Direct Care Time                              │                                   
+  ├───────────┼──────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────┤
+  │ Workforce │ RN Retention, Agency & Travel Nurse Reduction (child of Retention), Overtime Reduction           │ (none required)                                         │                                   
+  ├───────────┼──────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────┤                                   
+  │ Revenue   │ NOT APPLICABLE — explicitly framed as intentional                                                │ (none)                                                  │
+  ├───────────┼──────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────┤                                   
+  │ Quality   │ HAPI Prevention, Falls Prevention, CAUTI Prevention, CLABSI Prevention, Sepsis Bundle Compliance │ HCAHPS / Patient Experience, Medication Error Reduction │
+  └───────────┴──────────────────────────────────────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────┘                                   
+                                                           
+  Inside Quality's Financial section, sub-group as:                                                                                                                                                            
+  - HARM EVENTS: HAPI Prevention, Falls Prevention                                                                                                                                                             
+  - BUNDLE COMPLIANCE: CAUTI Prevention, CLABSI Prevention, Sepsis Bundle Compliance                                                                                                                           
+                                                                                                                                                                                                               
+  Task 1 — Create NursingValueAssessmentPDF.tsx                                                                                                                                                                
+                                                                                
+  The file is 8 pages. Use @react-pdf/renderer. Match the typography and color system from the existing ExplorePDFExport.tsx (Manrope font, primary red #EA2C00, body #1A1A1A, secondary #666666, tertiary     
+  #999999, separator #F5F0EB, card bg #F5F0EB).                                 
+                                                                                                                                                                                                               
+  Type signature                                                                
+                                                                                                                                                                                                               
+  export interface NursingPDFInput {                                            
+    // Cover                                                                                                                                                                                                   
+    clientName: string;        // e.g. "Deaconess - GW A600 Unit"                                                                                                                                              
+    preparedBy: string;        // e.g. "Christina Searle"                                                                                                                                                      
+    dateLabel: string;         // e.g. "April 28, 2026"                                                                                                                                                        
+                                                                                                                                                                                                               
+    // Setup                                                                    
+    staffedBeds: number;                                                   
+    nurseFTEs: number;                                                                                                                                                                                         
+    occupancyPercent: number;                               
+    utilizationPercent: number;                                                                                                                                                                                
+    minutesSavedPerShift: number;                                                                                                                                                                              
+    hoursReturnedAnnual: number;                                                                                                                                                                               
+    patientDaysAnnual: number;                                                                                                                                                                                 
+                                                                                                                                                                                                               
+    // Capacity (qualitative)                                                                                                                                                                                  
+    bedsideTimeEnabled: boolean;                                                
+                                                                                                                                                                                                               
+    // Workforce                                            
+    retention: { enabled: boolean; value: number; turnoverPct: number; replacementCost: number; impactPct: number; };                                                                                          
+    agency: { enabled: boolean; value: number; weeksPerVacancy: number; weeklyPremium: number; };                                                                                                              
+    overtime: { enabled: boolean; value: number; otHrsPerNurseWeek: number; reductionPct: number; otHourlyRate: number; };
+                                                                                                                                                                                                               
+    // Quality — quantified                                                     
+    hapi: { enabled: boolean; value: number; rate: number; preventionPct: number; costPerEvent: number; };                                                                                                     
+    falls: { enabled: boolean; value: number; rate: number; preventionPct: number; costPerEvent: number; };                                                                                                    
+    cauti: { enabled: boolean; value: number; rate: number; preventionPct: number; costPerEvent: number; };
+    clabsi: { enabled: boolean; value: number; rate: number; preventionPct: number; costPerEvent: number; };                                                                                                   
+    sepsis: { enabled: boolean; value: number; ratePerThousand: number; complianceGapPct: number; excessCostPerCase: number; realizationPct: number; };                                                        
+                                                                                                                                                                                                               
+    // Quality — qualitative                                                                                                                                                                                   
+    hcahpsEnabled: boolean;                                                                                                                                                                                    
+    medErrorEnabled: boolean;                                                                                                                                                                                  
+                                                                                                                                                                                                               
+    // Investment                                                                                                                                                                                              
+    costPerBedPerMonth: number;                                                                                                                                                                                
+    annualInvestment: number;                                                                                                                                                                                  
+    implementationFee: number;                                                                                                                                                                                 
+                                                                                                                                                                                                               
+    // Projection (already computed by ExploreModel)                                                                                                                                                           
+    year1Net: number;                                                                                                                                                                                          
+    year2Net: number;                                                           
+    year3Net: number;                                                                                                                                                                                          
+    threeYearCumulativeNet: number;                         
+    year2GrowthPct: number;                                                                                                                                                                                    
+    year3GrowthPct: number;                                                     
+                                                                                                                                                                                                               
+    // Totals                                                                                                                                                                                                  
+    workforceTotal: number;                                                                                                                                                                                    
+    qualityTotal: number;                                                                                                                                                                                      
+    totalAnnualValue: number;                                                   
+    netAnnualValue: number;                                 
+    costPerBedPerYear: number;                                                                                                                                                                                 
+  }                                                        
+                                                                                                                                                                                                               
+  export async function generateNursingValueAssessmentPDF(data: NursingPDFInput): Promise<void>;                                                                                                               
+                                                            
+  Page 1 — Cover                                                                                                                                                                                               
+                                                                                
+  Match the existing ExplorePDFExport.tsx cover layout exactly. Header: "NURSING VALUE ASSESSMENT". Title: data.clientName. Subtitle line: ${data.staffedBeds} beds · ${data.nurseFTEs} nurse FTEs · Inpatient 
+  Nursing. PREPARED BY: data.preparedBy · data.dateLabel. Bottom disclaimer: "This assessment is for planning purposes. Calculations are based on actual deployment data and Abridge methodology."             
+                                                                           
+  Page 2 — THE THESIS / Where Nursing Value Actually Lives                                                                                                                                                     
+                                                                                                                                                                                                               
+  Section label: THE THESIS (red, uppercase, tracked).                     
+  Title: Where Nursing Value Actually Lives (~28pt bold).                                                                                                                                                      
+  Lead paragraph: "Ambient documentation creates value across four distinct buckets. For nursing, three of them carry real dollars — and one of them, honestly, doesn't apply. We separate them because the 
+  strategic implications of each are different."                                                                                                                                                               
+                                                                           
+  Callout card:                                                                                                                                                                                                
+  - Header: Nurses don't bill. So where does the value live?                                                                                                                                                   
+  - Body: "Nursing documentation creates value through quality (preventable harm and bundle compliance), workforce (retention, agency, and overtime), and capacity (more time at the bedside). Revenue — the 
+  fourth bucket — is where nursing intentionally doesn't play."                                                                                                                                                
+                                                                                
+  2×2 grid of quadrant cards (in this order). Each card: section label, big number or "Not Applicable", short framing paragraph.                                                                               
+                                                                                                                                                                                                               
+  ┌───────────┬───────────┬─────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐   
+  │   Card    │   Label   │                 Big number                  │                                                             Framing                                                              │   
+  ├───────────┼───────────┼─────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤ 
+  │ Capacity  │ CAPACITY  │ "Tracked" (italic, primary color)           │ "Reclaimed documentation time goes back to bedside care. We track the ratio of bedside-to-charting time post-deployment as a     │ 
+  │           │           │                                             │ leading indicator that the model is working."                                                                                    │ 
+  ├───────────┼───────────┼─────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤   
+  │           │           │                                             │ "Documentation burden is among the top drivers of nurse turnover. The hypothesis we model: reducing end-of-shift charting moves  │ 
+  │ Workforce │ WORKFORCE │ formatCurrency(data.workforceTotal)         │ retention, the agency spend that follows every vacancy, and the overtime budget — three distinct labor lines that all share one  │   
+  │           │           │                                             │ root cause."                                                                                                                     │ 
+  ├───────────┼───────────┼─────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤   
+  │           │           │ formatCurrency(data.qualityTotal) + "       │ "Preventable harm events — HAPIs, falls, CAUTI, CLABSI — and sepsis bundle compliance are sensitive to documentation timing. The │
+  │ Quality   │ QUALITY   │ (potential)"                                │  hypothesis we model: real-time flowsheet capture surfaces the visibility for earlier intervention, with each unit's actual      │
+  │           │           │                                             │ outcome shaped by clinical practice."                                                                                            │
+  ├───────────┼───────────┼─────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤   
+  │ Revenue   │ REVENUE   │ Not Applicable (large, secondary-color,     │ "Nursing documentation doesn't generate billing revenue. The value lives in labor economics and care quality — which is where    │
+  │           │           │ lighter weight)                             │ we've modeled it."                                                                                                               │   
+  └───────────┴───────────┴─────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                                                                                                                                                                               
+  Bottom callout: WHAT YOUR CHOICES REVEAL — generate a 1-2 sentence summary based on what's enabled. Logic:
+  - If retention + OT both enabled: "Your model combines overtime reduction with retention savings. OT reduction is grounded in your current overtime spend; retention reflects the burnout-related turnover   
+  that documentation burden accelerates. Together they form a defensible staffing ROI."                                                                                                                      
+  - If only OT enabled: "Your model is anchored by overtime reduction — the most directly measurable line in the staffing budget. Worth pairing with retention and agency analysis once turnover data is in    
+  hand."                                                                                                                                                                                                    
+  - If only Quality enabled: "Your model is anchored by quality outcomes — preventable harm events that documentation timing influences. Worth pairing with workforce drivers (retention, OT, agency) for a    
+  complete labor-and-quality story."                                                                                                                                                                        
+  - Default fallback: "Your model spans labor economics and care quality. Validate each driver against your unit's actual data to convert potential into committed value."                                     
+                                                                                                                                                                                                               
+  Page 3 — Capacity                                                        
+                                                                                                                                                                                                               
+  Section label: CAPACITY.                                                      
+  Title: Bedside time is what nurses say they don't have enough of.                                                                                                                                            
+  Lead: "Capacity for nursing isn't a billable line — it's a leading indicator. When nurses finish charting before the end of their shift, more of the next hour goes to direct patient care instead of        
+  catch-up documentation. We track this post-deployment to confirm the model is producing the behavior change it predicts."
+                                                                                                                                                                                                               
+  Three stat blocks horizontally:                                               
+  - formatNumber(data.hoursReturnedAnnual) hours returned annually                                                                                                                                             
+  - formatNumber(data.patientDaysAnnual) patient days/year                      
+  - data.minutesSavedPerShift min saved per shift                                                                                                                                                              
+                                                                                
+  If data.bedsideTimeEnabled, render a single card:                                                                                                                                                            
+  - Header: BEDSIDE / DIRECT CARE TIME + a TRACKED pill on the right                                                                                                                                           
+  - Body: "Reclaimed documentation time spent in direct patient care. Track the ratio post-deployment as the leading indicator that ambient documentation is producing the behavior change."
+                                                                                                                                                                                                               
+  If not enabled, show a small italic note: "This indicator is not currently selected. Recommended for tracking post-deployment."
+                                                                                                                                                                                                               
+  Page 4 — Workforce                                                            
+                                                                                                                                                                                                               
+  Section label: WORKFORCE.                                                                                                                                                                                    
+  Title: Documentation burden is the reason nurses leave. And the reason they stay late.                                                                                                                       
+  Lead: "Three distinct budget lines — turnover cost, agency premium, and overtime — all driven by how long it takes to finish charting at the end of a shift. Reducing the documentation burden moves all     
+  three."                                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Render three driver cards (only the enabled ones):                                                                                                                                                           
+                                                                                                                                                                                                               
+  RN Retention Card (data.retention.enabled)                                                                                                                                                                   
+                                                                                                                                                                                                               
+  - Header: RN RETENTION · right-side big number formatCurrency(data.retention.value)
+  - Body: "Documentation burden is a leading driver of nurse burnout. Burnout drives turnover. Reducing burden helps retain experienced nurses who would otherwise leave."
+  - Calc line (italic, small, tertiary color): ${data.nurseFTEs} nurses × ${data.retention.turnoverPct}% turnover × 40% burnout-related × ${data.retention.impactPct}% impact ×                                
+  $${formatNumber(data.retention.replacementCost)}/replacement
+  - Source line: Source: NSI Nursing Solutions 2024 turnover benchmark.                                                                                                                                        
+                                                                                
+  Agency Card (data.agency.enabled) — render with ↳ prefix indented under Retention                                                                                                                            
+                                                                                
+  - Header: ↳ AGENCY & TRAVEL NURSE REDUCTION · right-side formatCurrency(data.agency.value)                                                                                                                   
+  - Body: "When nurses leave, hospitals fill gaps with agency at 2–3× the cost. Improved retention directly reduces premium-labor dependency."
+  - Calc: Nurses retained × ${data.agency.weeksPerVacancy} weeks coverage × $${formatNumber(data.agency.weeklyPremium)}/week premium                                                                           
+                                                                                                                                                                                                               
+  Overtime Card (data.overtime.enabled)                                                                                                                                                                        
+                                                                                                                                                                                                               
+  - Header: OVERTIME REDUCTION · right-side formatCurrency(data.overtime.value)                                                                                                                                
+  - Body: "When nurses spend less time documenting at end of shift, OT hours decrease. Direct, measurable line item in the payroll budget."                                                                    
+  - Calc: ${data.nurseFTEs} nurses × ${data.overtime.otHrsPerNurseWeek} OT hrs/week × ${data.overtime.reductionPct}% reduction × 52 weeks × $${data.overtime.otHourlyRate}/hr                                  
+                                                                                
+  Bottom of page: a horizontal divider, then WORKFORCE SUBTOTAL right-aligned with formatCurrency(data.workforceTotal) next to it in primary color.                                                            
+                                                                                                                                                                                                               
+  Page 5 — Quality                                                                                                                                                                                             
+                                                                                                                                                                                                               
+  Section label: QUALITY.                                                                                                                                                                                      
+  Title: Real-time documentation is the visibility layer that makes early intervention possible.
+  Lead: "Preventable harm events don't happen because nurses don't care — they happen when risk signals are missed or delayed. The hypothesis we model: real-time flowsheet capture surfaces those signals     
+  while there's still time to act, with the actual outcome determined by clinical practice on each unit."                                                                                                      
+                                                                                                                                                                                                               
+  Disclaimer card (left red border): "The values below are potential — they require clinical practice change alongside documentation improvement. Documentation creates the visibility; the care team creates  
+  the outcome. Validate baseline rates with your infection-control and quality teams before presenting."                                                                                                       
+                                                                                
+  Sub-section: HARM EVENTS                                                                                                                                                                                     
+                                                                                
+  Small uppercase tracked sub-header in secondary color.                                                                                                                                                       
+                                                                                                                                                                                                               
+  HAPI Risk Reduction card (data.hapi.enabled):                                                                                                                                                                
+  - Header: HAPI RISK REDUCTION · right formatCurrency(data.hapi.value) + " (potential)"                                                                                                                       
+  - Body: "At ${data.hapi.rate}/1,000 patient days across ${formatNumber(data.patientDaysAnnual)} patient days, your program sees approximately ${(data.patientDaysAnnual/1000 * data.hapi.rate).toFixed(1)} 
+  HAPIs per year. The hypothesis we model: when skin assessments are captured at the point of care rather than reconstructed at shift end, the visibility for earlier intervention improves. At a              
+  ${data.hapi.preventionPct}% documentation-attributable prevention rate and $${formatNumber(data.hapi.costPerEvent)}/event, that translates to ${formatCurrency(data.hapi.value)} — a potential to validate   
+  against your wound-care team's baseline."                                                                                                                                                                  
+  - Source: Source: Dowding et al., JAMIA 2012.                                                                                                                                                                
+                                                                                
+  Fall Risk Visibility card (data.falls.enabled):                                                                                                                                                              
+  - Header: FALL RISK VISIBILITY · right formatCurrency(data.falls.value) + " (potential)"
+  - Body: "At ${data.falls.rate}/1,000 patient days, your program sees approximately ${(data.patientDaysAnnual/1000 * data.falls.rate).toFixed(1)} falls per year. The hypothesis we model: when Morse Fall    
+  Scale assessments are completed in real time rather than deferred to end of shift, risk escalations become visible to the care team when they matter. At a ${data.falls.preventionPct}%                   
+  documentation-attributable prevention rate and $${formatNumber(data.falls.costPerEvent)}/event, that translates to ${formatCurrency(data.falls.value)} — a potential to validate against your                
+  falls-prevention committee's data."                                                                                                                                                           
+  - Source: Source: AHRQ inpatient fall cost benchmarks.                                                                                                                                                       
+                                                                                
+  Sub-section: BUNDLE COMPLIANCE                                                                                                                                                                               
+                                                           
+  Sub-header.                                                                                                                                                                                                  
+                                                                                
+  Render only enabled cards. CAUTI, CLABSI, Sepsis cards each follow the same pattern: header + value (potential) + 2-sentence body explaining mechanism + calc line + source. Use this copy:                  
+                                                                                
+  - CAUTI Prevention: "Daily catheter-necessity documentation supports earlier removal and bundle adherence. Real-time capture removes the lag between clinical decision and chart entry." Source: Source:     
+  Meddings et al., JAMA Internal Medicine 2014.                                 
+  - CLABSI Prevention: "Bundle compliance and timely line documentation reduce central line bloodstream infections. The model assumes a documentation-attributable share of preventable cases."                
+  - Sepsis Bundle Compliance: "Time-stamped vitals and antibiotic documentation lift SEP-1 bundle compliance. The model captures the documentation-lag share of non-compliant cases."
+                                                                                                                                                                                                               
+  Sub-section: TRACKED METRICS                                                  
+                                                                                                                                                                                                               
+  Sub-header. Render qualitative cards.                     
+                                                                                                                                                                                                               
+  - HCAHPS / Patient Experience (data.hcahpsEnabled) · right side: Qualitative italic gray
+    - Body: "Patient experience scores are sensitive to nursing presence and communication — both of which improve when nurses spend less time at the workstation. HCAHPS performance affects Value-Based      
+  Purchasing scores and thus Medicare reimbursement, but the causal chain is indirect and organization-specific to size precisely."                                                                            
+  - Medication Error Reduction (data.medErrorEnabled) · right side: Qualitative italic gray                                                                                                                    
+    - Body: "Cleaner real-time documentation reduces medication-related near misses and errors. Track post-deployment via your safety-event reporting system."                                                 
+                                                                                                                                                                                                               
+  Page 6 — Revenue                                                                                                                                                                                             
+                                                                           
+  Section label: REVENUE.                                                                                                                                                                                      
+  Title: Nursing documentation doesn't generate billing revenue.                
+  Subtitle: That's by design — and it's worth saying directly.                                                                                                                                                 
+                                                                                
+  Body paragraphs:                                                                                                                                                                                             
+  "Every other care setting in this model has a revenue optimization story — wRVU lift, DRG accuracy, denial prevention. Nursing doesn't. Nurses don't bill. Their documentation drives care quality and labor 
+  economics, not the revenue cycle."                                                                                                                                                                           
+                                                                                                                                                                                                               
+  "We've modeled the value where it actually lives: in the QUALITY bucket (preventable harm events, sepsis bundle compliance) and the WORKFORCE bucket (retention, agency cost avoidance, overtime reduction). 
+  Presenting a nursing revenue story that doesn't exist would undermine the credibility of the model that does."
+                                                                                                                                                                                                               
+  Two callout cards (left red border):                                                                                                                                                                         
+                                                                                                                                                                                                               
+  WHAT THIS MEANS FOR YOUR PRESENTATION                                                                                                                                                                        
+  "When a CFO asks where the nursing revenue story is, the answer is: there isn't one — and that's the point. The ROI case for nursing ambient AI is a labor economics and care quality story. It stands on its
+   own. You don't need to manufacture a billing narrative to make it compelling."
+                                                                                                                                                                                                               
+  THE INDIRECT CONNECTION                                                       
+  "Complete nursing documentation does create downstream organizational value: HCAHPS performance affects Value-Based Purchasing scores. HAC scores affect Medicare payment rates. Sepsis SEP-1 compliance     
+  affects public reporting and payer relationships. These are real — they're just not direct billing revenue, and we've modeled them as quality outcomes rather than revenue line items, which is the more     
+  defensible framing."                                     
+                                                                                                                                                                                                               
+  Page 7 — The Investment Case                                                  
+                                                                                                                                                                                                               
+  Section label: THE INVESTMENT CASE.                                           
+  Title: Infrastructure, Not Expense.                                                                                                                                                                          
+  Lead: "The investment is ${formatCurrency(data.annualInvestment)} annually — $${data.costPerBedPerMonth}/bed/month at ${data.staffedBeds} staffed beds. A one-time implementation fee of 
+  ${formatCurrency(data.implementationFee)} applies separately. Years 2–3 assume ${data.year2GrowthPct}% growth as adoption matures and documentation habits stabilize across the unit."                       
+                                                                                
+  3-Year Projection table (header row + 3 data rows). Columns: PERIOD, VALUE, INVESTMENT, NET VALUE, CUMULATIVE.                                                                                               
+  Row 1 (Year 1): ${formatCurrency(data.year1Net + data.annualInvestment)} | ${formatCurrency(data.annualInvestment)} | ${formatCurrency(data.year1Net)} | ${formatCurrency(data.year1Net)}                    
+  Row 2 (Year 2): apply +${data.year2GrowthPct}% growth to recurring; investment held constant; cumulative = Y1 + Y2 net.
+  Row 3 (Year 3): apply +${data.year3GrowthPct}%; cumulative = Y1+Y2+Y3 net.                                                                                                                                   
+                                                                                
+  Inset callout: "By Year 3, the program is generating ${(data.threeYearCumulativeNet / (data.annualInvestment * 3)).toFixed(1)}× cumulative net for every $1 invested — while your nursing staff spends more  
+  time at the bedside and less time charting after their shift."                                                                                                                                               
+                                                                                                                                                                                                               
+  AT SCALE section: 2 cards side by side.                                                                                                                                                                      
+  - CURRENT MODEL: formatCurrency(data.totalAnnualValue) + "/yr" · ${data.staffedBeds} beds · ${data.utilizationPercent}% adoption · Per bed: $${data.costPerBedPerYear}/yr
+  - AT FULL SCALE: project at the campus level — formatCurrency(data.totalAnnualValue * 4) · ${data.staffedBeds * 4} beds · 80% adoption · Per bed: $${data.costPerBedPerYear}/yr (rough 4× extrapolation; flag
+   in italic that this is an illustrative scaling, not a hard projection)                                                                                                                                      
+                                                                                                                                                                                                               
+  KEY METRICS TO TRACK numbered list:                                                                                                                                                                          
+  1. Documentation time per shift (target: −40%)                                                                                                                                                               
+  2. Nurse satisfaction / burnout score (target: +15 pts)                                                                                                                                                      
+  3. Overtime hours per FTE per week (target: −25%)                                                                                                                                                            
+                                                                           
+  Page 8 — Your Assessment Summary                                                                                                                                                                             
+                                                                                
+  Headline panel:                                                                                                                                                                                              
+  "${data.staffedBeds} staffed beds. ${data.nurseFTEs} nurse FTEs."             
+  Big number: ${formatCurrency(data.netAnnualValue)} projected net value.                                                                                                                                      
+  Subline: $${data.costPerBedPerYear}/bed per year.                                                                                                                                                            
+                                                                                                                                                                                                               
+  VALUE SUMMARY table grouped by quadrant. Each row: driver label (left) and value (right). Use — for not-selected items but always show the line. Group headers (QUALITY, WORKFORCE, CAPACITY, REVENUE) in    
+  primary red. Subtotal line per group.                                         
+                                                                                                                                                                                                               
+  QUALITY                                       formatCurrency(data.qualityTotal) (potential)                                                                                                                  
+    HAPI Prevention                            (value or —)                                                                                                                                                    
+    Falls Prevention                           (value or —)                                                                                                                                                    
+    CAUTI Prevention                           (value or —)                                                                                                                                                    
+    CLABSI Prevention                          (value or —)                                                                                                                                                    
+    Sepsis Bundle Compliance                   (value or —)                                                                                                                                                    
+    HCAHPS / Patient Experience                Qualitative                                                                                                                                                     
+    Medication Error Reduction                 Qualitative                                                                                                                                                     
+                                                                                
+  WORKFORCE                                     formatCurrency(data.workforceTotal)                                                                                                                            
+    RN Retention                               (value or —)                
+    Agency & Travel Nurse Reduction            (value or —)                                                                                                                                                    
+    Overtime Reduction                         (value or —)                     
+                                                                                                                                                                                                               
+  CAPACITY                                      Tracked                                                                                                                                                        
+    Bedside / Direct Care Time                 (Tracked or —)
+                                                                                                                                                                                                               
+  REVENUE                                       Not Applicable                  
+    Nursing documentation does not generate billing revenue.                                                                                                                                                   
+                                                                                
+  Net Annual Value                              formatCurrency(data.netAnnualValue)                                                                                                                            
+                                                            
+  METHODOLOGY section underneath (small text, neutral color), citing actual inputs from data:                                                                                                                  
+  - HAPI: ${data.hapi.rate}/1,000 patient days. ${data.hapi.preventionPct}% documentation-attributable prevention rate. ${formatCurrency(data.hapi.costPerEvent)}/event. Source: Dowding et al., JAMIA 2012.
+  - Falls: same pattern. Source: AHRQ inpatient fall cost benchmarks.                                                                                                                                          
+  - CAUTI: same. Source: Meddings et al., JAMA Internal Medicine 2014.                                                                                                                                         
+  - CLABSI: same. Source: CDC CLABSI cost-of-illness estimates.            
+  - Sepsis SEP-1: ${data.sepsis.ratePerThousand}/1,000 sepsis cases. ${data.sepsis.complianceGapPct}% non-compliant. ${formatCurrency(data.sepsis.excessCostPerCase)} excess cost per case.                    
+  ${data.sepsis.realizationPct}% realization.                                                                                                                                                                  
+  - Retention: ${data.retention.turnoverPct}% annual turnover, 40% burnout-related. ${data.retention.impactPct}% impact scenario. ${formatCurrency(data.retention.replacementCost)} replacement cost. Source: 
+  NSI Nursing Solutions 2024.                                                                                                                                                                                  
+  - Agency: ${data.agency.weeksPerVacancy} weeks coverage per vacancy at ${formatCurrency(data.agency.weeklyPremium)}/week premium.
+  - OT Reduction: ${data.overtime.otHrsPerNurseWeek} OT hrs/nurse/week at ${data.overtime.reductionPct}% reduction. $${data.overtime.otHourlyRate}/hour.                                                       
+  - Revenue: Not applicable. Nursing documentation does not generate billing revenue.                                                                   
+                                                                                                                                                                                                               
+  Bottom disclaimer: "This assessment is for planning purposes. Hard value projections are based on user-provided staffing inputs. Potential value uses published clinical rates with                          
+  documentation-attributable prevention rates that reflect the indirect causal chain. Validate with your organization's data post-implementation."                                                             
+                                                                                                                                                                                                               
+  Task 2 — Wire ExploreModel.tsx to use the new generator for nursing           
+                                                                                                                                                                                                               
+  In client/src/pages/explore/ExploreModel.tsx:                                 
+                                                                                                                                                                                                               
+  Add import:                                                                                                                                                                                                  
+  import { generateNursingValueAssessmentPDF, type NursingPDFInput } from "@/components/explore/NursingValueAssessmentPDF";                                                                                    
+                                                                                                                                                                                                               
+  Find the line await generateExplorePDF(pdfData); (around line 857). Replace just that line with:                                                                                                             
+                                                                                                                                                                                                               
+  if (state.careSetting === 'nursing') {                                        
+    const patientDaysAnnual = Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365);                                                                                                 
+    const td = state.timeDriverInputs;                                          
+    const dq = state.docQualityInputs;                                                                                                                                                                         
+                                                                           
+    const nursingInput: NursingPDFInput = {                                                                                                                                                                    
+      clientName,                                                                                                                                                                                              
+      preparedBy,                                                                                                                                                                                              
+      dateLabel: new Date().toLocaleDateString(),                                                                                                                                                              
+      staffedBeds: state.nursingStaffedBeds,                                                                                                                                                                   
+      nurseFTEs: state.numberOfProviders,                                                                                                                                                                      
+      occupancyPercent: state.nursingOccupancyRate,                                                                                                                                                            
+      utilizationPercent: state.utilizationPercent,                                                                                                                                                            
+      minutesSavedPerShift: state.minutesSavedPerEncounter,                                                                                                                                                    
+      hoursReturnedAnnual: totalHoursSaved,                                     
+      patientDaysAnnual,                                                                                                                                                                                       
+      bedsideTimeEnabled: td.nursingCareTimeEnabled,                                                                                                                                                           
+      retention: {                                                         
+        enabled: td.nursingRetentionEnabled,                                                                                                                                                                   
+        value: allDriverValues.nursingRetention || 0,                                                                                                                                                          
+        turnoverPct: td.nursingTurnoverRate,                                                                                                                                                                   
+        replacementCost: td.nursingReplacementCost,                                                                                                                                                            
+        impactPct: ({ conservative: 10, typical: 15, optimistic: 25 } as Record<string, number>)[td.retentionImpactScenario] || 15,                                                                            
+      },                                                                                                                                                                                                       
+      agency: {                                                                                                                                                                                                
+        enabled: td.nursingAgencyEnabled,                                                                                                                                                                      
+        value: allDriverValues.nursingAgency || 0,                              
+        weeksPerVacancy: td.nursingAgencyWeeksPerVacancy,                                                                                                                                                      
+        weeklyPremium: td.nursingAgencyWeeklyPremium,                                                                                                                                                          
+      },                                                                                                                                                                                                       
+      overtime: {                                                                                                                                                                                              
+        enabled: td.nursingOtEnabled,                                                                                                                                                                          
+        value: allDriverValues.nursingOvertime || 0,                            
+        otHrsPerNurseWeek: td.nursingOtHoursPerNurseWeek,                                                                                                                                                      
+        reductionPct: td.nursingOtReductionPercent,                             
+        otHourlyRate: td.nursingOtHourlyRate,                                                                                                                                                                  
+      },                                                                                                                                                                                                       
+      hapi: {                                              
+        enabled: dq.nursingHapiEnabled,                                                                                                                                                                        
+        value: allDriverValues.nursingHapi || 0,                                
+        rate: dq.nursingHapiRate,                                                                                                                                                                              
+        preventionPct: dq.nursingHapiPreventionRate,       
+        costPerEvent: dq.nursingHapiCost,                                                                                                                                                                      
+      },                                                                        
+      falls: {                                                                                                                                                                                                 
+        enabled: dq.nursingFallsEnabled,                                        
+        value: allDriverValues.nursingFalls || 0,                                                                                                                                                              
+        rate: dq.nursingFallsRate,                                              
+        preventionPct: dq.nursingFallsPreventionRate,                                                                                                                                                          
+        costPerEvent: dq.nursingFallsCost,                                 
+      },                                                                                                                                                                                                       
+      cauti: {                                                                  
+        enabled: dq.nursingCautiEnabled,                                                                                                                                                                       
+        value: allDriverValues.nursingCauti || 0,                               
+        rate: dq.nursingCautiRate,                          
+        preventionPct: dq.nursingCautiPreventionRate,                                                                                                                                                          
+        costPerEvent: dq.nursingCautiCost,                                 
+      },                                                                                                                                                                                                       
+      clabsi: {                                                                                                                                                                                                
+        enabled: dq.nursingClabsiEnabled,                                  
+        value: allDriverValues.nursingClabsi || 0,                                                                                                                                                             
+        rate: dq.nursingClabsiRate,                                             
+        preventionPct: dq.nursingClabsiPreventionRate,                                                                                                                                                         
+        costPerEvent: dq.nursingClabsiCost,                                
+      },                                                                                                                                                                                                       
+      sepsis: {                                                                                                                                                                                                
+        enabled: dq.nursingSepsisEnabled,                                  
+        value: allDriverValues.nursingSepsis || 0,                                                                                                                                                             
+        ratePerThousand: dq.nursingSepsisRatePerThousand,                       
+        complianceGapPct: 100 - dq.nursingSepsisCurrentCompliance,                                                                                                                                             
+        excessCostPerCase: dq.nursingSepsisExcessCostPerCase,              
+        realizationPct: dq.nursingSepsisRealization,                                                                                                                                                           
+      },                                                                                                                                                                                                       
+      hcahpsEnabled: dq.nursingHcahpsEnabled,              
+      medErrorEnabled: dq.nursingMedErrorEnabled,                                                                                                                                                              
+      costPerBedPerMonth: state.costPerProvider,                                
+      annualInvestment,                                                                                                                                                                                        
+      implementationFee: state.includeImplementation ? state.implementationFee : 0,
+      year1Net,                                                                                                                                                                                                
+      year2Net,                                                                 
+      year3Net,                                                                                                                                                                                                
+      threeYearCumulativeNet: threeYearNetTotal,                                
+      year2GrowthPct: state.year2GrowthPercent,                                                                                                                                                                
+      year3GrowthPct: state.year3GrowthPercent,                                 
+      workforceTotal: valueByQuadrant.Workforce || 0,                                                                                                                                                          
+      qualityTotal: valueByQuadrant.Quality || 0,                               
+      totalAnnualValue,                                                                                                                                                                                        
+      netAnnualValue: year1Net,                                                 
+      costPerBedPerYear: state.nursingStaffedBeds > 0 ? Math.round(year1Net / state.nursingStaffedBeds) : 0,                                                                                                   
+    };                                                                          
+                                                                                                                                                                                                               
+    await generateNursingValueAssessmentPDF(nursingInput);                                                                                                                                                     
+  } else {                                                                                                                                                                                                     
+    await generateExplorePDF(pdfData);                                                                                                                                                                         
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  All referenced variables (clientName, preparedBy, allDriverValues, totalHoursSaved, valueByQuadrant, annualInvestment, year1Net, year2Net, year3Net, threeYearNetTotal, totalAnnualValue) are already in     
+  scope in this handler.                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  Task 3 — Verify (Deaconess GW A600 case)                                                                                                                                                                     
+                                                                                
+  1. TypeScript compiles, no console errors.                               
+  2. Walk Nursing through Step 9 with these inputs: 32 beds, 36 FTEs, 90% occupancy, 60% adoption, 20 min/shift Typical, HAPI 2.40, Falls 2.03, CAUTI/CLABSI/Sepsis OFF, Retention + Agency + OT enabled with  
+  cheat-sheet values, HCAHPS + Med Error qualitative ON.                   
+  3. Download PDF. Verify all 8 pages render:                                                                                                                                                                  
+    - Page 1: cover (NURSING VALUE ASSESSMENT — Deaconess - GW A600 Unit / 32 beds · 36 nurse FTEs · Inpatient Nursing)
+    - Page 2: THE THESIS with 4 quadrant cards (Capacity Tracked / Workforce $X / Quality $Y potential / Revenue Not Applicable) + WHAT YOUR CHOICES REVEAL                                                    
+    - Page 3: Capacity narrative + Bedside Care Time TRACKED card                                                                                                                                              
+    - Page 4: Workforce — Documentation burden headline + Retention card + Agency child card + OT card + WORKFORCE SUBTOTAL
+    - Page 5: Quality — visibility-layer headline + disclaimer + HARM EVENTS sub-section (HAPI + Falls cards) + BUNDLE COMPLIANCE sub-section (empty for Deaconess — render the sub-header followed by italic  
+  "No bundle-compliance drivers selected for this assessment.") + TRACKED METRICS (HCAHPS + Med Error qualitative)
+    - Page 6: Revenue Not Applicable narrative + 2 callouts                                                                                                                                                    
+    - Page 7: Investment Case + 3-Year Projection table + AT SCALE + KEY METRICS TO TRACK
+    - Page 8: Your Assessment Summary table + Methodology with citations                                                                                                                                       
+  4. Walk OP / ED / IP through Step 9 — confirm those PDFs are unchanged (still use generateExplorePDF).                                                                                                       
+  5. The Deaconess MT 31/32 PDF should also render correctly with this generator (smaller numbers but same structure).                                                                                         
+                                                                                                                                                                                                               
+  Constraints                                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  - Do not modify ExplorePDFExport.tsx.                                                                                                                                                                        
+  - Do not modify nursing-pdf-generator.tsx (the legacy methodology doc — leave it).                                                                                                                           
+  - Do not delete the generateExplorePDF import from ExploreModel.tsx — OP/ED/IP still need it.                                                                                                                
+  - Empty Bundle Compliance sub-section for Deaconess should render the sub-header + an italic "no drivers selected" line, NOT be hidden — preserves the structure as a cue for what could be added.           
+  - The "Revenue: Not Applicable" framing is non-negotiable for nursing — never show $0 there.                                                                                                                 
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  22 tasks (19 done, 2 in progress, 1 open)                                                                                                                                                                    
+  ◼ R1 — Re-deploy Sprint 2D-Revenue (Revenue page rebuild)                     
+  ◼ R-NURSING-1 — Re-deploy missing nursing qualitative drivers from R-IA-6                                                                                                                                    
+  ◻ Sprint 1 — Mechanical fixes (specced, awaiting Replit)                                                                                                                                                     
+  ✔ Audit measureCareSettings.ts against 4-quadrant taxonomy                                                                                                                                                   
+  ✔ Propose measure catalog additions per setting                                                                                                                                                              
+   … +17 completed                                                                                                                                                                                             
+                                                                                                                                                                                                               
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── quadrant-page-grouping-structure ──
+❯  
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⏵⏵ auto mode on (shift+tab to cycle) · esc to interrupt · ctrl+t to hide tasks
+
+      year3GrowthPct: state.year3GrowthPercent,
+      workforceTotal: valueByQuadrant.Workforce || 0,
+      qualityTotal: valueByQuadrant.Quality || 0,
+      totalAnnualValue,
+      netAnnualValue: year1Net,
+      costPerBedPerYear: state.nursingStaffedBeds > 0 ? Math.round(year1Net / state.nursingStaffedBeds) : 0,
+    };
+
+    await generateNursingValueAssessmentPDF(nursingInput);
+  } else {
+    await generateExplorePDF(pdfData);
+  }
+
+  All referenced variables (clientName, preparedBy, allDriverValues, totalHoursSaved, valueByQuadrant, annualInvestment, year1Net, year2Net, year3Net, threeYearNetTotal, totalAnnualValue) are already in
+  scope in this handler.
+
+  Task 3 — Verify (Deaconess GW A600 case)
+
+  1. TypeScript compiles, no console errors.
+  2. Walk Nursing through Step 9 with these inputs: 32 beds, 36 FTEs, 90% occupancy, 60% adoption, 20 min/shift Typical, HAPI 2.40, Falls 2.03, CAUTI/CLABSI/Sepsis OFF, Retention + Agency + OT enabled with
+  cheat-sheet values, HCAHPS + Med Error qualitative ON.
+  3. Download PDF. Verify all 8 pages render:
+    - Page 1: cover (NURSING VALUE ASSESSMENT — Deaconess - GW A600 Unit / 32 beds · 36 nurse FTEs · Inpatient Nursing)
+    - Page 2: THE THESIS with 4 quadrant cards (Capacity Tracked / Workforce $X / Quality $Y potential / Revenue Not Applicable) + WHAT YOUR CHOICES REVEAL
+    - Page 3: Capacity narrative + Bedside Care Time TRACKED card
+    - Page 4: Workforce — Documentation burden headline + Retention card + Agency child card + OT card + WORKFORCE SUBTOTAL
+    - Page 5: Quality — visibility-layer headline + disclaimer + HARM EVENTS sub-section (HAPI + Falls cards) + BUNDLE COMPLIANCE sub-section (empty for Deaconess — render the sub-header followed by italic
+  "No bundle-compliance drivers selected for this assessment.") + TRACKED METRICS (HCAHPS + Med Error qualitative)
+    - Page 6: Revenue Not Applicable narrative + 2 callouts
+    - Page 7: Investment Case + 3-Year Projection table + AT SCALE + KEY METRICS TO TRACK
+    - Page 8: Your Assessment Summary table + Methodology with citations
+  4. Walk OP / ED / IP through Step 9 — confirm those PDFs are unchanged (still use generateExplorePDF).
+  5. The Deaconess MT 31/32 PDF should also render correctly with this generator (smaller numbers but same structure).
+
+  Constraints
+
+  - Do not modify ExplorePDFExport.tsx.
+  - Do not modify nursing-pdf-generator.tsx (the legacy methodology doc — leave it).
+  - Do not delete the generateExplorePDF import from ExploreModel.tsx — OP/ED/IP still need it.
+  - Empty Bundle Compliance sub-section for Deaconess should render the sub-header + an italic "no drivers selected" line, NOT be hidden — preserves the structure as a cue for what could be added.
+  - The "Revenue: Not Applicable" framing is non-negotiable for nursing — never show $0 there.
