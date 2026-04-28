@@ -1003,6 +1003,7 @@ export default function ExploreModel({
               turnoverPct: td.nursingTurnoverRate,
               replacementCost: td.nursingReplacementCost,
               impactPct: ({ conservative: 10, typical: 15, optimistic: 25 } as Record<string, number>)[td.retentionImpactScenario] || 15,
+              burnoutRelatedPct: 40,
             },
             agency: {
               enabled: td.nursingAgencyEnabled,

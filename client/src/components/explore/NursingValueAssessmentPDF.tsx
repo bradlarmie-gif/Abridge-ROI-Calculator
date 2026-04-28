@@ -178,7 +178,7 @@ export interface NursingPDFInput {
 
   bedsideTimeEnabled: boolean;
 
-  retention: { enabled: boolean; value: number; turnoverPct: number; replacementCost: number; impactPct: number };
+  retention: { enabled: boolean; value: number; turnoverPct: number; replacementCost: number; impactPct: number; burnoutRelatedPct: number };
   agency: { enabled: boolean; value: number; weeksPerVacancy: number; weeklyPremium: number };
   overtime: { enabled: boolean; value: number; otHrsPerNurseWeek: number; reductionPct: number; otHourlyRate: number };
 
@@ -588,7 +588,7 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 otherwise leave.
               </Text>
               <Text style={styles.driverCalc}>
-                {`${fmtNum(data.nurseFTEs)} nurses × ${data.retention.turnoverPct}% turnover × 40% burnout-related × ${data.retention.impactPct}% impact × ${fmtCurrencyExact(data.retention.replacementCost)}/replacement`}
+                {`${fmtNum(data.nurseFTEs)} nurses × ${data.retention.turnoverPct}% turnover × ${data.retention.burnoutRelatedPct}% burnout-related × ${data.retention.impactPct}% impact × ${fmtCurrencyExact(data.retention.replacementCost)}/replacement`}
               </Text>
               <Text style={styles.driverSource}>
                 Source: NSI Nursing Solutions 2024 turnover benchmark.
@@ -1105,33 +1105,59 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </Text>
           </View>
 
-          {/* METHODOLOGY */}
+          {/* METHODOLOGY — only enabled drivers */}
           <Text style={styles.subSectionHeader}>Methodology</Text>
           <View>
-            <MethodologyLine
-              text={`HAPI: ${data.hapi.rate}/1,000 patient days. ${data.hapi.preventionPct}% documentation-attributable prevention rate. ${fmtCurrencyExact(data.hapi.costPerEvent)}/event. Source: Dowding et al., JAMIA 2012.`}
-            />
-            <MethodologyLine
-              text={`Falls: ${data.falls.rate}/1,000 patient days. ${data.falls.preventionPct}% documentation-attributable prevention rate. ${fmtCurrencyExact(data.falls.costPerEvent)}/event. Source: AHRQ inpatient fall cost benchmarks.`}
-            />
-            <MethodologyLine
-              text={`CAUTI: ${data.cauti.rate}/1,000 patient days. ${data.cauti.preventionPct}% documentation-attributable prevention rate. ${fmtCurrencyExact(data.cauti.costPerEvent)}/event. Source: Meddings et al., JAMA Internal Medicine 2014.`}
-            />
-            <MethodologyLine
-              text={`CLABSI: ${data.clabsi.rate}/1,000 patient days. ${data.clabsi.preventionPct}% documentation-attributable prevention rate. ${fmtCurrencyExact(data.clabsi.costPerEvent)}/event. Source: CDC CLABSI cost-of-illness estimates.`}
-            />
-            <MethodologyLine
-              text={`Sepsis SEP-1: ${data.sepsis.ratePerThousand}/1,000 sepsis cases. ${data.sepsis.complianceGapPct}% non-compliant. ${fmtCurrencyExact(data.sepsis.excessCostPerCase)} excess cost per case. ${data.sepsis.realizationPct}% realization.`}
-            />
-            <MethodologyLine
-              text={`Retention: ${data.retention.turnoverPct}% annual turnover, 40% burnout-related. ${data.retention.impactPct}% impact scenario. ${fmtCurrencyExact(data.retention.replacementCost)} replacement cost. Source: NSI Nursing Solutions 2024.`}
-            />
-            <MethodologyLine
-              text={`Agency: ${data.agency.weeksPerVacancy} weeks coverage per vacancy at ${fmtCurrencyExact(data.agency.weeklyPremium)}/week premium.`}
-            />
-            <MethodologyLine
-              text={`OT Reduction: ${data.overtime.otHrsPerNurseWeek} OT hrs/nurse/week at ${data.overtime.reductionPct}% reduction. $${data.overtime.otHourlyRate}/hour.`}
-            />
+            {data.hapi.enabled ? (
+              <MethodologyLine
+                text={`HAPI: ${data.hapi.rate}/1,000 patient days. ${data.hapi.preventionPct}% documentation-attributable prevention rate. ${fmtCurrencyExact(data.hapi.costPerEvent)}/event. Source: Dowding et al., JAMIA 2012.`}
+              />
+            ) : null}
+            {data.falls.enabled ? (
+              <MethodologyLine
+                text={`Falls: ${data.falls.rate}/1,000 patient days. ${data.falls.preventionPct}% documentation-attributable prevention rate. ${fmtCurrencyExact(data.falls.costPerEvent)}/event. Source: AHRQ inpatient fall cost benchmarks.`}
+              />
+            ) : null}
+            {data.cauti.enabled ? (
+              <MethodologyLine
+                text={`CAUTI: ${data.cauti.rate}/1,000 cath-days at ${data.cauti.utilizationPct}% catheter utilization. ${data.cauti.preventionPct}% documentation-attributable prevention rate. ${fmtCurrencyExact(data.cauti.costPerEvent)}/event. Source: Meddings et al., JAMA Internal Medicine 2014.`}
+              />
+            ) : null}
+            {data.clabsi.enabled ? (
+              <MethodologyLine
+                text={`CLABSI: ${data.clabsi.rate}/1,000 line-days at ${data.clabsi.utilizationPct}% central-line utilization. ${data.clabsi.preventionPct}% documentation-attributable prevention rate. ${fmtCurrencyExact(data.clabsi.costPerEvent)}/event. Source: CDC CLABSI cost-of-illness estimates.`}
+              />
+            ) : null}
+            {data.sepsis.enabled ? (
+              <MethodologyLine
+                text={`Sepsis SEP-1: ${data.sepsis.ratePerThousand}/1,000 sepsis cases. ${data.sepsis.complianceGapPct}% non-compliant × ${data.sepsis.docLagPct}% doc-lag share. ${fmtCurrencyExact(data.sepsis.excessCostPerCase)} excess cost per case. ${data.sepsis.realizationPct}% realization.`}
+              />
+            ) : null}
+            {data.hcahpsEnabled ? (
+              <MethodologyLine
+                text="HCAHPS: Tracked qualitatively. Patient-experience scores affect Value-Based Purchasing but the causal chain to documentation is indirect; no monetary impact is modeled."
+              />
+            ) : null}
+            {data.medErrorEnabled ? (
+              <MethodologyLine
+                text="Medication Errors: Tracked qualitatively. Real-time MAR documentation supports earlier interception; outcome is unit-specific and not monetized in this assessment."
+              />
+            ) : null}
+            {data.retention.enabled ? (
+              <MethodologyLine
+                text={`Retention: ${data.retention.turnoverPct}% annual turnover, ${data.retention.burnoutRelatedPct}% burnout-related. ${data.retention.impactPct}% impact scenario. ${fmtCurrencyExact(data.retention.replacementCost)} replacement cost. Source: NSI Nursing Solutions 2024.`}
+              />
+            ) : null}
+            {data.agency.enabled ? (
+              <MethodologyLine
+                text={`Agency: ${data.agency.weeksPerVacancy} weeks coverage per vacancy at ${fmtCurrencyExact(data.agency.weeklyPremium)}/week premium.`}
+              />
+            ) : null}
+            {data.overtime.enabled ? (
+              <MethodologyLine
+                text={`OT Reduction: ${data.overtime.otHrsPerNurseWeek} OT hrs/nurse/week at ${data.overtime.reductionPct}% reduction. $${data.overtime.otHourlyRate}/hour.`}
+              />
+            ) : null}
             <MethodologyLine
               text="Revenue: Not applicable. Nursing documentation does not generate billing revenue."
             />
