@@ -584,20 +584,18 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         </View>
       </Page>
 
-      {/* PAGE 2 — WORKFORCE & CAPACITY (combined) */}
+      {/* PAGE 2 — WORKFORCE */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>WORKFORCE &amp; CAPACITY</Text>
+          <Text style={styles.sectionLabel}>WORKFORCE</Text>
           <Text style={styles.sectionHeadline}>
             Documentation burden is the reason nurses leave. And the reason they stay late.
           </Text>
           <Text style={styles.body}>
-            Three labor lines — turnover, agency premium, and overtime — and one
-            leading-indicator capacity line, all driven by the same root cause: how long
-            it takes to finish charting at the end of a shift.
+            Three labor lines — turnover, agency premium, and overtime — all driven by
+            the same root cause: how long it takes to finish charting at the end of a
+            shift.
           </Text>
-
-          <Text style={styles.subSectionHeader}>Workforce</Text>
 
           {data.retention.enabled ? (
             <View style={styles.driverCard}>
@@ -696,15 +694,25 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </Text>
           </View>
 
-          {/* CAPACITY subsection */}
-          <Text style={styles.subSectionHeader}>Capacity (Leading Indicator)</Text>
-          <Text style={[styles.body, { marginBottom: 8 }]}>
-            Capacity for nursing isn't a billable line — it's a leading indicator. When
-            nurses finish charting on shift, the next hour goes to direct patient care
-            instead of catch-up documentation.
+          <PageFooter orgName={orgName} />
+        </View>
+      </Page>
+
+      {/* PAGE 3 — CAPACITY (Leading Indicator) */}
+      <Page size="LETTER" style={styles.page}>
+        <View style={styles.pageWrapper}>
+          <Text style={styles.sectionLabel}>CAPACITY</Text>
+          <Text style={styles.sectionHeadline}>
+            A leading indicator, not a billable line.
+          </Text>
+          <Text style={styles.body}>
+            When nurses finish charting on shift, the next hour goes to direct patient
+            care instead of catch-up documentation. We track the ratio of bedside-to-
+            charting time as the leading indicator that the model is working — the
+            workforce and quality outcomes follow from it.
           </Text>
 
-          <View style={[styles.cardBg, { flexDirection: "row", paddingVertical: 12, marginBottom: 0 }]}>
+          <View style={[styles.cardBg, { flexDirection: "row", paddingVertical: 18, marginBottom: 14 }]}>
             <StatBlock
               label="Patient days/yr"
               value={fmtNum(data.patientDaysAnnual)}
@@ -724,11 +732,28 @@ const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             />
           </View>
 
+          <Text style={styles.subSectionHeader}>How To Read It</Text>
+          <Text style={styles.body}>
+            <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Hours returned/yr</Text> is the
+            headline — it's what reclaimed end-of-shift documentation time looks like
+            when aggregated across the unit. <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Minutes saved/shift</Text>{" "}
+            is the per-nurse experience that drives adoption. <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Patient days/yr</Text>{" "}
+            and <Text style={{ fontWeight: "bold", color: colors.primaryText }}>staffed beds</Text> anchor
+            the math to your actual operating footprint.
+          </Text>
+
+          <Text style={styles.body}>
+            We deliberately don't price capacity. Translating reclaimed minutes into
+            dollars requires assumptions about what the next hour gets used for —
+            assumptions that vary by unit, shift, and patient mix. Tracking the leading
+            indicator is more defensible than monetizing it.
+          </Text>
+
           <PageFooter orgName={orgName} />
         </View>
       </Page>
 
-      {/* PAGE 5 — QUALITY */}
+      {/* PAGE 4 — QUALITY */}
       <Page size="LETTER" style={styles.page} wrap>
         <View style={styles.pageWrapper}>
           <Text style={styles.sectionLabel}>QUALITY</Text>
