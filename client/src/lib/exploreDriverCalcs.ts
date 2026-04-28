@@ -371,12 +371,13 @@ export function computeAllDriverCalcSummaries(
       RETENTION_SCENARIOS_NURSING[td.retentionImpactScenario] ?? 0;
     out.nursingRetention = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingTurnoverRate}% turnover × 40% burnout × ${impactPct}% impact × ${fmt$(td.nursingReplacementCost)}/replacement`;
     if (td.nursingAgencyEnabled) {
-      const retained =
-        state.numberOfProviders *
-        (td.nursingTurnoverRate / 100) *
-        0.4 *
-        (impactPct / 100);
-      out.nursingAgency = `${fmtNd(retained)} retained × ${td.nursingAgencyWeeksPerVacancy} wks/vacancy × ${fmt$(td.nursingAgencyWeeklyPremium)}/wk`;
+      // Print the full factor breakdown rather than a precomputed
+      // `${fmtNd(retained)} retained` token. Rounding the retained-nurses
+      // sub-total to one decimal (e.g. 0.16 → "0.2") would silently inflate
+      // the printed math by ~25% versus the engine value. Breaking the
+      // formula down keeps the printed multiplicands in lockstep with the
+      // engine's unrounded retained × weeks × premium product.
+      out.nursingAgency = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingTurnoverRate}% turnover × 40% burnout × ${impactPct}% impact × ${td.nursingAgencyWeeksPerVacancy} wks/vacancy × ${fmt$(td.nursingAgencyWeeklyPremium)}/wk`;
     }
   }
   if (isNursing && td.nursingOtEnabled) {

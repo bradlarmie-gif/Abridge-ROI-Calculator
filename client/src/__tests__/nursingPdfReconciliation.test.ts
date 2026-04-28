@@ -6,6 +6,14 @@ import {
   calcClabsi,
   calcSepsis,
 } from "@/lib/nursingQualityCalcs";
+import {
+  computeAllDriverValues,
+  computeAllDriverCalcSummaries,
+} from "@/lib/exploreDriverCalcs";
+import {
+  DEFAULT_EXPLORE_STATE,
+  type ExploreState,
+} from "@/pages/explore/ExploreFlow";
 
 /**
  * Reconciliation guardrail for the Mercy Nursing Value Assessment PDF.
@@ -125,6 +133,62 @@ describe("Nursing PDF reconciliation — engine math vs. printed formula", () =>
     });
     expect(r.complianceGapPct).toBe(0);
     expect(r.value).toBe(0);
+  });
+
+  it("nursingAgency: printed multiplicands reconcile to engine value (low retained nurses)", () => {
+    // Construct a deliberately small "retained nurses" scenario so the
+    // sub-total rounds aggressively (e.g. 0.16 → "0.2") under the old
+    // `${fmtNd(retained)} retained × ...` formatter. The full-factor
+    // breakdown should still reconcile within tolerance to the engine
+    // value, which is computed from the unrounded retained × wks × premium
+    // product in `computeAllDriverValues`.
+    const state: ExploreState = {
+      ...DEFAULT_EXPLORE_STATE,
+      careSetting: "nursing",
+      numberOfProviders: 4,
+      timeDriverInputs: {
+        ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+        nursingRetentionEnabled: true,
+        nursingTurnoverRate: 10,
+        retentionImpactScenario: "typical", // 15% nursing impact
+        nursingReplacementCost: 60_000,
+        nursingAgencyEnabled: true,
+        nursingAgencyWeeksPerVacancy: 12,
+        nursingAgencyWeeklyPremium: 2_500,
+      },
+    };
+
+    const values = computeAllDriverValues(state, 0);
+    const summaries = computeAllDriverCalcSummaries(state, 0);
+
+    const summary = summaries.nursingAgency ?? "";
+    expect(summary).not.toMatch(/retained\b/);
+
+    // Parse multiplicands left-to-right (mirrors how a reader scans the
+    // formula). Each "×"-separated token contributes its first numeric
+    // value, with "$X" treated as a dollar amount and "X%" as X/100.
+    const tokens = summary.split("×").map((t) => t.trim());
+    let printed = 1;
+    for (const token of tokens) {
+      const dollarMatch = token.match(/\$([\d,]+(?:\.\d+)?)/);
+      const percentMatch = token.match(/(-?[\d,]+(?:\.\d+)?)\s*%/);
+      const bareMatch = token.match(/(-?[\d,]+(?:\.\d+)?)/);
+      let factor: number;
+      if (dollarMatch) {
+        factor = Number(dollarMatch[1].replace(/,/g, ""));
+      } else if (percentMatch) {
+        factor = Number(percentMatch[1].replace(/,/g, "")) / 100;
+      } else if (bareMatch) {
+        factor = Number(bareMatch[1].replace(/,/g, ""));
+      } else {
+        throw new Error(`could not parse multiplicand from token "${token}"`);
+      }
+      printed *= factor;
+    }
+
+    const engineValue = values.nursingAgency ?? 0;
+    const tol = Math.max(5, Math.abs(engineValue) * 0.005);
+    expect(Math.abs(printed - engineValue)).toBeLessThanOrEqual(tol);
   });
 
   it("End-to-end: rounding the helper value matches the engine's Math.round(value)", () => {
