@@ -3,6 +3,7 @@ import {
   Page,
   Text,
   View,
+  Image,
   StyleSheet,
   pdf,
   Font,
@@ -18,6 +19,7 @@ import {
 } from "@/lib/nursingQualityCalcs";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
+import abridgeWordmark from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -39,6 +41,9 @@ const colors = {
   border: "#E0E0E0",
   separator: "#F0EBE4",
   separatorHeavy: "#E5DCD0",
+  footerRule: "#DDD5C8", // warm hairline tuned to the Abridge palette (same family as `cards`)
+  footerMeta: "#5C5751",
+  footerMetaSoft: "#8F8A82",
 };
 
 const styles = StyleSheet.create({
@@ -147,30 +152,51 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary,
     marginBottom: 10,
   },
+  // ───── Page footer ──────────────────────────────────────────────────────
+  // Total reserved height (must fit inside `page.paddingBottom: 72`):
+  //   bottom (28) + content (~12 wordmark or text) + paddingTop (10) + rule (1)
+  //   = 51pt, leaving ~21pt of breathing room above. Do not shrink paddingBottom
+  //   without re-running the visual review checklist in pdf_layout_guidelines.md.
   footer: {
     position: "absolute",
-    bottom: 24,
+    bottom: 28,
     left: 54,
     right: 54,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 8,
+    paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.footerRule,
   },
-  footerLeft: {
-    fontSize: 10,
-    color: colors.primary,
-    fontWeight: "bold",
+  footerLogo: {
+    width: 56,
+    height: 12,
+    objectFit: "contain",
   },
   footerCenter: {
-    fontSize: 8.5,
-    color: colors.secondary,
+    fontSize: 7.5,
+    color: colors.footerMeta,
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
+  },
+  footerCenterOrg: {
+    fontWeight: "bold",
+    color: colors.primaryText,
+  },
+  footerCenterDot: {
+    color: colors.footerMetaSoft,
   },
   footerRight: {
-    fontSize: 8.5,
-    color: colors.tertiary,
+    fontSize: 7.5,
+    color: colors.footerMeta,
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
+  },
+  footerRightNum: {
+    color: colors.primaryText,
+    fontWeight: "bold",
+    letterSpacing: 0.4,
   },
 });
 
@@ -240,18 +266,32 @@ const fmtNum = (n: number): string => Math.round(n).toLocaleString();
 
 // ───────────────────────── Reusable components ─────────────────────────
 
+// PageFooter is a Bloomberg/McKinsey-style report footer:
+//   • Left: rendered Abridge wordmark image (NOT lowercase text — the brand
+//     mark must read as a logo, not as un-capitalized prose).
+//   • Center: small-caps document slug — `ORG · DOCUMENT TITLE` with subtle
+//     tracking. Org renders in bolded near-black so it anchors the line.
+//   • Right: small-caps "PAGE X / Y" with the numerals in bold near-black.
+// Hairline rule above is tuned to the warm Abridge palette (not slate gray).
 const PageFooter = ({ orgName }: { orgName: string }) => (
   <View style={styles.footer} fixed>
-    <Text style={styles.footerLeft}>abridge</Text>
+    <Image src={abridgeWordmark} style={styles.footerLogo} />
     <Text style={styles.footerCenter}>
-      {orgName} · Nursing Value Assessment
+      <Text style={styles.footerCenterOrg}>{orgName}</Text>
+      <Text style={styles.footerCenterDot}>{"   ·   "}</Text>
+      Nursing Value Assessment
     </Text>
     {/* Subtract 1 to skip the unnumbered cover page (currently always page 1). */}
     <Text
       style={styles.footerRight}
-      render={({ pageNumber, totalPages }) =>
-        `Page ${pageNumber - 1} of ${totalPages - 1}`
-      }
+      render={({ pageNumber, totalPages }) => (
+        <>
+          <Text>Page </Text>
+          <Text style={styles.footerRightNum}>
+            {`${pageNumber - 1} / ${totalPages - 1}`}
+          </Text>
+        </>
+      )}
     />
   </View>
 );

@@ -746,38 +746,63 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       {
                         "children": [
                           {
-                            "children": [
-                              {
-                                "kind": "text",
-                                "value": "abridge",
-                              },
-                            ],
+                            "children": [],
                             "kind": "primitive",
                             "props": {
+                              "src": "stub://asset",
                               "style": {
-                                "color": "#EA2C00",
-                                "fontSize": 10,
-                                "fontWeight": "bold",
+                                "height": 12,
+                                "objectFit": "contain",
+                                "width": 56,
                               },
                             },
-                            "tag": "TEXT",
+                            "tag": "IMAGE",
                           },
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Mercy Health System",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Mercy Health System",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontWeight": "bold",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "   ·   ",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#8F8A82",
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                               {
                                 "kind": "text",
-                                "value": " · Nursing Value Assessment",
+                                "value": "Nursing Value Assessment",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -786,10 +811,12 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [],
                             "kind": "primitive",
                             "props": {
-                              "render": "[render→ Page 0 of 7]",
+                              "render": "[render→element]",
                               "style": {
-                                "color": "#999999",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -800,13 +827,13 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           "fixed": true,
                           "style": {
                             "alignItems": "center",
-                            "borderTopColor": "#E0E0E0",
+                            "borderTopColor": "#DDD5C8",
                             "borderTopWidth": 1,
-                            "bottom": 24,
+                            "bottom": 28,
                             "flexDirection": "row",
                             "justifyContent": "space-between",
                             "left": 54,
-                            "paddingTop": 8,
+                            "paddingTop": 10,
                             "position": "absolute",
                             "right": 54,
                           },
@@ -2068,38 +2095,63 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       {
                         "children": [
                           {
-                            "children": [
-                              {
-                                "kind": "text",
-                                "value": "abridge",
-                              },
-                            ],
+                            "children": [],
                             "kind": "primitive",
                             "props": {
+                              "src": "stub://asset",
                               "style": {
-                                "color": "#EA2C00",
-                                "fontSize": 10,
-                                "fontWeight": "bold",
+                                "height": 12,
+                                "objectFit": "contain",
+                                "width": 56,
                               },
                             },
-                            "tag": "TEXT",
+                            "tag": "IMAGE",
                           },
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Mercy Health System",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Mercy Health System",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontWeight": "bold",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "   ·   ",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#8F8A82",
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                               {
                                 "kind": "text",
-                                "value": " · Nursing Value Assessment",
+                                "value": "Nursing Value Assessment",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -2108,10 +2160,12 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [],
                             "kind": "primitive",
                             "props": {
-                              "render": "[render→ Page 0 of 7]",
+                              "render": "[render→element]",
                               "style": {
-                                "color": "#999999",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -2122,13 +2176,13 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           "fixed": true,
                           "style": {
                             "alignItems": "center",
-                            "borderTopColor": "#E0E0E0",
+                            "borderTopColor": "#DDD5C8",
                             "borderTopWidth": 1,
-                            "bottom": 24,
+                            "bottom": 28,
                             "flexDirection": "row",
                             "justifyContent": "space-between",
                             "left": 54,
-                            "paddingTop": 8,
+                            "paddingTop": 10,
                             "position": "absolute",
                             "right": 54,
                           },
@@ -2611,38 +2665,63 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       {
                         "children": [
                           {
-                            "children": [
-                              {
-                                "kind": "text",
-                                "value": "abridge",
-                              },
-                            ],
+                            "children": [],
                             "kind": "primitive",
                             "props": {
+                              "src": "stub://asset",
                               "style": {
-                                "color": "#EA2C00",
-                                "fontSize": 10,
-                                "fontWeight": "bold",
+                                "height": 12,
+                                "objectFit": "contain",
+                                "width": 56,
                               },
                             },
-                            "tag": "TEXT",
+                            "tag": "IMAGE",
                           },
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Mercy Health System",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Mercy Health System",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontWeight": "bold",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "   ·   ",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#8F8A82",
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                               {
                                 "kind": "text",
-                                "value": " · Nursing Value Assessment",
+                                "value": "Nursing Value Assessment",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -2651,10 +2730,12 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [],
                             "kind": "primitive",
                             "props": {
-                              "render": "[render→ Page 0 of 7]",
+                              "render": "[render→element]",
                               "style": {
-                                "color": "#999999",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -2665,13 +2746,13 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           "fixed": true,
                           "style": {
                             "alignItems": "center",
-                            "borderTopColor": "#E0E0E0",
+                            "borderTopColor": "#DDD5C8",
                             "borderTopWidth": 1,
-                            "bottom": 24,
+                            "bottom": 28,
                             "flexDirection": "row",
                             "justifyContent": "space-between",
                             "left": 54,
-                            "paddingTop": 8,
+                            "paddingTop": 10,
                             "position": "absolute",
                             "right": 54,
                           },
@@ -5135,38 +5216,63 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       {
                         "children": [
                           {
-                            "children": [
-                              {
-                                "kind": "text",
-                                "value": "abridge",
-                              },
-                            ],
+                            "children": [],
                             "kind": "primitive",
                             "props": {
+                              "src": "stub://asset",
                               "style": {
-                                "color": "#EA2C00",
-                                "fontSize": 10,
-                                "fontWeight": "bold",
+                                "height": 12,
+                                "objectFit": "contain",
+                                "width": 56,
                               },
                             },
-                            "tag": "TEXT",
+                            "tag": "IMAGE",
                           },
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Mercy Health System",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Mercy Health System",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontWeight": "bold",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "   ·   ",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#8F8A82",
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                               {
                                 "kind": "text",
-                                "value": " · Nursing Value Assessment",
+                                "value": "Nursing Value Assessment",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -5175,10 +5281,12 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [],
                             "kind": "primitive",
                             "props": {
-                              "render": "[render→ Page 0 of 7]",
+                              "render": "[render→element]",
                               "style": {
-                                "color": "#999999",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -5189,13 +5297,13 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           "fixed": true,
                           "style": {
                             "alignItems": "center",
-                            "borderTopColor": "#E0E0E0",
+                            "borderTopColor": "#DDD5C8",
                             "borderTopWidth": 1,
-                            "bottom": 24,
+                            "bottom": 28,
                             "flexDirection": "row",
                             "justifyContent": "space-between",
                             "left": 54,
-                            "paddingTop": 8,
+                            "paddingTop": 10,
                             "position": "absolute",
                             "right": 54,
                           },
@@ -5386,38 +5494,63 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       {
                         "children": [
                           {
-                            "children": [
-                              {
-                                "kind": "text",
-                                "value": "abridge",
-                              },
-                            ],
+                            "children": [],
                             "kind": "primitive",
                             "props": {
+                              "src": "stub://asset",
                               "style": {
-                                "color": "#EA2C00",
-                                "fontSize": 10,
-                                "fontWeight": "bold",
+                                "height": 12,
+                                "objectFit": "contain",
+                                "width": 56,
                               },
                             },
-                            "tag": "TEXT",
+                            "tag": "IMAGE",
                           },
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Mercy Health System",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Mercy Health System",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontWeight": "bold",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "   ·   ",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#8F8A82",
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                               {
                                 "kind": "text",
-                                "value": " · Nursing Value Assessment",
+                                "value": "Nursing Value Assessment",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -5426,10 +5559,12 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [],
                             "kind": "primitive",
                             "props": {
-                              "render": "[render→ Page 0 of 7]",
+                              "render": "[render→element]",
                               "style": {
-                                "color": "#999999",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -5440,13 +5575,13 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           "fixed": true,
                           "style": {
                             "alignItems": "center",
-                            "borderTopColor": "#E0E0E0",
+                            "borderTopColor": "#DDD5C8",
                             "borderTopWidth": 1,
-                            "bottom": 24,
+                            "bottom": 28,
                             "flexDirection": "row",
                             "justifyContent": "space-between",
                             "left": 54,
-                            "paddingTop": 8,
+                            "paddingTop": 10,
                             "position": "absolute",
                             "right": 54,
                           },
@@ -6355,38 +6490,63 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       {
                         "children": [
                           {
-                            "children": [
-                              {
-                                "kind": "text",
-                                "value": "abridge",
-                              },
-                            ],
+                            "children": [],
                             "kind": "primitive",
                             "props": {
+                              "src": "stub://asset",
                               "style": {
-                                "color": "#EA2C00",
-                                "fontSize": 10,
-                                "fontWeight": "bold",
+                                "height": 12,
+                                "objectFit": "contain",
+                                "width": 56,
                               },
                             },
-                            "tag": "TEXT",
+                            "tag": "IMAGE",
                           },
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Mercy Health System",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Mercy Health System",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontWeight": "bold",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "   ·   ",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#8F8A82",
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                               {
                                 "kind": "text",
-                                "value": " · Nursing Value Assessment",
+                                "value": "Nursing Value Assessment",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -6395,10 +6555,12 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [],
                             "kind": "primitive",
                             "props": {
-                              "render": "[render→ Page 0 of 7]",
+                              "render": "[render→element]",
                               "style": {
-                                "color": "#999999",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -6409,13 +6571,13 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           "fixed": true,
                           "style": {
                             "alignItems": "center",
-                            "borderTopColor": "#E0E0E0",
+                            "borderTopColor": "#DDD5C8",
                             "borderTopWidth": 1,
-                            "bottom": 24,
+                            "bottom": 28,
                             "flexDirection": "row",
                             "justifyContent": "space-between",
                             "left": 54,
-                            "paddingTop": 8,
+                            "paddingTop": 10,
                             "position": "absolute",
                             "right": 54,
                           },
@@ -7963,38 +8125,63 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       {
                         "children": [
                           {
-                            "children": [
-                              {
-                                "kind": "text",
-                                "value": "abridge",
-                              },
-                            ],
+                            "children": [],
                             "kind": "primitive",
                             "props": {
+                              "src": "stub://asset",
                               "style": {
-                                "color": "#EA2C00",
-                                "fontSize": 10,
-                                "fontWeight": "bold",
+                                "height": 12,
+                                "objectFit": "contain",
+                                "width": 56,
                               },
                             },
-                            "tag": "TEXT",
+                            "tag": "IMAGE",
                           },
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Mercy Health System",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Mercy Health System",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#1A1A1A",
+                                    "fontWeight": "bold",
+                                  },
+                                },
+                                "tag": "TEXT",
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "   ·   ",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#8F8A82",
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                               {
                                 "kind": "text",
-                                "value": " · Nursing Value Assessment",
+                                "value": "Nursing Value Assessment",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#666666",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -8003,10 +8190,12 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [],
                             "kind": "primitive",
                             "props": {
-                              "render": "[render→ Page 0 of 7]",
+                              "render": "[render→element]",
                               "style": {
-                                "color": "#999999",
-                                "fontSize": 8.5,
+                                "color": "#5C5751",
+                                "fontSize": 7.5,
+                                "letterSpacing": 1.1,
+                                "textTransform": "uppercase",
                               },
                             },
                             "tag": "TEXT",
@@ -8017,13 +8206,13 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                           "fixed": true,
                           "style": {
                             "alignItems": "center",
-                            "borderTopColor": "#E0E0E0",
+                            "borderTopColor": "#DDD5C8",
                             "borderTopWidth": 1,
-                            "bottom": 24,
+                            "bottom": 28,
                             "flexDirection": "row",
                             "justifyContent": "space-between",
                             "left": 54,
-                            "paddingTop": 8,
+                            "paddingTop": 10,
                             "position": "absolute",
                             "right": 54,
                           },
