@@ -275,7 +275,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'opDiagnosisCaptureEnabled',
     expandedStateKey: 'opDiagnosisCaptureExpanded',
   },
-  // ED (qualitative)
+  // ED Quality (qualitative — 3 drivers; R-ED-1: Provider Communication → Admission Hand-Off Completeness)
   {
     id: 'edNoteStarRating',
     label: 'ED Note Quality (Star Rating)',
@@ -297,15 +297,15 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'edPressGaneyExpanded',
   },
   {
-    id: 'edProviderCommunication',
-    label: 'Provider Communication',
-    shortDescription: 'Patient-reported provider communication scores from HCAHPS or Press Ganey communication subscales. ED-specific patient experience signal.',
+    id: 'edAdmissionHandoff',
+    label: 'Admission Hand-Off Completeness',
+    shortDescription: 'Share of ED-to-inpatient hand-offs with complete documentation at admission. When the ED admits, downstream inpatient teams inherit the quality of the ED note.',
     quadrant: 'Quality',
     settings: ['ed'],
     visibility: 'qualitative',
-    enabledStateKey: 'edProviderCommunicationEnabled',
-    expandedStateKey: 'edProviderCommunicationExpanded',
-    trackedMeasureIds: ['pressGaney'],
+    enabledStateKey: 'edAdmissionHandoffEnabled',
+    expandedStateKey: 'edAdmissionHandoffExpanded',
+    trackedMeasureIds: [],
   },
   // IP (qualitative)
   {
@@ -717,11 +717,11 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: ['diagnosisSpecificity'],
   },
 
-  // ED Capacity (qualitative — 3 drivers, expanded by R-IA-4)
+  // ED Capacity (qualitative — 3 drivers; R-ED-1: Door-to-Disposition + Bed Turnover replaced for product reality)
   {
     id: 'edDoorToProvider',
     label: 'Door-to-Provider Time',
-    shortDescription: 'Minutes from patient arrival to first provider contact. An upstream indicator for LWBS and patient experience.',
+    shortDescription: 'Minutes from patient arrival to first provider contact. An upstream indicator for LWBS and patient experience; faster note-write frees clinicians to see the next patient sooner.',
     quadrant: 'Capacity',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -730,25 +730,25 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: ['doorToProvider'],
   },
   {
-    id: 'edDoorToDisposition',
-    label: 'Door-to-Disposition Time',
-    shortDescription: 'Minutes from patient arrival to admit/discharge decision. A throughput indicator that reflects the full ED decision cycle.',
+    id: 'edEncountersPerShift',
+    label: 'Encounters per Provider per Shift',
+    shortDescription: 'Average patient volume per provider per shift. Direct throughput proof — faster documentation makes more capacity per shift available.',
     quadrant: 'Capacity',
     settings: ['ed'],
     visibility: 'qualitative',
-    enabledStateKey: 'edDoorToDispositionEnabled',
-    expandedStateKey: 'edDoorToDispositionExpanded',
-    trackedMeasureIds: ['doorToDisposition'],
+    enabledStateKey: 'edEncountersPerShiftEnabled',
+    expandedStateKey: 'edEncountersPerShiftExpanded',
+    trackedMeasureIds: ['patientsPerShift'],
   },
   {
-    id: 'edBedTurnover',
-    label: 'Bed Turnover Time',
-    shortDescription: 'Minutes between patient discharge and bed becoming ready for the next patient. Tracks ED operational efficiency and boarding pressure.',
+    id: 'edEndOfShiftCompletion',
+    label: 'End-of-Shift Note Completion Rate',
+    shortDescription: 'Share of encounter notes signed before the provider leaves the shift. Tracks the shift away from end-of-shift batch charting.',
     quadrant: 'Capacity',
     settings: ['ed'],
     visibility: 'qualitative',
-    enabledStateKey: 'edBedTurnoverEnabled',
-    expandedStateKey: 'edBedTurnoverExpanded',
+    enabledStateKey: 'edEndOfShiftCompletionEnabled',
+    expandedStateKey: 'edEndOfShiftCompletionExpanded',
     trackedMeasureIds: [],
   },
 
@@ -787,7 +787,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: ['likelihoodToStay'],
   },
 
-  // ED Revenue (qualitative — 3 drivers, expanded by R-IA-4)
+  // ED Revenue (qualitative — 3 drivers; R-ED-1: CDI Query Volume Trend → Down-coding Rate)
   {
     id: 'edCleanClaim',
     label: 'Clean Claim Rate',
@@ -811,14 +811,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     trackedMeasureIds: ['emLevel'],
   },
   {
-    id: 'edCdiQueryTrend',
-    label: 'CDI Query Volume Trend',
-    shortDescription: 'Volume of CDI queries returned to ED providers post-visit. Decreasing query volume often signals more complete documentation at the point of care.',
+    id: 'edDowncodingRate',
+    label: 'Down-coding Rate',
+    shortDescription: 'Share of claims down-coded by payers (e.g., 99284 → 99283) due to insufficient documentation. Decreasing rate signals stronger documentation supporting the billed level.',
     quadrant: 'Revenue',
     settings: ['ed'],
     visibility: 'qualitative',
-    enabledStateKey: 'edCdiQueryTrendEnabled',
-    expandedStateKey: 'edCdiQueryTrendExpanded',
+    enabledStateKey: 'edDowncodingRateEnabled',
+    expandedStateKey: 'edDowncodingRateExpanded',
     trackedMeasureIds: [],
   },
 

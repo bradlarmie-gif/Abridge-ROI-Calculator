@@ -1,0 +1,239 @@
+🔧 R-ED-1 — ED qualitative driver consolidation + polish (Replit prompt — paste verbatim)
+                                                                                                                                                                                                               
+  Context: ED is in a bare state — only the financial drivers (LWBS Recovery, Admission Capture, Provider Wellbeing shared) and 2 Quality items (Note Star Rating, Press Ganey) are in the registry. The
+  qualitative drivers from R-IA-2 and R-IA-4 never deployed. This prompt consolidates the deployment AND applies three product-reality refinements:                                                            
+                                                                                
+  - Capacity: Drops Door-to-Disposition (multi-factor: labs, imaging, consults dominate — Abridge contributes minimally) and Bed Turnover (housekeeping/registration — Abridge has no real lever). Replaces    
+  with Encounters per Provider per Shift (direct throughput) + End-of-Shift Note Completion Rate (direct compliance/capacity).
+                                                                                                                                                                                                               
+  - Revenue: Drops CDI Query Volume Trend (CDI is much more an IP concern; ED has minimal CDI activity). Replaces with Down-coding Rate (more ED-specific — % of claims down-coded by payers due to
+  insufficient documentation, directly Abridge-moveable).                                                                                                                                                      
+                                                                                   
+  - Quality: Drops Provider Communication HCAHPS subscale (overlaps significantly with Press Ganey). Replaces with Admission Hand-Off Completeness (parallel to IP's Hand-Off Completeness — when ED admits,   
+  the inpatient team inherits the quality of the ED note, system-wide story).   
+                                                                                                                                                                                                               
+  Workforce qualitative items (After-Hours Documentation, Burnout Score, Likelihood to Stay) deploy as originally specced — solid for ED reality, no changes.
+                                                                                                                                                                                                               
+  Pre-req: R-IA-1 (two-section grouping) shipped. R-RECOVER (Revenue rebuild) ideally shipped too — the Revenue financial drivers (E&M Level Accuracy, Denial Prevention) need to be in registry for the       
+  Revenue page to work end-to-end. If R-RECOVER hasn't shipped, this prompt's ED Revenue qualitative items still deploy correctly but the Revenue page will have no Financial Drivers section until R-RECOVER
+  lands.                                                                                                                                                                                                       
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════
+  TASK 1 — Add 10 new ED qualitative state fields                                                                                                                                                              
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/pages/explore/ExploreFlow.tsx           
+                                                                                                                                                                                                               
+  ADD these enabled/expanded boolean field pairs to the TimeDriverInputs interface AND to DEFAULT_EXPLORE_STATE.timeDriverInputs (default `false`):
+                                                                                                                                                                                                               
+    // ED Capacity (3 qualitative)                                                 
+    edDoorToProviderEnabled: boolean;                       
+    edDoorToProviderExpanded: boolean;                      
+    edEncountersPerShiftEnabled: boolean;                                                                                                                                                                      
+    edEncountersPerShiftExpanded: boolean;                                         
+    edEndOfShiftCompletionEnabled: boolean;                                                                                                                                                                    
+    edEndOfShiftCompletionExpanded: boolean;                                                                                                                                                                   
+    // ED Workforce (3 qualitative)                                                                                                                                                                            
+    edAfterHoursDocEnabled: boolean;                                                                                                                                                                           
+    edAfterHoursDocExpanded: boolean;                                              
+    edBurnoutTrackingEnabled: boolean;                                                                                                                                                                         
+    edBurnoutTrackingExpanded: boolean;                     
+    edLikelihoodToStayEnabled: boolean;                                                                                                                                                                        
+    edLikelihoodToStayExpanded: boolean;                                                                                                                                                                       
+    // ED Revenue (3 qualitative)                           
+    edCleanClaimEnabled: boolean;                                                                                                                                                                              
+    edCleanClaimExpanded: boolean;                                              
+    edEmLevelDistributionEnabled: boolean;                                                                                                                                                                     
+    edEmLevelDistributionExpanded: boolean;                                                                                                                                                                    
+    edDowncodingRateEnabled: boolean;                                              
+    edDowncodingRateExpanded: boolean;                                                                                                                                                                         
+    // ED Quality (1 new — added to existing 2)                                                                                                                                                                
+    edAdmissionHandoffEnabled: boolean;                                            
+    edAdmissionHandoffExpanded: boolean;                                                                                                                                                                       
+                                                                                   
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 2 — Add 10 new ED qualitative driver entries to EXPLORE_DRIVERS
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                                                                                                                                                                       
+                                                                                   
+  APPEND these 10 driver entries to the EXPLORE_DRIVERS array. All have `visibility: 'qualitative'`, no calcComponent, no measureDefaults. Voice is neutral.                                                   
+                                                                                   
+    // ───── ED Capacity (qualitative) ─────                                                                                                                                                                   
+    {                                                                                                                                                                                                          
+      id: 'edDoorToProvider',                                                      
+      label: 'Door-to-Provider Time',                                                                                                                                                                          
+      shortDescription: 'Minutes from patient arrival to first provider contact. An upstream indicator for LWBS and patient experience; faster note-write frees clinicians to see the next patient sooner.',
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['ed'],                                                                                                                                                                                        
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edDoorToProviderEnabled',                                                                                                                                                              
+      expandedStateKey: 'edDoorToProviderExpanded',                                
+      trackedMeasureIds: ['doorToProvider'],                                                                                                                                                                   
+    },                                                                          
+    {                                                                                                                                                                                                          
+      id: 'edEncountersPerShift',                                                                                                                                                                              
+      label: 'Encounters per Provider per Shift',                                                                                                                                                              
+      shortDescription: 'Average patient volume per provider per shift. Direct throughput proof — faster documentation makes more capacity per shift available.',                                              
+      quadrant: 'Capacity',                                                     
+      settings: ['ed'],                                                                                                                                                                                        
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edEncountersPerShiftEnabled',                                                                                                                                                          
+      expandedStateKey: 'edEncountersPerShiftExpanded',                                                                                                                                                        
+      trackedMeasureIds: ['patientsPerShift'],                                                                                                                                                                 
+    },                                                                          
+    {                                                                              
+      id: 'edEndOfShiftCompletion',                                                                                                                                                                            
+      label: 'End-of-Shift Note Completion Rate',                                                                                                                                                              
+      shortDescription: 'Share of encounter notes signed before the provider leaves the shift. Tracks the shift away from end-of-shift batch charting.',                                                       
+      quadrant: 'Capacity',                                                                                                                                                                                    
+      settings: ['ed'],                                                         
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edEndOfShiftCompletionEnabled',                            
+      expandedStateKey: 'edEndOfShiftCompletionExpanded',                                                                                                                                                      
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                     
+                                                                                                                                                                                                               
+    // ───── ED Workforce (qualitative) ─────                                                                                                                                                                  
+    {                                                                                                                                                                                                          
+      id: 'edAfterHoursDoc',                                                                                                                                                                                   
+      label: 'After-Hours Documentation',                                                                                                                                                                      
+      shortDescription: 'Time providers spend in the EHR outside scheduled shift hours. A widely used signal for documentation burden in shift-based settings.',
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['ed'],                                    
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edAfterHoursDocEnabled',                                                                                                                                                               
+      expandedStateKey: 'edAfterHoursDocExpanded',          
+      trackedMeasureIds: ['workOutsideWorkEmpirical'],                                                                                                                                                         
+    },                                                                          
+    {                                                       
+      id: 'edBurnoutTracking',                                                                                                                                                                                 
+      label: 'Burnout Score',                              
+      shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Used as a leading indicator for retention.',                                                             
+      quadrant: 'Workforce',                                                                                                                                                                                   
+      settings: ['ed'],                                     
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edBurnoutTrackingEnabled',                                                                                                                                                             
+      expandedStateKey: 'edBurnoutTrackingExpanded',        
+      trackedMeasureIds: ['burnoutAssessment'],                                                                                                                                                                
+    },                                                                             
+    {                                                                                                                                                                                                          
+      id: 'edLikelihoodToStay',                                                                                                                                                                                
+      label: 'Likelihood to Stay',                        
+      shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe.',                                                                                                    
+      quadrant: 'Workforce',                                                    
+      settings: ['ed'],                                                                                                                                                                                        
+      visibility: 'qualitative',                                                   
+      enabledStateKey: 'edLikelihoodToStayEnabled',                                                                                                                                                            
+      expandedStateKey: 'edLikelihoodToStayExpanded',                           
+      trackedMeasureIds: ['likelihoodToStay'],                                                                                                                                                                 
+    },                                                                             
+                                                          
+    // ───── ED Revenue (qualitative) ─────                                                                                                                                                                    
+    {                                                                              
+      id: 'edCleanClaim',                                                                                                                                                                                      
+      label: 'Clean Claim Rate',                                                
+      shortDescription: 'Share of ED claims accepted on first submission. Tracked as a downstream signal of documentation completeness.',                                                                      
+      quadrant: 'Revenue',                 
+      settings: ['ed'],                                                                                                                                                                                        
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edCleanClaimEnabled',             
+      expandedStateKey: 'edCleanClaimExpanded',                                                                                                                                                                
+      trackedMeasureIds: ['cleanClaim'],                                           
+    },                                                    
+    {                                                       
+      id: 'edEmLevelDistribution',                                                                                                                                                                             
+      label: 'E&M Level Distribution Shift',              
+      shortDescription: 'Distribution of ED E/M codes (99281-99285) across encounters. A shift toward higher-level codes can indicate documentation more fully reflects visit complexity.',                    
+      quadrant: 'Revenue',                                                                                                                                                                                     
+      settings: ['ed'],                                                            
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edEmLevelDistributionEnabled',                                                                                                                                                         
+      expandedStateKey: 'edEmLevelDistributionExpanded',    
+      trackedMeasureIds: ['emLevel'],                                                                                                                                                                          
+    },                                                                             
+    {                                                                                                                                                                                                          
+      id: 'edDowncodingRate',                                                                                                                                                                                  
+      label: 'Down-coding Rate',                                                                                                                                                                               
+      shortDescription: 'Share of claims down-coded by payers (e.g., 99284 → 99283) due to insufficient documentation. Decreasing rate signals stronger documentation supporting the billed level.',           
+      quadrant: 'Revenue',                                                      
+      settings: ['ed'],                                                                                                                                                                                        
+      visibility: 'qualitative',                                                   
+      enabledStateKey: 'edDowncodingRateEnabled',                                                                                                                                                              
+      expandedStateKey: 'edDowncodingRateExpanded',                             
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                     
+                                                                                                                                                                                                               
+    // ───── ED Quality (qualitative — 1 new added to existing 2) ─────                                                                                                                                        
+    {                                                                                                                                                                                                          
+      id: 'edAdmissionHandoff',                                                                                                                                                                                
+      label: 'Admission Hand-Off Completeness',                                                                                                                                                                
+      shortDescription: 'Share of ED-to-inpatient hand-offs with complete documentation at admission. When the ED admits, downstream inpatient teams inherit the quality of the ED note.',
+      quadrant: 'Quality',                                                                                                                                                                                     
+      settings: ['ed'],                                    
+      visibility: 'qualitative',                                                                                                                                                                               
+      enabledStateKey: 'edAdmissionHandoffEnabled',                                                                                                                                                            
+      expandedStateKey: 'edAdmissionHandoffExpanded',       
+      trackedMeasureIds: [],                                                                                                                                                                                   
+    },                                                                             
+                                                          
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  TASK 3 — Verify existing ED Quality drivers are present (no changes)
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+  File: client/src/lib/exploreDrivers.ts                                        
+                                                                                                                                                                                                               
+  Confirm these existing entries remain UNCHANGED:        
+    - edNoteStarRating (Quality)                                                                                                                                                                               
+    - edPressGaney (Quality)                                                       
+                                                                                                                                                                                                               
+  After this prompt, ED Quality has 3 qualitative drivers: edNoteStarRating + edPressGaney + edAdmissionHandoff. No 4-item exception (unlike IP).
+                                                                                                                                                                                                               
+  ═══════════════════════════════════════════════════════════                      
+  VERIFICATION                                                                                                                                                                                                 
+  ═══════════════════════════════════════════════════════════                                                                                                                                                  
+                                                          
+  1. TypeScript compiles. New TimeDriverInputs fields are typed; defaults present in DEFAULT_EXPLORE_STATE.                                                                                                    
+                                                                                                                                                                                                               
+  2. Walk an ED session through each quadrant page:                                                                                                                                                            
+     - **Capacity (4/9)**:                                                                                                                                                                                     
+       - Financial Drivers: LWBS Recovery (with Admission Capture child)                                                                                                                                       
+       - Other Metrics to Watch: Door-to-Provider Time · Encounters per Provider per Shift · End-of-Shift Note Completion Rate
+       - Total qualitative items: exactly 3 ✓                                                                                                                                                                  
+       - "Door-to-Disposition" and "Bed Turnover" are NOT visible (intentionally never deployed)
+     - **Workforce (5/9)**:                                                                                                                                                                                    
+       - Financial Drivers: Provider Wellbeing (with Locum/Agency child)           
+       - Other Metrics to Watch: After-Hours Documentation · Burnout Score · Likelihood to Stay                                                                                                                
+       - Total qualitative items: exactly 3 ✓                                      
+     - **Revenue (6/9)** *(requires R-RECOVER to fully populate)*:                                                                                                                                             
+       - Financial Drivers (post R-RECOVER): E&M Level Accuracy · Denial Prevention                                                                                                                            
+       - Other Metrics to Watch: Clean Claim Rate · E&M Level Distribution Shift · Down-coding Rate                                                                                                            
+       - Total qualitative items: exactly 3 ✓                                                                                                                                                                  
+       - "CDI Query Volume Trend" is NOT visible (intentionally never deployed)                                                                                                                                
+     - **Quality (7/9)**:                                                                                                                                                                                      
+       - Financial Drivers section is HIDDEN (ED Quality is qualitative-only)                                                                                                                                  
+       - Other Metrics to Watch: Note Star Rating · Press Ganey / Patient Experience · Admission Hand-Off Completeness                                                                                         
+       - Total qualitative items: exactly 3 ✓                                   
+       - "Provider Communication" is NOT visible (intentionally never deployed)                                                                                                                                
+                                                                                                                                                                                                               
+  3. Toggle each new ED qualitative driver and confirm:                                                                                                                                                        
+     - Right-panel summary lists it under "Other Metrics" sub-header                                                                                                                                           
+     - Step 9 Model's ED Revenue / Quality / Workforce / Capacity card picks it up as "Qualitative" line item                                                                                                  
+                                                                                                                                                                                                               
+  4. Walk OP, IP, Nursing — confirm THEIR pages are untouched.                                                                                                                                                 
+                                                                                                                                                                                                               
+  5. PDF export — generate a PDF for an ED session with several drivers toggled. Each ED quadrant section in the PDF lists the appropriate Financial Drivers and Other Metrics to Watch entries. Cover page    
+  intact.                                                                                                                                                                                                      
+                                                                                   
+  6. No console errors. No TypeScript errors.                                                                                                                                                                  
+                                                                                                                                                                                                               
+  NOTES:                                                                                                                                                                                                       
+  - This prompt deploys ED's qualitative drivers fresh (since R-IA-2 and R-IA-4 never landed) AND applies three polish refinements simultaneously — no need to first re-deploy the original specs and then     
+  revise.                                                                                                                                                                                                      
+  - The discarded drivers from earlier prompts (Door-to-Disposition, Bed Turnover, CDI Query Volume Trend, Provider Communication) are intentionally NOT in this prompt. They never deployed and won't deploy  
+  now.                                                                             
+  - "Down-coding Rate" replaces CDI Query Volume Trend because CDI activity is minimal in most EDs while down-coding by payers is a real, ED-specific revenue concern that documentation completeness directly 
+  addresses.                                                                                                                                                                                                   
+  - "Admission Hand-Off Completeness" gives ED the same system-wide story as IP's Hand-Off Completeness driver (R-IP-1). When customers run Abridge in both ED and IP, the value compounds at the admission
+  boundary — both quadrant cards reinforce that narrative.                                                                                                                                                     
+  - "Encounters per Provider per Shift" is a strong throughput metric because it's directly Abridge-moveable (faster documentation = capacity for more patients per shift) and easy for buyers to track
+  post-deployment.                                                                                                                                                                                             
+  - "End-of-Shift Note Completion Rate" replaces Bed Turnover because bed turnover is dominated by housekeeping/registration (Abridge has no lever), while end-of-shift completion is the key compliance +
+  capacity metric ED clinicians care about.

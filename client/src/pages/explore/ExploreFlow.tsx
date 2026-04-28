@@ -256,6 +256,18 @@ export interface TimeDriverInputs {
   edEmLevelDistributionExpanded: boolean;
   edCdiQueryTrendEnabled: boolean;
   edCdiQueryTrendExpanded: boolean;
+  // ───── R-ED-1: ED qualitative driver consolidation + polish ─────
+  // ED Capacity (R-ED-1 — replaces edDoorToDisposition + edBedTurnover)
+  edEncountersPerShiftEnabled: boolean;
+  edEncountersPerShiftExpanded: boolean;
+  edEndOfShiftCompletionEnabled: boolean;
+  edEndOfShiftCompletionExpanded: boolean;
+  // ED Revenue (R-ED-1 — replaces edCdiQueryTrend)
+  edDowncodingRateEnabled: boolean;
+  edDowncodingRateExpanded: boolean;
+  // ED Quality (R-ED-1 — replaces edProviderCommunication)
+  edAdmissionHandoffEnabled: boolean;
+  edAdmissionHandoffExpanded: boolean;
   // IP Capacity qualitative (3 — restructured by R-IA-5; ALOS removed)
   ipDocumentationLagEnabled: boolean;
   ipDocumentationLagExpanded: boolean;
@@ -644,6 +656,15 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edEmLevelDistributionExpanded: false,
     edCdiQueryTrendEnabled: false,
     edCdiQueryTrendExpanded: false,
+    // R-ED-1 defaults
+    edEncountersPerShiftEnabled: false,
+    edEncountersPerShiftExpanded: false,
+    edEndOfShiftCompletionEnabled: false,
+    edEndOfShiftCompletionExpanded: false,
+    edDowncodingRateEnabled: false,
+    edDowncodingRateExpanded: false,
+    edAdmissionHandoffEnabled: false,
+    edAdmissionHandoffExpanded: false,
     ipDocumentationLagEnabled: false,
     ipDocumentationLagExpanded: false,
     ipDischargeSummaryTimeEnabled: false,
