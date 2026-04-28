@@ -1125,7 +1125,12 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 // ───────────────────────── Public API ─────────────────────────
 
 export const generateExplorePDF = async (data: ExplorePDFData): Promise<void> => {
-  const blob = await pdf(<ExplorePDFDocument data={data} />).toBlob();
+  // OP/ED/IP now use the Mercy-quality narrative PDF (parity with nursing).
+  // Nursing has its own dedicated generator and never reaches this function.
+  // The legacy ExplorePDFDocument above is preserved for snapshot/back-compat
+  // tests but is no longer the user-facing path.
+  const { ExploreNarrativePDFDocument } = await import("./ExploreNarrativePDF");
+  const blob = await pdf(<ExploreNarrativePDFDocument data={data} />).toBlob();
   const safeOrg = (data.clientName || "abridge").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
   const safeDate = new Date().toISOString().slice(0, 10);
   await savePdfBlob(blob, `abridge-roi-${safeOrg}-${safeDate}.pdf`);
