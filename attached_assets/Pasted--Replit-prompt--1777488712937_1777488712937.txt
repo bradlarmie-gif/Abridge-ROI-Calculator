@@ -1,0 +1,123 @@
+ Replit prompt
+                                                                                                                                                                                                               
+  Goal: Clean up and strengthen the inpatient Quality qualitative drivers, add missing patient experience metrics to ED, and add nursing handoff quality. This is a data + state change only — no calculation
+  engine changes.                                                                                                                                                                                              
+   
+  ---                                                                                                                                                                                                          
+                                                         
+  PART 1: Remove two weak inpatient Quality drivers                                                                                                                                                            
+   
+  Remove the following drivers entirely — driver definitions, state variables, defaults, and any UI references:                                                                                                
+                                                         
+    id: 'ipLeapfrog'                                                                                                                                                                                           
+      - Remove driver definition from exploreDrivers.ts  
+      - Remove state vars: ipLeapfrogEnabled, ipLeapfrogExpanded from ExploreFlow.tsx interface and defaults                                                                                                   
+                                                                                                                                                                                                               
+    id: 'ipNoteStarRating'                                                                                                                                                                                     
+      - Remove driver definition from exploreDrivers.ts                                                                                                                                                        
+      - Remove state vars: ipNoteStarRatingEnabled, ipNoteStarRatingExpanded from ExploreFlow.tsx interface and defaults
+                                                                                                                                                                                                               
+  ---
+                                                                                                                                                                                                               
+  PART 2: Add three new inpatient Quality qualitative drivers
+
+  Add the following driver definitions to exploreDrivers.ts in the inpatient Quality qualitative section. Add corresponding state variable pairs (enabled + expanded) to the ExploreFlow.tsx state interface   
+  and set both to false as defaults.
+                                                                                                                                                                                                               
+  Driver 1:                                              
+    id: 'ipHcahpsDoctor'
+    label: 'HCAHPS Doctor Communication'
+    tagline: 'Doctor listening and explanation scores — tied to VBP reimbursement'                                                                                                                             
+    shortDescription: 'The HCAHPS doctor communication composite captures whether doctors always explained things clearly, listened carefully, and treated patients with respect. When hospitalists are not
+  typing during rounds, eye contact improves and these scores follow. This composite affects Value-Based Purchasing reimbursement — 2% of Medicare payments are at risk based in part on HCAHPS performance.'  
+    quadrant: 'Quality'                                  
+    settings: ['inpatient']                                                                                                                                                                                    
+    visibility: 'qualitative'                            
+    enabledStateKey: 'ipHcahpsDoctorEnabled'                                                                                                                                                                   
+    expandedStateKey: 'ipHcahpsDoctorExpanded'           
+    trackedMeasureIds: []                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Driver 2:                                                                                                                                                                                                    
+    id: 'ipReadmissionRate'                                                                                                                                                                                    
+    label: '30-Day Readmission Rate'                     
+    tagline: 'HRRP penalty metric — discharge documentation is a direct lever'
+    shortDescription: 'CMS penalizes hospitals under the Hospital Readmissions Reduction Program (HRRP) for excess readmissions in targeted conditions. Complete discharge summaries, medication reconciliation
+   documentation, and follow-up instructions captured in real-time directly affect readmission risk. Attribution is multi-factorial — clinical operations, social determinants, and post-acute follow-up all   
+  contribute — but documentation quality at discharge is a recognized and measurable lever.'
+    quadrant: 'Quality'                                                                                                                                                                                        
+    settings: ['inpatient']                                                                                                                                                                                    
+    visibility: 'qualitative'
+    enabledStateKey: 'ipReadmissionRateEnabled'                                                                                                                                                                
+    expandedStateKey: 'ipReadmissionRateExpanded'        
+    trackedMeasureIds: []
+                                                                                                                                                                                                               
+  Driver 3:
+    id: 'ipCmsStarRating'                                                                                                                                                                                      
+    label: 'CMS Hospital Star Rating'                    
+    tagline: 'Overall quality star rating — patient experience and readmissions are direct inputs'
+    shortDescription: 'CMS Overall Hospital Quality Star Rating, publicly reported on Care Compare. The rating aggregates mortality, safety, readmissions, patient experience, and timely care across five     
+  domains. Abridge directly influences two: the patient experience domain (HCAHPS doctor communication composite) and the readmissions domain. Hospitals one star below a competitor watch this closely — it   
+  affects patient choice, referral patterns, and health system reputation.'                                                                                                                                    
+    quadrant: 'Quality'                                                                                                                                                                                        
+    settings: ['inpatient']                              
+    visibility: 'qualitative'
+    enabledStateKey: 'ipCmsStarRatingEnabled'
+    expandedStateKey: 'ipCmsStarRatingExpanded'                                                                                                                                                                
+    trackedMeasureIds: []
+                                                                                                                                                                                                               
+  ---                                                    
+
+  PART 3: Add one ED Quality qualitative driver
+
+  Add the following driver to exploreDrivers.ts in the ED Quality qualitative section. Add state variable pair to ExploreFlow.tsx interface and defaults.                                                      
+   
+  Driver:                                                                                                                                                                                                      
+    id: 'edPatientExperience'                            
+    label: 'ED Patient Experience (Press Ganey)'                                                                                                                                                               
+    tagline: 'Provider communication scores when eye contact replaces typing'
+    shortDescription: 'Press Ganey and ED HCAHPS scores for provider communication improve when clinicians are not typing during patient encounters. "Doctor explained things clearly" and "staff worked       
+  together" composites are the most documentation-influenced dimensions. ED patient experience scores affect hospital reputation, online reviews, and in value-based contracts, reimbursement.'                
+    quadrant: 'Quality'
+    settings: ['ed']                                                                                                                                                                                           
+    visibility: 'qualitative'                            
+    enabledStateKey: 'edPatientExperienceEnabled'
+    expandedStateKey: 'edPatientExperienceExpanded'                                                                                                                                                            
+    trackedMeasureIds: []
+                                                                                                                                                                                                               
+  ---                                                    
+
+  PART 4: Add one Nursing Quality qualitative driver
+
+  Add the following driver to exploreDrivers.ts in the nursing Quality qualitative section. Add state variable pair to ExploreFlow.tsx interface and defaults.                                                 
+   
+  Driver:                                                                                                                                                                                                      
+    id: 'nursingHandoffQuality'                          
+    label: 'Nursing Handoff Quality (SBAR)'
+    tagline: 'Shift-to-shift handoff completeness — real-time docs feed better handoffs'
+    shortDescription: 'SBAR (Situation-Background-Assessment-Recommendation) handoff completeness at shift change. When nurses document in real-time throughout the shift, the outgoing handoff note reflects  
+  the current patient state rather than recalled details from hours earlier. The Joint Commission tracks structured handoff processes as a National Patient Safety Goal. Better handoff documentation reduces  
+  adverse events caused by information gaps at shift change.'                                                                                                                                                  
+    quadrant: 'Quality'                                                                                                                                                                                        
+    settings: ['nursing']                                
+    visibility: 'qualitative'                                                                                                                                                                                  
+    enabledStateKey: 'nursingHandoffQualityEnabled'
+    expandedStateKey: 'nursingHandoffQualityExpanded'                                                                                                                                                          
+    trackedMeasureIds: []                                
+
+  ---                                                                                                                                                                                                          
+   
+  Constraints:                                                                                                                                                                                                 
+  - Do NOT touch any quantified driver definitions or calculation logic
+  - Do NOT change any existing shortDescription or tagline values added in prior prompts                                                                                                                       
+  - Do NOT touch outpatient qualitative drivers                                                                                                                                                                
+  - The new drivers are qualitative only — no dollar math, no calcComponent                                                                                                                                    
+                                                                                                                                                                                                               
+  Acceptance criteria:                                   
+  1. ipLeapfrog and ipNoteStarRating no longer appear anywhere in the codebase                                                                                                                                 
+  2. grep -r "ipLeapfrog\|ipNoteStarRating" client/src returns zero matches                                                                                                                                    
+  3. The three new inpatient Quality drivers appear in the wizard's Quality screen for inpatient with correct taglines and expanded body copy                                                                  
+  4. The new ED patient experience driver appears in the ED Quality screen                                                                                                                                     
+  5. The new nursing handoff quality driver appears in the nursing Quality screen                                                                                                                              
+  6. All new drivers default to disabled (toggle off)                                                                                                                                                          
+  7. npm run typecheck passes                            
+  8. npm run test passes — update any fixtures that reference ipLeapfrogEnabled or ipNoteStarRatingEnabled 
