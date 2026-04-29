@@ -1,0 +1,19 @@
+Replit prompt                                                                                                                                                                                                
+                                                         
+  Goal: Rename the "Rounding Efficiency" driver label to "Documentation Time Returned" in the inpatient Explore flow. This is a label/copy change only — do not touch any math, calculations, or logic.        
+                                                                                                                                                                                                               
+  Find every place the inpatient time-savings driver is labeled "Rounding Efficiency" and replace it with "Documentation Time Returned". This includes the wizard UI, the summary panel, the model results     
+  screen, and the PDF export — anywhere it renders as a visible label for the inpatient care setting.                                                                                                          
+                                                                                                                                                                                                               
+  Do NOT change:                                         
+  - The underlying variable names (e.g., ipRoundingEnabled or similar state keys) — rename labels only
+  - Any outpatient or ED driver labels                                                                                                                                                                         
+  - Any calculation logic                                                                                                                                                                                      
+  - The methodology page (MethodologyInpatient.tsx already uses the correct label "Time Returned to Clinical Care")                                                                                            
+                                                                                                                                                                                                               
+  Acceptance criteria:                                   
+  1. The inpatient Explore wizard, summary panel, model results screen, and PDF export all show "Documentation Time Returned" where they previously showed "Rounding Efficiency" for the inpatient time-savings
+   driver                                                                                                                                                                                                      
+  2. No outpatient or ED labels changed
+  3. npm run typecheck passes                                                                                                                                                                                  
+  4. grep -r "Rounding Efficiency" client/src returns zero matches for inpatient-specific label contexts (if the string appears in outpatient contexts, those must be left untouched)

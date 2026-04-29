@@ -570,7 +570,7 @@ export const inpatientMethodologyData: MethodologyPDFData = {
       measurability: "direct",
     },
     {
-      title: "Rounding Efficiency",
+      title: "Documentation Time Returned",
       description: "Time saved on documentation can be reallocated to patient care and earlier discharges.",
       measurability: "indirect",
     },

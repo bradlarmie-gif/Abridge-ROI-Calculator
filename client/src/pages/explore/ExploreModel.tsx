@@ -922,7 +922,7 @@ export default function ExploreModel({
     inpatient: {
       timeCardTitle: 'Clinical Operations',
       timeCardDescription: 'Reduced documentation burden allows hospitalists to focus on patient care and rounding.',
-      driver1: 'Rounding Efficiency',
+      driver1: 'Documentation Time Returned',
       driver2: 'Provider Wellbeing',
       driver3: '',
       docCardTitle: 'Documentation Quality',

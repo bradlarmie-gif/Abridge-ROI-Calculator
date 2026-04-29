@@ -812,7 +812,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         labelColor: colors.primary,
         mechanisms: [
           {
-            name: "Rounding Efficiency",
+            name: "Documentation Time Returned",
             attribution: "Measurable",
             description: "Documentation that previously extended the post-rounding workday now completes during or immediately after rounds. We measure this as hours returned per physician per week\u2014not as additional patient capacity, because hospitalists have an assigned census. Hours returned go to clinical care: more thorough rounding conversations, earlier discharge planning, better handoffs to the next shift. We show this as time value, not revenue.",
             formula: "Hospitalists \u00D7 Time saved/admission (15\u201330 min) \u00D7 Admissions/month \u00D7 Physician hourly rate \u2014 shown as hours returned",

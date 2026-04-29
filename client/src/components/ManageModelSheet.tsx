@@ -102,7 +102,7 @@ const DRIVER_NAMES: Record<string, string> = {
   inpatientCCMCC: "CC/MCC Capture (DRG Optimization)",
   inpatientCDI: "CDI Query Reduction",
   inpatientDenials: "Denial Prevention",
-  inpatientRounding: "Rounding Efficiency",
+  inpatientRounding: "Documentation Time Returned",
   nursingOvertime: "Overtime Reduction",
   nursingAgency: "Agency & Travel Nurse Reduction",
   nursingRetention: "Nurse Retention",

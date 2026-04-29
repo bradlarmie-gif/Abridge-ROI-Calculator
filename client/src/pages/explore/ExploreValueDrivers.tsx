@@ -111,7 +111,7 @@ export default function ExploreValueDrivers({
     return Math.round(grossValue * (timeDriverInputs.edAdmissionRealization / 100));
   }, [edRecoveredPatients, timeDriverInputs.edThroughputEnabled, timeDriverInputs.edLwbsEnabled, timeDriverInputs.edAdmissionRate, timeDriverInputs.edAdmissionRevenue, timeDriverInputs.edAdmissionRealization]);
 
-  // Inpatient-specific: Rounding Efficiency is qualitative only (no dollar value)
+  // Inpatient-specific: Documentation Time Returned is qualitative only (no dollar value)
   // Value comes from Clinician Wellbeing driver only
 
   // Nursing-specific calculations
@@ -275,7 +275,7 @@ export default function ExploreValueDrivers({
     inpatient: {
       pageTitle: 'What Could That Time Be Worth?',
       pageSubtitle: `Your hospitalists could reclaim ${formatNumber(totalHoursSaved)} hours. More time for patient care and rounding.`,
-      driver1Title: 'Rounding Efficiency',
+      driver1Title: 'Documentation Time Returned',
       driver1Subtitle: 'More time at bedside, less time charting',
       driver2Title: 'Provider Wellbeing',
       driver2Subtitle: 'If time improves work-life balance and retention',
@@ -702,7 +702,7 @@ export default function ExploreValueDrivers({
         </div>
         )}
 
-        {/* Inpatient: Rounding Efficiency - Qualitative Only */}
+        {/* Inpatient: Documentation Time Returned - Qualitative Only */}
         {isInpatient && (
         <div className="space-y-0">
           <div
@@ -2034,7 +2034,7 @@ export default function ExploreValueDrivers({
                       <div className="flex justify-between items-center gap-2">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.ipRoundingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Rounding Efficiency</span>
+                          <span className="text-sm text-[#888888]">Documentation Time Returned</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.ipRoundingEnabled ? 'text-white' : 'text-[#666666]'}`}>
                           {timeDriverInputs.ipRoundingEnabled ? '—' : '—'}

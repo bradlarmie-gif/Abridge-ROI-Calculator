@@ -112,7 +112,7 @@ const DRIVER_CATEGORIES: Record<string, { category: "time" | "documentation"; la
   edLevelOfService: { category: "documentation", label: "Level-of-Service Accuracy" },
   edDenials: { category: "documentation", label: "Documentation-Related Denials" },
   edPatientExperience: { category: "time", label: "Patient Experience" },
-  inpatientRounding: { category: "time", label: "Rounding Efficiency" },
+  inpatientRounding: { category: "time", label: "Documentation Time Returned" },
   inpatientRetention: { category: "time", label: "Hospitalist Retention" },
   inpatientCCMCC: { category: "documentation", label: "CC/MCC Capture" },
   inpatientCDI: { category: "documentation", label: "CDI Query Reduction" },
