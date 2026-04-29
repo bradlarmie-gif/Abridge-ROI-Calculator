@@ -121,7 +121,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Abridge Value Engineering · January 1, 2026",
+                                "value": "Abridge Value Engineering",
                               },
                               {
                                 "kind": "text",
@@ -6538,7 +6538,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Abridge Value Engineering · January 1, 2026",
+                                "value": "Abridge Value Engineering",
                               },
                               {
                                 "kind": "text",

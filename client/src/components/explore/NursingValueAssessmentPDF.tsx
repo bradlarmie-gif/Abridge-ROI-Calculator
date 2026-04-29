@@ -798,7 +798,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         reportLabel="NURSING VALUE ASSESSMENT"
         title={orgName}
         subtitle={subtitle}
-        preparedBy={`${data.preparedBy} · ${data.dateLabel}`}
+        preparedBy={data.preparedBy}
       />
 
       {/* PAGE 2 — THE THESIS */}
