@@ -187,9 +187,7 @@ export interface TimeDriverInputs {
   edPressGaneyExpanded: boolean;
   edProviderCommunicationEnabled: boolean;
   edProviderCommunicationExpanded: boolean;
-  // IP qualitative Quality drivers
-  ipNoteStarRatingEnabled: boolean;
-  ipNoteStarRatingExpanded: boolean;
+  // IP qualitative Quality drivers (legacy state vars retained for compatibility)
   ipHcahpsCompositeEnabled: boolean;
   ipHcahpsCompositeExpanded: boolean;
   ipReadmissionEnabled: boolean;
@@ -197,16 +195,25 @@ export interface TimeDriverInputs {
   // IP Capacity (R-IP-1 — replaces roundingEfficiency)
   ipHnpCompletion24hEnabled: boolean;
   ipHnpCompletion24hExpanded: boolean;
-  // IP Quality (R-IP-1 — replaces HCAHPS Composite + 30-Day Readmission, lands at 4 items intentionally)
+  // IP Quality (R-IP-1 + Quality refresh — Hand-Off, Discharge Doc, HCAHPS Doctor, Readmission Rate, CMS Star)
   ipHandoffCompletenessEnabled: boolean;
   ipHandoffCompletenessExpanded: boolean;
   ipDischargeDocCompletenessEnabled: boolean;
   ipDischargeDocCompletenessExpanded: boolean;
-  ipLeapfrogEnabled: boolean;
-  ipLeapfrogExpanded: boolean;
+  ipHcahpsDoctorEnabled: boolean;
+  ipHcahpsDoctorExpanded: boolean;
+  ipReadmissionRateEnabled: boolean;
+  ipReadmissionRateExpanded: boolean;
+  ipCmsStarRatingEnabled: boolean;
+  ipCmsStarRatingExpanded: boolean;
+  // ED qualitative Quality (patient experience addition)
+  edPatientExperienceEnabled: boolean;
+  edPatientExperienceExpanded: boolean;
   // Nursing qualitative Quality (1 new — HCAHPS already exists in docQualityInputs)
   nursingMedErrorEnabled: boolean;
   nursingMedErrorExpanded: boolean;
+  nursingHandoffQualityEnabled: boolean;
+  nursingHandoffQualityExpanded: boolean;
   // Nursing qualitative Revenue
   nursingCdiResponseEnabled: boolean;
   nursingCdiResponseExpanded: boolean;
@@ -588,8 +595,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edPressGaneyExpanded: false,
     edProviderCommunicationEnabled: false,
     edProviderCommunicationExpanded: false,
-    ipNoteStarRatingEnabled: false,
-    ipNoteStarRatingExpanded: false,
     ipHcahpsCompositeEnabled: false,
     ipHcahpsCompositeExpanded: false,
     ipReadmissionEnabled: false,
@@ -597,15 +602,24 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     // IP Capacity (R-IP-1)
     ipHnpCompletion24hEnabled: false,
     ipHnpCompletion24hExpanded: false,
-    // IP Quality (R-IP-1)
+    // IP Quality (R-IP-1 + Quality refresh)
     ipHandoffCompletenessEnabled: false,
     ipHandoffCompletenessExpanded: false,
     ipDischargeDocCompletenessEnabled: false,
     ipDischargeDocCompletenessExpanded: false,
-    ipLeapfrogEnabled: false,
-    ipLeapfrogExpanded: false,
+    ipHcahpsDoctorEnabled: false,
+    ipHcahpsDoctorExpanded: false,
+    ipReadmissionRateEnabled: false,
+    ipReadmissionRateExpanded: false,
+    ipCmsStarRatingEnabled: false,
+    ipCmsStarRatingExpanded: false,
+    // ED Quality (patient experience)
+    edPatientExperienceEnabled: false,
+    edPatientExperienceExpanded: false,
     nursingMedErrorEnabled: false,
     nursingMedErrorExpanded: false,
+    nursingHandoffQualityEnabled: false,
+    nursingHandoffQualityExpanded: false,
     nursingCdiResponseEnabled: false,
     nursingCdiResponseExpanded: false,
     nursingDocCompletionEnabled: false,
