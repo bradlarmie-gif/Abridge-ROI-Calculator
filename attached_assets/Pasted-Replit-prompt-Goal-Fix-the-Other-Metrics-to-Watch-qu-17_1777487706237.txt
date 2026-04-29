@@ -1,0 +1,84 @@
+Replit prompt                                          
+
+  Goal: Fix the "Other Metrics to Watch" qualitative driver cards for the INPATIENT care setting. Two problems to solve: (1) the card subtitle is too long at first glance — it shows the full shortDescription
+   which is 1-2 sentences; (2) when you toggle the card on and expand it, the body just repeats the same description plus a useless boilerplate line. Fix both.                                                
+   
+  Do NOT touch outpatient, ED, or nursing qualitative drivers yet — inpatient only.                                                                                                                            
+                                                         
+  ---                                                                                                                                                                                                          
+                                                         
+  PART 1: Add a `tagline` field to the ExploreDriver interface and inpatient driver definitions                                                                                                                
+   
+  In client/src/lib/exploreDrivers.ts, add an optional `tagline` field to the ExploreDriver interface:                                                                                                         
+                                                         
+    tagline?: string;                                                                                                                                                                                          
+   
+  Then add the following taglines to each inpatient qualitative driver definition (find each driver by its `id` field and add the tagline property):                                                           
+                                                         
+    id: 'ipHnpCompletion24h'        → tagline: 'H&P signed within the CMS-required 24-hour window'                                                                                                             
+    id: 'ipDocumentationLag'        → tagline: 'Time from clinical event to signed note'
+    id: 'ipDischargeSummaryTime'    → tagline: 'Hours from discharge order to signed summary'                                                                                                                  
+    id: 'ipAfterHoursDoc'           → tagline: 'EHR time logged outside scheduled shift hours'                                                                                                                 
+    id: 'ipBurnoutTracking'         → tagline: 'Validated burnout score — leading indicator for retention'
+    id: 'ipTimeToSignNote'          → tagline: 'Hours from encounter end to signed note'                                                                                                                       
+    id: 'ipCmiTracking'             → tagline: 'Downstream signal of CC/MCC capture and DRG accuracy'
+    id: 'ipCcMccCapture'            → tagline: 'Complication and major-complication capture rate trend'                                                                                                        
+    id: 'ipCdiQueryTrend'           → tagline: 'Query volume per admission — falling signals better upfront docs'
+    id: 'ipHandoffCompleteness'     → tagline: 'Complete documentation at shift change and consult transitions'                                                                                                
+    id: 'ipDischargeDocCompleteness'→ tagline: 'Complete discharge summaries supporting post-acute care'                                                                                                       
+    id: 'ipLeapfrog'                → tagline: 'Composite hospital safety grade — documentation is one input'                                                                                                  
+    id: 'ipNoteStarRatingEnabled' (state key) / id: 'ipNoteStarRating' (driver id) → tagline: 'Internal note-quality scores, inpatient setting'                                                                
+                                                                                                                                                                                                               
+  ---                                                    
+                                                                                                                                                                                                               
+  PART 2: Use `tagline` as the DriverCard subtitle                                                                                                                                                             
+   
+  In ExploreCapacity.tsx, ExploreWorkforce.tsx, and ExploreRevenue.tsx, where DriverCard is rendered for inpatient qualitative drivers, update the subtitle prop from:                                         
+                                                         
+    subtitle={driver.shortDescription}                                                                                                                                                                         
+                                                         
+  to:                                                                                                                                                                                                          
+   
+    subtitle={driver.tagline ?? driver.shortDescription}                                                                                                                                                       
+                                                         
+  This ensures drivers with a tagline show the short version in the collapsed card. Drivers without a tagline (non-inpatient for now) fall back to shortDescription unchanged.                                 
+   
+  ---                                                                                                                                                                                                          
+                                                         
+  PART 3: Fix the expanded body for qualitative drivers
+
+  In ExploreCapacity.tsx, ExploreWorkforce.tsx, and ExploreRevenue.tsx, find the rendering block for qualitative drivers (the `driver.visibility === 'qualitative'` branch). It currently shows:               
+   
+    <p className="text-sm text-black leading-relaxed mb-4">                                                                                                                                                    
+      {driver.shortDescription}       ← repeats what subtitle already showed
+    </p>                                                                                                                                                                                                       
+    <div className="bg-[#F5F0EB] rounded-lg p-3">
+      <p className="text-xs text-[#666666] italic">                                                                                                                                                            
+        Qualitative driver. No financial value modeled. Tracked post-deployment as a strategic outcome.
+      </p>                                                                                                                                                                                                     
+    </div>
+                                                                                                                                                                                                               
+  Replace this entire block with:                        
+
+    <p className="text-sm text-[#444444] leading-relaxed">                                                                                                                                                     
+      {driver.shortDescription}
+    </p>                                                                                                                                                                                                       
+                                                         
+  That's it. The full shortDescription is now meaningful body copy in the expanded panel (not a repeat of the subtitle since the subtitle now shows the tagline). The generic boilerplate is removed entirely —
+   it added no value and interrupted the experience.
+                                                                                                                                                                                                               
+  ---                                                    
+
+  Constraints:
+  - Do NOT change shortDescription values — those stay as-is, they become the expanded body copy
+  - Do NOT touch any quantified (non-qualitative) driver cards — only the qualitative branch                                                                                                                   
+  - Do NOT touch outpatient, ED, or nursing drivers                                                                                                                                                            
+  - Do NOT change DriverCard.tsx itself — the fix lives in the data layer (tagline field) and the rendering layer (the qualitative branch in Capacity/Workforce/Revenue)                                       
+                                                                                                                                                                                                               
+  Acceptance criteria:                                                                                                                                                                                         
+  1. Each inpatient qualitative driver card shows its short tagline as the subtitle in collapsed state — one line, scannable                                                                                   
+  2. When toggled on and expanded, the body shows the full shortDescription as clean body copy with no repeated text and no boilerplate                                                                        
+  3. Quantified driver cards (DRG, CDI, Obs/IP, Retention) are unchanged                                                                                                                                       
+  4. Outpatient, ED, and nursing qualitative driver cards are unchanged — they still use shortDescription as subtitle                                                                                          
+  5. npm run typecheck passes                                                                                                                                                                                  
+  6. Walk the inpatient Capacity, Workforce, and Revenue wizard screens and confirm every "Other Metrics to Watch" card shows a clean one-line subtitle and a useful expanded body 

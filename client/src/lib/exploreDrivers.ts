@@ -48,6 +48,7 @@ export interface ExploreDriver {
   id: string;
   label: string;
   shortDescription: string;
+  tagline?: string;
   quadrant: ExploreQuadrant;
   settings: ExploreSetting[];
   visibility: ExploreDriverVisibility;
@@ -313,6 +314,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipNoteStarRating',
     label: 'IP Note Quality (Star Rating)',
     shortDescription: 'Internal note-quality scores improve in the inpatient setting.',
+    tagline: 'Internal note-quality scores, inpatient setting',
     quadrant: 'Quality',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -834,6 +836,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipDocumentationLag',
     label: 'Documentation Lag',
     shortDescription: 'Hours from clinical event to signed note. Faster documentation makes current information available to consulting physicians, care managers, and discharge planners — capacity follows information flow.',
+    tagline: 'Time from clinical event to signed note',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -845,6 +848,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipDischargeSummaryTime',
     label: 'Discharge Summary Completion Time',
     shortDescription: 'Hours from discharge order to signed discharge summary. Bed turnover and downstream care transitions depend on completed documentation.',
+    tagline: 'Hours from discharge order to signed summary',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -858,6 +862,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipAfterHoursDoc',
     label: 'After-Hours Documentation',
     shortDescription: 'Time hospitalists spend in the EHR outside scheduled shift hours. A widely used signal for documentation burden in hospital medicine.',
+    tagline: 'EHR time logged outside scheduled shift hours',
     quadrant: 'Workforce',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -869,6 +874,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipBurnoutTracking',
     label: 'Burnout Score',
     shortDescription: 'Score from a validated burnout instrument. Tracked as a leading indicator for hospitalist retention.',
+    tagline: 'Validated burnout score — leading indicator for retention',
     quadrant: 'Workforce',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -880,6 +886,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipTimeToSignNote',
     label: 'Time to Sign Note',
     shortDescription: 'Hours from encounter completion to signed note. Hospitalists have a CMS 24-hour H&P signature requirement; this metric tracks compliance and workflow burden.',
+    tagline: 'Hours from encounter end to signed note',
     quadrant: 'Workforce',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -893,6 +900,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipCmiTracking',
     label: 'Case Mix Index',
     shortDescription: 'Weighted average of DRG relative weights. Tracked as a downstream signal of CC/MCC capture and DRG accuracy.',
+    tagline: 'Downstream signal of CC/MCC capture and DRG accuracy',
     quadrant: 'Revenue',
     settings: ['inpatient'],
     visibility: 'qualitative',
