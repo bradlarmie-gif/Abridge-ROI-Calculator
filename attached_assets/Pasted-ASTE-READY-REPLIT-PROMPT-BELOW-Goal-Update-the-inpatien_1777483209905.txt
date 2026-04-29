@@ -1,0 +1,171 @@
+ASTE-READY REPLIT PROMPT BELOW
+
+ ---
+ Goal
+
+ Update the inpatient methodology page to add DNFB (Discharge Not Final Billed) and CMS H&P-within-24-hour framing as a narrative-only influence lever in the Revenue domain. Match existing brand voice,
+ component patterns, and design system exactly. Do not modify the calculation engine, UI inputs, summary panel, or PDF generators.
+
+ File to modify (the only file you edit)
+
+ client/src/pages/methodology/MethodologyInpatient.tsx
+
+ Do not touch any other file. Specifically do not modify:
+ - client/src/pages/explore/ExploreFlow.tsx (calculation engine)
+ - client/src/pages/explore/ExploreDocQuality.tsx (UI inputs)
+ - client/src/components/SummaryCommandCenter.tsx
+ - client/src/lib/inpatient-pdf-data-transformer.ts
+ - client/src/components/inpatient-pdf-generator.tsx
+ - client/src/lib/inpatient-methodology-pdf.tsx (we will update PDF separately if desired)
+
+ Brand & voice constraints (must follow)
+
+ - Voice: matter-of-fact, anti-overreach, peer-to-CFO. Existing examples in the file:
+   - "We model this domain to help surface where your data could tell the story — not to set a number before you've looked."
+   - "We'd rather show you a defensible DRG improvement number based on CDI data than a speculative LOS reduction based on assumptions."
+   - "Track, but don't claim causation prematurely."
+ - Headers: uppercase tracking-tight where appropriate; sentence case for body.
+ - Brand colors (existing in file — do not invent new ones):
+   - #EA2C00 Abridge red (CTA, Revenue accent stripe)
+   - #1A1A1A Quality accent
+   - #888888 Capacity accent
+   - #555555 Workforce accent
+   - #F5F0EB warm beige panel background
+   - #E5E5E5 borders
+   - #666666 body secondary text
+   - #22C55E "Measure" indicator
+   - #F59E0B "Influence" indicator
+   - #EF4444 "Enable only" indicator
+ - Badges: use existing values only — "Demonstrated", "Emerging", or "Strategic". DNFB must use "Strategic" (signals influence/forward-looking, not yet directly measurable).
+ - Typography & spacing: follow design_guidelines.md — Inter for body, JetBrains Mono for numerical displays, Tailwind 2/3/4/6/8/12 spacing units.
+
+ What to add — six discrete edits to one file
+
+ Edit 1 — overviewCards array, REVENUE entry (around line 46–53)
+
+ Add one item to the items array of the REVENUE domain card. Keep existing items in order; append new one:
+
+ { label: "Billing cycle influence (DNFB)", badge: "Strategic" },
+
+ Final REVENUE card items:
+ items: [
+   { label: "DRG accuracy / CMI improvement", badge: "Demonstrated" },
+   { label: "Concurrent review & denial prevention", badge: "Emerging" },
+   { label: "Billing cycle influence (DNFB)", badge: "Strategic" },
+ ],
+
+ Edit 2 — domainDetails array, REVENUE section items (around line 115–129)
+
+ Append a third item to the REVENUE items array (after "Concurrent Review & Denial Prevention"). Use the same shape as existing items.
+
+ {
+   label: "Billing Cycle Influence (DNFB)",
+   badge: "Strategic",
+   explanation: "Discharge Not Final Billed (DNFB) is where days of inpatient revenue accumulate as working capital — charts that have left the building but haven't yet been billed because documentation is
+ still settling. CMS requires H&P completion within 24 hours of admission. When that window is consistently met and progress note specificity is captured in real time, CDI teams engage earlier in the stay.
+ Fewer end-of-stay queries means fewer charts stuck in DNFB at discharge. We frame this as influence rather than direct cause: discharge summary timing is the dominant DNFB driver, and Abridge's hospitalist
+  product captures H&P, progress notes, and consults today — discharge summary capture ships later in 2026.",
+   formula: "Working capital framing: DNFB days × daily inpatient revenue = cash tied up in unbilled discharges\n\nIllustrative: 0.5-day reduction × $300M annual inpatient revenue ÷ 365 ≈ $410K one-time
+ release; ~$25K annualized at 6% cost of capital\n\nNot modeled in the calculator today — added as a modeled driver when discharge summary capture is live.",
+   limit: "Track H&P-within-24h compliance and CDI query timing as the upstream signals. Don't claim a specific DNFB-day reduction until you have 6+ months of post-deployment billing cycle data and have
+ controlled for discharge summary workflow changes.",
+ },
+
+ Edit 3 — REVENUE honestLimit (line 130)
+
+ Replace the existing REVENUE honestLimit string with this expanded version (preserves the original "crown jewel" line, adds DNFB caveat):
+
+ honestLimit: "CMI improvement is the crown jewel of inpatient ROI — but it requires 6–12 months of data and CDI collaboration to be credible. Don't present CMI improvement without provider-level data to
+ support it. DNFB influence is real but indirect: H&P + progress notes accelerate the front of the documentation cycle, but discharge summary timing dominates the back. Until discharge summary capture is
+ live, treat DNFB as a strategic narrative, not a modeled dollar lever.",
+
+ Edit 4 — "What Goes Into the Number" table, Revenue section (around line 206–212)
+
+ Add one new <tr> row inside the Revenue group of the table, placed after the Obs/IP status defense row and before the Quality <tr> group header. Use the same row pattern as existing rows. Note the
+ text-[#F59E0B] font-medium styling on the middle cell to mark it as not-yet-modeled (matches the convention used for "CDI query reduction" and "Rounding efficiency" rows).
+
+ <tr className="border-b border-[#E5E5E5]">
+   <td className="py-3">DNFB / billing cycle influence</td>
+   <td className="py-3 text-[#F59E0B] font-medium">Narrative only — not modeled in $</td>
+   <td className="py-3">DNFB days × daily IP revenue (illustrative; live in Q3 with discharge capture)</td>
+ </tr>
+
+ Edit 5 — "The Assumptions" table, add Revenue row (around line 243–246, after DRG base rate)
+
+ Add one new tooltip-wrapped row. This documents the DNFB baseline assumption that the future modeled driver will use, so prospects can see the math even though it's not yet active.
+
+ <Tooltip>
+   <TooltipTrigger asChild>
+     <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+       <td className="py-3">DNFB days (industry baseline)</td>
+       <td className="py-3">5–7 days</td>
+       <td className="py-3">5.5 days (illustrative only)</td>
+     </tr>
+   </TooltipTrigger>
+   <TooltipContent side="top" className="max-w-xs">
+     <p className="text-xs">Discharge Not Final Billed days — a working-capital metric tracked by hospital revenue cycle. We use this baseline to illustrate potential influence, but do not model dollars in
+ the calculator until discharge summary capture is live.</p>
+   </TooltipContent>
+ </Tooltip>
+
+ Edit 6 — "Honest Limits" section updates (around line 263–298)
+
+ 6a — Add to "We Can Measure This" <ul> (after the "Discharge documentation lag" item, around line 276):
+
+ <li><strong>H&P completion vs. CMS 24-hour rule:</strong> EHR timestamps show whether H&Ps are landing inside the regulatory window. Direct measurement of whether ambient is closing the front of the
+ documentation cycle.</li>
+
+ 6b — Add to "We Can Influence This" <ul> (after the "Readmission-related documentation" item, around line 287):
+
+ <li><strong>Billing cycle (DNFB days):</strong> Faster H&P + cleaner progress notes pull CDI engagement forward, reducing end-of-stay query backlog. Discharge summary timing dominates DNFB and is outside
+ today's product scope. Track as a working-capital influence signal — don't promise specific day reductions yet.</li>
+
+ Do not add anything to "We Can Only Enable This."
+
+ What to leave untouched
+
+ - The five existing domainDetails items across Quality, Workforce, Capacity, and the first two Revenue items.
+ - The overviewCards items for Quality, Workforce, Capacity (don't redistribute DNFB across domains).
+ - The "Validation Path" section (the timing milestones still apply — DNFB validation will fold in naturally at the 6–12 month checkpoint when data exists).
+ - The "Connected Value" section.
+ - The bottom CTA and Related Methodologies grid.
+ - All existing brand colors, fonts, spacing, and component imports.
+
+ Acceptance criteria
+
+ 1. TypeScript compiles clean. npm run typecheck (or equivalent) passes. No new type errors.
+ 2. Existing six drivers' dollar values are unchanged. Open the Explore inpatient flow, toggle each existing driver on with default scenarios, confirm the Summary numbers match a pre-edit screenshot. Math
+ is untouched because the calculation file isn't modified — but verify visually as a regression check.
+ 3. DNFB appears in three places on the Methodology page:
+   - Revenue domain overview card with "Strategic" badge
+   - Revenue domain detail section as the third item with full explanation/formula/limit
+   - "What Goes Into the Number" Revenue table row marked "Narrative only — not modeled in $"
+ 4. CMS 24-hour rule appears in "We Can Measure This" with the H&P timestamp framing.
+ 5. DNFB appears in "We Can Influence This" with the discharge-summary-out-of-scope disclaimer.
+ 6. Read it as a hospital CFO. The Revenue domain section should now flow: DRG (Demonstrated, modeled) → Concurrent Review (Emerging, modeled) → DNFB (Strategic, narrative). The progression from most-direct
+  to most-influence should feel intentional. If a CFO can poke a hole in 30 seconds, rewrite.
+ 7. Voice match. New copy reads as if written by the same author as the existing copy. Specifically: no marketing fluff, no superlatives, explicit about what is and isn't claimable, includes the
+ discharge-summary disclaimer naturally (not as a footnote).
+ 8. No new dependencies. Don't import anything new. All required types (DomainCardData, DomainDetailData, DomainName) are already imported from @/components/methodology/MethodologyShared.
+
+ Verification commands
+
+ # Type check
+ npm run typecheck
+
+ # Run the dev server and walk the page
+ npm run dev
+
+ # Navigate to: /methodology/inpatient
+ # Expect: DNFB visible in Revenue overview card, Revenue detail section, both tables, and Honest Limits
+
+ Q3 follow-up (do not do now — note for later)
+
+ When discharge summary capture ships in Q3 2026, convert DNFB from narrative-only to a modeled driver. Initial defaults to discuss then:
+
+ - New state in ExploreFlow.tsx: ipDnfbEnabled, ipDnfbScenario (conservative/typical/optimistic), ipDnfbBaselineDays (5.5), ipDnfbDaysReduction, ipDnfbCostOfCapital (6), ipDnfbRealization (40)
+ - Calculation: daysReduced × (annualInpatientRevenue / 365) × (costOfCapital / 100) × (realization / 100)
+ - Scenario map: { conservative: 0.5, typical: 1.0, optimistic: 1.5 } days
+ - UI: copy the DRG Accuracy driver block in ExploreDocQuality.tsx, swap labels and bindings
+ - Methodology: convert the narrative-only entry in this file to a Demonstrated or Emerging driver with full formula
+ - Honest Limits: move DNFB from "We Can Influence This" into "We Can Measure This"

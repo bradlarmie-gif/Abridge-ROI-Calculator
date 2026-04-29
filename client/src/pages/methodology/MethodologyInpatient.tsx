@@ -48,6 +48,7 @@ const overviewCards: DomainCardData[] = [
     items: [
       { label: "DRG accuracy / CMI improvement", badge: "Demonstrated" },
       { label: "Concurrent review & denial prevention", badge: "Emerging" },
+      { label: "Billing cycle influence (DNFB)", badge: "Strategic" },
     ],
   },
 ];
@@ -126,8 +127,15 @@ const domainDetails: DomainDetailData[] = [
         formula: "(denial rate before − after, in pp) × annual discharges × $3,500/case × attribution %",
         limit: "Denial rates reflect many process factors — utilization management workflows, payer behavior, and clinical documentation all contribute. Work with your RCM team to isolate documentation-related denials before claiming full attribution.",
       },
+      {
+        label: "Billing Cycle Influence (DNFB)",
+        badge: "Strategic",
+        explanation: "Discharge Not Final Billed (DNFB) is where days of inpatient revenue accumulate as working capital — charts that have left the building but haven't yet been billed because documentation is still settling. CMS requires H&P completion within 24 hours of admission. When that window is consistently met and progress note specificity is captured in real time, CDI teams engage earlier in the stay. Fewer end-of-stay queries means fewer charts stuck in DNFB at discharge. We frame this as influence rather than direct cause: discharge summary timing is the dominant DNFB driver, and Abridge's hospitalist product captures H&P, progress notes, and consults today — discharge summary capture ships later in 2026.",
+        formula: "Working capital framing: DNFB days × daily inpatient revenue = cash tied up in unbilled discharges\n\nIllustrative: 0.5-day reduction × $300M annual inpatient revenue ÷ 365 ≈ $410K one-time release; ~$25K annualized at 6% cost of capital\n\nNot modeled in the calculator today — added as a modeled driver when discharge summary capture is live.",
+        limit: "Track H&P-within-24h compliance and CDI query timing as the upstream signals. Don't claim a specific DNFB-day reduction until you have 6+ months of post-deployment billing cycle data and have controlled for discharge summary workflow changes.",
+      },
     ],
-    honestLimit: "CMI improvement is the crown jewel of inpatient ROI — but it requires 6–12 months of data and CDI collaboration to be credible. Don't present CMI improvement without provider-level data to support it.",
+    honestLimit: "CMI improvement is the crown jewel of inpatient ROI — but it requires 6–12 months of data and CDI collaboration to be credible. Don't present CMI improvement without provider-level data to support it. DNFB influence is real but indirect: H&P + progress notes accelerate the front of the documentation cycle, but discharge summary timing dominates the back. Until discharge summary capture is live, treat DNFB as a strategic narrative, not a modeled dollar lever.",
   },
 ];
 
@@ -210,6 +218,11 @@ data-testid="button-export-pdf">
 $3,500/case</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Obs/IP status defense</td><td className="py-3">✅ Yes (if denial data provided)</td><td className="py-3">Admissions at
 risk × denial rate × avg claim delta × doc-attributable %</td></tr>
+                    <tr className="border-b border-[#E5E5E5]">
+                      <td className="py-3">DNFB / billing cycle influence</td>
+                      <td className="py-3 text-[#F59E0B] font-medium">Narrative only — not modeled in $</td>
+                      <td className="py-3">DNFB days × daily IP revenue (illustrative; live in Q3 with discharge capture)</td>
+                    </tr>
                     <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#1A1A1A', borderColor: '#1A1A1A' }}>Quality</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">CDI query reduction</td><td className="py-3 text-[#F59E0B] font-medium">Explore model: ✅ calculated · Measure model:
 signal only</td><td className="py-3">Admissions × query rate × reduction % × $50/query</td></tr>
@@ -244,6 +257,18 @@ H&P, progress notes, and discharge summary. Higher for complex admissions.</p></
                     <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">DRG base rate</td><td 
 className="py-3">$6,000–$8,000</td><td className="py-3">$6,800</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">CMS IPPS base rate; varies by hospital wage
 index and DSH adjustment.</p></TooltipContent></Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                          <td className="py-3">DNFB days (industry baseline)</td>
+                          <td className="py-3">5–7 days</td>
+                          <td className="py-3">5.5 days (illustrative only)</td>
+                        </tr>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <p className="text-xs">Discharge Not Final Billed days — a working-capital metric tracked by hospital revenue cycle. We use this baseline to illustrate potential influence, but do not model dollars in the calculator until discharge summary capture is live.</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#1A1A1A', borderColor: '#1A1A1A' }}>Quality</span></td></tr>
                     <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">CDI query rate</td><td 
 className="py-3">25-35%</td><td className="py-3">30%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">ACDIS benchmark. Shown here as context for the signal —
@@ -274,6 +299,7 @@ Measure This</h4></div>
                       <li><strong>CMI trends:</strong> Claims data, tracked quarterly. Compare Abridge providers vs. control group.</li>
                       <li><strong>Note completeness:</strong> CDI can assess documentation quality directly. Audit-ready evidence.</li>
                       <li><strong>Discharge documentation lag:</strong> Time from discharge order to completed discharge summary is an EHR-measurable metric.</li>
+                      <li><strong>H&P completion vs. CMS 24-hour rule:</strong> EHR timestamps show whether H&Ps are landing inside the regulatory window. Direct measurement of whether ambient is closing the front of the documentation cycle.</li>
                       <li><strong>Obs/IP status defense:</strong> Medical necessity denial rates by root cause are tracked by revenue cycle.</li>
                     </ul>
                   </div>
@@ -284,6 +310,7 @@ Influence This</h4></div>
                       <li><strong>DRG accuracy:</strong> Documentation is the input; CDI, coding, and payer response determine the output. Trackable, but multi-factorial.</li>
                       <li><strong>Denial prevention:</strong> Documentation-related denials are identifiable. Requires 6+ months of data to see trends.</li>
                       <li><strong>Readmission-related documentation:</strong> Better discharge summaries may reduce readmissions, but many factors contribute.</li>
+                      <li><strong>Billing cycle (DNFB days):</strong> Faster H&P + cleaner progress notes pull CDI engagement forward, reducing end-of-stay query backlog. Discharge summary timing dominates DNFB and is outside today's product scope. Track as a working-capital influence signal — don't promise specific day reductions yet.</li>
                     </ul>
                   </div>
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
