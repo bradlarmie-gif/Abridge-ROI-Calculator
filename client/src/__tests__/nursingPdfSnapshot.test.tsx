@@ -82,10 +82,14 @@ function extractProps(props: Record<string, unknown>): Record<string, unknown> {
 
 // react-pdf supports `render={({pageNumber, totalPages, ...}) => ...}` on
 // fixed footers/headers. We invoke render-fns with stable values so the
-// resulting copy ("Page 1 of 7") shows up in the snapshot deterministically.
+// resulting copy ("Page 1 of 8") shows up in the snapshot deterministically.
+// totalPages must match the actual structural Page count (cover + 8
+// content = 9). The footer formats it as `pageNumber - 1 / totalPages - 1`
+// to skip the unnumbered cover, so the printed token is "Page 0 / 8" for
+// the cover slot in the render-fn snapshot — that's expected.
 const RENDER_CONTEXT = {
   pageNumber: 1,
-  totalPages: 8,
+  totalPages: 9,
   subPageNumber: 1,
   subPageTotalPages: 1,
 };
