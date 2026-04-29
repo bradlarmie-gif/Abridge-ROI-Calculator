@@ -894,18 +894,26 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           {/* Cards stack full-width (each in its own row) so the formula
               line has room to breathe — the agency formula in particular
               prints all four multiplicands and would wrap in a half-width
-              column. The negative marginHorizontal here cancels the +4pt
+              column. Each card MUST sit inside its own
+              `<View flexDirection: row>` because CompactDriverCard sets
+              `flex: 1` on its outer View — without a row-direction parent
+              the flex value resolves against the cross-axis (height) and
+              every card collapses to y=0, painting on top of the others
+              (the bug the visual review caught). The negative
+              marginHorizontal on the outer wrapper cancels the +4pt
               CompactDriverCard inset so the card edges align to the page
               gutter. */}
           <View style={{ marginHorizontal: -4, marginBottom: 4 }}>
             {data.retention.enabled ? (
-              <CompactDriverCard
-                name="RN Retention"
-                value={fmtCurrency(data.retention.value)}
-                body="Documentation burden is among the factors associated with burnout and turnover. Reducing burden is modeled to help retain experienced nurses."
-                formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.retention.turnoverPct}% turnover × ${data.retention.burnoutRelatedPct}% burnout-related × ${data.retention.impactPct}% doc impact × ${fmtCurrencyExact(data.retention.replacementCost)} → ${fmtCurrency(data.retention.value)}`}
-                source="Source: NSI Nursing Solutions 2024 turnover benchmark."
-              />
+              <View style={{ flexDirection: "row" }}>
+                <CompactDriverCard
+                  name="RN Retention"
+                  value={fmtCurrency(data.retention.value)}
+                  body="Documentation burden is among the factors associated with burnout and turnover. Reducing burden is modeled to help retain experienced nurses."
+                  formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.retention.turnoverPct}% turnover × ${data.retention.burnoutRelatedPct}% burnout-related × ${data.retention.impactPct}% doc impact × ${fmtCurrencyExact(data.retention.replacementCost)} → ${fmtCurrency(data.retention.value)}`}
+                  source="Source: NSI Nursing Solutions 2024 turnover benchmark."
+                />
+              </View>
             ) : null}
 
             {data.agency.enabled ? (
@@ -920,22 +928,26 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               // the engine uses, even though the line is dense — that's
               // why this card sits in the full-width stacked column rather
               // than a 2-col grid.
-              <CompactDriverCard
-                name="Agency & Travel Nurse Reduction"
-                value={fmtCurrency(data.agency.value)}
-                linkedTo={data.retention.enabled ? "retention" : undefined}
-                body="When nurses leave, hospitals typically fill gaps with agency labor at 2–3× the cost. Improved retention reduces that premium-labor dependency."
-                formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.retention.turnoverPct}% turnover × ${data.retention.burnoutRelatedPct}% burnout × ${data.retention.impactPct}% impact × ${data.agency.weeksPerVacancy} wks/vacancy × ${fmtCurrencyExact(data.agency.weeklyPremium)}/wk → ${fmtCurrency(data.agency.value)}`}
-              />
+              <View style={{ flexDirection: "row" }}>
+                <CompactDriverCard
+                  name="Agency & Travel Nurse Reduction"
+                  value={fmtCurrency(data.agency.value)}
+                  linkedTo={data.retention.enabled ? "retention" : undefined}
+                  body="When nurses leave, hospitals typically fill gaps with agency labor at 2–3× the cost. Improved retention reduces that premium-labor dependency."
+                  formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.retention.turnoverPct}% turnover × ${data.retention.burnoutRelatedPct}% burnout × ${data.retention.impactPct}% impact × ${data.agency.weeksPerVacancy} wks/vacancy × ${fmtCurrencyExact(data.agency.weeklyPremium)}/wk → ${fmtCurrency(data.agency.value)}`}
+                />
+              </View>
             ) : null}
 
             {data.overtime.enabled ? (
-              <CompactDriverCard
-                name="Overtime Reduction"
-                value={fmtCurrency(data.overtime.value)}
-                body="When nurses spend less time documenting at end of shift, OT hours decrease. The most directly measurable line in the payroll budget."
-                formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.overtime.otHrsPerNurseWeek} OT hrs/wk × ${data.overtime.reductionPct}% reduction × $${data.overtime.otHourlyRate}/hr × 52 wks → ${fmtCurrency(data.overtime.value)}`}
-              />
+              <View style={{ flexDirection: "row" }}>
+                <CompactDriverCard
+                  name="Overtime Reduction"
+                  value={fmtCurrency(data.overtime.value)}
+                  body="When nurses spend less time documenting at end of shift, OT hours decrease. The most directly measurable line in the payroll budget."
+                  formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.overtime.otHrsPerNurseWeek} OT hrs/wk × ${data.overtime.reductionPct}% reduction × $${data.overtime.otHourlyRate}/hr × 52 wks → ${fmtCurrency(data.overtime.value)}`}
+                />
+              </View>
             ) : null}
           </View>
 
@@ -1404,7 +1416,16 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
       </Page>
 
       {/* PAGE 8 — ASSESSMENT SUMMARY + METHODOLOGY */}
-      <Page size="LETTER" style={styles.page} wrap>
+      {/* Summary page is now `wrap={false}` — every quadrant subtotal,
+          the hero card, and the net-annual-value row sit on a single
+          deterministic page. Previously this Page used `wrap` and the
+          Methodology section ran long enough to overflow into a second
+          physical page (the visual review caught a 9-page render where
+          the structural snapshot expected 8). Methodology has been
+          promoted to its own dedicated Page below so each surface holds
+          ONE clear topic — the premium-aesthetic rule from
+          pdf_layout_guidelines.md §9. */}
+      <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
           <SectionLabel>YOUR ASSESSMENT SUMMARY</SectionLabel>
 
@@ -1521,11 +1542,37 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </Text>
           </View>
 
-          {/* METHODOLOGY — only enabled drivers */}
-          {/* minPresenceAhead keeps the section header from orphaning at the
-              bottom of a page; if there isn't 60pt of room below it, react-pdf
-              will break before the header instead of after. */}
-          <Text style={styles.subSectionHeader} minPresenceAhead={60}>Methodology</Text>
+          <PageFooter orgName={orgName} />
+        </View>
+      </Page>
+
+      {/* PAGE 9 — METHODOLOGY */}
+      {/* Methodology was previously appended to the Summary page with
+          `wrap`, which produced a non-deterministic 8 vs 9 page render
+          depending on how many drivers were enabled. Promoting it to its
+          own dedicated single-page surface gives every methodology line
+          room to breathe and makes the final page count deterministic
+          (always 9 — cover + 7 quadrant/value pages + summary +
+          methodology). The page is `wrap`-enabled as a defensive measure
+          for a future where someone enables an unusually large set of
+          qualitative methodology lines, but with the universal closing
+          tail wrapped in `wrap={false}` we will never orphan the
+          disclaimer. */}
+      <Page size="LETTER" style={styles.page} wrap>
+        <View style={styles.pageWrapper}>
+          <SectionLabel>METHODOLOGY</SectionLabel>
+          <Text
+            style={{
+              fontSize: 10,
+              color: colors.secondary,
+              lineHeight: 1.55,
+              marginBottom: 18,
+            }}
+          >
+            How each enabled driver was modeled. Sources are inline; substitute
+            your organization's own benchmarks for any rate to recompute the
+            value on demand.
+          </Text>
           <View>
             {data.hapi.enabled ? (
               <MethodologyLine

@@ -345,12 +345,32 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     expect(buildTree()).toMatchSnapshot();
   });
 
-  it("contains exactly 8 top-level pages (1 cover + 7 content)", () => {
+  // Dedicated baseline for the long-org / large-dollar stress fixture.
+  // The targeted assertions below catch the specific bug class (footer
+  // suffix, page count, hero block, subtotal labels), but a full
+  // structural baseline catches any unexpected drift in the rest of the
+  // tree under the stress inputs — e.g., a hero number reflowing to two
+  // lines, an extra page being introduced under large numbers, or a
+  // footer slot losing its width constraint. Per
+  // pdf_layout_guidelines.md §8 we maintain a baseline for every
+  // fixture that exercises a distinct layout regime.
+  it("renders the multi-page document tree deterministically (long-org stress fixture)", () => {
+    expect(buildLongOrgTree()).toMatchSnapshot();
+  });
+
+  it("contains exactly 9 top-level pages (1 cover + 8 content) and matches the rendered count", () => {
     // Sanity check independent of the snapshot — guards against a Page being
     // accidentally added or removed even if the rest of the structure churns
     // enough that a snapshot diff is hard to read.
     //
-    // Page lineup (1 cover + 7 content):
+    // Why 9: when this test originally asserted 8, the live render produced
+    // 9 because the Summary page used `wrap` and the methodology section
+    // overflowed onto a second physical page. The visual review caught
+    // the gap between the structural count (8) and the rendered count (9).
+    // Methodology is now its own dedicated `<Page>`, so the structural
+    // count and the rendered count are aligned at 9.
+    //
+    // Page lineup (1 cover + 8 content):
     //   1. Cover                       (PDFCoverPage)
     //   2. The Thesis / 2x2 grid
     //   3. Workforce  (compact cards, hero subtotal)
@@ -358,7 +378,8 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     //   5. Quality    (compact 2-col grid, hero subtotal)
     //   6. Revenue    (tracked separately)
     //   7. Investment & Net Value (with cumulative-multiple hero)
-    //   8. Summary
+    //   8. Assessment Summary (hero card + quadrant subtotals + net value)
+    //   9. Methodology (per-driver formulas + closing tail)
     const tree = buildTree();
 
     let pageCount = 0;
@@ -368,7 +389,7 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     };
     tree.forEach(visit);
 
-    expect(pageCount).toBe(8);
+    expect(pageCount).toBe(9);
   });
 
   it("includes the headline copy + driver totals as printed text", () => {
@@ -397,7 +418,7 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
   // ── Long-org-name stress test ─────────────────────────────────────────
   // Anchors three layout invariants for a customer with a
   // deliberately-long org name and billion-class dollar figures:
-  //   1. Page count is still exactly 8 (no card overflow forcing extra pages).
+  //   1. Page count is still exactly 9 (no card overflow forcing extra pages).
   //   2. The footer center text is just the org name — never glued to a
   //      document-title slug — so it cannot grow into the right-slot
   //      "PAGE X / Y" the way the shipped bug did.
@@ -419,7 +440,7 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     tree.forEach(visit);
     const flat = text.join(" | ");
 
-    expect(pageCount).toBe(8);
+    expect(pageCount).toBe(9);
     expect(flat).toContain("Northwestern Memorial HealthCare System — Northwest Region");
     // Footer center text must be JUST the org name. The shipped-bug
     // " · Nursing Value Assessment" suffix is gone — assert the
