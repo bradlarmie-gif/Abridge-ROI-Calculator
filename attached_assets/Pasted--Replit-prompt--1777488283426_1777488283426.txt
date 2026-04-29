@@ -1,0 +1,51 @@
+  Replit prompt                                                                                                                                                                                                
+                                                                                                                                                                                                               
+  Goal: Apply the same tagline fix to nursing qualitative drivers. Same pattern as inpatient, ED, and outpatient.                                                                                              
+                                                                                                                                                                                                               
+  Do NOT touch inpatient, ED, or outpatient qualitative drivers.                                                                                                                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                         
+  PART 1: Add taglines to all nursing qualitative driver definitions in client/src/lib/exploreDrivers.ts                                                                                                       
+  
+  Find each driver by its `id` and add the tagline property:                                                                                                                                                   
+                                                         
+  Nursing Capacity:                                                                                                                                                                                            
+    id: 'bedsideTime'                → tagline: 'Reclaimed documentation time reinvested in direct care'
+    id: 'nursingDocumentationLag'    → tagline: 'Minutes from care event to chart entry'                                                                                                                       
+    id: 'nursingPointOfCareDoc'      → tagline: 'Documentation at bedside, not end-of-shift batch'
+                                                                                                                                                                                                               
+  Nursing Workforce:                                     
+    id: 'nursingLikelihoodToStay'    → tagline: 'Intent to remain in current role, surveyed'                                                                                                                   
+    id: 'nursingBurnout'             → tagline: 'Validated burnout score — leading indicator for retention'
+    id: 'nursingChartingAfterShift'  → tagline: 'EHR time after shift ends — direct burden signal'                                                                                                             
+  
+  Nursing Quality:                                                                                                                                                                                             
+    id: 'nursingHcahps'              → tagline: 'Nurse communication composite — more bedside time, better scores'
+    id: 'nursingMedError'            → tagline: 'Real-time documentation reducing medication near misses'                                                                                                      
+  
+  Nursing Revenue:                                                                                                                                                                                             
+    id: 'nursingCdiResponse'         → tagline: 'Nursing documentation supporting DRG accuracy and timeliness'
+    id: 'nursingDocCompletion'       → tagline: 'Timely documentation reducing billing delays and discharge holds'                                                                                             
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  PART 2 & 3: Confirm subtitle wiring and expanded body fix are already applied                                                                                                                                
+  
+  The previous prompts already updated ExploreCapacity.tsx, ExploreWorkforce.tsx, ExploreRevenue.tsx, and ExploreCareQuality.tsx to use `driver.tagline ?? driver.shortDescription` as subtitle and to show    
+  clean `shortDescription` body copy in the expanded panel with no boilerplate. Verify those files are correct. No changes needed if already done.
+                                                                                                                                                                                                               
+  ---                                                    
+
+  Constraints:
+  - Only add taglines to nursing drivers — do not touch inpatient, ED, or outpatient driver definitions
+  - Do NOT change any shortDescription values                                                                                                                                                                  
+  - Do NOT touch quantified (non-qualitative) driver cards                                                                                                                                                     
+  - Do NOT change DriverCard.tsx itself                                                                                                                                                                        
+                                                                                                                                                                                                               
+  Acceptance criteria:                                                                                                                                                                                         
+  1. Every nursing qualitative driver card shows a short one-line tagline as subtitle in collapsed state                                                                                                       
+  2. Expanded body shows the full shortDescription as clean body copy with no repeated text and no boilerplate                                                                                                 
+  3. Inpatient, ED, and outpatient qualitative cards are unchanged                                                                                                                                             
+  4. npm run typecheck passes                                                                                                                                                                                  
+  5. Walk the nursing Capacity, Workforce, Quality, and Revenue wizard screens — every qualitative card shows a clean scannable subtitle and useful expanded body
