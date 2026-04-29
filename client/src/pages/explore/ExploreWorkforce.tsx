@@ -147,7 +147,7 @@ export default function ExploreWorkforce({ state, updateState, totalHoursSaved, 
       <DriverCard
         key={driver.id}
         title={driver.label}
-        subtitle={driver.shortDescription}
+        subtitle={driver.tagline ?? driver.shortDescription}
         enabled={enabled}
         expanded={expanded}
         onToggle={() => toggleEnabled(driver)}
@@ -155,16 +155,9 @@ export default function ExploreWorkforce({ state, updateState, totalHoursSaved, 
         testId={`toggle-${driver.id}`}
       >
         {driver.visibility === 'qualitative' ? (
-          <div>
-            <p className="text-sm text-black leading-relaxed mb-4">
-              {driver.shortDescription}
-            </p>
-            <div className="bg-[#F5F0EB] rounded-lg p-3">
-              <p className="text-xs text-[#666666] italic">
-                Qualitative driver. No financial value modeled. Tracked post-deployment as a strategic outcome.
-              </p>
-            </div>
-          </div>
+          <p className="text-sm text-[#444444] leading-relaxed">
+            {driver.shortDescription}
+          </p>
         ) : driver.calcComponent ? (
           <driver.calcComponent
             state={state}

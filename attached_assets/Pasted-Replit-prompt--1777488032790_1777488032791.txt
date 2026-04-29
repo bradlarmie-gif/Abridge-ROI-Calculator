@@ -1,0 +1,51 @@
+Replit prompt                                                                                                                                                                                                
+   
+  Goal: Apply the same tagline fix to outpatient (OP) qualitative drivers. Same pattern as inpatient and ED.                                                                                                   
+                                                                                                                                                                                                               
+  Do NOT touch inpatient, ED, or nursing qualitative drivers.
+                                                                                                                                                                                                               
+  ---                                                    
+
+  PART 1: Add taglines to all OP qualitative driver definitions in client/src/lib/exploreDrivers.ts                                                                                                            
+   
+  Find each driver by its `id` and add the tagline property:                                                                                                                                                   
+                                                         
+  OP Capacity:
+    id: 'opThirdNextAvailable'    → tagline: 'Days until the third next available appointment'
+    id: 'opSameDayAccess'         → tagline: 'Same-day and urgent slots opened on the schedule'                                                                                                                
+    id: 'opExtendedVisitTime'     → tagline: 'Time with complex patients — where reclaimed time goes'
+                                                                                                                                                                                                               
+  OP Workforce:                                          
+    id: 'opAfterHoursDoc'         → tagline: 'EHR time logged outside scheduled clinical hours'                                                                                                                
+    id: 'opNotesBeforeLeaving'    → tagline: 'Notes signed before leaving the clinic that day'
+    id: 'opBurnoutTracking'       → tagline: 'Validated burnout score — leading indicator for retention'                                                                                                       
+   
+  OP Revenue:                                                                                                                                                                                                  
+    id: 'opEmLevelDistribution'   → tagline: 'Distribution of E/M codes across encounters'
+    id: 'opCdiQueryTrend'         → tagline: 'CDI query volume post-visit — falling signals better docs'                                                                                                       
+    id: 'opCodingSpecificity'     → tagline: 'Diagnoses coded to highest ICD-10 specificity'
+                                                                                                                                                                                                               
+  OP Quality (grep for settings: ['outpatient'] and quadrant: 'Quality' to find any — write taglines following the same pattern: short, factual, 8-12 words):                                                  
+    Any OP quality drivers found → add appropriate taglines                                                                                                                                                    
+                                                                                                                                                                                                               
+  ---                                                    
+
+  PART 2 & 3: Confirm subtitle wiring and expanded body fix are already applied                                                                                                                                
+   
+  The previous inpatient and ED prompts already updated ExploreCapacity.tsx, ExploreWorkforce.tsx, ExploreRevenue.tsx, and ExploreCareQuality.tsx to use `driver.tagline ?? driver.shortDescription` as        
+  subtitle and to show clean `shortDescription` body copy in the expanded panel with no boilerplate. Verify those files are correct. No changes needed if already done.
+                                                                                                                                                                                                               
+  ---                                                    
+
+  Constraints:
+  - Only add taglines to OP drivers — do not touch inpatient, ED, or nursing driver definitions
+  - Do NOT change any shortDescription values
+  - Do NOT touch quantified (non-qualitative) driver cards
+  - Do NOT change DriverCard.tsx itself                                                                                                                                                                        
+   
+  Acceptance criteria:                                                                                                                                                                                         
+  1. Every OP qualitative driver card shows a short one-line tagline as subtitle in collapsed state
+  2. Expanded body shows the full shortDescription as clean body copy with no repeated text and no boilerplate
+  3. Inpatient, ED, and nursing qualitative cards are unchanged                                                                                                                                                
+  4. npm run typecheck passes
+  5. Walk the OP Capacity, Workforce, and Revenue wizard screens — every "Other Metrics to Watch" card shows a clean scannable subtitle and useful expanded body 

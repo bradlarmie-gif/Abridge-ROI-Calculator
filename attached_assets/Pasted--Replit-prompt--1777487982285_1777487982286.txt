@@ -1,0 +1,67 @@
+  Replit prompt                                                                                                                                                                                                
+                                                                                                                                                                                                               
+  Goal: Apply the same tagline fix to ED qualitative drivers that was previously done for inpatient. Add short taglines to all ED qualitative driver definitions, update the subtitle to use tagline, and fix  
+  the expanded body. Same pattern, different care setting.                                                                                                                                                     
+                                                                                                                                                                                                               
+  The inpatient fix already established the pattern:                                                                                                                                                           
+  - `tagline` field added to ExploreDriver interface (already done — just add the data)
+  - Card subtitle uses `driver.tagline ?? driver.shortDescription`                                                                                                                                             
+  - Expanded qualitative body shows `shortDescription` as clean body copy, no boilerplate                                                                                                                      
+                                                                                                                                                                                                               
+  Do NOT touch inpatient, outpatient, or nursing qualitative drivers.                                                                                                                                          
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  
+  PART 1: Add taglines to all ED qualitative driver definitions in client/src/lib/exploreDrivers.ts                                                                                                            
+                                                         
+  Find each driver by its `id` and add the tagline property:                                                                                                                                                   
+                                                         
+  ED Capacity:                                                                                                                                                                                                 
+    id: 'edDoorToProvider'         → tagline: 'Minutes from patient arrival to first provider contact'
+    id: 'edEncountersPerShift'     → tagline: 'Average patients seen per provider per shift'                                                                                                                   
+    id: 'edEndOfShiftCompletion'   → tagline: 'Notes signed before the provider leaves the shift'
+                                                                                                                                                                                                               
+  ED Workforce:                                          
+    id: 'edAfterHoursDoc'          → tagline: 'EHR time logged outside scheduled shift hours'                                                                                                                  
+    id: 'edBurnoutTracking'        → tagline: 'Validated burnout score — leading indicator for retention'
+    id: 'edLikelihoodToStay'       → tagline: 'Intent to remain in current role, surveyed'                                                                                                                     
+  
+  ED Revenue:                                                                                                                                                                                                  
+    id: 'edCleanClaim'             → tagline: 'Claims accepted on first submission'
+    id: 'edEmLevelDistribution'    → tagline: 'Distribution of ED E/M codes across encounters'                                                                                                                 
+    id: 'edDowncodingRate'         → tagline: 'Claims down-coded by payers due to insufficient documentation'
+                                                                                                                                                                                                               
+  ED Quality (check for any ED quality drivers — grep for settings: ['ed'] and quadrant: 'Quality'):                                                                                                           
+    id: 'edAdmissionHandoff'       → tagline: 'Complete documentation at ED-to-inpatient transitions'                                                                                                          
+    Any other ED quality drivers found → write a tagline following the same pattern: short, factual, 8-12 words                                                                                                
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  PART 2: Confirm subtitle wiring is already correct                                                                                                                                                           
+  
+  The subtitle fix from the inpatient prompt already updated ExploreCapacity.tsx, ExploreWorkforce.tsx, and ExploreRevenue.tsx to use `driver.tagline ?? driver.shortDescription`. Verify those files are using
+   this pattern. If any of those files still pass `driver.shortDescription` directly as subtitle for ALL drivers (not the tagline-aware version), update them now.
+                                                                                                                                                                                                               
+  Also check ExploreCareQuality.tsx — if it renders DriverCard for qualitative drivers, apply the same subtitle pattern there too.                                                                             
+  
+  ---                                                                                                                                                                                                          
+                                                         
+  PART 3: Confirm expanded body fix is already correct
+
+  The qualitative expanded body fix from the inpatient prompt already replaced the repeat+boilerplate with clean `shortDescription` body copy. Verify ExploreCapacity.tsx, ExploreWorkforce.tsx,               
+  ExploreRevenue.tsx, and ExploreCareQuality.tsx are using the updated pattern. If any still show the old boilerplate ("Qualitative driver. No financial value modeled..."), remove it.
+                                                                                                                                                                                                               
+  ---                                                    
+
+  Constraints:                                                                                                                                                                                                 
+  - Only add taglines to ED drivers — do not touch inpatient, outpatient, or nursing driver definitions
+  - Do NOT change any shortDescription values                                                                                                                                                                  
+  - Do NOT touch quantified (non-qualitative) driver cards
+  - Do NOT change DriverCard.tsx itself                                                                                                                                                                        
+                                                                                                                                                                                                               
+  Acceptance criteria:                                                                                                                                                                                         
+  1. Every ED qualitative driver card shows a short one-line tagline as subtitle in collapsed state                                                                                                            
+  2. Expanded body shows the full shortDescription as clean body copy with no repeated text and no boilerplate                                                                                                 
+  3. Inpatient, outpatient, and nursing qualitative cards are unchanged                                                                                                                                        
+  4. npm run typecheck passes                                                                                                                                                                                  
+  5. Walk the ED Capacity, Workforce, and Revenue wizard screens — every "Other Metrics to Watch" card shows a clean scannable subtitle and useful expanded body 
