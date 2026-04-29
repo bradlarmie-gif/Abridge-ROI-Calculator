@@ -213,7 +213,6 @@ data-testid="button-export-pdf">
                   <tbody className="text-[#666666]">
                     <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#EA2C00', borderColor: '#EA2C00' }}>Revenue</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">CMI / DRG accuracy</td><td className="py-3">✅ Yes</td><td className="py-3">CMI delta × discharges × $6,800</td></tr>
-                    <tr className="border-b border-[#E5E5E5]"><td className="py-3">ALOS reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Days saved × admissions × $2,500/bed day</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Denial rate reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Denial pp delta × encounters ×
 $3,500/case</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Obs/IP status defense</td><td className="py-3">✅ Yes (if denial data provided)</td><td className="py-3">Admissions at
