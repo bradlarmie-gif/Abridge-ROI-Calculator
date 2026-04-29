@@ -282,6 +282,51 @@ function buildTree(): SnapshotNode[] {
   return serialize(<NursingPDFDocument data={FIXED_INPUT} />);
 }
 
+// ── Long-org-name stress fixture ────────────────────────────────────────
+// The original Mercy fixture used a 19-character org name. The shipped
+// footer-collision bug only surfaced for orgs whose name + the fixed-width
+// "PAGE X / Y" right slot overflowed the line — i.e., for long names. This
+// fixture pairs a deliberately-long org name with billion-class dollar
+// figures (which also stress the hero number sizing) so the snapshot
+// catches any future regression where the footer center text is ever
+// allowed to grow into the right slot, OR where a hero number grows so
+// large it can no longer stand alone in its eyebrow/number/footnote stack.
+const LONG_ORG_INPUT: NursingPDFInput = {
+  ...FIXED_INPUT,
+  clientName: "Northwestern Memorial HealthCare System — Northwest Region",
+  staffedBeds: 1_400,
+  nurseFTEs: 5_200,
+  patientDaysAnnual: 1_400 * (88 / 100) * 365,
+
+  retention: { ...FIXED_INPUT.retention, value: 18_500_000 },
+  agency: { ...FIXED_INPUT.agency, value: 7_400_000 },
+  overtime: { ...FIXED_INPUT.overtime, value: 4_300_000 },
+
+  hapi: { ...FIXED_INPUT.hapi, value: 1_700_000 },
+  falls: { ...FIXED_INPUT.falls, value: 920_000 },
+  cauti: { ...FIXED_INPUT.cauti, value: 360_000 },
+  clabsi: { ...FIXED_INPUT.clabsi, value: 110_000 },
+  sepsis: { ...FIXED_INPUT.sepsis, value: 140_000 },
+
+  annualInvestment: 4_200_000,
+  implementationFee: 250_000,
+
+  year1Net: 26_500_000,
+  year2Net: 31_800_000,
+  year3Net: 37_200_000,
+  threeYearCumulativeNet: 95_500_000,
+
+  workforceTotal: 30_200_000,
+  qualityTotal: 3_230_000,
+  totalAnnualValue: 33_430_000,
+  netAnnualValue: 26_500_000,
+  costPerBedPerYear: 3_000,
+};
+
+function buildLongOrgTree(): SnapshotNode[] {
+  return serialize(<NursingPDFDocument data={LONG_ORG_INPUT} />);
+}
+
 describe("Nursing Value Assessment PDF — structural snapshot", () => {
   // PDFCoverPage internally calls `new Date().toLocaleDateString(...)` to
   // stamp the cover with today's date (the `dateLabel` field on the input
@@ -308,12 +353,12 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     // Page lineup (1 cover + 7 content):
     //   1. Cover                       (PDFCoverPage)
     //   2. The Thesis / 2x2 grid
-    //   3. Workforce
+    //   3. Workforce  (compact cards, hero subtotal)
     //   4. Capacity
-    //   5. Quality (wraps)
-    //   6. Revenue (tracked separately)
-    //   7. Investment & Net Value
-    //   8. Summary (wraps)
+    //   5. Quality    (compact 2-col grid, hero subtotal)
+    //   6. Revenue    (tracked separately)
+    //   7. Investment & Net Value (with cumulative-multiple hero)
+    //   8. Summary
     const tree = buildTree();
 
     let pageCount = 0;
@@ -347,5 +392,50 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     // Both quadrant totals should appear somewhere on the deck.
     expect(flat).toContain("$6.83M"); // workforce
     expect(flat).toContain("$813K"); // quality
+  });
+
+  // ── Long-org-name stress test ─────────────────────────────────────────
+  // Anchors three layout invariants for a customer with a
+  // deliberately-long org name and billion-class dollar figures:
+  //   1. Page count is still exactly 8 (no card overflow forcing extra pages).
+  //   2. The footer center text is just the org name — never glued to a
+  //      document-title slug — so it cannot grow into the right-slot
+  //      "PAGE X / Y" the way the shipped bug did.
+  //   3. The Investment cumulative-multiple HERO renders as a standalone
+  //      number ("X.X×"), not as inline body copy.
+  it("renders the long-org / large-dollar fixture without overflowing or collapsing", () => {
+    const tree = buildLongOrgTree();
+
+    let pageCount = 0;
+    const text: string[] = [];
+    const visit = (node: SnapshotNode): void => {
+      if (node.kind === "text") {
+        text.push(node.value);
+      } else {
+        if (node.kind === "primitive" && node.tag === "PAGE") pageCount += 1;
+        node.children.forEach(visit);
+      }
+    };
+    tree.forEach(visit);
+    const flat = text.join(" | ");
+
+    expect(pageCount).toBe(8);
+    expect(flat).toContain("Northwestern Memorial HealthCare System — Northwest Region");
+    // Footer center text must be JUST the org name. The shipped-bug
+    // " · Nursing Value Assessment" suffix is gone — assert the
+    // non-uppercase suffix string is nowhere in the tree.
+    expect(flat).not.toContain(" · Nursing Value Assessment");
+    // Hero cumulative multiple (95.5M / (4.2M × 3) ≈ 7.6×) lands as its
+    // own text node next to the eyebrow.
+    expect(flat).toContain("By Year 3, For Every $1 Invested");
+    expect(flat).toMatch(/\d+(\.\d+)?×/);
+    // Workforce HeroSubtotal (and Quality HeroSubtotal) both render the
+    // tinted dollar total with the canonical fmtCurrency formatting.
+    // Note: the label text is title-case in source — `textTransform:
+    // uppercase` is applied at render time only, so the snapshot tree
+    // carries the original casing.
+    expect(flat).toContain("Workforce Subtotal");
+    expect(flat).toContain("Quality Subtotal");
+    expect(flat).toContain("$30.20M"); // workforce total
   });
 });

@@ -26,6 +26,24 @@ Every page in every PDF must obey this contract:
 
 If you change any of these numbers, change them all together and re-eyeball every page.
 
+### 1a. Footer 3-slot geometry (REQUIRED)
+
+The footer is `flexDirection: row` with **three explicit-width slots** —
+never let any slot be implicitly sized. We shipped a glyph-collision bug
+("ASSESSPAMGEENT 1/10") because the center text was unconstrained and was
+allowed to grow into the right slot when the org name was long.
+
+| Slot | Style | Content |
+|---|---|---|
+| `footerLeft` | `width: 90`, `flexShrink: 0` | Brand wordmark / logo (left-anchored) |
+| `footerCenter` | `flex: 1`, `textAlign: "center"`, `paddingHorizontal: 8`, `numberOfLines: 1` | Org name only — no document-title suffix |
+| `footerRight` | `width: 90`, `flexShrink: 0`, `textAlign: "right"` | `PAGE X / Y` |
+
+The center text must be JUST the organization name — no `· Document Title`
+suffix, no version stamp, no separator. Anything appended to the center
+text increases the chance of overflow into the right slot. If you need a
+document title in the chrome, put it in the page header, not the footer.
+
 ---
 
 ## 2. Wrap-safe primitives
@@ -74,6 +92,8 @@ For closing sequences (last bullet + disclaimer), wrap them in a single
 - ❌ `<View style={{ flex: 1 }}>` as a direct child of `<Page wrap>` without an explicit height — flex sizing confuses pagination
 - ❌ Repeating the same calculations in two places (driver value here, methodology footnote there) — derive both from the same input field on `NursingPDFInput`
 - ❌ Adding a new bullet/paragraph to a wrap-enabled page without re-running the visual review (rule 6)
+- ❌ **Footer with unconstrained center `Text` in a `flexDirection: row` row.** The center slot must always be `flex: 1` with `numberOfLines: 1`, paired with explicit-width left and right slots (rule 1a). Anything else is the recipe for the "ASSESSPAMGEENT 1/10" collision.
+- ❌ **Single-driver-per-page `wrap={false}` cards on a quadrant page.** If a quadrant has 4–5 drivers and each card is ~280pt tall, the page will produce orphan single-driver pages. Use `CompactDriverCard` (rule 9) or a 2-column grid instead (Quality page is the canonical example).
 
 ---
 
@@ -204,6 +224,48 @@ reason not to.
   paragraphs, not in a table cell.
 - ❌ **Dead helper components** (`TrackedPill` was defined and never
   referenced). Delete what you don't use.
+
+### Quadrant page layout (Workforce / Quality canonical)
+
+A quadrant page (one per Workforce/Capacity/Quality/Revenue) must fit on
+**one page** at the standard fixture and the long-org/large-dollar fixture.
+Use this composition:
+
+1. **Page header** (red accent bar + section label, ~28pt total)
+2. **Hero overview / 2x2 thesis** if applicable, OR a short context paragraph
+3. **Driver list** — one of:
+   - Stacked **`CompactDriverCard`** rows when there are 3 drivers
+     (Workforce). Each card is ~95pt: 2-line header + one-line italic
+     formula tail. No 6-row MathGrid inside a card.
+   - 2-column grid of compact cards when there are 4–6 drivers (Quality).
+     Use `flexDirection: row` with `gap: 10` and each card sized at
+     `flex: 1`. Pair drivers logically (HAPI/Falls, CAUTI/CLABSI, etc.).
+4. **`HeroSubtotal`** — a tinted card at the bottom of the page with:
+   - eyebrow uppercase label (e.g. `WORKFORCE SUBTOTAL`),
+   - large dollar figure (28–32pt bold primary, on its own Text node),
+   - one-line context footnote.
+   This is the page's anchor figure; it is NOT optional.
+
+If your draft would force a single driver onto its own page (orphan),
+collapse the driver list to compact cards or a 2-col grid. Big
+`wrap={false}` cards belong on cover/thesis pages, not quadrant pages.
+
+### Investment page hero
+
+The Investment & Net Value page must surface the **cumulative-multiple**
+("X.X×") as a hero block (rule 9 § Hero numbers), not buried in body
+prose. Eyebrow `BY YEAR 3, FOR EVERY $1 INVESTED` → number `X.X×` (36pt,
+bold, primary, on its own Text node) → one-line footnote. This is the
+page's takeaway.
+
+### Italic font registration
+
+If any `<Text>` uses `fontStyle: "italic"` (which all `Tracked` /
+`Tracked Separately` / formula-tail spans do), the custom font family
+must register italic variants — even if they're faux-italic
+(`{ src: regularTtf, fontWeight: 400, fontStyle: "italic" }`). Without
+explicit italic entries, server-side renders throw "Could not resolve
+font" and some browsers silently fall back to a system sans-serif.
 
 ---
 

@@ -23,11 +23,20 @@ import abridgeWordmark from "@assets/abridge-logo-wordmark-red_1769187440253.png
 
 Font.registerHyphenationCallback((word) => [word]);
 
+// Italic variants point at the same TTFs as the upright weights — react-pdf
+// synthesizes the slant from the upright glyphs (faux italic). Without these
+// explicit entries, any `fontStyle: "italic"` span (e.g. the "Tracked" /
+// "Tracked separately" hero subtotals, the formula tail in CompactDriverCard)
+// throws "Could not resolve font" when rendered server-side, and silently
+// falls back to a default sans-serif in some browser versions. Registering
+// faux variants makes the PDF render identically in node and the browser.
 Font.register({
   family: "Manrope",
   fonts: [
     { src: manropeRegular, fontWeight: 400 },
     { src: manropeBold, fontWeight: 700 },
+    { src: manropeRegular, fontWeight: 400, fontStyle: "italic" },
+    { src: manropeBold, fontWeight: 700, fontStyle: "italic" },
   ],
 });
 
@@ -172,17 +181,27 @@ const styles = StyleSheet.create({
   //   bottom (28) + content (~12 wordmark or text) + paddingTop (10) + rule (1)
   //   = 51pt, leaving ~21pt of breathing room above. Do not shrink paddingBottom
   //   without re-running the visual review checklist in pdf_layout_guidelines.md.
+  //
+  // Geometry: three FIXED-WIDTH slots (left logo / center org / right page-no)
+  // — never `justifyContent: space-between` with unconstrained Text in any
+  // slot. Unbounded Text in a flex row will physically overflow into the
+  // adjacent slot when the org name is long, producing the
+  // "ORGNAMEPAGE 4/7" glyph collision we shipped to a customer.
   footer: {
     position: "absolute",
     bottom: 28,
     left: 54,
     right: 54,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: colors.footerRule,
+  },
+  footerLeft: {
+    width: 90,
+    flexDirection: "row",
+    alignItems: "center",
   },
   footerLogo: {
     width: 56,
@@ -190,23 +209,28 @@ const styles = StyleSheet.create({
     objectFit: "contain",
   },
   footerCenter: {
+    flex: 1,
     fontSize: 7.5,
     color: colors.footerMeta,
     letterSpacing: 1.1,
     textTransform: "uppercase",
+    textAlign: "center",
+    // Matches the spec in pdf_layout_guidelines.md §1a — keep the inset
+    // small so a long org name has the maximum room before truncation,
+    // while still preserving a visible gutter against the right slot.
+    paddingHorizontal: 8,
   },
   footerCenterOrg: {
     fontWeight: "bold",
     color: colors.primaryText,
   },
-  footerCenterDot: {
-    color: colors.footerMetaSoft,
-  },
   footerRight: {
+    width: 90,
     fontSize: 7.5,
     color: colors.footerMeta,
     letterSpacing: 1.1,
     textTransform: "uppercase",
+    textAlign: "right",
   },
   footerRightNum: {
     color: colors.primaryText,
@@ -282,19 +306,34 @@ const fmtNum = (n: number): string => Math.round(n).toLocaleString();
 // ───────────────────────── Reusable components ─────────────────────────
 
 // PageFooter is a Bloomberg/McKinsey-style report footer:
-//   • Left: rendered Abridge wordmark image (NOT lowercase text — the brand
-//     mark must read as a logo, not as un-capitalized prose).
-//   • Center: small-caps document slug — `ORG · DOCUMENT TITLE` with subtle
-//     tracking. Org renders in bolded near-black so it anchors the line.
-//   • Right: small-caps "PAGE X / Y" with the numerals in bold near-black.
-// Hairline rule above is tuned to the warm Abridge palette (not slate gray).
+//   • Left: fixed-width slot holding the rendered Abridge wordmark image
+//     (NOT lowercase text — the brand mark must read as a logo, not as
+//     un-capitalized prose).
+//   • Center: small-caps org name (no document-title slug — every page
+//     already has a SectionLabel that names the section; repeating
+//     "NURSING VALUE ASSESSMENT" in the footer was redundant and was the
+//     long-string that overflowed the right slot in the shipped bug).
+//   • Right: fixed-width slot holding small-caps "PAGE X / Y" with the
+//     numerals in bold near-black, right-aligned.
+// All three slots have explicit widths/flex so the center can never grow
+// into the right slot regardless of org-name length. Hairline rule above
+// is tuned to the warm Abridge palette (not slate gray).
 const PageFooter = ({ orgName }: { orgName: string }) => (
   <View style={styles.footer} fixed>
-    <Image src={abridgeWordmark} style={styles.footerLogo} />
-    <Text style={styles.footerCenter}>
+    <View style={styles.footerLeft}>
+      <Image src={abridgeWordmark} style={styles.footerLogo} />
+    </View>
+    {/*
+      `wrap={false}` + the parent slot's `flex: 1` means an unusually long
+      org name is clipped at the slot boundary instead of wrapping
+      vertically (which would push the footer off its 23pt height
+      contract) or growing into the right "PAGE X / Y" slot (the shipped
+      collision bug). This is the geometric belt-and-braces; the snapshot
+      test asserts the structural part (no document-title suffix is glued
+      onto the org name).
+    */}
+    <Text style={styles.footerCenter} wrap={false}>
       <Text style={styles.footerCenterOrg}>{orgName}</Text>
-      <Text style={styles.footerCenterDot}>{"   ·   "}</Text>
-      Nursing Value Assessment
     </Text>
     {/* Subtract 1 to skip the unnumbered cover page (currently always page 1). */}
     <Text
@@ -350,6 +389,14 @@ const StatBlock = ({
   </View>
 );
 
+// QuadrantThesisCard typography is intentionally tiered so the eye lands
+// on real-dollar figures first:
+//   • Live dollars (e.g. "$6.83M")     → 24pt bold near-black, lineHeight 1.0
+//   • "Tracked" / italic accent state  → 18pt italic primary
+//   • "Tracked Separately" light state → 15pt regular tertiary
+// Live dollars are intentionally near-black (not red) so brand red can be
+// reserved for the italic "Tracked" accent and the SectionLabel mark —
+// otherwise three different reds compete on one page.
 const QuadrantThesisCard = ({
   label,
   bigNumber,
@@ -362,6 +409,163 @@ const QuadrantThesisCard = ({
   bigNumberItalic?: boolean;
   bigNumberLight?: boolean;
   framing: string;
+}) => {
+  const numberSize = bigNumberLight ? 15 : bigNumberItalic ? 18 : 24;
+  const numberColor = bigNumberLight
+    ? colors.tertiary
+    : bigNumberItalic
+      ? colors.primary
+      : colors.primaryText;
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: colors.cards,
+        padding: 14,
+        borderRadius: 4,
+        marginHorizontal: 4,
+        marginVertical: 4,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 8,
+          color: colors.secondary,
+          textTransform: "uppercase",
+          letterSpacing: 1.5,
+          fontWeight: "bold",
+          marginBottom: 10,
+        }}
+      >
+        {label}
+      </Text>
+      <Text
+        style={{
+          fontSize: numberSize,
+          fontWeight: bigNumberLight ? 400 : "bold",
+          fontStyle: bigNumberItalic ? "italic" : "normal",
+          color: numberColor,
+          lineHeight: 1.0,
+          marginBottom: 10,
+        }}
+      >
+        {bigNumber}
+      </Text>
+      <Text
+        style={{
+          fontSize: 8.5,
+          color: colors.secondary,
+          lineHeight: 1.45,
+        }}
+      >
+        {framing}
+      </Text>
+    </View>
+  );
+};
+
+// HeroSubtotal is a full-width tinted band that promotes a quadrant's
+// dollar total to the page's punchline. Replaces the hairline right-aligned
+// "Subtotal $X" text that buried the number on the original Workforce/
+// Quality pages — readers couldn't find the bottom-line per quadrant
+// without scanning all the cards. Pattern:
+//   ┌───────────────────────────────────────────────┐
+//   │ WORKFORCE SUBTOTAL                  $6.83M    │
+//   │ Three labor lines, one upstream factor        │
+//   └───────────────────────────────────────────────┘
+const HeroSubtotal = ({
+  label,
+  total,
+  caption,
+}: {
+  label: string;
+  total: string;
+  caption?: string;
+}) => (
+  <View
+    style={{
+      backgroundColor: colors.cards,
+      borderRadius: 4,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      marginTop: 6,
+      marginBottom: 8,
+    }}
+    wrap={false}
+  >
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 9,
+          color: colors.secondary,
+          textTransform: "uppercase",
+          letterSpacing: 2,
+          fontWeight: "bold",
+        }}
+      >
+        {label}
+      </Text>
+      <Text
+        style={{
+          fontSize: 24,
+          fontWeight: "bold",
+          color: colors.primary,
+          lineHeight: 1.0,
+        }}
+      >
+        {total}
+      </Text>
+    </View>
+    {caption ? (
+      <Text
+        style={{
+          fontSize: 8.5,
+          color: colors.tertiary,
+          marginTop: 6,
+        }}
+      >
+        {caption}
+      </Text>
+    ) : null}
+  </View>
+);
+
+// CompactDriverCard is the dense executive-style card we use on Workforce
+// and Quality pages. The original tall "header + body + 6-row math grid +
+// source" cards (≈250pt each) caused two compounding problems:
+//   1. With wrap={false}, only 1 driver fit per page after the headline
+//      and intro — Quality forced 5 single-driver orphan pages.
+//   2. The math grid carried the same data as the printed inline formula,
+//      so readers ended up with two ways to read the same calculation
+//      stacked on top of each other (textbook "AI slop" feel).
+// CompactDriverCard collapses each driver into ~95pt:
+//   • Header row     (driver name + value)
+//   • Optional link tag (↳ LINKED TO RETENTION)
+//   • 1–2 line body
+//   • Inline italic formula line (the printed math)
+//   • Optional source line
+// Multiple cards can sit side-by-side in a flex row, or full-width in a
+// column. `flex: 1` makes them grid-friendly out of the box.
+const CompactDriverCard = ({
+  name,
+  value,
+  body,
+  formula,
+  source,
+  linkedTo,
+}: {
+  name: string;
+  value: string;
+  body: string;
+  formula?: string;
+  source?: string;
+  linkedTo?: string;
 }) => (
   <View
     style={{
@@ -370,41 +574,89 @@ const QuadrantThesisCard = ({
       padding: 12,
       borderRadius: 4,
       marginHorizontal: 4,
-      marginVertical: 4,
+      marginBottom: 8,
     }}
+    wrap={false}
   >
-    <Text
+    <View
       style={{
-        fontSize: 8,
-        color: colors.secondary,
-        textTransform: "uppercase",
-        letterSpacing: 1.5,
-        fontWeight: "bold",
-        marginBottom: 8,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        marginBottom: 4,
       }}
     >
-      {label}
-    </Text>
+      <Text
+        style={{
+          fontSize: 10.5,
+          fontWeight: "bold",
+          color: colors.primaryText,
+          textTransform: "uppercase",
+          letterSpacing: 0.8,
+          flex: 1,
+          paddingRight: 6,
+        }}
+      >
+        {name}
+      </Text>
+      <Text
+        style={{
+          fontSize: 13,
+          fontWeight: "bold",
+          color: colors.primary,
+        }}
+      >
+        {value}
+      </Text>
+    </View>
+    {linkedTo ? (
+      <Text
+        style={{
+          fontSize: 7.5,
+          color: colors.primary,
+          textTransform: "uppercase",
+          letterSpacing: 1.2,
+          fontWeight: "bold",
+          marginBottom: 4,
+        }}
+      >
+        {`↳ Linked to ${linkedTo}`}
+      </Text>
+    ) : null}
     <Text
       style={{
-        fontSize: bigNumberLight ? 16 : 18,
-        fontWeight: bigNumberLight ? 400 : "bold",
-        fontStyle: bigNumberItalic ? "italic" : "normal",
-        color: bigNumberLight ? colors.tertiary : (bigNumberItalic ? colors.primary : colors.primaryText),
-        marginBottom: 8,
-      }}
-    >
-      {bigNumber}
-    </Text>
-    <Text
-      style={{
-        fontSize: 8.5,
+        fontSize: 9,
         color: colors.secondary,
         lineHeight: 1.45,
+        marginBottom: 4,
       }}
     >
-      {framing}
+      {body}
     </Text>
+    {formula ? (
+      <Text
+        style={{
+          fontSize: 8.5,
+          fontStyle: "italic",
+          color: colors.primaryText,
+          lineHeight: 1.4,
+          marginTop: 2,
+        }}
+      >
+        {formula}
+      </Text>
+    ) : null}
+    {source ? (
+      <Text
+        style={{
+          fontSize: 7.5,
+          color: colors.tertiary,
+          marginTop: 3,
+        }}
+      >
+        {source}
+      </Text>
+    ) : null}
   </View>
 );
 
@@ -620,7 +872,13 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         </View>
       </Page>
 
-      {/* PAGE 2 — WORKFORCE */}
+      {/* PAGE 2 — WORKFORCE
+          Layout discipline note: this page used to ship 3 tall driver cards
+          (≈250pt each) with full 6-row MathGrids that duplicated the printed
+          formula in two visual styles. The cards are now CompactDriverCard
+          (~95pt) — same data, same reconciliation, but the page now has
+          enough vertical room for a proper HeroSubtotal band at the bottom
+          that promotes the workforce total to the punchline. */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
           <SectionLabel>WORKFORCE</SectionLabel>
@@ -633,119 +891,59 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             end of a shift.
           </Text>
 
-          {data.retention.enabled ? (
-            <View style={styles.driverCard} wrap={false}>
-              <View style={styles.driverHeaderRow}>
-                <Text style={styles.driverHeader}>RN Retention</Text>
-                <Text style={styles.driverValue}>{fmtCurrency(data.retention.value)}</Text>
-              </View>
-              <Text style={styles.driverBody}>
-                Documentation burden is among the factors associated with burnout and
-                turnover. Reducing burden is modeled to help retain experienced nurses
-                who might otherwise leave.
-              </Text>
-              <MathGrid
-                rows={[
-                  { label: "Nurse FTEs", value: fmtNum(data.nurseFTEs) },
-                  { label: "Annual turnover rate", value: `${data.retention.turnoverPct}%` },
-                  { label: "Burnout-related share", value: `${data.retention.burnoutRelatedPct}%` },
-                  { label: "Documentation impact on burnout turnover", value: `${data.retention.impactPct}%` },
-                  { label: "Replacement cost per nurse", value: fmtCurrencyExact(data.retention.replacementCost) },
-                  { label: "= Retention savings", value: fmtCurrency(data.retention.value) },
-                ]}
+          {/* Cards stack full-width (each in its own row) so the formula
+              line has room to breathe — the agency formula in particular
+              prints all four multiplicands and would wrap in a half-width
+              column. The negative marginHorizontal here cancels the +4pt
+              CompactDriverCard inset so the card edges align to the page
+              gutter. */}
+          <View style={{ marginHorizontal: -4, marginBottom: 4 }}>
+            {data.retention.enabled ? (
+              <CompactDriverCard
+                name="RN Retention"
+                value={fmtCurrency(data.retention.value)}
+                body="Documentation burden is among the factors associated with burnout and turnover. Reducing burden is modeled to help retain experienced nurses."
+                formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.retention.turnoverPct}% turnover × ${data.retention.burnoutRelatedPct}% burnout-related × ${data.retention.impactPct}% doc impact × ${fmtCurrencyExact(data.retention.replacementCost)} → ${fmtCurrency(data.retention.value)}`}
+                source="Source: NSI Nursing Solutions 2024 turnover benchmark."
               />
-              <Text style={styles.driverSource}>
-                Source: NSI Nursing Solutions 2024 turnover benchmark.
-              </Text>
-            </View>
-          ) : null}
+            ) : null}
 
-          {data.agency.enabled ? (
-            <View style={styles.driverCard} wrap={false}>
-              <View style={styles.driverHeaderRow}>
-                <Text style={styles.driverHeader}>Agency &amp; Travel Nurse Reduction</Text>
-                <Text style={styles.driverValue}>{fmtCurrency(data.agency.value)}</Text>
-              </View>
-              {data.retention.enabled ? (
-                <Text
-                  style={{
-                    fontSize: 7.5,
-                    color: colors.primary,
-                    textTransform: "uppercase",
-                    letterSpacing: 1.2,
-                    fontWeight: "bold",
-                    marginTop: -2,
-                    marginBottom: 6,
-                  }}
-                >
-                  ↳ Linked to retention
-                </Text>
-              ) : null}
-              <Text style={styles.driverBody}>
-                When nurses leave, hospitals typically fill gaps with agency labor at
-                2–3× the cost. Improved retention is modeled to reduce that
-                premium-labor dependency.
-              </Text>
-              <MathGrid
-                rows={[
-                  { label: "Weeks of agency coverage avoided per vacancy", value: `${data.agency.weeksPerVacancy} wks` },
-                  { label: "Weekly agency premium", value: fmtCurrencyExact(data.agency.weeklyPremium) },
-                  { label: "= Agency cost avoided", value: fmtCurrency(data.agency.value) },
-                ]}
+            {data.agency.enabled ? (
+              // Formula must reconcile to `computeAllDriverValues` in
+              // exploreDriverCalcs.ts: engine value = retained × wks ×
+              // premium, where retained = nurseFTEs × turnoverPct% ×
+              // burnoutRelatedPct% × impactPct%. Earlier this card printed
+              // only `wks × premium → $value`, which was mathematically
+              // incomplete — the multiplicands didn't multiply out to the
+              // displayed dollar value, so the card lost its defensibility
+              // (the entire point of the math tail). Surface every factor
+              // the engine uses, even though the line is dense — that's
+              // why this card sits in the full-width stacked column rather
+              // than a 2-col grid.
+              <CompactDriverCard
+                name="Agency & Travel Nurse Reduction"
+                value={fmtCurrency(data.agency.value)}
+                linkedTo={data.retention.enabled ? "retention" : undefined}
+                body="When nurses leave, hospitals typically fill gaps with agency labor at 2–3× the cost. Improved retention reduces that premium-labor dependency."
+                formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.retention.turnoverPct}% turnover × ${data.retention.burnoutRelatedPct}% burnout × ${data.retention.impactPct}% impact × ${data.agency.weeksPerVacancy} wks/vacancy × ${fmtCurrencyExact(data.agency.weeklyPremium)}/wk → ${fmtCurrency(data.agency.value)}`}
               />
-            </View>
-          ) : null}
+            ) : null}
 
-          {data.overtime.enabled ? (
-            <View style={styles.driverCard} wrap={false}>
-              <View style={styles.driverHeaderRow}>
-                <Text style={styles.driverHeader}>Overtime Reduction</Text>
-                <Text style={styles.driverValue}>{fmtCurrency(data.overtime.value)}</Text>
-              </View>
-              <Text style={styles.driverBody}>
-                When nurses spend less time documenting at end of shift, OT hours
-                decrease. The most directly measurable line in the payroll budget.
-              </Text>
-              <MathGrid
-                rows={[
-                  { label: "Nurse FTEs", value: fmtNum(data.nurseFTEs) },
-                  { label: "OT hrs per nurse per week", value: `${data.overtime.otHrsPerNurseWeek} hrs` },
-                  { label: "Documentation-driven OT reduction", value: `${data.overtime.reductionPct}%` },
-                  { label: "OT hourly rate", value: `$${data.overtime.otHourlyRate}/hr` },
-                  { label: "Weeks per year", value: "52" },
-                  { label: "= OT savings", value: fmtCurrency(data.overtime.value) },
-                ]}
+            {data.overtime.enabled ? (
+              <CompactDriverCard
+                name="Overtime Reduction"
+                value={fmtCurrency(data.overtime.value)}
+                body="When nurses spend less time documenting at end of shift, OT hours decrease. The most directly measurable line in the payroll budget."
+                formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.overtime.otHrsPerNurseWeek} OT hrs/wk × ${data.overtime.reductionPct}% reduction × $${data.overtime.otHourlyRate}/hr × 52 wks → ${fmtCurrency(data.overtime.value)}`}
               />
-            </View>
-          ) : null}
-
-          <View
-            style={{
-              borderTopWidth: 1,
-              borderTopColor: colors.separatorHeavy,
-              marginTop: 6,
-              paddingTop: 8,
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              marginBottom: 14,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 10,
-                color: colors.secondary,
-                textTransform: "uppercase",
-                letterSpacing: 1,
-                marginRight: 12,
-              }}
-            >
-              Workforce Subtotal
-            </Text>
-            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primary }}>
-              {fmtCurrency(data.workforceTotal)}
-            </Text>
+            ) : null}
           </View>
+
+          <HeroSubtotal
+            label="Workforce Subtotal"
+            total={data.workforceTotal > 0 ? fmtCurrency(data.workforceTotal) : "Tracked"}
+            caption="Three labor lines, one upstream factor: end-of-shift charting time."
+          />
 
           <PageFooter orgName={orgName} />
         </View>
@@ -807,195 +1005,143 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         </View>
       </Page>
 
-      {/* PAGE 4 — QUALITY */}
-      <Page size="LETTER" style={styles.page} wrap>
+      {/* PAGE 4 — QUALITY
+          The previous version of this page rendered 5 wrap={false} driver
+          cards (≈280pt each) inside a `<Page wrap>` — pagination math
+          guaranteed exactly 1 driver per page after the headline + intro,
+          producing 5 single-driver orphan pages instead of one cohesive
+          quality story. This rewrite collapses each driver into a
+          CompactDriverCard arranged in a 2-column grid (5 cards = 3 rows
+          with the 5th sharing a row with the qualitative-metrics card),
+          and lands the quality subtotal as a HeroSubtotal at the bottom.
+          The full per-driver math still reconciles via the inline italic
+          formula on each card and the Methodology page bullets. */}
+      <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
           <SectionLabel>QUALITY</SectionLabel>
           <Text style={styles.sectionHeadline}>
             Real-time documentation is the visibility layer that makes early intervention possible.
           </Text>
           <Text style={styles.body}>
-            Preventable harm events don't happen because nurses don't care — they happen
-            when risk signals are missed or delayed. The hypothesis we model: real-time
-            flowsheet capture surfaces those signals while there's still time to act,
-            with the actual outcome determined by clinical practice on each unit.
+            Preventable harm events happen when risk signals are missed or delayed.
+            The hypothesis we model: real-time flowsheet capture surfaces those
+            signals while there's still time to act — with the actual outcome
+            determined by clinical practice on each unit. The values below are
+            <Text style={{ fontWeight: "bold", color: colors.primaryText }}> potential</Text>;
+            documentation creates the visibility, the care team creates the outcome.
           </Text>
 
-          <View style={[styles.redBorderCallout, { marginBottom: 12 }]}>
-            <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>
-              The values below are{" "}
-              <Text style={{ fontWeight: "bold", color: colors.primaryText }}>potential</Text>
-              {" "}— they require clinical practice change alongside documentation
-              improvement. Documentation creates the visibility; the care team creates
-              the outcome. Validate baseline rates with your infection-control and
-              quality teams before presenting.
-            </Text>
+          {/* 2-column grid. Each <View flexDirection: row> is a row of up to
+              two compact cards. The negative marginHorizontal cancels the
+              CompactDriverCard's +4pt marginHorizontal so the row's outer
+              edges align to the page gutter. */}
+          <View style={{ marginHorizontal: -4 }}>
+            <View style={{ flexDirection: "row" }}>
+              {data.hapi.enabled ? (
+                <CompactDriverCard
+                  name="HAPI Risk Reduction"
+                  value={`${fmtCurrency(data.hapi.value)} (pot.)`}
+                  body="Skin assessments at the point of care surface risk earlier than charts reconstructed at shift end."
+                  formula={`${hapiEvents.toFixed(1)} events × ${data.hapi.preventionPct}% prevention × ${fmtCurrencyExact(data.hapi.costPerEvent)} → ${fmtCurrency(data.hapi.value)}`}
+                  source="Source: Dowding et al., JAMIA 2012."
+                />
+              ) : null}
+              {data.falls.enabled ? (
+                <CompactDriverCard
+                  name="Fall Risk Visibility"
+                  value={`${fmtCurrency(data.falls.value)} (pot.)`}
+                  body="Morse Fall Scale assessments completed in real time make risk escalations visible when they matter."
+                  formula={`${fallsEvents.toFixed(1)} falls × ${data.falls.preventionPct}% prevention × ${fmtCurrencyExact(data.falls.costPerEvent)} → ${fmtCurrency(data.falls.value)}`}
+                  source="Source: AHRQ inpatient fall cost benchmarks."
+                />
+              ) : null}
+            </View>
+
+            <View style={{ flexDirection: "row" }}>
+              {data.cauti.enabled ? (
+                <CompactDriverCard
+                  name="CAUTI Prevention"
+                  value={`${fmtCurrency(data.cauti.value)} (pot.)`}
+                  body="Daily catheter-necessity documentation supports earlier removal and bundle adherence."
+                  formula={`${cautiEvents.toFixed(1)} CAUTIs × ${data.cauti.preventionPct}% prevention × ${fmtCurrencyExact(data.cauti.costPerEvent)} → ${fmtCurrency(data.cauti.value)}`}
+                  source="Source: Meddings et al., JAMA Internal Medicine 2014."
+                />
+              ) : null}
+              {data.clabsi.enabled ? (
+                <CompactDriverCard
+                  name="CLABSI Prevention"
+                  value={`${fmtCurrency(data.clabsi.value)} (pot.)`}
+                  body="Timely line documentation supports bundle compliance and is associated with fewer central-line bloodstream infections."
+                  formula={`${clabsiEvents.toFixed(1)} CLABSIs × ${data.clabsi.preventionPct}% prevention × ${fmtCurrencyExact(data.clabsi.costPerEvent)} → ${fmtCurrency(data.clabsi.value)}`}
+                  source="Source: CDC CLABSI cost-of-illness estimates."
+                />
+              ) : null}
+            </View>
+
+            {/* Sepsis sits on its own row paired with a "Tracked Metrics"
+                summary card so the row reads as one symmetric pair instead
+                of leaving sepsis as an orphan half-row. The tracked-metrics
+                card collapses HCAHPS + medication errors into one block —
+                each was a full driverCard previously, which was three
+                paragraphs to deliver "we are not putting a dollar on this."
+                One block, one beat. */}
+            <View style={{ flexDirection: "row" }}>
+              {data.sepsis.enabled ? (
+                <CompactDriverCard
+                  name="Sepsis Bundle Compliance"
+                  value={`${fmtCurrency(data.sepsis.value)} (pot.)`}
+                  body="Time-stamped vitals and antibiotic documentation lift SEP-1 compliance. The model captures only the documentation-lag share."
+                  formula={`${sepsisCases.toFixed(1)} cases × ${data.sepsis.complianceGapPct}% non-comp × ${data.sepsis.docLagPct}% doc-lag × ${fmtCurrencyExact(data.sepsis.excessCostPerCase)} × ${data.sepsis.realizationPct}% real. → ${fmtCurrency(data.sepsis.value)}`}
+                />
+              ) : null}
+              {hasTrackedMetrics ? (
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.cards,
+                    padding: 12,
+                    borderRadius: 4,
+                    marginHorizontal: 4,
+                    marginBottom: 8,
+                    borderLeftWidth: 2,
+                    borderLeftColor: colors.tertiary,
+                  }}
+                  wrap={false}
+                >
+                  <Text
+                    style={{
+                      fontSize: 8.5,
+                      color: colors.secondary,
+                      textTransform: "uppercase",
+                      letterSpacing: 1.5,
+                      fontWeight: "bold",
+                      marginBottom: 6,
+                    }}
+                  >
+                    Tracked Qualitatively
+                  </Text>
+                  {data.hcahpsEnabled ? (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 4 }}>
+                      <Text style={{ fontWeight: "bold", color: colors.primaryText }}>HCAHPS / Patient Experience.</Text>{" "}
+                      Affects Value-Based Purchasing, but the causal chain to documentation is indirect and organization-specific.
+                    </Text>
+                  ) : null}
+                  {data.medErrorEnabled ? (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45 }}>
+                      <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Medication Errors.</Text>{" "}
+                      Cleaner real-time MAR documentation is associated with fewer near misses; track post-deployment via safety-event reporting.
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null}
+            </View>
           </View>
 
-          {data.hapi.enabled ? (
-            <View style={styles.driverCard} wrap={false}>
-              <View style={styles.driverHeaderRow}>
-                <Text style={styles.driverHeader}>HAPI Risk Reduction</Text>
-                <Text style={styles.driverValue}>{fmtCurrency(data.hapi.value)} (potential)</Text>
-              </View>
-              <Text style={styles.driverBody}>
-                Skin assessments captured at the point of care surface risk earlier than
-                charts reconstructed at shift end. The model isolates the
-                documentation-attributable share of preventable HAPIs.
-              </Text>
-              <MathGrid
-                rows={[
-                  { label: "Patient days/yr", value: fmtNum(data.patientDaysAnnual) },
-                  { label: "HAPI rate per 1,000 patient days", value: `${data.hapi.rate}` },
-                  { label: "Estimated HAPIs/yr", value: hapiEvents.toFixed(1) },
-                  { label: "Documentation-attributable prevention", value: `${data.hapi.preventionPct}%` },
-                  { label: "Cost per event", value: fmtCurrencyExact(data.hapi.costPerEvent) },
-                  { label: "= Potential value", value: fmtCurrency(data.hapi.value) },
-                ]}
-              />
-              <Text style={styles.driverSource}>Source: Dowding et al., JAMIA 2012.</Text>
-            </View>
-          ) : null}
-
-          {data.falls.enabled ? (
-            <View style={styles.driverCard} wrap={false}>
-              <View style={styles.driverHeaderRow}>
-                <Text style={styles.driverHeader}>Fall Risk Visibility</Text>
-                <Text style={styles.driverValue}>{fmtCurrency(data.falls.value)} (potential)</Text>
-              </View>
-              <Text style={styles.driverBody}>
-                Morse Fall Scale assessments completed in real time can make risk
-                escalations visible when they matter, rather than at shift end.
-              </Text>
-              <MathGrid
-                rows={[
-                  { label: "Patient days/yr", value: fmtNum(data.patientDaysAnnual) },
-                  { label: "Falls rate per 1,000 patient days", value: `${data.falls.rate}` },
-                  { label: "Estimated falls/yr", value: fallsEvents.toFixed(1) },
-                  { label: "Documentation-attributable prevention", value: `${data.falls.preventionPct}%` },
-                  { label: "Cost per event", value: fmtCurrencyExact(data.falls.costPerEvent) },
-                  { label: "= Potential value", value: fmtCurrency(data.falls.value) },
-                ]}
-              />
-              <Text style={styles.driverSource}>Source: AHRQ inpatient fall cost benchmarks.</Text>
-            </View>
-          ) : null}
-
-          {data.cauti.enabled ? (
-            <View style={styles.driverCard} wrap={false}>
-              <View style={styles.driverHeaderRow}>
-                <Text style={styles.driverHeader}>CAUTI Prevention</Text>
-                <Text style={styles.driverValue}>{fmtCurrency(data.cauti.value)} (potential)</Text>
-              </View>
-              <Text style={styles.driverBody}>
-                Daily catheter-necessity documentation supports earlier removal and
-                bundle adherence — the timing-driven half of CAUTI prevention.
-              </Text>
-              <MathGrid
-                rows={[
-                  { label: "Catheter utilization (% of patient days)", value: `${data.cauti.utilizationPct}%` },
-                  { label: "Cath-days/yr", value: fmtNum(cathDays) },
-                  { label: "CAUTI rate per 1,000 cath-days", value: `${data.cauti.rate}` },
-                  { label: "Estimated CAUTIs/yr", value: cautiEvents.toFixed(1) },
-                  { label: "Documentation-attributable prevention", value: `${data.cauti.preventionPct}%` },
-                  { label: "Cost per event", value: fmtCurrencyExact(data.cauti.costPerEvent) },
-                  { label: "= Potential value", value: fmtCurrency(data.cauti.value) },
-                ]}
-              />
-              <Text style={styles.driverSource}>Source: Meddings et al., JAMA Internal Medicine 2014.</Text>
-            </View>
-          ) : null}
-
-          {data.clabsi.enabled ? (
-            <View style={styles.driverCard} wrap={false}>
-              <View style={styles.driverHeaderRow}>
-                <Text style={styles.driverHeader}>CLABSI Prevention</Text>
-                <Text style={styles.driverValue}>{fmtCurrency(data.clabsi.value)} (potential)</Text>
-              </View>
-              <Text style={styles.driverBody}>
-                Timely line documentation supports bundle compliance and is associated
-                with reductions in central line bloodstream infections.
-              </Text>
-              <MathGrid
-                rows={[
-                  { label: "Line utilization (% of patient days)", value: `${data.clabsi.utilizationPct}%` },
-                  { label: "Line-days/yr", value: fmtNum(lineDays) },
-                  { label: "CLABSI rate per 1,000 line-days", value: `${data.clabsi.rate}` },
-                  { label: "Estimated CLABSIs/yr", value: clabsiEvents.toFixed(1) },
-                  { label: "Documentation-attributable prevention", value: `${data.clabsi.preventionPct}%` },
-                  { label: "Cost per event", value: fmtCurrencyExact(data.clabsi.costPerEvent) },
-                  { label: "= Potential value", value: fmtCurrency(data.clabsi.value) },
-                ]}
-              />
-              <Text style={styles.driverSource}>Source: CDC CLABSI cost-of-illness estimates.</Text>
-            </View>
-          ) : null}
-
-          {data.sepsis.enabled ? (
-            <View style={styles.driverCard} wrap={false}>
-              <View style={styles.driverHeaderRow}>
-                <Text style={styles.driverHeader}>Sepsis Bundle Compliance</Text>
-                <Text style={styles.driverValue}>{fmtCurrency(data.sepsis.value)} (potential)</Text>
-              </View>
-              <Text style={styles.driverBody}>
-                Time-stamped vitals and antibiotic documentation lift SEP-1 bundle
-                compliance. The model captures only the documentation-lag share.
-              </Text>
-              <MathGrid
-                rows={[
-                  { label: "Sepsis cases per 1,000 patient days", value: `${data.sepsis.ratePerThousand}` },
-                  { label: "Estimated cases/yr", value: sepsisCases.toFixed(1) },
-                  { label: "Non-compliant share", value: `${data.sepsis.complianceGapPct}%` },
-                  { label: "Documentation-lag share of non-compliant", value: `${data.sepsis.docLagPct}%` },
-                  { label: "Excess cost per case", value: fmtCurrencyExact(data.sepsis.excessCostPerCase) },
-                  { label: "Realization rate", value: `${data.sepsis.realizationPct}%` },
-                  { label: "= Potential value", value: fmtCurrency(data.sepsis.value) },
-                ]}
-              />
-            </View>
-          ) : null}
-
-          {/* TRACKED METRICS */}
-          {hasTrackedMetrics ? (
-            <>
-              <Text style={styles.subSectionHeader}>Tracked Metrics</Text>
-
-              {data.hcahpsEnabled ? (
-                <View style={styles.driverCard} wrap={false}>
-                  <View style={styles.driverHeaderRow}>
-                    <Text style={styles.driverHeader}>HCAHPS / Patient Experience</Text>
-                    <Text style={{ fontSize: 9.5, fontStyle: "italic", color: colors.tertiary }}>
-                      Qualitative
-                    </Text>
-                  </View>
-                  <Text style={styles.driverBody}>
-                    Patient experience scores are sensitive to nursing presence and
-                    communication — both of which can improve when nurses spend less
-                    time at the workstation. HCAHPS performance affects Value-Based
-                    Purchasing scores and thus Medicare reimbursement, but the causal
-                    chain is indirect and organization-specific, so we surface this as
-                    a tracked metric rather than a modeled dollar figure.
-                  </Text>
-                </View>
-              ) : null}
-
-              {data.medErrorEnabled ? (
-                <View style={styles.driverCard} wrap={false}>
-                  <View style={styles.driverHeaderRow}>
-                    <Text style={styles.driverHeader}>Medication Error Reduction</Text>
-                    <Text style={{ fontSize: 9.5, fontStyle: "italic", color: colors.tertiary }}>
-                      Qualitative
-                    </Text>
-                  </View>
-                  <Text style={styles.driverBody}>
-                    Cleaner real-time documentation is associated with fewer
-                    medication-related near misses and errors. Track post-deployment
-                    via your safety-event reporting system.
-                  </Text>
-                </View>
-              ) : null}
-            </>
-          ) : null}
+          <HeroSubtotal
+            label="Quality Subtotal (Potential)"
+            total={data.qualityTotal > 0 ? fmtCurrency(data.qualityTotal) : "Tracked"}
+            caption="Validate baseline rates with your infection-control and quality teams before presenting."
+          />
 
           <PageFooter orgName={orgName} />
         </View>
@@ -1201,9 +1347,47 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </View>
           )}
 
-          <View style={[styles.redBorderCallout, { marginBottom: 14 }]}>
-            <Text style={{ fontSize: 10.5, color: colors.primaryText, lineHeight: 1.5 }}>
-              {`Under the modeled assumptions, by Year 3 the program projects ${cumulativeMultiple.toFixed(1)}× cumulative net for every $1 invested — alongside more time at the bedside and less end-of-shift charting for nursing staff.`}
+          {/* Cumulative-multiple HERO. Replaces a small redBorderCallout
+              that buried the punchline in body copy. Eyebrow / number /
+              footnote stack — three separate Text nodes — so the multiple
+              can stand at 36pt without wrapping. This is the page's
+              takeaway and should land like one. */}
+          <View
+            style={{
+              backgroundColor: colors.cards,
+              borderRadius: 4,
+              paddingHorizontal: 18,
+              paddingVertical: 18,
+              marginBottom: 14,
+            }}
+            wrap={false}
+          >
+            <Text
+              style={{
+                fontSize: 8.5,
+                color: colors.secondary,
+                textTransform: "uppercase",
+                letterSpacing: 2.5,
+                fontWeight: "bold",
+                marginBottom: 8,
+              }}
+            >
+              By Year 3, For Every $1 Invested
+            </Text>
+            <Text
+              style={{
+                fontSize: 36,
+                fontWeight: "bold",
+                color: colors.primary,
+                lineHeight: 1.0,
+                marginBottom: 10,
+              }}
+            >
+              {`${cumulativeMultiple.toFixed(1)}×`}
+            </Text>
+            <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>
+              Cumulative net under the modeled assumptions — alongside more time at
+              the bedside and less end-of-shift charting for nursing staff.
             </Text>
           </View>
 
