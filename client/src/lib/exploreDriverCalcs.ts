@@ -55,11 +55,6 @@ const IP_CDI_SCENARIOS: Record<string, number> = {
   typical: 25,
   aggressive: 35,
 };
-const IP_EM_CODING_GAP_SCENARIOS: Record<string, number> = {
-  conservative: 8,
-  typical: 12,
-  optimistic: 18,
-};
 
 const wrvuScenariosFor = (isED: boolean): Record<string, number> =>
   isED
@@ -225,20 +220,6 @@ export function computeAllDriverValues(
       dq.ipObsDefenseClaimValue *
       (dq.ipObsDefenseDocContribution / 100);
     result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));
-  }
-  if (isIP && dq.ipEmCodingEnabled) {
-    const losVal = (state as any).ipAvgLengthOfStay ?? 4.5;
-    const progressPerAdm = Math.max(losVal - 2, 1);
-    const totalCharges =
-      eligibleEncounters *
-      (1 + progressPerAdm + dq.ipEmCodingConsultsPerAdmission);
-    const gapPct = (IP_EM_CODING_GAP_SCENARIOS[dq.ipEmCodingGapScenario] ?? 12) / 100;
-    result.emCodingAccuracy = Math.round(
-      totalCharges *
-        gapPct *
-        dq.ipEmCodingAvgRevenueLift *
-        (dq.ipEmCodingRealization / 100),
-    );
   }
 
   // ─── Quality (Nursing only quantified) ───
@@ -413,16 +394,6 @@ export function computeAllDriverCalcSummaries(
   }
   if (isIP && dq.ipObsDefenseEnabled) {
     out.obsDefense = `${fmtN(eligibleEncounters)} encounters × ${dq.ipObsDefenseDenialRate}% denial × ${fmt$(dq.ipObsDefenseClaimValue)}/claim × ${dq.ipObsDefenseDocContribution}% doc contribution × ${dq.ipObsDefenseRealization}% realization`;
-  }
-  if (isIP && dq.ipEmCodingEnabled) {
-    const losVal = (state as any).ipAvgLengthOfStay ?? 4.5;
-    const progressPerAdm = Math.max(losVal - 2, 1);
-    const totalCharges = Math.round(
-      eligibleEncounters *
-        (1 + progressPerAdm + dq.ipEmCodingConsultsPerAdmission),
-    );
-    const gapPct = IP_EM_CODING_GAP_SCENARIOS[dq.ipEmCodingGapScenario] ?? 12;
-    out.emCodingAccuracy = `${fmtN(totalCharges)} charges × ${gapPct}% gap × ${fmt$(dq.ipEmCodingAvgRevenueLift)}/charge lift × ${dq.ipEmCodingRealization}% realization`;
   }
 
   // Quality (Nursing only quantified) — derive every multiplicand from the

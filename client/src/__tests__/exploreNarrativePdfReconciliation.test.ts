@@ -133,7 +133,6 @@ const ipBase: ExploreState = {
   numberOfProviders: 25,
   annualEncounters: 12_000,
   utilizationPercent: 100,
-  ipAvgLengthOfStay: 4.5,
 };
 
 const TOTAL_HOURS_SAVED = 50 * 4 * 48; // 4 hrs / provider / wk × 48 wks
@@ -450,26 +449,6 @@ describe("Explore OP/ED/IP PDF reconciliation — engine math vs. printed formul
       assertReconciles("obsDefense", values.obsDefense, summaries.obsDefense);
     });
 
-    it("Revenue / emCodingAccuracy: printed multiplicands reconcile to engine value", () => {
-      const state: ExploreState = {
-        ...ipBase,
-        docQualityInputs: {
-          ...ipBase.docQualityInputs,
-          ipEmCodingEnabled: true,
-          ipEmCodingGapScenario: "typical",
-          ipEmCodingAvgRevenueLift: 50,
-          ipEmCodingRealization: 40,
-          ipEmCodingConsultsPerAdmission: 1.0,
-        },
-      };
-      const values = computeAllDriverValues(state, TOTAL_HOURS_SAVED);
-      const summaries = computeAllDriverCalcSummaries(state, TOTAL_HOURS_SAVED);
-      assertReconciles(
-        "emCodingAccuracy",
-        values.emCodingAccuracy,
-        summaries.emCodingAccuracy,
-      );
-    });
   });
 
   // ── Drift detection sanity check ─────────────────────────────────────

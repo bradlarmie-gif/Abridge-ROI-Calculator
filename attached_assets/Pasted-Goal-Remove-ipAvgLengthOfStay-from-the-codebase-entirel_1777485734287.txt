@@ -1,0 +1,39 @@
+Goal: Remove ipAvgLengthOfStay from the codebase entirely. The "Average Length of Stay" input on the inpatient Opportunity screen, the state field, the default, and all consumers should be deleted.        
+                                                                                                                                                                                                               
+  Context: E/M Coding has already been removed from the inpatient flow in a prior change. ipAvgLengthOfStay was only ever consumed by E/M coding code paths. Now that E/M is gone, ipAvgLengthOfStay is dead   
+  state — the field is collected from the user but never read or used in any calculation. We are removing it cleanly.                                                                                          
+                                                                                                                                                                                                               
+  Scope rules:                                           
+  - Remove ipAvgLengthOfStay everywhere it appears in the codebase
+  - Do NOT touch unrelated lengthOfStay references (these are different fields and must stay):                                                                                                                 
+    • client/src/lib/inpatient-pdf-generator.tsx line 87 — timeAllocation.lengthOfStay PERCENTAGE field, unrelated                                                                                             
+    • client/src/lib/inpatient-pdf-generator.tsx line 878 — "Length of Stay" benefit narrative driven by losReductionHours, unrelated                                                                          
+    • client/src/lib/measureCareSettings.ts, measureCalculator.ts, measureUrlState.ts — Measure flow has its own LOS metric tracking, unrelated                                                                
+    • client/src/pages/measure/MeasureOpportunity.tsx, MeasureAllocate.tsx — Measure flow ALOS handling, unrelated                                                                                             
+                                                                                                                                                                                                               
+  Files to modify:                                                                                                                                                                                             
+                                                                                                                                                                                                               
+  1. client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                                  
+     - Remove the ipAvgLengthOfStay field from the state TypeScript interface (around line 426)
+     - Remove the ipAvgLengthOfStay default value (around line 477)                                                                                                                                            
+     - If any E/M removal left a stale reference to ipAvgLengthOfStay anywhere in this file, remove it
+                                                                                                                                                                                                               
+  2. client/src/pages/explore/ExploreOpportunity.tsx (around lines 439–440)
+     - Remove the entire input UI block for "Average Length of Stay" — the field, label, helper text, and any surrounding container/grid wrapper that becomes empty                                            
+     - If removing the LOS input leaves an orphaned section header or two-column grid with one empty cell, restructure to keep the screen visually balanced                                                    
+                                                                                                                                                                                                               
+  3. client/src/__tests__/exploreNarrativePdfReconciliation.test.ts                                                                                                                                            
+     - Remove ipAvgLengthOfStay from the test fixture state (line 136)                                                                                                                                         
+                                                                                                                                                                                                               
+  4. Any other file in client/src that still references ipAvgLengthOfStay                                                                                                                                      
+     - Run a full grep across client/src and remove every remaining reference                                                                                                                                  
+     - These should all be leftovers from incomplete E/M removal                                                                                                                                               
+                                                         
+  Acceptance criteria:                                                                                                                                                                                         
+  1. npm run typecheck passes with zero new errors       
+  2. npm run test passes (with updated fixture)                                                                                                                                                                
+  3. The inpatient Opportunity screen no longer asks for Average Length of Stay                                                                                                                                
+  4. The wizard still flows correctly through Opportunity → next phase without errors
+  5. The Opportunity screen layout remains visually balanced after the input is removed                                                                                                                        
+  6. grep -r "ipAvgLengthOfStay" client/src returns zero matches                                                                                                                                               
+  7. No dead imports, unused variables, or orphaned constants remain after removal         

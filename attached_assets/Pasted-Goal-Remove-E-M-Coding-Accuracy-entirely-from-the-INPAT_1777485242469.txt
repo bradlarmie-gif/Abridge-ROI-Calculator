@@ -1,0 +1,73 @@
+Goal: Remove E/M Coding Accuracy entirely from the INPATIENT flow only. Keep all outpatient E/M coding logic intact and untouched.
+                                                                                                                                                                                                               
+  Context: E/M coding has been part of the inpatient revenue drivers but the math relies on an undocumented LOS-based assumption that doesn't hold up under hospital scrutiny. We are removing it cleanly. The 
+  remaining inpatient revenue drivers are: DRG/CMI Accuracy, CDI Query Reduction, Obs/IP Status Defense, plus Hospitalist Retention (workforce) and Rounding Efficiency (capacity, time-only). DNFB stays as   
+  narrative-only on the methodology page.                                                                                                                                                                      
+                                                         
+  Scope: Find and delete every reference to inpatient E/M coding across the codebase. Keep outpatient E/M coding completely untouched. If a file or component is shared between inpatient and outpatient (e.g.,
+   EmCodingCalc.tsx), only remove the inpatient code paths and inpatient-specific props/branches — do not delete the file or remove the outpatient logic.
+                                                                                                                                                                                                               
+  Files to audit and modify (search the codebase for any others that reference these names):                                                                                                                   
+  
+  1. client/src/pages/explore/ExploreFlow.tsx                                                                                                                                                                  
+     - Remove state variables: ipEmCodingEnabled, ipEmCodingScenario, ipEmCodingGapScenario, ipEmCodingAvgRevenueLift, ipEmCodingConsultsPerAdmission, ipEmCodingRealization, and any related ipEmCoding*
+  fields                                                                                                                                                                                                       
+     - Remove their default values
+     - Remove their TypeScript type declarations in the state interface                                                                                                                                        
+                                                                                                                                                                                                               
+  2. client/src/lib/exploreDriverCalcs.ts (around lines 229–241 and any other ipEmCoding block)                                                                                                                
+     - Remove the entire E/M coding calculation block for inpatient                                                                                                                                            
+     - Remove the IP_EM_CODING_GAP_SCENARIOS constant if defined                                                                                                                                               
+     - Remove the progressPerAdmission = max(losVal - 2, 1) logic if it only feeds E/M                                                                                                                         
+                                                                                                                                                                                                               
+  3. client/src/lib/exploreDrivers.ts                                                                                                                                                                          
+     - Remove any inpatient E/M coding driver entries from the drivers list/registry                                                                                                                           
+                                                                                                                                                                                                               
+  4. client/src/components/explore/drivers/EmCodingCalc.tsx                                                                                                                                                    
+     - If this component is inpatient-only, delete the file                                                                                                                                                    
+     - If it's shared with outpatient, remove the inpatient branch/props only and keep outpatient intact                                                                                                       
+                                                                                                                                                                                                               
+  5. client/src/pages/explore/ExploreRevenue.tsx (or wherever the inpatient revenue wizard screen lives)                                                                                                       
+     - Remove the E/M coding section, toggle, inputs, scenario selector, and any UI block specific to inpatient E/M                                                                                            
+     - Keep DRG, CDI, and Obs/IP Defense sections fully intact                                                                                                                                                 
+                                                                                                                                                                                                               
+  6. client/src/pages/explore/ExploreModel.tsx                                                                                                                                                                 
+     - Remove any inpatient E/M references in the model phase / aggregation logic                                                                                                                              
+     - Confirm the Revenue total still sums correctly from DRG + CDI + Obs/IP only                                                                                                                             
+                                                                                                                                                                                                               
+  7. client/src/components/SummaryCommandCenter.tsx                                                                                                                                                            
+     - Remove the inpatientEmCoding → "E/M Coding Accuracy" mapping (around line 115–119 area)                                                                                                                 
+                                                                                                                                                                                                               
+  8. client/src/lib/inpatient-pdf-data-transformer.ts
+     - Remove any E/M coding driver from the inpatient PDF data shape and computation                                                                                                                          
+                                                                                                                                                                                                               
+  9. client/src/components/inpatient-pdf-generator.tsx
+     - Remove any E/M coding row, label, or rendering block from the inpatient PDF output                                                                                                                      
+                                                                                                                                                                                                               
+  10. client/src/pages/methodology/MethodologyInpatient.tsx                                                                                                                                                    
+      - Search for any E/M references in overviewCards, domainDetails, "What Goes Into the Number" table, or "The Assumptions" table                                                                           
+      - Remove inpatient E/M entries if present (do not touch outpatient methodology)                                                                                                                          
+                                                                                                                                                                                                               
+  11. client/src/__tests__/ (and any other test directories)                                                                                                                                                   
+      - Remove or update any inpatient E/M-specific test cases                                                                                                                                                 
+      - Update fixtures that include ipEmCoding* fields                                                                                                                                                        
+      - Confirm exploreNarrativePdfReconciliation.test.ts still passes after removal                                                                                                                           
+                                                                                                                                                                                                               
+  Constraints:                                                                                                                                                                                                 
+  - Do NOT remove ipAvgLengthOfStay from state — it may still be used elsewhere as a baseline. Verify by grepping; if E/M was its only consumer, then yes remove it. Otherwise keep it.                        
+  - Do NOT touch any outpatient (op*) or ED (ed*) E/M coding logic.                                                                                                                                            
+  - Do NOT modify DRG, CDI, Obs/IP Defense, Retention, or Rounding drivers.                                                                                                                                    
+  - Do NOT modify the calculation engine for any other driver.                                                                                                                                                 
+                                                                                                                                                                                                               
+  Acceptance criteria:                                                                                                                                                                                         
+  1. npm run typecheck passes with zero new errors                                                                                                                                                             
+  2. npm run test passes (update tests as needed; do not skip)                                                                                                                                                 
+  3. The inpatient Explore wizard no longer shows an E/M coding toggle, slider, or input anywhere                                                                                                              
+  4. The inpatient model results screen no longer shows an E/M coding line                                                                                                                                     
+  5. The inpatient PDF export no longer shows an E/M coding row                                                                                                                                                
+  6. The methodology page no longer references inpatient E/M                                                                                                                                                   
+  7. The Revenue domain on the inpatient methodology page now contains exactly: DRG/CMI (Demonstrated), Concurrent Review & Denial Prevention (Emerging), DNFB (Strategic, narrative-only)                     
+  8. Outpatient E/M coding still works exactly as before — verify by toggling it on in an outpatient scenario and confirming the dollar value computes                                                         
+  9. No dead imports, unused variables, or orphaned constants remain after removal                                                                                                                             
+                                                                                                                                                                                                               
+  Verification: npm run typecheck && npm run test && npm run dev, then walk the inpatient Explore flow end to end and confirm E/M is gone everywhere.         

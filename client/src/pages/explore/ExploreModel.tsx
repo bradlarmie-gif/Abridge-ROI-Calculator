@@ -268,17 +268,6 @@ export default function ExploreModel({
     return Math.round(gross * (docQualityInputs.ipObsDefenseRealization / 100));
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
-  const ipEmCodingValue = useMemo(() => {
-    if (!isInpatient || !docQualityInputs.ipEmCodingEnabled) return 0;
-    const los = state.ipAvgLengthOfStay ?? 4.5;
-    const progressPerAdmission = Math.max(los - 2, 1);
-    const totalCharges = eligibleEncounters * (1 + progressPerAdmission + docQualityInputs.ipEmCodingConsultsPerAdmission);
-    const gapScenarios: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };
-    const gapPct = (gapScenarios[docQualityInputs.ipEmCodingGapScenario] ?? 12) / 100;
-    const grossValue = totalCharges * gapPct * docQualityInputs.ipEmCodingAvgRevenueLift;
-    return Math.round(grossValue * (docQualityInputs.ipEmCodingRealization / 100));
-  }, [isInpatient, eligibleEncounters, docQualityInputs, state.ipAvgLengthOfStay]);
-
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (isED
         ? (totalHoursSaved * ((timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) / 100) / state.numberOfProviders / 48)

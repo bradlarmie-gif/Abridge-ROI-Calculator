@@ -149,15 +149,6 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
     const gross = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100) * dq.ipObsDefenseClaimValue * (dq.ipObsDefenseDocContribution / 100);
     result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));
   }
-  if (isIP && dq.ipEmCodingEnabled) {
-    const losVal = state.ipAvgLengthOfStay ?? 4.5;
-    const progressPerAdm = Math.max(losVal - 2, 1);
-    const totalCharges = eligibleEncounters * (1 + progressPerAdm + dq.ipEmCodingConsultsPerAdmission);
-    const gapMap: Record<string, number> = { conservative: 8, typical: 12, optimistic: 18 };
-    const gapPct = (gapMap[dq.ipEmCodingGapScenario] ?? 12) / 100;
-    const gross = totalCharges * gapPct * dq.ipEmCodingAvgRevenueLift;
-    result.emCodingAccuracy = Math.round(gross * (dq.ipEmCodingRealization / 100));
-  }
 
   return buildResult(result, benefitsForQuadrant(state, 'Revenue'));
 }

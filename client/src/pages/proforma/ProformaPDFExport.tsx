@@ -225,7 +225,6 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   } else if (cs === "inpatient") {
     if (d.ipDrgEnabled) lines.push(`DRG: ${d.ipDrgScenario} scenario \u00B7 ${d.ipDrgRealization}% realization`);
     if (d.ipCdiEnabled) lines.push(`CDI: ${d.ipCdiScenario} scenario \u00B7 ${d.ipCdiQueryRate}% query rate`);
-    if ((d as any).ipEmCodingEnabled) lines.push(`E/M Coding: ${(d as any).ipEmCodingGapScenario ?? 'typical'} scenario \u00B7 ${(d as any).ipEmCodingRealization ?? 40}% realization`);
   } else if (cs === "nursing") {
     if (t.nursingOtEnabled) lines.push(`OT: ${t.nursingOtReductionPercent}% reduction \u00B7 $${t.nursingOtHourlyRate}/hr`);
     if (t.nursingRetentionEnabled) lines.push(`Retention: ${t.nursingTurnoverRate}% turnover \u00B7 $${(t.nursingReplacementCost ?? 0).toLocaleString()} replacement`);
@@ -358,20 +357,6 @@ function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSna
       return [
         `${eligibleEnc.toLocaleString()} enc \u00D7 ${d.ipCdiQueryRate}% query rate \u00D7 ${reductionRate}% reduced`,
         `\u00D7 $${d.ipCdiCostPerQuery}/query \u00D7 ${d.ipCdiRealization ?? 75}% realization = ${fmtK(driver.value)}/year`,
-      ];
-    }
-    case "ipEmCoding": {
-      const gapPct = (d as any).ipEmCodingGapScenario === 'conservative' ? 8 : (d as any).ipEmCodingGapScenario === 'optimistic' ? 18 : 12;
-      const los = (s as any).ipAvgLengthOfStay ?? 4.5;
-      const progressPerAdm = Math.max(los - 2, 1);
-      const consultsPerAdm = (d as any).ipEmCodingConsultsPerAdmission ?? 1;
-      const totalCharges = Math.round(eligibleEnc * (1 + progressPerAdm + consultsPerAdm));
-      const avgLift = (d as any).ipEmCodingAvgRevenueLift ?? 50;
-      const realization = (d as any).ipEmCodingRealization ?? 40;
-      return [
-        `${eligibleEnc.toLocaleString()} admissions \u00D7 (1 H&P + ${progressPerAdm.toFixed(1)} progress + ${consultsPerAdm} consults) = ${totalCharges.toLocaleString()} charges`,
-        `\u00D7 ${gapPct}% coding gap \u00D7 $${avgLift}/charge \u00D7 ${realization}% realization`,
-        `= ${fmtK(driver.value)}/year`,
       ];
     }
     case "costReduction":
