@@ -281,7 +281,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'opDiagnosisCaptureEnabled',
     expandedStateKey: 'opDiagnosisCaptureExpanded',
   },
-  // ED Quality (qualitative — 3 drivers; R-ED-1: Provider Communication → Admission Hand-Off Completeness)
+  // ED Quality (qualitative — 3 drivers; R-ED-1: Provider Communication → Admission Hand-Off Completeness; deduped: legacy edPressGaney removed in favor of richer edPatientExperience)
   {
     id: 'edNoteStarRating',
     label: 'ED Note Quality (Star Rating)',
@@ -292,17 +292,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'qualitative',
     enabledStateKey: 'edNoteStarRatingEnabled',
     expandedStateKey: 'edNoteStarRatingExpanded',
-  },
-  {
-    id: 'edPressGaney',
-    label: 'Patient Experience (Press Ganey)',
-    shortDescription: 'More attentive face-time during the encounter lifts patient experience scores.',
-    tagline: 'Patient experience scores tied to face-time during the encounter',
-    quadrant: 'Quality',
-    settings: ['ed'],
-    visibility: 'qualitative',
-    enabledStateKey: 'edPressGaneyEnabled',
-    expandedStateKey: 'edPressGaneyExpanded',
   },
   {
     id: 'edAdmissionHandoff',

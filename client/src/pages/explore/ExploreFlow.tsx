@@ -183,8 +183,6 @@ export interface TimeDriverInputs {
   // ED qualitative Quality drivers (3 — expanded by R-IA-4)
   edNoteStarRatingEnabled: boolean;
   edNoteStarRatingExpanded: boolean;
-  edPressGaneyEnabled: boolean;
-  edPressGaneyExpanded: boolean;
   edProviderCommunicationEnabled: boolean;
   edProviderCommunicationExpanded: boolean;
   // IP qualitative Quality drivers (legacy state vars retained for compatibility)
@@ -591,8 +589,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     opDiagnosisCaptureExpanded: false,
     edNoteStarRatingEnabled: false,
     edNoteStarRatingExpanded: false,
-    edPressGaneyEnabled: false,
-    edPressGaneyExpanded: false,
     edProviderCommunicationEnabled: false,
     edProviderCommunicationExpanded: false,
     ipHcahpsCompositeEnabled: false,
