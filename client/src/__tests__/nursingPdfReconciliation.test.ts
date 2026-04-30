@@ -135,6 +135,31 @@ describe("Nursing PDF reconciliation — engine math vs. printed formula", () =>
     expect(r.value).toBe(0);
   });
 
+  // Parse multiplicands left-to-right (mirrors how a reader scans the
+  // formula). Each "×"-separated token contributes its first numeric
+  // value, with "$X" treated as a dollar amount and "X%" as X/100.
+  const productOfPrintedFormula = (summary: string): number => {
+    const tokens = summary.split("×").map((t) => t.trim());
+    let printed = 1;
+    for (const token of tokens) {
+      const dollarMatch = token.match(/\$([\d,]+(?:\.\d+)?)/);
+      const percentMatch = token.match(/(-?[\d,]+(?:\.\d+)?)\s*%/);
+      const bareMatch = token.match(/(-?[\d,]+(?:\.\d+)?)/);
+      let factor: number;
+      if (dollarMatch) {
+        factor = Number(dollarMatch[1].replace(/,/g, ""));
+      } else if (percentMatch) {
+        factor = Number(percentMatch[1].replace(/,/g, "")) / 100;
+      } else if (bareMatch) {
+        factor = Number(bareMatch[1].replace(/,/g, ""));
+      } else {
+        throw new Error(`could not parse multiplicand from token "${token}"`);
+      }
+      printed *= factor;
+    }
+    return printed;
+  };
+
   it("nursingAgency: printed multiplicands reconcile to engine value (low retained nurses)", () => {
     // Construct a deliberately small "retained nurses" scenario so the
     // sub-total rounds aggressively (e.g. 0.16 → "0.2") under the old
@@ -164,29 +189,66 @@ describe("Nursing PDF reconciliation — engine math vs. printed formula", () =>
     const summary = summaries.nursingAgency ?? "";
     expect(summary).not.toMatch(/retained\b/);
 
-    // Parse multiplicands left-to-right (mirrors how a reader scans the
-    // formula). Each "×"-separated token contributes its first numeric
-    // value, with "$X" treated as a dollar amount and "X%" as X/100.
-    const tokens = summary.split("×").map((t) => t.trim());
-    let printed = 1;
-    for (const token of tokens) {
-      const dollarMatch = token.match(/\$([\d,]+(?:\.\d+)?)/);
-      const percentMatch = token.match(/(-?[\d,]+(?:\.\d+)?)\s*%/);
-      const bareMatch = token.match(/(-?[\d,]+(?:\.\d+)?)/);
-      let factor: number;
-      if (dollarMatch) {
-        factor = Number(dollarMatch[1].replace(/,/g, ""));
-      } else if (percentMatch) {
-        factor = Number(percentMatch[1].replace(/,/g, "")) / 100;
-      } else if (bareMatch) {
-        factor = Number(bareMatch[1].replace(/,/g, ""));
-      } else {
-        throw new Error(`could not parse multiplicand from token "${token}"`);
-      }
-      printed *= factor;
-    }
-
+    const printed = productOfPrintedFormula(summary);
     const engineValue = values.nursingAgency ?? 0;
+    const tol = Math.max(5, Math.abs(engineValue) * 0.005);
+    expect(Math.abs(printed - engineValue)).toBeLessThanOrEqual(tol);
+  });
+
+  it("nursingRetention: printed multiplicands reconcile to engine value", () => {
+    // Same low-headcount scenario as the nursingAgency case so that any
+    // future "retained nurses" rounding regression in the printed formula
+    // (e.g. 0.16 → "0.2") would inflate the printed product noticeably
+    // versus the engine's unrounded retained × replacement product.
+    const state: ExploreState = {
+      ...DEFAULT_EXPLORE_STATE,
+      careSetting: "nursing",
+      numberOfProviders: 4,
+      timeDriverInputs: {
+        ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+        nursingRetentionEnabled: true,
+        nursingTurnoverRate: 10,
+        retentionImpactScenario: "typical", // 15% nursing impact
+        nursingReplacementCost: 60_000,
+      },
+    };
+
+    const values = computeAllDriverValues(state, 0);
+    const summaries = computeAllDriverCalcSummaries(state, 0);
+
+    const summary = summaries.nursingRetention ?? "";
+    expect(summary).not.toMatch(/retained\b/);
+
+    const printed = productOfPrintedFormula(summary);
+    const engineValue = values.nursingRetention ?? 0;
+    const tol = Math.max(5, Math.abs(engineValue) * 0.005);
+    expect(Math.abs(printed - engineValue)).toBeLessThanOrEqual(tol);
+  });
+
+  it("nursingOvertime: printed multiplicands reconcile to engine value", () => {
+    // A representative inpatient-nursing OT scenario. Uses a fractional
+    // OT-hours-per-nurse-week input (1.5) to ensure the printed token
+    // preserves the decimal — any silent integer rounding would diverge
+    // from the engine product by 33%.
+    const state: ExploreState = {
+      ...DEFAULT_EXPLORE_STATE,
+      careSetting: "nursing",
+      numberOfProviders: 120,
+      timeDriverInputs: {
+        ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+        nursingOtEnabled: true,
+        nursingOtHoursPerNurseWeek: 1.5,
+        nursingOtReductionPercent: 40,
+        nursingOtHourlyRate: 75,
+      },
+    };
+
+    const values = computeAllDriverValues(state, 0);
+    const summaries = computeAllDriverCalcSummaries(state, 0);
+
+    const summary = summaries.nursingOvertime ?? "";
+    const printed = productOfPrintedFormula(summary);
+    const engineValue = values.nursingOvertime ?? 0;
     const tol = Math.max(5, Math.abs(engineValue) * 0.005);
     expect(Math.abs(printed - engineValue)).toBeLessThanOrEqual(tol);
   });
