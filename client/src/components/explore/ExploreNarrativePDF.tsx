@@ -15,17 +15,25 @@ import type {
   ExplorePDFData,
   ExploreCareSetting,
   ExplorePDFQuadrantData,
-  ExplorePDFQuadrantDriver,
-  ExplorePDFOtherBenefit,
 } from "./ExplorePDFExport";
 
 Font.registerHyphenationCallback((word) => [word]);
 
+// Italic variants point at the same TTFs as the upright weights — react-pdf
+// synthesizes the slant from the upright glyphs (faux italic). Without these
+// explicit entries, any `fontStyle: "italic"` span (the inline italic formula
+// tail in CompactDriverCard, the "Tracked"/"Tracked separately" tags) throws
+// "Could not resolve font" when rendered server-side and silently falls back
+// to a system sans-serif in some browser versions. Mirrors the Nursing PDF
+// registration block — see pdf_layout_guidelines.md §9 (italic font
+// registration).
 Font.register({
   family: "Manrope",
   fonts: [
     { src: manropeRegular, fontWeight: 400 },
     { src: manropeBold, fontWeight: 700 },
+    { src: manropeRegular, fontWeight: 400, fontStyle: "italic" },
+    { src: manropeBold, fontWeight: 700, fontStyle: "italic" },
   ],
 });
 
@@ -44,7 +52,6 @@ const colors = {
   separatorHeavy: "#E5DCD0",
   footerRule: "#DDD5C8",
   footerMeta: "#5C5751",
-  footerMetaSoft: "#8F8A82",
 };
 
 const styles = StyleSheet.create({
@@ -113,43 +120,15 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 8,
   },
-  driverCard: {
-    backgroundColor: colors.cards,
-    padding: 12,
-    borderRadius: 4,
-    marginBottom: 10,
-  },
-  driverHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 6,
-  },
-  driverHeader: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.primaryText,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    flex: 1,
-  },
-  driverValue: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: colors.primary,
-  },
-  driverBody: {
-    fontSize: 9.5,
-    color: colors.secondary,
-    lineHeight: 1.45,
-    marginBottom: 4,
-  },
-  driverCalc: {
-    fontSize: 8.5,
-    fontStyle: "italic",
-    color: colors.tertiary,
-    marginTop: 2,
-  },
+  // The previous `driverCard` / `driverHeaderRow` / `driverHeader` /
+  // `driverValue` / `driverBody` / `driverCalc` style block belonged to the
+  // tall spreadsheet-style cards (≈220pt) that powered the original
+  // QuantifiedDriverCard / QualitativeDriverCard / BenefitCard helpers.
+  // Those helpers were collapsed into the inline-styled CompactDriverCard
+  // (see below) to match the Nursing PDF's executive-document rhythm and
+  // to fit 4–6 drivers per quadrant page without orphaning. The styles
+  // were deleted with the helpers — keeping dead StyleSheet entries was
+  // forbidden by pdf_layout_guidelines.md §9 ("Dead helper components").
   redBorderCallout: {
     backgroundColor: colors.cards,
     padding: 14,
@@ -158,23 +137,31 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary,
     marginBottom: 10,
   },
-  // Footer mirrors the Nursing PDF's executive-document chrome:
-  //   • Left: rendered Abridge wordmark image (NOT lowercase text — the brand
-  //     mark must read as a logo, not as un-capitalized prose).
-  //   • Center: small-caps `ORG · DOCUMENT TITLE` with the org bolded.
-  //   • Right: `Page X / Y` with the numerals bolded.
-  // bottom: 28 matches NursingValueAssessmentPDF and pdf_layout_guidelines.md §1.
+  // Footer mirrors the Nursing PDF's executive-document chrome with the same
+  // 3-slot geometry codified in pdf_layout_guidelines.md §1a:
+  //   • footerLeft  (width: 90, fixed)  — Abridge wordmark image
+  //   • footerCenter (flex: 1, padded)  — org name only, numberOfLines: 1
+  //   • footerRight (width: 90, fixed)  — `Page X / Y`
+  // The center slot is JUST the org name — never glued to a document-title
+  // suffix. Unbounded text in a flex row physically overflows into the
+  // adjacent slot when the org name is long, producing the
+  // "ORGNAMEPAGE 4/7" glyph collision the Nursing PDF originally shipped
+  // and that this contract exists to prevent.
   footer: {
     position: "absolute",
     bottom: 28,
     left: 54,
     right: 54,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: colors.footerRule,
+  },
+  footerLeft: {
+    width: 90,
+    flexDirection: "row",
+    alignItems: "center",
   },
   footerLogo: {
     width: 56,
@@ -182,23 +169,25 @@ const styles = StyleSheet.create({
     objectFit: "contain",
   },
   footerCenter: {
+    flex: 1,
     fontSize: 7.5,
     color: colors.footerMeta,
     letterSpacing: 1.1,
     textTransform: "uppercase",
+    textAlign: "center",
+    paddingHorizontal: 8,
   },
   footerCenterOrg: {
     fontWeight: "bold",
     color: colors.primaryText,
   },
-  footerCenterDot: {
-    color: colors.footerMetaSoft,
-  },
   footerRight: {
+    width: 90,
     fontSize: 7.5,
     color: colors.footerMeta,
     letterSpacing: 1.1,
     textTransform: "uppercase",
+    textAlign: "right",
   },
   footerRightNum: {
     color: colors.primaryText,
@@ -225,12 +214,6 @@ const settingShortLabel: Record<Exclude<ExploreCareSetting, "nursing">, string> 
   outpatient: "Outpatient",
   ed: "Emergency Department",
   inpatient: "Inpatient",
-};
-
-const settingFooterLabel: Record<Exclude<ExploreCareSetting, "nursing">, string> = {
-  outpatient: "Outpatient Value Assessment",
-  ed: "ED Value Assessment",
-  inpatient: "Inpatient Value Assessment",
 };
 
 const settingThesisHeadline: Record<Exclude<ExploreCareSetting, "nursing">, string> = {
@@ -349,25 +332,34 @@ const buildChoicesReveal = (
 // ───────────────────────── Reusable components ─────────────────────────
 
 // PageFooter mirrors NursingValueAssessmentPDF.tsx — Bloomberg/McKinsey
-// executive-document chrome:
-//   • Left: rendered Abridge wordmark image (NOT lowercase text — the brand
-//     mark must read as a logo, not as un-capitalized prose).
-//   • Center: small-caps `ORG · DOCUMENT TITLE` with the org name bolded
-//     in near-black so it anchors the line.
-//   • Right: small-caps `Page X / Y` with the numerals bolded.
-const PageFooter = ({
-  orgName,
-  setting,
-}: {
-  orgName: string;
-  setting: Exclude<ExploreCareSetting, "nursing">;
-}) => (
+// executive-document chrome with the 3-slot geometry codified in
+// pdf_layout_guidelines.md §1a:
+//   • Left  (width: 90, fixed)  — Abridge wordmark image
+//   • Center (flex: 1, padded)  — org name only, single-line, never glued
+//     to a document-title suffix
+//   • Right (width: 90, fixed)  — `Page X / Y`
+// The center text used to be `ORG · DOCUMENT TITLE`. The suffix was removed
+// because every page already carries a SectionLabel naming the section, and
+// the suffix was the long-string that overflowed into the right slot in the
+// shipped Nursing PDF bug ("ASSESSPAMGEENT 1/10"). We now refuse the
+// suffix structurally — even on short org names — so the bug class cannot
+// recur regardless of input.
+const PageFooter = ({ orgName }: { orgName: string }) => (
   <View style={styles.footer} fixed>
-    <Image src={abridgeWordmark} style={styles.footerLogo} />
-    <Text style={styles.footerCenter}>
+    <View style={styles.footerLeft}>
+      <Image src={abridgeWordmark} style={styles.footerLogo} />
+    </View>
+    {/*
+      `wrap={false}` + the parent slot's `flex: 1` means an unusually long
+      org name is clipped at the slot boundary instead of wrapping
+      vertically (which would push the footer off its 23pt height
+      contract) or growing into the right "PAGE X / Y" slot (the shipped
+      collision bug). This is the geometric belt-and-braces; the snapshot
+      test asserts the structural part (no document-title suffix glued
+      onto the org name).
+    */}
+    <Text style={styles.footerCenter} wrap={false}>
       <Text style={styles.footerCenterOrg}>{orgName}</Text>
-      <Text style={styles.footerCenterDot}>{"   ·   "}</Text>
-      {settingFooterLabel[setting]}
     </Text>
     {/* Subtract 1 to skip the unnumbered cover page (currently always page 1). */}
     <Text
@@ -457,70 +449,81 @@ const QuadrantThesisCard = ({
   </View>
 );
 
-// Wraps a calcSummary string into label/value rows where possible.
-// calcSummary often arrives like "FTEs 250 × Turnover 18% × Replacement $400K = $1.2M".
-// To stay safe, we render the raw string in a single-row card if no obvious "=" split.
-const CalcCallout = ({ calcSummary }: { calcSummary: string }) => (
+// CompactDriverCard mirrors the dense executive-style card the Nursing PDF
+// canonized in pdf_layout_guidelines.md §9. The original tall
+// "header + body + bordered CalcCallout" cards (≈220pt each) caused two
+// compounding problems on the OP/ED/IP quadrant pages:
+//   1. With wrap={false}, only 2–3 drivers fit per page after the headline,
+//      framing paragraph, and the right-aligned "Quadrant total" header —
+//      producing orphan single-driver pages on quadrants with 4+ drivers.
+//   2. The bordered "How it's calculated" callout box stacked a second
+//      visual frame inside an already-tinted card, making the rhythm read
+//      as nested boxes instead of one driver tile.
+// CompactDriverCard collapses each driver into ~95pt:
+//   • Header row     (driver name + value/tag)
+//   • Optional link tag (↳ LINKED DRIVER)
+//   • 1–2 line body
+//   • Inline italic formula line (the printed math, no border)
+// Multiple cards stack vertically with the HeroSubtotal anchoring the page.
+const CompactDriverCard = ({
+  name,
+  value,
+  body,
+  formula,
+  linkedTag,
+  valueIsTracked,
+}: {
+  name: string;
+  value: string;
+  body: string;
+  formula?: string;
+  linkedTag?: boolean;
+  valueIsTracked?: boolean;
+}) => (
   <View
     style={{
-      backgroundColor: "#FFFFFF",
-      borderWidth: 1,
-      borderColor: colors.separatorHeavy,
+      backgroundColor: colors.cards,
+      padding: 12,
       borderRadius: 4,
-      paddingHorizontal: 8,
-      paddingVertical: 5,
-      marginTop: 6,
-      marginBottom: 4,
+      marginBottom: 8,
     }}
+    wrap={false}
   >
-    <Text
+    <View
       style={{
-        fontSize: 8,
-        color: colors.secondary,
-        textTransform: "uppercase",
-        letterSpacing: 0.6,
-        marginBottom: 2,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        marginBottom: 4,
       }}
     >
-      How it's calculated
-    </Text>
-    <Text style={{ fontSize: 9, color: colors.primaryText, lineHeight: 1.4 }}>
-      {calcSummary}
-    </Text>
-  </View>
-);
-
-// "Tracked" tag for qualitative drivers — small uppercase text in the
-// secondary palette, italicized for the same restrained-but-clear treatment
-// the Nursing PDF uses for "Tracked" zero-state cells. Replaces the
-// previous red-background pill, which competed with brand-red value
-// figures for visual weight on the same page.
-const TrackedTag = () => (
-  <Text
-    style={{
-      fontSize: 8,
-      color: colors.secondary,
-      textTransform: "uppercase",
-      letterSpacing: 1.2,
-      fontWeight: "bold",
-      fontStyle: "italic",
-    }}
-  >
-    Tracked
-  </Text>
-);
-
-const QuantifiedDriverCard = ({ driver }: { driver: ExplorePDFQuadrantDriver }) => (
-  <View style={styles.driverCard} wrap={false}>
-    <View style={styles.driverHeaderRow}>
-      <Text style={styles.driverHeader}>{driver.label}</Text>
-      <Text style={styles.driverValue}>{fmtCurrency(driver.value)}</Text>
+      <Text
+        style={{
+          fontSize: 10.5,
+          fontWeight: "bold",
+          color: colors.primaryText,
+          textTransform: "uppercase",
+          letterSpacing: 0.8,
+          flex: 1,
+          paddingRight: 6,
+        }}
+      >
+        {name}
+      </Text>
+      <Text
+        style={{
+          fontSize: valueIsTracked ? 10 : 13,
+          fontWeight: "bold",
+          color: valueIsTracked ? colors.secondary : colors.primary,
+          fontStyle: valueIsTracked ? "italic" : "normal",
+          textTransform: valueIsTracked ? "uppercase" : "none",
+          letterSpacing: valueIsTracked ? 1.2 : 0,
+        }}
+      >
+        {value}
+      </Text>
     </View>
-    {/* Linked-driver tag (nursing-PDF convention): when a child driver
-        depends on its parent's economics, surface the relationship as a
-        small uppercase tag in the secondary palette instead of an indent +
-        "↳" glyph hack. Reads cleaner and keeps the figure column aligned. */}
-    {driver.isChild ? (
+    {linkedTag ? (
       <Text
         style={{
           fontSize: 7.5,
@@ -534,41 +537,104 @@ const QuantifiedDriverCard = ({ driver }: { driver: ExplorePDFQuadrantDriver }) 
         ↳ Linked driver
       </Text>
     ) : null}
-    <Text style={styles.driverBody}>{driver.shortDescription}</Text>
-    {driver.calcSummary ? <CalcCallout calcSummary={driver.calcSummary} /> : null}
+    <Text
+      style={{
+        fontSize: 9,
+        color: colors.secondary,
+        lineHeight: 1.45,
+        marginBottom: formula ? 4 : 0,
+      }}
+    >
+      {body}
+    </Text>
+    {formula ? (
+      <Text
+        style={{
+          fontSize: 8.5,
+          fontStyle: "italic",
+          color: colors.primaryText,
+          lineHeight: 1.4,
+          marginTop: 2,
+        }}
+      >
+        {formula}
+      </Text>
+    ) : null}
   </View>
 );
 
-// QualitativeDriverCard renders the same flat geometry as
-// QuantifiedDriverCard. Child drivers used to be indented + prefixed with a
-// "↳ " glyph, which created a misaligned column on the right side of the
-// page (the figure/tag would no longer line up with the parent rows). The
-// parent/child relationship is communicated through driver ordering and the
-// flat rhythm reads cleaner — matches the linked-driver convention in the
-// Nursing PDF (§9 in pdf_layout_guidelines.md).
-const QualitativeDriverCard = ({ driver }: { driver: ExplorePDFQuadrantDriver }) => (
-  <View style={styles.driverCard} wrap={false}>
-    <View style={styles.driverHeaderRow}>
-      <Text style={styles.driverHeader}>{driver.label}</Text>
-      <TrackedTag />
-    </View>
-    <Text style={styles.driverBody}>{driver.shortDescription}</Text>
-  </View>
-);
-
-const BenefitCard = ({ benefit }: { benefit: ExplorePDFOtherBenefit }) => (
-  <View style={styles.driverCard} wrap={false}>
-    <View style={styles.driverHeaderRow}>
-      <Text style={styles.driverHeader}>{benefit.label}</Text>
-      <Text style={styles.driverValue}>
-        {fmtCurrency(benefit.amount)}
-        <Text style={{ fontSize: 9, color: colors.tertiary, fontWeight: 400 }}>
-          {" "}
-          {benefit.type === "annual" ? "annual" : "one-time (Y1)"}
-        </Text>
+// HeroSubtotal — full-width tinted band that promotes a quadrant's dollar
+// total to the page's punchline. Replaces the right-aligned "Quadrant
+// total" line that used to sit at the TOP of each page (where readers had
+// to scan back up after reading the drivers to see the total). The
+// punchline now lands at the bottom where it's been earned.
+//   ┌───────────────────────────────────────────────┐
+//   │ CAPACITY SUBTOTAL                    $2.40M   │
+//   │ One-time benefits ($100K) reported separately │
+//   └───────────────────────────────────────────────┘
+const HeroSubtotal = ({
+  label,
+  total,
+  caption,
+  totalIsTracked,
+}: {
+  label: string;
+  total: string;
+  caption?: string;
+  totalIsTracked?: boolean;
+}) => (
+  <View
+    style={{
+      backgroundColor: colors.cards,
+      borderRadius: 4,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      marginTop: 6,
+      marginBottom: 8,
+    }}
+    wrap={false}
+  >
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 9,
+          color: colors.secondary,
+          textTransform: "uppercase",
+          letterSpacing: 2,
+          fontWeight: "bold",
+        }}
+      >
+        {label}
+      </Text>
+      <Text
+        style={{
+          fontSize: totalIsTracked ? 18 : 24,
+          fontWeight: "bold",
+          color: totalIsTracked ? colors.secondary : colors.primary,
+          fontStyle: totalIsTracked ? "italic" : "normal",
+          lineHeight: 1.0,
+        }}
+      >
+        {total}
       </Text>
     </View>
-    <Text style={styles.driverBody}>Other financial benefit configured for this quadrant.</Text>
+    {caption ? (
+      <Text
+        style={{
+          fontSize: 8.5,
+          color: colors.tertiary,
+          marginTop: 6,
+        }}
+      >
+        {caption}
+      </Text>
+    ) : null}
   </View>
 );
 
@@ -597,11 +663,26 @@ const QuadrantPage = ({
       : "Quality outcomes follow documentation completeness.",
   };
 
-  const totalLine = (() => {
-    if (isQualityForNonNursing && q.annualTotal === 0) {
-      return "Tracked post-deployment";
+  // HeroSubtotal copy: the bottom-of-page anchor. For Quality on non-nursing
+  // settings the underlying drivers are intentionally qualitative-only — the
+  // total renders as italic "Tracked" instead of "$0", per the edge-case
+  // numerics rule (pdf_layout_guidelines.md §9 > Edge-case numerics).
+  const subtotalLabel = `${q.quadrant} Subtotal`;
+  const subtotalIsTracked =
+    isQualityForNonNursing && q.annualTotal === 0;
+  const subtotalTotal = subtotalIsTracked
+    ? "Tracked"
+    : q.annualTotal > 0
+      ? fmtCurrency(q.annualTotal)
+      : "—";
+  const subtotalCaption = (() => {
+    if (subtotalIsTracked) {
+      return "Tracked post-deployment as the leading indicator that documentation lift translates to clinical signal.";
     }
-    return `${fmtCurrency(q.annualTotal)} annual${q.oneTimeTotal > 0 ? ` · +${fmtCurrency(q.oneTimeTotal)} one-time` : ""}`;
+    if (q.oneTimeTotal > 0) {
+      return `Plus ${fmtCurrency(q.oneTimeTotal)} one-time benefit reported separately above so multi-year ROI math stays comparable.`;
+    }
+    return undefined;
   })();
 
   return (
@@ -610,39 +691,6 @@ const QuadrantPage = ({
         <SectionLabel>{q.quadrant.toUpperCase()}</SectionLabel>
         <Text style={styles.sectionHeadline}>{headlineForQuadrant[q.quadrant]}</Text>
         <Text style={styles.body}>{settingQuadrantFraming[setting][q.quadrant]}</Text>
-
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-            borderBottomWidth: 1,
-            borderBottomColor: colors.separator,
-            paddingBottom: 6,
-            marginBottom: 12,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 9,
-              color: colors.secondary,
-              textTransform: "uppercase",
-              letterSpacing: 1.2,
-              fontWeight: "bold",
-            }}
-          >
-            Quadrant total
-          </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "bold",
-              color: q.annualTotal > 0 ? colors.primary : colors.primaryText,
-            }}
-          >
-            {totalLine}
-          </Text>
-        </View>
 
         {isEmpty ? (
           <Text
@@ -659,26 +707,44 @@ const QuadrantPage = ({
           </Text>
         ) : (
           <>
-            {quantified.length > 0 || q.otherFinancialBenefits.length > 0 ? (
-              <Text style={styles.subSectionHeader}>Financial Drivers</Text>
-            ) : null}
             {quantified.map((d) => (
-              <QuantifiedDriverCard key={d.id} driver={d} />
+              <CompactDriverCard
+                key={d.id}
+                name={d.label}
+                value={fmtCurrency(d.value)}
+                body={d.shortDescription}
+                formula={d.calcSummary}
+                linkedTag={d.isChild}
+              />
             ))}
             {q.otherFinancialBenefits.map((b, i) => (
-              <BenefitCard key={`b-${i}`} benefit={b} />
+              <CompactDriverCard
+                key={`b-${i}`}
+                name={b.label}
+                value={`${fmtCurrency(b.amount)} ${b.type === "annual" ? "annual" : "one-time"}`}
+                body="Other financial benefit configured for this quadrant — reported separately so it is not folded into the recurring annual total."
+              />
             ))}
-
-            {qualitative.length > 0 ? (
-              <Text style={styles.subSectionHeader}>Other Metrics To Watch</Text>
-            ) : null}
             {qualitative.map((d) => (
-              <QualitativeDriverCard key={d.id} driver={d} />
+              <CompactDriverCard
+                key={d.id}
+                name={d.label}
+                value="Tracked"
+                valueIsTracked
+                body={d.shortDescription}
+              />
             ))}
           </>
         )}
 
-        <PageFooter orgName={orgName} setting={setting} />
+        <HeroSubtotal
+          label={subtotalLabel}
+          total={subtotalTotal}
+          caption={subtotalCaption}
+          totalIsTracked={subtotalIsTracked}
+        />
+
+        <PageFooter orgName={orgName} />
       </View>
     </Page>
   );
@@ -932,7 +998,7 @@ export const ExploreNarrativePDFDocument = ({
             </Text>
           </View>
 
-          <PageFooter orgName={orgName} setting={setting} />
+          <PageFooter orgName={orgName} />
         </View>
       </Page>
 
@@ -997,7 +1063,7 @@ export const ExploreNarrativePDFDocument = ({
             </Text>
           </View>
 
-          <PageFooter orgName={orgName} setting={setting} />
+          <PageFooter orgName={orgName} />
         </View>
       </Page>
 
@@ -1270,23 +1336,53 @@ export const ExploreNarrativePDFDocument = ({
             </View>
           )}
 
+          {/* Cumulative-multiple HERO. Replaces the previous redBorderCallout
+              that buried the punchline in body copy. Eyebrow / number /
+              footnote stack — three separate Text nodes — so the multiple
+              can stand at 36pt without wrapping. Mirrors the Nursing PDF's
+              Investment-page hero geometry exactly (pdf_layout_guidelines.md
+              §9 > Investment page hero). */}
           {cumulativeMultiple > 0 ? (
-            <View style={[styles.redBorderCallout, { marginBottom: 14 }]}>
+            <View
+              style={{
+                backgroundColor: colors.cards,
+                borderRadius: 4,
+                paddingHorizontal: 18,
+                paddingVertical: 18,
+                marginBottom: 14,
+              }}
+              wrap={false}
+            >
               <Text
                 style={{
-                  fontSize: 10.5,
-                  color: colors.primaryText,
-                  lineHeight: 1.5,
+                  fontSize: 8.5,
+                  color: colors.secondary,
+                  textTransform: "uppercase",
+                  letterSpacing: 2.5,
+                  fontWeight: "bold",
+                  marginBottom: 8,
                 }}
               >
-                {`By Year 3, the program is generating ${cumulativeMultiple.toFixed(
-                  1,
-                )}× cumulative net for every $1 invested — while ${
+                By Year 3, For Every $1 Invested
+              </Text>
+              <Text
+                style={{
+                  fontSize: 36,
+                  fontWeight: "bold",
+                  color: colors.primary,
+                  lineHeight: 1.0,
+                  marginBottom: 10,
+                }}
+              >
+                {`${cumulativeMultiple.toFixed(1)}×`}
+              </Text>
+              <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>
+                {`Cumulative net under the modeled assumptions — alongside ${
                   setting === "ed"
-                    ? "your ED clinicians spend more time at the bedside and less time charting at end of shift."
+                    ? "ED clinicians spending more time at the bedside and less time charting at end of shift."
                     : setting === "inpatient"
-                      ? "your hospitalists spend less time finishing notes after hours."
-                      : "your providers spend more face-time with patients and less time charting after clinic."
+                      ? "hospitalists spending less time finishing notes after hours."
+                      : "providers spending more face-time with patients and less time charting after clinic."
                 }`}
               </Text>
             </View>
@@ -1299,7 +1395,7 @@ export const ExploreNarrativePDFDocument = ({
               targets, not partner data. The cumulative-multiple callout
               above is the page's punchline; nothing else is needed. */}
 
-          <PageFooter orgName={orgName} setting={setting} />
+          <PageFooter orgName={orgName} />
         </View>
       </Page>
 
@@ -1467,7 +1563,7 @@ export const ExploreNarrativePDFDocument = ({
             organization's data after implementation.
           </Text>
 
-          <PageFooter orgName={orgName} setting={setting} />
+          <PageFooter orgName={orgName} />
         </View>
       </Page>
     </Document>

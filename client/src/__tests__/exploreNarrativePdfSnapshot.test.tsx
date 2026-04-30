@@ -348,6 +348,84 @@ function buildTree(
   );
 }
 
+// ── Long-org / large-dollar stress fixture (per setting) ─────────────────
+// Mirrors the LONG_ORG_INPUT pattern in nursingPdfSnapshot.test.tsx. The
+// shipped footer-collision bug only surfaced when the org name + the
+// fixed-width "PAGE X / Y" right slot overflowed the line — i.e., for
+// long names. Pairing the long name with billion-class dollar figures
+// also stresses the Investment-page hero number sizing AND the per-quadrant
+// HeroSubtotal sizing. One stress fixture per non-nursing setting because
+// each setting's quadrant-framing dictionary is independent and a
+// regression in any one of them needs to fail CI standalone.
+function buildLongOrgFixture(
+  setting: Exclude<ExploreCareSetting, "nursing">,
+): ExplorePDFData {
+  const base = buildFixture(setting);
+  const annualInvestment = 4_200_000;
+  const totalAnnual = 33_430_000;
+  const year2Value = totalAnnual * 1.2;
+  const year3Value = year2Value * 1.18;
+  return {
+    ...base,
+    clientName:
+      "Northwestern Memorial HealthCare System — Northwest Region",
+    quadrants: base.quadrants.map((q) => {
+      if (q.quadrant === "Capacity") {
+        return {
+          ...q,
+          annualTotal: 12_400_000,
+          drivers: q.drivers.map((d) => ({ ...d, value: 12_400_000 })),
+        };
+      }
+      if (q.quadrant === "Workforce") {
+        return {
+          ...q,
+          annualTotal: 9_800_000,
+          drivers: q.drivers.map((d) => ({
+            ...d,
+            value: d.isChild ? 2_400_000 : 7_400_000,
+          })),
+        };
+      }
+      if (q.quadrant === "Revenue") {
+        return {
+          ...q,
+          annualTotal: 11_230_000,
+          drivers: q.drivers.map((d) => ({ ...d, value: 11_230_000 })),
+        };
+      }
+      return q;
+    }),
+    totalAnnualValue: totalAnnual,
+    annualInvestment,
+    implementationFee: 250_000,
+    year1Value: totalAnnual,
+    year2Value,
+    year3Value,
+    year1Investment: annualInvestment,
+    year2Investment: annualInvestment,
+    year3Investment: annualInvestment,
+    year1Net: totalAnnual - annualInvestment,
+    year2Net: year2Value - annualInvestment,
+    year3Net: year3Value - annualInvestment,
+    threeYearGrossTotal: totalAnnual + year2Value + year3Value,
+    threeYearInvestmentTotal: annualInvestment * 3,
+    threeYearNetTotal:
+      totalAnnual + year2Value + year3Value - annualInvestment * 3,
+    netAnnualValue: totalAnnual - annualInvestment,
+    roi: (totalAnnual - annualInvestment) / annualInvestment,
+    valuePerProvider: totalAnnual / base.numberOfProviders,
+  };
+}
+
+function buildLongOrgTree(
+  setting: Exclude<ExploreCareSetting, "nursing">,
+): SnapshotNode[] {
+  return serialize(
+    <ExploreNarrativePDFDocument data={buildLongOrgFixture(setting)} />,
+  );
+}
+
 function countPages(tree: SnapshotNode[]): number {
   let pageCount = 0;
   const visit = (node: SnapshotNode): void => {
@@ -418,24 +496,21 @@ describe("Explore Narrative PDF — structural snapshot", () => {
     {
       setting: "outpatient" as const,
       coverLabel: "OUTPATIENT VALUE ASSESSMENT",
-      footerLabel: "Outpatient Value Assessment",
       thesisHeadline: "Where Outpatient Documentation Value Lives",
     },
     {
       setting: "ed" as const,
       coverLabel: "EMERGENCY DEPARTMENT VALUE ASSESSMENT",
-      footerLabel: "ED Value Assessment",
       thesisHeadline: "Where ED Documentation Value Lives",
     },
     {
       setting: "inpatient" as const,
       coverLabel: "INPATIENT VALUE ASSESSMENT",
-      footerLabel: "Inpatient Value Assessment",
       thesisHeadline: "Where Inpatient Documentation Value Lives",
     },
   ])(
-    "$setting: includes setting-aware cover label, footer label, and thesis headline",
-    ({ setting, coverLabel, footerLabel, thesisHeadline }) => {
+    "$setting: includes setting-aware cover label and thesis headline",
+    ({ setting, coverLabel, thesisHeadline }) => {
       const flat = flattenText(buildTree(setting));
 
       // Cover page identity
@@ -445,8 +520,15 @@ describe("Explore Narrative PDF — structural snapshot", () => {
       // Thesis page setting-specific headline (catches dictionary drift)
       expect(flat).toContain(thesisHeadline);
 
-      // Footer setting label appears on every content page
-      expect(flat).toContain(footerLabel);
+      // Footer center text is JUST the org name now — the previous
+      // "Outpatient Value Assessment" / "ED Value Assessment" /
+      // "Inpatient Value Assessment" suffix was removed when the footer
+      // moved to the 3-slot geometry from the Nursing PDF
+      // (pdf_layout_guidelines.md §1a). Assert the suffix strings are
+      // gone so a regression that re-introduces them fails CI.
+      expect(flat).not.toContain("Outpatient Value Assessment");
+      expect(flat).not.toContain("ED Value Assessment");
+      expect(flat).not.toContain("Inpatient Value Assessment");
 
       // Quadrant rhythm — every non-nursing setting renders the four-quadrant
       // grid on the thesis page AND a dedicated quadrant page for each.
@@ -455,14 +537,70 @@ describe("Explore Narrative PDF — structural snapshot", () => {
       expect(flat).toContain("REVENUE");
       expect(flat).toContain("QUALITY");
 
+      // HeroSubtotal copy lands at the bottom of each quadrant page —
+      // the punchline anchor that replaced the previous top-of-page
+      // "Quadrant total" header row.
+      expect(flat).toContain("Capacity Subtotal");
+      expect(flat).toContain("Workforce Subtotal");
+      expect(flat).toContain("Revenue Subtotal");
+      expect(flat).toContain("Quality Subtotal");
+
       // Investment + summary pages — assert the unique copy on each so
       // accidentally dropping either page fails this test even if page
-      // count somehow stays at 9.
+      // count somehow stays at 9. The cumulative-multiple eyebrow is the
+      // hero block that replaced the inline redBorderCallout.
       expect(flat).toContain("THE INVESTMENT CASE");
       expect(flat).toContain("Infrastructure, Not Expense.");
+      expect(flat).toContain("By Year 3, For Every $1 Invested");
+      expect(flat).toMatch(/\d+(\.\d+)?×/);
       expect(flat).toContain("YOUR ASSESSMENT SUMMARY");
       expect(flat).toContain("Projected Net Annual Value");
       expect(flat).toContain("Methodology");
+    },
+  );
+
+  // ── Long-org / large-dollar stress test (per setting) ───────────────────
+  // Anchors the same three layout invariants as the Nursing stress test for
+  // each non-nursing setting:
+  //   1. Page count is still exactly 9 (no card overflow forcing extra pages).
+  //   2. Footer center text is JUST the org name — never glued to a
+  //      document-title slug — so it cannot grow into the right-slot
+  //      "PAGE X / Y" the way the shipped bug did.
+  //   3. The Investment cumulative-multiple HERO renders as a standalone
+  //      number ("X.X×"), not as inline body copy.
+  //   4. Each quadrant's HeroSubtotal carries its label in title-case.
+  it.each(["outpatient", "ed", "inpatient"] as const)(
+    "%s: long-org / large-dollar fixture renders without overflow or collapse",
+    (setting) => {
+      const tree = buildLongOrgTree(setting);
+      const flat = flattenText(tree);
+
+      expect(countPages(tree)).toBe(EXPECTED_PAGE_COUNT);
+
+      expect(flat).toContain(
+        "Northwestern Memorial HealthCare System — Northwest Region",
+      );
+
+      // Footer suffix strings must be absent — the 3-slot footer renders
+      // org name only.
+      expect(flat).not.toContain("Outpatient Value Assessment");
+      expect(flat).not.toContain("ED Value Assessment");
+      expect(flat).not.toContain("Inpatient Value Assessment");
+
+      // Hero cumulative multiple (eyebrow + standalone number).
+      expect(flat).toContain("By Year 3, For Every $1 Invested");
+      expect(flat).toMatch(/\d+(\.\d+)?×/);
+
+      // Each quadrant's HeroSubtotal anchors the bottom of its page.
+      expect(flat).toContain("Capacity Subtotal");
+      expect(flat).toContain("Workforce Subtotal");
+      expect(flat).toContain("Revenue Subtotal");
+      expect(flat).toContain("Quality Subtotal");
+
+      // Capacity (the largest single-driver figure) renders via fmtCurrency
+      // in the millions form, asserting the HeroSubtotal can hold a
+      // 2-digit-million value at 24pt without reflowing.
+      expect(flat).toContain("$12.40M");
     },
   );
 });

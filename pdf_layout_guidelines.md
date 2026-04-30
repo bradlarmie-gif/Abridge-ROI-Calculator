@@ -272,6 +272,11 @@ font" and some browsers silently fall back to a system sans-serif.
 ## 10. Files governed by these rules
 
 - `client/src/components/explore/NursingValueAssessmentPDF.tsx`
+- `client/src/components/explore/ExploreNarrativePDF.tsx` — Outpatient /
+  ED / Inpatient narrative PDF. Adopted the section 1 page-chrome
+  contract (3-slot footer, org-name-only center) and the section 9
+  premium aesthetic (CompactDriverCard, HeroSubtotal, Investment-page
+  cumulative-multiple hero) in task #102.
 - `client/src/components/explore/ExplorePDFExport.tsx`
 - `client/src/components/pdf/PDFCoverPage.tsx`
 - Any future `*PDF*.tsx` files

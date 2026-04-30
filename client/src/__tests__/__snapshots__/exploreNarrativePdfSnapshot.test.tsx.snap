@@ -777,17 +777,30 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                       {
                         "children": [
                           {
-                            "children": [],
+                            "children": [
+                              {
+                                "children": [],
+                                "kind": "primitive",
+                                "props": {
+                                  "src": "stub://asset",
+                                  "style": {
+                                    "height": 12,
+                                    "objectFit": "contain",
+                                    "width": 56,
+                                  },
+                                },
+                                "tag": "IMAGE",
+                              },
+                            ],
                             "kind": "primitive",
                             "props": {
-                              "src": "stub://asset",
                               "style": {
-                                "height": 12,
-                                "objectFit": "contain",
-                                "width": 56,
+                                "alignItems": "center",
+                                "flexDirection": "row",
+                                "width": 90,
                               },
                             },
-                            "tag": "IMAGE",
+                            "tag": "VIEW",
                           },
                           {
                             "children": [
@@ -807,34 +820,19 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 },
                                 "tag": "TEXT",
                               },
-                              {
-                                "children": [
-                                  {
-                                    "kind": "text",
-                                    "value": "   ·   ",
-                                  },
-                                ],
-                                "kind": "primitive",
-                                "props": {
-                                  "style": {
-                                    "color": "#8F8A82",
-                                  },
-                                },
-                                "tag": "TEXT",
-                              },
-                              {
-                                "kind": "text",
-                                "value": "Outpatient Value Assessment",
-                              },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
                                 "color": "#5C5751",
+                                "flex": 1,
                                 "fontSize": 7.5,
                                 "letterSpacing": 1.1,
+                                "paddingHorizontal": 8,
+                                "textAlign": "center",
                                 "textTransform": "uppercase",
                               },
+                              "wrap": false,
                             },
                             "tag": "TEXT",
                           },
@@ -847,7 +845,9 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 "color": "#5C5751",
                                 "fontSize": 7.5,
                                 "letterSpacing": 1.1,
+                                "textAlign": "right",
                                 "textTransform": "uppercase",
+                                "width": 90,
                               },
                             },
                             "tag": "TEXT",
@@ -862,7 +862,6 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                             "borderTopWidth": 1,
                             "bottom": 28,
                             "flexDirection": "row",
-                            "justifyContent": "space-between",
                             "left": 54,
                             "paddingTop": 10,
                             "position": "absolute",
@@ -1323,17 +1322,30 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                       {
                         "children": [
                           {
-                            "children": [],
+                            "children": [
+                              {
+                                "children": [],
+                                "kind": "primitive",
+                                "props": {
+                                  "src": "stub://asset",
+                                  "style": {
+                                    "height": 12,
+                                    "objectFit": "contain",
+                                    "width": 56,
+                                  },
+                                },
+                                "tag": "IMAGE",
+                              },
+                            ],
                             "kind": "primitive",
                             "props": {
-                              "src": "stub://asset",
                               "style": {
-                                "height": 12,
-                                "objectFit": "contain",
-                                "width": 56,
+                                "alignItems": "center",
+                                "flexDirection": "row",
+                                "width": 90,
                               },
                             },
-                            "tag": "IMAGE",
+                            "tag": "VIEW",
                           },
                           {
                             "children": [
@@ -1353,34 +1365,19 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 },
                                 "tag": "TEXT",
                               },
-                              {
-                                "children": [
-                                  {
-                                    "kind": "text",
-                                    "value": "   ·   ",
-                                  },
-                                ],
-                                "kind": "primitive",
-                                "props": {
-                                  "style": {
-                                    "color": "#8F8A82",
-                                  },
-                                },
-                                "tag": "TEXT",
-                              },
-                              {
-                                "kind": "text",
-                                "value": "Outpatient Value Assessment",
-                              },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
                                 "color": "#5C5751",
+                                "flex": 1,
                                 "fontSize": 7.5,
                                 "letterSpacing": 1.1,
+                                "paddingHorizontal": 8,
+                                "textAlign": "center",
                                 "textTransform": "uppercase",
                               },
+                              "wrap": false,
                             },
                             "tag": "TEXT",
                           },
@@ -1393,7 +1390,9 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 "color": "#5C5751",
                                 "fontSize": 7.5,
                                 "letterSpacing": 1.1,
+                                "textAlign": "right",
                                 "textTransform": "uppercase",
+                                "width": 90,
                               },
                             },
                             "tag": "TEXT",
@@ -1408,7 +1407,6 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                             "borderTopWidth": 1,
                             "bottom": 28,
                             "flexDirection": "row",
-                            "justifyContent": "space-between",
                             "left": 54,
                             "paddingTop": 10,
                             "position": "absolute",
@@ -1545,70 +1543,104 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Quadrant total",
+                                "children": [
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "Capacity Subtotal",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#666666",
+                                        "fontSize": 9,
+                                        "fontWeight": "bold",
+                                        "letterSpacing": 2,
+                                        "textTransform": "uppercase",
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "$2.40M",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#EA2C00",
+                                        "fontSize": 24,
+                                        "fontStyle": "normal",
+                                        "fontWeight": "bold",
+                                        "lineHeight": 1,
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "alignItems": "baseline",
+                                    "flexDirection": "row",
+                                    "justifyContent": "space-between",
+                                  },
+                                },
+                                "tag": "VIEW",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#666666",
-                                "fontSize": 9,
-                                "fontWeight": "bold",
-                                "letterSpacing": 1.2,
-                                "textTransform": "uppercase",
+                                "backgroundColor": "#F5F0EB",
+                                "borderRadius": 4,
+                                "marginBottom": 8,
+                                "marginTop": 6,
+                                "paddingHorizontal": 16,
+                                "paddingVertical": 14,
                               },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
-                          },
-                          {
-                            "children": [
-                              {
-                                "kind": "text",
-                                "value": "$2.40M annual",
-                              },
-                            ],
-                            "kind": "primitive",
-                            "props": {
-                              "style": {
-                                "color": "#EA2C00",
-                                "fontSize": 14,
-                                "fontWeight": "bold",
-                              },
-                            },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
-                        "kind": "primitive",
-                        "props": {
-                          "style": {
-                            "alignItems": "baseline",
-                            "borderBottomColor": "#F0EBE4",
-                            "borderBottomWidth": 1,
-                            "flexDirection": "row",
-                            "justifyContent": "space-between",
-                            "marginBottom": 12,
-                            "paddingBottom": 6,
-                          },
-                        },
-                        "tag": "VIEW",
+                        "kind": "component",
+                        "name": "HeroSubtotal",
                       },
                       {
                         "children": [
                           {
                             "children": [
                               {
-                                "children": [],
+                                "children": [
+                                  {
+                                    "children": [],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "src": "stub://asset",
+                                      "style": {
+                                        "height": 12,
+                                        "objectFit": "contain",
+                                        "width": 56,
+                                      },
+                                    },
+                                    "tag": "IMAGE",
+                                  },
+                                ],
                                 "kind": "primitive",
                                 "props": {
-                                  "src": "stub://asset",
                                   "style": {
-                                    "height": 12,
-                                    "objectFit": "contain",
-                                    "width": 56,
+                                    "alignItems": "center",
+                                    "flexDirection": "row",
+                                    "width": 90,
                                   },
                                 },
-                                "tag": "IMAGE",
+                                "tag": "VIEW",
                               },
                               {
                                 "children": [
@@ -1628,34 +1660,19 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                     },
                                     "tag": "TEXT",
                                   },
-                                  {
-                                    "children": [
-                                      {
-                                        "kind": "text",
-                                        "value": "   ·   ",
-                                      },
-                                    ],
-                                    "kind": "primitive",
-                                    "props": {
-                                      "style": {
-                                        "color": "#8F8A82",
-                                      },
-                                    },
-                                    "tag": "TEXT",
-                                  },
-                                  {
-                                    "kind": "text",
-                                    "value": "Outpatient Value Assessment",
-                                  },
                                 ],
                                 "kind": "primitive",
                                 "props": {
                                   "style": {
                                     "color": "#5C5751",
+                                    "flex": 1,
                                     "fontSize": 7.5,
                                     "letterSpacing": 1.1,
+                                    "paddingHorizontal": 8,
+                                    "textAlign": "center",
                                     "textTransform": "uppercase",
                                   },
+                                  "wrap": false,
                                 },
                                 "tag": "TEXT",
                               },
@@ -1668,7 +1685,9 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                     "color": "#5C5751",
                                     "fontSize": 7.5,
                                     "letterSpacing": 1.1,
+                                    "textAlign": "right",
                                     "textTransform": "uppercase",
+                                    "width": 90,
                                   },
                                 },
                                 "tag": "TEXT",
@@ -1683,7 +1702,6 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 "borderTopWidth": 1,
                                 "bottom": 28,
                                 "flexDirection": "row",
-                                "justifyContent": "space-between",
                                 "left": 54,
                                 "paddingTop": 10,
                                 "position": "absolute",
@@ -1825,70 +1843,104 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Quadrant total",
+                                "children": [
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "Workforce Subtotal",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#666666",
+                                        "fontSize": 9,
+                                        "fontWeight": "bold",
+                                        "letterSpacing": 2,
+                                        "textTransform": "uppercase",
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "$1.80M",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#EA2C00",
+                                        "fontSize": 24,
+                                        "fontStyle": "normal",
+                                        "fontWeight": "bold",
+                                        "lineHeight": 1,
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "alignItems": "baseline",
+                                    "flexDirection": "row",
+                                    "justifyContent": "space-between",
+                                  },
+                                },
+                                "tag": "VIEW",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#666666",
-                                "fontSize": 9,
-                                "fontWeight": "bold",
-                                "letterSpacing": 1.2,
-                                "textTransform": "uppercase",
+                                "backgroundColor": "#F5F0EB",
+                                "borderRadius": 4,
+                                "marginBottom": 8,
+                                "marginTop": 6,
+                                "paddingHorizontal": 16,
+                                "paddingVertical": 14,
                               },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
-                          },
-                          {
-                            "children": [
-                              {
-                                "kind": "text",
-                                "value": "$1.80M annual",
-                              },
-                            ],
-                            "kind": "primitive",
-                            "props": {
-                              "style": {
-                                "color": "#EA2C00",
-                                "fontSize": 14,
-                                "fontWeight": "bold",
-                              },
-                            },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
-                        "kind": "primitive",
-                        "props": {
-                          "style": {
-                            "alignItems": "baseline",
-                            "borderBottomColor": "#F0EBE4",
-                            "borderBottomWidth": 1,
-                            "flexDirection": "row",
-                            "justifyContent": "space-between",
-                            "marginBottom": 12,
-                            "paddingBottom": 6,
-                          },
-                        },
-                        "tag": "VIEW",
+                        "kind": "component",
+                        "name": "HeroSubtotal",
                       },
                       {
                         "children": [
                           {
                             "children": [
                               {
-                                "children": [],
+                                "children": [
+                                  {
+                                    "children": [],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "src": "stub://asset",
+                                      "style": {
+                                        "height": 12,
+                                        "objectFit": "contain",
+                                        "width": 56,
+                                      },
+                                    },
+                                    "tag": "IMAGE",
+                                  },
+                                ],
                                 "kind": "primitive",
                                 "props": {
-                                  "src": "stub://asset",
                                   "style": {
-                                    "height": 12,
-                                    "objectFit": "contain",
-                                    "width": 56,
+                                    "alignItems": "center",
+                                    "flexDirection": "row",
+                                    "width": 90,
                                   },
                                 },
-                                "tag": "IMAGE",
+                                "tag": "VIEW",
                               },
                               {
                                 "children": [
@@ -1908,34 +1960,19 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                     },
                                     "tag": "TEXT",
                                   },
-                                  {
-                                    "children": [
-                                      {
-                                        "kind": "text",
-                                        "value": "   ·   ",
-                                      },
-                                    ],
-                                    "kind": "primitive",
-                                    "props": {
-                                      "style": {
-                                        "color": "#8F8A82",
-                                      },
-                                    },
-                                    "tag": "TEXT",
-                                  },
-                                  {
-                                    "kind": "text",
-                                    "value": "Outpatient Value Assessment",
-                                  },
                                 ],
                                 "kind": "primitive",
                                 "props": {
                                   "style": {
                                     "color": "#5C5751",
+                                    "flex": 1,
                                     "fontSize": 7.5,
                                     "letterSpacing": 1.1,
+                                    "paddingHorizontal": 8,
+                                    "textAlign": "center",
                                     "textTransform": "uppercase",
                                   },
+                                  "wrap": false,
                                 },
                                 "tag": "TEXT",
                               },
@@ -1948,7 +1985,9 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                     "color": "#5C5751",
                                     "fontSize": 7.5,
                                     "letterSpacing": 1.1,
+                                    "textAlign": "right",
                                     "textTransform": "uppercase",
+                                    "width": 90,
                                   },
                                 },
                                 "tag": "TEXT",
@@ -1963,7 +2002,6 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 "borderTopWidth": 1,
                                 "bottom": 28,
                                 "flexDirection": "row",
-                                "justifyContent": "space-between",
                                 "left": 54,
                                 "paddingTop": 10,
                                 "position": "absolute",
@@ -2105,70 +2143,121 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Quadrant total",
+                                "children": [
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "Revenue Subtotal",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#666666",
+                                        "fontSize": 9,
+                                        "fontWeight": "bold",
+                                        "letterSpacing": 2,
+                                        "textTransform": "uppercase",
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "$3.60M",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#EA2C00",
+                                        "fontSize": 24,
+                                        "fontStyle": "normal",
+                                        "fontWeight": "bold",
+                                        "lineHeight": 1,
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "alignItems": "baseline",
+                                    "flexDirection": "row",
+                                    "justifyContent": "space-between",
+                                  },
+                                },
+                                "tag": "VIEW",
                               },
-                            ],
-                            "kind": "primitive",
-                            "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 9,
-                                "fontWeight": "bold",
-                                "letterSpacing": 1.2,
-                                "textTransform": "uppercase",
-                              },
-                            },
-                            "tag": "TEXT",
-                          },
-                          {
-                            "children": [
                               {
-                                "kind": "text",
-                                "value": "$3.60M annual · +$100K one-time",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Plus $100K one-time benefit reported separately above so multi-year ROI math stays comparable.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8.5,
+                                    "marginTop": 6,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#EA2C00",
-                                "fontSize": 14,
-                                "fontWeight": "bold",
+                                "backgroundColor": "#F5F0EB",
+                                "borderRadius": 4,
+                                "marginBottom": 8,
+                                "marginTop": 6,
+                                "paddingHorizontal": 16,
+                                "paddingVertical": 14,
                               },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
-                        "kind": "primitive",
-                        "props": {
-                          "style": {
-                            "alignItems": "baseline",
-                            "borderBottomColor": "#F0EBE4",
-                            "borderBottomWidth": 1,
-                            "flexDirection": "row",
-                            "justifyContent": "space-between",
-                            "marginBottom": 12,
-                            "paddingBottom": 6,
-                          },
-                        },
-                        "tag": "VIEW",
+                        "kind": "component",
+                        "name": "HeroSubtotal",
                       },
                       {
                         "children": [
                           {
                             "children": [
                               {
-                                "children": [],
+                                "children": [
+                                  {
+                                    "children": [],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "src": "stub://asset",
+                                      "style": {
+                                        "height": 12,
+                                        "objectFit": "contain",
+                                        "width": 56,
+                                      },
+                                    },
+                                    "tag": "IMAGE",
+                                  },
+                                ],
                                 "kind": "primitive",
                                 "props": {
-                                  "src": "stub://asset",
                                   "style": {
-                                    "height": 12,
-                                    "objectFit": "contain",
-                                    "width": 56,
+                                    "alignItems": "center",
+                                    "flexDirection": "row",
+                                    "width": 90,
                                   },
                                 },
-                                "tag": "IMAGE",
+                                "tag": "VIEW",
                               },
                               {
                                 "children": [
@@ -2188,34 +2277,19 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                     },
                                     "tag": "TEXT",
                                   },
-                                  {
-                                    "children": [
-                                      {
-                                        "kind": "text",
-                                        "value": "   ·   ",
-                                      },
-                                    ],
-                                    "kind": "primitive",
-                                    "props": {
-                                      "style": {
-                                        "color": "#8F8A82",
-                                      },
-                                    },
-                                    "tag": "TEXT",
-                                  },
-                                  {
-                                    "kind": "text",
-                                    "value": "Outpatient Value Assessment",
-                                  },
                                 ],
                                 "kind": "primitive",
                                 "props": {
                                   "style": {
                                     "color": "#5C5751",
+                                    "flex": 1,
                                     "fontSize": 7.5,
                                     "letterSpacing": 1.1,
+                                    "paddingHorizontal": 8,
+                                    "textAlign": "center",
                                     "textTransform": "uppercase",
                                   },
+                                  "wrap": false,
                                 },
                                 "tag": "TEXT",
                               },
@@ -2228,7 +2302,9 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                     "color": "#5C5751",
                                     "fontSize": 7.5,
                                     "letterSpacing": 1.1,
+                                    "textAlign": "right",
                                     "textTransform": "uppercase",
+                                    "width": 90,
                                   },
                                 },
                                 "tag": "TEXT",
@@ -2243,7 +2319,6 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 "borderTopWidth": 1,
                                 "bottom": 28,
                                 "flexDirection": "row",
-                                "justifyContent": "space-between",
                                 "left": 54,
                                 "paddingTop": 10,
                                 "position": "absolute",
@@ -2385,70 +2460,121 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                           {
                             "children": [
                               {
-                                "kind": "text",
-                                "value": "Quadrant total",
+                                "children": [
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "Quality Subtotal",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#666666",
+                                        "fontSize": 9,
+                                        "fontWeight": "bold",
+                                        "letterSpacing": 2,
+                                        "textTransform": "uppercase",
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                  {
+                                    "children": [
+                                      {
+                                        "kind": "text",
+                                        "value": "Tracked",
+                                      },
+                                    ],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "style": {
+                                        "color": "#666666",
+                                        "fontSize": 18,
+                                        "fontStyle": "italic",
+                                        "fontWeight": "bold",
+                                        "lineHeight": 1,
+                                      },
+                                    },
+                                    "tag": "TEXT",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "alignItems": "baseline",
+                                    "flexDirection": "row",
+                                    "justifyContent": "space-between",
+                                  },
+                                },
+                                "tag": "VIEW",
                               },
-                            ],
-                            "kind": "primitive",
-                            "props": {
-                              "style": {
-                                "color": "#666666",
-                                "fontSize": 9,
-                                "fontWeight": "bold",
-                                "letterSpacing": 1.2,
-                                "textTransform": "uppercase",
-                              },
-                            },
-                            "tag": "TEXT",
-                          },
-                          {
-                            "children": [
                               {
-                                "kind": "text",
-                                "value": "Tracked post-deployment",
+                                "children": [
+                                  {
+                                    "kind": "text",
+                                    "value": "Tracked post-deployment as the leading indicator that documentation lift translates to clinical signal.",
+                                  },
+                                ],
+                                "kind": "primitive",
+                                "props": {
+                                  "style": {
+                                    "color": "#999999",
+                                    "fontSize": 8.5,
+                                    "marginTop": 6,
+                                  },
+                                },
+                                "tag": "TEXT",
                               },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#1A1A1A",
-                                "fontSize": 14,
-                                "fontWeight": "bold",
+                                "backgroundColor": "#F5F0EB",
+                                "borderRadius": 4,
+                                "marginBottom": 8,
+                                "marginTop": 6,
+                                "paddingHorizontal": 16,
+                                "paddingVertical": 14,
                               },
+                              "wrap": false,
                             },
-                            "tag": "TEXT",
+                            "tag": "VIEW",
                           },
                         ],
-                        "kind": "primitive",
-                        "props": {
-                          "style": {
-                            "alignItems": "baseline",
-                            "borderBottomColor": "#F0EBE4",
-                            "borderBottomWidth": 1,
-                            "flexDirection": "row",
-                            "justifyContent": "space-between",
-                            "marginBottom": 12,
-                            "paddingBottom": 6,
-                          },
-                        },
-                        "tag": "VIEW",
+                        "kind": "component",
+                        "name": "HeroSubtotal",
                       },
                       {
                         "children": [
                           {
                             "children": [
                               {
-                                "children": [],
+                                "children": [
+                                  {
+                                    "children": [],
+                                    "kind": "primitive",
+                                    "props": {
+                                      "src": "stub://asset",
+                                      "style": {
+                                        "height": 12,
+                                        "objectFit": "contain",
+                                        "width": 56,
+                                      },
+                                    },
+                                    "tag": "IMAGE",
+                                  },
+                                ],
                                 "kind": "primitive",
                                 "props": {
-                                  "src": "stub://asset",
                                   "style": {
-                                    "height": 12,
-                                    "objectFit": "contain",
-                                    "width": 56,
+                                    "alignItems": "center",
+                                    "flexDirection": "row",
+                                    "width": 90,
                                   },
                                 },
-                                "tag": "IMAGE",
+                                "tag": "VIEW",
                               },
                               {
                                 "children": [
@@ -2468,34 +2594,19 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                     },
                                     "tag": "TEXT",
                                   },
-                                  {
-                                    "children": [
-                                      {
-                                        "kind": "text",
-                                        "value": "   ·   ",
-                                      },
-                                    ],
-                                    "kind": "primitive",
-                                    "props": {
-                                      "style": {
-                                        "color": "#8F8A82",
-                                      },
-                                    },
-                                    "tag": "TEXT",
-                                  },
-                                  {
-                                    "kind": "text",
-                                    "value": "Outpatient Value Assessment",
-                                  },
                                 ],
                                 "kind": "primitive",
                                 "props": {
                                   "style": {
                                     "color": "#5C5751",
+                                    "flex": 1,
                                     "fontSize": 7.5,
                                     "letterSpacing": 1.1,
+                                    "paddingHorizontal": 8,
+                                    "textAlign": "center",
                                     "textTransform": "uppercase",
                                   },
+                                  "wrap": false,
                                 },
                                 "tag": "TEXT",
                               },
@@ -2508,7 +2619,9 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                     "color": "#5C5751",
                                     "fontSize": 7.5,
                                     "letterSpacing": 1.1,
+                                    "textAlign": "right",
                                     "textTransform": "uppercase",
+                                    "width": 90,
                                   },
                                 },
                                 "tag": "TEXT",
@@ -2523,7 +2636,6 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 "borderTopWidth": 1,
                                 "bottom": 28,
                                 "flexDirection": "row",
-                                "justifyContent": "space-between",
                                 "left": 54,
                                 "paddingTop": 10,
                                 "position": "absolute",
@@ -3321,14 +3433,53 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                         "children": [
                           {
                             "kind": "text",
-                            "value": "By Year 3, the program is generating 12.1× cumulative net for every $1 invested — while your providers spend more face-time with patients and less time charting after clinic.",
+                            "value": "By Year 3, For Every $1 Invested",
                           },
                         ],
                         "kind": "primitive",
                         "props": {
                           "style": {
-                            "color": "#1A1A1A",
-                            "fontSize": 10.5,
+                            "color": "#666666",
+                            "fontSize": 8.5,
+                            "fontWeight": "bold",
+                            "letterSpacing": 2.5,
+                            "marginBottom": 8,
+                            "textTransform": "uppercase",
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "12.1×",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#EA2C00",
+                            "fontSize": 36,
+                            "fontWeight": "bold",
+                            "lineHeight": 1,
+                            "marginBottom": 10,
+                          },
+                        },
+                        "tag": "TEXT",
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "text",
+                            "value": "Cumulative net under the modeled assumptions — alongside providers spending more face-time with patients and less time charting after clinic.",
+                          },
+                        ],
+                        "kind": "primitive",
+                        "props": {
+                          "style": {
+                            "color": "#666666",
+                            "fontSize": 9.5,
                             "lineHeight": 1.5,
                           },
                         },
@@ -3337,19 +3488,14 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                     ],
                     "kind": "primitive",
                     "props": {
-                      "style": [
-                        {
-                          "backgroundColor": "#F5F0EB",
-                          "borderLeftColor": "#EA2C00",
-                          "borderLeftWidth": 3,
-                          "borderRadius": 4,
-                          "marginBottom": 10,
-                          "padding": 14,
-                        },
-                        {
-                          "marginBottom": 14,
-                        },
-                      ],
+                      "style": {
+                        "backgroundColor": "#F5F0EB",
+                        "borderRadius": 4,
+                        "marginBottom": 14,
+                        "paddingHorizontal": 18,
+                        "paddingVertical": 18,
+                      },
+                      "wrap": false,
                     },
                     "tag": "VIEW",
                   },
@@ -3358,17 +3504,30 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                       {
                         "children": [
                           {
-                            "children": [],
+                            "children": [
+                              {
+                                "children": [],
+                                "kind": "primitive",
+                                "props": {
+                                  "src": "stub://asset",
+                                  "style": {
+                                    "height": 12,
+                                    "objectFit": "contain",
+                                    "width": 56,
+                                  },
+                                },
+                                "tag": "IMAGE",
+                              },
+                            ],
                             "kind": "primitive",
                             "props": {
-                              "src": "stub://asset",
                               "style": {
-                                "height": 12,
-                                "objectFit": "contain",
-                                "width": 56,
+                                "alignItems": "center",
+                                "flexDirection": "row",
+                                "width": 90,
                               },
                             },
-                            "tag": "IMAGE",
+                            "tag": "VIEW",
                           },
                           {
                             "children": [
@@ -3388,34 +3547,19 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 },
                                 "tag": "TEXT",
                               },
-                              {
-                                "children": [
-                                  {
-                                    "kind": "text",
-                                    "value": "   ·   ",
-                                  },
-                                ],
-                                "kind": "primitive",
-                                "props": {
-                                  "style": {
-                                    "color": "#8F8A82",
-                                  },
-                                },
-                                "tag": "TEXT",
-                              },
-                              {
-                                "kind": "text",
-                                "value": "Outpatient Value Assessment",
-                              },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
                                 "color": "#5C5751",
+                                "flex": 1,
                                 "fontSize": 7.5,
                                 "letterSpacing": 1.1,
+                                "paddingHorizontal": 8,
+                                "textAlign": "center",
                                 "textTransform": "uppercase",
                               },
+                              "wrap": false,
                             },
                             "tag": "TEXT",
                           },
@@ -3428,7 +3572,9 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 "color": "#5C5751",
                                 "fontSize": 7.5,
                                 "letterSpacing": 1.1,
+                                "textAlign": "right",
                                 "textTransform": "uppercase",
+                                "width": 90,
                               },
                             },
                             "tag": "TEXT",
@@ -3443,7 +3589,6 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                             "borderTopWidth": 1,
                             "bottom": 28,
                             "flexDirection": "row",
-                            "justifyContent": "space-between",
                             "left": 54,
                             "paddingTop": 10,
                             "position": "absolute",
@@ -4550,17 +4695,30 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                       {
                         "children": [
                           {
-                            "children": [],
+                            "children": [
+                              {
+                                "children": [],
+                                "kind": "primitive",
+                                "props": {
+                                  "src": "stub://asset",
+                                  "style": {
+                                    "height": 12,
+                                    "objectFit": "contain",
+                                    "width": 56,
+                                  },
+                                },
+                                "tag": "IMAGE",
+                              },
+                            ],
                             "kind": "primitive",
                             "props": {
-                              "src": "stub://asset",
                               "style": {
-                                "height": 12,
-                                "objectFit": "contain",
-                                "width": 56,
+                                "alignItems": "center",
+                                "flexDirection": "row",
+                                "width": 90,
                               },
                             },
-                            "tag": "IMAGE",
+                            "tag": "VIEW",
                           },
                           {
                             "children": [
@@ -4580,34 +4738,19 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 },
                                 "tag": "TEXT",
                               },
-                              {
-                                "children": [
-                                  {
-                                    "kind": "text",
-                                    "value": "   ·   ",
-                                  },
-                                ],
-                                "kind": "primitive",
-                                "props": {
-                                  "style": {
-                                    "color": "#8F8A82",
-                                  },
-                                },
-                                "tag": "TEXT",
-                              },
-                              {
-                                "kind": "text",
-                                "value": "Outpatient Value Assessment",
-                              },
                             ],
                             "kind": "primitive",
                             "props": {
                               "style": {
                                 "color": "#5C5751",
+                                "flex": 1,
                                 "fontSize": 7.5,
                                 "letterSpacing": 1.1,
+                                "paddingHorizontal": 8,
+                                "textAlign": "center",
                                 "textTransform": "uppercase",
                               },
+                              "wrap": false,
                             },
                             "tag": "TEXT",
                           },
@@ -4620,7 +4763,9 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                                 "color": "#5C5751",
                                 "fontSize": 7.5,
                                 "letterSpacing": 1.1,
+                                "textAlign": "right",
                                 "textTransform": "uppercase",
+                                "width": 90,
                               },
                             },
                             "tag": "TEXT",
@@ -4635,7 +4780,6 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                             "borderTopWidth": 1,
                             "bottom": 28,
                             "flexDirection": "row",
-                            "justifyContent": "space-between",
                             "left": 54,
                             "paddingTop": 10,
                             "position": "absolute",
