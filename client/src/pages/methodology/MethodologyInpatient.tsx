@@ -1,16 +1,16 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Download, ArrowRight, Activity, Stethoscope, Heart, Loader2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
-  DomainOverviewGrid,
-  DomainDetailSection,
+  DomainTabExplorer,
   CollapsibleSection,
   type DomainCardData,
   type DomainDetailData,
   type DomainName,
+  type QualitativeSignal,
 } from "@/components/methodology/MethodologyShared";
 
 interface MethodologyInpatientProps {
@@ -139,9 +139,97 @@ const domainDetails: DomainDetailData[] = [
   },
 ];
 
+const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
+  QUALITY: [
+    {
+      label: "CDI Query Trend",
+      tagline: "Daily signal — fastest post-deployment metric to move",
+      howToTrack: "CDI departments track query rates by provider daily. Pull 90-day pre/post comparison to see the documentation-completeness signal.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "CC/MCC Capture Rate",
+      tagline: "Monthly/quarterly — feeds directly into DRG weight accuracy",
+      howToTrack: "Your coding team tracks CC/MCC capture rate per discharge. Compare Abridge-enabled providers against a control cohort.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "HCAHPS Doctor Communication",
+      tagline: "Less time on keyboard = more presence during the encounter",
+      howToTrack: "CMS HCAHPS survey results, reported quarterly. Isolate the 'doctor communication' composite. Signal takes 2–3 reporting cycles to stabilize.",
+      badge: "Emerging",
+    },
+    {
+      label: "30-Day Readmission Rate",
+      tagline: "Better discharge summaries may reduce care-transition failures",
+      howToTrack: "Hospital readmission dashboard, tracked monthly. Many factors contribute — isolate documentation-related cases only with your quality team.",
+      badge: "Emerging",
+    },
+    {
+      label: "CMS Hospital Star Rating",
+      tagline: "Long-game signal — documentation quality accumulates into composite scores",
+      howToTrack: "CMS Care Compare, updated annually. Shows where your quality composites trend over time. Don't claim short-term causation.",
+      badge: "Strategic",
+    },
+  ],
+  WORKFORCE: [
+    {
+      label: "After-Hours Documentation",
+      tagline: "Time spent documenting after shift — the clearest burnout signal",
+      howToTrack: "EHR session data after shift end. Ideally compare same providers before and after deployment. Visible in weeks.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Time to Note Signature",
+      tagline: "How long from patient encounter to signed note",
+      howToTrack: "EHR audit logs. Track median time-to-sign by provider and note type. Faster sign-off correlates with same-session documentation.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Hospitalist Satisfaction / Burnout Surveys",
+      tagline: "Is documentation burden still cited in annual surveys?",
+      howToTrack: "Physician engagement surveys (Press Ganey, internal). Track documentation burden specifically — is it trending down among Abridge users?",
+      badge: "Emerging",
+    },
+  ],
+  CAPACITY: [
+    {
+      label: "H&P Completion vs. CMS 24-Hour Rule",
+      tagline: "Regulatory compliance signal — is the front of the documentation cycle closing faster?",
+      howToTrack: "EHR timestamps for H&P completion vs. admission time. CMS requires H&P within 24 hours. Track % on-time pre/post.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Discharge Documentation Lag",
+      tagline: "Time from discharge order to completed discharge summary",
+      howToTrack: "EHR reports on discharge summary completion timing. DNFB-adjacent metric — the faster the summary, the faster billing can close the chart.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Handoff Completeness (SBAR)",
+      tagline: "Are sign-out notes structured and complete at care transitions?",
+      howToTrack: "Nursing and hospitalist handoff documentation audits. SBAR completeness can be scored from note structure.",
+      badge: "Emerging",
+    },
+  ],
+  REVENUE: [
+    {
+      label: "CMI Trending",
+      tagline: "Case Mix Index — the single number that summarizes DRG accuracy",
+      howToTrack: "Revenue cycle / finance dashboard, tracked quarterly. Compare Abridge-enabled providers vs. control group. 6+ months needed for credible comparison.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "DNFB / Billing Cycle Days",
+      tagline: "Discharge Not Final Billed — working capital tied up in unclosed charts",
+      howToTrack: "Revenue cycle tracks DNFB days (typically 5–7 day industry baseline). Faster H&P + progress notes pull CDI engagement forward. Not modeled in dollars until discharge summary capture ships.",
+      badge: "Emerging",
+    },
+  ],
+};
+
 export function MethodologyInpatient({ onBack, onNavigateToSetting }: MethodologyInpatientProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const domainRefs = useRef<Partial<Record<DomainName, HTMLDivElement | null>>>({});
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -153,11 +241,6 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
     } finally {
       setIsExporting(false);
     }
-  };
-
-  const scrollToDomain = (domain: DomainName) => {
-    const el = domainRefs.current[domain];
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -188,18 +271,14 @@ data-testid="button-export-pdf">
           <p className="text-base text-[#666666]">Where documentation quality becomes DRG accuracy — and DRG accuracy becomes revenue</p>
         </motion.div>
 
-        <DomainOverviewGrid cards={overviewCards} onDomainClick={scrollToDomain} />
+        <DomainTabExplorer
+          cards={overviewCards}
+          domainDetails={domainDetails}
+          qualitativeByDomain={qualitativeSignals}
+        />
 
         <div className="bg-[#F5F0EB] rounded-lg">
           <div className="px-6">
-            {domainDetails.map((detail) => (
-              <DomainDetailSection
-                key={detail.domain}
-                data={detail}
-                sectionRef={{ current: domainRefs.current[detail.domain] ?? null } as React.RefObject<HTMLDivElement>}
-              />
-            ))}
-
             <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

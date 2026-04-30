@@ -1,0 +1,406 @@
+REPLIT PROMPT 1 — Methodology Interactive Domain Explorer (Inpatient + Shared)                                                                                                                               
+                                                                                                                                                                                                               
+  Goal: Convert the inpatient methodology page from a static scroll document into an interactive domain explorer with tabs. Each tab shows the modeled drivers for that domain plus a "Metrics to Watch"       
+  section with qualitative signals. This makes the page usable in live sales conversations — navigate to whatever domain the CFO is asking about.                                                              
+                                                         
+  Files to edit (exactly these two, nothing else):                                                                                                                                                             
+  - client/src/components/methodology/MethodologyShared.tsx
+  - client/src/pages/methodology/MethodologyInpatient.tsx                                                                                                                                                      
+                                                         
+  ---                                                                                                                                                                                                          
+  Part 1 — client/src/components/methodology/MethodologyShared.tsx
+                                                                                                                                                                                                               
+  Add the following three items to this file. Place them at the end of the file, after the existing DomainDetailSection and DomainImpactCard functions. Do not change any existing exports.
+                                                                                                                                                                                                               
+  New item 1 — QualitativeSignal interface (exported)                                                                                                                                                          
+                                                                                                                                                                                                               
+  // ─── Qualitative Signal ───────────────────────────────────────────────────────                                                                                                                            
+                                                                                                                                                                                                               
+  export interface QualitativeSignal {
+    label: string;                                                                                                                                                                                             
+    tagline: string;                                     
+    howToTrack: string;
+    badge: BadgeType;                                                                                                                                                                                          
+  }
+                                                                                                                                                                                                               
+  New item 2 — QualitativeSignalCard component (not exported — internal use)
+
+  function QualitativeSignalCard({ signal }: { signal: QualitativeSignal }) {
+    const [expanded, setExpanded] = useState(false);                                                                                                                                                           
+   
+    return (                                                                                                                                                                                                   
+      <div className="bg-white border border-[#E5E5E5] rounded-sm p-4">
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <h5 className="font-bold text-black text-xs uppercase tracking-wide leading-snug">{signal.label}</h5>                                                                                                
+          <ImpactBadge type={signal.badge} />
+        </div>                                                                                                                                                                                                 
+        <p className="text-sm text-[#666666] leading-relaxed mb-3">{signal.tagline}</p>                                                                                                                        
+        <button
+          onClick={() => setExpanded(!expanded)}                                                                                                                                                               
+          className="text-[10px] font-bold uppercase tracking-[1.5px] flex items-center gap-1 text-[#EA2C00] hover:text-[#C22000] transition-colors"
+        >                                                                                                                                                                                                      
+          {expanded ? "Hide" : "How to track"}
+          {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}                                                                                                                 
+        </button>                                                                                                                                                                                              
+        {expanded && (
+          <div className="mt-2 bg-[#F5F0EB] rounded-sm p-3 border-l-2 border-[#EA2C00]">                                                                                                                       
+            <p className="text-xs text-[#1A1A1A] leading-relaxed">{signal.howToTrack}</p>                                                                                                                      
+          </div>
+        )}                                                                                                                                                                                                     
+      </div>                                                                                                                                                                                                   
+    );
+  }                                                                                                                                                                                                            
+                                                         
+  New item 3 — DomainTabExplorer component (exported)
+
+  // ─── Domain Tab Explorer ──────────────────────────────────────────────────────
+                                                                                                                                                                                                               
+  const DOMAIN_ORDER: DomainName[] = ["QUALITY", "WORKFORCE", "CAPACITY", "REVENUE"];
+  const DOMAIN_LABELS: Record<DomainName, string> = {                                                                                                                                                          
+    QUALITY: "Quality",                                                                                                                                                                                        
+    WORKFORCE: "Workforce",
+    CAPACITY: "Capacity",                                                                                                                                                                                      
+    REVENUE: "Revenue",                                  
+  };
+
+  export function DomainTabExplorer({
+    cards,
+    domainDetails,
+    qualitativeByDomain,
+    defaultDomain = "QUALITY",                                                                                                                                                                                 
+  }: {
+    cards: DomainCardData[];                                                                                                                                                                                   
+    domainDetails: DomainDetailData[];                   
+    qualitativeByDomain: Partial<Record<DomainName, QualitativeSignal[]>>;
+    defaultDomain?: DomainName;                                                                                                                                                                                
+  }) {
+    const [activeDomain, setActiveDomain] = useState<DomainName>(defaultDomain);                                                                                                                               
+                                                         
+    const activeDetail = domainDetails.find((d) => d.domain === activeDomain);                                                                                                                                 
+    const activeCard = cards.find((c) => c.domain === activeDomain);
+    const activeSignals = qualitativeByDomain[activeDomain] ?? [];                                                                                                                                             
+                                                         
+    return (                                                                                                                                                                                                   
+      <div className="mb-10">
+        {/* Section header */}                                                                                                                                                                                 
+        <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
+          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>
+          <h2 className="text-lg font-bold text-black uppercase tracking-tight">Four Domains of Value</h2>                                                                                                     
+          <p className="text-sm text-[#888888] mt-1">Select a domain to explore the evidence and methodology below.</p>                                                                                        
+        </div>                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+        {/* Overview cards — clicking switches active tab */}                                                                                                                                                  
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          {cards.map((card) => (                                                                                                                                                                               
+            <DomainOverviewCard key={card.domain} data={card} onClick={() => setActiveDomain(card.domain)} />
+          ))}                                                                                                                                                                                                  
+        </div>
+                                                                                                                                                                                                               
+        {/* Badge legend */}                             
+        <div className="mb-6 pt-4 border-t border-[#E5E5E5] flex flex-wrap gap-x-6 gap-y-2 items-center">
+          <span className="text-[10px] text-[#888888] uppercase tracking-[1.5px] font-bold">Evidence level:</span>                                                                                             
+          <div className="flex flex-wrap gap-4 items-center">                                                                                                                                                  
+            <div className="flex items-center gap-2">                                                                                                                                                          
+              <ImpactBadge type="Demonstrated" />                                                                                                                                                              
+              <span className="text-[10px] text-[#666666]">trackable from EHR / claims / payroll</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex items-center gap-2">
+              <ImpactBadge type="Emerging" />                                                                                                                                                                  
+              <span className="text-[10px] text-[#666666]">attributable with confidence over 6–18 mo</span>                                                                                                    
+            </div>
+            <div className="flex items-center gap-2">                                                                                                                                                          
+              <ImpactBadge type="Strategic" />           
+              <span className="text-[10px] text-[#666666]">directional — real but not easily monetized</span>                                                                                                  
+            </div>
+          </div>                                                                                                                                                                                               
+        </div>                                           
+
+        {/* Tab bar — underline style, domain color accent, no shadcn styles */}                                                                                                                               
+        <div className="flex border-b border-[#E5E5E5] mb-6 overflow-x-auto">
+          {DOMAIN_ORDER.map((domain) => {                                                                                                                                                                      
+            const isActive = activeDomain === domain;    
+            const color = domainColors[domain];                                                                                                                                                                
+            return (
+              <button                                                                                                                                                                                          
+                key={domain}                             
+                onClick={() => setActiveDomain(domain)}
+                className="px-4 py-3 text-xs font-bold uppercase tracking-[1.5px] whitespace-nowrap transition-colors hover:text-[#444444]"
+                style={{                                                                                                                                                                                       
+                  color: isActive ? color : "#888888",
+                  borderBottom: `2px solid ${isActive ? color : "transparent"}`,                                                                                                                               
+                  marginBottom: -1,                      
+                }}                                                                                                                                                                                             
+              >
+                {DOMAIN_LABELS[domain]}                                                                                                                                                                        
+              </button>                                  
+            );
+          })}
+        </div>
+
+        {/* Tab content — fades in on domain change */}                                                                                                                                                        
+        <motion.div
+          key={activeDomain}                                                                                                                                                                                   
+          initial={{ opacity: 0 }}                       
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15 }}
+          className="space-y-6"
+        >                                                                                                                                                                                                      
+          {/* Domain description */}
+          {activeCard && (                                                                                                                                                                                     
+            <p className="text-[15px] text-[#666666] leading-relaxed">{activeCard.description}</p>
+          )}
+
+          {/* Modeled drivers */}                                                                                                                                                                              
+          {activeDetail && activeDetail.items.length > 0 && (
+            <div>                                                                                                                                                                                              
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Modeled Drivers</p>
+              <div className="space-y-3">                                                                                                                                                                      
+                {activeDetail.items.map((item) => (
+                  <DomainImpactCard key={item.label} item={item} accentColor={domainColors[activeDomain]} />                                                                                                   
+                ))}                                                                                                                                                                                            
+              </div>
+              {activeDetail.honestLimit && (                                                                                                                                                                   
+                <div className="mt-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
+                  <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>                                                                                         
+                  <p className="text-xs text-[#666666] leading-relaxed">{activeDetail.honestLimit}</p>
+                </div>                                                                                                                                                                                         
+              )}                                         
+            </div>                                                                                                                                                                                             
+          )}                                             
+
+          {/* Qualitative signals — Metrics to Watch */}
+          {activeSignals.length > 0 && (
+            <div>                                                                                                                                                                                              
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Metrics to Watch</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">                                                                                                                                          
+                {activeSignals.map((signal) => (                                                                                                                                                               
+                  <QualitativeSignalCard key={signal.label} signal={signal} />
+                ))}                                                                                                                                                                                            
+              </div>                                     
+            </div>
+          )}
+        </motion.div>
+      </div>                                                                                                                                                                                                   
+    );
+  }                                                                                                                                                                                                            
+                                                         
+  ---
+  Part 2 — client/src/pages/methodology/MethodologyInpatient.tsx
+                                                                
+  Step 1 — Replace the import block from @/components/methodology/MethodologyShared
+                                                                                                                                                                                                               
+  Current import (lines 7–14):                                                                                                                                                                                 
+  import {                                                                                                                                                                                                     
+    DomainOverviewGrid,                                                                                                                                                                                        
+    DomainDetailSection,                                 
+    CollapsibleSection, 
+    type DomainCardData,
+    type DomainDetailData,                                                                                                                                                                                     
+    type DomainName,
+  } from "@/components/methodology/MethodologyShared";                                                                                                                                                         
+                                                         
+  Replace with:
+  import {
+    DomainTabExplorer,
+    CollapsibleSection,
+    type DomainCardData,                                                                                                                                                                                       
+    type DomainDetailData,
+    type DomainName,                                                                                                                                                                                           
+    type QualitativeSignal,                              
+  } from "@/components/methodology/MethodologyShared";
+
+  Step 2 — Remove unused imports from lucide-react                                                                                                                                                             
+   
+  Remove Activity, Stethoscope, Heart from the lucide-react import if they are only used in the Related Methodologies section at the bottom — check before removing. Only remove imports that become truly     
+  unused after the refactor.                             
+                                                                                                                                                                                                               
+  Step 3 — Add qualitativeSignals constant               
+
+  Add this constant after the domainDetails array (after line 132, before the export function MethodologyInpatient line):                                                                                      
+   
+  const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {                                                                                                                               
+    QUALITY: [                                                                                                                                                                                                 
+      {
+        label: "CDI Query Trend",                                                                                                                                                                              
+        tagline: "Daily signal — fastest post-deployment metric to move",                                                                                                                                      
+        howToTrack: "CDI departments track query rates by provider daily. Pull 90-day pre/post comparison to see the documentation-completeness signal.",                                                      
+        badge: "Demonstrated",                                                                                                                                                                                 
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "CC/MCC Capture Rate",                    
+        tagline: "Monthly/quarterly — feeds directly into DRG weight accuracy",
+        howToTrack: "Your coding team tracks CC/MCC capture rate per discharge. Compare Abridge-enabled providers against a control cohort.",                                                                  
+        badge: "Demonstrated",                                                                                                                                                                                 
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "HCAHPS Doctor Communication",            
+        tagline: "Less time on keyboard = more presence during the encounter",                                                                                                                                 
+        howToTrack: "CMS HCAHPS survey results, reported quarterly. Isolate the 'doctor communication' composite. Signal takes 2–3 reporting cycles to stabilize.",                                            
+        badge: "Emerging",                                                                                                                                                                                     
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "30-Day Readmission Rate",                
+        tagline: "Better discharge summaries may reduce care-transition failures",
+        howToTrack: "Hospital readmission dashboard, tracked monthly. Many factors contribute — isolate documentation-related cases only with your quality team.",                                             
+        badge: "Emerging",                                                                                                                                                                                     
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "CMS Hospital Star Rating",                                                                                                                                                                     
+        tagline: "Long-game signal — documentation quality accumulates into composite scores",
+        howToTrack: "CMS Care Compare, updated annually. Shows where your quality composites trend over time. Don't claim short-term causation.",                                                              
+        badge: "Strategic",                                                                                                                                                                                    
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    WORKFORCE: [                                         
+      {
+        label: "After-Hours Documentation",
+        tagline: "Time spent documenting after shift — the clearest burnout signal",                                                                                                                           
+        howToTrack: "EHR session data after shift end. Ideally compare same providers before and after deployment. Visible in weeks.",                                                                         
+        badge: "Demonstrated",                                                                                                                                                                                 
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Time to Note Signature",                 
+        tagline: "How long from patient encounter to signed note",                                                                                                                                             
+        howToTrack: "EHR audit logs. Track median time-to-sign by provider and note type. Faster sign-off correlates with same-session documentation.",
+        badge: "Demonstrated",                                                                                                                                                                                 
+      },                                                 
+      {                                                                                                                                                                                                        
+        label: "Hospitalist Satisfaction / Burnout Surveys",
+        tagline: "Is documentation burden still cited in annual surveys?",                                                                                                                                     
+        howToTrack: "Physician engagement surveys (Press Ganey, internal). Track documentation burden specifically — is it trending down among Abridge users?",                                                
+        badge: "Emerging",                                                                                                                                                                                     
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    CAPACITY: [                                          
+      {
+        label: "H&P Completion vs. CMS 24-Hour Rule",
+        tagline: "Regulatory compliance signal — is the front of the documentation cycle closing faster?",                                                                                                     
+        howToTrack: "EHR timestamps for H&P completion vs. admission time. CMS requires H&P within 24 hours. Track % on-time pre/post.",                                                                       
+        badge: "Demonstrated",                                                                                                                                                                                 
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Discharge Documentation Lag",                                                                                                                                                                  
+        tagline: "Time from discharge order to completed discharge summary",
+        howToTrack: "EHR reports on discharge summary completion timing. DNFB-adjacent metric — the faster the summary, the faster billing can close the chart.",                                              
+        badge: "Demonstrated",                                                                                                                                                                                 
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Handoff Completeness (SBAR)",                                                                                                                                                                  
+        tagline: "Are sign-out notes structured and complete at care transitions?",
+        howToTrack: "Nursing and hospitalist handoff documentation audits. SBAR completeness can be scored from note structure.",                                                                              
+        badge: "Emerging",                                                                                                                                                                                     
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    REVENUE: [                                                                                                                                                                                                 
+      {
+        label: "CMI Trending",                                                                                                                                                                                 
+        tagline: "Case Mix Index — the single number that summarizes DRG accuracy",
+        howToTrack: "Revenue cycle / finance dashboard, tracked quarterly. Compare Abridge-enabled providers vs. control group. 6+ months needed for credible comparison.",                                    
+        badge: "Demonstrated",                                                                                                                                                                                 
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "DNFB / Billing Cycle Days",                                                                                                                                                                    
+        tagline: "Discharge Not Final Billed — working capital tied up in unclosed charts",
+        howToTrack: "Revenue cycle tracks DNFB days (typically 5–7 day industry baseline). Faster H&P + progress notes pull CDI engagement forward. Not modeled in dollars until discharge summary capture     
+  ships.",                                                                                                                                                                                                     
+        badge: "Emerging",                                                                                                                                                                                     
+      },                                                                                                                                                                                                       
+    ],                                                   
+  };                                                                                                                                                                                                           
+   
+  Step 4 — Remove domainRefs and scrollToDomain from the component body                                                                                                                                        
+                                                         
+  Inside export function MethodologyInpatient, remove these two lines (they are no longer needed since tabs replace scroll-to behavior):                                                                       
+  const domainRefs = useRef<Partial<Record<DomainName, HTMLDivElement | null>>>({});
+  const scrollToDomain = (domain: DomainName) => {                                                                                                                                                             
+    const el = domainRefs.current[domain];                                                                                                                                                                     
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });                                                                                                                                         
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Also remove the useRef import from React if it becomes unused after removing domainRefs.
+                                                                                                                                                                                                               
+  Step 5 — Replace the JSX block                                                                                                                                                                               
+                                                                                                                                                                                                               
+  Find and replace the following block in the JSX (the DomainOverviewGrid + the beige panel containing DomainDetailSections + CollapsibleSections):                                                            
+                                                         
+  Remove (current lines approximately 183–371):                                                                                                                                                                
+  <DomainOverviewGrid cards={overviewCards} onDomainClick={scrollToDomain} />
+                                                                                                                                                                                                               
+  <div className="bg-[#F5F0EB] rounded-lg">              
+    <div className="px-6">                                                                                                                                                                                     
+      {domainDetails.map((detail) => (
+        <DomainDetailSection                                                                                                                                                                                   
+          key={detail.domain}                            
+          data={detail}      
+          sectionRef={{ current: domainRefs.current[detail.domain] ?? null } as React.RefObject<HTMLDivElement>}
+        />                                                                                                      
+      ))}                                                                                                                                                                                                      
+         
+      <CollapsibleSection sectionId="what-goes-in" ... >                                                                                                                                                       
+        ...                                              
+      </CollapsibleSection>
+                           
+      <CollapsibleSection sectionId="assumptions" ...>                                                                                                                                                         
+        ...                                           
+      </CollapsibleSection>                                                                                                                                                                                    
+                                                         
+      <CollapsibleSection sectionId="honest-limits" ...>
+        ...                                             
+      </CollapsibleSection>
+                           
+      <CollapsibleSection sectionId="validation-path" ...>
+        ...                                                                                                                                                                                                    
+      </CollapsibleSection>
+                                                                                                                                                                                                               
+      <CollapsibleSection sectionId="connected-value" ...>
+        ...                                               
+      </CollapsibleSection>
+    </div>                 
+  </div>  
+        
+  Replace with:
+  <DomainTabExplorer                                                                                                                                                                                           
+    cards={overviewCards}
+    domainDetails={domainDetails}                                                                                                                                                                              
+    qualitativeByDomain={qualitativeSignals}             
+  />                                        
+    
+  <div className="bg-[#F5F0EB] rounded-lg">
+    <div className="px-6">                                                                                                                                                                                     
+      <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
+        { /* KEEP THE EXACT EXISTING CONTENT OF THIS COLLAPSIBLE UNCHANGED */ }                                                                                                                                
+      </CollapsibleSection>                                                                                                                                                                                    
+                                                                                                                                                                                                               
+      <CollapsibleSection sectionId="assumptions" title="The Assumptions" subtitle="Inpatient-specific defaults and ranges">                                                                                   
+        { /* KEEP THE EXACT EXISTING CONTENT OF THIS COLLAPSIBLE UNCHANGED */ }                                                                                                                                
+      </CollapsibleSection>                                                                                                                                                                                    
+                                                                                                                                                                                                               
+      <CollapsibleSection sectionId="honest-limits" title="The Honest Limits" subtitle="What we can prove, what we can support, and what we can only enable in inpatient">
+        { /* KEEP THE EXACT EXISTING CONTENT OF THIS COLLAPSIBLE UNCHANGED */ }                                                                                                                                
+      </CollapsibleSection>                                                    
+                                                                                                                                                                                                               
+      <CollapsibleSection sectionId="validation-path" title="The Validation Path" subtitle="How to prove this with your hospitalist program's data — before, during, and after">
+        { /* KEEP THE EXACT EXISTING CONTENT OF THIS COLLAPSIBLE UNCHANGED */ }                                                                                                                                
+      </CollapsibleSection>                                                    
+                                                                                                                                                                                                               
+      <CollapsibleSection sectionId="connected-value" title="Connected Value" subtitle="How inpatient documentation connects to the rest of your organization">
+        { /* KEEP THE EXACT EXISTING CONTENT OF THIS COLLAPSIBLE UNCHANGED */ }                                                                                                                                
+      </CollapsibleSection>                                                    
+    </div>                                                                                                                                                                                                     
+  </div>                                                 
+        
+  Important: Keep all five CollapsibleSection blocks with their complete existing inner content. Only the DomainDetailSection loop and DomainOverviewGrid are removed.
+                                                                                                                                                                                                               
+  ---
+  Verification                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  npm run typecheck
+  npm run dev                                                                                                                                                                                                  
+  # Navigate to /methodology/inpatient (or the Learn tab)
+  # Expect:                                                                                                                                                                                                    
+  # 1. Four domain summary tiles at top — clicking each switches the active tab below
+  # 2. Tab bar: Quality | Workforce | Capacity | Revenue — active tab shows domain color underline                                                                                                             
+  # 3. Each tab: domain description → "Modeled Drivers" section → "Metrics to Watch" grid → honest limit                                                                                                       
+  # 4. "Metrics to Watch" cards have "How to track" expander in Abridge red                                                                                                                                    
+  # 5. Five collapsible sections below (What Goes Into the Number, etc.) still work                                                                                                                            
+  # 6. No console errors, no TypeScript errors 

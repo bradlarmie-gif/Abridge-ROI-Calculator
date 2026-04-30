@@ -271,3 +271,170 @@ function DomainImpactCard({
     </div>
   );
 }
+
+// ─── Qualitative Signal ───────────────────────────────────────────────────────
+
+export interface QualitativeSignal {
+  label: string;
+  tagline: string;
+  howToTrack: string;
+  badge: BadgeType;
+}
+
+function QualitativeSignalCard({ signal }: { signal: QualitativeSignal }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="bg-white border border-[#E5E5E5] rounded-sm p-4">
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <h5 className="font-bold text-black text-xs uppercase tracking-wide leading-snug">{signal.label}</h5>
+        <ImpactBadge type={signal.badge} />
+      </div>
+      <p className="text-sm text-[#666666] leading-relaxed mb-3">{signal.tagline}</p>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="text-[10px] font-bold uppercase tracking-[1.5px] flex items-center gap-1 text-[#EA2C00] hover:text-[#C22000] transition-colors"
+      >
+        {expanded ? "Hide" : "How to track"}
+        {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+      </button>
+      {expanded && (
+        <div className="mt-2 bg-[#F5F0EB] rounded-sm p-3 border-l-2 border-[#EA2C00]">
+          <p className="text-xs text-[#1A1A1A] leading-relaxed">{signal.howToTrack}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Domain Tab Explorer ──────────────────────────────────────────────────────
+
+const DOMAIN_ORDER: DomainName[] = ["QUALITY", "WORKFORCE", "CAPACITY", "REVENUE"];
+const DOMAIN_LABELS: Record<DomainName, string> = {
+  QUALITY: "Quality",
+  WORKFORCE: "Workforce",
+  CAPACITY: "Capacity",
+  REVENUE: "Revenue",
+};
+
+export function DomainTabExplorer({
+  cards,
+  domainDetails,
+  qualitativeByDomain,
+  defaultDomain = "QUALITY",
+}: {
+  cards: DomainCardData[];
+  domainDetails: DomainDetailData[];
+  qualitativeByDomain: Partial<Record<DomainName, QualitativeSignal[]>>;
+  defaultDomain?: DomainName;
+}) {
+  const [activeDomain, setActiveDomain] = useState<DomainName>(defaultDomain);
+
+  const activeDetail = domainDetails.find((d) => d.domain === activeDomain);
+  const activeCard = cards.find((c) => c.domain === activeDomain);
+  const activeSignals = qualitativeByDomain[activeDomain] ?? [];
+
+  return (
+    <div className="mb-10">
+      {/* Section header */}
+      <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
+        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>
+        <h2 className="text-lg font-bold text-black uppercase tracking-tight">Four Domains of Value</h2>
+        <p className="text-sm text-[#888888] mt-1">Select a domain to explore the evidence and methodology below.</p>
+      </div>
+
+      {/* Overview cards — clicking switches active tab */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+        {cards.map((card) => (
+          <DomainOverviewCard key={card.domain} data={card} onClick={() => setActiveDomain(card.domain)} />
+        ))}
+      </div>
+
+      {/* Badge legend */}
+      <div className="mb-6 pt-4 border-t border-[#E5E5E5] flex flex-wrap gap-x-6 gap-y-2 items-center">
+        <span className="text-[10px] text-[#888888] uppercase tracking-[1.5px] font-bold">Evidence level:</span>
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex items-center gap-2">
+            <ImpactBadge type="Demonstrated" />
+            <span className="text-[10px] text-[#666666]">trackable from EHR / claims / payroll</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ImpactBadge type="Emerging" />
+            <span className="text-[10px] text-[#666666]">attributable with confidence over 6–18 mo</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ImpactBadge type="Strategic" />
+            <span className="text-[10px] text-[#666666]">directional — real but not easily monetized</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab bar — underline style, domain color accent, no shadcn styles */}
+      <div className="flex border-b border-[#E5E5E5] mb-6 overflow-x-auto">
+        {DOMAIN_ORDER.map((domain) => {
+          const isActive = activeDomain === domain;
+          const color = domainColors[domain];
+          return (
+            <button
+              key={domain}
+              onClick={() => setActiveDomain(domain)}
+              className="px-4 py-3 text-xs font-bold uppercase tracking-[1.5px] whitespace-nowrap transition-colors hover:text-[#444444]"
+              style={{
+                color: isActive ? color : "#888888",
+                borderBottom: `2px solid ${isActive ? color : "transparent"}`,
+                marginBottom: -1,
+              }}
+              data-testid={`tab-domain-${domain.toLowerCase()}`}
+            >
+              {DOMAIN_LABELS[domain]}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tab content — fades in on domain change */}
+      <motion.div
+        key={activeDomain}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15 }}
+        className="space-y-6"
+      >
+        {/* Domain description */}
+        {activeCard && (
+          <p className="text-[15px] text-[#666666] leading-relaxed">{activeCard.description}</p>
+        )}
+
+        {/* Modeled drivers */}
+        {activeDetail && activeDetail.items.length > 0 && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Modeled Drivers</p>
+            <div className="space-y-3">
+              {activeDetail.items.map((item) => (
+                <DomainImpactCard key={item.label} item={item} accentColor={domainColors[activeDomain]} />
+              ))}
+            </div>
+            {activeDetail.honestLimit && (
+              <div className="mt-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
+                <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>
+                <p className="text-xs text-[#666666] leading-relaxed">{activeDetail.honestLimit}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Qualitative signals — Metrics to Watch */}
+        {activeSignals.length > 0 && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Metrics to Watch</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {activeSignals.map((signal) => (
+                <QualitativeSignalCard key={signal.label} signal={signal} />
+              ))}
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+}
