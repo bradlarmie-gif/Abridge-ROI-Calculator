@@ -1,16 +1,16 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Download, ArrowRight, Activity, Building2, Stethoscope, Loader2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
-  DomainOverviewGrid,
-  DomainDetailSection,
+  DomainTabExplorer,
   CollapsibleSection,
   type DomainCardData,
   type DomainDetailData,
   type DomainName,
+  type QualitativeSignal,
 } from "@/components/methodology/MethodologyShared";
 
 interface MethodologyNursingProps {
@@ -133,9 +133,71 @@ const domainDetails: DomainDetailData[] = [
   },
 ];
 
+const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
+  QUALITY: [
+    {
+      label: "Skin Assessment Completion Rate",
+      tagline: "Upstream HAPI prevention — assessments done on time make pressure injuries identifiable earlier",
+      howToTrack: "EHR audit: % of admissions with Braden / skin assessment completed within shift policy. Trend monthly per unit. Direct documentation-driven signal.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Falls Risk Assessment Completion (Morse / Hendrich)",
+      tagline: "Documentation completeness for the standardized fall-risk score on admission and shift change",
+      howToTrack: "EHR report: % of patients with current fall-risk score per shift. Compare pilot vs. control units. Tracked daily by nursing quality teams.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "HCAHPS Nurse Communication Composite",
+      tagline: "More bedside time tends to surface in patient-reported nurse communication scores",
+      howToTrack: "CMS HCAHPS survey, reported quarterly. Isolate the 'nurse communication' composite. Signal takes 2–3 reporting cycles to stabilize.",
+      badge: "Emerging",
+    },
+  ],
+  WORKFORCE: [
+    {
+      label: "Late-Shift Documentation",
+      tagline: "Nurses charting after their shift ends — the cleanest leading indicator for OT and burnout",
+      howToTrack: "EHR session data after shift end timestamp. Compare same nurses pre/post deployment. Visible in weeks; this is the upstream signal for OT reduction.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Nurse Engagement / Burnout Surveys (NDNQI / MBI)",
+      tagline: "Is documentation burden still cited as a top factor in nurse engagement instruments?",
+      howToTrack: "NDNQI RN Job Satisfaction surveys, MBI burnout assessments, or internal pulse surveys. Track the documentation-burden item year over year for Abridge units.",
+      badge: "Emerging",
+    },
+    {
+      label: "Agency / Travel Nurse Fill Rate",
+      tagline: "Lagging indicator for retention — agency reliance often drops as documentation-driven turnover eases",
+      howToTrack: "Workforce analytics: % of shifts filled by agency vs. core staff per unit. Trend monthly. Multi-factorial — control for census and market availability.",
+      badge: "Emerging",
+    },
+  ],
+  CAPACITY: [
+    {
+      label: "Shift End-Time Discipline",
+      tagline: "% of nurses clocking out within 15 minutes of shift end — direct OT precursor",
+      howToTrack: "Payroll / time-and-attendance system. Trend monthly per unit. Pair with late-shift documentation to confirm OT reduction is driven by documentation, not staffing changes.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Bedside Time per Patient (NDNQI)",
+      tagline: "Time spent in direct patient care vs. at the workstation",
+      howToTrack: "NDNQI nursing care hours data, time-motion observation studies, or RTLS badge data if available. Trend pre/post for Abridge units. Quarterly cadence.",
+      badge: "Emerging",
+    },
+    {
+      label: "Hand-Off Completeness (SBAR)",
+      tagline: "Are shift-to-shift hand-offs structured and complete? Documentation quality shows up at care transitions",
+      howToTrack: "Hand-off audits scored against SBAR completeness rubric. Sample 10–20 hand-offs per unit per month. Pair with patient-safety event data to triangulate impact.",
+      badge: "Strategic",
+    },
+  ],
+};
+
 export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyNursingProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const domainRefs = useRef<Partial<Record<DomainName, HTMLDivElement | null>>>({});
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -147,11 +209,6 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
     } finally {
       setIsExporting(false);
     }
-  };
-
-  const scrollToDomain = (domain: DomainName) => {
-    const el = domainRefs.current[domain];
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -182,18 +239,14 @@ data-testid="button-export-pdf">
           <p className="text-base text-[#666666]">Where overtime reduction is the lead metric — and retention is the long game</p>
         </motion.div>
 
-        <DomainOverviewGrid cards={overviewCards} onDomainClick={scrollToDomain} />
+        <DomainTabExplorer
+          cards={overviewCards}
+          domainDetails={domainDetails}
+          qualitativeByDomain={qualitativeSignals}
+        />
 
         <div className="bg-[#F5F0EB] rounded-lg">
           <div className="px-6">
-            {domainDetails.map((detail) => (
-              <DomainDetailSection
-                key={detail.domain}
-                data={detail}
-                sectionRef={{ current: domainRefs.current[detail.domain] ?? null } as React.RefObject<HTMLDivElement>}
-              />
-            ))}
-
             <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

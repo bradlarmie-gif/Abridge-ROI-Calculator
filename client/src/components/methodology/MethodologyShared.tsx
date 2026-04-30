@@ -75,60 +75,6 @@ export function DomainOverviewCard({ data, onClick }: { data: DomainCardData; on
   );
 }
 
-// ─── Domain Overview Grid ─────────────────────────────────────────────────────
-
-export function DomainOverviewGrid({
-  cards,
-  onDomainClick,
-}: {
-  cards: DomainCardData[];
-  onDomainClick?: (domain: DomainName) => void;
-}) {
-  return (
-    <div className="mb-12">
-      {/* Section header — matches PDF editorial style */}
-      <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>
-        <h2 className="text-lg font-bold text-black uppercase tracking-tight">
-          Four Domains of Value
-        </h2>
-        <p className="text-sm text-[#888888] mt-1">
-          Select a domain to explore the evidence and methodology below.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {cards.map((card) => (
-          <DomainOverviewCard
-            key={card.domain}
-            data={card}
-            onClick={() => onDomainClick?.(card.domain)}
-          />
-        ))}
-      </div>
-
-      {/* Badge legend */}
-      <div className="mt-6 pt-4 border-t border-[#E5E5E5] flex flex-wrap gap-x-6 gap-y-2 items-center">
-        <span className="text-[10px] text-[#888888] uppercase tracking-[1.5px] font-bold">Evidence level:</span>
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2">
-            <ImpactBadge type="Demonstrated" />
-            <span className="text-[10px] text-[#666666]">trackable from EHR / claims / payroll</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ImpactBadge type="Emerging" />
-            <span className="text-[10px] text-[#666666]">attributable with confidence over 6–18 mo</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ImpactBadge type="Strategic" />
-            <span className="text-[10px] text-[#666666]">directional — real but not easily monetized</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Collapsible Section ──────────────────────────────────────────────────────
 
 interface SectionProps {
@@ -185,7 +131,7 @@ export function CollapsibleSection({
   );
 }
 
-// ─── Domain Detail Section ────────────────────────────────────────────────────
+// ─── Domain Detail Types & Card ───────────────────────────────────────────────
 
 export interface DomainImpactItem {
   label: string;
@@ -201,37 +147,6 @@ export interface DomainDetailData {
   sectionSubtitle: string;
   items: DomainImpactItem[];
   honestLimit?: string;
-}
-
-export function DomainDetailSection({
-  data,
-  sectionRef,
-}: {
-  data: DomainDetailData;
-  sectionRef?: React.RefObject<HTMLDivElement>;
-}) {
-  const color = domainColors[data.domain];
-
-  return (
-    <CollapsibleSection
-      sectionId={`domain-${data.domain.toLowerCase()}`}
-      title={data.sectionTitle}
-      subtitle={data.sectionSubtitle}
-      accentColor={color}
-    >
-      <div ref={sectionRef} className="space-y-3">
-        {data.items.map((item) => (
-          <DomainImpactCard key={item.label} item={item} accentColor={color} />
-        ))}
-        {data.honestLimit && (
-          <div className="mt-1 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
-            <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>
-            <p className="text-xs text-[#666666] leading-relaxed">{data.honestLimit}</p>
-          </div>
-        )}
-      </div>
-    </CollapsibleSection>
-  );
 }
 
 function DomainImpactCard({

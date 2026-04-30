@@ -1,16 +1,16 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Download, ArrowRight, Activity, Building2, Heart, Loader2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
-  DomainOverviewGrid,
-  DomainDetailSection,
+  DomainTabExplorer,
   CollapsibleSection,
   type DomainCardData,
   type DomainDetailData,
   type DomainName,
+  type QualitativeSignal,
 } from "@/components/methodology/MethodologyShared";
 
 interface MethodologyOutpatientProps {
@@ -133,9 +133,85 @@ const domainDetails: DomainDetailData[] = [
   },
 ];
 
+const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
+  QUALITY: [
+    {
+      label: "HCC Recapture Rate (MA Risk Adjustment)",
+      tagline: "Are chronic conditions being re-documented in the year they need to be?",
+      howToTrack: "Risk adjustment / coding team tracks suspected vs. confirmed HCC closures by provider. Pull pre/post recapture rate for MA panels. Quarterly cadence.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Care Gap Closure Rate",
+      tagline: "HEDIS-style measures that depend on documentation completeness — A1c, BP, screenings",
+      howToTrack: "Population health dashboard or payer scorecard. Track gap closure rate per measure for Abridge-enabled providers vs. control. 6-month signal.",
+      badge: "Emerging",
+    },
+    {
+      label: "MIPS / Quality Reporting Score",
+      tagline: "Composite regulatory score that rolls up documentation-dependent measures",
+      howToTrack: "CMS MIPS feedback report, annual cadence. Trend the quality category score over multiple reporting years. Long-game signal.",
+      badge: "Strategic",
+    },
+  ],
+  WORKFORCE: [
+    {
+      label: "After-Hours Documentation (Pajama Time)",
+      tagline: "Time spent charting outside scheduled work hours — the canonical outpatient burnout metric",
+      howToTrack: "EHR session data outside scheduled hours. Compare same providers before and after deployment. Visible in weeks; among the earliest signals.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Same-Day Note Closure Rate",
+      tagline: "% of encounters with the note signed before the provider leaves the clinic",
+      howToTrack: "EHR audit logs: % of visits with a signed note by end of day. Track per-provider trend pre/post. Often dramatic in the first 90 days.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Provider Engagement / Burnout Surveys",
+      tagline: "Is documentation burden still cited in annual engagement surveys?",
+      howToTrack: "Press Ganey provider engagement, MBI, or internal pulse surveys. Isolate the documentation-burden item and trend year over year for Abridge cohort.",
+      badge: "Emerging",
+    },
+  ],
+  CAPACITY: [
+    {
+      label: "Patient Panel Size",
+      tagline: "Active panel per PCP — moves slowly, but reflects real access expansion when it does",
+      howToTrack: "Empanelment data from your population health system. Trend panel size for Abridge-enabled PCPs vs. control. 6–12 month signal; control for retirements and new hires.",
+      badge: "Emerging",
+    },
+    {
+      label: "No-Show Rate",
+      tagline: "Downstream of better access — easier scheduling reduces patient drop-off",
+      howToTrack: "Scheduling system reports. Track no-show rate trend monthly. Influenced by reminder workflows and demographics — control for those when interpreting.",
+      badge: "Strategic",
+    },
+    {
+      label: "New Patient Wait Time (Third Next Available)",
+      tagline: "Industry-standard access metric — reflects how quickly a new patient can be seen",
+      howToTrack: "Scheduling analytics: median days to third next available appointment. Track per-provider trend. Improvement is slow but compounds.",
+      badge: "Emerging",
+    },
+  ],
+  REVENUE: [
+    {
+      label: "E/M Level Distribution",
+      tagline: "% of visits at each E/M level — the clearest leading indicator of wRVU lift",
+      howToTrack: "Billing system: % of visits at 99213, 99214, 99215 by provider. Compare same provider, same patient mix pre/post. Visible in claims data within 90 days.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Documentation-Related Denial Rate",
+      tagline: "Denials specifically tied to medical necessity / documentation gaps",
+      howToTrack: "RCM root-cause categorization, tracked monthly. Isolate documentation-related denials from other causes. 6+ months for credible trend.",
+      badge: "Emerging",
+    },
+  ],
+};
+
 export function MethodologyOutpatient({ onBack, onNavigateToSetting }: MethodologyOutpatientProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const domainRefs = useRef<Partial<Record<DomainName, HTMLDivElement | null>>>({});
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -147,11 +223,6 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
     } finally {
       setIsExporting(false);
     }
-  };
-
-  const scrollToDomain = (domain: DomainName) => {
-    const el = domainRefs.current[domain];
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -182,18 +253,14 @@ data-testid="button-export-pdf">
           <p className="text-base text-[#666666]">Where time saved becomes capacity — and capacity becomes revenue or wellbeing</p>
         </motion.div>
 
-        <DomainOverviewGrid cards={overviewCards} onDomainClick={scrollToDomain} />
+        <DomainTabExplorer
+          cards={overviewCards}
+          domainDetails={domainDetails}
+          qualitativeByDomain={qualitativeSignals}
+        />
 
         <div className="bg-[#F5F0EB] rounded-lg">
           <div className="px-6">
-            {domainDetails.map((detail) => (
-              <DomainDetailSection
-                key={detail.domain}
-                data={detail}
-                sectionRef={{ current: domainRefs.current[detail.domain] ?? null } as React.RefObject<HTMLDivElement>}
-              />
-            ))}
-
             <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

@@ -1,16 +1,16 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Download, ArrowRight, Stethoscope, Building2, Heart, Loader2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
-  DomainOverviewGrid,
-  DomainDetailSection,
+  DomainTabExplorer,
   CollapsibleSection,
   type DomainCardData,
   type DomainDetailData,
   type DomainName,
+  type QualitativeSignal,
 } from "@/components/methodology/MethodologyShared";
 
 interface MethodologyEDProps {
@@ -145,9 +145,85 @@ const domainDetails: DomainDetailData[] = [
   },
 ];
 
+const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
+  QUALITY: [
+    {
+      label: "ED Note Quality (Star Rating)",
+      tagline: "Composite of completeness, specificity, and structure — auditable per provider",
+      howToTrack: "CDI / quality team scores ED notes on a star scale (often 1–5). Pull pre/post averages by provider. Pattern is usually visible within 90 days.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Admission Hand-Off Completeness",
+      tagline: "When the ED admits, the inpatient team starts from the ED note — completeness shows up downstream",
+      howToTrack: "Audit a sample of ED-to-inpatient handoffs for SBAR completeness, presenting condition specificity, and disposition reasoning. Pair with hospitalist satisfaction surveys.",
+      badge: "Emerging",
+    },
+    {
+      label: "ED Patient Experience (Press Ganey)",
+      tagline: "Less keyboard time = more eye contact during the encounter",
+      howToTrack: "Press Ganey ED survey, reported quarterly. Isolate the 'Doctor explained things clearly' composite. Tied directly to ED HCAHPS and value-based contract performance.",
+      badge: "Emerging",
+    },
+  ],
+  WORKFORCE: [
+    {
+      label: "After-Hours Documentation",
+      tagline: "Time spent charting after shift end — the cleanest ED burnout signal",
+      howToTrack: "EHR session data after shift end. Compare same providers before and after deployment. Visible in weeks.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Provider Engagement / Burnout Surveys",
+      tagline: "Is documentation burden still cited as a top driver in ED-specific burnout assessments?",
+      howToTrack: "Press Ganey provider engagement, ACEP wellness surveys, or internal pulse surveys. Track documentation burden specifically among Abridge users.",
+      badge: "Emerging",
+    },
+    {
+      label: "Locum Utilization Trend",
+      tagline: "Locum coverage often spikes when retention dips — track the leading indicator",
+      howToTrack: "Schedule data and locum agency invoices. Track locum hours and spend per month vs. baseline. Lagging indicator for retention.",
+      badge: "Emerging",
+    },
+  ],
+  CAPACITY: [
+    {
+      label: "Encounters per Provider per Shift",
+      tagline: "Throughput per provider — directly responsive to documentation speed",
+      howToTrack: "EHR encounter counts segmented by provider and shift. Compare same shift type and acuity mix pre/post for credible comparison.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "End-of-Shift Note Completion Rate",
+      tagline: "% of notes signed before clock-out — a clean signal for same-shift documentation",
+      howToTrack: "EHR audit logs: % of encounters with a signed note by end of shift. Often the most dramatic early metric in the ED.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Door-to-Provider Time",
+      tagline: "Front-end throughput — affected by triage, staffing, and documentation flow",
+      howToTrack: "ED operational dashboard, tracked monthly. Documentation is one input — control for staffing and acuity changes when interpreting the trend.",
+      badge: "Emerging",
+    },
+  ],
+  REVENUE: [
+    {
+      label: "Down-coding Rate",
+      tagline: "% of ED encounters coded below the level supported by the actual visit complexity",
+      howToTrack: "Coding team audit. Pull % of encounters down-coded due to documentation gaps. Directly responsive to documentation completeness — Abridge-moveable signal.",
+      badge: "Demonstrated",
+    },
+    {
+      label: "Documentation-Related Denial Rate",
+      tagline: "Denials specifically tied to medical necessity / documentation gaps",
+      howToTrack: "RCM root-cause categorization, tracked monthly. Isolate documentation-related denials from other causes. 6+ months for credible trend.",
+      badge: "Emerging",
+    },
+  ],
+};
+
 export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const domainRefs = useRef<Partial<Record<DomainName, HTMLDivElement | null>>>({});
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -159,11 +235,6 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
     } finally {
       setIsExporting(false);
     }
-  };
-
-  const scrollToDomain = (domain: DomainName) => {
-    const el = domainRefs.current[domain];
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -194,18 +265,14 @@ data-testid="button-export-pdf">
           <p className="text-base text-[#666666]">Where speed matters and every minute counts differently</p>
         </motion.div>
 
-        <DomainOverviewGrid cards={overviewCards} onDomainClick={scrollToDomain} />
+        <DomainTabExplorer
+          cards={overviewCards}
+          domainDetails={domainDetails}
+          qualitativeByDomain={qualitativeSignals}
+        />
 
         <div className="bg-[#F5F0EB] rounded-lg">
           <div className="px-6">
-            {domainDetails.map((detail) => (
-              <DomainDetailSection
-                key={detail.domain}
-                data={detail}
-                sectionRef={{ current: domainRefs.current[detail.domain] ?? null } as React.RefObject<HTMLDivElement>}
-              />
-            ))}
-
             <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
