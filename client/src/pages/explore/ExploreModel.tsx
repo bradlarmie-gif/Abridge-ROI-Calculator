@@ -730,35 +730,57 @@ export default function ExploreModel({
           }
 
           const drivers = EXPLORE_DRIVERS
-            .filter(d => d.quadrant === quadrant && d.settings.includes(state.careSetting!) && isDriverEnabled(d, state))
+            .filter(d =>
+              d.quadrant === quadrant &&
+              d.settings.includes(state.careSetting!) &&
+              !d.childOfDriverId
+            )
             .map(d => {
-              const value = allDriverValues[d.id] || 0;
-              const personalizedDesc = d.visibility === 'quantified'
-                ? buildPersonalizedDescription(
-                    d.id,
-                    value,
-                    state.numberOfProviders || 0,
-                    state.annualEncounters || 0,
-                    totalHoursSaved,
-                  )
+              const included = isDriverEnabled(d, state);
+              const value = included ? (allDriverValues[d.id] || 0) : 0;
+              const personalizedDesc = included && d.visibility === 'quantified'
+                ? buildPersonalizedDescription(d.id, value, state.numberOfProviders || 0, state.annualEncounters || 0, totalHoursSaved)
                 : '';
               return {
                 id: d.id,
                 label: d.label,
-                shortDescription: (personalizedDesc || d.shortDescription),
+                shortDescription: personalizedDesc || d.shortDescription,
                 visibility: d.visibility,
                 value,
-                isChild: Boolean(d.childOfDriverId),
-                calcSummary: allDriverCalcSummaries[d.id],
+                isChild: false,
+                calcSummary: included ? allDriverCalcSummaries[d.id] : undefined,
+                isIncluded: included,
               };
             });
+
+          const childDrivers = EXPLORE_DRIVERS
+            .filter(d =>
+              d.quadrant === quadrant &&
+              d.settings.includes(state.careSetting!) &&
+              d.childOfDriverId &&
+              isDriverEnabled(d, state)
+            )
+            .map(d => ({
+              id: d.id,
+              label: d.label,
+              shortDescription: allDriverCalcSummaries[d.id] ? buildPersonalizedDescription(d.id, allDriverValues[d.id] || 0, state.numberOfProviders || 0, state.annualEncounters || 0, totalHoursSaved) || d.shortDescription : d.shortDescription,
+              visibility: d.visibility,
+              value: allDriverValues[d.id] || 0,
+              isChild: true,
+              calcSummary: allDriverCalcSummaries[d.id],
+              isIncluded: true,
+            }));
+
+          const includedFirst = drivers.filter(d => d.isIncluded);
+          const notIncluded = drivers.filter(d => !d.isIncluded);
+          const finalDrivers = [...includedFirst, ...childDrivers, ...notIncluded];
 
           const benefits = (state.otherFinancialBenefits ?? [])
             .filter(b => b.quadrant === quadrant && b.label.trim() && b.amount > 0)
             .map(b => ({ label: b.label, amount: b.amount, type: b.type }));
 
-          const driverAnnualSum = drivers
-            .filter(d => d.visibility === 'quantified')
+          const driverAnnualSum = finalDrivers
+            .filter(d => d.visibility === 'quantified' && d.isIncluded)
             .reduce((s, d) => s + d.value, 0);
           const benefitsAnnual = benefits.filter(b => b.type === 'annual').reduce((s, b) => s + b.amount, 0);
           const benefitsOneTime = benefits.filter(b => b.type === 'oneTime').reduce((s, b) => s + b.amount, 0);
@@ -767,7 +789,7 @@ export default function ExploreModel({
             quadrant,
             annualTotal: driverAnnualSum + benefitsAnnual,
             oneTimeTotal: benefitsOneTime,
-            drivers,
+            drivers: finalDrivers,
             otherFinancialBenefits: benefits,
           };
         };

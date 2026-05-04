@@ -1,0 +1,251 @@
+Three files. Two changes.                              
+                                                                                                                                                                                                               
+  ---                                                    
+  Change 1 — Show all available drivers on every quadrant page (selected vs. not selected)
+                                                                                                                                                                                                               
+  client/src/components/explore/ExplorePDFExport.tsx
+                                                                                                                                                                                                               
+  Add isIncluded?: boolean to ExplorePDFQuadrantDriver:  
+
+  export interface ExplorePDFQuadrantDriver {                                                                                                                                                                  
+    id: string;
+    label: string;                                                                                                                                                                                             
+    shortDescription: string;                            
+    visibility: "quantified" | "qualitative";
+    value: number;
+    isChild?: boolean;
+    calcSummary?: string;
+    isIncluded?: boolean;  // ← ADD: true = user selected, false = available but not included                                                                                                                  
+  }                                                                                                                                                                                                            
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  client/src/components/explore/ExploreModel.tsx         
+                                                
+  In the buildQuadrantData function (or wherever the drivers array is assembled for the PDF), change it to include ALL drivers for the setting+quadrant — not just enabled ones. Mark each with isIncluded:
+                                                                                                                                                                                                               
+  import { EXPLORE_DRIVERS, isDriverEnabled } from "@/lib/exploreDrivers";
+                                                                                                                                                                                                               
+  // Replace the current drivers filter+map with:                                                                                                                                                              
+  const drivers = EXPLORE_DRIVERS                                                                                                                                                                              
+    .filter(d =>                                                                                                                                                                                               
+      d.quadrant === quadrant &&                                                                                                                                                                               
+      d.settings.includes(state.careSetting!) &&
+      !d.childOfDriverId  // exclude child drivers from the main list                                                                                                                                          
+    )                                                                                                                                                                                                          
+    .map(d => {                                                                                                                                                                                                
+      const included = isDriverEnabled(d, state);                                                                                                                                                              
+      const value = included ? (allDriverValues[d.id] || 0) : 0;                                                                                                                                               
+      const personalizedDesc = included && d.visibility === 'quantified'
+        ? buildPersonalizedDescription(d.id, value, state.numberOfProviders || 0, state.annualEncounters || 0, totalHoursSaved)                                                                                
+        : '';                                                                                                                                                                                                  
+      return {                                                                                                                                                                                                 
+        id: d.id,                                                                                                                                                                                              
+        label: d.label,                                  
+        shortDescription: personalizedDesc || d.shortDescription,                                                                                                                                              
+        visibility: d.visibility,                        
+        value,
+        isChild: false,
+        calcSummary: included ? allDriverCalcSummaries[d.id] : undefined,                                                                                                                                      
+        isIncluded: included,                                                                                                                                                                                  
+      };                                                                                                                                                                                                       
+    });                                                                                                                                                                                                        
+                                                         
+  // Then append child drivers for INCLUDED parents only (preserve existing child behavior)                                                                                                                    
+  const childDrivers = EXPLORE_DRIVERS
+    .filter(d =>                                                                                                                                                                                               
+      d.quadrant === quadrant &&                                                                                                                                                                               
+      d.settings.includes(state.careSetting!) &&
+      d.childOfDriverId &&                                                                                                                                                                                     
+      isDriverEnabled(d, state)                          
+    )
+    .map(d => ({
+      id: d.id,
+      label: d.label,
+      shortDescription: allDriverCalcSummaries[d.id] ? buildPersonalizedDescription(d.id, allDriverValues[d.id] || 0, state.numberOfProviders || 0, state.annualEncounters || 0, totalHoursSaved) ||
+  d.shortDescription : d.shortDescription,                                                                                                                                                                     
+      visibility: d.visibility,
+      value: allDriverValues[d.id] || 0,                                                                                                                                                                       
+      isChild: true,                                                                                                                                                                                           
+      calcSummary: allDriverCalcSummaries[d.id],
+      isIncluded: true,                                                                                                                                                                                        
+    }));                                                 
+
+  // Merge: included drivers first (in order), then not-included, then children                                                                                                                                
+  const includedFirst = drivers.filter(d => d.isIncluded);
+  const notIncluded = drivers.filter(d => !d.isIncluded);                                                                                                                                                      
+  const finalDrivers = [...includedFirst, ...childDrivers, ...notIncluded];
+                                                                                                                                                                                                               
+  Use finalDrivers where drivers was previously used when assembling ExplorePDFQuadrantData.                                                                                                                   
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  client/src/components/explore/ExploreNarrativePDF.tsx  
+                                                       
+  In CompactDriverCard, add an isIncluded prop defaulting to true. Render non-included drivers as muted/outlined cards:
+                                                                                                                                                                                                               
+  const CompactDriverCard = ({
+    name,                                                                                                                                                                                                      
+    value,                                               
+    body,                                                                                                                                                                                                      
+    formula,                                             
+    linkedTag,
+    valueIsTracked,
+    isIncluded = true,   // ← ADD prop                                                                                                                                                                         
+  }: {
+    name: string;                                                                                                                                                                                              
+    value: string;                                       
+    body: string;
+    formula?: string;                                                                                                                                                                                          
+    linkedTag?: boolean;
+    valueIsTracked?: boolean;                                                                                                                                                                                  
+    isIncluded?: boolean;  // ← ADD                      
+  }) => (
+    <View
+      style={{
+        backgroundColor: isIncluded ? colors.cards : colors.background,
+        borderWidth: isIncluded ? 0 : 1,                                                                                                                                                                       
+        borderColor: colors.border,
+        borderRadius: 4,                                                                                                                                                                                       
+        padding: 14,                                                                                                                                                                                           
+        marginBottom: 10,
+      }}                                                                                                                                                                                                       
+      wrap={false}                                       
+    >
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+        <Text                                                                                                                                                                                                  
+          style={{
+            fontSize: 10.5,                                                                                                                                                                                    
+            fontWeight: "bold",                          
+            color: isIncluded ? colors.primaryText : colors.tertiary,
+            textTransform: "uppercase",                                                                                                                                                                        
+            letterSpacing: 0.8,
+            flex: 1,                                                                                                                                                                                           
+            paddingRight: 6,                             
+          }}
+        >
+          {name}
+        </Text>
+        {isIncluded ? (
+          <Text                                                                                                                                                                                                
+            style={{
+              fontSize: valueIsTracked ? 10 : 13,                                                                                                                                                              
+              fontWeight: "bold",                        
+              color: valueIsTracked ? colors.secondary : colors.primary,
+              fontStyle: valueIsTracked ? "italic" : "normal",                                                                                                                                                 
+              textTransform: valueIsTracked ? "uppercase" : "none",
+              letterSpacing: valueIsTracked ? 1.2 : 0,                                                                                                                                                         
+            }}                                           
+          >                                                                                                                                                                                                    
+            {value}                                      
+          </Text>                                                                                                                                                                                              
+        ) : (
+          <Text style={{ fontSize: 8, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1.2 }}>                                                                                               
+            Not included                                 
+          </Text>
+        )}
+      </View>                                                                                                                                                                                                  
+   
+      {linkedTag ? (                                                                                                                                                                                           
+        <Text style={{ fontSize: 7.5, color: colors.primary, textTransform: "uppercase", letterSpacing: 1.2, fontWeight: "bold", marginBottom: 4 }}>
+          ↳ Linked driver                                                                                                                                                                                      
+        </Text>                                                                                                                                                                                                
+      ) : null}                                                                                                                                                                                                
+                                                                                                                                                                                                               
+      <Text                                              
+        style={{
+          fontSize: 9.5,
+          color: isIncluded ? colors.secondary : colors.tertiary,
+          lineHeight: 1.5,
+          marginBottom: isIncluded && formula ? 0 : 0,                                                                                                                                                         
+        }}
+      >                                                                                                                                                                                                        
+        {body}                                                                                                                                                                                                 
+      </Text>
+                                                                                                                                                                                                               
+      {/* Formula box — only for included drivers */}    
+      {isIncluded && formula ? (
+        <View
+          style={{                                                                                                                                                                                             
+            marginTop: 8,
+            backgroundColor: colors.background,                                                                                                                                                                
+            borderLeftWidth: 2,                          
+            borderLeftColor: colors.border,
+            paddingHorizontal: 8,
+            paddingVertical: 5,
+            borderRadius: 2,                                                                                                                                                                                   
+          }}
+        >                                                                                                                                                                                                      
+          <Text                                          
+            style={{
+              fontSize: 7.5,
+              color: colors.tertiary,
+              textTransform: "uppercase",
+              letterSpacing: 1.2,
+              fontWeight: "bold",                                                                                                                                                                              
+              marginBottom: 3,
+            }}                                                                                                                                                                                                 
+          >                                              
+            How it's calculated
+          </Text>
+          <Text style={{ fontSize: 8.5, color: colors.primaryText, lineHeight: 1.5 }}>
+            {formula}                                                                                                                                                                                          
+          </Text>
+        </View>                                                                                                                                                                                                
+      ) : null}                                          
+    </View>
+  );
+
+  In QuadrantPage, pass isIncluded to each CompactDriverCard call:                                                                                                                                             
+   
+  {/* Included quantified drivers */}                                                                                                                                                                          
+  {quantified.map((d) => (                                                                                                                                                                                     
+    <CompactDriverCard
+      key={d.id}                                                                                                                                                                                               
+      name={d.label}                                     
+      value={fmtCurrency(d.value)}                                                                                                                                                                             
+      body={d.shortDescription}
+      formula={d.calcSummary}                                                                                                                                                                                  
+      linkedTag={d.isChild}                              
+      isIncluded={d.isIncluded !== false}                                                                                                                                                                      
+    />
+  ))}                                                                                                                                                                                                          
+                                                         
+  {/* Other financial benefits — always included */}                                                                                                                                                           
+  {q.otherFinancialBenefits.map((b, i) => (
+    <CompactDriverCard                                                                                                                                                                                         
+      key={`b-${i}`}                                                                                                                                                                                           
+      name={b.label}
+      value={`${fmtCurrency(b.amount)} ${b.type === "annual" ? "annual" : "one-time"}`}                                                                                                                        
+      body="Other financial benefit configured for this quadrant."                                                                                                                                             
+      isIncluded={true}                                                                                                                                                                                        
+    />                                                                                                                                                                                                         
+  ))}                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  {/* Tracked qualitative drivers — included */}         
+  {qualitative.filter(d => d.isIncluded !== false).map((d) => (
+    <CompactDriverCard                                                                                                                                                                                         
+      key={d.id}
+      name={d.label}                                                                                                                                                                                           
+      value="Tracked"                                    
+      valueIsTracked
+      body={d.shortDescription}                                                                                                                                                                                
+      isIncluded={true}
+    />                                                                                                                                                                                                         
+  ))}                                                    
+
+  {/* Not-included drivers — render last, muted */}                                                                                                                                                            
+  {q.drivers.filter(d => d.isIncluded === false).map((d) => (
+    <CompactDriverCard                                                                                                                                                                                         
+      key={`ni-${d.id}`}                                                                                                                                                                                       
+      name={d.label}
+      value=""                                                                                                                                                                                                 
+      body={d.shortDescription}                          
+      isIncluded={false}
+    />                                                                                                                                                                                                         
+  ))}
+                                                                                                                                                                                                               
+  Also update the isEmpty check — a quadrant with only not-included drivers should still render the full page (not the "no drivers selected" message). Change isEmpty to:                                      
+   
+  const isEmpty = q.drivers.filter(d => d.isIncluded !== false).length === 0 && q.otherFinancialBenefits.length === 0;                                                                                         
+                                                                                                                                                                                                               
+  ---
+  TypeScript must compile clean. isIncluded is optional (defaults to true) so existing call sites without it compile without change.

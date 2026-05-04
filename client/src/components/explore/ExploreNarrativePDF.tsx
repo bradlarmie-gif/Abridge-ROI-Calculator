@@ -420,6 +420,7 @@ const CompactDriverCard = ({
   formula,
   linkedTag,
   valueIsTracked,
+  isIncluded = true,
 }: {
   name: string;
   value: string;
@@ -427,29 +428,25 @@ const CompactDriverCard = ({
   formula?: string;
   linkedTag?: boolean;
   valueIsTracked?: boolean;
+  isIncluded?: boolean;
 }) => (
   <View
     style={{
-      backgroundColor: colors.cards,
-      padding: 14,
+      backgroundColor: isIncluded ? colors.cards : colors.background,
+      borderWidth: isIncluded ? 0 : 1,
+      borderColor: colors.border,
       borderRadius: 4,
+      padding: 14,
       marginBottom: 10,
     }}
     wrap={false}
   >
-    <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        marginBottom: 4,
-      }}
-    >
+    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
       <Text
         style={{
           fontSize: 10.5,
           fontWeight: "bold",
-          color: colors.primaryText,
+          color: isIncluded ? colors.primaryText : colors.tertiary,
           textTransform: "uppercase",
           letterSpacing: 0.8,
           flex: 1,
@@ -458,55 +455,71 @@ const CompactDriverCard = ({
       >
         {name}
       </Text>
-      <Text
-        style={{
-          fontSize: valueIsTracked ? 10 : 13,
-          fontWeight: "bold",
-          color: valueIsTracked ? colors.secondary : colors.primary,
-          fontStyle: valueIsTracked ? "italic" : "normal",
-          textTransform: valueIsTracked ? "uppercase" : "none",
-          letterSpacing: valueIsTracked ? 1.2 : 0,
-        }}
-      >
-        {value}
-      </Text>
+      {isIncluded ? (
+        <Text
+          style={{
+            fontSize: valueIsTracked ? 10 : 13,
+            fontWeight: "bold",
+            color: valueIsTracked ? colors.secondary : colors.primary,
+            fontStyle: valueIsTracked ? "italic" : "normal",
+            textTransform: valueIsTracked ? "uppercase" : "none",
+            letterSpacing: valueIsTracked ? 1.2 : 0,
+          }}
+        >
+          {value}
+        </Text>
+      ) : (
+        <Text style={{ fontSize: 8, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1.2 }}>
+          Not included
+        </Text>
+      )}
     </View>
+
     {linkedTag ? (
-      <Text
-        style={{
-          fontSize: 7.5,
-          color: colors.primary,
-          textTransform: "uppercase",
-          letterSpacing: 1.2,
-          fontWeight: "bold",
-          marginBottom: 4,
-        }}
-      >
+      <Text style={{ fontSize: 7.5, color: colors.primary, textTransform: "uppercase", letterSpacing: 1.2, fontWeight: "bold", marginBottom: 4 }}>
         ↳ Linked driver
       </Text>
     ) : null}
+
     <Text
       style={{
         fontSize: 9.5,
-        color: colors.secondary,
+        color: isIncluded ? colors.secondary : colors.tertiary,
         lineHeight: 1.5,
-        marginBottom: formula ? 4 : 0,
+        marginBottom: isIncluded && formula ? 0 : 0,
       }}
     >
       {body}
     </Text>
-    {formula ? (
-      <Text
+
+    {isIncluded && formula ? (
+      <View
         style={{
-          fontSize: 8.5,
-          fontStyle: "italic",
-          color: colors.primaryText,
-          lineHeight: 1.4,
-          marginTop: 2,
+          marginTop: 8,
+          backgroundColor: colors.background,
+          borderLeftWidth: 2,
+          borderLeftColor: colors.border,
+          paddingHorizontal: 8,
+          paddingVertical: 5,
+          borderRadius: 2,
         }}
       >
-        {formula}
-      </Text>
+        <Text
+          style={{
+            fontSize: 7.5,
+            color: colors.tertiary,
+            textTransform: "uppercase",
+            letterSpacing: 1.2,
+            fontWeight: "bold",
+            marginBottom: 3,
+          }}
+        >
+          How it's calculated
+        </Text>
+        <Text style={{ fontSize: 8.5, color: colors.primaryText, lineHeight: 1.5 }}>
+          {formula}
+        </Text>
+      </View>
     ) : null}
   </View>
 );
@@ -657,7 +670,7 @@ const QuadrantPage = ({
           </Text>
         ) : (
           <>
-            {quantified.map((d) => (
+            {quantified.filter(d => d.isIncluded !== false).map((d) => (
               <CompactDriverCard
                 key={d.id}
                 name={d.label}
@@ -665,6 +678,7 @@ const QuadrantPage = ({
                 body={d.shortDescription}
                 formula={d.calcSummary}
                 linkedTag={d.isChild}
+                isIncluded={true}
               />
             ))}
             {q.otherFinancialBenefits.map((b, i) => (
@@ -672,16 +686,27 @@ const QuadrantPage = ({
                 key={`b-${i}`}
                 name={b.label}
                 value={`${fmtCurrency(b.amount)} ${b.type === "annual" ? "annual" : "one-time"}`}
-                body="Other financial benefit configured for this quadrant — reported separately so it is not folded into the recurring annual total."
+                body="Other financial benefit configured for this quadrant."
+                isIncluded={true}
               />
             ))}
-            {qualitative.map((d) => (
+            {qualitative.filter(d => d.isIncluded !== false).map((d) => (
               <CompactDriverCard
                 key={d.id}
                 name={d.label}
                 value="Tracked"
                 valueIsTracked
                 body={d.shortDescription}
+                isIncluded={true}
+              />
+            ))}
+            {q.drivers.filter(d => d.isIncluded === false).map((d) => (
+              <CompactDriverCard
+                key={`ni-${d.id}`}
+                name={d.label}
+                value=""
+                body={d.shortDescription}
+                isIncluded={false}
               />
             ))}
           </>

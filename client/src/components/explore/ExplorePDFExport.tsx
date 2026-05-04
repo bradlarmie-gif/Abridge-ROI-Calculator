@@ -27,6 +27,7 @@ export interface ExplorePDFQuadrantDriver {
   value: number;
   isChild?: boolean;
   calcSummary?: string;
+  isIncluded?: boolean;
 }
 
 export interface ExplorePDFOtherBenefit {
