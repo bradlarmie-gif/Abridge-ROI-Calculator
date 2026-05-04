@@ -1487,9 +1487,13 @@ export default function SummaryCommandCenter({
             });
           } catch (error) {
             console.error("PDF export error:", error);
+            const msg = error instanceof Error ? error.message : "";
+            const isChunkError = msg.includes("dynamically imported module") || msg.includes("Failed to fetch") || msg.includes("Loading chunk");
             toast({
               title: "Export Failed",
-              description: error instanceof Error ? error.message : "Unable to generate PDF. Please try again.",
+              description: isChunkError
+                ? "A newer version of the app is available. Please refresh the page (Ctrl+Shift+R) and try again."
+                : msg || "Unable to generate PDF. Please try again.",
               variant: "destructive",
             });
           } finally {
