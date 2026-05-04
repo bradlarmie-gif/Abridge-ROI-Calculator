@@ -1,0 +1,39 @@
+  PROMPT 1 — DRG weight lift: tighten default + add help text
+                                                                                                                                                                                                               
+  File: client/src/pages/explore/ExploreFlow.tsx
+                                                                                                                                                                                                               
+  On line ~723, change:                                  
+  ipDrgWeightIncrease: 0.4,
+  to:
+  ipDrgWeightIncrease: 0.3,                                                                                                                                                                                    
+                           
+  File: client/src/components/explore/drivers/DrgAccuracyCalc.tsx                                                                                                                                              
+                                                                                                                                                                                                               
+  After the Avg DRG Weight Lift input field (around line 135, after the </input> closing), add a help text paragraph:                                                                                          
+  <p className="text-[13px] text-[#888888] mt-2">                                                                                                                                                              
+    Typical CC/MCC capture shifts DRG weight 0.2–0.4. 0.3 is a defensible midpoint; adjust based on your case mix complexity.                                                                                  
+  </p>                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PROMPT 2 — Nursing: add source framing to Falls, CAUTI, CLABSI prevention rates                                                                                                                              
+                                                                                                                                                                                                               
+  File: client/src/components/explore/drivers/NursingFallsCalc.tsx
+                                                                                                                                                                                                               
+  Find the prevention rate helper text (near the nursingFallsPreventionRate input). Currently it has no citation. Add below the prevention rate input:                                                         
+  <p className="text-xs text-[#888888] mt-2">10% reflects a conservative estimate of falls attributable to documentation-timeliness gaps (delayed Morse score updates, missed reassessments). Adjust based on  
+  your unit's audit data.</p>                                                                                                                                                                                  
+                                                                                                                                                                                                               
+  File: client/src/components/explore/drivers/NursingCautiCalc.tsx
+                                                                                                                                                                                                               
+  Find the prevention rate helper text near the nursingCautiPreventionRate input. Change the existing benchmark text from:                                                                                     
+  "National benchmark: 1-2 per 1,000."
+  to:                                                                                                                                                                                                          
+  "NHSN national benchmark: 1–2 per 1,000 catheter days. 12% prevention rate reflects estimated improvement from consistent catheter-necessity documentation supporting earlier removal (AHRQ CAUTI bundle
+  guidance)."
+                                                                                                                                                                                                               
+  File: client/src/components/explore/drivers/NursingClabsiCalc.tsx
+                                                                                                                                                                                                               
+  Find the prevention rate helper text near the nursingClabsiPreventionRate input. Change:
+  "National benchmark: 0.5-1 per 1,000."
+  to:
+  "NHSN national benchmark: 0.5–1.0 per 1,000 line days. 8% prevention rate reflects estimated improvement from timely line-care bundle documentation and adherence tracking." 

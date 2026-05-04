@@ -75,6 +75,7 @@ export default function NursingFallsCalc({ state, updateDocQualityInputs }: Prop
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
           </div>
           <p className="text-xs text-[#888888]">Estimate of falls where documentation timeliness was a contributing factor.</p>
+          <p className="text-xs text-[#888888] mt-2">10% reflects a conservative estimate of falls attributable to documentation-timeliness gaps (delayed Morse score updates, missed reassessments). Adjust based on your unit's audit data.</p>
         </div>
         <div className="space-y-2">
           <label className="text-sm text-[#888888]">Cost per Fall</label>

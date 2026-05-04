@@ -62,7 +62,7 @@ export default function NursingClabsiCalc({ state, updateDocQualityInputs }: Pro
             className="h-12 bg-white"
             data-testid="input-clabsi-rate"
           />
-          <p className="text-xs text-[#888888]">National benchmark: 0.5-1 per 1,000.</p>
+          <p className="text-xs text-[#888888]">NHSN national benchmark: 0.5–1.0 per 1,000 line days. 8% prevention rate reflects estimated improvement from timely line-care bundle documentation and adherence tracking.</p>
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">

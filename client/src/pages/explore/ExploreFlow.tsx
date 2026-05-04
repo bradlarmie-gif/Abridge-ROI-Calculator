@@ -724,7 +724,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipDrgEnabled: false,
     ipDrgScenario: 'typical',
     ipDrgAtRiskRate: 18, // 18% of admissions have documentation gaps
-    ipDrgWeightIncrease: 0.4, // Average DRG weight difference
+    ipDrgWeightIncrease: 0.3, // Average DRG weight difference
     ipDrgBasePayment: 6000, // $6,000 base DRG payment
     ipDrgRealization: 65, // 65% realization (RAC/PEPPER audits)
     // Inpatient: Obs/IP Status Defense defaults

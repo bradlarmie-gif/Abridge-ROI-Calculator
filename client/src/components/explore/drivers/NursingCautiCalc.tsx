@@ -63,7 +63,7 @@ export default function NursingCautiCalc({ state, updateDocQualityInputs }: Prop
             className="h-12 bg-white"
             data-testid="input-cauti-rate"
           />
-          <p className="text-xs text-[#888888]">National benchmark: 1-2 per 1,000.</p>
+          <p className="text-xs text-[#888888]">NHSN national benchmark: 1–2 per 1,000 catheter days. 12% prevention rate reflects estimated improvement from consistent catheter-necessity documentation supporting earlier removal (AHRQ CAUTI bundle guidance).</p>
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">

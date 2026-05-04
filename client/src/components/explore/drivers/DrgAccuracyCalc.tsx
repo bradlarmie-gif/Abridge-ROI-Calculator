@@ -133,6 +133,9 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
                 className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
                 data-testid="input-drg-weight"
               />
+              <p className="text-[13px] text-[#888888] mt-2">
+                Typical CC/MCC capture shifts DRG weight 0.2–0.4. 0.3 is a defensible midpoint; adjust based on your case mix complexity.
+              </p>
             </div>
             <span className="text-[#888888] text-xl hidden sm:block">×</span>
             <div className="flex-1">
