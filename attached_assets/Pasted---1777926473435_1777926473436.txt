@@ -1,0 +1,554 @@
+                                                                                                                         
+  REPLIT PROMPT 2 — ED Methodology: Four-Part Metric Cards + Validation Timeline                                                                                                                               
+                                                                                                                                                                                                               
+  Two files: client/src/components/methodology/MethodologyShared.tsx and client/src/pages/methodology/MethodologyED.tsx.                                                                                       
+                                                                                                                                                                                                               
+  ---                                                    
+  PART A — client/src/components/methodology/MethodologyShared.tsx                                                                                                                                             
+                                                                  
+  A1. Extend DomainImpactItem interface
+                                                                                                                                                                                                               
+  Find:
+  export interface DomainImpactItem {                                                                                                                                                                          
+    label: string;                                       
+    badge: BadgeType;
+    explanation: string;
+    formula?: string;
+    limit?: string;                                                                                                                                                                                            
+  }
+                                                                                                                                                                                                               
+  Replace with:                                          
+  export interface DomainImpactItem {
+    label: string;                   
+    badge: BadgeType;
+    explanation: string;
+    formula?: string;   
+    limit?: string;                                                                                                                                                                                            
+    // Structured four-part content — when present, renders labeled sections instead of explanation prose
+    mechanism?: string;                                                                                                                                                                                        
+    whyItMatters?: string;                                                                                                                                                                                     
+    whenToExpect?: string;
+  }                                                                                                                                                                                                            
+                                                         
+  ---
+  A2. Update DomainImpactCard render                                                                                                                                                                           
+                                    
+  Find the entire DomainImpactCard function (from function DomainImpactCard through its closing }) and replace with:                                                                                           
+                                                                                                                                                                                                               
+  function DomainImpactCard({
+    item,                                                                                                                                                                                                      
+    accentColor,                                         
+  }: {                                                                                                                                                                                                         
+    item: DomainImpactItem;
+    accentColor: string;                                                                                                                                                                                       
+  }) {                                                   
+    const [showFormula, setShowFormula] = useState(false);
+    const hasStructured = !!(item.mechanism || item.whyItMatters || item.whenToExpect);
+                                                                                                                                                                                                               
+    return (
+      <div className="bg-white border border-[#E5E5E5] rounded-sm p-4">                                                                                                                                        
+        <div className="flex items-start justify-between gap-3 mb-3">                                                                                                                                          
+          <h4 className="font-bold text-black text-xs uppercase tracking-wide leading-snug">{item.label}</h4>
+          <ImpactBadge type={item.badge} />                                                                                                                                                                    
+        </div>                                                                                                                                                                                                 
+  
+        {hasStructured ? (                                                                                                                                                                                     
+          <div className="space-y-4">                    
+            {item.mechanism && (
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1.5">Mechanism</p>                                                                                             
+                <p className="text-sm text-[#666666] leading-relaxed">{item.mechanism}</p>                                                                                                                     
+              </div>                                                                                                                                                                                           
+            )}                                                                                                                                                                                                 
+            {item.whyItMatters && (                      
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1.5">Why it matters</p>
+                <p className="text-sm text-[#666666] leading-relaxed">{item.whyItMatters}</p>                                                                                                                  
+              </div>                                                                                                                                                                                           
+            )}                                                                                                                                                                                                 
+            {item.whenToExpect && (                                                                                                                                                                            
+              <div>                                      
+                <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1.5">When to expect</p>
+                <p className="text-sm text-[#666666] leading-relaxed">{item.whenToExpect}</p>                                                                                                                  
+              </div>
+            )}                                                                                                                                                                                                 
+          </div>                                         
+        ) : (
+          <p className="text-sm text-[#666666] leading-relaxed">{item.explanation}</p>                                                                                                                         
+        )}
+                                                                                                                                                                                                               
+        {item.limit && (                                 
+          <div className="mt-4 pl-3 border-l-2 border-[#D9D4CF]">
+            <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1">Honest limit</p>                                                                                                
+            <p className="text-xs text-[#666666] leading-relaxed">{item.limit}</p>                                                                                                                             
+          </div>                                                                                                                                                                                               
+        )}                                                                                                                                                                                                     
+                                                                                                                                                                                                               
+        {item.formula && (                               
+          <div className="mt-3">
+            <button
+              onClick={() => setShowFormula(!showFormula)}
+              className="text-[10px] font-bold uppercase tracking-[1.5px] flex items-center gap-1 text-[#EA2C00] hover:text-[#C22000] transition-colors"
+            >                                                                                                                                                                                                  
+              {showFormula ? "Hide formula" : "Show formula"}
+              {showFormula                                                                                                                                                                                     
+                ? <ChevronUp className="w-3 h-3" />      
+                : <ChevronDown className="w-3 h-3" />}                                                                                                                                                         
+            </button>                                    
+            {showFormula && (
+              <div className="mt-2 bg-[#F5F0EB] rounded-sm p-3 border-l-2 border-[#EA2C00]">
+                <p className="font-mono text-xs text-[#1A1A1A] leading-relaxed whitespace-pre-line">{item.formula}</p>                                                                                         
+              </div>                                                                                                                                                                                           
+            )}                                                                                                                                                                                                 
+          </div>                                                                                                                                                                                               
+        )}                                               
+      </div>
+    );
+  }
+
+  ---
+  A3. Move honestLimit to top of tab content in DomainTabExplorer
+                                                                                                                                                                                                               
+  Inside DomainTabExplorer, find the tab content <motion.div> block. Currently honestLimit appears after the items list. Move it to render BEFORE the "Modeled Drivers" label.
+                                                                                                                                                                                                               
+  Find this block inside the motion.div:                                                                                                                                                                       
+              {/* Modeled drivers */}                                                                                                                                                                          
+              {activeDetail && activeDetail.items.length > 0 && (                                                                                                                                              
+                <div>                                            
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Modeled Drivers</p>
+                  <div className="space-y-3">                                                                                                                                                                  
+                    {activeDetail.items.map((item) => (
+                      <DomainImpactCard key={item.label} item={item} accentColor={domainColors[activeDomain]} />                                                                                               
+                    ))}                                                                                         
+                  </div>                                                                                                                                                                                       
+                  {activeDetail.honestLimit && (         
+                    <div className="mt-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">                                                                                                           
+                      <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>
+                      <p className="text-xs text-[#666666] leading-relaxed">{activeDetail.honestLimit}</p>                                                                                                     
+                    </div>
+                  )}                                                                                                                                                                                           
+                </div>                                   
+              )}                                                                                                                                                                                               
+                                                         
+  Replace with:
+              {/* Modeled drivers */}
+              {activeDetail && activeDetail.items.length > 0 && (
+                <div>                                                                                                                                                                                          
+                  {activeDetail.honestLimit && (
+                    <div className="mb-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">                                                                                                           
+                      <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>
+                      <p className="text-xs text-[#666666] leading-relaxed">{activeDetail.honestLimit}</p>                                                                                                     
+                    </div>                                                                                                                                                                                     
+                  )}                                                                                                                                                                                           
+                  <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Modeled Drivers</p>                                                                                        
+                  <div className="space-y-3">                                                                          
+                    {activeDetail.items.map((item) => (                                                                                                                                                        
+                      <DomainImpactCard key={item.label} item={item} accentColor={domainColors[activeDomain]} />
+                    ))}                                                                                                                                                                                        
+                  </div>                                                                                                                                                                                       
+                </div>
+              )}                                                                                                                                                                                               
+                                                         
+  ---
+  A4. Make ValueAccrualSection accept optional stages
+                                                                                                                                                                                                               
+  Find the ValueAccrualSection function signature:
+  export function ValueAccrualSection() {                                                                                                                                                                      
+    const stages = [                                     
+                                                                                                                                                                                                               
+  Replace with:
+  export interface ValueAccrualStage {                                                                                                                                                                         
+    badge: BadgeType;                                    
+    timing: string;  
+    title: string; 
+    description: string;
+  }                                                                                                                                                                                                            
+   
+  export function ValueAccrualSection({ stages: customStages }: { stages?: ValueAccrualStage[] } = {}) {                                                                                                       
+    const defaultStages: ValueAccrualStage[] = [                                                        
+                                                
+  Then find the closing of the default stages array (the line ]; after the last stage object) and add:                                                                                                         
+    ];                                                                                                                                                                                                         
+    const stages = customStages ?? defaultStages;                                                                                                                                                              
+                                                                                                                                                                                                               
+  Remove the old const stages = [ declaration since stages is now declared conditionally. The rest of the function body stays the same.
+                                                                                                                                                                                                               
+  ---
+  PART B — client/src/pages/methodology/MethodologyED.tsx                                                                                                                                                      
+                                                         
+  B1. Update imports
+
+  The import from MethodologyShared needs to include ValueAccrualStage. Find:                                                                                                                                  
+  import {
+    DomainTabExplorer,                                                                                                                                                                                         
+    CollapsibleSection,                                                                                                                                                                                        
+    ValueAccrualSection,
+    type DomainCardData,                                                                                                                                                                                       
+    type DomainDetailData,                               
+    type DomainName,      
+    type QualitativeSignal,
+  } from "@/components/methodology/MethodologyShared";                                                                                                                                                         
+  
+  Replace with:                                                                                                                                                                                                
+  import {                                               
+    DomainTabExplorer,
+    CollapsibleSection,
+    ValueAccrualSection,
+    type DomainCardData,
+    type DomainDetailData,                                                                                                                                                                                     
+    type DomainName,      
+    type QualitativeSignal,                                                                                                                                                                                    
+    type ValueAccrualStage,                              
+  } from "@/components/methodology/MethodologyShared";
+
+  ---                                                                                                                                                                                                          
+  B2. Replace overviewCards array
+                                                                                                                                                                                                               
+  Replace the entire overviewCards declaration with:     
+  const overviewCards: DomainCardData[] = [
+    {                                      
+      domain: "QUALITY",
+      description: "Documentation accuracy under pressure — capturing complexity that determines CDI query rate, E/M level accuracy, and clinical defensibility. The first domain where Abridge's impact 
+  becomes measurable.",                                                                                                                                                                                        
+      items: [                                                                                                                                                                                                 
+        { label: "CDI query volume on admits", badge: "Signal" },                                                                                                                                              
+        { label: "HCAHPS doctor communication score", badge: "Trend" },                                                                                                                                        
+      ],                                                                                                                                                                                                       
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      domain: "WORKFORCE",                                                                                                                                                                                     
+      description: "Physician burnout and turnover are the ED's slow bleed — documentation burden is the most attributable and most Abridge-moveable contributor.",
+      items: [                                                                                                                                                     
+        { label: "After-shift charting time", badge: "Signal" },                                                                                                                                               
+        { label: "Physician retention savings", badge: "Trend" },
+      ],                                                                                                                                                                                                       
+    },                                                   
+    {                                                                                                                                                                                                          
+      domain: "CAPACITY",                                
+      description: "Throughput is the ED's operating system. Faster documentation is one lever — the right lever only when physician availability is the bottleneck.",
+      items: [                                                                                                                                                        
+        { label: "Documentation time per encounter", badge: "Signal" },                                                                                                                                        
+        { label: "LWBS rate", badge: "Trend" },                        
+      ],                                                                                                                                                                                                       
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      domain: "REVENUE",                                                                                                                                                                                       
+      description: "ED coding is the most audit-vulnerable setting. Every surge creates under-documented complexity. Two drivers with direct RCM measurement paths.",
+      items: [                                                                                                                                                       
+        { label: "E/M level accuracy (claims data)", badge: "Trend" },                                                                                                                                         
+        { label: "Denial prevention (RCM root cause)", badge: "Signal" },
+      ],                                                                                                                                                                                                       
+    },                                                   
+  ];                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---
+  B3. Replace domainDetails array                                                                                                                                                                              
+                                                         
+  Replace the entire domainDetails declaration with:
+
+  const domainDetails: DomainDetailData[] = [
+    {
+      domain: "QUALITY",
+      sectionTitle: "Quality",
+      sectionSubtitle: "Documentation accuracy under surge — the first place Abridge's impact becomes measurable",                                                                                             
+      honestLimit: "CDI query reduction on admits is the cleanest quality signal from the ED. DRG impact on admitted patients is quantified in the Inpatient methodology to prevent double-counting.",         
+      items: [                                                                                                                                                                                                 
+        {                                                                                                                                                                                                      
+          label: "CDI Query Volume on Admits",                                                                                                                                                                 
+          badge: "Signal",                               
+          explanation: "",                                                                                                                                                                                     
+          mechanism: "Ambient documentation captures presenting conditions, comorbidities, and clinical reasoning as they're verbalized during the encounter. CDI specialists working admitted cases receive 
+  documentation that already answers their questions — reducing the need to send a query back to the attending.",                                                                                              
+          whyItMatters: "Each CDI query requires 15–30 minutes of physician response time and delays the billing cycle for that case. CDI departments track query rate monthly — before/after comparison is 
+  fast and clean. A 20% reduction on admitted patients represents meaningful physician hours returned each week.",                                                                                             
+          whenToExpect: "Month 2–3 after consistent adoption on admits. CDI teams review notes continuously — the pattern becomes visible within 1–2 billing cycles. This is your earliest cross-departmental 
+  signal that documentation quality is improving.",                                                                                                                                                            
+          formula: "Admissions × query rate reduction % × physician response time per query\n\nTracked directly by your CDI department — no modeling required.",
+        },                                                                                                                                                                                                     
+        {                                                
+          label: "HCAHPS Doctor Communication Score",                                                                                                                                                          
+          badge: "Trend",                                                                                                                                                                                      
+          explanation: "",
+          mechanism: "Physicians using ambient documentation spend less time looking at a screen and more time making eye contact with the patient. When the note is writing itself, the physician can be fully
+   present in the conversation — patients notice, and they respond in surveys.",                                                                                                                               
+          whyItMatters: "HCAHPS Doctor Communication is one of five domains in Value-Based Purchasing. CMS puts 2% of Medicare inpatient payments at risk based in part on these scores. A 1–2 point 
+  improvement in the composite can shift a hospital from the penalty zone to neutral or positive territory.",                                                                                                  
+          whenToExpect: "Month 3–6 for survey signal. HCAHPS is reported quarterly — needs 2–3 survey cycles before a meaningful trend is visible. Isolate 'doctor listened carefully' and 'doctor explained 
+  things clearly' specifically, not just the overall composite.",                                                                                                                                              
+          formula: "HCAHPS domain composite score delta × Medicare inpatient volume × VBP multiplier\n\nVBP penalty/bonus ranges from -2% to +2% of Medicare base DRG payments.",
+        },                                                                                                                                                                                                     
+      ],                                                 
+    },                                                                                                                                                                                                         
+    {                                                    
+      domain: "WORKFORCE",
+      sectionTitle: "Workforce",
+      sectionSubtitle: "The physician experience — the most visceral and most measurable Abridge impact in the ED",
+      honestLimit: "Documentation is one of many burnout drivers in the ED. Don't attribute all retention improvement to documentation — but do attribute the documentation-specific change, which is directly 
+  Abridge-moveable.",                                                                                                                                                                                          
+      items: [                                                                                                                                                                                                 
+        {                                                                                                                                                                                                      
+          label: "After-Shift Charting Time",            
+          badge: "Signal",
+          explanation: "",
+          mechanism: "Abridge generates a drafted note by the time the patient leaves. The physician reviews and signs instead of writing from scratch after hours. The note that used to take 20–30 minutes at
+   midnight takes 5 minutes to review.",                                                                                                                                                                       
+          whyItMatters: "ED physicians average 45–90 minutes of unpaid after-shift charting per shift. This is the most visceral metric for physician buy-in — when this number drops, physicians notice 
+  immediately and talk about it. EHR session data after shift end is directly measurable without a survey.",                                                                                                   
+          whenToExpect: "Week 4–8 for active users. Among the fastest metrics to show change because it's a direct behavioral outcome with no lag — no billing cycle, no coding team, no survey cycle. Track in
+   EHR audit logs: session time after scheduled shift end.",                                                                                                                                                   
+          formula: "Minutes of after-shift EHR session time per provider per shift — compare same providers pre/post deployment.\n\nTarget: visible reduction in Week 4–8 for consistent users.",
+        },                                                                                                                                                                                                     
+        {                                                
+          label: "Physician Retention Savings",                                                                                                                                                                
+          badge: "Trend",                                
+          explanation: "",
+          mechanism: "Documentation burden is consistently cited in ACEP surveys and Medscape reports as a top driver of ED physician burnout. When you remove the primary mechanical cause — the act of       
+  writing — you address the underlying driver, not a symptom. Physicians who feel the work is sustainable are the ones who stay.",                                                                             
+          whyItMatters: "Replacing an ED physician costs $250,000–$500,000 fully loaded — recruitment, credentialing, locum coverage during the gap, productivity ramp. An ED group running 10% annual turnover
+   on 30 physicians replaces 3 physicians per year. Preventing one additional departure can offset a full year of Abridge costs.",                                                                             
+          whenToExpect: "Month 12–18 for statistically meaningful data. Turnover is a lagging indicator. Track satisfaction scores and exit interview data as the leading indicators — specifically 
+  documentation burden as a sub-question, not just overall satisfaction.",                                                                                                                                     
+          formula: "Turnovers avoided × blended replacement cost\n\nDefaults: replacement cost $250K–$500K, turnover rate 8–15%, documentation attribution 10–20%",
+          limit: "Correlation between documentation burden and turnover is well-documented; individual causal attribution is not. Use as a directional estimate, not a guarantee.",                            
+        },                                                                                                                                                                                                     
+      ],                                                                                                                                                                                                       
+    },                                                                                                                                                                                                         
+    {                                                    
+      domain: "CAPACITY",
+      sectionTitle: "Capacity",
+      sectionSubtitle: "Throughput and time — documentation speed is one input; physician bottleneck is the prerequisite",
+      honestLimit: "This domain only moves if physician availability is your throughput bottleneck. If LWBS is driven by bed availability, nursing ratios, or ancillary wait times, faster documentation       
+  doesn't move the needle. We make this explicit so you set expectations correctly with your ED leadership before presenting these numbers.",                                                                  
+      items: [                                                                                                                                                                                                 
+        {                                                                                                                                                                                                      
+          label: "Documentation Time Per Encounter",     
+          badge: "Signal",
+          explanation: "",                                                                                                                                                                                     
+          mechanism: "Ambient capture converts charting from a memory exercise after the patient leaves into a real-time drafting process. Instead of reconstructing an encounter from mental notes, the 
+          whyItMatters: "At 40,000–80,000 ED visits per year, 3 minutes saved per encounter = 2,000–4,000 physician hours annually. This is the prerequisite for all other capacity improvements — if          
+  documentation time doesn't move, throughput and LWBS won't move either.",                                                                                                                           
+          whenToExpect: "Week 6–8 for active users. EHR session timestamps show exactly when charting happens — this is your cleanest early signal and typically among the first metrics that move in          
+  deployment data.",                                                                                                                                                                                  
+          formula: "Minutes saved per encounter × annual ED visits / 60 = estimated physician hours returned annually\n\nED default: 3 min saved/encounter (range 2–5 min)",                                   
+        },                                                                                                                                                                  
+        {                                                                                                                                                                                                      
+          label: "LWBS Rate",                            
+          badge: "Trend",                                                                                                                                                                                      
+          explanation: "",                                                                                                                                                                                     
+          mechanism: "When physician documentation time drops, physicians can begin the next encounter sooner. In EDs where physician availability — not bed availability — is the throughput bottleneck, 
+  faster documentation directly reduces door-to-provider time, which directly reduces LWBS.",                                                                                                                  
+          whyItMatters: "Each LWBS patient represents approximately $480 in lost revenue. At a 2% LWBS rate on 50,000 visits, a 0.5 percentage point reduction = ~$240,000 in recovered revenue annually. LWBS 
+  is also a CMS-tracked metric with reputational and regulatory implications.",                                                                                                                                
+          whenToExpect: "Month 3–6 for a credible trend. Requires group-level behavior change, not just a few early adopters. Seasonal variation means you need a controlled year-over-year comparison — same  
+  months, same staffing context — to isolate the documentation signal.",                                                                                                                                      
+          formula: "(LWBS rate before − LWBS rate after, in pp) × annual ED visits × $480/visit × attribution %\n\nAttribution default: 25% (documentation is one of several throughput levers)",              
+          limit: "Only activate this driver if your ED's throughput analysis shows physician availability — not beds, nursing ratios, or ancillary services — as the primary LWBS driver.",      
+        },                                                                                                                                                                                                     
+      ],                                                                                                                                                                                                       
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      domain: "REVENUE",                                 
+      sectionTitle: "Revenue",
+      sectionSubtitle: "Coding accuracy and denial prevention — the ED's most auditable, defensible revenue domain",                                                                                           
+      honestLimit: "ED wRVU lift is lower than outpatient (2–4% vs 5–8%) because ED documentation workflows are already more structured. Use your observed E/M distribution data, not assumed percentages, for 
+  any number you'll defend with RCM.",                                                                                                                                                                         
+      items: [                                                                                                                                                                                                 
+        {     
+          label: "E/M Level Accuracy",                                                                                                                                                                         
+          badge: "Trend",                                
+          explanation: "",
+          mechanism: "ED documentation under time pressure tends toward default mid-level codes. Abridge captures the full clinical conversation — the presenting complaint, the exam findings, the 
+  decision-making — so the note reflects what actually happened, not what could be recalled and typed in 3 minutes. Coders see complete documentation and assign the code the complexity warrants.",
+          whyItMatters: "Every ED visit is billed at an E/M level. A shift from Level 3 to Level 4 on high-complexity encounters adds ~0.7 wRVU per visit. Across 40,000–80,000 annual ED visits, even a 2–4%  
+  shift in distribution is meaningful annual revenue — on work the physician already did.",                                                                                                                   
+          whenToExpect: "Month 2–3 for initial signal. The improved note exists immediately, but it takes one full billing cycle (30–45 days from encounter to payment) plus coding team adjustment before the 
+  aggregate distribution shift is clean. Plan for 2–3 billing cycles before comparing distributions.",                                                                                                         
+          formula: "wRVU delta × adopted encounters × $33.40/wRVU (CMS 2026) × attribution % × realization %\n\nED baseline: 2.5 wRVU/encounter. Expected lift: 2–4%.",                                        
+        },                                                                                                                                                             
+        {                                                                                                                                                                                                      
+          label: "Denial Prevention (Documentation-Related)",
+          badge: "Signal",                                                                                                                                                                                     
+          explanation: "",                                                                                                                                                                                     
+          mechanism: "Medical necessity denials happen when the note doesn't show why the level of care was warranted. Abridge captures clinical reasoning that physicians verbalize but rarely have time to 
+  write — the severity of symptoms, the decision tree, the alternatives considered. That reasoning, preserved in the note at time of service, is what payers need to adjudicate the claim.",                   
+          whyItMatters: "A 1 percentage point reduction in documentation-related denial rate on 50,000 visits at ~$500 average denial cost = ~$250,000 in recovered revenue annually. Documentation-related    
+  denials are entirely preventable — they represent revenue earned but not collected.",                                                                                                                     
+          whenToExpect: "Month 3–6 for RCM signal. Denial root-cause data requires 90+ days of claims volume to show a statistically meaningful trend. Track documentation-specific denial rate separately —   
+  RCM teams can pull this breakdown by denial reason code.",                                                                                                                                                 
+          formula: "(Denial rate before − after, in pp) × annual encounters × avg denial cost per encounter × attribution %\n\nED default: $500 per denied encounter",                                         
+          limit: "Track documentation-related denials separately from coverage, eligibility, and authorization denials — Abridge only moves the documentation-related bucket.",
+        },                                                                                                                                                                                                     
+      ],                                                                                                                                                                                                       
+    },                                                                                                                                                                                                         
+  ];                                                                                                                                                                                                           
+                                                         
+  ---
+  B4. Replace qualitativeSignals array
+                                      
+  Replace the entire qualitativeSignals declaration with:
+                                                                                                                                                                                                               
+  const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
+    QUALITY: [                                                                                                                                                                                                 
+      {                                                  
+        label: "Admission Hand-Off Completeness",                                                                                                                                                              
+        tagline: "When the ED admits, the inpatient team starts from the ED note — completeness shows up in CDI query rates downstream",
+        howToTrack: "Audit a sample of ED-to-inpatient handoffs for SBAR completeness, presenting condition specificity, and disposition reasoning. Pair with hospitalist satisfaction surveys. Signal within  
+  60–90 days.",                                                                                                                                                                                                
+        badge: "Trend",                                                                                                                                                                                        
+      {                                                                                                                                                                                                        
+        label: "ED Patient Experience (Press Ganey)",                                                                                                                                                          
+        tagline: "Less keyboard time = more eye contact — patients notice when the physician is fully present",
+        howToTrack: "Press Ganey ED survey reported quarterly. Isolate 'Doctor explained things clearly' and 'Doctor listened carefully' items. Tied directly to ED HCAHPS and value-based contract            
+  performance.",                                                                                                                                                                                               
+        badge: "Trend",                                                                                                                                                                                        
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    WORKFORCE: [                                         
+      {         
+        label: "Provider Burnout Survey Score",
+        tagline: "Is documentation burden still cited as a top driver in ED-specific burnout assessments?",
+        howToTrack: "Press Ganey provider engagement, ACEP wellness surveys, or internal pulse surveys. Track documentation burden specifically as a sub-question among Abridge users. 2–3 month cadence to see
+   initial signal.",                                                                                                                                                                                           
+        badge: "Trend",                                                                                                                                                                                        
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Locum Utilization Trend",                
+        tagline: "Locum coverage often spikes when retention dips — track the leading indicator",
+        howToTrack: "Schedule data and locum agency invoices. Track locum hours and spend per month vs. baseline. Useful as a corroborating retention indicator at 12+ months.",                               
+        badge: "Trend",                                                                                                                                                                                        
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    CAPACITY: [                                                                                                                                                                                                
+      {                                                  
+        label: "End-of-Shift Note Completion Rate",
+        tagline: "% of notes signed before clock-out — a clean signal for same-shift documentation",
+        howToTrack: "EHR audit logs: % of encounters with a signed note by end of shift. Often the most dramatic early metric in the ED — sometimes moves within the first two weeks of consistent use.",      
+        badge: "Signal",                                                                                                                                                                                       
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Door-to-Provider Time",                                                                                                                                                                        
+        tagline: "Front-end throughput — affected by triage, staffing, and documentation flow",
+        howToTrack: "ED operational dashboard tracked monthly. Documentation is one input — control for staffing and acuity changes when interpreting the trend. More meaningful after 6+ months of data.",
+        badge: "Trend",                                                                                                                                                                                        
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    REVENUE: [                                                                                                                                                                                                 
+      {                                                  
+        label: "Down-Coding Rate",
+        tagline: "% of ED encounters coded below the level supported by the actual visit complexity",
+        howToTrack: "Coding team audit. Pull % of encounters down-coded due to documentation gaps. Compare same providers, same shift types. Directly responsive to documentation completeness —               
+  Abridge-moveable signal.",                                                                                                                                                                                   
+        badge: "Signal",                                                                                                                                                                                       
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Admission Capture (Downstream of LWBS)", 
+        tagline: "Of patients recovered from LWBS, some require inpatient admission — converting lost ED visits into DRG revenue",
+        howToTrack: "Only track if LWBS recovery is already being measured. Recovered LWBS patients × historical admission rate × avg admission revenue. Don't compound two estimates without real LWBS data.",
+        badge: "Trend",                                                                                                                                                                                        
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+  };                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---
+  B5. Add ED-specific ValueAccrualStage data and EDValidationPathStrip component                                                                                                                               
+                                                                                                                                                                                                               
+  Add this block of code immediately BEFORE the export function MethodologyED(...) declaration:
+                                                                                                                                                                                                               
+  const edValueAccrualStages: ValueAccrualStage[] = [    
+    {                                                                                                                                                                                                          
+      badge: "Signal",                                   
+      timing: "Week 6–8",                                                                                                                                                                                      
+      title: "The Provider Feels It",                                                                                                                                                                          
+      description: "After-shift charting drops. Documentation time per encounter measurably shorter in EHR audit logs. Individual providers using Abridge consistently are your first observable signal — 
+  visible before any aggregate data moves.",                                                                                                                                                                   
+    },                                                   
+    {                                                                                                                                                                                                          
+      badge: "Trend",                                                                                                                                                                                          
+      timing: "Month 2–3",
+      title: "The Chart Shows It",                                                                                                                                                                             
+      description: "E/M level distribution starts to shift in claims data. CDI query rates on admitted patients start to drop. These require one full billing cycle to become visible — the note improves 
+  immediately, but coding and CDI response take time.",                                                                                                                                                        
+    },
+    {                                                                                                                                                                                                          
+      badge: "Proof",                                    
+      timing: "Month 3–18",                                                                                                                                                                                    
+      title: "The System Measures It",
+      description: "LWBS rate trend, denial rate by root cause, HCAHPS doctor communication composite, and eventually turnover data. Downstream of documentation maturity — requires data volume and controlled
+   comparisons for statistical credibility.",                                                                                                                                                                  
+    },
+  ];                                                                                                                                                                                                           
+                                                         
+  function EDValidationPathStrip() {                                                                                                                                                                           
+    const milestones = [
+      { label: "Baseline", sublabel: "Before deployment", active: false },                                                                                                                                     
+      { label: "Week 6–8", sublabel: "Documentation behavior", active: false },                                                                                                                                
+      { label: "Month 2–3", sublabel: "Revenue & coding signals", active: false },
+      { label: "Month 3–6", sublabel: "Throughput trends", active: false },                                                                                                                                    
+      { label: "Month 6+", sublabel: "Workforce & system proof", active: false },                                                                                                                              
+    ];                                                                                                                                                                                                         
+                                                                                                                                                                                                               
+    return (                                             
+      <div className="mb-10">
+        <div className="mb-4 pb-3 border-b-2 border-[#EA2C00]">                                                                                                                                                
+          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>                                                                                                      
+          <h2 className="text-lg font-bold text-black uppercase tracking-tight">Validation Timeline</h2>                                                                                                       
+          <p className="text-sm text-[#888888] mt-1">When to look for each signal — and why the timing is mechanistically predictable.</p>                                                                     
+        </div>                                                                                                                                                                                                 
+        <div className="relative">                                                                                                                                                                             
+          {/* Connector line */}                                                                                                                                                                               
+          <div className="absolute top-4 left-[10%] right-[10%] h-px bg-[#E5E5E5]" />                                                                                                                          
+          <div className="grid grid-cols-5 gap-2 relative">                                                                                                                                                    
+            {milestones.map((m, i) => (
+              <div key={i} className="flex flex-col items-center text-center">                                                                                                                                 
+                <div className="w-8 h-8 rounded-full border-2 border-[#E5E5E5] bg-white flex items-center justify-center mb-2 relative z-10">
+                  <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />                                                                                                                                        
+                </div>                                   
+                <p className="text-[10px] font-bold text-black leading-tight">{m.label}</p>                                                                                                                    
+                <p className="text-[9px] text-[#888888] mt-0.5 leading-tight">{m.sublabel}</p>                                                                                                                 
+              </div>                                                                                                                                                                                           
+            ))}                                                                                                                                                                                                
+          </div>                                                                                                                                                                                               
+        </div>                                           
+      </div>
+    );
+  }
+
+  ---
+  B6. Update hero tagline
+                                                                                                                                                                                                               
+  Find:
+            <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Emergency: How We Think About Value</h1>                                                                   
+            <p className="text-base text-[#666666]">Where speed matters and every minute counts differently</p>                             
+                                                                                                                                                                                                               
+  Replace with:                                                                                                                                                                                                
+            <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Emergency Department: How Value Accrues</h1>                                                               
+            <p className="text-base text-[#666666]">What changes in your ED with ambient documentation — and when. Built for CFO scrutiny.</p>                                                                 
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  B7. Update the JSX render — add EDValidationPathStrip and pass ED-specific stages to ValueAccrualSection                                                                                                     
+                                                                                                                                                                                                               
+  Find:                                                  
+          <ValueAccrualSection />                                                                                                                                                                              
+                                                         
+          <DomainTabExplorer
+                                                                                                                                                                                                               
+  Replace with:
+          <ValueAccrualSection stages={edValueAccrualStages} />                                                                                                                                                
+                                                               
+          <EDValidationPathStrip />
+                                   
+          <DomainTabExplorer
+                                                                                                                                                                                                               
+  ---
+  That's Prompt 2. All other existing content in both files stays unchanged.                                                                                                                                   
+                                                                                                                                                                                                               
+  ---
+  What this does:                                                                                                                                                                                              
+                                                         
+  - Every metric card now shows three labeled sections (Mechanism / Why it matters / When to expect) without any toggling — the full story is visible immediately
+  - item.limit is now rendered inline in each card as a small "Honest limit" callout                                                                                                                           
+  - Domain-level honestLimit moves to the top of each tab — before the cards, not after                                                                                                                        
+  - The Capacity tab's honestLimit now leads with the throughput-bottleneck caveat prominently                                                                                                                 
+  - The validation timeline strip gives a visual anchor for the "when to expect" language across all tabs                                                                                                      
+  - ValueAccrualSection now shows ED-specific timing language (Week 6–8 / Month 2–3 / Month 3–18) with mechanistic descriptions                                                                                
+  - The explanation field is still used as fallback for any other methodology pages that haven't been updated to the four-part structure — no regressions on Outpatient, Inpatient, Nursing 

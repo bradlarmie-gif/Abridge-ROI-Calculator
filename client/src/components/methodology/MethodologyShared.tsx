@@ -139,6 +139,10 @@ export interface DomainImpactItem {
   explanation: string;
   formula?: string;
   limit?: string;
+  // Structured four-part content — when present, renders labeled sections instead of explanation prose
+  mechanism?: string;
+  whyItMatters?: string;
+  whenToExpect?: string;
 }
 
 export interface DomainDetailData {
@@ -157,14 +161,47 @@ function DomainImpactCard({
   accentColor: string;
 }) {
   const [showFormula, setShowFormula] = useState(false);
+  const hasStructured = !!(item.mechanism || item.whyItMatters || item.whenToExpect);
 
   return (
     <div className="bg-white border border-[#E5E5E5] rounded-sm p-4">
-      <div className="flex items-start justify-between gap-3 mb-2">
+      <div className="flex items-start justify-between gap-3 mb-3">
         <h4 className="font-bold text-black text-xs uppercase tracking-wide leading-snug">{item.label}</h4>
         <ImpactBadge type={item.badge} />
       </div>
-      <p className="text-sm text-[#666666] leading-relaxed">{item.explanation}</p>
+
+      {hasStructured ? (
+        <div className="space-y-4">
+          {item.mechanism && (
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1.5">Mechanism</p>
+              <p className="text-sm text-[#666666] leading-relaxed">{item.mechanism}</p>
+            </div>
+          )}
+          {item.whyItMatters && (
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1.5">Why it matters</p>
+              <p className="text-sm text-[#666666] leading-relaxed">{item.whyItMatters}</p>
+            </div>
+          )}
+          {item.whenToExpect && (
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1.5">When to expect</p>
+              <p className="text-sm text-[#666666] leading-relaxed">{item.whenToExpect}</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-[#666666] leading-relaxed">{item.explanation}</p>
+      )}
+
+      {item.limit && (
+        <div className="mt-4 pl-3 border-l-2 border-[#D9D4CF]">
+          <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1">Honest limit</p>
+          <p className="text-xs text-[#666666] leading-relaxed">{item.limit}</p>
+        </div>
+      )}
+
       {item.formula && (
         <div className="mt-3">
           <button
@@ -329,18 +366,18 @@ export function DomainTabExplorer({
             {/* Modeled drivers */}
             {activeDetail && activeDetail.items.length > 0 && (
               <div>
+                {activeDetail.honestLimit && (
+                  <div className="mb-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
+                    <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>
+                    <p className="text-xs text-[#666666] leading-relaxed">{activeDetail.honestLimit}</p>
+                  </div>
+                )}
                 <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Modeled Drivers</p>
                 <div className="space-y-3">
                   {activeDetail.items.map((item) => (
                     <DomainImpactCard key={item.label} item={item} accentColor={domainColors[activeDomain]} />
                   ))}
                 </div>
-                {activeDetail.honestLimit && (
-                  <div className="mt-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
-                    <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>
-                    <p className="text-xs text-[#666666] leading-relaxed">{activeDetail.honestLimit}</p>
-                  </div>
-                )}
               </div>
             )}
 
@@ -368,8 +405,15 @@ export function DomainTabExplorer({
 
 // ─── Value Accrual Section ────────────────────────────────────────────────────
 
-export function ValueAccrualSection() {
-  const stages = [
+export interface ValueAccrualStage {
+  badge: BadgeType;
+  timing: string;
+  title: string;
+  description: string;
+}
+
+export function ValueAccrualSection({ stages: customStages }: { stages?: ValueAccrualStage[] } = {}) {
+  const defaultStages: ValueAccrualStage[] = [
     {
       badge: "Signal" as BadgeType,
       timing: "30–90 days",
@@ -389,6 +433,7 @@ export function ValueAccrualSection() {
       description: "CMI, wRVU, denial rates, retention, HCAHPS. Downstream of documentation quality. Requires data volume for statistical credibility. This is what goes in the annual business case and contract renewal conversation.",
     },
   ];
+  const stages = customStages ?? defaultStages;
 
   return (
     <div className="mb-10">
