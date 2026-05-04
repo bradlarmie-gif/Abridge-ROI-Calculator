@@ -132,7 +132,7 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "E/M Level Accuracy (Claims Data)",
         badge: "Trend",
-        explanation: "During surges, ED notes understate what actually happened — a physician manages complex differentials but the note reflects a simpler encounter because time was short. Claims data shows E/M level distribution shifts before and after. ED wRVU lift is typically 2–4% (lower than outpatient because ED workflows are more structured).",
+        explanation: "The 2021 CMS E/M guideline shift made Medical Decision Making (MDM) the primary determinant of E/M level — three elements: complexity of problems addressed, data reviewed and analyzed, and risk of treatment. During surges, ED notes understate what actually happened not because physicians made simpler decisions, but because the documentation didn't capture the MDM elements that support the appropriate level. Ambient capture records the clinical reasoning in real time — the differential, the data weighed, the treatment risk — in a way that dictation shortcuts and templates don't. Coding teams can audit MDM completeness directly to confirm the mechanism before claims data makes the financial signal visible.",
         formula: "(wRVU per encounter after − before) × adopted encounters × $33/wRVU × attribution % × realization %",
       },
       {
@@ -208,6 +208,12 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
     },
   ],
   REVENUE: [
+    {
+      label: "MDM Documentation Completeness",
+      tagline: "The 2021 E/M guideline shift made MDM the coding driver — are all three elements documented?",
+      howToTrack: "Coding team audits MDM elements per encounter: complexity of problems, data reviewed, risk of treatment. Score a sample of notes per provider pre/post deployment. Directly auditable and directly moveable by ambient capture.",
+      badge: "Signal",
+    },
     {
       label: "Down-coding Rate",
       tagline: "% of ED encounters coded below the level supported by the actual visit complexity",
