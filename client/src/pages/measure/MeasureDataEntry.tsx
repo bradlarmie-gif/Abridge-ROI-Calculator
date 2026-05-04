@@ -327,7 +327,16 @@ export default function MeasureDataEntry({
               ) : (
                 <FormattedNumberInput
                   value={state.deployment.monthsOnAbridge}
-                  onChange={(v) => updateDeployment("monthsOnAbridge", v)}
+                  onChange={(v) => {
+                    updateDeployment("monthsOnAbridge", v);
+                    if (v > 0) {
+                      const now = new Date();
+                      const goLive = new Date(now.getFullYear(), now.getMonth() - v, 1);
+                      const yyyy = goLive.getFullYear();
+                      const mm = String(goLive.getMonth() + 1).padStart(2, '0');
+                      updateState({ goLiveDate: `${yyyy}-${mm}-01` });
+                    }
+                  }}
                   className="h-10 bg-white border-[#E5E5E5] text-right"
                   data-testid="input-months"
                 />
