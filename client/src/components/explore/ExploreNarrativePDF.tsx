@@ -184,13 +184,21 @@ const settingThesisHeadline: Record<Exclude<ExploreCareSetting, "nursing">, stri
   inpatient: "Where Inpatient Documentation Value Lives",
 };
 
-const settingThesisIntro: Record<Exclude<ExploreCareSetting, "nursing">, string> = {
-  outpatient:
-    "Ambient documentation creates value across four buckets in outpatient — and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.",
-  ed:
-    "In the emergency department, every minute of charting is a minute not seeing the next patient. Ambient documentation moves four levers — and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.",
-  inpatient:
-    "Inpatient value follows information flow. Ambient documentation moves four levers — and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.",
+const getThesisIntro = (
+  data: ExplorePDFData,
+  setting: Exclude<ExploreCareSetting, "nursing">,
+): string => {
+  const providers = fmtNum(data.numberOfProviders);
+  const encounters = fmtNum(data.annualEncounters);
+  const hours = fmtNum(data.totalHoursSaved);
+  switch (setting) {
+    case "outpatient":
+      return `For a ${providers}-provider practice seeing ${encounters} patients annually, ${hours} hours of documentation time reclaimed per year. That time creates value across four buckets — and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.`;
+    case "ed":
+      return `In an ED seeing ${encounters} visits annually across ${providers} providers, ${hours} hours of documentation time reclaimed per year. Every minute of charting saved is a minute back to the next patient — and that time moves four levers. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.`;
+    case "inpatient":
+      return `On a hospitalist service covering ${encounters} annual admissions with ${providers} providers, ${hours} hours of documentation time reclaimed per year. Ambient documentation moves four levers — and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.`;
+  }
 };
 
 const settingThesisCardTitle: Record<Exclude<ExploreCareSetting, "nursing">, string> = {
@@ -875,7 +883,7 @@ export const ExploreNarrativePDFDocument = ({
         <View style={styles.pageWrapper}>
           <SectionLabel>THE THESIS</SectionLabel>
           <Text style={styles.sectionHeadline}>{settingThesisHeadline[setting]}</Text>
-          <Text style={styles.body}>{settingThesisIntro[setting]}</Text>
+          <Text style={styles.body}>{getThesisIntro(data, setting)}</Text>
 
           <View style={[styles.cardBg, { marginBottom: 14 }]}>
             <Text
@@ -1002,6 +1010,35 @@ export const ExploreNarrativePDFDocument = ({
               Quality one quadrant at a time. Each driver shows the framing,
               the dollar value (where modeled), and the formula we used so the
               math is auditable end-to-end.
+            </Text>
+          </View>
+
+          <View
+            style={{
+              backgroundColor: colors.cards,
+              borderRadius: 4,
+              padding: 12,
+              marginTop: 10,
+            }}
+            wrap={false}
+          >
+            <Text
+              style={{
+                fontSize: 8.5,
+                color: colors.secondary,
+                lineHeight: 1.55,
+              }}
+            >
+              <Text style={{ fontWeight: "bold", color: colors.primaryText }}>
+                Every assumption in this model is visible and editable.{" "}
+              </Text>
+              Drivers labeled{" "}
+              <Text style={{ fontStyle: "italic" }}>Tracked</Text>{" "}
+              carry qualitative value we report on post-deployment rather than
+              project upfront — they're in the model because they matter to your
+              care teams, not because we've assigned a dollar figure to them yet.
+              The result is a financial story built to hold up in a budget
+              conversation.
             </Text>
           </View>
 

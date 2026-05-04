@@ -669,17 +669,89 @@ export default function ExploreModel({
           if (!state.careSetting) {
             return { quadrant, annualTotal: 0, oneTimeTotal: 0, drivers: [], otherFinancialBenefits: [] };
           }
+          function buildPersonalizedDescription(
+            driverId: string,
+            value: number,
+            providers: number,
+            encounters: number,
+            hoursSaved: number,
+          ): string {
+            const fmt = (n: number) => Math.round(n).toLocaleString();
+            const fmtCur = (n: number) => {
+              if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+              if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
+              return `$${Math.round(n).toLocaleString()}`;
+            };
+
+            switch (driverId) {
+              case 'patientAccess':
+                return `${fmt(hoursSaved)} hours returned across ${fmt(providers)} providers. Reinvesting a portion of recovered documentation time into additional visits generates ${fmtCur(value)} annually${providers > 0 ? ` — ${fmtCur(Math.round(value / providers))} per provider` : ''}.`;
+              case 'lwbsRecovery':
+                return `Across ${fmt(encounters)} annual ED visits, reducing LWBS through faster documentation generates ${fmtCur(value)} in recovered visit revenue annually.`;
+              case 'admissionCapture':
+                return `Of LWBS-recovered patients, a portion require inpatient admission. Capturing that downstream revenue adds ${fmtCur(value)} annually on top of the ED visit recovery.`;
+              case 'providerWellbeing':
+                return `With ${fmt(providers)} providers on staff, each departure runs $250K–$500K in recruiting, locum coverage, and ramp-up. This driver models ${fmtCur(value)} in avoided replacement cost annually when documentation burden stops driving people toward the door.`;
+              case 'physicianLocumAgency':
+                return `Every retained provider eliminates a coverage gap that would otherwise require locum or agency fill. At your scale, avoided contract coverage adds ${fmtCur(value)} annually.`;
+              case 'wrvu':
+                return `Across ${fmt(encounters)} annual encounters, notes that fully reflect visit complexity — MDM detail, conditions addressed, time-based billing eligibility — recover ${fmtCur(value)} in E/M coding accuracy annually.`;
+              case 'edEmLevel':
+                return `At ${fmt(encounters)} annual ED visits, documentation that captures clinical complexity during high-volume periods — when notes most commonly understate the encounter — recovers ${fmtCur(value)} annually in E/M level accuracy.`;
+              case 'hccCapture':
+                return `Across ${fmt(providers)} providers with a Medicare Advantage panel, conditions documented during the visit but omitted from risk adjustment create RAF score gaps. Closing those gaps generates ${fmtCur(value)} annually.`;
+              case 'denialPrevention':
+                return `Across ${fmt(encounters)} annual claims, documentation gaps that trigger unappealable medical-necessity denials represent a recoverable loss. Capturing clinical reasoning at the point of care prevents ${fmtCur(value)} in documentation-related denials annually.`;
+              case 'drgAccuracy':
+                return `Across ${fmt(encounters)} annual admissions, conditions discussed at bedside but missing from the note shift DRG weight by 0.3–0.5 each — worth $2,000–$4,000 per stay. Capturing that complexity in real time recovers ${fmtCur(value)} annually.`;
+              case 'cdiQueryReduction':
+                return `Each CDI query costs $40–$60 in specialist labor. Across ${fmt(encounters)} admissions, documentation that closes gaps at the point of care eliminates ${fmtCur(value)} in query overhead annually.`;
+              case 'obsDefense':
+                return `Inpatient status downgrades average $3,500–$10,000 per contested case. Documentation that supports medical necessity at point of care defends ${fmtCur(value)} in at-risk admission revenue annually.`;
+              case 'nursingRetention':
+                return `With ${fmt(providers)} nurses on staff, each departure costs $50K–$100K in recruiting and onboarding. Documentation burden is the most controllable retention lever — this driver models ${fmtCur(value)} in avoided replacement cost annually.`;
+              case 'nursingAgency':
+                return `Agency and travel nurse premiums run $2,000–$4,000 per week per vacancy. As retention stabilizes across your nursing staff, avoided agency coverage adds ${fmtCur(value)} annually.`;
+              case 'nursingOvertime':
+                return `Documentation completed during the shift rather than after it reduces overtime hours across ${fmt(providers)} nurses. At overtime rates, that converts to ${fmtCur(value)} annually in avoided labor cost.`;
+              case 'nursingHapi':
+                return `Real-time skin and turning documentation ensures risk factors are captured when observed, not reconstructed at end of shift. CMS does not reimburse for hospital-acquired pressure injuries — this driver models ${fmtCur(value)} in prevented HAPI costs annually.`;
+              case 'nursingFalls':
+                return `Real-time risk assessments and Morse score updates enable earlier preventive action. CMS does not reimburse for hospital-acquired fall injuries — this driver models ${fmtCur(value)} in prevented fall costs annually.`;
+              case 'nursingCauti':
+                return `Daily catheter-necessity documentation supports earlier removal and bundle adherence. CMS penalizes CAUTI rates through the HAC Reduction Program — this driver models ${fmtCur(value)} in prevented infection costs annually.`;
+              case 'nursingClabsi':
+                return `Bundle compliance and timely line documentation reduce central line bloodstream infections. CMS penalizes CLABSI rates through the HAC Reduction Program — this driver models ${fmtCur(value)} in prevented infection costs annually.`;
+              case 'nursingSepsis':
+                return `Time-stamped vitals and intervention documentation lift SEP-1 bundle compliance rates. Earlier recognition and better documentation support both outcomes and compliance reporting — this driver models ${fmtCur(value)} in avoided excess costs annually.`;
+              default:
+                return '';
+            }
+          }
+
           const drivers = EXPLORE_DRIVERS
             .filter(d => d.quadrant === quadrant && d.settings.includes(state.careSetting!) && isDriverEnabled(d, state))
-            .map(d => ({
-              id: d.id,
-              label: d.label,
-              shortDescription: d.shortDescription,
-              visibility: d.visibility,
-              value: allDriverValues[d.id] || 0,
-              isChild: Boolean(d.childOfDriverId),
-              calcSummary: allDriverCalcSummaries[d.id],
-            }));
+            .map(d => {
+              const value = allDriverValues[d.id] || 0;
+              const personalizedDesc = d.visibility === 'quantified'
+                ? buildPersonalizedDescription(
+                    d.id,
+                    value,
+                    state.numberOfProviders || 0,
+                    state.annualEncounters || 0,
+                    totalHoursSaved,
+                  )
+                : '';
+              return {
+                id: d.id,
+                label: d.label,
+                shortDescription: (personalizedDesc || d.shortDescription),
+                visibility: d.visibility,
+                value,
+                isChild: Boolean(d.childOfDriverId),
+                calcSummary: allDriverCalcSummaries[d.id],
+              };
+            });
 
           const benefits = (state.otherFinancialBenefits ?? [])
             .filter(b => b.quadrant === quadrant && b.label.trim() && b.amount > 0)
