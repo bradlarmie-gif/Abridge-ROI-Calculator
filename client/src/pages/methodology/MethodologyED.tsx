@@ -22,35 +22,35 @@ interface MethodologyEDProps {
 const overviewCards: DomainCardData[] = [
   {
     domain: "QUALITY",
-    description: "Documentation accuracy under pressure — capturing complexity that determines DRG, E/M level, and clinical defensibility. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
+    description: "Documentation specificity determines CDI query volume and patient experience scores. Both are measurable, both are Abridge-moveable, and both connect to financial outcomes an executive will recognize.",
     items: [
-      { label: "CDI query volume on admits", badge: "Signal" },
-      { label: "Note completeness rate", badge: "Signal" },
-      { label: "Sepsis/stroke protocol documentation", badge: "Proof" },
+      { label: "CDI query volume on admits", badge: "Trend" },
+      { label: "HCAHPS doctor communication score", badge: "Trend" },
     ],
   },
   {
     domain: "WORKFORCE",
-    description: "Physician burnout and turnover are the ED's slow bleed — documentation burden is a measurable contributor. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
+    description: "Documentation burden is the most cited and most measurable driver of ED physician burnout. After-shift charting time is EHR-measurable within weeks. Retention impact takes longer — but the replacement cost math is unambiguous.",
     items: [
-      { label: "Physician retention savings", badge: "Trend" },
+      { label: "After-shift charting time (pajama time)", badge: "Signal" },
+      { label: "Provider satisfaction / burnout surveys", badge: "Trend" },
+      { label: "Physician turnover rate", badge: "Proof" },
     ],
   },
   {
     domain: "CAPACITY",
-    description: "Throughput is the ED's operating system. Faster documentation is one lever — not the only one. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
+    description: "Documentation speed is one input to throughput — not the only one. We model it carefully and require you to confirm whether physician time is actually your throughput constraint before claiming LWBS impact.",
     items: [
       { label: "Documentation time per encounter (EHR)", badge: "Signal" },
-      { label: "LWBS recovery (wait time sensitivity)", badge: "Trend" },
-      { label: "Admission capture (downstream of LWBS)", badge: "Trend" },
+      { label: "LWBS rate", badge: "Trend" },
     ],
   },
   {
     domain: "REVENUE",
-    description: "ED coding is the most audit-vulnerable setting. Every surge creates under-documented complexity. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
+    description: "ED coding is the most audit-vulnerable setting. Under time pressure, physicians default to mid-level codes. Complete documentation shifts that distribution — and the billing cycle creates a clean, attributable before/after signal.",
     items: [
-      { label: "E/M level accuracy (claims data)", badge: "Trend" },
-      { label: "Denial prevention (RCM root cause)", badge: "Trend" },
+      { label: "E/M level accuracy / wRVU per encounter", badge: "Trend" },
+      { label: "Denial rate (documentation-related)", badge: "Trend" },
     ],
   },
 ];
@@ -59,171 +59,133 @@ const domainDetails: DomainDetailData[] = [
   {
     domain: "QUALITY",
     sectionTitle: "Quality",
-    sectionSubtitle: "Documentation accuracy under surge — capturing clinical complexity that determines downstream outcomes",
+    sectionSubtitle: "CDI specificity and patient experience — the two quality signals that connect directly to financial outcomes",
     items: [
       {
         label: "CDI Query Volume on Admits",
-        badge: "Signal",
-        explanation: "When ED documentation captures presenting conditions and comorbidities completely, CDI specialists receive fewer queries to clarify the clinical picture. This is tracked daily by most CDI departments — before/after comparison is fast and clean. Better ED notes also form the foundation of inpatient DRG accuracy for admitted patients.",
-        formula: "Admissions × query rate × reduction % — tracked by CDI department",
-        limit: "ED notes influence but don't fully determine inpatient DRG. Attribution requires CDI tracking both ED and inpatient documentation quality together.",
+        badge: "Trend",
+        explanation: "CDI queries happen when a note lacks the specificity to support accurate DRG coding — the coder can't tell if the patient had a complication, a severity level, or a comorbidity that would change the code. Abridge captures the clinical reasoning that physicians verbalize during the encounter: the severity assessment, the differential, the specific findings. That specificity, preserved in the note, answers the CDI question before it's asked. CDI departments track query volume monthly — it's one of the cleaner before/after metrics in the hospital.",
+        formula: "CDI queries per admission × reduction % × cost per query (CDI labor + physician response time, typically $50–$100 fully loaded)",
+        limit: "CDI query reduction from ED notes affects admitted patients. This is a joint ED + inpatient signal — track query rate on ED-origin cases specifically to isolate attribution.",
       },
       {
-        label: "Note Completeness Rate",
-        badge: "Signal",
-        explanation: "EHR timestamp data shows exactly when notes are completed and how long they take. During surges, note quality often drops — key elements get abbreviated or omitted. The hypothesis we model is that ambient capture, by removing the typing bottleneck, reduces volume-driven completeness loss; organizations have observed this pattern, and it's something CDI and compliance teams can audit directly to confirm whether it holds in your environment.",
-        formula: "EHR session data: note completion time, completeness scores (CDI audit-based)",
-      },
-      {
-        label: "Sepsis / Stroke Protocol Documentation",
-        badge: "Proof",
-        explanation: "Proper documentation of sepsis and stroke presentations affects both regulatory compliance (CMS sepsis bundle measures) and downstream coding accuracy. The documentation is real and the clinical stakes are high — but direct financial attribution is indirect and multi-factorial. Track as a quality signal, not a revenue line.",
+        label: "HCAHPS Doctor Communication Score",
+        badge: "Trend",
+        explanation: "Physicians using ambient documentation spend less time looking at a screen and more time making eye contact with the patient. When the note is drafting itself, the physician can be fully present in the conversation. Patients notice — and report it in surveys. The HCAHPS doctor communication composite ('doctors always explained things clearly / listened carefully / treated me with respect') is directly affected by physician presence during the encounter.",
+        formula: "HCAHPS Doctor Communication composite score (Press Ganey reporting). Value-Based Purchasing: CMS puts 2% of Medicare inpatient payments at risk based in part on HCAHPS domain scores. A 1–2 point composite improvement can shift a hospital from the penalty zone to neutral.",
+        limit: "HCAHPS is reported quarterly — you need 2–3 survey cycles before the trend is statistically meaningful. Isolate the doctor communication sub-items specifically, not just overall satisfaction.",
       },
     ],
-    honestLimit: "CDI query reduction shows up quickly. DRG impact on admitted patients is captured in the Inpatient methodology to avoid double-counting.",
+    honestLimit: "CDI query reduction shows up in 2–3 billing cycles. HCAHPS requires quarterly survey cycles. Neither is a Day 1 signal — but both are clean, measurable, and directly linked to financial outcomes executives track.",
   },
   {
     domain: "WORKFORCE",
     sectionTitle: "Workforce",
-    sectionSubtitle: "Physician retention — the ED's most expensive and least discussed cost driver",
+    sectionSubtitle: "Physician time, satisfaction, and retention — the ED's most expensive and most measurable cost driver",
     items: [
       {
+        label: "After-Shift Charting Time (Pajama Time)",
+        badge: "Signal",
+        explanation: "Abridge generates a drafted note by the time the patient leaves. The physician reviews and edits instead of writing from scratch. The note that used to take 20–30 minutes at midnight takes 5 minutes to review. ED physicians average 45–90 minutes of unpaid after-shift charting per shift. That's time with their families, their sleep, their life outside medicine. When this number drops, physicians notice immediately — and they talk about it. EHR session data after shift end is directly measurable: compare the same providers before and after deployment.",
+        formula: "Minutes of post-shift EHR activity per provider per shift (before vs. after). EHR session timestamps — pull shift end time + last EHR activity by provider.",
+      },
+      {
         label: "Physician Retention Savings",
-        badge: "Trend",
-        explanation: "ED burnout is a workforce crisis. Documentation burden is consistently cited in ACEP surveys and Medscape reports as a top contributor. At $250K–$500K per physician replacement (AMGA Physician Retention Survey), retaining even one additional physician could offset a significant portion of implementation cost. The link is attributable; the measurement takes 12–18 months.",
-        formula: "ED physicians × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefaults: replacement cost $250K–$500K, turnover 8–15%, burnout attribution 10–20%",
-        limit: "Documentation is one of many burnout drivers in the ED. Don't attribute all turnover change to documentation.",
+        badge: "Proof",
+        explanation: "Documentation burden is consistently the #1 or #2 driver of ED physician burnout in ACEP and Medscape surveys. Burnout drives exit. When you reduce a physician's primary operational complaint — nightly charting, interrupted evenings, weekend catch-up — you remove a key reason they look for other positions or reduce clinical hours. At $250,000–$500,000 per physician replacement (recruitment, credentialing, locum coverage during the gap, productivity ramp), preventing even one departure more than offsets a year of Abridge costs for most groups.",
+        formula: "ED physicians × annual turnover rate × burnout attribution % × Abridge retention impact % × replacement cost\n\nDefaults: replacement cost $250K–$500K, turnover 8–15%, burnout attribution 10–20%",
+        limit: "Documentation burden is one of many burnout drivers. Don't attribute all turnover change to documentation. The right claim: Abridge addresses the most commonly cited operational complaint, and that's attributable. The rest is multi-factorial.",
       },
     ],
-    honestLimit: "Retention impact takes 12–18 months to observe. Track exit interviews and satisfaction surveys to build the attribution case over time.",
+    honestLimit: "After-shift charting shows up in weeks. Satisfaction surveys at 2–4 months. Turnover data takes 12–18 months to be statistically credible. Build the case in layers — don't try to prove retention ROI in quarter one.",
   },
   {
     domain: "CAPACITY",
     sectionTitle: "Capacity",
-    sectionSubtitle: "Throughput and time — documentation speed is one input to the ED's operational throughput",
+    sectionSubtitle: "Documentation speed is one input to ED throughput — but only if physician time is actually your bottleneck",
     items: [
       {
         label: "Documentation Time Per Encounter (EHR)",
         badge: "Signal",
-        explanation: "EHR timestamps show exactly when charting begins and ends. In the ED, time savings are smaller per encounter (2–5 minutes) vs. outpatient — but the ED is a volume engine. At 40,000–80,000 visits/year, 3 minutes × 50,000 visits = ~2,500 hours of physician time annually (illustrative). Early signals are often visible within weeks in deployment data.",
-        formula: "Minutes saved × annual ED visits / 60 = estimated physician hours potentially returned",
+        explanation: "Ambient documentation captures the encounter as it happens. Instead of writing from memory after the patient leaves, the physician reviews and edits a drafted note. EHR timestamp data shows exactly when charting begins, when it ends, and whether it happens during the encounter or after the shift. In consistent users, documentation time typically drops 30–50%. In the ED at 40,000–80,000 visits per year, even 3 minutes per encounter recaptured is a meaningful shift in how physicians spend their clinical hours.",
+        formula: "Minutes saved per encounter × annual ED visits / 60 = physician hours returned annually (illustrative — use your EHR session data for the actual number)",
       },
       {
-        label: "LWBS Recovery (Wait Time Sensitivity)",
+        label: "LWBS Rate",
         badge: "Trend",
-        explanation: "Each patient who leaves without being seen represents $300–$500+ in lost revenue. Faster documentation contributes to faster throughput, which can reduce wait times and recover some LWBS patients. Attribution is the challenge — documentation is one lever among staffing, bed management, triage protocol, and acuity mix.",
-        formula: "(LWBS rate before − LWBS rate after, in pp) × annual ED visits × $480/visit × attribution %",
-        limit: "If your LWBS rate is already below 2%, this lever is smaller. We let you adjust based on your reality.",
-      },
-      {
-        label: "Admission Capture (Downstream of LWBS)",
-        badge: "Trend",
-        explanation: "Of patients recovered from LWBS, some require inpatient admission — converting a lost ED visit into DRG-based inpatient revenue. This driver only activates when LWBS recovery is calculated first. Without real LWBS data, don't estimate this — compounding two estimates produces a number that won't survive scrutiny.",
-        formula: "Recovered LWBS patients × admission rate % × avg admission revenue × realization rate",
+        explanation: "When physician documentation time drops, physicians can begin the next encounter sooner. In EDs where physician availability — not bed availability — is the throughput bottleneck, faster documentation directly reduces door-to-provider time, which directly reduces the number of patients who leave without being seen. Each LWBS patient represents approximately $480 in lost revenue plus negative patient experience and regulatory exposure. At a 2% LWBS rate on 50,000 annual visits, a half-point reduction is roughly $240,000 recovered annually — on revenue the ED already earned by keeping the doors open.",
+        formula: "(LWBS rate before − after, in pp) × annual ED visits × ~$480/visit × attribution %",
+        limit: "This metric only moves if physician time is your throughput bottleneck. If you're constrained by bed availability, nursing ratios, or ancillary service wait times, faster documentation does not move LWBS. We require you to confirm this explicitly before we include this driver — a number that falls apart in a leadership meeting is worse than no number.",
       },
     ],
-    honestLimit: "Documentation is one input to throughput. Staffing, triage protocols, and bed management all matter. We model the documentation contribution — not the whole throughput picture.",
+    honestLimit: "Documentation is one input to throughput. Staffing, triage protocols, and bed management all matter. The LWBS model requires explicit confirmation that physician time is your constraint — not an assumption.",
   },
   {
     domain: "REVENUE",
     sectionTitle: "Revenue",
-    sectionSubtitle: "Coding accuracy and denial prevention — the ED's most auditable, defensible revenue domain",
+    sectionSubtitle: "Coding accuracy and denial prevention — the ED's most auditable revenue opportunity",
     items: [
       {
         label: "E/M Level Accuracy (Claims Data)",
         badge: "Trend",
-        explanation: "The 2021 CMS E/M guideline shift made Medical Decision Making (MDM) the primary determinant of E/M level — three elements: complexity of problems addressed, data reviewed and analyzed, and risk of treatment. During surges, ED notes understate what actually happened not because physicians made simpler decisions, but because the documentation didn't capture the MDM elements that support the appropriate level. Ambient capture records the clinical reasoning in real time — the differential, the data weighed, the treatment risk — in a way that dictation shortcuts and templates don't. Coding teams can audit MDM completeness directly to confirm the mechanism before claims data makes the financial signal visible.",
-        formula: "(wRVU per encounter after − before) × adopted encounters × $33/wRVU × attribution % × realization %",
+        explanation: "Under time pressure, ED physicians manage complex differentials but document simpler encounters because that's what can be written in 3 minutes. Abridge captures the full clinical conversation — the presenting complaint, exam findings, and decision-making — so the note reflects what actually happened. Coders see complete documentation and assign the code the complexity warrants. Claims data shows E/M level distribution before and after — it's one of the cleanest revenue signals in the ED because the before/after comparison is in your own billing system.",
+        formula: "(wRVU per encounter after − before) × adopted encounters × $33.40/wRVU × attribution % × realization %\n\nED wRVU lift is typically 2–7% (lower than outpatient because ED workflows are already more structured)",
+        limit: "Plan for 2–3 billing cycles (60–90 days) before comparing E/M distributions. The improved note exists immediately, but the billing cycle (30–45 days encounter to payment) plus coding team behavior adjustment means the aggregate signal takes time to be clean.",
       },
       {
-        label: "Denial Prevention (RCM Root Cause)",
-        badge: "Signal",
-        explanation: "Medical necessity is the ED's denial vulnerability. When a note doesn't capture why a test was ordered or why admission was necessary, that's a denial waiting to happen — and many ED denials are unappealable because the documentation gap existed at time of service. RCM teams track documentation-related denials as a specific root cause category.",
-        formula: "(denial rate before − after, in pp) × annual encounters × avg denial cost per encounter × attribution %\n\nED default: $500 per encounter",
+        label: "Denial Rate (Documentation-Related)",
+        badge: "Trend",
+        explanation: "Medical necessity denials are the top ED denial type — payers reject claims when the note doesn't show why the level of care was warranted. Abridge captures the clinical reasoning that physicians verbalize but rarely have time to write: the severity of symptoms, the differential diagnosis, the alternatives considered. That reasoning, preserved in the note, is what payers need to adjudicate the claim. RCM teams track documentation-related denials as a specific root cause category — this is a metric your revenue cycle team already monitors.",
+        formula: "(denial rate before − after, in pp) × annual encounters × avg denial cost × attribution %\n\nED default: ~$450–$500 per denied encounter",
+        limit: "RCM denial trend data requires 90+ days of claims volume to show a statistically meaningful pattern. Track documentation-specific denials separately from other denial causes — the attribution depends on isolating that root cause.",
       },
     ],
-    honestLimit: "ED wRVU lift is lower than outpatient because ED documentation workflows are already more structured. We use your observed delta, not an assumed percentage.",
+    honestLimit: "Revenue signals in the ED are measurable but require patience with the billing cycle. E/M level data and denial root-cause both need 60–90+ days before the trend is clean enough to present to finance.",
   },
 ];
 
 const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
   QUALITY: [
     {
-      label: "ED Note Quality (Star Rating)",
-      tagline: "Composite of completeness, specificity, and structure — auditable per provider",
-      howToTrack: "CDI / quality team scores ED notes on a star scale (often 1–5). Pull pre/post averages by provider. Pattern is usually visible within 90 days.",
-      badge: "Signal",
-    },
-    {
-      label: "Admission Hand-Off Completeness",
-      tagline: "When the ED admits, the inpatient team starts from the ED note — completeness shows up downstream",
-      howToTrack: "Audit a sample of ED-to-inpatient handoffs for SBAR completeness, presenting condition specificity, and disposition reasoning. Pair with hospitalist satisfaction surveys.",
-      badge: "Trend",
-    },
-    {
-      label: "ED Patient Experience (Press Ganey)",
-      tagline: "Less keyboard time = more eye contact during the encounter",
-      howToTrack: "Press Ganey ED survey, reported quarterly. Isolate the 'Doctor explained things clearly' composite. Tied directly to ED HCAHPS and value-based contract performance.",
+      label: "Down-Coding Rate",
+      tagline: "% of encounters coded below the level supported by actual visit complexity — the most direct coding accuracy signal",
+      howToTrack: "Coding team audit: pull % of encounters down-coded due to documentation gaps. Compare same acuity cohort before and after deployment. Directly responsive to documentation completeness. 60–90 days for a meaningful trend.",
       badge: "Trend",
     },
   ],
   WORKFORCE: [
     {
-      label: "After-Hours Documentation",
-      tagline: "Time spent charting after shift end — the cleanest ED burnout signal",
-      howToTrack: "EHR session data after shift end. Compare same providers before and after deployment. Visible in weeks.",
-      badge: "Signal",
-    },
-    {
       label: "Provider Engagement / Burnout Surveys",
-      tagline: "Is documentation burden still cited as a top driver in ED-specific burnout assessments?",
-      howToTrack: "Press Ganey provider engagement, ACEP wellness surveys, or internal pulse surveys. Track documentation burden specifically among Abridge users.",
+      tagline: "Documentation burden specifically — not just overall satisfaction",
+      howToTrack: "Use ACEP wellness surveys, Mini Z, Maslach, or internal pulse surveys. Track the documentation burden sub-question specifically among Abridge users vs. non-users. Meaningful trend at 2–4 months. Satisfaction is the 6-month leading indicator before turnover data appears.",
       badge: "Trend",
     },
     {
       label: "Locum Utilization Trend",
-      tagline: "Locum coverage often spikes when retention dips — track the leading indicator",
-      howToTrack: "Schedule data and locum agency invoices. Track locum hours and spend per month vs. baseline. Lagging indicator for retention.",
+      tagline: "Locum coverage spikes when retention dips — track the leading financial indicator",
+      howToTrack: "Schedule data and locum agency invoices. Track locum hours and spend per month vs. baseline. This is a lagging indicator for retention but a leading indicator for locum cost savings — and it's a number finance already tracks.",
       badge: "Trend",
     },
   ],
   CAPACITY: [
     {
-      label: "Encounters per Provider per Shift",
-      tagline: "Throughput per provider — directly responsive to documentation speed",
-      howToTrack: "EHR encounter counts segmented by provider and shift. Compare same shift type and acuity mix pre/post for credible comparison.",
-      badge: "Signal",
-    },
-    {
       label: "End-of-Shift Note Completion Rate",
-      tagline: "% of notes signed before clock-out — a clean signal for same-shift documentation",
-      howToTrack: "EHR audit logs: % of encounters with a signed note by end of shift. Often the most dramatic early metric in the ED.",
+      tagline: "% of notes signed before clock-out — often the most dramatic early signal in the ED",
+      howToTrack: "EHR audit logs: % of encounters with a signed note by end of shift. Compare same providers pre/post. This is frequently one of the first metrics to move visibly — and it's a clean operational win to report to clinical leadership.",
       badge: "Signal",
     },
     {
-      label: "Door-to-Provider Time",
-      tagline: "Front-end throughput — affected by triage, staffing, and documentation flow",
-      howToTrack: "ED operational dashboard, tracked monthly. Documentation is one input — control for staffing and acuity changes when interpreting the trend.",
+      label: "Encounters per Provider per Shift",
+      tagline: "Direct throughput signal — but requires controlling for acuity mix",
+      howToTrack: "EHR encounter counts segmented by provider and shift type. Compare same shift type and acuity cohort pre/post. A change here with controlled comparison is one of the strongest capacity claims you can make.",
       badge: "Trend",
     },
   ],
   REVENUE: [
     {
-      label: "MDM Documentation Completeness",
-      tagline: "The 2021 E/M guideline shift made MDM the coding driver — are all three elements documented?",
-      howToTrack: "Coding team audits MDM elements per encounter: complexity of problems, data reviewed, risk of treatment. Score a sample of notes per provider pre/post deployment. Directly auditable and directly moveable by ambient capture.",
-      badge: "Signal",
-    },
-    {
-      label: "Down-coding Rate",
-      tagline: "% of ED encounters coded below the level supported by the actual visit complexity",
-      howToTrack: "Coding team audit. Pull % of encounters down-coded due to documentation gaps. Directly responsive to documentation completeness — Abridge-moveable signal.",
-      badge: "Signal",
-    },
-    {
       label: "Documentation-Related Denial Rate",
-      tagline: "Denials specifically tied to medical necessity / documentation gaps",
-      howToTrack: "RCM root-cause categorization, tracked monthly. Isolate documentation-related denials from other causes. 6+ months for credible trend.",
+      tagline: "Denials tied specifically to medical necessity gaps — the most defensible revenue signal",
+      howToTrack: "RCM root-cause categorization, tracked monthly. Isolate documentation-related denials from authorization, eligibility, and other denial types. 90+ days for a credible trend. This is the number your CFO will ask about.",
       badge: "Trend",
     },
   ],
@@ -269,7 +231,7 @@ data-testid="button-export-pdf">
       <div className="max-w-[800px] mx-auto px-6 py-12">
         <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Emergency: How We Think About Value</h1>
-          <p className="text-base text-[#666666]">Where speed matters and every minute counts differently</p>
+          <p className="text-base text-[#666666]">What changes in your ED with ambient documentation — and when. Built for CFO scrutiny.</p>
         </motion.div>
 
         <ValueAccrualSection />
