@@ -385,7 +385,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
       {
         label: "QUALITY",
         description: "Documentation completeness drives referral quality and risk adjustment accuracy for value-based contracts. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Strategic \u2014 qualitative, tracked not monetized",
+        footer: "Proof \u2014 qualitative, tracked not monetized",
         accentColor: colors.primary,
       },
       {
@@ -564,7 +564,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
       {
         label: "QUALITY",
         description: "Documentation accuracy under pressure\u2014capturing complexity that determines DRG, E/M level, and clinical defensibility. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Strategic \u2014 qualitative, with measurable CDI impact",
+        footer: "Proof \u2014 qualitative, with measurable CDI impact",
         accentColor: colors.primary,
       },
       {
