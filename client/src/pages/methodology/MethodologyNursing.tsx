@@ -243,10 +243,7 @@ data-testid="button-export-pdf">
           cards={overviewCards}
           domainDetails={domainDetails}
           qualitativeByDomain={qualitativeSignals}
-        />
-
-        <div className="bg-[#F5F0EB] rounded-lg">
-          <div className="px-6">
+        >
             <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -434,8 +431,7 @@ retention improves even modestly, the stabilization effect compounds. The system
 system-level business case, these connections are part of the story.</p>
               </div>
             </CollapsibleSection>
-          </div>
-        </div>
+        </DomainTabExplorer>
 
         <motion.div className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>

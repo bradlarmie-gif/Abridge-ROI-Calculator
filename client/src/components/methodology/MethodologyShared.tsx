@@ -237,11 +237,13 @@ export function DomainTabExplorer({
   domainDetails,
   qualitativeByDomain,
   defaultDomain = "QUALITY",
+  children,
 }: {
   cards: DomainCardData[];
   domainDetails: DomainDetailData[];
   qualitativeByDomain: Partial<Record<DomainName, QualitativeSignal[]>>;
   defaultDomain?: DomainName;
+  children?: React.ReactNode;
 }) {
   const [activeDomain, setActiveDomain] = useState<DomainName>(defaultDomain);
 
@@ -284,72 +286,82 @@ export function DomainTabExplorer({
         </div>
       </div>
 
-      {/* Tab bar — underline style, domain color accent, no shadcn styles */}
-      <div className="flex border-b border-[#E5E5E5] mb-6 overflow-x-auto">
-        {DOMAIN_ORDER.map((domain) => {
-          const isActive = activeDomain === domain;
-          const color = domainColors[domain];
-          return (
-            <button
-              key={domain}
-              onClick={() => setActiveDomain(domain)}
-              className="px-4 py-3 text-xs font-bold uppercase tracking-[1.5px] whitespace-nowrap transition-colors hover:text-[#444444]"
-              style={{
-                color: isActive ? color : "#888888",
-                borderBottom: `2px solid ${isActive ? color : "transparent"}`,
-                marginBottom: -1,
-              }}
-              data-testid={`tab-domain-${domain.toLowerCase()}`}
-            >
-              {DOMAIN_LABELS[domain]}
-            </button>
-          );
-        })}
-      </div>
+      {/* Beige container — tab bar, tab content, and collapsible children */}
+      <div className="bg-[#F5F0EB] rounded-lg">
+        <div className="px-6">
 
-      {/* Tab content — fades in on domain change */}
-      <motion.div
-        key={activeDomain}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.15 }}
-        className="space-y-6"
-      >
-        {/* Domain description */}
-        {activeCard && (
-          <p className="text-[15px] text-[#666666] leading-relaxed">{activeCard.description}</p>
-        )}
+          {/* Tab bar — inside the beige panel */}
+          <div className="flex border-b border-[#D9D4CF] overflow-x-auto">
+            {DOMAIN_ORDER.map((domain) => {
+              const isActive = activeDomain === domain;
+              const color = domainColors[domain];
+              return (
+                <button
+                  key={domain}
+                  onClick={() => setActiveDomain(domain)}
+                  className="px-4 py-3 text-xs font-bold uppercase tracking-[1.5px] whitespace-nowrap transition-colors hover:text-[#444444]"
+                  style={{
+                    color: isActive ? color : "#888888",
+                    borderBottom: `2px solid ${isActive ? color : "transparent"}`,
+                    marginBottom: -1,
+                  }}
+                  data-testid={`tab-domain-${domain.toLowerCase()}`}
+                >
+                  {DOMAIN_LABELS[domain]}
+                </button>
+              );
+            })}
+          </div>
 
-        {/* Modeled drivers */}
-        {activeDetail && activeDetail.items.length > 0 && (
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Modeled Drivers</p>
-            <div className="space-y-3">
-              {activeDetail.items.map((item) => (
-                <DomainImpactCard key={item.label} item={item} accentColor={domainColors[activeDomain]} />
-              ))}
-            </div>
-            {activeDetail.honestLimit && (
-              <div className="mt-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
-                <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>
-                <p className="text-xs text-[#666666] leading-relaxed">{activeDetail.honestLimit}</p>
+          {/* Tab content */}
+          <motion.div
+            key={activeDomain}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15 }}
+            className="space-y-6 py-6"
+          >
+            {/* Domain description */}
+            {activeCard && (
+              <p className="text-[15px] text-[#666666] leading-relaxed">{activeCard.description}</p>
+            )}
+
+            {/* Modeled drivers */}
+            {activeDetail && activeDetail.items.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Modeled Drivers</p>
+                <div className="space-y-3">
+                  {activeDetail.items.map((item) => (
+                    <DomainImpactCard key={item.label} item={item} accentColor={domainColors[activeDomain]} />
+                  ))}
+                </div>
+                {activeDetail.honestLimit && (
+                  <div className="mt-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
+                    <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>
+                    <p className="text-xs text-[#666666] leading-relaxed">{activeDetail.honestLimit}</p>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
 
-        {/* Qualitative signals — Metrics to Watch */}
-        {activeSignals.length > 0 && (
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Metrics to Watch</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {activeSignals.map((signal) => (
-                <QualitativeSignalCard key={signal.label} signal={signal} />
-              ))}
-            </div>
-          </div>
-        )}
-      </motion.div>
+            {/* Qualitative signals — Metrics to Watch */}
+            {activeSignals.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Metrics to Watch</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {activeSignals.map((signal) => (
+                    <QualitativeSignalCard key={signal.label} signal={signal} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Collapsible sections passed as children — sit below tab content, inside same beige panel */}
+          {children}
+
+        </div>
+      </div>
     </div>
   );
 }

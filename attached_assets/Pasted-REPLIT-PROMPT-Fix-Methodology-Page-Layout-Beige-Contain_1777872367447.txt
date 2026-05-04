@@ -1,0 +1,174 @@
+REPLIT PROMPT — Fix Methodology Page Layout (Beige Container)
+                                                                                                                                                                                                               
+  Goal: The methodology page tab section is floating on white. Wrap the tab bar, tab content, and all collapsible sections inside one unified bg-[#F5F0EB] rounded-lg beige container — matching the visual
+  language of the Explore wizard. The four domain overview cards stay on white above the panel. No new colors, no new dependencies.                                                                            
+                                                         
+  Files to edit (exactly these five):                                                                                                                                                                          
+  - client/src/components/methodology/MethodologyShared.tsx
+  - client/src/pages/methodology/MethodologyInpatient.tsx                                                                                                                                                      
+  - client/src/pages/methodology/MethodologyED.tsx       
+  - client/src/pages/methodology/MethodologyOutpatient.tsx                                                                                                                                                     
+  - client/src/pages/methodology/MethodologyNursing.tsx
+                                                                                                                                                                                                               
+  ---                                                    
+  Part 1 — client/src/components/methodology/MethodologyShared.tsx                                                                                                                                             
+                                                                                                                                                                                                               
+  Find the DomainTabExplorer function. Make three changes:
+                                                                                                                                                                                                               
+  Change A — Add children prop to the interface:                                                                                                                                                               
+                                                                                                                                                                                                               
+  export function DomainTabExplorer({                                                                                                                                                                          
+    cards,                                               
+    domainDetails,
+    qualitativeByDomain,
+    defaultDomain = "QUALITY",
+    children,
+  }: {                                                                                                                                                                                                         
+    cards: DomainCardData[];
+    domainDetails: DomainDetailData[];                                                                                                                                                                         
+    qualitativeByDomain: Partial<Record<DomainName, QualitativeSignal[]>>;
+    defaultDomain?: DomainName;                                                                                                                                                                                
+    children?: React.ReactNode;
+  })                                                                                                                                                                                                           
+                                                         
+  Change B — Wrap the tab bar + tab content inside a beige container:                                                                                                                                          
+   
+  In the JSX returned by DomainTabExplorer, after the overview cards + badge legend block ends (the existing white section), replace the bare tab bar + motion.div block with this structure:                  
+                                                         
+  {/* Beige container — tab bar, tab content, and collapsible children */}                                                                                                                                     
+  <div className="bg-[#F5F0EB] rounded-lg">                                                                                                                                                                    
+    <div className="px-6">                                                                                                                                                                                     
+                                                                                                                                                                                                               
+      {/* Tab bar — inside the beige panel */}                                                                                                                                                                 
+      <div className="flex border-b border-[#D9D4CF] overflow-x-auto">
+        {DOMAIN_ORDER.map((domain) => {                                                                                                                                                                        
+          const isActive = activeDomain === domain;
+          const color = domainColors[domain];                                                                                                                                                                  
+          return (                                                                                                                                                                                             
+            <button
+              key={domain}                                                                                                                                                                                     
+              onClick={() => setActiveDomain(domain)}    
+              className="px-4 py-3 text-xs font-bold uppercase tracking-[1.5px] whitespace-nowrap transition-colors hover:text-[#444444]"
+              style={{                                                                                                                                                                                         
+                color: isActive ? color : "#888888",
+                borderBottom: `2px solid ${isActive ? color : "transparent"}`,                                                                                                                                 
+                marginBottom: -1,                                                                                                                                                                              
+              }}
+            >                                                                                                                                                                                                  
+              {DOMAIN_LABELS[domain]}                    
+            </button>                                                                                                                                                                                          
+          );
+        })}                                                                                                                                                                                                    
+      </div>                                             
+
+      {/* Tab content */}
+      <motion.div
+        key={activeDomain}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}                                                                                                                                                                               
+        transition={{ duration: 0.15 }}
+        className="space-y-6 py-6"                                                                                                                                                                             
+      >                                                                                                                                                                                                        
+        {/* Domain description */}
+        {activeCard && (                                                                                                                                                                                       
+          <p className="text-[15px] text-[#666666] leading-relaxed">{activeCard.description}</p>
+        )}                                                                                                                                                                                                     
+   
+        {/* Modeled drivers */}                                                                                                                                                                                
+        {activeDetail && activeDetail.items.length > 0 && (
+          <div>                                                                                                                                                                                                
+            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Modeled Drivers</p>
+            <div className="space-y-3">                                                                                                                                                                        
+              {activeDetail.items.map((item) => (        
+                <DomainImpactCard key={item.label} item={item} accentColor={domainColors[activeDomain]} />                                                                                                     
+              ))}                                        
+            </div>                                                                                                                                                                                             
+            {activeDetail.honestLimit && (               
+              <div className="mt-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">                                                                                                                 
+                <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>                                                                                           
+                <p className="text-xs text-[#666666] leading-relaxed">{activeDetail.honestLimit}</p>                                                                                                           
+              </div>                                                                                                                                                                                           
+            )}                                                                                                                                                                                                 
+          </div>                                                                                                                                                                                               
+        )}                                               
+
+        {/* Metrics to Watch */}
+        {activeSignals.length > 0 && (
+          <div>                                                                                                                                                                                                
+            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Metrics to Watch</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">                                                                                                                                            
+              {activeSignals.map((signal) => (                                                                                                                                                                 
+                <QualitativeSignalCard key={signal.label} signal={signal} />
+              ))}                                                                                                                                                                                              
+            </div>                                       
+          </div>                                                                                                                                                                                               
+        )}                                               
+      </motion.div>
+
+      {/* Collapsible sections passed as children — sit below tab content, inside same beige panel */}                                                                                                         
+      {children}
+                                                                                                                                                                                                               
+    </div>                                               
+  </div>
+
+  Change C — Remove the old standalone tab bar + motion.div that existed outside any container — the code you are replacing is whatever currently renders the tab bar and tab content outside of a beige       
+  wrapper. Delete it and use the new structure above.
+                                                                                                                                                                                                               
+  ---                                                    
+  Parts 2–5 — All four methodology files
+                                        
+  In each of these four files:
+  - MethodologyInpatient.tsx                                                                                                                                                                                   
+  - MethodologyED.tsx                                                                                                                                                                                          
+  - MethodologyOutpatient.tsx                                                                                                                                                                                  
+  - MethodologyNursing.tsx                                                                                                                                                                                     
+                                                         
+  Make these two changes:
+                                                                                                                                                                                                               
+  Change A — Move CollapsibleSections inside <DomainTabExplorer> as children:                                                                                                                                  
+                                                                                                                                                                                                               
+  Find the <DomainTabExplorer ... /> self-closing tag and the separate <div className="bg-[#F5F0EB] rounded-lg"> block that wraps the CollapsibleSections.                                                     
+                                                         
+  Replace this pattern:                                                                                                                                                                                        
+  <DomainTabExplorer                                     
+    cards={overviewCards}                                                                                                                                                                                      
+    domainDetails={domainDetails}                        
+    qualitativeByDomain={qualitativeSignals}
+  />                                        
+    
+  <div className="bg-[#F5F0EB] rounded-lg">                                                                                                                                                                    
+    <div className="px-6">                 
+      <CollapsibleSection ...>...</CollapsibleSection>                                                                                                                                                         
+      <CollapsibleSection ...>...</CollapsibleSection>   
+      {/* ...all remaining CollapsibleSections */}    
+    </div>                                                                                                                                                                                                     
+  </div>  
+                                                                                                                                                                                                               
+  With this pattern:                                                                                                                                                                                           
+  <DomainTabExplorer
+    cards={overviewCards}                                                                                                                                                                                      
+    domainDetails={domainDetails}                        
+    qualitativeByDomain={qualitativeSignals}
+  >                                         
+    <CollapsibleSection ...>...</CollapsibleSection>
+    <CollapsibleSection ...>...</CollapsibleSection>
+    {/* ...all remaining CollapsibleSections with their EXACT existing content unchanged */}                                                                                                                   
+  </DomainTabExplorer>                                                                      
+                                                                                                                                                                                                               
+  Critical: Every CollapsibleSection's inner content must remain exactly as it was — only the outer container changes. Do not alter any text, table rows, lists, or nested elements inside the collapsibles.
+                                                                                                                                                                                                               
+  Change B — Remove the mb-12 margin that was on the old beige div (since DomainTabExplorer now handles its own bottom margin).                                                                                
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  Verification                                           
+
+  npm run typecheck
+  npm run dev
+  # Navigate to each methodology setting page
+  # Expect on each:                                                                                                                                                                                            
+  # 1. White area: hero heading + four domain overview cards + badge legend
+  # 2. ONE unified beige panel below: tab bar at top, tab content, then the 5 collapsibles                                                                                                                     
+  # 3. White cards (driver cards, signal cards) pop off the beige background — same visual language as Explore wizard                                                                                          
+  # 4. No content floating on plain white background                                                                                                                                                           
+  # 5. Tab switching still animates cleanly                                                                                                                                                                    
+  # 6. Collapsibles still open/close normally 
