@@ -19,12 +19,12 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
   return (
     <div>
       <p className="text-[13px] text-[#666666] leading-relaxed mb-4">
-        Obs/IP status is determined at admission {"—"} Abridge doesn{"'"}t change that decision. What it changes is the quality of the documentation that supports it. When payers challenge IP status in retrospective review, the attending{"'"}s clinical reasoning needs to be in the record.
+        IP status denials hinge on medical necessity {"—"} and medical necessity lives in the attending{"'"}s clinical reasoning, not just the final diagnosis codes. Abridge captures that reasoning at the time of admission, so when payers review the claim, the record already shows why the IP level of care was warranted.
       </p>
       <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg px-4 py-3 mb-6 flex items-start gap-2">
         <span className="text-[#EA2C00] text-sm mt-0.5 shrink-0">{"ⓘ"}</span>
         <p className="text-xs text-[#666666]">
-          <strong>What this models:</strong> The share of medical necessity denials where the appeal outcome depends on the quality of the original encounter documentation.
+          <strong>What this models:</strong> The share of medical necessity denials where better real-time documentation {"—"} captured at admission {"—"} would have prevented the denial or substantially strengthened the appeal.
         </p>
       </div>
 
@@ -89,7 +89,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
 
       {/* STEP 3 */}
       <div className="mb-10">
-        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">Step 3: Appeal-Sensitive Denials</p>
+        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">Step 3: Documentation-Preventable Denials</p>
         <div className="bg-[#F5F0EB] rounded-lg p-5">
           <div className="flex-1">
             <label className="text-[13px] text-[#666666] mb-1.5 block">Documentation Contribution %</label>
@@ -108,7 +108,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
             </div>
           </div>
           <p className="text-[13px] text-[#888888] mt-3">
-            Of your medical necessity denials, what % do you lose specifically because documentation didn{"'"}t capture clinical reasoning adequately? 35{"–"}55% is appropriate.
+            Of your medical necessity denials, what % are driven by inadequate clinical reasoning in the record {"—"} not payer policy? This is the share where better admission documentation would change the outcome. 35{"–"}55% is a typical benchmark.
           </p>
         </div>
       </div>

@@ -738,7 +738,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipCdiEnabled: false,
     ipCdiScenario: 'typical',
     ipCdiQueryRate: 30, // 30% of admissions generate queries
-    ipCdiCostPerQuery: 150, // $150 per query
+    ipCdiCostPerQuery: 50, // $50 per query
     ipCdiRealization: 75,
     // Nursing: HAPI Prevention defaults
     nursingHapiEnabled: false,
@@ -1160,7 +1160,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
 
     // Inpatient: CDI Query Reduction
     if (state.careSetting === 'inpatient' && docQualityInputs.ipCdiEnabled) {
-      const ipCdiReductionScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
+      const ipCdiReductionScenarios: Record<string, number> = { conservative: 15, typical: 30, aggressive: 50 };
       const reductionPercent = ipCdiReductionScenarios[docQualityInputs.ipCdiScenario];
       const totalQueries = eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100);
       const queriesAvoided = totalQueries * (reductionPercent / 100);

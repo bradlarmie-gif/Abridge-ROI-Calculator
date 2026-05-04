@@ -13,7 +13,7 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
   const { docQualityInputs, annualEncounters, utilizationPercent } = state;
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
 
-  const ipDrgProtectionScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 60 };
+  const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
   const ipDrgProtectionPercent = ipDrgProtectionScenarios[docQualityInputs.ipDrgScenario];
   const ipAdmissionsAtRisk = eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100);
   const ipAdmissionsProtected = ipAdmissionsAtRisk * (ipDrgProtectionPercent / 100);

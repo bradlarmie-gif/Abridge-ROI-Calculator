@@ -1,0 +1,70 @@
+PROMPT 1 — DRG Accuracy: Fix UI scenario percentages   
+                                                                                                                                                                                                               
+  File: client/src/components/explore/drivers/DrgAccuracyCalc.tsx
+                                                                                                                                                                                                               
+  On line 16, change:                                    
+  const ipDrgProtectionScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 60 };                                                                                                  
+  to:                                                    
+  const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };                                                                                                  
+                                                                                                             
+  No other changes in this file. The engine in ExploreFlow.tsx and exploreDriverCalcs.ts already uses 15/20/25 — this just makes the UI display match the actual math.                                         
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PROMPT 2 — CDI: Fix two issues (scenarios + cost default)                                                                                                                                                    
+                                                                                                                                                                                                               
+  File 1: client/src/pages/explore/ExploreFlow.tsx
+                                                                                                                                                                                                               
+  Find line ~1159 where CDI reduction scenarios are defined inline in the calculation:                                                                                                                         
+  const ipCdiReductionScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
+  Change to:                                                                                                                                                                                                   
+  const ipCdiReductionScenarios: Record<string, number> = { conservative: 15, typical: 30, aggressive: 50 };                                                                                                   
+                                                                                                            
+  Also on line ~737 where the default ipCdiCostPerQuery is set:                                                                                                                                                
+  ipCdiCostPerQuery: 150,                                                                                                                                                                                      
+  Change to:                                                                                                                                                                                                   
+  ipCdiCostPerQuery: 50,                                                                                                                                                                                       
+                                                         
+  File 2: client/src/components/explore/drivers/CdiQueryReductionCalc.tsx
+                                                                                                                                                                                                               
+  On line 125, the help text currently says: "Fully loaded cost per query: $50-$100. We use $50 conservatively."                                                                                               
+                                                                                                                                                                                                               
+  Change to: "Fully loaded cost per CDI query: $50–$100 (CDI specialist time + overhead). $50 is conservative; adjust up if your program runs closer to $75–$100."                                             
+                                                         
+  No other changes.                                                                                                                                                                                            
+                                                         
+  ---
+  PROMPT 3 — Obs Defense: Reframe from retroactive appeals to proactive prevention
+                                                                                                                                                                                                               
+  File: client/src/components/explore/drivers/ObsDefenseCalc.tsx
+                                                                                                                                                                                                               
+  Make these text-only changes (no logic changes):       
+                                                                                                                                                                                                               
+  1. The intro paragraph (lines 21–23) currently reads:                                                                                                                                                        
+  ▎ "Obs/IP status is determined at admission — Abridge doesn't change that decision. What it changes is the quality of the documentation that supports it. When payers challenge IP status in retrospective 
+  review, the attending's clinical reasoning needs to be in the record."                                                                                                                                       
+                                                         
+  Replace with:                                                                                                                                                                                                
+                                                         
+  ▎ "IP status denials hinge on medical necessity — and medical necessity lives in the attending's clinical reasoning, not just the final diagnosis codes. Abridge captures that reasoning at the time of      
+  ▎ admission, so when payers review the claim, the record already shows why the IP level of care was warranted."
+                                                                                                                                                                                                               
+  2. The <strong>What this models:</strong> callout box text (line 28) currently reads:                                                                                                                        
+  ▎ "The share of medical necessity denials where the appeal outcome depends on the quality of the original encounter documentation."
+                                                                                                                                                                                                               
+  Replace with:                                          
+                                                                                                                                                                                                               
+  ▎ "The share of medical necessity denials where better real-time documentation — captured at admission — would have prevented the denial or substantially strengthened the appeal."                          
+   
+  3. Step 3 label (line 92) currently reads: "Step 3: Appeal-Sensitive Denials"                                                                                                                                
+                                                         
+  Change to: "Step 3: Documentation-Preventable Denials"                                                                                                                                                       
+                                                         
+  4. The Step 3 helper text (lines 110–112) currently reads:                                                                                                                                                   
+  ▎ "Of your medical necessity denials, what % do you lose specifically because documentation didn't capture clinical reasoning adequately? 35–55% is appropriate."
+                                                                                                                                                                                                               
+  Replace with:
+                                                                                                                                                                                                               
+  ▎ "Of your medical necessity denials, what % are driven by inadequate clinical reasoning in the record — not payer policy? This is the share where better admission documentation would change the outcome.  
+  ▎ 35–55% is a typical benchmark."
+                                                                                                                                                                                                               
+  No logic or formula changes — numbers, inputs, and final value calculation are unchanged.                                                                                                                    

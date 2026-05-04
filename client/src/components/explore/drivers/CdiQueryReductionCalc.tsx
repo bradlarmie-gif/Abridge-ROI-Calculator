@@ -122,7 +122,7 @@ export default function CdiQueryReductionCalc({ state, updateDocQualityInputs }:
             <span className="text-[13px] text-[#666666]">= </span>
             <span className="font-semibold text-black">{formatCurrency(Math.round(ipCdiSavingsValue))}</span>
           </div>
-          <p className="text-[13px] text-[#888888] mt-3">Fully loaded cost per query: $50-$100. We use $50 conservatively.</p>
+          <p className="text-[13px] text-[#888888] mt-3">Fully loaded cost per CDI query: $50–$100 (CDI specialist time + overhead). $50 is conservative; adjust up if your program runs closer to $75–$100.</p>
         </div>
       </div>
 
