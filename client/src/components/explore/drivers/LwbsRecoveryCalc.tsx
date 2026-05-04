@@ -27,6 +27,33 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
         Faster documentation reduces door-to-doc time and overall wait times. When patients wait less, fewer leave without being seen.
       </p>
 
+      {state.minutesSavedPerEncounter > 0 && (
+        <div className="bg-[#F5F0EB] rounded-lg p-3 mb-4">
+          <p className="text-xs font-medium text-[#1A1A1A] uppercase tracking-[1.5px] mb-2">
+            Time savings → throughput anchor
+          </p>
+          <div className="space-y-1 text-xs text-[#666666]">
+            <div className="flex justify-between">
+              <span>Documentation saved per encounter</span>
+              <span className="font-semibold text-[#1A1A1A]">{state.minutesSavedPerEncounter} min</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Implied reduction in door-to-disposition time</span>
+              <span className="font-semibold text-[#1A1A1A]">~{state.minutesSavedPerEncounter} min/encounter</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Literature-implied LWBS reduction range</span>
+              <span className="font-semibold text-[#EA2C00]">
+                {Math.round(state.minutesSavedPerEncounter * 1.5)}–{Math.round(state.minutesSavedPerEncounter * 3)}%
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-[#888888] mt-2">
+            Based on ED throughput research: faster documentation shortens encounter completion time, clearing rooms sooner and reducing the wait that drives LWBS. Approximately 1.5–3% LWBS reduction per minute of door-to-disposition improvement (Welch et al., Annals of Emergency Medicine). Use this range to anchor your selection below.
+          </p>
+        </div>
+      )}
+
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your ED</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
@@ -96,7 +123,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
           ))}
         </div>
         <p className="text-xs text-[#888888]">
-          Door-to-doc time is the strongest predictor of LWBS rates (Welch et al., Annals of Emergency Medicine). Faster documentation directly reduces door-to-doc time, lowering the probability that patients leave before being seen.
+          Select a reduction consistent with your time savings anchor above. Conservative (10%) suits EDs where LWBS is driven more by bed availability than wait time. Moderate (20%) aligns with the literature-implied range for most documentation-improvement deployments.
         </p>
         <div className="bg-[#F5F0EB] rounded-lg p-3">
           <p className="text-xs text-[#666666]">

@@ -861,7 +861,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         if (newCareSetting === 'ed') {
           fresh.docQualityInputs = {
             ...fresh.docQualityInputs,
-            currentWrvu: 1.6,
+            currentWrvu: 1.8,
             denialRate: 10,
             avgClaimValue: 300,
           };

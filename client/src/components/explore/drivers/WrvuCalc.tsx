@@ -19,7 +19,7 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
 
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
   const wrvuScenarios: Record<string, number> = isED
-    ? { conservative: 1, typical: 2.5, aggressive: 4, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
+    ? { conservative: 2, typical: 4, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
     : { conservative: 2, typical: 5, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
 
   const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
@@ -34,8 +34,10 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
   return (
     <div>
       <p className="text-sm text-black mb-4">
-        When notes fully reflect visit complexity, E/M levels often code higher.
-        Industry data shows {isED ? '1-4%' : '2-7%'} {isED ? 'E&M' : 'wRVU'} lift from better documentation.
+        When notes fully reflect visit complexity, E/M levels code to the right level.
+        {isED
+          ? ' Documentation improvement drives 2–7% E&M lift in ED settings — largest when surge-driven under-documentation is highest.'
+          : ' Industry data shows 2–7% wRVU lift from better documentation.'}
       </p>
 
       <p className="text-sm font-medium text-black mb-2">Choose your scenario:</p>
@@ -133,6 +135,11 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
               <span className="text-[#888888]">wRVU</span>
             </div>
           </div>
+          <p className="text-xs text-[#888888] mt-1">
+            {isED
+              ? 'Post-2022 CMS E&M revision: typical ED range 1.6–2.2. Default updated to 1.8.'
+              : 'Varies by specialty. MGMA data: 1.5–2.5 for primary care.'}
+          </p>
           <div className="flex justify-between gap-2">
             <span className="text-[#666666]">Documentation improvement</span>
             <span className="font-semibold text-black">{wrvuLiftPercent}%</span>
@@ -145,19 +152,46 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
             <span className="text-[#666666]">= Total additional wRVUs</span>
             <span className="font-semibold text-black">{formatNumber(Math.round(totalAdditionalWrvus))}</span>
           </div>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <span className="text-[#666666]">× Conversion factor</span>
-            <div className="flex items-center gap-1">
-              <span className="text-[#888888]">$</span>
-              <input
-                type="number"
-                value={docQualityInputs.conversionFactor}
-                onChange={(e) => updateDocQualityInputs({ conversionFactor: parseFloat(e.target.value) || 0 })}
-                className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
-                data-testid="input-wrvu-conversion"
-              />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => updateDocQualityInputs({ conversionFactor: 33 })}
+                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                  docQualityInputs.conversionFactor <= 35
+                    ? 'bg-[#1A1A1A] text-white'
+                    : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+                }`}
+                data-testid="button-cf-cms"
+              >
+                CMS $33
+              </button>
+              <button
+                onClick={() => updateDocQualityInputs({ conversionFactor: 50 })}
+                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                  docQualityInputs.conversionFactor >= 45
+                    ? 'bg-[#1A1A1A] text-white'
+                    : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+                }`}
+                data-testid="button-cf-commercial"
+              >
+                Commercial $50
+              </button>
+              <div className="flex items-center gap-1">
+                <span className="text-[#888888]">$</span>
+                <input
+                  type="number"
+                  value={docQualityInputs.conversionFactor}
+                  onChange={(e) => updateDocQualityInputs({ conversionFactor: parseFloat(e.target.value) || 0 })}
+                  className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                  data-testid="input-wrvu-conversion"
+                />
+              </div>
             </div>
           </div>
+          <p className="text-xs text-[#888888] text-right mt-1">
+            CMS 2024 physician fee schedule: $32.74. Commercial blended rates: $45–55 depending on payer mix.
+          </p>
           <div className="flex justify-between items-center">
             <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" /></span>
             <div className="flex items-center gap-1">

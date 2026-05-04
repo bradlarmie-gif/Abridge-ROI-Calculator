@@ -186,7 +186,7 @@ export default function ExploreModel({
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
   const isEDForScenarios = state.careSetting === 'ed';
   const wrvuScenarios: Record<string, number> = isEDForScenarios
-    ? { conservative: 1, typical: 2.5, aggressive: 4, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
+    ? { conservative: 2, typical: 4, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
     : { conservative: 2, typical: 5, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
   const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
   const denialsScenarios: Record<string, number> = isEDForScenarios
