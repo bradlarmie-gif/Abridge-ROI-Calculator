@@ -119,7 +119,7 @@ const domainDetails: DomainDetailData[] = [
       {
         label: "wRVU Accuracy (Billing Data)",
         badge: "Trend",
-        explanation: "Better documentation captures visit complexity more accurately, supporting appropriate E/M level coding. Claims data shows wRVU distribution shifts before and after. Published studies and deployment observations suggest wRVU lift may range 2–7% depending on baseline documentation quality and specialty. MGMA data shows that documentation-related undercoding is common, particularly in primary care where visit complexity is often under-documented.",
+        explanation: "The 2021 CMS E/M guideline shift made Medical Decision Making (MDM) the primary driver of E/M level — not time spent, not bullet points, but three specific elements: complexity of problems addressed, data reviewed and analyzed, and risk of treatment. Ambient capture naturally documents all three MDM elements during the clinical conversation, supporting appropriate E/M level assignment in a way that typed shortcuts and templates don't. Better MDM documentation captures visit complexity more accurately — that's the mechanism behind wRVU lift. Claims data shows the resulting E/M distribution shift before and after. Published studies and deployment observations suggest wRVU lift may range 2–7% depending on baseline documentation quality and specialty.",
         formula: "wRVU delta per encounter × adopted encounters × $33/wRVU (CMS MPFS conversion factor)\n\nNote: commercial payers often pay higher than Medicare conversion factor — blended rate depends on payer mix",
       },
       {
@@ -196,6 +196,12 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
     },
   ],
   REVENUE: [
+    {
+      label: "MDM Documentation Completeness",
+      tagline: "Three elements determine E/M level: problem complexity, data reviewed, risk. Ambient capture covers all three in real time.",
+      howToTrack: "Coding team audits MDM completeness per encounter. Compare same providers pre/post deployment. Often one of the fastest-moving signals after go-live — and the direct mechanism behind wRVU improvement.",
+      badge: "Signal",
+    },
     {
       label: "E/M Level Distribution",
       tagline: "% of visits at each E/M level — the clearest leading indicator of wRVU lift",
