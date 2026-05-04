@@ -4,12 +4,12 @@ import { useState } from "react";
 
 // ─── Evidence Badge ───────────────────────────────────────────────────────────
 
-export type BadgeType = "Demonstrated" | "Emerging" | "Strategic";
+export type BadgeType = "Signal" | "Trend" | "Proof";
 
 const badgeStyles: Record<BadgeType, { className: string }> = {
-  Demonstrated: { className: "bg-[#1A1A1A] text-white" },
-  Emerging:     { className: "border border-[#999999] text-[#555555] bg-transparent" },
-  Strategic:    { className: "bg-[#F5F0EB] text-[#888888] border border-[#E5E5E5]" },
+  Signal: { className: "bg-[#1A1A1A] text-white" },
+  Trend:  { className: "border border-[#999999] text-[#555555] bg-transparent" },
+  Proof:  { className: "bg-[#F5F0EB] text-[#888888] border border-[#E5E5E5]" },
 };
 
 export function ImpactBadge({ type }: { type: BadgeType }) {
@@ -272,16 +272,16 @@ export function DomainTabExplorer({
         <span className="text-[10px] text-[#888888] uppercase tracking-[1.5px] font-bold">Evidence level:</span>
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex items-center gap-2">
-            <ImpactBadge type="Demonstrated" />
-            <span className="text-[10px] text-[#666666]">trackable from EHR / claims / payroll</span>
+            <ImpactBadge type="Signal" />
+            <span className="text-[10px] text-[#666666]">visible in first 30–90 days of per-encounter use</span>
           </div>
           <div className="flex items-center gap-2">
-            <ImpactBadge type="Emerging" />
-            <span className="text-[10px] text-[#666666]">attributable with confidence over 6–18 mo</span>
+            <ImpactBadge type="Trend" />
+            <span className="text-[10px] text-[#666666]">meaningful patterns emerge at 3–6 months</span>
           </div>
           <div className="flex items-center gap-2">
-            <ImpactBadge type="Strategic" />
-            <span className="text-[10px] text-[#666666]">directional — real but not easily monetized</span>
+            <ImpactBadge type="Proof" />
+            <span className="text-[10px] text-[#666666]">system-level proof at 6–18 months</span>
           </div>
         </div>
       </div>
@@ -362,6 +362,64 @@ export function DomainTabExplorer({
 
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Value Accrual Section ────────────────────────────────────────────────────
+
+export function ValueAccrualSection() {
+  const stages = [
+    {
+      badge: "Signal" as BadgeType,
+      timing: "30–90 days",
+      title: "The Provider Feels It",
+      description: "Time returned per encounter. After-hours documentation dropping. Less cognitive load at the end of shift. These signals are individual-level and EHR-measurable as soon as a provider is using Abridge consistently on their own encounters.",
+    },
+    {
+      badge: "Trend" as BadgeType,
+      timing: "3–6 months",
+      title: "The Chart Shows It",
+      description: "CDI query reduction. Note completeness. H&P timing. CC/MCC capture. These require the provider to trust the capture — using the tool isn't enough, the documentation itself has to change. That trust takes time to build.",
+    },
+    {
+      badge: "Proof" as BadgeType,
+      timing: "6–18 months",
+      title: "The System Measures It",
+      description: "CMI, wRVU, denial rates, retention, HCAHPS. Downstream of documentation quality. Requires data volume for statistical credibility. This is what goes in the annual business case and contract renewal conversation.",
+    },
+  ];
+
+  return (
+    <div className="mb-10">
+      <div className="mb-5 pb-3 border-b-2 border-[#EA2C00]">
+        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>
+        <h2 className="text-lg font-bold text-black uppercase tracking-tight">How Value Accrues</h2>
+        <p className="text-sm text-[#888888] mt-1">
+          Ambient documentation value arrives in stages — driven by the adoption curve, not the deployment date.
+        </p>
+      </div>
+
+      <p className="text-[15px] text-[#666666] leading-relaxed mb-6">
+        When a provider starts using Abridge, value doesn't arrive all at once. The first signals are individual — time returned per encounter, documentation burden dropping. As the provider builds trust in the capture, documentation quality shifts and CDI teams start to notice. System-level financial outcomes are downstream of that documentation maturity and require months of data to be statistically credible.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        {stages.map((stage) => (
+          <div key={stage.badge} className="bg-white border border-[#E5E5E5] rounded-sm p-5">
+            <div className="flex items-center justify-between mb-3">
+              <ImpactBadge type={stage.badge} />
+              <span className="text-[10px] font-medium text-[#888888]">{stage.timing}</span>
+            </div>
+            <h4 className="font-bold text-black text-xs uppercase tracking-wide mb-2">{stage.title}</h4>
+            <p className="text-xs text-[#666666] leading-relaxed">{stage.description}</p>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-[11px] text-[#888888] leading-relaxed border-l-2 border-[#E5E5E5] pl-3">
+        Timelines reflect consistent per-encounter use by the individual provider. System-level metrics require sufficient provider adoption to move aggregate data. For metrics where documentation improvement is one contributing factor among several — such as falls prevention, LWBS rate, or sepsis bundle compliance — the "How to Track" section notes where attribution is shared.
+      </p>
     </div>
   );
 }

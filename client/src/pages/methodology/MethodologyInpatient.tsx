@@ -7,6 +7,7 @@ import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
   DomainTabExplorer,
   CollapsibleSection,
+  ValueAccrualSection,
   type DomainCardData,
   type DomainDetailData,
   type DomainName,
@@ -23,32 +24,32 @@ const overviewCards: DomainCardData[] = [
     domain: "QUALITY",
     description: "CDI query reduction and CC/MCC capture are daily, trackable signals of documentation improvement. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "CDI query reduction (tracked daily)", badge: "Demonstrated" },
-      { label: "CC/MCC documentation completeness", badge: "Demonstrated" },
+      { label: "CDI query reduction (tracked daily)", badge: "Signal" },
+      { label: "CC/MCC documentation completeness", badge: "Signal" },
     ],
   },
   {
     domain: "WORKFORCE",
     description: "Hospitalist burnout from documentation burden is real and expensive. Turnover drives operational and financial risk. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Hospitalist retention savings", badge: "Emerging" },
+      { label: "Hospitalist retention savings", badge: "Trend" },
     ],
   },
   {
     domain: "CAPACITY",
     description: "Time returned from documentation becomes rounding time, discharge planning time, or clinical headroom. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Time returned to clinical care (EHR)", badge: "Demonstrated" },
-      { label: "Discharge planning timeliness", badge: "Strategic" },
+      { label: "Time returned to clinical care (EHR)", badge: "Signal" },
+      { label: "Discharge planning timeliness", badge: "Proof" },
     ],
   },
   {
     domain: "REVENUE",
     description: "DRG accuracy and concurrent review are the core inpatient revenue levers — both tied directly to documentation quality. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "DRG accuracy / CMI improvement", badge: "Demonstrated" },
-      { label: "Concurrent review & denial prevention", badge: "Emerging" },
-      { label: "Billing cycle influence (DNFB)", badge: "Strategic" },
+      { label: "DRG accuracy / CMI improvement", badge: "Signal" },
+      { label: "Concurrent review & denial prevention", badge: "Trend" },
+      { label: "Billing cycle influence (DNFB)", badge: "Proof" },
     ],
   },
 ];
@@ -61,13 +62,13 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "CDI Query Reduction (Tracked Daily)",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "CDI departments track query rates daily. When documentation is more complete at the point of care, CDI specialists receive fewer queries to clarify clinical complexity. This is one of the fastest and cleanest signals after deployment — before/after comparison at the provider or unit level is straightforward. Most CDI teams can pull this data within 90 days of implementation.",
         formula: "Admissions × CDI query rate × reduction % × $50/query (CDI specialist time cost)\n\nACDIS benchmark: 25–35% query rate, $40–60/query",
       },
       {
         label: "CC/MCC Documentation Completeness",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "Complication and Comorbidity (CC) and Major Comorbidity (MCC) capture rates directly affect DRG assignment. When documentation captures qualifying conditions completely and accurately, CC/MCC capture improves — shifting DRG weight upward where clinically appropriate. CDI teams audit this daily. It's the most direct connection between documentation quality and DRG revenue.",
         formula: "CC/MCC capture rate improvement × discharges × average DRG weight delta × base rate",
       },
@@ -81,7 +82,7 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "Hospitalist Retention Savings",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "Hospitalist medicine has some of the highest turnover in healthcare — relentless documentation, overnight admits, and high patient volumes create a unique burnout profile. When a hospitalist leaves, you face coverage gaps, locum costs, and recruiting timelines that stretch months. Documentation burden is consistently cited in exit interviews — but attribution requires tracking it deliberately.",
         formula: "Hospitalists × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefaults: turnover 8–12%, burnout attribution 40–50%, replacement cost $250K–$500K (AMGA)",
         limit: "Track exit interview data — is documentation burden cited? Compare turnover in Abridge-enabled programs vs. those without. The measurement takes time, but the signal is usually there within 18 months.",
@@ -96,13 +97,13 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "Time Returned to Clinical Care (EHR)",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "EHR session data for H&Ps, progress notes, and discharge summaries shows documentation time directly. In inpatient, time savings are larger per encounter than outpatient — 15–45 minutes across all note types for a typical admission. That time can return to rounding, patient conversations, or discharge coordination. Early signals are often visible within weeks in deployment data — and this is often among the earliest signals organizations observe across inpatient metrics.",
         formula: "Minutes saved per admission × annual admissions / 60 = estimated physician hours potentially returned annually",
       },
       {
         label: "Discharge Planning Timeliness",
-        badge: "Strategic",
+        badge: "Proof",
         explanation: "Better discharge summaries — captured in real-time during discharge conversations rather than retrospectively — improve care transition quality and reduce documentation lag. Discharge documentation lag is an EHR-measurable metric. While faster, more complete discharge summaries may reduce readmissions, attribution is indirect and multi-factorial. Track as a quality signal and a care continuity story.",
         limit: "Readmission attribution is complex. Track discharge documentation lag time as a direct metric. Don't attribute readmission reduction to documentation alone without controlling for multiple other factors.",
       },
@@ -116,20 +117,20 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "DRG Accuracy / CMI Improvement",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "Case Mix Index (CMI) is the clearest inpatient revenue signal — it reflects the average DRG weight of your patient population. The hypothesis we model: when documentation more completely captures clinical complexity, CMI tends to move upward where clinically appropriate. Claims data tracks this quarterly, and CDI teams can compare ambient-AI-enabled providers against a control cohort to test whether the shift is real in your environment. This is the inpatient equivalent of wRVU lift — trackable, auditable, and defensible when validated with your own data.",
         formula: "CMI delta × annual discharges × $6,800 (CMS IPPS base rate)\n\nIllustrative model input: CMI improvement of 0.01 across 5,000 discharges × $6,800 ≈ $340,000",
       },
       {
         label: "Concurrent Review & Denial Prevention",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "Observation vs. inpatient status denials are driven by medical necessity documentation. When clinical reasoning for admission, continued stay, and discharge is captured in real-time, concurrent review becomes more defensible. Documentation-related denials are an identifiable RCM root cause. At $3,500+ per inpatient case denial, even small improvements in denial rates represent significant recovery.",
         formula: "(denial rate before − after, in pp) × annual discharges × $3,500/case × attribution %",
         limit: "Denial rates reflect many process factors — utilization management workflows, payer behavior, and clinical documentation all contribute. Work with your RCM team to isolate documentation-related denials before claiming full attribution.",
       },
       {
         label: "Billing Cycle Influence (DNFB)",
-        badge: "Strategic",
+        badge: "Proof",
         explanation: "Discharge Not Final Billed (DNFB) is where days of inpatient revenue accumulate as working capital — charts that have left the building but haven't yet been billed because documentation is still settling. CMS requires H&P completion within 24 hours of admission. When that window is consistently met and progress note specificity is captured in real time, CDI teams engage earlier in the stay. Fewer end-of-stay queries means fewer charts stuck in DNFB at discharge. We frame this as influence rather than direct cause: discharge summary timing is the dominant DNFB driver, and Abridge's hospitalist product captures H&P, progress notes, and consults today — discharge summary capture ships later in 2026.",
         formula: "Working capital framing: DNFB days × daily inpatient revenue = cash tied up in unbilled discharges\n\nIllustrative: 0.5-day reduction × $300M annual inpatient revenue ÷ 365 ≈ $410K one-time release; ~$25K annualized at 6% cost of capital\n\nNot modeled in the calculator today — added as a modeled driver when discharge summary capture is live.",
         limit: "Track H&P-within-24h compliance and CDI query timing as the upstream signals. Don't claim a specific DNFB-day reduction until you have 6+ months of post-deployment billing cycle data and have controlled for discharge summary workflow changes.",
@@ -145,31 +146,31 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "CDI Query Trend",
       tagline: "Daily signal — fastest post-deployment metric to move",
       howToTrack: "CDI departments track query rates by provider daily. Pull 90-day pre/post comparison to see the documentation-completeness signal.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "CC/MCC Capture Rate",
       tagline: "Monthly/quarterly — feeds directly into DRG weight accuracy",
       howToTrack: "Your coding team tracks CC/MCC capture rate per discharge. Compare Abridge-enabled providers against a control cohort.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "HCAHPS Doctor Communication",
       tagline: "Less time on keyboard = more presence during the encounter",
       howToTrack: "CMS HCAHPS survey results, reported quarterly. Isolate the 'doctor communication' composite. Signal takes 2–3 reporting cycles to stabilize.",
-      badge: "Emerging",
+      badge: "Trend",
     },
     {
       label: "30-Day Readmission Rate",
       tagline: "Better discharge summaries may reduce care-transition failures",
       howToTrack: "Hospital readmission dashboard, tracked monthly. Many factors contribute — isolate documentation-related cases only with your quality team.",
-      badge: "Emerging",
+      badge: "Trend",
     },
     {
       label: "CMS Hospital Star Rating",
       tagline: "Long-game signal — documentation quality accumulates into composite scores",
       howToTrack: "CMS Care Compare, updated annually. Shows where your quality composites trend over time. Don't claim short-term causation.",
-      badge: "Strategic",
+      badge: "Proof",
     },
   ],
   WORKFORCE: [
@@ -177,19 +178,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "After-Hours Documentation",
       tagline: "Time spent documenting after shift — the clearest burnout signal",
       howToTrack: "EHR session data after shift end. Ideally compare same providers before and after deployment. Visible in weeks.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Time to Note Signature",
       tagline: "How long from patient encounter to signed note",
       howToTrack: "EHR audit logs. Track median time-to-sign by provider and note type. Faster sign-off correlates with same-session documentation.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Hospitalist Satisfaction / Burnout Surveys",
       tagline: "Is documentation burden still cited in annual surveys?",
       howToTrack: "Physician engagement surveys (Press Ganey, internal). Track documentation burden specifically — is it trending down among Abridge users?",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
   CAPACITY: [
@@ -197,19 +198,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "H&P Completion vs. CMS 24-Hour Rule",
       tagline: "Regulatory compliance signal — is the front of the documentation cycle closing faster?",
       howToTrack: "EHR timestamps for H&P completion vs. admission time. CMS requires H&P within 24 hours. Track % on-time pre/post.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Discharge Documentation Lag",
       tagline: "Time from discharge order to completed discharge summary",
       howToTrack: "EHR reports on discharge summary completion timing. DNFB-adjacent metric — the faster the summary, the faster billing can close the chart.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Handoff Completeness (SBAR)",
       tagline: "Are sign-out notes structured and complete at care transitions?",
       howToTrack: "Nursing and hospitalist handoff documentation audits. SBAR completeness can be scored from note structure.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
   REVENUE: [
@@ -217,13 +218,13 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "CMI Trending",
       tagline: "Case Mix Index — the single number that summarizes DRG accuracy",
       howToTrack: "Revenue cycle / finance dashboard, tracked quarterly. Compare Abridge-enabled providers vs. control group. 6+ months needed for credible comparison.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "DNFB / Billing Cycle Days",
       tagline: "Discharge Not Final Billed — working capital tied up in unclosed charts",
       howToTrack: "Revenue cycle tracks DNFB days (typically 5–7 day industry baseline). Faster H&P + progress notes pull CDI engagement forward. Not modeled in dollars until discharge summary capture ships.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
 };
@@ -270,6 +271,8 @@ data-testid="button-export-pdf">
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Inpatient: How We Think About Value</h1>
           <p className="text-base text-[#666666]">Where documentation quality becomes DRG accuracy — and DRG accuracy becomes revenue</p>
         </motion.div>
+
+        <ValueAccrualSection />
 
         <DomainTabExplorer
           cards={overviewCards}

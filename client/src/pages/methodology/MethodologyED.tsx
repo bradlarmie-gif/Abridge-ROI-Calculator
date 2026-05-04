@@ -7,6 +7,7 @@ import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
   DomainTabExplorer,
   CollapsibleSection,
+  ValueAccrualSection,
   type DomainCardData,
   type DomainDetailData,
   type DomainName,
@@ -23,33 +24,33 @@ const overviewCards: DomainCardData[] = [
     domain: "QUALITY",
     description: "Documentation accuracy under pressure — capturing complexity that determines DRG, E/M level, and clinical defensibility. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "CDI query volume on admits", badge: "Demonstrated" },
-      { label: "Note completeness rate", badge: "Demonstrated" },
-      { label: "Sepsis/stroke protocol documentation", badge: "Strategic" },
+      { label: "CDI query volume on admits", badge: "Signal" },
+      { label: "Note completeness rate", badge: "Signal" },
+      { label: "Sepsis/stroke protocol documentation", badge: "Proof" },
     ],
   },
   {
     domain: "WORKFORCE",
     description: "Physician burnout and turnover are the ED's slow bleed — documentation burden is a measurable contributor. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Physician retention savings", badge: "Emerging" },
+      { label: "Physician retention savings", badge: "Trend" },
     ],
   },
   {
     domain: "CAPACITY",
     description: "Throughput is the ED's operating system. Faster documentation is one lever — not the only one. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Documentation time per encounter (EHR)", badge: "Demonstrated" },
-      { label: "LWBS recovery (wait time sensitivity)", badge: "Emerging" },
-      { label: "Admission capture (downstream of LWBS)", badge: "Emerging" },
+      { label: "Documentation time per encounter (EHR)", badge: "Signal" },
+      { label: "LWBS recovery (wait time sensitivity)", badge: "Trend" },
+      { label: "Admission capture (downstream of LWBS)", badge: "Trend" },
     ],
   },
   {
     domain: "REVENUE",
     description: "ED coding is the most audit-vulnerable setting. Every surge creates under-documented complexity. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "E/M level accuracy (claims data)", badge: "Demonstrated" },
-      { label: "Denial prevention (RCM root cause)", badge: "Demonstrated" },
+      { label: "E/M level accuracy (claims data)", badge: "Signal" },
+      { label: "Denial prevention (RCM root cause)", badge: "Signal" },
     ],
   },
 ];
@@ -62,20 +63,20 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "CDI Query Volume on Admits",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "When ED documentation captures presenting conditions and comorbidities completely, CDI specialists receive fewer queries to clarify the clinical picture. This is tracked daily by most CDI departments — before/after comparison is fast and clean. Better ED notes also form the foundation of inpatient DRG accuracy for admitted patients.",
         formula: "Admissions × query rate × reduction % — tracked by CDI department",
         limit: "ED notes influence but don't fully determine inpatient DRG. Attribution requires CDI tracking both ED and inpatient documentation quality together.",
       },
       {
         label: "Note Completeness Rate",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "EHR timestamp data shows exactly when notes are completed and how long they take. During surges, note quality often drops — key elements get abbreviated or omitted. The hypothesis we model is that ambient capture, by removing the typing bottleneck, reduces volume-driven completeness loss; organizations have observed this pattern, and it's something CDI and compliance teams can audit directly to confirm whether it holds in your environment.",
         formula: "EHR session data: note completion time, completeness scores (CDI audit-based)",
       },
       {
         label: "Sepsis / Stroke Protocol Documentation",
-        badge: "Strategic",
+        badge: "Proof",
         explanation: "Proper documentation of sepsis and stroke presentations affects both regulatory compliance (CMS sepsis bundle measures) and downstream coding accuracy. The documentation is real and the clinical stakes are high — but direct financial attribution is indirect and multi-factorial. Track as a quality signal, not a revenue line.",
       },
     ],
@@ -88,7 +89,7 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "Physician Retention Savings",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "ED burnout is a workforce crisis. Documentation burden is consistently cited in ACEP surveys and Medscape reports as a top contributor. At $250K–$500K per physician replacement (AMGA Physician Retention Survey), retaining even one additional physician could offset a significant portion of implementation cost. The link is attributable; the measurement takes 12–18 months.",
         formula: "ED physicians × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefaults: replacement cost $250K–$500K, turnover 8–15%, burnout attribution 10–20%",
         limit: "Documentation is one of many burnout drivers in the ED. Don't attribute all turnover change to documentation.",
@@ -103,20 +104,20 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "Documentation Time Per Encounter (EHR)",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "EHR timestamps show exactly when charting begins and ends. In the ED, time savings are smaller per encounter (2–5 minutes) vs. outpatient — but the ED is a volume engine. At 40,000–80,000 visits/year, 3 minutes × 50,000 visits = ~2,500 hours of physician time annually (illustrative). Early signals are often visible within weeks in deployment data.",
         formula: "Minutes saved × annual ED visits / 60 = estimated physician hours potentially returned",
       },
       {
         label: "LWBS Recovery (Wait Time Sensitivity)",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "Each patient who leaves without being seen represents $300–$500+ in lost revenue. Faster documentation contributes to faster throughput, which can reduce wait times and recover some LWBS patients. Attribution is the challenge — documentation is one lever among staffing, bed management, triage protocol, and acuity mix.",
         formula: "(LWBS rate before − LWBS rate after, in pp) × annual ED visits × $480/visit × attribution %",
         limit: "If your LWBS rate is already below 2%, this lever is smaller. We let you adjust based on your reality.",
       },
       {
         label: "Admission Capture (Downstream of LWBS)",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "Of patients recovered from LWBS, some require inpatient admission — converting a lost ED visit into DRG-based inpatient revenue. This driver only activates when LWBS recovery is calculated first. Without real LWBS data, don't estimate this — compounding two estimates produces a number that won't survive scrutiny.",
         formula: "Recovered LWBS patients × admission rate % × avg admission revenue × realization rate",
       },
@@ -130,13 +131,13 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "E/M Level Accuracy (Claims Data)",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "During surges, ED notes understate what actually happened — a physician manages complex differentials but the note reflects a simpler encounter because time was short. Claims data shows E/M level distribution shifts before and after. ED wRVU lift is typically 2–4% (lower than outpatient because ED workflows are more structured).",
         formula: "(wRVU per encounter after − before) × adopted encounters × $33/wRVU × attribution % × realization %",
       },
       {
         label: "Denial Prevention (RCM Root Cause)",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "Medical necessity is the ED's denial vulnerability. When a note doesn't capture why a test was ordered or why admission was necessary, that's a denial waiting to happen — and many ED denials are unappealable because the documentation gap existed at time of service. RCM teams track documentation-related denials as a specific root cause category.",
         formula: "(denial rate before − after, in pp) × annual encounters × avg denial cost per encounter × attribution %\n\nED default: $500 per encounter",
       },
@@ -151,19 +152,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "ED Note Quality (Star Rating)",
       tagline: "Composite of completeness, specificity, and structure — auditable per provider",
       howToTrack: "CDI / quality team scores ED notes on a star scale (often 1–5). Pull pre/post averages by provider. Pattern is usually visible within 90 days.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Admission Hand-Off Completeness",
       tagline: "When the ED admits, the inpatient team starts from the ED note — completeness shows up downstream",
       howToTrack: "Audit a sample of ED-to-inpatient handoffs for SBAR completeness, presenting condition specificity, and disposition reasoning. Pair with hospitalist satisfaction surveys.",
-      badge: "Emerging",
+      badge: "Trend",
     },
     {
       label: "ED Patient Experience (Press Ganey)",
       tagline: "Less keyboard time = more eye contact during the encounter",
       howToTrack: "Press Ganey ED survey, reported quarterly. Isolate the 'Doctor explained things clearly' composite. Tied directly to ED HCAHPS and value-based contract performance.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
   WORKFORCE: [
@@ -171,19 +172,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "After-Hours Documentation",
       tagline: "Time spent charting after shift end — the cleanest ED burnout signal",
       howToTrack: "EHR session data after shift end. Compare same providers before and after deployment. Visible in weeks.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Provider Engagement / Burnout Surveys",
       tagline: "Is documentation burden still cited as a top driver in ED-specific burnout assessments?",
       howToTrack: "Press Ganey provider engagement, ACEP wellness surveys, or internal pulse surveys. Track documentation burden specifically among Abridge users.",
-      badge: "Emerging",
+      badge: "Trend",
     },
     {
       label: "Locum Utilization Trend",
       tagline: "Locum coverage often spikes when retention dips — track the leading indicator",
       howToTrack: "Schedule data and locum agency invoices. Track locum hours and spend per month vs. baseline. Lagging indicator for retention.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
   CAPACITY: [
@@ -191,19 +192,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "Encounters per Provider per Shift",
       tagline: "Throughput per provider — directly responsive to documentation speed",
       howToTrack: "EHR encounter counts segmented by provider and shift. Compare same shift type and acuity mix pre/post for credible comparison.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "End-of-Shift Note Completion Rate",
       tagline: "% of notes signed before clock-out — a clean signal for same-shift documentation",
       howToTrack: "EHR audit logs: % of encounters with a signed note by end of shift. Often the most dramatic early metric in the ED.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Door-to-Provider Time",
       tagline: "Front-end throughput — affected by triage, staffing, and documentation flow",
       howToTrack: "ED operational dashboard, tracked monthly. Documentation is one input — control for staffing and acuity changes when interpreting the trend.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
   REVENUE: [
@@ -211,13 +212,13 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "Down-coding Rate",
       tagline: "% of ED encounters coded below the level supported by the actual visit complexity",
       howToTrack: "Coding team audit. Pull % of encounters down-coded due to documentation gaps. Directly responsive to documentation completeness — Abridge-moveable signal.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Documentation-Related Denial Rate",
       tagline: "Denials specifically tied to medical necessity / documentation gaps",
       howToTrack: "RCM root-cause categorization, tracked monthly. Isolate documentation-related denials from other causes. 6+ months for credible trend.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
 };
@@ -264,6 +265,8 @@ data-testid="button-export-pdf">
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Emergency: How We Think About Value</h1>
           <p className="text-base text-[#666666]">Where speed matters and every minute counts differently</p>
         </motion.div>
+
+        <ValueAccrualSection />
 
         <DomainTabExplorer
           cards={overviewCards}

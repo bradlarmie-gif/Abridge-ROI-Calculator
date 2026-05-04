@@ -7,6 +7,7 @@ import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
   DomainTabExplorer,
   CollapsibleSection,
+  ValueAccrualSection,
   type DomainCardData,
   type DomainDetailData,
   type DomainName,
@@ -23,31 +24,31 @@ const overviewCards: DomainCardData[] = [
     domain: "QUALITY",
     description: "Documentation completeness drives referral quality and risk adjustment accuracy for value-based contracts. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Referral note completeness", badge: "Strategic" },
-      { label: "HCC/risk adjustment for MA populations", badge: "Emerging" },
+      { label: "Referral note completeness", badge: "Proof" },
+      { label: "HCC/risk adjustment for MA populations", badge: "Trend" },
     ],
   },
   {
     domain: "WORKFORCE",
     description: "Physician burnout and turnover represent the largest hidden cost in outpatient practices. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Physician retention savings", badge: "Emerging" },
+      { label: "Physician retention savings", badge: "Trend" },
     ],
   },
   {
     domain: "CAPACITY",
     description: "Time saved per encounter is the outpatient multiplier — translates directly into capacity or clinical headroom. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Time per encounter (EHR timestamps)", badge: "Demonstrated" },
-      { label: "Patient access / capacity expansion", badge: "Emerging" },
+      { label: "Time per encounter (EHR timestamps)", badge: "Signal" },
+      { label: "Patient access / capacity expansion", badge: "Trend" },
     ],
   },
   {
     domain: "REVENUE",
     description: "wRVU accuracy and denial prevention are the most directly attributable revenue drivers in outpatient. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "wRVU accuracy (billing data)", badge: "Demonstrated" },
-      { label: "Denial prevention", badge: "Emerging" },
+      { label: "wRVU accuracy (billing data)", badge: "Signal" },
+      { label: "Denial prevention", badge: "Trend" },
     ],
   },
 ];
@@ -60,13 +61,13 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "Referral Note Completeness",
-        badge: "Strategic",
+        badge: "Proof",
         explanation: "When primary care documentation is complete, specialists receive better clinical context — fewer repeat tests, faster diagnoses, better care continuity. This is real and clinically meaningful, but direct financial attribution is difficult. Track as a quality signal and a differentiator in value-based contract conversations.",
         limit: "Too many variables to attribute financially. Track as a leading indicator for specialist partnership and patient experience.",
       },
       {
         label: "HCC / Risk Adjustment for MA Populations",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "HCC (Hierarchical Condition Category) accuracy drives risk adjustment in Medicare Advantage plans. Complete documentation of chronic conditions supports accurate RAF (Risk Adjustment Factor) scores, which determine capitated payment levels. With 20–30% chronic condition gap rates in typical practices, this is a meaningful and attributable value driver for practices with significant MA populations.",
         formula: "MA patients × HCC gap rate × recapture % × RAF point value × capitation rate multiplier",
         limit: "Requires MA population data and coordination with your risk adjustment team. Gap rate and recapture % should come from your actual coding data, not benchmarks.",
@@ -81,7 +82,7 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "Physician Retention Savings",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "Documentation burden is consistently cited as a top burnout driver in outpatient settings. At $250K–$500K per physician replacement (AMGA Physician Retention Survey), retaining one additional physician annually can significantly change the ROI picture. The link between documentation burden and burnout is well-established; the attribution to Abridge specifically takes 12–18 months to observe.",
         formula: "Physicians × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefault: replacement cost $350K, burnout attribution 10–20%",
         limit: "Documentation is one of many outpatient burnout drivers. Don't attribute all turnover change to documentation without exit interview data to support it.",
@@ -96,13 +97,13 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "Time Per Encounter (EHR Timestamps)",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "EHR session data shows exactly when documentation happens and how long it takes. This is the most immediate and unambiguous signal after deployment. In outpatient, deployment observations suggest time savings often run 2–4 minutes per encounter — with same-day note closure among the earliest signals organizations report. Illustratively, 20 patients/day × 240 working days × 3 minutes/encounter ≈ 240 hours of physician time annually per provider (model input — your data will tell the real story).",
         formula: "Minutes saved × daily encounters × working days = estimated annual physician hours potentially returned",
       },
       {
         label: "Patient Access / Capacity Expansion",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "When physicians spend less time documenting, they have headroom to see more patients — or to stop working after hours. Whether that time converts to capacity depends on patient demand and scheduling decisions your leadership makes. We model the capacity potential; you decide how to use it. For practices with wait lists or access constraints, this driver can be significant.",
         formula: "Additional patients/provider/month × providers × 12 months × avg revenue per visit",
         limit: "Requires patient demand to convert time to revenue. If you're not capacity-constrained, this value goes to physician wellbeing, not incremental volume.",
@@ -117,13 +118,13 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "wRVU Accuracy (Billing Data)",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "Better documentation captures visit complexity more accurately, supporting appropriate E/M level coding. Claims data shows wRVU distribution shifts before and after. Published studies and deployment observations suggest wRVU lift may range 2–7% depending on baseline documentation quality and specialty. MGMA data shows that documentation-related undercoding is common, particularly in primary care where visit complexity is often under-documented.",
         formula: "wRVU delta per encounter × adopted encounters × $33/wRVU (CMS MPFS conversion factor)\n\nNote: commercial payers often pay higher than Medicare conversion factor — blended rate depends on payer mix",
       },
       {
         label: "Denial Prevention",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "30–40% of claim denials are unappealable — permanent revenue loss because the documentation gap existed at time of service. The mechanism we're modeling: capturing clinical reasoning in real time creates an opportunity to close medical-necessity gaps at the point of care rather than after the claim is filed. Outpatient denial rates typically run 5–12% (MGMA), and documentation-related denials are an identifiable subset that your RCM team can isolate as a root cause category — that root-cause data is what would confirm or adjust the model in your setting.",
         formula: "(denial rate before − after, in pp) × annual encounters × $350/encounter × attribution %",
         limit: "Denial rates reflect many process factors beyond documentation. Work with your RCM team to isolate documentation-related denials before claiming full attribution.",
@@ -139,19 +140,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "HCC Recapture Rate (MA Risk Adjustment)",
       tagline: "Are chronic conditions being re-documented in the year they need to be?",
       howToTrack: "Risk adjustment / coding team tracks suspected vs. confirmed HCC closures by provider. Pull pre/post recapture rate for MA panels. Quarterly cadence.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Care Gap Closure Rate",
       tagline: "HEDIS-style measures that depend on documentation completeness — A1c, BP, screenings",
       howToTrack: "Population health dashboard or payer scorecard. Track gap closure rate per measure for Abridge-enabled providers vs. control. 6-month signal.",
-      badge: "Emerging",
+      badge: "Trend",
     },
     {
       label: "MIPS / Quality Reporting Score",
       tagline: "Composite regulatory score that rolls up documentation-dependent measures",
       howToTrack: "CMS MIPS feedback report, annual cadence. Trend the quality category score over multiple reporting years. Long-game signal.",
-      badge: "Strategic",
+      badge: "Proof",
     },
   ],
   WORKFORCE: [
@@ -159,19 +160,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "After-Hours Documentation (Pajama Time)",
       tagline: "Time spent charting outside scheduled work hours — the canonical outpatient burnout metric",
       howToTrack: "EHR session data outside scheduled hours. Compare same providers before and after deployment. Visible in weeks; among the earliest signals.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Same-Day Note Closure Rate",
       tagline: "% of encounters with the note signed before the provider leaves the clinic",
       howToTrack: "EHR audit logs: % of visits with a signed note by end of day. Track per-provider trend pre/post. Often dramatic in the first 90 days.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Provider Engagement / Burnout Surveys",
       tagline: "Is documentation burden still cited in annual engagement surveys?",
       howToTrack: "Press Ganey provider engagement, MBI, or internal pulse surveys. Isolate the documentation-burden item and trend year over year for Abridge cohort.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
   CAPACITY: [
@@ -179,19 +180,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "Patient Panel Size",
       tagline: "Active panel per PCP — moves slowly, but reflects real access expansion when it does",
       howToTrack: "Empanelment data from your population health system. Trend panel size for Abridge-enabled PCPs vs. control. 6–12 month signal; control for retirements and new hires.",
-      badge: "Emerging",
+      badge: "Trend",
     },
     {
       label: "No-Show Rate",
       tagline: "Downstream of better access — easier scheduling reduces patient drop-off",
       howToTrack: "Scheduling system reports. Track no-show rate trend monthly. Influenced by reminder workflows and demographics — control for those when interpreting.",
-      badge: "Strategic",
+      badge: "Proof",
     },
     {
       label: "New Patient Wait Time (Third Next Available)",
       tagline: "Industry-standard access metric — reflects how quickly a new patient can be seen",
       howToTrack: "Scheduling analytics: median days to third next available appointment. Track per-provider trend. Improvement is slow but compounds.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
   REVENUE: [
@@ -199,13 +200,13 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "E/M Level Distribution",
       tagline: "% of visits at each E/M level — the clearest leading indicator of wRVU lift",
       howToTrack: "Billing system: % of visits at 99213, 99214, 99215 by provider. Compare same provider, same patient mix pre/post. Visible in claims data within 90 days.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Documentation-Related Denial Rate",
       tagline: "Denials specifically tied to medical necessity / documentation gaps",
       howToTrack: "RCM root-cause categorization, tracked monthly. Isolate documentation-related denials from other causes. 6+ months for credible trend.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
 };
@@ -252,6 +253,8 @@ data-testid="button-export-pdf">
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Outpatient: How We Think About Value</h1>
           <p className="text-base text-[#666666]">Where time saved becomes capacity — and capacity becomes revenue or wellbeing</p>
         </motion.div>
+
+        <ValueAccrualSection />
 
         <DomainTabExplorer
           cards={overviewCards}

@@ -7,6 +7,7 @@ import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
   DomainTabExplorer,
   CollapsibleSection,
+  ValueAccrualSection,
   type DomainCardData,
   type DomainDetailData,
   type DomainName,
@@ -23,31 +24,31 @@ const overviewCards: DomainCardData[] = [
     domain: "QUALITY",
     description: "Documentation completeness enables earlier intervention, better care continuity, and regulatory compliance. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "HAPI and falls prevention", badge: "Emerging" },
-      { label: "CAUTI / CLABSI / Sepsis SEP-1 compliance", badge: "Strategic" },
-      { label: "HCAHPS / patient experience", badge: "Strategic" },
+      { label: "HAPI and falls prevention", badge: "Trend" },
+      { label: "CAUTI / CLABSI / Sepsis SEP-1 compliance", badge: "Proof" },
+      { label: "HCAHPS / patient experience", badge: "Proof" },
     ],
   },
   {
     domain: "WORKFORCE",
     description: "Nursing turnover is the most expensive workforce problem in healthcare. Documentation burden is a measurable driver. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Retention savings", badge: "Emerging" },
-      { label: "Agency labor reduction", badge: "Emerging" },
+      { label: "Retention savings", badge: "Trend" },
+      { label: "Agency labor reduction", badge: "Trend" },
     ],
   },
   {
     domain: "CAPACITY",
     description: "Overtime reduction is the most direct, payroll-verified financial driver in nursing — uniquely monetizable. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Overtime reduction (payroll data)", badge: "Demonstrated" },
+      { label: "Overtime reduction (payroll data)", badge: "Signal" },
     ],
   },
   {
     domain: "REVENUE",
     description: "Nurses don't bill directly. Revenue impact flows through quality, safety, and workforce stability — not billing. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Not applicable — nurses don't bill", badge: "Strategic" },
+      { label: "Not applicable — nurses don't bill", badge: "Proof" },
     ],
   },
 ];
@@ -60,20 +61,20 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "HAPI and Falls Prevention",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "Hospital-Acquired Pressure Injuries (HAPIs) and falls are preventable safety events with significant cost and regulatory consequences. Better real-time nursing documentation enables earlier risk identification and intervention. The documentation-to-prevention link is attributable with confidence over time — but requires operational changes alongside documentation improvement. Track HAPI and fall rates on pilot units vs. control as a 12+ month signal.",
         formula: "Current HAC events × 5% documentation-preventable rate × average cost per event\n\nHAPI: $10K–$100K+ per event depending on severity. Falls: $14K–$35K per event.",
         limit: "Documentation is one enabler of HAC prevention — not the only factor. Staffing ratios, protocols, and equipment all matter. Don't attribute HAC reduction entirely to documentation.",
       },
       {
         label: "CAUTI / CLABSI / Sepsis SEP-1 Compliance",
-        badge: "Strategic",
+        badge: "Proof",
         explanation: "Real-time nursing documentation supports bundle compliance for CAUTI, CLABSI, and Sepsis SEP-1 measures. When assessments, interventions, and clinical observations are captured accurately and promptly, care team coordination improves and documentation gaps that create compliance risk are reduced. This is clinically meaningful and real — but direct financial attribution is multi-factorial and difficult to isolate to documentation alone.",
         limit: "Track compliance rates as a quality signal after implementation. Financial attribution requires isolating documentation's contribution from protocol adherence, staffing, and other factors.",
       },
       {
         label: "HCAHPS / Patient Experience",
-        badge: "Strategic",
+        badge: "Proof",
         explanation: "When nurses spend less time on documentation burden, they spend more time at the bedside. Research consistently shows bedside time correlates with patient satisfaction scores. Hospitals in the top HCAHPS quartile receive ~2% higher reimbursement through Value-Based Purchasing. We don't attribute HCAHPS improvement directly to documentation — too many variables — but it's a directional signal worth tracking as a leading indicator.",
         limit: "HCAHPS is influenced by everything from wait times to room cleanliness to physician communication. Track as a directional signal, not a direct attribution.",
       },
@@ -87,14 +88,14 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "Retention Savings",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "Nursing turnover is the most expensive workforce problem in healthcare — NSI 2023 data shows a national average turnover rate of ~22.5%, with replacement costs ranging from $46K–$100K+ per nurse depending on specialty. Documentation burden is cited in ANA surveys as a top contributor to 30–50% of voluntary turnover. Retaining nurses who would otherwise leave due to burnout is a real and attributable financial outcome — but takes 12–18 months to observe.",
         formula: "Nurses × turnover rate × burnout % × Abridge impact % × replacement cost\n\nDefaults: turnover 18%, burnout attribution 40%, Abridge impact 15%, replacement cost $65K",
         limit: "Documentation burden is one burnout driver among many. Don't attribute all turnover change to documentation without exit interview data and validated burnout surveys to support the attribution.",
       },
       {
         label: "Agency Labor Reduction",
-        badge: "Emerging",
+        badge: "Trend",
         explanation: "When documentation burden contributes to turnover, remaining staff absorb heavier loads, burnout accelerates, and agency fill rates increase. The cycle compounds. Reducing documentation burden is one input to breaking the cycle — by improving retention, reducing vacancy rates, and decreasing reliance on agency staffing at premium costs. Agency spend is directly trackable from invoices and budget data.",
         formula: "Observed agency spend reduction × attribution % (based on retention improvement correlation)",
         limit: "Agency spend is affected by many factors — market availability, unit census, scheduling decisions. Work with your workforce analytics team to isolate documentation-driven retention improvement.",
@@ -109,7 +110,7 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "Overtime Reduction (Payroll Data)",
-        badge: "Demonstrated",
+        badge: "Signal",
         explanation: "Nursing is the only care setting in this methodology where we monetize time savings directly through overtime reduction. In physician settings (outpatient, ED, inpatient), physicians are salaried — time savings are modeled as capacity or retention signal. Nurses often work overtime to complete documentation after their shift ends. The mechanism we're modeling: when documentation burden decreases, on-time shift completion tends to improve and a portion of that time shows up as reduced overtime. Organizations have observed this pattern, but the magnitude varies by unit — your payroll data within 90 days will confirm or adjust the assumption.",
         formula: "Hours saved per shift × OT conversion rate × nurses × OT hourly rate × 52 weeks\n\nDefaults: 20 min/shift saved, 25% OT conversion rate, OT rate = 1.5× base hourly",
         limit: "Not all saved time converts to OT reduction. Accounts for nurses already leaving on time, shift overlap, and other documentation tasks that fill saved time. OT conversion rate of 15–40% is realistic — use your unit-level payroll data to calibrate.",
@@ -124,7 +125,7 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "Not Applicable — Nurses Don't Bill Directly",
-        badge: "Strategic",
+        badge: "Proof",
         explanation: "Unlike physicians in ED, outpatient, or inpatient settings, nurses do not generate direct billing revenue. Nursing's revenue impact flows through three indirect channels: (1) quality and safety outcomes that affect Value-Based Purchasing reimbursement; (2) workforce stability that reduces agency costs and preserves operational capacity; (3) support for physician documentation that enables more accurate DRG and CC/MCC coding. These are real and meaningful — but they belong in the Quality, Workforce, and Capacity domains, not a billing revenue line.",
         limit: "The ROI case for nursing is strongest when built on overtime reduction (demonstrated, fast) and retention savings (emerging, 12–18 months). Don't try to build a billing revenue case — it doesn't hold up.",
       },
@@ -139,19 +140,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "Skin Assessment Completion Rate",
       tagline: "Upstream HAPI prevention — assessments done on time make pressure injuries identifiable earlier",
       howToTrack: "EHR audit: % of admissions with Braden / skin assessment completed within shift policy. Trend monthly per unit. Direct documentation-driven signal.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Falls Risk Assessment Completion (Morse / Hendrich)",
       tagline: "Documentation completeness for the standardized fall-risk score on admission and shift change",
       howToTrack: "EHR report: % of patients with current fall-risk score per shift. Compare pilot vs. control units. Tracked daily by nursing quality teams.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "HCAHPS Nurse Communication Composite",
       tagline: "More bedside time tends to surface in patient-reported nurse communication scores",
       howToTrack: "CMS HCAHPS survey, reported quarterly. Isolate the 'nurse communication' composite. Signal takes 2–3 reporting cycles to stabilize.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
   WORKFORCE: [
@@ -159,19 +160,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "Late-Shift Documentation",
       tagline: "Nurses charting after their shift ends — the cleanest leading indicator for OT and burnout",
       howToTrack: "EHR session data after shift end timestamp. Compare same nurses pre/post deployment. Visible in weeks; this is the upstream signal for OT reduction.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Nurse Engagement / Burnout Surveys (NDNQI / MBI)",
       tagline: "Is documentation burden still cited as a top factor in nurse engagement instruments?",
       howToTrack: "NDNQI RN Job Satisfaction surveys, MBI burnout assessments, or internal pulse surveys. Track the documentation-burden item year over year for Abridge units.",
-      badge: "Emerging",
+      badge: "Trend",
     },
     {
       label: "Agency / Travel Nurse Fill Rate",
       tagline: "Lagging indicator for retention — agency reliance often drops as documentation-driven turnover eases",
       howToTrack: "Workforce analytics: % of shifts filled by agency vs. core staff per unit. Trend monthly. Multi-factorial — control for census and market availability.",
-      badge: "Emerging",
+      badge: "Trend",
     },
   ],
   CAPACITY: [
@@ -179,19 +180,19 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "Shift End-Time Discipline",
       tagline: "% of nurses clocking out within 15 minutes of shift end — direct OT precursor",
       howToTrack: "Payroll / time-and-attendance system. Trend monthly per unit. Pair with late-shift documentation to confirm OT reduction is driven by documentation, not staffing changes.",
-      badge: "Demonstrated",
+      badge: "Signal",
     },
     {
       label: "Bedside Time per Patient (NDNQI)",
       tagline: "Time spent in direct patient care vs. at the workstation",
       howToTrack: "NDNQI nursing care hours data, time-motion observation studies, or RTLS badge data if available. Trend pre/post for Abridge units. Quarterly cadence.",
-      badge: "Emerging",
+      badge: "Trend",
     },
     {
       label: "Hand-Off Completeness (SBAR)",
       tagline: "Are shift-to-shift hand-offs structured and complete? Documentation quality shows up at care transitions",
       howToTrack: "Hand-off audits scored against SBAR completeness rubric. Sample 10–20 hand-offs per unit per month. Pair with patient-safety event data to triangulate impact.",
-      badge: "Strategic",
+      badge: "Proof",
     },
   ],
 };
@@ -238,6 +239,8 @@ data-testid="button-export-pdf">
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Nursing: How We Think About Value</h1>
           <p className="text-base text-[#666666]">Where overtime reduction is the lead metric — and retention is the long game</p>
         </motion.div>
+
+        <ValueAccrualSection />
 
         <DomainTabExplorer
           cards={overviewCards}

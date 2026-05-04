@@ -415,7 +415,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "Referral & Downstream Documentation",
-            attribution: "Strategic",
+            attribution: "Proof",
             description: "When outpatient notes capture full clinical context\u2014differential reasoning, exam findings, medication rationale\u2014specialist referrals arrive with the information needed to act. Thin referral notes create redundant workups, delays, and patient frustration. Documentation quality is the upstream input to care coordination quality.",
             formula: "Measured: referral note completeness rate, prior auth approval rate, specialist query volume on incoming referrals",
           },
@@ -594,19 +594,19 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "CDI Query Volume on Admits",
-            attribution: "Demonstrated",
+            attribution: "Signal",
             description: "When ED documentation captures presenting conditions and comorbidities completely, CDI specialists receive fewer queries to clarify the clinical picture. This is tracked daily by most CDI departments\u2014before/after comparison is fast and clean. Better ED notes also form the foundation of inpatient DRG accuracy for admitted patients (quantified in the Inpatient methodology to avoid double-counting).",
             formula: "Admissions \u00D7 query rate \u00D7 reduction % \u2014 tracked by CDI department",
           },
           {
             name: "Note Completeness Rate",
-            attribution: "Demonstrated",
+            attribution: "Signal",
             description: "EHR timestamp data shows exactly when notes are completed and how long they take. During surges, note quality often drops\u2014key elements get abbreviated or omitted. The hypothesis we model is that ambient capture, by removing the typing bottleneck, reduces volume-driven completeness loss; organizations have observed this pattern, and CDI and compliance teams can audit directly to confirm whether it holds in your environment.",
             formula: "EHR session data: note completion time, completeness scores (CDI audit-based)",
           },
           {
             name: "Sepsis / Stroke Protocol Documentation",
-            attribution: "Strategic",
+            attribution: "Proof",
             description: "Proper documentation of sepsis and stroke presentations affects both regulatory compliance (CMS sepsis bundle measures) and downstream coding accuracy. The documentation is real and the clinical stakes are high\u2014but direct financial attribution is indirect and multi-factorial. Track as a quality signal, not a revenue line.",
             formula: "Tracked as a quality signal: bundle compliance %, time-to-recognition \u2014 not monetized directly",
             formulaColor: colors.tertiary,
@@ -619,7 +619,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "Physician Retention Savings",
-            attribution: "Emerging",
+            attribution: "Trend",
             description: "ED burnout is a workforce crisis. Documentation burden is consistently cited in ACEP surveys and Medscape reports as a top contributor. At $250K\u2013$500K per physician replacement (AMGA Physician Retention Survey), retaining even one additional physician could offset a significant portion of implementation cost. The link is attributable; the measurement takes 12\u201318 months. Documentation is one of many burnout drivers\u2014don\u2019t attribute all turnover change to documentation.",
             formula: "ED physicians \u00D7 Turnover (8\u201315%) \u00D7 Burnout attribution (10\u201320%) \u00D7 Replacement cost ($250\u2013500K)",
           },
@@ -631,19 +631,19 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "Documentation Time Per Encounter (EHR)",
-            attribution: "Demonstrated",
+            attribution: "Signal",
             description: "EHR timestamps show exactly when charting begins and ends. In the ED, time savings per encounter are smaller (2\u20134 minutes) than outpatient\u2014but the ED is a volume engine. At 40,000\u201380,000 visits/year, 3 minutes \u00D7 50,000 visits \u2248 2,500 hours of physician time annually (illustrative). Early signals are often visible within weeks in deployment data.",
             formula: "Minutes saved \u00D7 annual ED visits / 60 = estimated physician hours potentially returned",
           },
           {
             name: "LWBS Recovery (Wait Time Sensitivity)",
-            attribution: "Emerging",
+            attribution: "Trend",
             description: "Each patient who leaves without being seen represents $300\u2013$500+ in lost revenue. Faster documentation contributes to faster throughput, which can reduce wait times and recover some LWBS patients. Attribution is the challenge\u2014documentation is one lever among staffing, bed management, triage protocol, and acuity mix. We use conservative recovery rates (5\u201315%) and are explicit about attribution. If your LWBS rate is already below 2%, this lever is smaller.",
             formula: "(LWBS rate before \u2212 after, in pp) \u00D7 annual ED visits \u00D7 $300\u2013500/visit \u00D7 attribution %",
           },
           {
             name: "Admission Capture (Downstream of LWBS)",
-            attribution: "Emerging",
+            attribution: "Trend",
             description: "Of patients recovered from LWBS, some require inpatient admission\u2014converting a lost ED visit into DRG-based inpatient revenue. This driver only activates when LWBS recovery is calculated first. Without real LWBS data, don\u2019t estimate this\u2014compounding two estimates produces a number that won\u2019t survive scrutiny.",
             formula: "Recovered LWBS patients \u00D7 Admission rate (15\u201320%) \u00D7 Avg admission revenue \u00D7 Realization",
           },
@@ -655,13 +655,13 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "E/M Level Accuracy (Claims Data)",
-            attribution: "Demonstrated",
+            attribution: "Signal",
             description: "During surges, ED notes understate what actually happened\u2014a physician manages a complex differential but the note reflects a simpler encounter because time was short. Claims data shows E/M level distribution shifts before and after. ED wRVU lift is typically 2\u20134% (lower than outpatient because ED workflows are more structured). We use your observed delta, not an assumed percentage.",
             formula: "(wRVU per encounter after \u2212 before) \u00D7 adopted encounters \u00D7 $33/wRVU \u00D7 attribution % \u00D7 realization %",
           },
           {
             name: "Denial Prevention (RCM Root Cause)",
-            attribution: "Demonstrated",
+            attribution: "Signal",
             description: "Medical necessity is the ED\u2019s denial vulnerability. The mechanism we\u2019re modeling: capturing clinical reasoning in real time creates an opportunity to close medical-necessity gaps at the point of care\u2014before the note is finalized and the claim is sent. When a note doesn\u2019t capture why a test was ordered or why admission was necessary, that\u2019s a denial waiting to happen, and many ED denials are unappealable because the documentation gap existed at time of service. RCM teams track documentation-related denials as a specific root cause category\u2014that\u2019s where you validate whether the mechanism is showing up in your data.",
             formula: "(denial rate before \u2212 after, in pp) \u00D7 annual encounters \u00D7 avg denial cost per encounter \u00D7 attribution %  (ED default: $500/encounter)",
           },
@@ -789,7 +789,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
           },
           {
             name: "Documentation Completeness",
-            attribution: "Strategic",
+            attribution: "Proof",
             description: "Complete documentation at the point of care means fewer CDI queries, more accurate DRG assignment, and stronger payer audit defense\u2014all from the same root cause. When hospitalists discuss AKI, malnutrition, or respiratory failure at bedside and the note reflects it in real time, every downstream step benefits: CDI, coding, billing, and appeals. This is the mechanism that connects Quality to Revenue.",
             formula: "Measured: note completeness rate (CDI audit), CC/MCC capture rate, same-day note closure rate",
           },
