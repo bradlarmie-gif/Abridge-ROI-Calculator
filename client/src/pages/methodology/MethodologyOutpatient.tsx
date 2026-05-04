@@ -47,7 +47,7 @@ const overviewCards: DomainCardData[] = [
     domain: "REVENUE",
     description: "wRVU accuracy and denial prevention are the most directly attributable revenue drivers in outpatient. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "wRVU accuracy (billing data)", badge: "Signal" },
+      { label: "wRVU accuracy (billing data)", badge: "Trend" },
       { label: "Denial prevention", badge: "Trend" },
     ],
   },
@@ -118,7 +118,7 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "wRVU Accuracy (Billing Data)",
-        badge: "Signal",
+        badge: "Trend",
         explanation: "Better documentation captures visit complexity more accurately, supporting appropriate E/M level coding. Claims data shows wRVU distribution shifts before and after. Published studies and deployment observations suggest wRVU lift may range 2–7% depending on baseline documentation quality and specialty. MGMA data shows that documentation-related undercoding is common, particularly in primary care where visit complexity is often under-documented.",
         formula: "wRVU delta per encounter × adopted encounters × $33/wRVU (CMS MPFS conversion factor)\n\nNote: commercial payers often pay higher than Medicare conversion factor — blended rate depends on payer mix",
       },
@@ -140,7 +140,7 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "HCC Recapture Rate (MA Risk Adjustment)",
       tagline: "Are chronic conditions being re-documented in the year they need to be?",
       howToTrack: "Risk adjustment / coding team tracks suspected vs. confirmed HCC closures by provider. Pull pre/post recapture rate for MA panels. Quarterly cadence.",
-      badge: "Signal",
+      badge: "Trend",
     },
     {
       label: "Care Gap Closure Rate",

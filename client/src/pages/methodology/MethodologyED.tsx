@@ -49,8 +49,8 @@ const overviewCards: DomainCardData[] = [
     domain: "REVENUE",
     description: "ED coding is the most audit-vulnerable setting. Every surge creates under-documented complexity. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "E/M level accuracy (claims data)", badge: "Signal" },
-      { label: "Denial prevention (RCM root cause)", badge: "Signal" },
+      { label: "E/M level accuracy (claims data)", badge: "Trend" },
+      { label: "Denial prevention (RCM root cause)", badge: "Trend" },
     ],
   },
 ];
@@ -131,7 +131,7 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "E/M Level Accuracy (Claims Data)",
-        badge: "Signal",
+        badge: "Trend",
         explanation: "During surges, ED notes understate what actually happened — a physician manages complex differentials but the note reflects a simpler encounter because time was short. Claims data shows E/M level distribution shifts before and after. ED wRVU lift is typically 2–4% (lower than outpatient because ED workflows are more structured).",
         formula: "(wRVU per encounter after − before) × adopted encounters × $33/wRVU × attribution % × realization %",
       },

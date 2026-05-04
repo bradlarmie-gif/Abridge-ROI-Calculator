@@ -25,7 +25,7 @@ const overviewCards: DomainCardData[] = [
     description: "CDI query reduction and CC/MCC capture are daily, trackable signals of documentation improvement. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
       { label: "CDI query reduction (tracked daily)", badge: "Signal" },
-      { label: "CC/MCC documentation completeness", badge: "Signal" },
+      { label: "CC/MCC documentation completeness", badge: "Trend" },
     ],
   },
   {
@@ -47,7 +47,7 @@ const overviewCards: DomainCardData[] = [
     domain: "REVENUE",
     description: "DRG accuracy and concurrent review are the core inpatient revenue levers — both tied directly to documentation quality. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "DRG accuracy / CMI improvement", badge: "Signal" },
+      { label: "DRG accuracy / CMI improvement", badge: "Trend" },
       { label: "Concurrent review & denial prevention", badge: "Trend" },
       { label: "Billing cycle influence (DNFB)", badge: "Proof" },
     ],
@@ -68,7 +68,7 @@ const domainDetails: DomainDetailData[] = [
       },
       {
         label: "CC/MCC Documentation Completeness",
-        badge: "Signal",
+        badge: "Trend",
         explanation: "Complication and Comorbidity (CC) and Major Comorbidity (MCC) capture rates directly affect DRG assignment. When documentation captures qualifying conditions completely and accurately, CC/MCC capture improves — shifting DRG weight upward where clinically appropriate. CDI teams audit this daily. It's the most direct connection between documentation quality and DRG revenue.",
         formula: "CC/MCC capture rate improvement × discharges × average DRG weight delta × base rate",
       },
@@ -117,7 +117,7 @@ const domainDetails: DomainDetailData[] = [
     items: [
       {
         label: "DRG Accuracy / CMI Improvement",
-        badge: "Signal",
+        badge: "Trend",
         explanation: "Case Mix Index (CMI) is the clearest inpatient revenue signal — it reflects the average DRG weight of your patient population. The hypothesis we model: when documentation more completely captures clinical complexity, CMI tends to move upward where clinically appropriate. Claims data tracks this quarterly, and CDI teams can compare ambient-AI-enabled providers against a control cohort to test whether the shift is real in your environment. This is the inpatient equivalent of wRVU lift — trackable, auditable, and defensible when validated with your own data.",
         formula: "CMI delta × annual discharges × $6,800 (CMS IPPS base rate)\n\nIllustrative model input: CMI improvement of 0.01 across 5,000 discharges × $6,800 ≈ $340,000",
       },
@@ -218,7 +218,7 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
       label: "CMI Trending",
       tagline: "Case Mix Index — the single number that summarizes DRG accuracy",
       howToTrack: "Revenue cycle / finance dashboard, tracked quarterly. Compare Abridge-enabled providers vs. control group. 6+ months needed for credible comparison.",
-      badge: "Signal",
+      badge: "Trend",
     },
     {
       label: "DNFB / Billing Cycle Days",
@@ -305,7 +305,7 @@ risk × denial rate × avg claim delta × doc-attributable %</td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">CDI query reduction</td><td className="py-3 text-[#F59E0B] font-medium">Explore model: ✅ calculated · Measure model:
 signal only</td><td className="py-3">Admissions × query rate × reduction % × $50/query</td></tr>
                     <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#888888', borderColor: '#888888' }}>Capacity</span></td></tr>
-                    <tr className="border-b border-[#E5E5E5]"><td className="py-3">Rounding efficiency</td><td className="py-3 text-[#F59E0B] font-medium">Hours only — not monetized</td><td 
+                    <tr className="border-b border-[#E5E5E5]"><td className="py-3">Documentation time returned</td><td className="py-3 text-[#F59E0B] font-medium">Hours only — not monetized</td><td 
 className="py-3">Physician time is salaried</td></tr>
                     <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#555555', borderColor: '#555555' }}>Workforce</span></td></tr>
                     <tr className="border-b border-[#E5E5E5]"><td className="py-3">Hospitalist retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers avoided

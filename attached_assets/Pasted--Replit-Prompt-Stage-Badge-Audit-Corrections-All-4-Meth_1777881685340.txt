@@ -1,0 +1,59 @@
+ Replit Prompt — Stage Badge Audit Corrections (All 4 Methodology Pages)
+                                                                                                                                                                                                               
+  This is a surgical correction pass. The SIGNAL/TREND/PROOF badge system has several misassignments where metrics that require claims data processing, quarterly payer reporting, or 6+ months of statistical
+  accumulation were incorrectly labeled as Signal. Apply the following exact changes with no other modifications.                                                                                              
+                                                         
+  ---                                                                                                                                                                                                          
+  client/src/pages/methodology/MethodologyInpatient.tsx  
+                                                       
+  In overviewCards, QUALITY domain:
+  - Change { label: "CC/MCC documentation completeness", badge: "Signal" } → badge: "Trend"                                                                                                                    
+                                                                                                                                                                                                               
+  In overviewCards, REVENUE domain:                                                                                                                                                                            
+  - Change { label: "DRG accuracy / CMI improvement", badge: "Signal" } → badge: "Trend"                                                                                                                       
+                                                                                        
+  In domainDetails, QUALITY section, item "CC/MCC Documentation Completeness":
+  - Change badge: "Signal" → badge: "Trend"                                                                                                                                                                    
+                                                                                                                                                                                                               
+  In domainDetails, REVENUE section, item "DRG Accuracy / CMI Improvement":                                                                                                                                    
+  - Change badge: "Signal" → badge: "Trend"                                                                                                                                                                    
+                                                         
+  In qualitativeSignals, REVENUE section, signal "CMI Trending":
+  - Change badge: "Signal" → badge: "Trend"                                                                                                                                                                    
+                                           
+  In the "What Goes Into the Number" table (inside the CollapsibleSection):                                                                                                                                    
+  - Change the table row label Rounding efficiency → Documentation time returned                                                                                                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  client/src/pages/methodology/MethodologyED.tsx                                                                                                                                                               
+                                                         
+  In overviewCards, REVENUE domain:
+  - Change { label: "E/M level accuracy (claims data)", badge: "Signal" } → badge: "Trend"                                                                                                                     
+  - Change { label: "Denial prevention (RCM root cause)", badge: "Signal" } → badge: "Trend"
+                                                                                                                                                                                                               
+  In domainDetails, REVENUE section, item "E/M Level Accuracy (Claims Data)":                                                                                                                                  
+  - Change badge: "Signal" → badge: "Trend"
+                                                                                                                                                                                                               
+  ---                                                    
+  client/src/pages/methodology/MethodologyOutpatient.tsx                                                                                                                                                       
+   
+  In overviewCards, REVENUE domain:                                                                                                                                                                            
+  - Change { label: "wRVU accuracy (billing data)", badge: "Signal" } → badge: "Trend"
+                                                                                                                                                                                                               
+  In domainDetails, REVENUE section, item "wRVU Accuracy (Billing Data)":
+  - Change badge: "Signal" → badge: "Trend"                                                                                                                                                                    
+                                                         
+  In qualitativeSignals, QUALITY section, signal "HCC Recapture Rate (MA Risk Adjustment)":
+  - Change badge: "Signal" → badge: "Trend"                                                                                                                                                                    
+   
+  ---                                                                                                                                                                                                          
+  client/src/pages/methodology/MethodologyNursing.tsx    
+                                                     
+  No changes needed — badge assignments are correctly calibrated.
+                                                                                                                                                                                                               
+  ---
+  Rationale (for context, don't add to code):                                                                                                                                                                  
+  - Signal = visible in first 30–90 days from EHR session data, coding audits, CDI query logs — no claims processing required                                                                                  
+  - Trend = requires claims billing cycle, quarterly payer data (MA risk adjustment), or statistical accumulation over 3–6 months
+  - CMI/DRG, wRVU, E/M level accuracy, denial rates, and HCC recapture all require claims data to complete — they cannot be meaningfully validated in 90 days. The files' own validation paths and honest      
+  limits sections already say this; the badges just didn't match.  
