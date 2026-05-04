@@ -1,0 +1,176 @@
+File to edit: client/src/components/explore/ExploreNarrativePDF.tsx
+                                                                                                                                                                                                               
+  Make these five targeted visual quality changes. No content changes, no new pages, no interface changes.                                                                                                   
+                                                                                                                                                                                                               
+  ---
+  Change 1 — Section label style (biggest impact)                                                                                                                                                              
+                                                                                                                                                                                                             
+  In StyleSheet.create(...), change the sectionLabel style:
+  sectionLabel: {                                                                                                                                                                                              
+    fontSize: 8.5,
+    color: "#EA2C00",        // was colors.primaryText — make it RED like the methodology PDF                                                                                                                  
+    textTransform: "uppercase",                                                                                                                                                                              
+    letterSpacing: 2.5,                                                                                                                                                                                        
+    fontWeight: "bold",                                                                                                                                                                                        
+  },                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  Remove the sectionLabelRow and sectionLabelMark style entries from StyleSheet (they're no longer needed).                                                                                                  
+                                                                                                                                                                                                               
+  Replace the SectionLabel component with this simpler version:                                                                                                                                                
+  const SectionLabel = ({ children }: { children: string }) => (                                                                                                                                               
+    <Text style={[styles.sectionLabel, { marginBottom: 12 }]}>{children}</Text>                                                                                                                                
+  );                                                                                                                                                                                                         
+
+  ---
+  Change 2 — Footer: replace absolute-positioned footer with flow-based footer
+                                                                                                                                                                                                               
+  In StyleSheet.create(...), replace the footer, footerLeft, footerCenter, footerCenterOrg, footerRight, footerRightNum, footerLogo style entries with:
+  footer: {                                                                                                                                                                                                    
+    marginTop: "auto",                                                                                                                                                                                       
+    flexDirection: "row",                                                                                                                                                                                      
+    justifyContent: "space-between",                                                                                                                                                                           
+    alignItems: "center",           
+    paddingTop: 8,                                                                                                                                                                                             
+    borderTopWidth: 1,                                                                                                                                                                                       
+    borderTopColor: "#DDD5C8",
+  },                          
+  footerLeftText: {                                                                                                                                                                                            
+    fontSize: 10,  
+    color: "#EA2C00",                                                                                                                                                                                          
+    fontWeight: "bold",                                  
+  },                   
+  footerCenterText: {
+    fontSize: 8.5,   
+    color: "#666666",                                                                                                                                                                                          
+  },                 
+  footerRightText: {                                                                                                                                                                                           
+    fontSize: 8.5,                                       
+    color: "#999999",
+  },                 
+                                                                                                                                                                                                               
+  Also change the page style: paddingBottom: 72 → paddingBottom: 50.
+                                                                                                                                                                                                               
+  Remove the import abridgeWordmark from ... image import at the top of the file (it's only used in the footer).                                                                                               
+                                                                                                                                                                                                               
+  Replace the PageFooter component with:                                                                                                                                                                       
+  const PageFooter = ({ orgName, settingLabel }: { orgName: string; settingLabel: string }) => (
+    <View style={styles.footer}>                                                                                                                                                                               
+      <Text style={styles.footerLeftText}>ABRIDGE</Text> 
+      <Text style={styles.footerCenterText}>{orgName} · {settingLabel}</Text>
+      <Text                                                                                                                                                                                                    
+        style={styles.footerRightText}
+        render={({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) =>                                                                                                                    
+          `Page ${pageNumber - 1} / ${totalPages - 1}`                                     
+        }                                                                                                                                                                                                      
+      /> 
+    </View>                                                                                                                                                                                                    
+  );                                                     
+    
+  In the ExploreNarrativePDFDocument function, add settingLabel to the PageFooter calls. The settingLabel variable already exists in scope. Update every <PageFooter orgName={orgName} /> to <PageFooter 
+  orgName={orgName} settingLabel={settingLabel} />.                                                                                                                                                            
+   
+  ---                                                                                                                                                                                                          
+  Change 3 — Investment table: alternating row backgrounds + 3-Year Totals row
+                                                                                                                                                                                                               
+  In the Year 1/2/3 row .map(), add backgroundColor to each row's style:
+  backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#F5F0EB",                                                                                                                                                      
+                                                         
+  After the closing })} of the .map() (after the Year 3 row), add a 3-Year Totals row:                                                                                                                         
+  <View                                                                                                                                                                                                        
+    style={{                                                                                                                                                                                                   
+      flexDirection: "row",                                                                                                                                                                                    
+      paddingVertical: 10,                               
+      paddingHorizontal: 10,
+      borderTopWidth: 2,    
+      borderTopColor: "#E5DCD0",                                                                                                                                                                               
+      backgroundColor: "#F5F0EB",
+    }}                                                                                                                                                                                                         
+    wrap={false}                                         
+  >                                                                                                                                                                                                            
+    <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: "#1A1A1A" }}>
+      3-Year Total                                                                
+    </Text>                                                                                                                                                                                                    
+    <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: "#1A1A1A", textAlign: "right" }}>
+      {fmtCurrency(data.threeYearGrossTotal)}                                                                                                                                                                  
+    </Text>                                              
+    <Text style={{ flex: 1.2, fontSize: 10, color: "#666666", textAlign: "right" }}>                                                                                                                           
+      {fmtCurrency(data.threeYearInvestmentTotal)}                                  
+    </Text>                                                                                                                                                                                                    
+    <Text style={{ flex: 1.2, fontSize: 11, fontWeight: "bold", color: "#EA2C00", textAlign: "right" }}>                                                                                                       
+      {fmtCurrency(data.threeYearNetTotal)}                                                             
+    </Text>                                                                                                                                                                                                    
+    <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: "#1A1A1A", textAlign: "right" }}>                                                                                                       
+      {fmtCurrency(data.threeYearNetTotal)}                                                             
+    </Text>                                                                                                                                                                                                    
+  </View>                                                                                                                                                                                                      
+   
+  ---                                                                                                                                                                                                          
+  Change 4 — Summary page: 2-column SummaryGroup layout  
+                                                       
+  On the Assessment Summary page, find where the four SummaryGroup components render (the .map() over ["Capacity", "Workforce", "Revenue", "Quality"]). Replace that entire block with two side-by-side rows:
+                                                                                                                                                                                                               
+  {/* Row 1 */}
+  <View style={{ flexDirection: "row", gap: 10, marginBottom: 8 }}>                                                                                                                                            
+    {(["Capacity", "Workforce"] as const).map((qLabel) => {                                                                                                                                                    
+      const q = data.quadrants.find((x) => x.quadrant === qLabel);
+      if (!q) return null;                                                                                                                                                                                     
+      const total =                                      
+        qLabel === "Quality" && q.annualTotal === 0                                                                                                                                                            
+          ? "Tracked"                                                                                                                                                                                          
+          : q.annualTotal > 0                                                                                                                                                                                  
+            ? fmtCurrency(q.annualTotal)                                                                                                                                                                       
+            : "—";                                                                                                                                                                                             
+      const rows = [                                     
+        ...q.drivers.map((d) => ({                                                                                                                                                                             
+          label: d.label,
+          value: d.visibility === "quantified" ? fmtCurrency(d.value) : "Tracked",                                                                                                                             
+        })),                                                                                                                                                                                                   
+        ...q.otherFinancialBenefits.map((b) => ({
+          label: b.label,                                                                                                                                                                                      
+          value: `${fmtCurrency(b.amount)} ${b.type === "annual" ? "annual" : "one-time"}`,
+        })),                                                                                                                                                                                                   
+      ];                                                 
+      return (                                                                                                                                                                                                 
+        <View key={qLabel} style={{ flex: 1 }}>          
+          <SummaryGroup label={qLabel.toUpperCase()} total={total} rows={rows} />
+        </View>                                                                                                                                                                                                
+      );
+    })}                                                                                                                                                                                                        
+  </View>                                                
+  {/* Row 2 */}
+  <View style={{ flexDirection: "row", gap: 10, marginBottom: 10 }}>                                                                                                                                           
+    {(["Revenue", "Quality"] as const).map((qLabel) => {
+      const q = data.quadrants.find((x) => x.quadrant === qLabel);                                                                                                                                             
+      if (!q) return null;                                                                                                                                                                                     
+      const total =
+        qLabel === "Quality" && q.annualTotal === 0                                                                                                                                                            
+          ? "Tracked"                                    
+          : q.annualTotal > 0
+            ? fmtCurrency(q.annualTotal)
+            : "—";                                                                                                                                                                                             
+      const rows = [
+        ...q.drivers.map((d) => ({                                                                                                                                                                             
+          label: d.label,                                
+          value: d.visibility === "quantified" ? fmtCurrency(d.value) : "Tracked",
+        })),                                                                                                                                                                                                   
+        ...q.otherFinancialBenefits.map((b) => ({
+          label: b.label,                                                                                                                                                                                      
+          value: `${fmtCurrency(b.amount)} ${b.type === "annual" ? "one-time" : "annual"}`,
+        })),                                                                                                                                                                                                   
+      ];
+      return (                                                                                                                                                                                                 
+        <View key={qLabel} style={{ flex: 1 }}>          
+          <SummaryGroup label={qLabel.toUpperCase()} total={total} rows={rows} />
+        </View>                                                                                                                                                                                                
+      );
+    })}                                                                                                                                                                                                        
+  </View>                                                
+
+  ---
+  Change 5 — CompactDriverCard: increase padding and body text size
+                                                                                                                                                                                                               
+  In the CompactDriverCard component, change:
+  - The outer View's padding: 12 → padding: 14                                                                                                                                                                 
+  - The outer View's marginBottom: 8 → marginBottom: 10                                                                                                                                                        
+  - The body Text's fontSize: 9 → fontSize: 9.5        
+  - The body Text's lineHeight: 1.45 → lineHeight: 1.5   

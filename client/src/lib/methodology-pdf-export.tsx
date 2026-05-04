@@ -196,8 +196,8 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
     settingLabelLower: "nursing",
     coverSubtitle: "A transparent framework for understanding where\nvalue lives when there\u2019s no billing relationship",
     contextHeadline: "Nursing is the hardest setting to model ROI\u2014and the most important to get right.",
-    contextBody: "In outpatient medicine, a physician saves 3 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. Nurses don\u2019t bill. They don\u2019t generate wRVUs. And yet nursing documentation burden is massive\u201425\u201335% of every shift spent on flowsheets, assessments, handoffs, and charting. The four-domain framework applies here\u2014but one domain is intentionally empty. Nurses have no direct revenue story, and we\u2019re not going to invent one. What they do have is the largest quality footprint in the building: HAPI, falls, CAUTI, CLABSI, sepsis SEP-1, HAC penalties, and HCAHPS scores all run through nursing documentation. That\u2019s where the value lives.",
-    contextQuestion: "Three active domains, one honest absence.",
+    contextBody: "In outpatient medicine, a physician saves 3 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. In nursing, the same time saved flows differently: documentation burden accounts for 25\u201335% of every shift, and reclaiming that time shows up in overtime reduction, retention improvement, and more bedside time. The four-domain framework applies here\u2014revenue flows through quality outcomes, workforce stability, and support for physician coding accuracy. What nursing has is the largest quality footprint in the building: HAPI, falls, CAUTI, CLABSI, sepsis SEP-1, HAC penalties, and HCAHPS scores all run through nursing documentation. That\u2019s where the value lives.",
+    contextQuestion: "Three active domains \u2014 Quality, Workforce, and Capacity.",
     cat1Label: "WORKFORCE",
     cat1Description: "Retention and agency reduction.",
     cat1Footer: "Measurable",
@@ -226,11 +226,11 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
       {
         label: "REVENUE",
         description: "Nurses don\u2019t bill directly. Revenue impact flows through quality, workforce stability, and support for physician documentation\u2014not a billing line. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Intentionally absent \u2014 honesty is the defensibility",
+        footer: "Revenue flows through Quality and Workforce \u2014 tracked there",
         accentColor: colors.tertiary,
       },
     ],
-    frameworkCallout: "Three domains are active in nursing. One is intentionally empty\u2014and that\u2019s a feature, not a gap. The willingness to say \u2018nurses don\u2019t have a revenue story\u2019 is exactly what makes the Quality, Workforce, and Capacity stories credible. We model what we can defend. Everything else we name and explain.",
+    frameworkCallout: "Three domains are active in nursing: Quality, Workforce, and Capacity. Nursing\u2019s financial impact flows through quality outcomes, workforce stability, and documentation that supports physician coding accuracy\u2014not direct billing. Track it there\u2014those numbers are real and defensible.",
     categories: [
       {
         label: "QUALITY",
@@ -238,32 +238,32 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "HAPI Prevention",
-            attribution: "Potential",
+            attribution: "Trend",
             description: "Real-time documentation ensures skin assessments and risk factors are captured when they\u2019re observed\u2014not reconstructed at end of shift when the picture has already changed. Complete risk documentation enables earlier intervention for pressure injuries. CMS does not reimburse for hospital-acquired pressure injuries; each HAPI represents both a clinical failure and a financial penalty.",
             formula: "Current HAPIs \u00D7 Doc-preventable % (3\u201310%) \u00D7 Cost per HAPI ($10K\u2013$100K+, severity-dependent)",
           },
           {
             name: "Falls Prevention",
-            attribution: "Potential",
+            attribution: "Trend",
             description: "Real-time fall risk scores and mobility status documentation enable earlier preventive action. When risk assessments are completed and documented at the right intervals, fall prevention protocols can be activated before an event occurs. CMS does not reimburse for hospital-acquired fall injuries.",
             formula: "Current falls \u00D7 Doc-preventable % (3\u201310%) \u00D7 Cost per fall ($14\u201335K)",
           },
           {
             name: "CAUTI & CLABSI Prevention",
-            attribution: "Potential",
+            attribution: "Trend",
             description: "Device-associated infection prevention depends on insertion documentation, daily necessity assessments, and removal timing. When nursing documentation captures device placement dates, indication reviews, and care bundle compliance in real time, infection prevention teams have the data to act. CMS penalizes HAI rates through the HAC Reduction Program.",
             formula: "CAUTI/CLABSI rates \u00D7 Doc-preventable % (3\u20138%) \u00D7 Cost per event \u00D7 HAC penalty exposure",
           },
           {
             name: "Sepsis SEP-1 Bundle Compliance",
-            attribution: "Potential",
+            attribution: "Trend",
             description: "Sepsis SEP-1 bundle compliance requires timely documentation of screening, assessment, and intervention\u2014across nursing and physician notes. When nursing documentation captures vital sign changes, mental status shifts, and suspected infection in real time, the clinical picture that triggers sepsis recognition is clearer and faster. Earlier recognition improves outcomes and supports bundle compliance rates reported to CMS.",
             formula: "Measured: SEP-1 bundle compliance rate, time-to-recognition for sepsis alerts \u2014 not monetized directly",
             formulaColor: colors.tertiary,
           },
           {
             name: "HCAHPS & Patient Experience",
-            attribution: "Directional",
+            attribution: "Proof",
             description: "More bedside time correlates with higher patient experience scores. When documentation is faster, nurses spend more time at the bedside\u2014which is where responsiveness, communication, and care perception are shaped. HCAHPS scores affect VBP reimbursement by approximately 2% for top-quartile performers. We treat this as a directional indicator, not a direct attribution.",
             formula: "Top quartile HCAHPS \u2248 2% higher VBP reimbursement \u2014 tracked as indicator, not outcome",
             formulaColor: colors.tertiary,
@@ -276,13 +276,13 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "Nurse Retention Savings",
-            attribution: "Influenceable",
+            attribution: "Trend",
             description: "Documentation burden is among the top drivers of nursing burnout and departure. When nurses finish shifts on time and spend less time on administrative documentation, the friction that precedes burnout decreases. At $50K\u2013$100K per nurse replacement (NSI 2023), even modest retention improvement compounds significantly across a large nursing staff. We use conservative impact rates (10\u201325%) because documentation is one of many burnout factors.",
             formula: "Nurses \u00D7 Turnover (15\u201325%) \u00D7 Burnout % (30\u201350%) \u00D7 Burnout attribution (10\u201325%) \u00D7 Replacement cost ($50\u2013100K)",
           },
           {
             name: "Agency Labor Reduction",
-            attribution: "Tied to retention",
+            attribution: "Trend",
             description: "When nurses leave, hospitals fill coverage gaps with agency and travel nurses at 2\u20133\u00D7 the cost of permanent staff. Better retention directly reduces agency dependency. This is the highest-dollar workforce outcome in nursing\u2014agency premiums of $2,000\u2013$4,000 per week per nurse add up quickly across a unit with persistent vacancies.",
             formula: "Nurses retained \u00D7 Coverage weeks needed (8\u201316 wks) \u00D7 Weekly agency premium ($2\u20134K)",
           },
@@ -294,7 +294,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "Overtime Reduction",
-            attribution: "Measurable",
+            attribution: "Signal",
             description: "When nurses document faster, they finish their shift workload on time. Not all time saved reduces overtime\u2014some returns to patient care, which is the right use of it. But a measurable portion of time saved does convert to shift completion, reducing mandatory and voluntary overtime hours. This is the most immediately trackable financial outcome in nursing ROI, visible in payroll data within 2\u20133 months.",
             formula: "Nurses \u00D7 Shifts/year \u00D7 Time saved/shift \u00D7 OT conversion rate (15\u201340%) \u00D7 OT rate (1.5\u00D7 base hourly)",
           },
@@ -361,12 +361,12 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
       },
       {
         name: "REVENUE",
-        before: ["No direct nursing revenue metrics to baseline"],
-        after: ["See Inpatient methodology for DRG accuracy impact of nursing documentation"],
-        timeline: "Not applicable \u2014 tracked in Inpatient model",
+        before: ["Baseline VBP scores and HAC penalty exposure", "CC/MCC capture rate \u2014 see Inpatient methodology"],
+        after: ["Track VBP reimbursement trend annually", "Revenue impact of nursing documentation tracked in Inpatient model"],
+        timeline: "Tracked through Quality and Workforce timelines",
       },
     ],
-    closingNote: "This methodology reflects Abridge\u2019s approach to modeling nursing ROI across four domains: Quality, Workforce, Capacity, and Revenue. Three domains are active. Revenue is intentionally absent\u2014nurses don\u2019t bill, and we don\u2019t manufacture a story where one doesn\u2019t exist. That honesty is what makes the Quality, Workforce, and Capacity stories defensible. All defaults are conservative and editable. The goal is a framework you can walk into a CFO conversation with\u2014not a number that falls apart under the first question.",
+    closingNote: "This methodology reflects Abridge\u2019s approach to modeling nursing ROI across four domains: Quality, Workforce, Capacity, and Revenue. Three domains are active. Revenue flows through quality outcomes and workforce stability\u2014those numbers are real and defensible, they just live in different domains than physician ROI. All defaults are conservative and editable. The goal is a framework you can walk into a CFO conversation with\u2014not a number that falls apart under the first question.",
   },
   outpatient: {
     settingLabel: "Outpatient",
@@ -421,7 +421,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
           },
           {
             name: "HCC Accuracy (Medicare Advantage)",
-            attribution: "Potential",
+            attribution: "Trend",
             description: "Medicare Advantage populations require annual documentation of active chronic conditions to maintain RAF scores. When documentation is complete and specific\u2014using the right ICD-10 codes, capturing status and treatment\u2014risk adjustment payments follow. When conditions are documented inconsistently year-over-year, RAF scores drift downward and per-member payments fall.",
             formula: "MA patients \u00D7 Condition gap rate \u00D7 Recapture % (20\u201335%) \u00D7 RAF impact \u00D7 Per-member payment",
           },
@@ -433,7 +433,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "Provider Retention Savings",
-            attribution: "Influenceable",
+            attribution: "Trend",
             description: "Documentation burden is the single most-cited driver of physician burnout in outpatient medicine. Ambient AI documentation can reduce after-hours charting\u2014pajama time\u2014and between-patient documentation time. At $250K\u2013$500K per physician replacement (recruiting, onboarding, productivity ramp, and coverage), even a modest reduction in burnout-driven departures generates significant avoided cost. We use conservative impact rates because documentation is one of many burnout factors.",
             formula: "Providers \u00D7 Turnover (4\u20138%) \u00D7 Burnout % (30\u201350%) \u00D7 Burnout attribution (10\u201320%) \u00D7 Replacement cost ($250\u2013500K)",
           },
@@ -445,13 +445,13 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "Patient Access Expansion",
-            attribution: "Measurable",
+            attribution: "Trend",
             description: "When documentation per encounter takes less time, that time can be reallocated to additional patient visits. The conversion rate is not 100%\u2014scheduling, demand, and practice model constrain it. We apply a realistic conversion rate (15\u201330%) and let you adjust based on your scheduling patterns. Practices with open access models and unmet demand see higher capacity conversion than fully booked panels.",
             formula: "Hours saved \u00D7 % to capacity (15\u201330%) \u00D7 Revenue per visit \u00D7 Realization (70\u201385%)",
           },
           {
             name: "Operational Time Recovery",
-            attribution: "Measurable",
+            attribution: "Signal",
             description: "Time saved that doesn\u2019t convert to additional patients still has value\u2014it reduces after-hours overtime, lowers per-encounter labor cost, and improves the economics of the practice day. We show this as a floor scenario: even if zero additional patients are seen, documentation time has a dollar value based on the hourly cost of physician time.",
             formula: "Providers \u00D7 Encounters \u00D7 Time saved (2\u20134 min) \u00D7 Conversion (15\u201330%) \u00D7 Physician hourly rate ($100\u2013250)",
           },
@@ -463,13 +463,13 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "wRVU Capture",
-            attribution: "Measurable",
+            attribution: "Trend",
             description: "Better documentation supports accurate coding. Notes that capture full clinical complexity\u2014multiple diagnoses addressed, medical decision-making detail, time-based billing eligibility\u2014yield higher wRVUs. The mechanism is documentation of complexity that was already delivered, not upcoding. wRVU lift is auditable from billing data by comparing level mix before and after implementation.",
             formula: "Encounters \u00D7 Avg wRVU (specialty-specific) \u00D7 Lift % (2\u20137%) \u00D7 Conversion factor ($33\u201336) \u00D7 Realization (75\u201385%)",
           },
           {
             name: "Denial Prevention",
-            attribution: "Potential",
+            attribution: "Trend",
             description: "Documentation gaps drive unappealable denials\u2014revenue that is permanently lost, not just delayed. The most common outpatient denial root causes are missing medical necessity language, incomplete exam documentation, and absent clinical rationale for ordered services. Real-time capture prevents these gaps at the point of care. Your RCM team can identify documentation-related denials by root cause code.",
             formula: "Encounters \u00D7 Denial rate \u00D7 Doc-related % \u00D7 Prevention rate (25\u201350%) \u00D7 Avg claim value",
           },
@@ -655,13 +655,13 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "E/M Level Accuracy (Claims Data)",
-            attribution: "Signal",
+            attribution: "Trend",
             description: "During surges, ED notes understate what actually happened\u2014a physician manages a complex differential but the note reflects a simpler encounter because time was short. Claims data shows E/M level distribution shifts before and after. ED wRVU lift is typically 2\u20134% (lower than outpatient because ED workflows are more structured). We use your observed delta, not an assumed percentage.",
             formula: "(wRVU per encounter after \u2212 before) \u00D7 adopted encounters \u00D7 $33/wRVU \u00D7 attribution % \u00D7 realization %",
           },
           {
             name: "Denial Prevention (RCM Root Cause)",
-            attribution: "Signal",
+            attribution: "Trend",
             description: "Medical necessity is the ED\u2019s denial vulnerability. The mechanism we\u2019re modeling: capturing clinical reasoning in real time creates an opportunity to close medical-necessity gaps at the point of care\u2014before the note is finalized and the claim is sent. When a note doesn\u2019t capture why a test was ordered or why admission was necessary, that\u2019s a denial waiting to happen, and many ED denials are unappealable because the documentation gap existed at time of service. RCM teams track documentation-related denials as a specific root cause category\u2014that\u2019s where you validate whether the mechanism is showing up in your data.",
             formula: "(denial rate before \u2212 after, in pp) \u00D7 annual encounters \u00D7 avg denial cost per encounter \u00D7 attribution %  (ED default: $500/encounter)",
           },
@@ -783,7 +783,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "CDI Query Reduction",
-            attribution: "Measurable",
+            attribution: "Signal",
             description: "Every CDI query represents a documentation gap\u2014something that should have been in the note but wasn\u2019t. Each query costs $40\u2013$60 in CDI labor (creation, tracking, follow-up, physician response time). When documentation captures clinical detail at the point of care, fewer queries are needed. CDI departments track query volume daily\u2014this is one of the cleanest metrics to measure pre/post implementation.",
             formula: "Admissions \u00D7 Query rate (25\u201335%) \u00D7 Reduction % (15\u201335%) \u00D7 Cost per query ($40\u2013$60)",
           },
@@ -801,7 +801,7 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "Hospitalist Retention Savings",
-            attribution: "Influenceable",
+            attribution: "Trend",
             description: "Documentation burden during overnight admits and weekend shifts is a leading driver of hospitalist burnout and turnover. Ambient AI documentation can reduce time spent on H&Ps, daily progress notes, and discharge summaries that previously took 15\u201340 minutes. At $250K\u2013$500K per replacement (recruiting, locum coverage during gap, and months of onboarding), every hospitalist retained represents significant avoided cost. The financial impact extends far beyond recruitment fees.",
             formula: "Hospitalists \u00D7 Turnover (8\u201312%) \u00D7 Burnout % (40\u201350%) \u00D7 Burnout attribution (15%) \u00D7 Replacement cost ($250\u2013500K)",
           },
@@ -813,13 +813,13 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "Documentation Time Returned",
-            attribution: "Measurable",
+            attribution: "Signal",
             description: "Documentation that previously extended the post-rounding workday now completes during or immediately after rounds. We measure this as hours returned per physician per week\u2014not as additional patient capacity, because hospitalists have an assigned census. Hours returned go to clinical care: more thorough rounding conversations, earlier discharge planning, better handoffs to the next shift. We show this as time value, not revenue.",
             formula: "Hospitalists \u00D7 Time saved/admission (15\u201330 min) \u00D7 Admissions/month \u00D7 Physician hourly rate \u2014 shown as hours returned",
           },
           {
             name: "Discharge Planning Timeliness",
-            attribution: "Connected",
+            attribution: "Proof",
             description: "When documentation completes earlier in the day, discharge summaries are available sooner, post-acute placement requests can go earlier, and case management has more lead time. Earlier discharges free beds earlier\u2014a capacity benefit that accrues to the institution rather than to the hospitalist directly. We note this connection without assigning a dollar value, because the attribution chain runs through bed management and case management, not documentation alone.",
             formula: "Noted as downstream benefit \u2014 not monetized to avoid attribution overreach",
             formulaColor: colors.tertiary,
@@ -832,20 +832,20 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
         mechanisms: [
           {
             name: "DRG Accuracy (CC/MCC Capture)",
-            attribution: "Measurable",
+            attribution: "Trend",
             description: "When hospitalists discuss AKI, malnutrition, or respiratory failure at bedside but the note says \u2018renal function stable,\u2019 that missing specificity costs $2,000\u2013$4,000 in DRG weight. Ambient AI captures the clinical conversation so the note reflects what actually happened\u2014ensuring documentation reflects care delivered. This is the highest-value mechanism in inpatient medicine, auditable from CMI trend data.",
             formula: "Admissions at risk (20\u201330%) \u00D7 Protection rate (20%) \u00D7 DRG weight increase (0.4) \u00D7 Base payment ($6,800) \u00D7 Realization (50%)",
           },
           {
             name: "Observation vs. Inpatient Defense",
-            attribution: "Connected",
+            attribution: "Trend",
             description: "Appropriate inpatient admission status requires documentation that supports medical necessity\u2014acuity, complexity, and the clinical reasoning for why outpatient or observation care was insufficient. When documentation captures this at point of care, status determinations hold up to payer review. When it doesn\u2019t, downgrades from IP to observation are common and expensive. We include this within DRG accuracy to avoid double-counting.",
             formula: "Combined with DRG accuracy \u2014 documentation quality supports both appropriate DRG assignment and status defense",
             formulaColor: colors.tertiary,
           },
           {
             name: "Concurrent Review & Denial Prevention",
-            attribution: "Measurable",
+            attribution: "Trend",
             description: "Inpatient denials are expensive\u2014documentation-related cases average $3,500+ per denial, with complex medical necessity and DRG downgrade audits running higher. Medical necessity denials, DRG downgrade audits, and concurrent review failures all stem from documentation gaps. Complete notes that capture clinical reasoning for continued stay, discharge barriers, and comorbidity burden support concurrent review and reduce unappealable denials.",
             formula: "(denial rate before \u2212 after, in pp) \u00D7 annual discharges \u00D7 $3,500/case \u00D7 attribution %",
           },
@@ -1032,8 +1032,21 @@ function Page1Content({ setting }: { setting: MethodologyCareSetting }) {
           </>
         )}
 
-        <View style={[styles.calloutBox, { marginBottom: 10 }]}>
-          <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>{data.frameworkCallout}</Text>
+        <View style={{ marginBottom: 10 }}>
+          <Text style={[styles.sectionLabel, { marginBottom: 6 }]}>HOW VALUE ACCRUES</Text>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            {[
+              { stage: "SIGNAL", timeline: "30–90 days", description: "Provider-level, EHR-measurable. Documentation time, CDI queries, note completion rate." },
+              { stage: "TREND", timeline: "3–6 months", description: "Documentation patterns emerge. Billing distributions, retention signals, coding accuracy." },
+              { stage: "PROOF", timeline: "6–18 months", description: "System-level statistical credibility. Claims validation, CMI trending, retention data." },
+            ].map((s, i) => (
+              <View key={i} style={{ flex: 1, backgroundColor: colors.cards, borderLeftWidth: 2, borderLeftColor: colors.primary, padding: 8 }}>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 2 }}>{s.stage}</Text>
+                <Text style={{ fontSize: 8.5, color: colors.primary, fontWeight: "bold" as const, marginBottom: 3 }}>{s.timeline}</Text>
+                <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>{s.description}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
         <View style={styles.thickDivider} />
