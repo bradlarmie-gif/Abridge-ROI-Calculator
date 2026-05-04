@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState } from "./ExploreFlow";
 
-type RetentionScenario = 'conservative' | 'typical' | 'optimistic';
+type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
 
 interface ExploreValueDriversProps {
   state: ExploreState;
@@ -68,6 +68,7 @@ export default function ExploreValueDrivers({
     conservative: 5,
     typical: 10,
     optimistic: 15,
+    custom: timeDriverInputs.retentionCustomPercent ?? 10,
   };
 
   const retentionCalcs = useMemo(() => {
@@ -135,6 +136,7 @@ export default function ExploreValueDrivers({
     conservative: 10,
     typical: 15,
     optimistic: 25,
+    custom: timeDriverInputs.retentionCustomPercent ?? 10,
   };
 
   const nursingRetentionCalcs = useMemo(() => {
@@ -1269,7 +1271,7 @@ export default function ExploreValueDrivers({
 
                   <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">ABRIDGE IMPACT ON RETENTION</p>
                   <p className="text-sm text-[#888888] mb-3">How much could reducing documentation burden impact burnout-driven departures?</p>
-                  <div className="grid grid-cols-3 gap-2 mb-2">
+                  <div className="flex gap-2 mb-2">
                     {[
                       { label: 'Conservative', value: 'conservative' as RetentionScenario, pct: 10 },
                       { label: 'Typical', value: 'typical' as RetentionScenario, pct: 15 },
@@ -1278,8 +1280,8 @@ export default function ExploreValueDrivers({
                       <button
                         key={preset.value}
                         onClick={() => updateTimeDriverInputs({ retentionImpactScenario: preset.value })}
-                        className={`py-3 px-2 rounded-lg border-2 text-center transition-all ${
-                          timeDriverInputs.retentionImpactScenario === preset.value
+                        className={`flex-1 py-3 px-2 rounded-lg border-2 text-center transition-all ${
+                          timeDriverInputs.retentionImpactScenario !== 'custom' && timeDriverInputs.retentionImpactScenario === preset.value
                             ? 'border-[#EA2C00] bg-[#F5F0EB]'
                             : 'border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]'
                         }`}
@@ -1289,7 +1291,54 @@ export default function ExploreValueDrivers({
                         <span className="block text-xs text-[#888888]">{preset.pct}% impact</span>
                       </button>
                     ))}
+                    <button
+                      onClick={() => updateTimeDriverInputs({ retentionImpactScenario: 'custom' })}
+                      className={`flex-1 py-3 px-2 rounded-lg border-2 text-center transition-all ${
+                        timeDriverInputs.retentionImpactScenario === 'custom'
+                          ? 'border-[#EA2C00] bg-[#F5F0EB]'
+                          : 'border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]'
+                      }`}
+                      data-testid="preset-retention-custom"
+                    >
+                      <span className="block text-xs font-semibold text-black">Custom</span>
+                      {timeDriverInputs.retentionImpactScenario === 'custom' && (
+                        <span className="block text-xs text-[#888888]">{timeDriverInputs.retentionCustomPercent ?? 10}% impact</span>
+                      )}
+                    </button>
                   </div>
+                  {timeDriverInputs.retentionImpactScenario === 'custom' && (
+                    <div className="flex items-center gap-3 mb-2">
+                      <label className="text-sm text-[#666666] flex-shrink-0">Retention impact</label>
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={timeDriverInputs.retentionCustomPercent ?? 10}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^0-9]/g, '');
+                            const n = parseInt(raw);
+                            if (raw === '') {
+                              updateTimeDriverInputs({ retentionCustomPercent: 0 });
+                            } else if (!isNaN(n) && n >= 0 && n <= 100) {
+                              updateTimeDriverInputs({ retentionCustomPercent: n });
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const n = parseInt(e.target.value);
+                            if (isNaN(n) || n < 1) {
+                              updateTimeDriverInputs({ retentionCustomPercent: 10 });
+                            } else {
+                              updateTimeDriverInputs({ retentionCustomPercent: Math.min(100, n) });
+                            }
+                          }}
+                          className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                          autoFocus
+                          data-testid="input-nursing-vd-retention-custom"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                      </div>
+                    </div>
+                  )}
                   <p className="text-xs text-[#888888] mb-6">
                     Applied to the 40% of departures that are burnout-related.
                   </p>
@@ -1488,13 +1537,13 @@ export default function ExploreValueDrivers({
                         </p>
 
                         {/* Scenario Buttons */}
-                        <div className="grid grid-cols-3 gap-2 mb-4">
+                        <div className="flex gap-2 mb-4">
                           {(['conservative', 'typical', 'optimistic'] as RetentionScenario[]).map((scenario) => (
                             <button
                               key={scenario}
                               onClick={() => updateTimeDriverInputs({ retentionImpactScenario: scenario })}
-                              className={`p-3 rounded-lg border text-center transition-all ${
-                                timeDriverInputs.retentionImpactScenario === scenario
+                              className={`flex-1 p-3 rounded-lg border text-center transition-all ${
+                                timeDriverInputs.retentionImpactScenario !== 'custom' && timeDriverInputs.retentionImpactScenario === scenario
                                   ? 'bg-[#EA2C00] border-[#EA2C00] text-white'
                                   : 'bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]'
                               }`}
@@ -1504,7 +1553,55 @@ export default function ExploreValueDrivers({
                               <p className="font-semibold">{retentionScenarios[scenario]}%</p>
                             </button>
                           ))}
+                          <button
+                            onClick={() => updateTimeDriverInputs({ retentionImpactScenario: 'custom' })}
+                            className={`flex-1 p-3 rounded-lg border text-center transition-all ${
+                              timeDriverInputs.retentionImpactScenario === 'custom'
+                                ? 'bg-[#EA2C00] border-[#EA2C00] text-white'
+                                : 'bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]'
+                            }`}
+                            data-testid="button-scenario-custom"
+                          >
+                            <p className="text-xs mb-2">Custom</p>
+                            {timeDriverInputs.retentionImpactScenario === 'custom' && (
+                              <p className="font-semibold">{timeDriverInputs.retentionCustomPercent ?? 10}%</p>
+                            )}
+                          </button>
                         </div>
+
+                        {timeDriverInputs.retentionImpactScenario === 'custom' && (
+                          <div className="flex items-center gap-3 mb-4">
+                            <label className="text-sm text-[#666666] flex-shrink-0">Retention impact</label>
+                            <div className="relative flex-1">
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={timeDriverInputs.retentionCustomPercent ?? 10}
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/[^0-9]/g, '');
+                                  const n = parseInt(raw);
+                                  if (raw === '') {
+                                    updateTimeDriverInputs({ retentionCustomPercent: 0 });
+                                  } else if (!isNaN(n) && n >= 0 && n <= 100) {
+                                    updateTimeDriverInputs({ retentionCustomPercent: n });
+                                  }
+                                }}
+                                onBlur={(e) => {
+                                  const n = parseInt(e.target.value);
+                                  if (isNaN(n) || n < 1) {
+                                    updateTimeDriverInputs({ retentionCustomPercent: 10 });
+                                  } else {
+                                    updateTimeDriverInputs({ retentionCustomPercent: Math.min(100, n) });
+                                  }
+                                }}
+                                className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                                autoFocus
+                                data-testid="input-physician-vd-retention-custom"
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="text-[13px] text-[#666666] leading-relaxed space-y-2 mt-4">
                           <p><strong>Conservative (5%):</strong> Documentation burden is one of several burnout factors. Modest impact on departure decisions.</p>

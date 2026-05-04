@@ -1,0 +1,111 @@
+Replit Prompt — PDF Methodology: SIGNAL/TREND/PROOF Timeline + Attribution Alignment + Nursing Language                                                                                                      
+                                                                                                                                                                                                               
+  All changes are in client/src/lib/methodology-pdf-export.tsx. No other files touched.                                                                                                                        
+                                                                                                                                                                                                               
+  ---                                                    
+  CHANGE 1 — Replace the frameworkCallout render block with the HOW VALUE ACCRUES timeline section                                                                                                             
+                                                                                                                                                                                                               
+  In Page1Content, find and replace this block (lines ~1035–1037):
+                                                                                                                                                                                                               
+  <View style={[styles.calloutBox, { marginBottom: 10 }]}>
+    <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>{data.frameworkCallout}</Text>                                                                                                    
+  </View>                                                                                                                                                                                                      
+  
+  Replace with:                                                                                                                                                                                                
+                                                         
+  <View style={{ marginBottom: 10 }}>
+    <Text style={[styles.sectionLabel, { marginBottom: 6 }]}>HOW VALUE ACCRUES</Text>
+    <View style={{ flexDirection: "row", gap: 8 }}>                                                                                                                                                            
+      {[                                                                                                                                                                                                       
+        { stage: "SIGNAL", timeline: "30–90 days", description: "Provider-level, EHR-measurable. Documentation time, CDI queries, note completion rate." },                                                    
+        { stage: "TREND", timeline: "3–6 months", description: "Documentation patterns emerge. Billing distributions, retention signals, coding accuracy." },                                                  
+        { stage: "PROOF", timeline: "6–18 months", description: "System-level statistical credibility. Claims validation, CMI trending, retention data." },                                                    
+      ].map((s, i) => (                                                                                                                                                                                        
+        <View key={i} style={{ flex: 1, backgroundColor: colors.cards, borderLeftWidth: 2, borderLeftColor: colors.primary, padding: 8 }}>                                                                     
+          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 2 }}>{s.stage}</Text>                                
+          <Text style={{ fontSize: 8.5, color: colors.primary, fontWeight: "bold" as const, marginBottom: 3 }}>{s.timeline}</Text>                                                                             
+          <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>{s.description}</Text>                                                                                                       
+        </View>                                                                                                                                                                                                
+      ))}                                                                                                                                                                                                      
+    </View>                                                                                                                                                                                                    
+  </View>                                                
+
+  The frameworkCallout field stays in settingData — it just isn't rendered anymore. Do not delete it from the data objects.                                                                                    
+  
+  ---                                                                                                                                                                                                          
+  CHANGE 2 — Standardize mechanism attribution labels across all four settings
+                                                                                                                                                                                                               
+  In settingData, update the attribution field on every MechanismData object as listed below. Only change the fields listed — leave everything else untouched.
+                                                                                                                                                                                                               
+  inpatient mechanisms:                                  
+  - "CDI Query Reduction" — attribution: "Measurable" → "Signal"                                                                                                                                               
+  - "Hospitalist Retention Savings" — attribution: "Influenceable" → "Trend"                                                                                                                                   
+  - "Documentation Time Returned" — attribution: "Measurable" → "Signal"    
+  - "Discharge Planning Timeliness" — attribution: "Connected" → "Proof"                                                                                                                                       
+  - "DRG Accuracy (CC/MCC Capture)" — attribution: "Measurable" → "Trend"                                                                                                                                      
+  - "Observation vs. Inpatient Defense" — attribution: "Connected" → "Trend"                                                                                                                                   
+  - "Concurrent Review & Denial Prevention" — attribution: "Measurable" → "Trend"                                                                                                                              
+                                                                                                                                                                                                               
+  ed mechanisms:                                                                                                                                                                                               
+  - "E/M Level Accuracy (Claims Data)" — attribution: "Signal" → "Trend"                                                                                                                                       
+  - "Denial Prevention (RCM Root Cause)" — attribution: "Signal" → "Trend"                                                                                                                                     
+                                                         
+  outpatient mechanisms:                                                                                                                                                                                       
+  - "HCC Accuracy (Medicare Advantage)" — attribution: "Potential" → "Trend"
+  - "Provider Retention Savings" — attribution: "Influenceable" → "Trend"                                                                                                                                      
+  - "Patient Access Expansion" — attribution: "Measurable" → "Trend"     
+  - "Operational Time Recovery" — attribution: "Measurable" → "Signal"                                                                                                                                         
+  - "wRVU Capture" — attribution: "Measurable" → "Trend"                                                                                                                                                       
+  - "Denial Prevention" (outpatient) — attribution: "Potential" → "Trend"                                                                                                                                      
+                                                                                                                                                                                                               
+  nursing mechanisms:                                                                                                                                                                                          
+  - "HAPI Prevention" — attribution: "Potential" → "Trend"                                                                                                                                                     
+  - "Falls Prevention" — attribution: "Potential" → "Trend"                                                                                                                                                    
+  - "CAUTI & CLABSI Prevention" — attribution: "Potential" → "Trend"
+  - "HCAHPS & Patient Experience" — attribution: "Directional" → "Proof"                                                                                                                                       
+  - "Nurse Retention Savings" — attribution: "Influenceable" → "Trend"                                                                                                                                         
+  - "Agency Labor Reduction" — attribution: "Tied to retention" → "Trend"                                                                                                                                      
+  - "Overtime Reduction" — attribution: "Measurable" → "Signal"                                                                                                                                                
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  CHANGE 3 — Nursing language: remove explicit negative framing                                                                                                                                                
+                                                                                                                                                                                                               
+  nursing.contextBody — replace with:
+                                                                                                                                                                                                               
+  "In outpatient medicine, a physician saves 3 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. In nursing, the same time saved flows differently: documentation burden accounts
+   for 25\u201335% of every shift, and reclaiming that time shows up in overtime reduction, retention improvement, and more bedside time. The four-domain framework applies here\u2014revenue flows through    
+  quality outcomes, workforce stability, and support for physician coding accuracy. What nursing has is the largest quality footprint in the building: HAPI, falls, CAUTI, CLABSI, sepsis SEP-1, HAC penalties,
+   and HCAHPS scores all run through nursing documentation. That\u2019s where the value lives."                                                                                                                
+                                                         
+  nursing.contextQuestion — replace with:
+
+  "Three active domains \u2014 Quality, Workforce, and Capacity."
+                                                                                                                                                                                                               
+  nursing.domains array — REVENUE domain footer — replace:                                                                                                                                                     
+                                                                                                                                                                                                               
+  "Intentionally absent \u2014 honesty is the defensibility"                                                                                                                                                   
+  with:                                                                                                                                                                                                        
+  "Revenue flows through Quality and Workforce \u2014 tracked there"                                                                                                                                           
+                                                                                                                                                                                                               
+  nursing.frameworkCallout — replace with:                                                                                                                                                                     
+                                                                                                                                                                                                               
+  "Three domains are active in nursing: Quality, Workforce, and Capacity. Nursing\u2019s financial impact flows through quality outcomes, workforce stability, and documentation that supports physician coding
+   accuracy\u2014not direct billing. Track it there\u2014those numbers are real and defensible."                                                                                                               
+                                                         
+  nursing.closingNote — replace with:                                                                                                                                                                          
+                                                         
+  "This methodology reflects Abridge\u2019s approach to modeling nursing ROI across four domains: Quality, Workforce, Capacity, and Revenue. Three domains are active. Revenue flows through quality outcomes
+  and workforce stability\u2014those numbers are real and defensible, they just live in different domains than physician ROI. All defaults are conservative and editable. The goal is a framework you can walk 
+  into a CFO conversation with\u2014not a number that falls apart under the first question."
+                                                                                                                                                                                                               
+  nursing.validation — REVENUE card — replace the entire { name: "REVENUE", before: [...], after: [...], timeline: "..." } object with:                                                                        
+  
+  {                                                                                                                                                                                                            
+    name: "REVENUE",                                     
+    before: ["Baseline VBP scores and HAC penalty exposure", "CC/MCC capture rate \u2014 see Inpatient methodology"],
+    after: ["Track VBP reimbursement trend annually", "Revenue impact of nursing documentation tracked in Inpatient model"],                                                                                   
+    timeline: "Tracked through Quality and Workforce timelines",                                                                                                                                               
+  },                                                                                                                                                                                                           
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  No other changes. TypeScript should compile clean — the frameworkCallout field remains in all data objects, just not rendered.

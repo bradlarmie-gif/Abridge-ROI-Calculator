@@ -240,9 +240,9 @@ function getSettingInputSummary(snapshot: ProformaSettingSnapshot): string[] {
   return lines;
 }
 
-const WRVU_SCENARIOS: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
+const WRVU_SCENARIOS_BASE: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
 const DENIALS_SCENARIOS: Record<string, number> = { conservative: 25, typical: 50, aggressive: 75 };
-const RETENTION_SCENARIOS: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+const RETENTION_SCENARIOS_BASE: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
 const DRG_SCENARIOS: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
 const CDI_SCENARIOS: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
 
@@ -265,6 +265,7 @@ function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSna
 
   switch (driver.id) {
     case "wrvu": {
+      const WRVU_SCENARIOS: Record<string, number> = { ...WRVU_SCENARIOS_BASE, custom: d.wrvuCustomPercent ?? 5 };
       const liftPct = WRVU_SCENARIOS[d.wrvuScenario] || 5;
       return [
         `${d.currentWrvu} wRVU/enc \u00D7 ${liftPct}% lift \u00D7 ${eligibleEnc.toLocaleString()} encounters`,
@@ -305,6 +306,7 @@ function getDriverCalcSteps(driver: ProformaDriver, snapshot: ProformaSettingSna
           `= ${fmtK(driver.value)}/year`,
         ];
       }
+      const RETENTION_SCENARIOS: Record<string, number> = { ...RETENTION_SCENARIOS_BASE, custom: t.retentionCustomPercent ?? 10 };
       const impactPct = RETENTION_SCENARIOS[t.retentionImpactScenario] || 30;
       return [
         `${providers} providers \u00D7 ${t.annualTurnoverRate}% turnover \u00D7 ${t.burnoutRelatedTurnover}% burnout-related`,

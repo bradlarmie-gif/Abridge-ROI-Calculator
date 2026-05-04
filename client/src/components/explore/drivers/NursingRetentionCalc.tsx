@@ -1,17 +1,20 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 
 type Props = ExploreCalcComponentProps;
-type RetentionScenario = 'conservative' | 'typical' | 'optimistic';
+type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
 
 export default function NursingRetentionCalc({ state, updateTimeDriverInputs }: Props) {
   const { timeDriverInputs } = state;
+  const [customMode, setCustomMode] = useState(timeDriverInputs.retentionImpactScenario === 'custom');
+  const [customDisplay, setCustomDisplay] = useState(String(timeDriverInputs.retentionCustomPercent ?? 10));
 
   const nursingRetentionImpactRates: Record<RetentionScenario, number> = {
     conservative: 10,
     typical: 15,
     optimistic: 25,
+    custom: timeDriverInputs.retentionCustomPercent ?? 10,
   };
 
   const calc = useMemo(() => {
@@ -27,6 +30,7 @@ export default function NursingRetentionCalc({ state, updateTimeDriverInputs }: 
     timeDriverInputs.nursingTurnoverRate,
     timeDriverInputs.nursingReplacementCost,
     timeDriverInputs.retentionImpactScenario,
+    timeDriverInputs.retentionCustomPercent,
   ]);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
@@ -75,7 +79,7 @@ export default function NursingRetentionCalc({ state, updateTimeDriverInputs }: 
 
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Abridge Impact on Retention</p>
       <p className="text-sm text-[#888888] mb-3">How much could reducing documentation burden impact burnout-driven departures?</p>
-      <div className="grid grid-cols-3 gap-2 mb-2">
+      <div className="flex gap-2 mb-2">
         {([
           { label: 'Conservative', value: 'conservative' as RetentionScenario, pct: 10 },
           { label: 'Typical', value: 'typical' as RetentionScenario, pct: 15 },
@@ -83,19 +87,71 @@ export default function NursingRetentionCalc({ state, updateTimeDriverInputs }: 
         ]).map((preset) => (
           <button
             key={preset.value}
-            onClick={() => updateTimeDriverInputs({ retentionImpactScenario: preset.value })}
-            className={`py-3 px-2 rounded-lg border-2 text-center transition-all ${
-              timeDriverInputs.retentionImpactScenario === preset.value
-                ? 'border-[#EA2C00] bg-[#F5F0EB]'
-                : 'border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]'
+            onClick={() => {
+              setCustomMode(false);
+              updateTimeDriverInputs({ retentionImpactScenario: preset.value });
+            }}
+            className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+              !customMode && timeDriverInputs.retentionImpactScenario === preset.value
+                ? 'bg-[#EA2C00] text-white'
+                : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
             }`}
             data-testid={`button-nursing-retention-${preset.value}`}
           >
-            <span className="block text-xs font-semibold text-black">{preset.label}</span>
-            <span className="block text-xs text-[#888888]">{preset.pct}% impact</span>
+            <span className="font-medium">{preset.label}</span>
+            <span className="block text-[10px] mt-0.5 opacity-80">{preset.pct}% impact</span>
           </button>
         ))}
+        <button
+          onClick={() => {
+            setCustomMode(true);
+            updateTimeDriverInputs({ retentionImpactScenario: 'custom' });
+          }}
+          className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+            customMode ? 'bg-[#EA2C00] text-white' : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+          }`}
+          data-testid="button-nursing-retention-custom"
+        >
+          <span className="font-medium">Custom</span>
+        </button>
       </div>
+
+      {customMode && (
+        <div className="flex items-center gap-3 mb-2">
+          <label className="text-sm text-[#666666] flex-shrink-0">Retention impact</label>
+          <div className="relative flex-1">
+            <input
+              type="text"
+              inputMode="numeric"
+              value={customDisplay}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^0-9]/g, '');
+                setCustomDisplay(raw);
+                const n = parseInt(raw);
+                if (!isNaN(n) && n >= 1 && n <= 100) {
+                  updateTimeDriverInputs({ retentionCustomPercent: n, retentionImpactScenario: 'custom' });
+                }
+              }}
+              onBlur={() => {
+                const n = parseInt(customDisplay);
+                if (isNaN(n) || n < 1) {
+                  updateTimeDriverInputs({ retentionCustomPercent: 10, retentionImpactScenario: 'custom' });
+                  setCustomDisplay('10');
+                } else {
+                  const clamped = Math.min(100, n);
+                  updateTimeDriverInputs({ retentionCustomPercent: clamped, retentionImpactScenario: 'custom' });
+                  setCustomDisplay(String(clamped));
+                }
+              }}
+              className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+              autoFocus
+              data-testid="input-nursing-retention-custom"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+          </div>
+        </div>
+      )}
+
       <p className="text-xs text-[#888888] mb-6">
         Applied to the 40% of departures that are burnout-related.
       </p>

@@ -30,16 +30,18 @@ import type { ExploreState } from "@/pages/explore/ExploreFlow";
  * to mirror the original ExploreModel logic exactly.
  */
 
-const RETENTION_SCENARIOS_PHYSICIAN: Record<string, number> = {
+const RETENTION_SCENARIOS_PHYSICIAN_BASE: Record<string, number> = {
   conservative: 5,
   typical: 10,
   optimistic: 15,
 };
-const RETENTION_SCENARIOS_NURSING: Record<string, number> = {
+const RETENTION_SCENARIOS_NURSING_BASE: Record<string, number> = {
   conservative: 10,
   typical: 15,
   optimistic: 25,
 };
+const retentionPhysician = (customPct: number): Record<string, number> => ({ ...RETENTION_SCENARIOS_PHYSICIAN_BASE, custom: customPct });
+const retentionNursing = (customPct: number): Record<string, number> => ({ ...RETENTION_SCENARIOS_NURSING_BASE, custom: customPct });
 const HCC_SCENARIOS: Record<string, number> = {
   conservative: 6,
   typical: 10,
@@ -56,10 +58,10 @@ const IP_CDI_SCENARIOS: Record<string, number> = {
   aggressive: 35,
 };
 
-const wrvuScenariosFor = (isED: boolean): Record<string, number> =>
+const wrvuScenariosFor = (isED: boolean, customPct?: number): Record<string, number> =>
   isED
-    ? { conservative: 1, typical: 2.5, aggressive: 4 }
-    : { conservative: 2, typical: 5, aggressive: 7 };
+    ? { conservative: 1, typical: 2.5, aggressive: 4, custom: customPct ?? 5 }
+    : { conservative: 2, typical: 5, aggressive: 7, custom: customPct ?? 5 };
 
 const denialsScenariosFor = (isED: boolean): Record<string, number> =>
   isED
@@ -123,6 +125,8 @@ export function computeAllDriverValues(
   }
 
   // ─── Workforce ───
+  const RETENTION_SCENARIOS_PHYSICIAN = retentionPhysician(td.retentionCustomPercent ?? 10);
+  const RETENTION_SCENARIOS_NURSING = retentionNursing(td.retentionCustomPercent ?? 10);
   if (isPhysician && td.wellbeingEnabled && td.calculateRetentionValue) {
     const turnover = td.annualTurnoverRate / 100;
     const burnout = td.burnoutRelatedTurnover / 100;
@@ -163,7 +167,7 @@ export function computeAllDriverValues(
   }
 
   // ─── Revenue ───
-  const wrvuScenarios = wrvuScenariosFor(isED);
+  const wrvuScenarios = wrvuScenariosFor(isED, dq.wrvuCustomPercent);
   const denialsScenarios = denialsScenariosFor(isED);
 
   if (dq.wrvuEnabled && (isOP || isED)) {
@@ -333,9 +337,11 @@ export function computeAllDriverCalcSummaries(
   }
 
   // Workforce
+  const CS_RETENTION_PHYSICIAN = retentionPhysician(td.retentionCustomPercent ?? 10);
+  const CS_RETENTION_NURSING = retentionNursing(td.retentionCustomPercent ?? 10);
   if (isPhysician && td.wellbeingEnabled && td.calculateRetentionValue) {
     const impactPct =
-      RETENTION_SCENARIOS_PHYSICIAN[td.retentionImpactScenario] ?? 0;
+      CS_RETENTION_PHYSICIAN[td.retentionImpactScenario] ?? 0;
     out.providerWellbeing = `${fmtN(state.numberOfProviders)} providers × ${td.annualTurnoverRate}% turnover × ${td.burnoutRelatedTurnover}% burnout × ${impactPct}% impact × ${fmt$(td.replacementCost)}/replacement`;
     if (td.physicianAgencyEnabled) {
       // Print the full factor breakdown rather than a precomputed
@@ -349,7 +355,7 @@ export function computeAllDriverCalcSummaries(
   }
   if (isNursing && td.nursingRetentionEnabled) {
     const impactPct =
-      RETENTION_SCENARIOS_NURSING[td.retentionImpactScenario] ?? 0;
+      CS_RETENTION_NURSING[td.retentionImpactScenario] ?? 0;
     out.nursingRetention = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingTurnoverRate}% turnover × 40% burnout × ${impactPct}% impact × ${fmt$(td.nursingReplacementCost)}/replacement`;
     if (td.nursingAgencyEnabled) {
       // Print the full factor breakdown rather than a precomputed
@@ -366,7 +372,7 @@ export function computeAllDriverCalcSummaries(
   }
 
   // Revenue
-  const wrvuScenarios = wrvuScenariosFor(isED);
+  const wrvuScenarios = wrvuScenariosFor(isED, dq.wrvuCustomPercent);
   const denialsScenarios = denialsScenariosFor(isED);
 
   if (dq.wrvuEnabled && (isOP || isED)) {

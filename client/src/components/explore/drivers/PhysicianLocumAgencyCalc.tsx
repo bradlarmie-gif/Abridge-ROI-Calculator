@@ -4,7 +4,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 
 type Props = ExploreCalcComponentProps;
-type RetentionScenario = 'conservative' | 'typical' | 'optimistic';
+type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
 
 export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs }: Props) {
   const { timeDriverInputs } = state;
@@ -13,6 +13,7 @@ export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs
     conservative: 5,
     typical: 10,
     optimistic: 15,
+    custom: timeDriverInputs.retentionCustomPercent ?? 10,
   };
 
   const calc = useMemo(() => {
@@ -30,6 +31,7 @@ export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs
     timeDriverInputs.annualTurnoverRate,
     timeDriverInputs.burnoutRelatedTurnover,
     timeDriverInputs.retentionImpactScenario,
+    timeDriverInputs.retentionCustomPercent,
     timeDriverInputs.physicianAgencyWeeksPerVacancy,
     timeDriverInputs.physicianAgencyWeeklyPremium,
   ]);

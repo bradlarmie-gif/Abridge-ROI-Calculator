@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Info } from "lucide-react";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 
@@ -13,10 +14,13 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
   const { docQualityInputs, careSetting, annualEncounters, utilizationPercent } = state;
   const isED = careSetting === 'ed';
 
+  const [customMode, setCustomMode] = useState(docQualityInputs.wrvuScenario === 'custom');
+  const [customDisplay, setCustomDisplay] = useState(String(docQualityInputs.wrvuCustomPercent ?? 5));
+
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
   const wrvuScenarios: Record<string, number> = isED
-    ? { conservative: 1, typical: 2.5, aggressive: 4 }
-    : { conservative: 2, typical: 5, aggressive: 7 };
+    ? { conservative: 1, typical: 2.5, aggressive: 4, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
+    : { conservative: 2, typical: 5, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
 
   const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
   const wrvuLiftPerVisit = (docQualityInputs.currentWrvu * wrvuLiftPercent) / 100;
@@ -35,23 +39,75 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
       </p>
 
       <p className="text-sm font-medium text-black mb-2">Choose your scenario:</p>
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+      <div className="flex gap-2 mb-4">
         {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
           <button
             key={level}
-            onClick={() => updateDocQualityInputs({ wrvuScenario: level })}
-            className={`p-2 sm:p-3 rounded-lg border-2 transition-all text-center ${
-              docQualityInputs.wrvuScenario === level
-                ? "border-[#EA2C00] bg-white"
-                : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
+            onClick={() => {
+              setCustomMode(false);
+              updateDocQualityInputs({ wrvuScenario: level });
+            }}
+            className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+              !customMode && docQualityInputs.wrvuScenario === level
+                ? 'bg-[#EA2C00] text-white'
+                : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
             }`}
             data-testid={`button-wrvu-${level}`}
           >
-            <p className="font-medium text-black">{SCENARIO_LABELS[level]}</p>
-            <p className="text-sm text-[#888888]">{wrvuScenarios[level]}%</p>
+            <span className="font-medium">{SCENARIO_LABELS[level]}</span>
+            <span className="block text-[10px] mt-0.5 opacity-80">{wrvuScenarios[level]}%</span>
           </button>
         ))}
+        <button
+          onClick={() => {
+            setCustomMode(true);
+            updateDocQualityInputs({ wrvuScenario: 'custom' });
+          }}
+          className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+            customMode ? 'bg-[#EA2C00] text-white' : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+          }`}
+          data-testid="button-wrvu-custom"
+        >
+          <span className="font-medium">Custom</span>
+        </button>
       </div>
+
+      {customMode && (
+        <div className="flex items-center gap-3 mb-4">
+          <label className="text-sm text-[#666666] flex-shrink-0">{isED ? 'E&M' : 'wRVU'} lift</label>
+          <div className="relative flex-1">
+            <input
+              type="text"
+              inputMode="decimal"
+              value={customDisplay}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^0-9.]/g, '');
+                setCustomDisplay(raw);
+                const n = parseFloat(raw);
+                if (!isNaN(n) && n >= 0.1 && n <= 100) {
+                  updateDocQualityInputs({ wrvuCustomPercent: n, wrvuScenario: 'custom' });
+                }
+              }}
+              onBlur={() => {
+                const n = parseFloat(customDisplay);
+                if (isNaN(n) || n < 0.1) {
+                  const defaultVal = isED ? 2.5 : 5;
+                  updateDocQualityInputs({ wrvuCustomPercent: defaultVal, wrvuScenario: 'custom' });
+                  setCustomDisplay(String(defaultVal));
+                } else {
+                  const clamped = Math.min(100, n);
+                  updateDocQualityInputs({ wrvuCustomPercent: clamped, wrvuScenario: 'custom' });
+                  setCustomDisplay(String(clamped));
+                }
+              }}
+              className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+              autoFocus
+              data-testid="input-wrvu-custom"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+          </div>
+        </div>
+      )}
 
       <div className="bg-[#F5F0EB] rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">

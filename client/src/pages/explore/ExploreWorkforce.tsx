@@ -86,8 +86,8 @@ export default function ExploreWorkforce({ state, updateState, totalHoursSaved, 
   const driverValues = useMemo(() => {
     const result: Record<string, number> = {};
     const td = state.timeDriverInputs;
-    const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
-    const nursingScenarios: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
+    const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: td.retentionCustomPercent ?? 10 };
+    const nursingScenarios: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25, custom: td.retentionCustomPercent ?? 10 };
 
     // Provider Wellbeing (OP/ED/IP)
     if (td.wellbeingEnabled && td.calculateRetentionValue) {

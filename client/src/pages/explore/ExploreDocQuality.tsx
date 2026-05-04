@@ -15,7 +15,7 @@ interface ExploreDocQualityProps {
   onHome: () => void;
 }
 
-type ScenarioLevel = 'conservative' | 'typical' | 'aggressive';
+type ScenarioLevel = 'conservative' | 'typical' | 'aggressive' | 'custom';
 
 const HCC_DEFAULTS = {
   avgHccs: 0.5,
@@ -319,7 +319,7 @@ export default function ExploreDocQuality({
   }, [state.annualEncounters, state.utilizationPercent]);
 
   // Scenario percentages
-  const wrvuScenarios: Record<ScenarioLevel, number> = { conservative: 2, typical: 5, aggressive: 7 };
+  const wrvuScenarios: Record<ScenarioLevel, number> = { conservative: 2, typical: 5, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
   const hccScenarios: Record<ScenarioLevel, number> = { conservative: 6, typical: 10, aggressive: 15 };
   const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typical: 50, aggressive: 75 };
   const ipDrgProtectionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 20, aggressive: 25 };
@@ -1687,13 +1687,13 @@ export default function ExploreDocQuality({
                   </p>
 
                   <p className="text-sm font-medium text-black mb-2">Choose your scenario:</p>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+                  <div className="flex gap-2 sm:gap-3 mb-4">
                     {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
                       <button
                         key={level}
                         onClick={() => updateDocInputs({ wrvuScenario: level })}
-                        className={`p-2 sm:p-3 rounded-lg border-2 transition-all text-center ${
-                          docQualityInputs.wrvuScenario === level
+                        className={`flex-1 p-2 sm:p-3 rounded-lg border-2 transition-all text-center ${
+                          docQualityInputs.wrvuScenario !== 'custom' && docQualityInputs.wrvuScenario === level
                             ? "border-[#EA2C00] bg-white"
                             : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
                         }`}
@@ -1704,7 +1704,54 @@ export default function ExploreDocQuality({
                         <p className="text-sm text-[#888888]">{wrvuScenarios[level]}%</p>
                       </button>
                     ))}
+                    <button
+                      onClick={() => updateDocInputs({ wrvuScenario: 'custom' })}
+                      className={`flex-1 p-2 sm:p-3 rounded-lg border-2 transition-all text-center ${
+                        docQualityInputs.wrvuScenario === 'custom'
+                          ? "border-[#EA2C00] bg-white"
+                          : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
+                      }`}
+                    >
+                      <p className="font-medium text-black">Custom</p>
+                      {docQualityInputs.wrvuScenario === 'custom' && (
+                        <p className="text-sm text-[#888888]">{docQualityInputs.wrvuCustomPercent ?? 5}%</p>
+                      )}
+                    </button>
                   </div>
+
+                  {docQualityInputs.wrvuScenario === 'custom' && (
+                    <div className="flex items-center gap-3 mb-4">
+                      <label className="text-sm text-[#666666] flex-shrink-0">wRVU lift</label>
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={docQualityInputs.wrvuCustomPercent ?? 5}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^0-9.]/g, '');
+                            const n = parseFloat(raw);
+                            if (raw === '' || raw === '.') {
+                              updateDocInputs({ wrvuCustomPercent: 0 });
+                            } else if (!isNaN(n) && n >= 0 && n <= 100) {
+                              updateDocInputs({ wrvuCustomPercent: n });
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const n = parseFloat(e.target.value);
+                            if (isNaN(n) || n < 0.1) {
+                              updateDocInputs({ wrvuCustomPercent: 5 });
+                            } else {
+                              updateDocInputs({ wrvuCustomPercent: Math.min(100, n) });
+                            }
+                          }}
+                          className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                          autoFocus
+                          data-testid="input-dq-wrvu-custom"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">

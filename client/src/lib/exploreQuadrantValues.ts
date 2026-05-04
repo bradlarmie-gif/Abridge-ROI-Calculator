@@ -58,8 +58,8 @@ export function computeCapacityBreakdown(state: ExploreState, totalHoursSaved: n
 export function computeWorkforceBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {
   const result: Record<string, number> = {};
   const td = state.timeDriverInputs;
-  const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
-  const nursingScenarios: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
+  const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: td.retentionCustomPercent ?? 10 };
+  const nursingScenarios: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25, custom: td.retentionCustomPercent ?? 10 };
 
   if (td.wellbeingEnabled && td.calculateRetentionValue) {
     const turnover = td.annualTurnoverRate / 100;
@@ -104,8 +104,8 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
   const isIP = state.careSetting === 'inpatient';
 
   const wrvuScenarios: Record<string, number> = isED
-    ? { conservative: 1, typical: 2.5, aggressive: 4 }
-    : { conservative: 2, typical: 5, aggressive: 7 };
+    ? { conservative: 1, typical: 2.5, aggressive: 4, custom: dq.wrvuCustomPercent ?? 5 }
+    : { conservative: 2, typical: 5, aggressive: 7, custom: dq.wrvuCustomPercent ?? 5 };
   const denialsScenarios: Record<string, number> = isED
     ? { conservative: 15, typical: 30, aggressive: 50 }
     : { conservative: 25, typical: 50, aggressive: 75 };

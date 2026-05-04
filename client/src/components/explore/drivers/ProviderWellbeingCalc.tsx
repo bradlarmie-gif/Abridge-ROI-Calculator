@@ -1,18 +1,21 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Check, AlertTriangle } from "lucide-react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 
 type Props = ExploreCalcComponentProps;
-type RetentionScenario = 'conservative' | 'typical' | 'optimistic';
+type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
 
 export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs } = state;
+  const [customMode, setCustomMode] = useState(timeDriverInputs.retentionImpactScenario === 'custom');
+  const [customDisplay, setCustomDisplay] = useState(String(timeDriverInputs.retentionCustomPercent ?? 10));
 
   const retentionScenarios: Record<RetentionScenario, number> = {
     conservative: 5,
     typical: 10,
     optimistic: 15,
+    custom: timeDriverInputs.retentionCustomPercent ?? 10,
   };
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0
@@ -43,6 +46,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
     timeDriverInputs.burnoutRelatedTurnover,
     timeDriverInputs.retentionImpactScenario,
     timeDriverInputs.replacementCost,
+    timeDriverInputs.retentionCustomPercent,
   ]);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
@@ -145,23 +149,78 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
             What percentage of burnout-related turnover could Abridge help prevent?
           </p>
 
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {(['conservative', 'typical', 'optimistic'] as RetentionScenario[]).map((scenario) => (
+          <div className="flex gap-2 mb-4">
+            {([
+              { label: 'Conservative', value: 'conservative' as const, pct: 5 },
+              { label: 'Typical', value: 'typical' as const, pct: 10 },
+              { label: 'Optimistic', value: 'optimistic' as const, pct: 15 },
+            ]).map((preset) => (
               <button
-                key={scenario}
-                onClick={() => updateTimeDriverInputs({ retentionImpactScenario: scenario })}
-                className={`p-3 rounded-lg border text-center transition-all ${
-                  timeDriverInputs.retentionImpactScenario === scenario
-                    ? 'bg-[#EA2C00] border-[#EA2C00] text-white'
-                    : 'bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]'
+                key={preset.value}
+                onClick={() => {
+                  setCustomMode(false);
+                  updateTimeDriverInputs({ retentionImpactScenario: preset.value });
+                }}
+                className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+                  !customMode && timeDriverInputs.retentionImpactScenario === preset.value
+                    ? 'bg-[#EA2C00] text-white'
+                    : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
                 }`}
-                data-testid={`button-scenario-${scenario}`}
+                data-testid={`button-scenario-${preset.value}`}
               >
-                <p className="text-xs capitalize mb-2">{scenario}</p>
-                <p className="font-semibold">{retentionScenarios[scenario]}%</p>
+                <span className="font-medium">{preset.label}</span>
+                <span className="block text-[10px] mt-0.5 opacity-80">{preset.pct}%</span>
               </button>
             ))}
+            <button
+              onClick={() => {
+                setCustomMode(true);
+                updateTimeDriverInputs({ retentionImpactScenario: 'custom' });
+              }}
+              className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
+                customMode ? 'bg-[#EA2C00] text-white' : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+              }`}
+              data-testid="button-scenario-custom"
+            >
+              <span className="font-medium">Custom</span>
+            </button>
           </div>
+
+          {customMode && (
+            <div className="flex items-center gap-3 mb-4">
+              <label className="text-sm text-[#666666] flex-shrink-0">Retention impact</label>
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={customDisplay}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9]/g, '');
+                    setCustomDisplay(raw);
+                    const n = parseInt(raw);
+                    if (!isNaN(n) && n >= 1 && n <= 100) {
+                      updateTimeDriverInputs({ retentionCustomPercent: n, retentionImpactScenario: 'custom' });
+                    }
+                  }}
+                  onBlur={() => {
+                    const n = parseInt(customDisplay);
+                    if (isNaN(n) || n < 1) {
+                      updateTimeDriverInputs({ retentionCustomPercent: 10, retentionImpactScenario: 'custom' });
+                      setCustomDisplay('10');
+                    } else {
+                      const clamped = Math.min(100, n);
+                      updateTimeDriverInputs({ retentionCustomPercent: clamped, retentionImpactScenario: 'custom' });
+                      setCustomDisplay(String(clamped));
+                    }
+                  }}
+                  className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                  autoFocus
+                  data-testid="input-retention-custom"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+              </div>
+            </div>
+          )}
 
           <div className="text-[13px] text-[#666666] leading-relaxed space-y-2 mt-4">
             <p><strong>Conservative (5%):</strong> Documentation burden is one of several burnout factors. Modest impact on departure decisions.</p>

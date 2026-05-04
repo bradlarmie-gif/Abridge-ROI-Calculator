@@ -89,7 +89,8 @@ export interface TimeDriverInputs {
   annualTurnoverRate: number;
   burnoutRelatedTurnover: number;
   replacementCost: number;
-  retentionImpactScenario: 'conservative' | 'typical' | 'optimistic';
+  retentionImpactScenario: 'conservative' | 'typical' | 'optimistic' | 'custom';
+  retentionCustomPercent: number;
   
   // ED-specific inputs
   edLwbsEnabled: boolean;
@@ -310,7 +311,8 @@ export interface TimeDriverInputs {
 export interface DocQualityInputs {
   // wRVU
   wrvuEnabled: boolean;
-  wrvuScenario: 'conservative' | 'typical' | 'aggressive';
+  wrvuScenario: 'conservative' | 'typical' | 'aggressive' | 'custom';
+  wrvuCustomPercent: number;
   currentWrvu: number;
   conversionFactor: number;
   wrvuRealization: number;
@@ -509,6 +511,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     burnoutRelatedTurnover: 40,
     replacementCost: 400000,
     retentionImpactScenario: 'typical',
+    retentionCustomPercent: 10,
     // ED-specific defaults
     edLwbsEnabled: false,
     edLwbsRate: 3, // 3% baseline LWBS rate
@@ -698,6 +701,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   docQualityInputs: {
     wrvuEnabled: false,
     wrvuScenario: 'typical',
+    wrvuCustomPercent: 5,
     currentWrvu: 1.8,
     conversionFactor: 33,
     wrvuRealization: 75,
@@ -986,7 +990,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += grossValue * (timeDriverInputs.edAdmissionRealization / 100);
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -996,7 +1000,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += retained * timeDriverInputs.replacementCost;
       }
       if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -1013,7 +1017,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += timeDriverInputs.estimatedCostReduction;
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -1023,7 +1027,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += retained * timeDriverInputs.replacementCost;
       }
       if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -1046,7 +1050,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       }
       // Nursing: Retention (40% burnout-related × impact scenario 10/15/25%)
       if (timeDriverInputs.nursingRetentionEnabled) {
-        const retentionImpactRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
+        const retentionImpactRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
         const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
         const burnoutDepartures = leavingPerYear * 0.40;
         const impactRate = (retentionImpactRates[timeDriverInputs.retentionImpactScenario] || 15) / 100;
@@ -1074,7 +1078,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += annualVisits * timeDriverInputs.revenuePerVisit;
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -1084,7 +1088,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += retained * timeDriverInputs.replacementCost;
       }
       if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+        const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -1108,8 +1112,8 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     let total = 0;
     
     const wrvuScenarios: Record<string, number> = isEDLocal
-      ? { conservative: 1, typical: 2.5, aggressive: 4 }
-      : { conservative: 2, typical: 5, aggressive: 7 };
+      ? { conservative: 1, typical: 2.5, aggressive: 4, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
+      : { conservative: 2, typical: 5, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
     const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
     const denialsScenarios: Record<string, number> = isEDLocal
       ? { conservative: 15, typical: 30, aggressive: 50 }
