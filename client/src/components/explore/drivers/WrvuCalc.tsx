@@ -190,7 +190,7 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
             </div>
           </div>
           <p className="text-xs text-[#888888] text-right mt-1">
-            CMS 2024 physician fee schedule: $32.74. Commercial blended rates: $45–55 depending on payer mix.
+            CMS 2026 physician fee schedule: $33.40. Commercial blended rates: $45–55 depending on payer mix.
           </p>
           <div className="flex justify-between items-center">
             <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" /></span>
