@@ -245,41 +245,6 @@ const edValueAccrualStages: ValueAccrualStage[] = [
   },
 ];
 
-function EDValidationPathStrip() {
-  const milestones = [
-    { label: "Baseline", sublabel: "Before deployment", active: false },
-    { label: "Week 6–8", sublabel: "Documentation behavior", active: false },
-    { label: "Month 2–3", sublabel: "Revenue & coding signals", active: false },
-    { label: "Month 3–6", sublabel: "Throughput trends", active: false },
-    { label: "Month 6+", sublabel: "Workforce & system proof", active: false },
-  ];
-
-  return (
-    <div className="mb-10">
-      <div className="mb-4 pb-3 border-b-2 border-[#EA2C00]">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>
-        <h2 className="text-lg font-bold text-black uppercase tracking-tight">Validation Timeline</h2>
-        <p className="text-sm text-[#888888] mt-1">When to look for each signal — and why the timing is mechanistically predictable.</p>
-      </div>
-      <div className="relative">
-        {/* Connector line */}
-        <div className="absolute top-4 left-[10%] right-[10%] h-px bg-[#E5E5E5]" />
-        <div className="grid grid-cols-5 gap-2 relative">
-          {milestones.map((m, i) => (
-            <div key={i} className="flex flex-col items-center text-center">
-              <div className="w-8 h-8 rounded-full border-2 border-[#E5E5E5] bg-white flex items-center justify-center mb-2 relative z-10">
-                <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
-              </div>
-              <p className="text-[10px] font-bold text-black leading-tight">{m.label}</p>
-              <p className="text-[9px] text-[#888888] mt-0.5 leading-tight">{m.sublabel}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProps) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -325,9 +290,14 @@ data-testid="button-export-pdf">
 
         <ValueAccrualSection stages={edValueAccrualStages} />
 
-        <EDValidationPathStrip />
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex-1 h-px bg-[#E5E5E5]" />
+          <span className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] whitespace-nowrap">Four Domains</span>
+          <div className="flex-1 h-px bg-[#E5E5E5]" />
+        </div>
 
         <DomainTabExplorer
+          hideOverviewGrid={true}
           cards={overviewCards}
           domainDetails={domainDetails}
           qualitativeByDomain={qualitativeSignals}

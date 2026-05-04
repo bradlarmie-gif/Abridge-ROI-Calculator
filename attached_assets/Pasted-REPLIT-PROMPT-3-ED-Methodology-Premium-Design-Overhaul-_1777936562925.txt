@@ -1,0 +1,274 @@
+REPLIT PROMPT 3 — ED Methodology: Premium Design Overhaul
+                                                                                                                                                                                                               
+  Two files: client/src/components/methodology/MethodologyShared.tsx and client/src/pages/methodology/MethodologyED.tsx.
+                                                                                                                                                                                                               
+  ---                                                    
+  PART A — client/src/components/methodology/MethodologyShared.tsx                                                                                                                                             
+                                                                                                                                                                                                               
+  A1. Redesign ValueAccrualSection — compact panel, no section header
+                                                                                                                                                                                                               
+  Replace the entire ValueAccrualSection function with:                                                                                                                                                        
+                                                                                                                                                                                                               
+  export function ValueAccrualSection({ stages: customStages }: { stages?: ValueAccrualStage[] } = {}) {                                                                                                       
+    const defaultStages: ValueAccrualStage[] = [         
+      {                                                                                                                                                                                                        
+        badge: "Signal" as BadgeType,
+        timing: "30–90 days",                                                                                                                                                                                  
+        title: "The Provider Feels It",                  
+        description: "Time returned per encounter. After-hours documentation dropping. Less cognitive load at the end of shift. These signals are individual-level and EHR-measurable as soon as a provider is 
+  using Abridge consistently on their own encounters.",                                                                                                                                                        
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        badge: "Trend" as BadgeType,                     
+        timing: "3–6 months",
+        title: "The Chart Shows It",
+        description: "CDI query reduction. Note completeness. H&P timing. CC/MCC capture. These require the provider to trust the capture — using the tool isn't enough, the documentation itself has to       
+  change. That trust takes time to build.",                                                                                                                                                                    
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        badge: "Proof" as BadgeType,                     
+        timing: "6–18 months",
+        title: "The System Measures It",
+        description: "CMI, wRVU, denial rates, retention, HCAHPS. Downstream of documentation quality. Requires data volume for statistical credibility. This is what goes in the annual business case and     
+  contract renewal conversation.",                                                                                                                                                                             
+      },                                                                                                                                                                                                       
+    ];                                                                                                                                                                                                         
+    const stages = customStages ?? defaultStages;                                                                                                                                                              
+  
+    return (                                                                                                                                                                                                   
+      <div className="mb-10 border border-[#E5E5E5] rounded-sm overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E5E5E5]">                                                                                                  
+          {stages.map((stage) => (                                                                                                                                                                             
+            <div key={stage.badge} className="p-5">                                                                                                                                                            
+              <div className="flex items-center justify-between mb-3">                                                                                                                                         
+                <ImpactBadge type={stage.badge} />                                                                                                                                                             
+                <span className="text-[10px] font-medium text-[#888888] uppercase tracking-wide">{stage.timing}</span>
+              </div>                                                                                                                                                                                           
+              <p className="font-bold text-black text-xs uppercase tracking-wide mb-2">{stage.title}</p>                                                                                                       
+              <p className="text-xs text-[#666666] leading-relaxed">{stage.description}</p>
+            </div>                                                                                                                                                                                             
+          ))}                                                                                                                                                                                                  
+        </div>
+      </div>                                                                                                                                                                                                   
+    );                                                   
+  }
+
+  ---
+  A2. Redesign DomainImpactCard — left accent stripe, editorial prose, warm timing callout
+                                                                                                                                                                                                               
+  Replace the entire DomainImpactCard function with:
+                                                                                                                                                                                                               
+  function DomainImpactCard({                            
+    item,
+    accentColor,
+  }: {
+    item: DomainImpactItem;
+    accentColor: string;                                                                                                                                                                                       
+  }) {
+    const [showFormula, setShowFormula] = useState(false);                                                                                                                                                     
+    const hasStructured = !!(item.mechanism || item.whyItMatters || item.whenToExpect);
+
+    return (
+      <div className="bg-white border border-[#E5E5E5] rounded-sm overflow-hidden flex">
+        <div className="w-[3px] shrink-0" style={{ backgroundColor: accentColor }} />                                                                                                                          
+        <div className="flex-1 p-5">
+          <div className="flex items-start justify-between gap-3 mb-4">                                                                                                                                        
+            <h4 className="font-semibold text-black text-sm leading-snug">{item.label}</h4>
+            <ImpactBadge type={item.badge} />                                                                                                                                                                  
+          </div>                                         
+                                                                                                                                                                                                               
+          {hasStructured ? (                             
+            <div className="space-y-3">
+              {item.mechanism && (                                                                                                                                                                             
+                <p className="text-[13px] text-[#444444] leading-relaxed">{item.mechanism}</p>
+              )}                                                                                                                                                                                               
+              {item.whyItMatters && (                    
+                <p className="text-[13px] text-[#666666] leading-relaxed">{item.whyItMatters}</p>
+              )}                                                                                                                                                                                               
+              {item.whenToExpect && (
+                <div className="bg-[#F5F0EB] rounded-sm px-4 py-3">                                                                                                                                            
+                  <p className="text-[10px] text-[#888888] font-medium mb-1">When to expect</p>                                                                                                                
+                  <p className="text-[12px] text-[#444444] leading-relaxed">{item.whenToExpect}</p>
+                </div>                                                                                                                                                                                         
+              )}                                         
+            </div>                                                                                                                                                                                             
+          ) : (                                          
+            <p className="text-[13px] text-[#666666] leading-relaxed">{item.explanation}</p>
+          )}                                                                                                                                                                                                   
+  
+          {item.limit && (                                                                                                                                                                                     
+            <p className="text-[11px] text-[#999999] leading-relaxed italic mt-3">{item.limit}</p>
+          )}                                                                                                                                                                                                   
+  
+          {item.formula && (                                                                                                                                                                                   
+            <div className="mt-4 pt-3 border-t border-[#F0EDE9]">
+              <button                                                                                                                                                                                          
+                onClick={() => setShowFormula(!showFormula)}
+                className="text-[10px] font-bold uppercase tracking-[1.5px] flex items-center gap-1 text-[#EA2C00] hover:text-[#C22000] transition-colors"                                                     
+              >                                                                                                                                                                                                
+                {showFormula ? "Hide formula" : "Show formula"}
+                {showFormula ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}                                                                                                        
+              </button>                                                                                                                                                                                        
+              {showFormula && (
+                <div className="mt-2 bg-[#F5F0EB] rounded-sm p-3 border-l-2 border-[#EA2C00]">                                                                                                                 
+                  <p className="font-mono text-xs text-[#1A1A1A] leading-relaxed whitespace-pre-line">{item.formula}</p>                                                                                       
+                </div>                                                                                                                                                                                         
+              )}                                                                                                                                                                                               
+            </div>                                                                                                                                                                                             
+          )}                                             
+        </div>
+      </div>
+    );
+  }
+
+  ---
+  A3. Add hideOverviewGrid prop to DomainTabExplorer
+                                                    
+  Find the DomainTabExplorer function signature:
+  export function DomainTabExplorer({                                                                                                                                                                          
+    cards,                           
+    domainDetails,                                                                                                                                                                                             
+    qualitativeByDomain,                                 
+    defaultDomain = "QUALITY",
+    children,                 
+  }: {                                                                                                                                                                                                         
+    cards: DomainCardData[];
+    domainDetails: DomainDetailData[];                                                                                                                                                                         
+    qualitativeByDomain: Partial<Record<DomainName, QualitativeSignal[]>>;
+    defaultDomain?: DomainName;                                           
+    children?: React.ReactNode;
+  }) {                                                                                                                                                                                                         
+  
+  Replace with:                                                                                                                                                                                                
+  export function DomainTabExplorer({                    
+    cards,                           
+    domainDetails,
+    qualitativeByDomain,
+    defaultDomain = "QUALITY",                                                                                                                                                                                 
+    hideOverviewGrid = false, 
+    children,                                                                                                                                                                                                  
+  }: {                                                   
+    cards: DomainCardData[];
+    domainDetails: DomainDetailData[];
+    qualitativeByDomain: Partial<Record<DomainName, QualitativeSignal[]>>;
+    defaultDomain?: DomainName;                                           
+    hideOverviewGrid?: boolean;                                                                                                                                                                                
+    children?: React.ReactNode;
+  }) {                                                                                                                                                                                                         
+                                                         
+  Then inside the DomainTabExplorer return, find the section header + overview cards + badge legend block:
+                                                                                                                                                                                                               
+        {/* Section header */}
+        <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">                                                                                                                                                
+          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>                                                                                                      
+          <h2 className="text-lg font-bold text-black uppercase tracking-tight">Four Domains of Value</h2>
+          <p className="text-sm text-[#888888] mt-1">Select a domain to explore the evidence and methodology below.</p>                                                                                        
+        </div>                                           
+                                                                                                                                                                                                               
+        {/* Overview cards — clicking switches active tab */}                                                                                                                                                  
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          {cards.map((card) => (                                                                                                                                                                               
+            <DomainOverviewCard key={card.domain} data={card} onClick={() => setActiveDomain(card.domain)} />
+          ))}                                                                                                                                                                                                  
+        </div>
+                                                                                                                                                                                                               
+        {/* Badge legend */}                             
+        <div className="mb-6 pt-4 border-t border-[#E5E5E5] flex flex-wrap gap-x-6 gap-y-2 items-center">
+          <span className="text-[10px] text-[#888888] uppercase tracking-[1.5px] font-bold">Evidence level:</span>                                                                                             
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex items-center gap-2">                                                                                                                                                          
+              <ImpactBadge type="Signal" />              
+              <span className="text-[10px] text-[#666666]">visible in first 30–90 days of per-encounter use</span>                                                                                             
+            </div>                                                                                                                                                                                             
+            <div className="flex items-center gap-2">
+              <ImpactBadge type="Trend" />                                                                                                                                                                     
+              <span className="text-[10px] text-[#666666]">meaningful patterns emerge at 3–6 months</span>
+            </div>                                                                                                                                                                                             
+            <div className="flex items-center gap-2">
+              <ImpactBadge type="Proof" />                                                                                                                                                                     
+              <span className="text-[10px] text-[#666666]">system-level proof at 6–18 months</span>
+            </div>                                                                                                                                                                                             
+          </div>
+        </div>                                                                                                                                                                                                 
+                                                         
+  Replace that entire block with:
+        {!hideOverviewGrid && (
+          <>                   
+            {/* Section header */}                                                                                                                                                                             
+            <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>                                                                                                  
+              <h2 className="text-lg font-bold text-black uppercase tracking-tight">Four Domains of Value</h2>
+              <p className="text-sm text-[#888888] mt-1">Select a domain to explore the evidence and methodology below.</p>                                                                                    
+            </div>                                                                                                         
+                                                                                                                                                                                                               
+            {/* Overview cards — clicking switches active tab */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">                                                                                                                                       
+              {cards.map((card) => (                                    
+                <DomainOverviewCard key={card.domain} data={card} onClick={() => setActiveDomain(card.domain)} />                                                                                              
+              ))}                                                                                                
+            </div>                                                                                                                                                                                             
+                                                         
+            {/* Badge legend */}                                                                                                                                                                               
+            <div className="mb-6 pt-4 border-t border-[#E5E5E5] flex flex-wrap gap-x-6 gap-y-2 items-center">
+              <span className="text-[10px] text-[#888888] uppercase tracking-[1.5px] font-bold">Evidence level:</span>                                                                                         
+              <div className="flex flex-wrap gap-4 items-center">                                                     
+                <div className="flex items-center gap-2">                                                                                                                                                      
+                  <ImpactBadge type="Signal" />          
+                  <span className="text-[10px] text-[#666666]">visible in first 30–90 days of per-encounter use</span>                                                                                         
+                </div>                                                                                                                                                                                         
+                <div className="flex items-center gap-2">
+                  <ImpactBadge type="Trend" />                                                                                                                                                                 
+                  <span className="text-[10px] text-[#666666]">meaningful patterns emerge at 3–6 months</span>
+                </div>                                                                                        
+                <div className="flex items-center gap-2">
+                  <ImpactBadge type="Proof" />           
+                  <span className="text-[10px] text-[#666666]">system-level proof at 6–18 months</span>                                                                                                        
+                </div>                                                                                 
+              </div>                                                                                                                                                                                           
+            </div>                                       
+          </>                                                                                                                                                                                                  
+        )}   
+                                                                                                                                                                                                               
+  Also find the honestLimit callout inside the tab content (inside the motion.div). It currently has uppercase in the label styling. Update it so the label reads "Honest limit" in sentence case (not all
+  caps):                                                                                                                                                                                                       
+  
+  Find:                                                                                                                                                                                                        
+                    <div className="mb-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
+                      <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>                                                                                     
+                                                         
+  Replace with:                                                                                                                                                                                                
+                    <div className="mb-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
+                      <p className="text-[10px] font-semibold text-[#EA2C00] mb-1">Honest limit</p>                                                                                                            
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  PART B — client/src/pages/methodology/MethodologyED.tsx                                                                                                                                                      
+                                                                                                                                                                                                               
+  B1. Remove EDValidationPathStrip                       
+
+  Delete the entire EDValidationPathStrip function (from function EDValidationPathStrip() through its closing }).                                                                                              
+   
+  Also remove <EDValidationPathStrip /> from the JSX (it appears between <ValueAccrualSection /> and <DomainTabExplorer).                                                                                      
+                                                         
+  B2. Add hideOverviewGrid to DomainTabExplorer in JSX                                                                                                                                                         
+                                                         
+  Find:                                                                                                                                                                                                        
+          <DomainTabExplorer                             
+            cards={overviewCards}
+
+  Replace with:
+          <DomainTabExplorer
+            hideOverviewGrid={true}
+            cards={overviewCards}                                                                                                                                                                              
+                                 
+  B3. Add a minimal domain intro label before the DomainTabExplorer                                                                                                                                            
+                                                                                                                                                                                                               
+  After <ValueAccrualSection stages={edValueAccrualStages} /> and before <DomainTabExplorer, add:                                                                                                              
+                                                                                                                                                                                                               
+          <div className="mb-5 flex items-center gap-3">                                                                                                                                                       
+            <div className="flex-1 h-px bg-[#E5E5E5]" />                                                                                                                                                       
+            <span className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] whitespace-nowrap">Four Domains</span>
+            <div className="flex-1 h-px bg-[#E5E5E5]" />                                                                                                                                                       
+          </div>                                                                                                                                                                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  That's the full prompt. No other changes needed.  

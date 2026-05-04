@@ -164,62 +164,54 @@ function DomainImpactCard({
   const hasStructured = !!(item.mechanism || item.whyItMatters || item.whenToExpect);
 
   return (
-    <div className="bg-white border border-[#E5E5E5] rounded-sm p-4">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <h4 className="font-bold text-black text-xs uppercase tracking-wide leading-snug">{item.label}</h4>
-        <ImpactBadge type={item.badge} />
+    <div className="bg-white border border-[#E5E5E5] rounded-sm overflow-hidden flex">
+      <div className="w-[3px] shrink-0" style={{ backgroundColor: accentColor }} />
+      <div className="flex-1 p-5">
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <h4 className="font-semibold text-black text-sm leading-snug">{item.label}</h4>
+          <ImpactBadge type={item.badge} />
+        </div>
+
+        {hasStructured ? (
+          <div className="space-y-3">
+            {item.mechanism && (
+              <p className="text-[13px] text-[#444444] leading-relaxed">{item.mechanism}</p>
+            )}
+            {item.whyItMatters && (
+              <p className="text-[13px] text-[#666666] leading-relaxed">{item.whyItMatters}</p>
+            )}
+            {item.whenToExpect && (
+              <div className="bg-[#F5F0EB] rounded-sm px-4 py-3">
+                <p className="text-[10px] text-[#888888] font-medium mb-1">When to expect</p>
+                <p className="text-[12px] text-[#444444] leading-relaxed">{item.whenToExpect}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-[13px] text-[#666666] leading-relaxed">{item.explanation}</p>
+        )}
+
+        {item.limit && (
+          <p className="text-[11px] text-[#999999] leading-relaxed italic mt-3">{item.limit}</p>
+        )}
+
+        {item.formula && (
+          <div className="mt-4 pt-3 border-t border-[#F0EDE9]">
+            <button
+              onClick={() => setShowFormula(!showFormula)}
+              className="text-[10px] font-bold uppercase tracking-[1.5px] flex items-center gap-1 text-[#EA2C00] hover:text-[#C22000] transition-colors"
+            >
+              {showFormula ? "Hide formula" : "Show formula"}
+              {showFormula ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+            {showFormula && (
+              <div className="mt-2 bg-[#F5F0EB] rounded-sm p-3 border-l-2 border-[#EA2C00]">
+                <p className="font-mono text-xs text-[#1A1A1A] leading-relaxed whitespace-pre-line">{item.formula}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      {hasStructured ? (
-        <div className="space-y-4">
-          {item.mechanism && (
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1.5">Mechanism</p>
-              <p className="text-sm text-[#666666] leading-relaxed">{item.mechanism}</p>
-            </div>
-          )}
-          {item.whyItMatters && (
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1.5">Why it matters</p>
-              <p className="text-sm text-[#666666] leading-relaxed">{item.whyItMatters}</p>
-            </div>
-          )}
-          {item.whenToExpect && (
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1.5">When to expect</p>
-              <p className="text-sm text-[#666666] leading-relaxed">{item.whenToExpect}</p>
-            </div>
-          )}
-        </div>
-      ) : (
-        <p className="text-sm text-[#666666] leading-relaxed">{item.explanation}</p>
-      )}
-
-      {item.limit && (
-        <div className="mt-4 pl-3 border-l-2 border-[#D9D4CF]">
-          <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1">Honest limit</p>
-          <p className="text-xs text-[#666666] leading-relaxed">{item.limit}</p>
-        </div>
-      )}
-
-      {item.formula && (
-        <div className="mt-3">
-          <button
-            onClick={() => setShowFormula(!showFormula)}
-            className="text-[10px] font-bold uppercase tracking-[1.5px] flex items-center gap-1 text-[#EA2C00] hover:text-[#C22000] transition-colors"
-          >
-            {showFormula ? "Hide formula" : "Show formula"}
-            {showFormula
-              ? <ChevronUp className="w-3 h-3" />
-              : <ChevronDown className="w-3 h-3" />}
-          </button>
-          {showFormula && (
-            <div className="mt-2 bg-[#F5F0EB] rounded-sm p-3 border-l-2 border-[#EA2C00]">
-              <p className="font-mono text-xs text-[#1A1A1A] leading-relaxed whitespace-pre-line">{item.formula}</p>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -274,12 +266,14 @@ export function DomainTabExplorer({
   domainDetails,
   qualitativeByDomain,
   defaultDomain = "QUALITY",
+  hideOverviewGrid = false,
   children,
 }: {
   cards: DomainCardData[];
   domainDetails: DomainDetailData[];
   qualitativeByDomain: Partial<Record<DomainName, QualitativeSignal[]>>;
   defaultDomain?: DomainName;
+  hideOverviewGrid?: boolean;
   children?: React.ReactNode;
 }) {
   const [activeDomain, setActiveDomain] = useState<DomainName>(defaultDomain);
@@ -290,38 +284,42 @@ export function DomainTabExplorer({
 
   return (
     <div className="mb-10">
-      {/* Section header */}
-      <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>
-        <h2 className="text-lg font-bold text-black uppercase tracking-tight">Four Domains of Value</h2>
-        <p className="text-sm text-[#888888] mt-1">Select a domain to explore the evidence and methodology below.</p>
-      </div>
+      {!hideOverviewGrid && (
+        <>
+          {/* Section header */}
+          <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
+            <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>
+            <h2 className="text-lg font-bold text-black uppercase tracking-tight">Four Domains of Value</h2>
+            <p className="text-sm text-[#888888] mt-1">Select a domain to explore the evidence and methodology below.</p>
+          </div>
 
-      {/* Overview cards — clicking switches active tab */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-        {cards.map((card) => (
-          <DomainOverviewCard key={card.domain} data={card} onClick={() => setActiveDomain(card.domain)} />
-        ))}
-      </div>
+          {/* Overview cards — clicking switches active tab */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+            {cards.map((card) => (
+              <DomainOverviewCard key={card.domain} data={card} onClick={() => setActiveDomain(card.domain)} />
+            ))}
+          </div>
 
-      {/* Badge legend */}
-      <div className="mb-6 pt-4 border-t border-[#E5E5E5] flex flex-wrap gap-x-6 gap-y-2 items-center">
-        <span className="text-[10px] text-[#888888] uppercase tracking-[1.5px] font-bold">Evidence level:</span>
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2">
-            <ImpactBadge type="Signal" />
-            <span className="text-[10px] text-[#666666]">visible in first 30–90 days of per-encounter use</span>
+          {/* Badge legend */}
+          <div className="mb-6 pt-4 border-t border-[#E5E5E5] flex flex-wrap gap-x-6 gap-y-2 items-center">
+            <span className="text-[10px] text-[#888888] uppercase tracking-[1.5px] font-bold">Evidence level:</span>
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center gap-2">
+                <ImpactBadge type="Signal" />
+                <span className="text-[10px] text-[#666666]">visible in first 30–90 days of per-encounter use</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ImpactBadge type="Trend" />
+                <span className="text-[10px] text-[#666666]">meaningful patterns emerge at 3–6 months</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ImpactBadge type="Proof" />
+                <span className="text-[10px] text-[#666666]">system-level proof at 6–18 months</span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <ImpactBadge type="Trend" />
-            <span className="text-[10px] text-[#666666]">meaningful patterns emerge at 3–6 months</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ImpactBadge type="Proof" />
-            <span className="text-[10px] text-[#666666]">system-level proof at 6–18 months</span>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
 
       {/* Beige container — tab bar, tab content, and collapsible children */}
       <div className="bg-[#F5F0EB] rounded-lg">
@@ -368,7 +366,7 @@ export function DomainTabExplorer({
               <div>
                 {activeDetail.honestLimit && (
                   <div className="mb-4 border-l-2 border-[#EA2C00] pl-4 py-3 bg-white rounded-sm">
-                    <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-1">Honest limit</p>
+                    <p className="text-[10px] font-semibold text-[#EA2C00] mb-1">Honest limit</p>
                     <p className="text-xs text-[#666666] leading-relaxed">{activeDetail.honestLimit}</p>
                   </div>
                 )}
@@ -436,35 +434,20 @@ export function ValueAccrualSection({ stages: customStages }: { stages?: ValueAc
   const stages = customStages ?? defaultStages;
 
   return (
-    <div className="mb-10">
-      <div className="mb-5 pb-3 border-b-2 border-[#EA2C00]">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Framework</p>
-        <h2 className="text-lg font-bold text-black uppercase tracking-tight">How Value Accrues</h2>
-        <p className="text-sm text-[#888888] mt-1">
-          Ambient documentation value arrives in stages — driven by the adoption curve, not the deployment date.
-        </p>
-      </div>
-
-      <p className="text-[15px] text-[#666666] leading-relaxed mb-6">
-        When a provider starts using Abridge, value doesn't arrive all at once. The first signals are individual — time returned per encounter, documentation burden dropping. As the provider builds trust in the capture, documentation quality shifts and CDI teams start to notice. System-level financial outcomes are downstream of that documentation maturity and require months of data to be statistically credible.
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+    <div className="mb-10 border border-[#E5E5E5] rounded-sm overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E5E5E5]">
         {stages.map((stage) => (
-          <div key={stage.badge} className="bg-white border border-[#E5E5E5] rounded-sm p-5">
+          <div key={stage.badge} className="p-5">
             <div className="flex items-center justify-between mb-3">
               <ImpactBadge type={stage.badge} />
-              <span className="text-[10px] font-medium text-[#888888]">{stage.timing}</span>
+              <span className="text-[10px] font-medium text-[#888888] uppercase tracking-wide">{stage.timing}</span>
             </div>
-            <h4 className="font-bold text-black text-xs uppercase tracking-wide mb-2">{stage.title}</h4>
+            <p className="font-bold text-black text-xs uppercase tracking-wide mb-2">{stage.title}</p>
             <p className="text-xs text-[#666666] leading-relaxed">{stage.description}</p>
           </div>
         ))}
       </div>
-
-      <p className="text-[11px] text-[#888888] leading-relaxed border-l-2 border-[#E5E5E5] pl-3">
-        Timelines reflect consistent per-encounter use by the individual provider. System-level metrics require sufficient provider adoption to move aggregate data. For metrics where documentation improvement is one contributing factor among several — such as falls prevention, LWBS rate, or sepsis bundle compliance — the "How to Track" section notes where attribution is shared.
-      </p>
     </div>
   );
 }
+
