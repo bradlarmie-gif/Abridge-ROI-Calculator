@@ -1,0 +1,19 @@
+Replit Prompt 2 — ED + Outpatient: MDM Angle / Nursing: Revenue Reframe
+                                                                                                                                                                                                               
+  client/src/pages/methodology/MethodologyED.tsx
+                                                                                                                                                                                                               
+  In domainDetails, REVENUE section, item "E/M Level Accuracy (Claims Data)" — replace the explanation field with:                                                                                             
+   
+  "The 2021 CMS E/M guideline shift made Medical Decision Making (MDM) the primary determinant of E/M level — three elements: complexity of problems addressed, data reviewed and analyzed, and risk of        
+  treatment. During surges, ED notes understate what actually happened not because physicians made simpler decisions, but because the documentation didn't capture the MDM elements that support the           
+  appropriate level. Ambient capture records the clinical reasoning in real time — the differential, the data weighed, the treatment risk — in a way that dictation shortcuts and templates don't. Coding teams
+   can audit MDM completeness directly to confirm the mechanism before claims data makes the financial signal visible."                                                                                        
+                                                         
+  In qualitativeSignals, REVENUE section, add a new signal at the top of the array (before "Down-coding Rate"):                                                                                                
+  {
+    label: "MDM Documentation Completeness",                                                                                                                                                                   
+    tagline: "The 2021 E/M guideline shift made MDM the coding driver — are all three elements documented?",
+    howToTrack: "Coding team audits MDM elements per encounter: complexity of problems, data reviewed, risk of treatment. Score a sample of notes per provider pre/post deployment. Directly auditable and     
+  directly moveable by ambient capture.",                
+    badge: "Signal",                                                                                                                                                                                           
+  },

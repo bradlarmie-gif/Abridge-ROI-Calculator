@@ -26,6 +26,7 @@ const overviewCards: DomainCardData[] = [
     items: [
       { label: "CDI query reduction (tracked daily)", badge: "Signal" },
       { label: "CC/MCC documentation completeness", badge: "Trend" },
+      { label: "HRRP readmission penalty avoidance", badge: "Proof" },
     ],
   },
   {
@@ -71,6 +72,13 @@ const domainDetails: DomainDetailData[] = [
         badge: "Trend",
         explanation: "Complication and Comorbidity (CC) and Major Comorbidity (MCC) capture rates directly affect DRG assignment. When documentation captures qualifying conditions completely and accurately, CC/MCC capture improves — shifting DRG weight upward where clinically appropriate. CDI teams audit this daily. It's the most direct connection between documentation quality and DRG revenue.",
         formula: "CC/MCC capture rate improvement × discharges × average DRG weight delta × base rate",
+      },
+      {
+        label: "30-Day Readmission Penalty Avoidance (HRRP)",
+        badge: "Proof",
+        explanation: "CMS penalizes hospitals up to 3% of Medicare base DRG payments for excess readmissions across six conditions: AMI, heart failure, pneumonia, COPD, hip/knee arthroplasty, and CABG. The documentation link: discharge summaries that accurately capture follow-up instructions, pending test results, and medication reconciliation support better care transitions — and readmission rates are tied to transition quality. This is a Proof-stage signal because attribution is multi-factorial and the CMS reporting cycle is annual. Track as a strategic quality story and a Board-level conversation.",
+        formula: "Hospital Medicare payments × excess readmission penalty % × attribution %\n\nCMS HRRP range: 0–3% of base Medicare DRG payments. Most penalized hospitals face 0.5–1.5% penalties.",
+        limit: "Many factors drive readmissions — patient acuity, social determinants, post-discharge care access. Don't attribute readmission reduction to documentation alone. Track discharge summary completion timing as the upstream signal; readmission rate improvement is the long-game outcome.",
       },
     ],
     honestLimit: "CDI query reduction shows immediately. CC/MCC improvement and CMI impact require 6+ months of data to be statistically credible. Track query rates first, then validate CMI movement.",

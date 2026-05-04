@@ -1,0 +1,17 @@
+client/src/pages/methodology/MethodologyOutpatient.tsx
+                                                        
+  In domainDetails, REVENUE section, item "wRVU Accuracy (Billing Data)" — replace the explanation field with:
+                                                                                                                                                                                                               
+  "The 2021 CMS E/M guideline shift made Medical Decision Making (MDM) the primary driver of E/M level — not time spent, not bullet points, but three specific elements: complexity of problems addressed, data
+   reviewed and analyzed, and risk of treatment. Ambient capture naturally documents all three MDM elements during the clinical conversation, supporting appropriate E/M level assignment in a way that typed  
+  shortcuts and templates don't. Better MDM documentation captures visit complexity more accurately — that's the mechanism behind wRVU lift. Claims data shows the resulting E/M distribution shift before and
+  after. Published studies and deployment observations suggest wRVU lift may range 2–7% depending on baseline documentation quality and specialty."                                                            
+                                                         
+  In qualitativeSignals, REVENUE section, add a new signal at the top of the array (before "E/M Level Distribution"):                                                                                          
+  {
+    label: "MDM Documentation Completeness",                                                                                                                                                                   
+    tagline: "Three elements determine E/M level: problem complexity, data reviewed, risk. Ambient capture covers all three in real time.",
+    howToTrack: "Coding team audits MDM completeness per encounter. Compare same providers pre/post deployment. Often one of the fastest-moving signals after go-live — and the direct mechanism behind wRVU 
+  improvement.",                                                                                                                                                                                               
+    badge: "Signal",                                                                                                                                                                                           
+  },                 

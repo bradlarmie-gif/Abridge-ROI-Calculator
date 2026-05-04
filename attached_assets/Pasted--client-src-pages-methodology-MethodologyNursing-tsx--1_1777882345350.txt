@@ -1,0 +1,23 @@
+ client/src/pages/methodology/MethodologyNursing.tsx
+                                                                                                                                                                                                               
+  In overviewCards, REVENUE domain — replace the current item with:
+  { label: "Revenue through quality outcomes and workforce stability", badge: "Trend" },                                                                                                                       
+                                                                                                                                                                                                               
+  In domainDetails, REVENUE section:
+                                                                                                                                                                                                               
+  Replace the label field:                                                                                                                                                                                     
+  "Revenue Through Quality and Workforce Channels"
+                                                                                                                                                                                                               
+  Replace the explanation field:                         
+  "Nursing drives hospital revenue through channels that don't show up on a billing report but absolutely show up on the P&L: quality and safety outcomes that affect Value-Based Purchasing reimbursement;    
+  workforce stability that reduces agency costs and preserves operational capacity; and documentation support for physician coding accuracy — nursing clinical observations feed CC/MCC capture directly. The
+  ROI case for nursing is built in Quality, Workforce, and Capacity. Track it there — those numbers are real and defensible."                                                                                  
+                                                                                                                             
+  Replace the honestLimit field on this REVENUE domainDetails entry:                                                                                                                                           
+  "The nursing ROI story is a quality and workforce story. The numbers are real and defensible — they just live in different domains than physician ROI, and that's worth saying plainly."                     
+                                                                                                                                                                                          
+  Replace the description in overviewCards REVENUE domain with:                                                                                                                                                
+  "Nursing's financial impact flows through quality outcomes, workforce stability, and documentation that supports physician coding accuracy — not direct billing. We model this domain to help surface where  
+  your data could tell the story — not to set a number before you've looked."                                                                                                                                  
+                                                                                                                                                                                                               
+  No other changes.                  
