@@ -46,9 +46,9 @@ const overviewCards: DomainCardData[] = [
   },
   {
     domain: "REVENUE",
-    description: "Nurses don't bill directly. Revenue impact flows through quality, safety, and workforce stability — not billing. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
+    description: "Nursing's financial impact flows through quality outcomes, workforce stability, and documentation that supports physician coding accuracy — not direct billing. We model this domain to help surface where your data could tell the story — not to set a number before you've looked.",
     items: [
-      { label: "Not applicable — nurses don't bill", badge: "Proof" },
+      { label: "Revenue through quality outcomes and workforce stability", badge: "Trend" },
     ],
   },
 ];
@@ -124,13 +124,13 @@ const domainDetails: DomainDetailData[] = [
     sectionSubtitle: "Revenue impact flows through quality, safety, and workforce — not direct billing",
     items: [
       {
-        label: "Not Applicable — Nurses Don't Bill Directly",
-        badge: "Proof",
-        explanation: "Unlike physicians in ED, outpatient, or inpatient settings, nurses do not generate direct billing revenue. Nursing's revenue impact flows through three indirect channels: (1) quality and safety outcomes that affect Value-Based Purchasing reimbursement; (2) workforce stability that reduces agency costs and preserves operational capacity; (3) support for physician documentation that enables more accurate DRG and CC/MCC coding. These are real and meaningful — but they belong in the Quality, Workforce, and Capacity domains, not a billing revenue line.",
+        label: "Revenue Through Quality and Workforce Channels",
+        badge: "Trend",
+        explanation: "Nursing drives hospital revenue through channels that don't show up on a billing report but absolutely show up on the P&L: quality and safety outcomes that affect Value-Based Purchasing reimbursement; workforce stability that reduces agency costs and preserves operational capacity; and documentation support for physician coding accuracy — nursing clinical observations feed CC/MCC capture directly. The ROI case for nursing is built in Quality, Workforce, and Capacity. Track it there — those numbers are real and defensible.",
         limit: "The ROI case for nursing is strongest when built on overtime reduction (demonstrated, fast) and retention savings (emerging, 12–18 months). Don't try to build a billing revenue case — it doesn't hold up.",
       },
     ],
-    honestLimit: "Nursing ROI is a workforce and quality story, not a billing story. The numbers are real and defensible — they just live in different domains than physician ROI.",
+    honestLimit: "The nursing ROI story is a quality and workforce story. The numbers are real and defensible — they just live in different domains than physician ROI, and that's worth saying plainly.",
   },
 ];
 
