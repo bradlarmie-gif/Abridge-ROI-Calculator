@@ -1,0 +1,41 @@
+File 1: client/src/lib/exploreDrivers.ts                                                                                                                                                                     
+                                                                                                                                                                                                               
+  Change 1 — Remove ipCmsStarRating: Delete the entire driver object from the array (lines 1094–1104, the block starting with id: 'ipCmsStarRating' through its closing },).                                   
+                                                                                                                                                                                                               
+  Change 2 — Add ipConsultThroughput to IP Capacity: In the IP Capacity section (after the ipDischargeSummaryTime block, before the // IP Workforce comment), insert this new driver:                          
+                                                                                                                                                                                                               
+  {                                                                                                                                                                                                            
+    id: 'ipConsultThroughput',                           
+    label: 'Consult Throughput',                                                                                                                                                                               
+    shortDescription: 'Time from consult request to signed consult note. When Abridge captures the consultation conversation in real time, specialists generate structured notes without a separate charting 
+  session — reducing turnaround and freeing capacity for additional consults per shift.',                                                                                                                      
+    tagline: 'Consult request to signed note — a capacity signal for specialty services',
+    quadrant: 'Capacity',                                                                                                                                                                                      
+    settings: ['inpatient'],                             
+    visibility: 'qualitative',                                                                                                                                                                                 
+    enabledStateKey: 'ipConsultThroughputEnabled',       
+    expandedStateKey: 'ipConsultThroughputExpanded',                                                                                                                                                           
+    trackedMeasureIds: [],
+  },                                                                                                                                                                                                           
+                                                         
+  ---
+  File 2: client/src/pages/explore/ExploreFlow.tsx
+                                                                                                                                                                                                               
+  Change 1 — Remove ipCmsStarRating from the TypeScript type (around lines 205–206). Delete:
+  ipCmsStarRatingEnabled: boolean;                                                                                                                                                                             
+  ipCmsStarRatingExpanded: boolean;                      
+                                                                                                                                                                                                               
+  Change 2 — Remove ipCmsStarRating from default state (around lines 610–611). Delete:                                                                                                                         
+  ipCmsStarRatingEnabled: false,
+  ipCmsStarRatingExpanded: false,                                                                                                                                                                              
+                                                         
+  Change 3 — Add ipConsultThroughput to the TypeScript type. In the same section where the other ip*Enabled/Expanded boolean pairs live, add:                                                                  
+  ipConsultThroughputEnabled: boolean;                                                                                                                                                                         
+  ipConsultThroughputExpanded: boolean;                                                                                                                                                                        
+                                                                                                                                                                                                               
+  Change 4 — Add ipConsultThroughput to default state. In the same section as the other ip*Enabled: false defaults, add:
+  ipConsultThroughputEnabled: false,                                                                                                                                                                           
+  ipConsultThroughputExpanded: false,
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  That's it — no other files need to change. The driver will automatically render in the IP Capacity quadrant since getDriversForPage() just filters by quadrant + setting.

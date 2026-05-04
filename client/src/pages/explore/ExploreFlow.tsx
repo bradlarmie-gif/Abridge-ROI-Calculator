@@ -203,8 +203,8 @@ export interface TimeDriverInputs {
   ipHcahpsDoctorExpanded: boolean;
   ipReadmissionRateEnabled: boolean;
   ipReadmissionRateExpanded: boolean;
-  ipCmsStarRatingEnabled: boolean;
-  ipCmsStarRatingExpanded: boolean;
+  ipConsultThroughputEnabled: boolean;
+  ipConsultThroughputExpanded: boolean;
   // ED qualitative Quality (patient experience addition)
   edPatientExperienceEnabled: boolean;
   edPatientExperienceExpanded: boolean;
@@ -610,8 +610,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipHcahpsDoctorExpanded: false,
     ipReadmissionRateEnabled: false,
     ipReadmissionRateExpanded: false,
-    ipCmsStarRatingEnabled: false,
-    ipCmsStarRatingExpanded: false,
+    ipConsultThroughputEnabled: false,
+    ipConsultThroughputExpanded: false,
     // ED Quality (patient experience)
     edPatientExperienceEnabled: false,
     edPatientExperienceExpanded: false,

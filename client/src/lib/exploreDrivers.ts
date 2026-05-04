@@ -886,6 +886,18 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'ipDischargeSummaryTimeExpanded',
     trackedMeasureIds: [],
   },
+  {
+    id: 'ipConsultThroughput',
+    label: 'Consult Throughput',
+    shortDescription: 'Time from consult request to signed consult note. When Abridge captures the consultation conversation in real time, specialists generate structured notes without a separate charting session — reducing turnaround and freeing capacity for additional consults per shift.',
+    tagline: 'Consult request to signed note — a capacity signal for specialty services',
+    quadrant: 'Capacity',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipConsultThroughputEnabled',
+    expandedStateKey: 'ipConsultThroughputExpanded',
+    trackedMeasureIds: [],
+  },
 
   // IP Workforce (qualitative — 3 drivers, restructured by R-IA-5; Likelihood to Stay removed)
   {
@@ -1088,18 +1100,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'qualitative',
     enabledStateKey: 'ipReadmissionRateEnabled',
     expandedStateKey: 'ipReadmissionRateExpanded',
-    trackedMeasureIds: [],
-  },
-  {
-    id: 'ipCmsStarRating',
-    label: 'CMS Hospital Star Rating',
-    shortDescription: 'CMS Overall Hospital Quality Star Rating, publicly reported on Care Compare. The rating aggregates mortality, safety, readmissions, patient experience, and timely care across five domains. Abridge directly influences two: the patient experience domain (HCAHPS doctor communication composite) and the readmissions domain. Hospitals one star below a competitor watch this closely — it affects patient choice, referral patterns, and health system reputation.',
-    tagline: 'Overall quality star rating — patient experience and readmissions are direct inputs',
-    quadrant: 'Quality',
-    settings: ['inpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'ipCmsStarRatingEnabled',
-    expandedStateKey: 'ipCmsStarRatingExpanded',
     trackedMeasureIds: [],
   },
 ];
