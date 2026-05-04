@@ -1,18 +1,19 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, ArrowRight, Stethoscope, Building2, Heart, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Download, ArrowRight, ChevronDown, Stethoscope, Building2, Heart, Loader2 } from "lucide-react";
+import { useState, useRef } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
   DomainTabExplorer,
   CollapsibleSection,
-  ValueAccrualSection,
+  ImpactBadge,
+  domainColors,
+  type BadgeType,
   type DomainCardData,
   type DomainDetailData,
   type DomainName,
   type QualitativeSignal,
-  type ValueAccrualStage,
 } from "@/components/methodology/MethodologyShared";
 
 interface MethodologyEDProps {
@@ -224,29 +225,136 @@ const qualitativeSignals: Partial<Record<DomainName, QualitativeSignal[]>> = {
   ],
 };
 
-const edValueAccrualStages: ValueAccrualStage[] = [
+const edStageData = [
   {
-    badge: "Signal",
+    badge: "Signal" as BadgeType,
     timing: "Week 6–8",
     title: "The Provider Feels It",
-    description: "After-shift charting drops. Documentation time per encounter measurably shorter in EHR audit logs. Individual providers using Abridge consistently are your first observable signal — visible before any aggregate data moves.",
+    description: "After-shift charting drops. Documentation time per encounter measurably shorter in EHR audit logs. The first signals are individual — visible before any aggregate data moves.",
+    metrics: [
+      { domain: "WORKFORCE" as DomainName, label: "After-shift charting time", direction: "↓" },
+      { domain: "CAPACITY" as DomainName, label: "Documentation time per encounter", direction: "↓" },
+    ],
   },
   {
-    badge: "Trend",
+    badge: "Trend" as BadgeType,
     timing: "Month 2–3",
     title: "The Chart Shows It",
-    description: "E/M level distribution starts to shift in claims data. CDI query rates on admitted patients start to drop. These require one full billing cycle to become visible — the note improves immediately, but coding and CDI response take time.",
+    description: "E/M level distribution starts shifting in claims data. CDI query rates on admitted patients start to drop. The note improved at time of service — coding and CDI response take one billing cycle to reflect it.",
+    metrics: [
+      { domain: "REVENUE" as DomainName, label: "E/M level accuracy", direction: "↑" },
+      { domain: "QUALITY" as DomainName, label: "CDI query volume on admits", direction: "↓" },
+    ],
   },
   {
-    badge: "Proof",
+    badge: "Proof" as BadgeType,
     timing: "Month 3–18",
     title: "The System Measures It",
-    description: "LWBS rate trend, denial rate by root cause, HCAHPS doctor communication composite, and eventually turnover data. Downstream of documentation maturity — requires data volume and controlled comparisons for statistical credibility.",
+    description: "LWBS rate trend, denial rate by root cause, HCAHPS doctor communication composite, physician retention. Downstream of documentation maturity — requires data volume and controlled comparisons for statistical credibility.",
+    metrics: [
+      { domain: "REVENUE" as DomainName, label: "Denial prevention (RCM root cause)", direction: "↑" },
+      { domain: "WORKFORCE" as DomainName, label: "Physician retention savings", direction: "↑" },
+      { domain: "QUALITY" as DomainName, label: "HCAHPS doctor communication", direction: "↑" },
+      { domain: "CAPACITY" as DomainName, label: "LWBS rate", direction: "↓" },
+    ],
   },
 ];
 
+function EDStorySection({ onExplore }: { onExplore: (domain: DomainName) => void }) {
+  const [activeStage, setActiveStage] = useState<BadgeType | null>(null);
+
+  return (
+    <div className="mb-10">
+      <p className="text-[15px] text-[#666666] leading-relaxed mb-6">
+        An ED implements ambient documentation. Physicians start using it on their encounters. Here's what the next 18 months look like — and the specific metrics that tell you it's working.
+      </p>
+      <div className="space-y-2">
+        {edStageData.map((stage) => {
+          const isActive = activeStage === stage.badge;
+
+          return (
+            <div
+              key={stage.badge}
+              className="bg-white border border-[#E5E5E5] rounded-sm overflow-hidden"
+              style={{ borderLeftWidth: 3, borderLeftColor: isActive ? "#EA2C00" : "#E5E5E5" }}
+            >
+              <button
+                className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-[#FAFAFA] transition-colors"
+                onClick={() => setActiveStage(isActive ? null : stage.badge)}
+              >
+                <div className="flex items-center gap-3 flex-wrap">
+                  <ImpactBadge type={stage.badge} />
+                  <span className="text-[10px] font-medium text-[#888888] uppercase tracking-wide">{stage.timing}</span>
+                  <span className="font-semibold text-black text-sm">{stage.title}</span>
+                </div>
+                <ChevronDown
+                  className="w-4 h-4 text-[#888888] shrink-0 transition-transform duration-200"
+                  style={{ transform: isActive ? "rotate(180deg)" : "rotate(0deg)" }}
+                />
+              </button>
+
+              {isActive && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  transition={{ duration: 0.18 }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-5 pb-5">
+                    <p className="text-[13px] text-[#666666] leading-relaxed mb-5">{stage.description}</p>
+                    <div className="border-t border-[#F0EDE9] pt-4">
+                      <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-3">
+                        Metrics moving at this stage
+                      </p>
+                      <div className="space-y-2.5">
+                        {stage.metrics.map((m) => (
+                          <div key={m.label} className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span
+                                className="text-[9px] font-bold uppercase tracking-[1.5px] shrink-0 w-[76px]"
+                                style={{ color: domainColors[m.domain] }}
+                              >
+                                {m.domain}
+                              </span>
+                              <span className="text-[13px] text-[#444444] truncate">
+                                {m.label} <span className="text-[#888888]">{m.direction}</span>
+                              </span>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onExplore(m.domain);
+                              }}
+                              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] hover:text-[#C22000] transition-colors whitespace-nowrap shrink-0"
+                            >
+                              Explore <ArrowRight className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const [activeDomain, setActiveDomain] = useState<DomainName>("QUALITY");
+  const tabsRef = useRef<HTMLDivElement>(null);
+
+  const handleExplore = (domain: DomainName) => {
+    setActiveDomain(domain);
+    setTimeout(() => {
+      tabsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -285,10 +393,10 @@ data-testid="button-export-pdf">
       <div className="max-w-[800px] mx-auto px-6 py-12">
         <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Emergency Department: How Value Accrues</h1>
-          <p className="text-base text-[#666666]">What changes in your ED with ambient documentation — and when. Built for CFO scrutiny.</p>
+          <p className="text-base text-[#666666]">What moves, when it moves, and why. Built to walk through with your ED leadership.</p>
         </motion.div>
 
-        <ValueAccrualSection stages={edValueAccrualStages} />
+        <EDStorySection onExplore={handleExplore} />
 
         <div className="mb-5 flex items-center gap-3">
           <div className="flex-1 h-px bg-[#E5E5E5]" />
@@ -296,8 +404,11 @@ data-testid="button-export-pdf">
           <div className="flex-1 h-px bg-[#E5E5E5]" />
         </div>
 
+        <div ref={tabsRef}>
         <DomainTabExplorer
           hideOverviewGrid={true}
+          activeDomain={activeDomain}
+          onDomainChange={setActiveDomain}
           cards={overviewCards}
           domainDetails={domainDetails}
           qualitativeByDomain={qualitativeSignals}
@@ -482,6 +593,7 @@ comprehensive documentation that goes beyond the ED's own P&L.</p>
               </div>
             </CollapsibleSection>
         </DomainTabExplorer>
+        </div>
 
         <motion.div className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>

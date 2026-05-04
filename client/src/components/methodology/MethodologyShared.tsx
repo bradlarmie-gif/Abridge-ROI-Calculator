@@ -267,6 +267,8 @@ export function DomainTabExplorer({
   qualitativeByDomain,
   defaultDomain = "QUALITY",
   hideOverviewGrid = false,
+  activeDomain: controlledDomain,
+  onDomainChange,
   children,
 }: {
   cards: DomainCardData[];
@@ -274,9 +276,16 @@ export function DomainTabExplorer({
   qualitativeByDomain: Partial<Record<DomainName, QualitativeSignal[]>>;
   defaultDomain?: DomainName;
   hideOverviewGrid?: boolean;
+  activeDomain?: DomainName;
+  onDomainChange?: (domain: DomainName) => void;
   children?: React.ReactNode;
 }) {
-  const [activeDomain, setActiveDomain] = useState<DomainName>(defaultDomain);
+  const [internalDomain, setInternalDomain] = useState<DomainName>(defaultDomain);
+  const activeDomain = controlledDomain ?? internalDomain;
+  const setActiveDomain = (d: DomainName) => {
+    setInternalDomain(d);
+    onDomainChange?.(d);
+  };
 
   const activeDetail = domainDetails.find((d) => d.domain === activeDomain);
   const activeCard = cards.find((c) => c.domain === activeDomain);
