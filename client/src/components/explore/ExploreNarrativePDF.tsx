@@ -3,14 +3,12 @@ import {
   Page,
   Text,
   View,
-  Image,
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
-import abridgeWordmark from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import type {
   ExplorePDFData,
   ExploreCareSetting,
@@ -61,7 +59,7 @@ const styles = StyleSheet.create({
     //   footer.bottom (28) + footer height (~border 1 + paddingTop 10 + content ~12) ≈ 51pt.
     // Leave ~21pt of breathing room above the footer to prevent collisions.
     // See pdf_layout_guidelines.md §1 for the canonical math check.
-    paddingBottom: 72,
+    paddingBottom: 50,
     fontFamily: "Manrope",
     fontSize: 10.5,
     color: colors.primaryText,
@@ -77,21 +75,10 @@ const styles = StyleSheet.create({
   // so it lands when it appears instead of shouting on every page header.
   sectionLabel: {
     fontSize: 8.5,
-    color: colors.primaryText,
+    color: "#EA2C00",
     textTransform: "uppercase",
     letterSpacing: 2.5,
     fontWeight: "bold",
-  },
-  sectionLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  sectionLabelMark: {
-    width: 5,
-    height: 5,
-    backgroundColor: colors.primary,
-    marginRight: 9,
   },
   sectionHeadline: {
     fontSize: 22,
@@ -148,51 +135,26 @@ const styles = StyleSheet.create({
   // "ORGNAMEPAGE 4/7" glyph collision the Nursing PDF originally shipped
   // and that this contract exists to prevent.
   footer: {
-    position: "absolute",
-    bottom: 28,
-    left: 54,
-    right: 54,
+    marginTop: "auto",
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 10,
+    paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: colors.footerRule,
+    borderTopColor: "#DDD5C8",
   },
-  footerLeft: {
-    width: 90,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  footerLogo: {
-    width: 56,
-    height: 12,
-    objectFit: "contain",
-  },
-  footerCenter: {
-    flex: 1,
-    fontSize: 7.5,
-    color: colors.footerMeta,
-    letterSpacing: 1.1,
-    textTransform: "uppercase",
-    textAlign: "center",
-    paddingHorizontal: 8,
-  },
-  footerCenterOrg: {
+  footerLeftText: {
+    fontSize: 10,
+    color: "#EA2C00",
     fontWeight: "bold",
-    color: colors.primaryText,
   },
-  footerRight: {
-    width: 90,
-    fontSize: 7.5,
-    color: colors.footerMeta,
-    letterSpacing: 1.1,
-    textTransform: "uppercase",
-    textAlign: "right",
+  footerCenterText: {
+    fontSize: 8.5,
+    color: "#666666",
   },
-  footerRightNum: {
-    color: colors.primaryText,
-    fontWeight: "bold",
-    letterSpacing: 0.4,
+  footerRightText: {
+    fontSize: 8.5,
+    color: "#999999",
   },
 });
 
@@ -344,34 +306,15 @@ const buildChoicesReveal = (
 // shipped Nursing PDF bug ("ASSESSPAMGEENT 1/10"). We now refuse the
 // suffix structurally — even on short org names — so the bug class cannot
 // recur regardless of input.
-const PageFooter = ({ orgName }: { orgName: string }) => (
-  <View style={styles.footer} fixed>
-    <View style={styles.footerLeft}>
-      <Image src={abridgeWordmark} style={styles.footerLogo} />
-    </View>
-    {/*
-      `wrap={false}` + the parent slot's `flex: 1` means an unusually long
-      org name is clipped at the slot boundary instead of wrapping
-      vertically (which would push the footer off its 23pt height
-      contract) or growing into the right "PAGE X / Y" slot (the shipped
-      collision bug). This is the geometric belt-and-braces; the snapshot
-      test asserts the structural part (no document-title suffix glued
-      onto the org name).
-    */}
-    <Text style={styles.footerCenter} wrap={false}>
-      <Text style={styles.footerCenterOrg}>{orgName}</Text>
-    </Text>
-    {/* Subtract 1 to skip the unnumbered cover page (currently always page 1). */}
+const PageFooter = ({ orgName, settingLabel }: { orgName: string; settingLabel: string }) => (
+  <View style={styles.footer}>
+    <Text style={styles.footerLeftText}>ABRIDGE</Text>
+    <Text style={styles.footerCenterText}>{orgName} · {settingLabel}</Text>
     <Text
-      style={styles.footerRight}
-      render={({ pageNumber, totalPages }) => (
-        <>
-          <Text>Page </Text>
-          <Text style={styles.footerRightNum}>
-            {`${pageNumber - 1} / ${totalPages - 1}`}
-          </Text>
-        </>
-      )}
+      style={styles.footerRightText}
+      render={({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) =>
+        `Page ${pageNumber - 1} / ${totalPages - 1}`
+      }
     />
   </View>
 );
@@ -381,10 +324,7 @@ const PageFooter = ({ orgName }: { orgName: string }) => (
 // label that competed with section headlines for visual weight. Mirrors
 // the Nursing PDF's SectionLabel one-for-one — see pdf_layout_guidelines §9.
 const SectionLabel = ({ children }: { children: string }) => (
-  <View style={styles.sectionLabelRow}>
-    <View style={styles.sectionLabelMark} />
-    <Text style={styles.sectionLabel}>{children}</Text>
-  </View>
+  <Text style={[styles.sectionLabel, { marginBottom: 12 }]}>{children}</Text>
 );
 
 const QuadrantThesisCard = ({
@@ -483,9 +423,9 @@ const CompactDriverCard = ({
   <View
     style={{
       backgroundColor: colors.cards,
-      padding: 12,
+      padding: 14,
       borderRadius: 4,
-      marginBottom: 8,
+      marginBottom: 10,
     }}
     wrap={false}
   >
@@ -539,9 +479,9 @@ const CompactDriverCard = ({
     ) : null}
     <Text
       style={{
-        fontSize: 9,
+        fontSize: 9.5,
         color: colors.secondary,
-        lineHeight: 1.45,
+        lineHeight: 1.5,
         marginBottom: formula ? 4 : 0,
       }}
     >
@@ -642,11 +582,13 @@ const QuadrantPage = ({
   q,
   setting,
   orgName,
+  settingLabel,
   isQualityForNonNursing,
 }: {
   q: ExplorePDFQuadrantData;
   setting: Exclude<ExploreCareSetting, "nursing">;
   orgName: string;
+  settingLabel: string;
   isQualityForNonNursing: boolean;
 }) => {
   const quantified = q.drivers.filter((d) => d.visibility === "quantified");
@@ -744,7 +686,7 @@ const QuadrantPage = ({
           totalIsTracked={subtotalIsTracked}
         />
 
-        <PageFooter orgName={orgName} />
+        <PageFooter orgName={orgName} settingLabel={settingLabel} />
       </View>
     </Page>
   );
@@ -998,7 +940,7 @@ export const ExploreNarrativePDFDocument = ({
             </Text>
           </View>
 
-          <PageFooter orgName={orgName} />
+          <PageFooter orgName={orgName} settingLabel={settingLabel} />
         </View>
       </Page>
 
@@ -1063,7 +1005,7 @@ export const ExploreNarrativePDFDocument = ({
             </Text>
           </View>
 
-          <PageFooter orgName={orgName} />
+          <PageFooter orgName={orgName} settingLabel={settingLabel} />
         </View>
       </Page>
 
@@ -1077,6 +1019,7 @@ export const ExploreNarrativePDFDocument = ({
             q={quadrant}
             setting={setting}
             orgName={orgName}
+            settingLabel={settingLabel}
             isQualityForNonNursing={q === "Quality"}
           />
         );
@@ -1248,6 +1191,7 @@ export const ExploreNarrativePDFDocument = ({
                   paddingHorizontal: 10,
                   borderBottomWidth: idx === 2 ? 0 : 1,
                   borderBottomColor: colors.separator,
+                  backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#F5F0EB",
                 }}
               >
                 <Text
@@ -1303,6 +1247,33 @@ export const ExploreNarrativePDFDocument = ({
                 </Text>
               </View>
             ))}
+            <View
+              style={{
+                flexDirection: "row",
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+                borderTopWidth: 2,
+                borderTopColor: "#E5DCD0",
+                backgroundColor: "#F5F0EB",
+              }}
+              wrap={false}
+            >
+              <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: "#1A1A1A" }}>
+                3-Year Total
+              </Text>
+              <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: "#1A1A1A", textAlign: "right" }}>
+                {fmtCurrency(data.threeYearGrossTotal)}
+              </Text>
+              <Text style={{ flex: 1.2, fontSize: 10, color: "#666666", textAlign: "right" }}>
+                {fmtCurrency(data.threeYearInvestmentTotal)}
+              </Text>
+              <Text style={{ flex: 1.2, fontSize: 11, fontWeight: "bold", color: "#EA2C00", textAlign: "right" }}>
+                {fmtCurrency(data.threeYearNetTotal)}
+              </Text>
+              <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: "#1A1A1A", textAlign: "right" }}>
+                {fmtCurrency(data.threeYearNetTotal)}
+              </Text>
+            </View>
           </View>
 
           {/* True Year 1 outlay footnote — only renders when an impl fee
@@ -1395,7 +1366,7 @@ export const ExploreNarrativePDFDocument = ({
               targets, not partner data. The cumulative-multiple callout
               above is the page's punchline; nothing else is needed. */}
 
-          <PageFooter orgName={orgName} />
+          <PageFooter orgName={orgName} settingLabel={settingLabel} />
         </View>
       </Page>
 
@@ -1444,37 +1415,60 @@ export const ExploreNarrativePDFDocument = ({
 
           <Text style={styles.subSectionHeader}>Value Summary</Text>
 
-          {(["Capacity", "Workforce", "Revenue", "Quality"] as const).map((qLabel) => {
-            const q = data.quadrants.find((x) => x.quadrant === qLabel);
-            if (!q) return null;
-            const total =
-              qLabel === "Quality" && q.annualTotal === 0
-                ? "Tracked"
-                : q.annualTotal > 0
+          {/* Row 1 */}
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 8 }}>
+            {(["Capacity", "Workforce"] as const).map((qLabel) => {
+              const q = data.quadrants.find((x) => x.quadrant === qLabel);
+              if (!q) return null;
+              const total =
+                q.annualTotal > 0
                   ? fmtCurrency(q.annualTotal)
                   : "—";
-            const rows = [
-              ...q.drivers.map((d) => ({
-                label: d.label,
-                value:
-                  d.visibility === "quantified"
-                    ? fmtCurrency(d.value)
-                    : "Tracked",
-              })),
-              ...q.otherFinancialBenefits.map((b) => ({
-                label: b.label,
-                value: `${fmtCurrency(b.amount)} ${b.type === "annual" ? "annual" : "one-time"}`,
-              })),
-            ];
-            return (
-              <SummaryGroup
-                key={qLabel}
-                label={qLabel.toUpperCase()}
-                total={total}
-                rows={rows}
-              />
-            );
-          })}
+              const rows = [
+                ...q.drivers.map((d) => ({
+                  label: d.label,
+                  value: d.visibility === "quantified" ? fmtCurrency(d.value) : "Tracked",
+                })),
+                ...q.otherFinancialBenefits.map((b) => ({
+                  label: b.label,
+                  value: `${fmtCurrency(b.amount)} ${b.type === "annual" ? "annual" : "one-time"}`,
+                })),
+              ];
+              return (
+                <View key={qLabel} style={{ flex: 1 }}>
+                  <SummaryGroup label={qLabel.toUpperCase()} total={total} rows={rows} />
+                </View>
+              );
+            })}
+          </View>
+          {/* Row 2 */}
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 10 }}>
+            {(["Revenue", "Quality"] as const).map((qLabel) => {
+              const q = data.quadrants.find((x) => x.quadrant === qLabel);
+              if (!q) return null;
+              const total =
+                qLabel === "Quality" && q.annualTotal === 0
+                  ? "Tracked"
+                  : q.annualTotal > 0
+                    ? fmtCurrency(q.annualTotal)
+                    : "—";
+              const rows = [
+                ...q.drivers.map((d) => ({
+                  label: d.label,
+                  value: d.visibility === "quantified" ? fmtCurrency(d.value) : "Tracked",
+                })),
+                ...q.otherFinancialBenefits.map((b) => ({
+                  label: b.label,
+                  value: `${fmtCurrency(b.amount)} ${b.type === "annual" ? "annual" : "one-time"}`,
+                })),
+              ];
+              return (
+                <View key={qLabel} style={{ flex: 1 }}>
+                  <SummaryGroup label={qLabel.toUpperCase()} total={total} rows={rows} />
+                </View>
+              );
+            })}
+          </View>
 
           {/* Net annual value row */}
           <View
@@ -1563,7 +1557,7 @@ export const ExploreNarrativePDFDocument = ({
             organization's data after implementation.
           </Text>
 
-          <PageFooter orgName={orgName} />
+          <PageFooter orgName={orgName} settingLabel={settingLabel} />
         </View>
       </Page>
     </Document>
