@@ -1,0 +1,318 @@
+PROMPT 9 — Outpatient Methodology: Complete Rebuild to Match ED/IP Layout                                                                                                                                    
+                                                                                                                                                                                                               
+  File: client/src/pages/methodology/MethodologyOutpatient.tsx
+                                                                                                                                                                                                               
+  Complete replacement of this file. Build it using the exact same component pattern as MethodologyED.tsx and MethodologyInpatient.tsx — OPDomainCard, OPDomainMethodologySection, OPValueArcSection. The      
+  current file uses the old DomainTabExplorer structure; replace it entirely.                                                                                                                                  
+                                                                                                                                                                                                               
+  ---                                                    
+
+  IMPORTS
+
+  import { motion } from "framer-motion";                                                                                                                                                                      
+  import { ArrowLeft, Download, ArrowRight, Activity, Building2, Heart, Loader2, ChevronDown } from "lucide-react";
+  import { useState } from "react";                                                                                                                                                                            
+  import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+  import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";                                                                                                                                       
+  import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';                                                                                                                               
+  import { CollapsibleSection, ImpactBadge, type BadgeType } from "@/components/methodology/MethodologyShared";                                                                                                
+                                                                                                                                                                                                               
+  Remove imports of: DomainTabExplorer, ValueAccrualSection, DomainCardData, DomainDetailData, DomainName, QualitativeSignal                                                                                   
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                         
+  TYPES
+
+  type OPMechanism = { label: string; description: string; };                                                                                                                                                  
+  
+  type OPMetricItem = {                                                                                                                                                                                        
+    label: string;                                       
+    badge: BadgeType;
+    explanation: string;
+    whenToExpect?: string;
+    formula?: string;                                                                                                                                                                                          
+  };
+                                                                                                                                                                                                               
+  ---                                                    
+
+  DOMAIN DATA
+
+  const opDomainData = [                                                                                                                                                                                       
+    {
+      domain: "CAPACITY",                                                                                                                                                                                      
+      tagline: "Patient Access & Clinical Time",         
+      outcomes: [
+        { label: "Patients seen per provider", direction: "↑" },
+        { label: "After-hours charting", direction: "↓" },                                                                                                                                                     
+      ],                                                                                                                                                                                                       
+      problem: "The average outpatient encounter generates 8–15 minutes of documentation. Multiplied by 20 patients per day and 240 clinic days per year, that's 640–1,200 hours of physician documentation    
+  time annually — per provider. Most of it happens after clinic ends. The time saved per encounter is modest; the scale is the leverage.",                                                                     
+      mechanisms: [                                      
+        { label: "Documentation time per encounter", description: "How long the physician spends in the EHR charting each patient. Ambient capture reduces this from 8–15 minutes of writing to 2–4 minutes of 
+  note review — the draft exists before the patient leaves the room." },                                                                                                                                       
+        { label: "Same-day note closure rate", description: "The share of encounter notes signed before the provider leaves clinic. Goes from 40–60% baseline to 85–95% for consistent Abridge users. This
+  metric eliminates the carry-forward queue that fuels pajama time." },                                                                                                                                        
+        { label: "Patient access slots", description: "When documentation time drops, providers have headroom to see additional patients — or to stop working after hours. For practices with wait lists, this
+  headroom converts to incremental volume. For practices at capacity, it converts to physician wellbeing." },                                                                                                  
+        { label: "Third-next-available appointment", description: "The industry standard outpatient access metric — days until a new patient can be seen. When providers close more of their schedule by seeing
+   additional patients with reclaimed time, this number shrinks. Moves slowly but compounds." },                                                                                                               
+      ],                                                 
+    },                                                                                                                                                                                                         
+    {                                                    
+      domain: "WORKFORCE",
+      tagline: "Clinician Wellbeing & Retention",
+      outcomes: [
+        { label: "Physician satisfaction", direction: "↑" },                                                                                                                                                   
+        { label: "Voluntary turnover", direction: "↓" },
+      ],                                                                                                                                                                                                       
+      problem: "Medscape has ranked documentation and EHR burden as the #1 or #2 cause of physician burnout for over a decade. In outpatient, it manifests as a predictable, measurable daily ritual: clinic
+  ends, patients go home, physician opens the laptop. 'Pajama time' is the term physicians use for it. It's not a metaphor — it's EHR session data logged between 8pm and midnight.",                          
+      mechanisms: [
+        { label: "After-hours documentation time (pajama time)", description: "Time spent charting outside scheduled clinical hours. EHR session logs show exactly when this happens and for how long. When    
+  notes draft themselves during the encounter, the post-clinic queue becomes a review queue — and that time returns to physicians." },                                                                         
+        { label: "Same-day note closure rate", description: "The behavioral outcome that correlates most directly with burnout reduction. When providers sign notes before leaving clinic instead of carrying
+  them home, the psychological boundary between work and home is restored." },                                                                                                                                 
+        { label: "Burnout score on validated instruments", description: "Mini Z, Maslach Burnout Inventory, or internal pulse surveys. Track the documentation burden subscore specifically among Abridge users
+   — it's more attributable and moves faster than the overall composite." },                                                                                                                                   
+        { label: "Locum utilization and vacancy rate", description: "Locum coverage spikes when retention falters — at 2–3× the cost of employed physicians. Track locum spend as a lagging indicator of
+  retention pressure. When it starts declining, the workforce story is working." },                                                                                                                            
+      ],                                                 
+    },                                                                                                                                                                                                         
+    {                                                    
+      domain: "REVENUE",
+      tagline: "wRVU Capture & Denial Prevention",
+      outcomes: [                                                                                                                                                                                              
+        { label: "wRVU per encounter", direction: "↑" },
+        { label: "Documentation-related denials", direction: "↓" },                                                                                                                                            
+      ],                                                 
+      problem: "Outpatient E/M coding runs from 99211 to 99215. Under time pressure, physicians default to mid-level codes — not because the clinical work was simple, but because there wasn't time to
+  document the complexity. The result is a systematic pattern of undercoding that shows up in E/M distribution data and is directly recoverable when documentation captures what actually happened.",          
+      mechanisms: [
+        { label: "E/M level distribution (99211–99215)", description: "The five outpatient E/M levels. When documentation captures history, exam findings, and clinical decision-making with the specificity   
+  that supports higher-complexity codes, the distribution shifts toward 99214 and 99215 where the work was done. Claims data shows this shift directly." },                                                    
+        { label: "wRVU per encounter", description: "The aggregate revenue signal that rolls up E/M level accuracy. Published studies and deployment observations show 2–7% wRVU lift from better
+  documentation, depending on baseline quality and specialty. At $33.40/wRVU (CMS 2026 MPFS), even a 3% lift across 10,000 encounters per provider is meaningful annual revenue." },                           
+        { label: "Documentation-related denial rate", description: "Medical necessity denials that occur because the documentation didn't support the level of care billed. RCM teams track denial root cause —
+   documentation-related denials are an identifiable subset. 30–40% of claim denials are unappealable because the documentation gap existed at the time of service." },                                        
+        { label: "Charge lag reduction", description: "Days from service to billing. When notes are signed same-day instead of 2–5 days later, the billing queue advances — improving cash flow and reducing
+  the risk of late notes missing billing windows." },                                                                                                                                                          
+      ],                                                 
+    },                                                                                                                                                                                                         
+    {                                                                                                                                                                                                          
+      domain: "QUALITY",
+      tagline: "Risk Capture & Care Gap Closure",                                                                                                                                                              
+      outcomes: [                                        
+        { label: "HCC / RAF score accuracy", direction: "↑" },
+        { label: "Care gap closure rate", direction: "↑" },                                                                                                                                                    
+      ],
+      problem: "For practices with Medicare Advantage populations, HCC coding accuracy is the difference between being paid for the risk you're actually managing and being systematically underpaid for it.   
+  Chronic conditions discussed during the visit but not documented create HCC gaps that accumulate year over year — each missing diagnosis is a capitated payment reduction that compounds across the panel.", 
+      mechanisms: [
+        { label: "HCC capture rate (MA populations)", description: "Hierarchical Condition Category coding drives Risk Adjustment Factor scores in Medicare Advantage. When ambient capture preserves the      
+  chronic condition documentation discussed during the visit, HCC gap rates fall and RAF scores reflect the actual complexity of the panel." },                                                                
+        { label: "Care gap closure (HEDIS measures)", description: "HEDIS-aligned quality measures — A1c documentation, blood pressure, preventive screenings — depend on documentation completeness. When the
+  note captures what was discussed and ordered, care gap closure rates improve on population health dashboards and payer scorecards." },                                                                       
+        { label: "Referral note completeness", description: "When primary care documentation is complete, specialists receive better clinical context — fewer repeat tests, faster diagnoses, better care
+  continuity. Hard to quantify directly, but practices competing on value-based contracts cite this as a differentiator in specialist partnership conversations." },                                           
+        { label: "MIPS / quality reporting performance", description: "MIPS quality scores aggregate documentation-dependent measures. As care gap closure and diagnosis specificity improve, MIPS quality
+  category performance trends upward — affecting performance-based payment adjustments." },                                                                                                                    
+      ],                                                 
+    },                                                                                                                                                                                                         
+  ];                                                     
+
+  ---
+
+  METRIC ITEMS PER DOMAIN
+
+  const opMetricItems: Record<string, OPMetricItem[]> = {                                                                                                                                                      
+    CAPACITY: [
+      {                                                                                                                                                                                                        
+        label: "Documentation Time Per Encounter",       
+        badge: "Signal",
+        explanation: "EHR session data shows exactly when documentation happens and how long it takes. This is the most immediate and unambiguous post-deployment signal. Deployment observations suggest time
+  savings of 2–4 minutes per encounter for consistent users. Illustratively, 20 patients/day × 240 days × 3 minutes = 240 physician hours annually per provider — returned to patients or to life.",           
+        whenToExpect: "Week 4–6 for active users. EHR session timestamps are the cleanest early metric — no billing cycle, no coding team, no CDI engagement needed.",
+        formula: "Minutes saved × daily encounters × working days = estimated annual physician hours returned",                                                                                                
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Same-Day Note Closure Rate",                                                                                                                                                                   
+        badge: "Signal",                                 
+        explanation: "The share of encounter notes signed before the provider leaves clinic. Typically runs 40–60% at baseline — the rest carry forward to evenings and weekends. For consistent Abridge users,
+   this often rises to 85–95% within 60 days. EHR audit logs show this directly, and it's often the most dramatic early metric that physicians talk about with colleagues.",                                   
+        whenToExpect: "Week 4–8. Track as the share of encounters with a note signed before 6pm (or end of scheduled clinic). Compare same providers before and after.",
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Patient Access Capacity",                                                                                                                                                                      
+        badge: "Trend",                                                                                                                                                                                        
+        explanation: "For practices with patient demand outpacing supply, reclaimed documentation time converts to additional patient visits. We model the capacity potential — your leadership decides how to
+  deploy it. For practices with wait lists, an additional 1–2 patients per provider per day is meaningful access expansion and incremental revenue.",                                                          
+        whenToExpect: "Month 2–4, but only if patient demand exists. If you're scheduling-constrained, track third-next-available appointment as the access signal.",
+        formula: "Additional patients/provider/month × providers × 12 months × avg revenue per visit",                                                                                                         
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    WORKFORCE: [                                                                                                                                                                                               
+      {                                                  
+        label: "After-Hours Documentation Time",
+        badge: "Signal",
+        explanation: "Time spent charting outside scheduled clinical hours — the canonical outpatient burnout metric. EHR session data shows exactly when this happens. Medscape 2023: outpatient physicians
+  average 1–2 hours of after-hours charting per clinic day. When notes draft themselves during the encounter, the post-clinic queue becomes a review queue. This is the metric physicians ask about most.",    
+        whenToExpect: "Week 4–6 for active users. EHR session logs outside clinic hours are directly measurable. Compare same providers, same days of week, before vs. after.",
+      },                                                                                                                                                                                                       
+      {                                                  
+        label: "Physician Satisfaction Score",                                                                                                                                                                 
+        badge: "Trend",                                                                                                                                                                                        
+        explanation: "Validated instruments (Mini Z, Maslach Burnout Inventory, internal pulse surveys) consistently rank documentation burden as the top outpatient burnout driver. Track the documentation
+  burden subscore specifically among Abridge users — it's more attributable and moves faster than the composite score. A 2-point improvement on the documentation subscale is a meaningful signal.",           
+        whenToExpect: "Month 2–4 for validated survey signal. Internal pulse surveys can show directional movement sooner. Run documentation-specific questions — not just overall satisfaction.",
+      },                                                                                                                                                                                                       
+      {                                                  
+        label: "Voluntary Physician Turnover",                                                                                                                                                                 
+        badge: "Proof",                                  
+        explanation: "Replacing a physician costs $250K–$500K fully loaded — recruiting, credentialing, onboarding, and the productivity ramp of a new hire. Documentation burden is consistently cited in exit
+   interviews as a top reason physicians leave. This is the 3-year value story metric — anchor it in the contract renewal conversation, not the 90-day check-in.",                                             
+        whenToExpect: "Month 12–18. Track exit interview data from day one so you have the attribution evidence when you need it.",
+      },                                                                                                                                                                                                       
+    ],                                                   
+    REVENUE: [                                                                                                                                                                                                 
+      {                                                  
+        label: "E/M Level Distribution Shift",
+        badge: "Signal",                                                                                                                                                                                       
+        explanation: "Claims data shows the distribution of visits at each E/M level (99211–99215) per provider. When documentation captures complexity more completely, the distribution shifts toward 99214
+  and 99215 where the clinical work supports it. Compare the same provider's distribution before and after — it's a clean before/after with data your billing team already has.",                              
+        whenToExpect: "Month 2–3. Claims data requires one full billing cycle. Compare at least 90 days of post-deployment claims against the same 90 days prior year — same provider, same patient mix.",
+      },                                                                                                                                                                                                       
+      {                                                  
+        label: "wRVU Per Encounter",                                                                                                                                                                           
+        badge: "Trend",                                  
+        explanation: "The aggregate revenue signal that rolls up E/M level accuracy. Industry data and deployment observations show 2–7% wRVU lift from better documentation, depending on baseline quality and
+   specialty. At $33.40/wRVU (CMS 2026 MPFS), a 4% lift on 8,000 annual encounters at 1.8 baseline wRVU = ~$19,300 per provider. Scale by provider count for the practice total.",                             
+        whenToExpect: "Month 3–6 for a statistically meaningful trend. Requires sufficient encounter volume and a controlled comparison — same providers, same patient mix.",
+        formula: "wRVU delta per encounter × adopted encounters × $33.40 (CMS 2026 MPFS) × realization %",                                                                                                     
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Documentation-Related Denial Rate",                                                                                                                                                            
+        badge: "Trend",                                  
+        explanation: "Medical necessity denials that occur because the note didn't support the level of care billed. RCM teams track denial root cause — documentation-related denials are an identifiable
+  subset. 30–40% of claim denials are unappealable because the documentation gap existed at service. Work with your RCM team to isolate documentation-related denials before attributing the improvement.",    
+        whenToExpect: "Month 4–8. Requires 90+ days of claims volume and root-cause categorization by your RCM team. Establish the documentation-related denial baseline before deployment.",
+        formula: "(denial rate before − after, in pp) × annual encounters × $350/encounter × attribution %",                                                                                                   
+      },                                                                                                                                                                                                       
+    ],                                                                                                                                                                                                         
+    QUALITY: [                                                                                                                                                                                                 
+      {                                                  
+        label: "HCC Capture Rate (MA Populations)",
+        badge: "Trend",                                                                                                                                                                                        
+        explanation: "Hierarchical Condition Category documentation drives Risk Adjustment Factor scores in Medicare Advantage. When ambient capture preserves chronic condition documentation discussed during
+   the visit, HCC gap rates fall and RAF scores reflect actual panel complexity. For a practice with 2,000 MA patients, closing a 5% HCC gap rate can represent significant capitated payment recovery.",      
+        whenToExpect: "Month 3–6. Risk adjustment teams track suspected vs. confirmed HCC closures per provider quarterly. Compare Abridge-enabled providers against a control group.",
+        formula: "MA patients × HCC gap rate × recapture % × RAF point value × capitation rate",                                                                                                               
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Care Gap Closure Rate",                                                                                                                                                                        
+        badge: "Trend",                                                                                                                                                                                        
+        explanation: "HEDIS-aligned quality measures — A1c documentation, blood pressure control, preventive screenings — depend on what gets captured in the note. When ambient documentation preserves what
+  was discussed and ordered during the visit, care gap closure rates improve on population health dashboards and payer quality scorecards.",                                                                   
+        whenToExpect: "Month 3–6. Track on your population health platform or payer quality scorecard. Compare gap closure rates per measure for Abridge-enabled providers vs. control.",
+      },                                                                                                                                                                                                       
+      {                                                  
+        label: "MIPS Quality Score",                                                                                                                                                                           
+        badge: "Proof",                                  
+        explanation: "MIPS quality category performance aggregates documentation-dependent measures. As care gap closure and diagnosis specificity improve, MIPS quality scores trend upward — affecting the
+  performance-based payment adjustment CMS applies to Medicare revenue. Long-game metric: annual reporting cadence, but the upstream signals (HCC capture, care gap closure) move faster and confirm the       
+  direction.",
+        whenToExpect: "Annual MIPS reporting cycle. Track upstream signals (HCC capture, care gap closure) quarterly as leading indicators. Don't use MIPS score as a short-term ROI proof point.",            
+      },                                                                                                                                                                                                       
+    ],
+  };                                                                                                                                                                                                           
+                                                         
+  ---                                                                                                                                                                                                          
+                                                         
+  COMPONENTS
+
+  1. OPMetricCard — identical visual pattern to IPMetricCard / DomainImpactCard in ED:                                                                                                                         
+     White card, border border-[#E5E5E5], rounded-sm, p-5
+     Header: label 14px bold + ImpactBadge, flex justify-between                                                                                                                                               
+     Explanation: 14px text-[#444444] leading-relaxed mt-2                                                                                                                                                     
+     whenToExpect callout: bg-[#F5F0EB] rounded-sm px-4 py-2.5 mt-3 ("When to expect" label 10px gray, text 12px)                                                                                              
+     formula toggle: same "Show formula / Hide formula" chevron pattern                                                                                                                                        
+                                                                                                                                                                                                               
+  2. OPDomainCard — COPY EXACTLY from EDDomainCard / IPDomainCard, rename to OPDomainCard. Same dark #1A1A1A header, same red domain label, same mechanism expand behavior, same metric panel expand/collapse. 
+  Renders opMetricItems[domain] using OPMetricCard.                                                                                                                                                            
+                                                                                                                                                                                                               
+  3. OPDomainMethodologySection — renders 4 OPDomainCards. Same as ED/IP equivalents.                                                                                                                          
+  
+  4. OPValueArcSection — same 3-cell bordered grid. Data:                                                                                                                                                      
+                                                         
+     Signal | Week 4–6 | "The Provider Feels It"                                                                                                                                                               
+     Documentation time per encounter drops measurably. Same-day note closure rises. After-hours EHR sessions shrink. All visible in EHR audit logs before any billing cycle closes.
+     Domain chips: CAPACITY, WORKFORCE                                                                                                                                                                         
+                                                                                                                                                                                                               
+     Trend | Month 2–4 | "The Chart Shows It"                                                                                                                                                                  
+     E/M level distribution begins shifting in claims data. wRVU per encounter starts moving. HCC gap closure improves for MA populations. The coding team and risk adjustment team start to notice.           
+     Domain chips: REVENUE, QUALITY                                                                                                                                                                            
+  
+     Proof | Month 6–18 | "The Practice Measures It"                                                                                                                                                           
+     wRVU improvement validated against controlled comparison. Denial rate reduction attributable to documentation. Physician retention signal emerges in satisfaction surveys and exit data.
+     Domain chips: REVENUE, WORKFORCE                                                                                                                                                                          
+                                                         
+     Domain chip colors:                                                                                                                                                                                       
+     CAPACITY: bg-[#F0EEEC] text-[#888888]               
+     WORKFORCE: bg-[#EDECEB] text-[#555555]                                                                                                                                                                    
+     REVENUE: bg-[#FFF0EC] text-[#EA2C00]                
+     QUALITY: bg-[#E8E8E8] text-[#1A1A1A]                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  MAIN COMPONENT                                         
+
+  export function MethodologyOutpatient({ onBack, onNavigateToSetting }) — same header/footer structure as ED/IP.                                                                                              
+  
+  Hero:                                                                                                                                                                                                        
+    Eyebrow: "Outpatient" in text-[#EA2C00]              
+    H1: "How We Think\nAbout Value"                                                                                                                                                                            
+    Subtitle: "Every encounter creates documentation debt. Multiply that by 4,000+ annual encounters per provider and the math becomes the case."
+                                                                                                                                                                                                               
+  Domain section:                                        
+    Eyebrow: "THE OUTPATIENT VALUE STORY"                                                                                                                                                                      
+    H2: "Four Domains of Value"                                                                                                                                                                                
+    <OPDomainMethodologySection />
+                                                                                                                                                                                                               
+  Value arc:                                                                                                                                                                                                   
+    Eyebrow: "VALUE ARC"
+    H2: "How It Accrues Over Time"                                                                                                                                                                             
+    Subtitle: "Value doesn't arrive all at once. The sequence is mechanistically predictable — not arbitrary."                                                                                                 
+    <OPValueArcSection />                                                                                                                                                                                      
+                                                                                                                                                                                                               
+  Methodology Reference section — same wrapper as ED/IP (border rounded-lg divide-y, with eyebrow "Methodology Reference" and h2 "The Full Framework"):                                                        
+                                                         
+    CollapsibleSection 1: "What Goes Into the Number" / "Exactly what the calculator uses — and what it doesn't"                                                                                               
+    Preserve exact table content from current file — all rows with their ✅/narrative-only designations.
+                                                                                                                                                                                                               
+    CollapsibleSection 2: "The Assumptions" / "Outpatient-specific defaults and ranges"                                                                                                                        
+    Preserve exact table content from current file, including all Tooltip rows.                                                                                                                                
+    UPDATE the wRVU conversion factor row: change "~$33 (2024)" to "$33.40 (CMS 2026 MPFS)"                                                                                                                    
+                                                                                                                                                                                                               
+    CollapsibleSection 3: "The Honest Limits" / "What we can prove, what we can support, and what we can only enable"                                                                                          
+    Preserve existing content. UPDATE the intro paragraph to:                                                                                                                                                  
+    "Most vendors will tell you their product saves money. We think you deserve to know exactly how confident we are in each claim — and what it takes to verify it in your specific practice."                
+                                                                                                                                                                                                               
+    CollapsibleSection 4: "The Validation Path" / "How to prove this with your own data — before, during, and after"                                                                                           
+    Preserve existing content.                                                                                                                                                                                 
+                                                                                                                                                                                                               
+    CollapsibleSection 5: "Connected Value" / "How outpatient documentation connects to your organization"                                                                                                     
+    Preserve existing content.
+                                                                                                                                                                                                               
+  CTA: "Ready to Build Your Model?" → "Build an Outpatient Model" (data-testid="button-build-model")                                                                                                           
+  
+  Disclaimer: preserve existing text.                                                                                                                                                                          
+                                                         
+  Related methodologies:                                                                                                                                                                                       
+    Emergency (data-testid="link-setting-ed") — "Throughput & LWBS"
+    Inpatient (data-testid="link-setting-inpatient") — "DRG & documentation quality"                                                                                                                           
+    Nursing (data-testid="link-setting-nursing") — "OT reduction & retention"                                                                                                                                  
+                                                                                                                                                                                                               
+  Preserve all test IDs: link-home-logo, button-back, button-export-pdf, button-build-model, toast-pdf-download, link-setting-*.                                                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  The outpatient story lives or dies on one insight: scale is the mechanism. 3 minutes × 20 patients × 240 days = 240 hours per provider. That's what the CAPACITY domain leads with — and everything else (the
+   burnout, the wRVU, the HCC) is downstream of that same fundamental dynamic. 
