@@ -23,6 +23,11 @@ interface MethodologyEDProps {
 
 // ─── Domain Methodology Data ──────────────────────────────────────────────────
 
+type EDMechanism = {
+  label: string;
+  description: string;
+};
+
 const edDomainMethodology = [
   {
     domain: "CAPACITY" as DomainName,
@@ -33,11 +38,11 @@ const edDomainMethodology = [
       { label: "Additional admissions captured", direction: "↑" as const },
     ],
     mechanisms: [
-      "Patients per provider per hour",
-      "Time in note per encounter",
-      "Door-to-disposition time",
-      "Door-to-provider time",
-    ],
+      { label: "Patients per provider per hour", description: "When charting time drops, providers complete their note faster and move to the next patient sooner. This is the primary throughput mechanism — but only activates when physician time, not bed availability, is your actual constraint." },
+      { label: "Time in note per encounter", description: "How long a provider spends in the EHR charting each patient. Studies on ambient AI in similar settings show 30–50% reduction for consistent users — from 8–15 minutes to 2–4 minutes of note review." },
+      { label: "Door-to-disposition time", description: "Total time from patient arrival to discharge or admission decision. Documentation speed is one input — testing turnaround, specialist availability, and bed management all contribute. We model documentation's share." },
+      { label: "Door-to-provider time", description: "Time from patient arrival to first provider contact. When providers close prior notes faster, they're available for the next patient sooner — directly reducing the front-end queue." },
+    ] as EDMechanism[],
   },
   {
     domain: "WORKFORCE" as DomainName,
@@ -48,10 +53,10 @@ const edDomainMethodology = [
       { label: "Voluntary turnover", direction: "↓" as const },
     ],
     mechanisms: [
-      "After-hours charting time (pajama time)",
-      "Cognitive load during shift",
-      "Clinician satisfaction scores",
-    ],
+      { label: "After-hours charting time (pajama time)", description: "Time spent charting after the shift ends. ED physicians average 45–90 minutes of unpaid post-shift documentation per shift. Abridge generates a draft while the encounter happens — the provider reviews and signs instead of writing from scratch." },
+      { label: "Cognitive load during shift", description: "The mental overhead of knowing documentation is accumulating. When the note writes itself in real time, providers focus on the patient in front of them — not on what they'll need to reconstruct later." },
+      { label: "Clinician satisfaction scores", description: "Validated instruments (Mini Z, ACEP surveys) consistently rank documentation burden as the #1 or #2 driver of ED physician burnout. This mechanism tracks whether that burden is actually dropping for Abridge users." },
+    ] as EDMechanism[],
   },
   {
     domain: "REVENUE" as DomainName,
@@ -62,10 +67,10 @@ const edDomainMethodology = [
       { label: "Medical necessity denials", direction: "↓" as const },
     ],
     mechanisms: [
-      "E/M level distribution (99281–99285)",
-      "Charge lag — time from visit to bill",
-      "Medical necessity denial rate",
-    ],
+      { label: "E/M level distribution (99281–99285)", description: "The five ED E/M levels. Under time pressure, providers default to mid-level codes even when complexity warrants higher. Ambient capture preserves the clinical reasoning that supports the appropriate code — so coders have what they need." },
+      { label: "Charge lag", description: "Days from service to billing. Faster note completion means faster coding queue. Every day of lag is cash flow deferred — and late notes occasionally miss billing windows entirely." },
+      { label: "Medical necessity denial rate", description: "Claims denied because documentation didn't justify the level of care. When the note captures the clinical reasoning verbalized during the encounter, payers have what they need to adjudicate the claim correctly the first time." },
+    ] as EDMechanism[],
   },
   {
     domain: "QUALITY" as DomainName,
@@ -76,11 +81,11 @@ const edDomainMethodology = [
       { label: "Quality penalty exposure", direction: "↓" as const },
     ],
     mechanisms: [
-      "CDI query volume on admits",
-      "HCAHPS doctor communication (VBP risk)",
-      "Sepsis bundle documentation (SEP-1)",
-      "Malpractice documentation exposure",
-    ],
+      { label: "CDI query volume on admissions", description: "How often CDI specialists send queries back to the attending to clarify the clinical picture for DRG coding. Better ED notes answer these questions before they're asked — reducing physician response time and accelerating billing." },
+      { label: "HCAHPS Doctor Communication score", description: "The 'doctor listened carefully / explained things clearly' composite in value-based purchasing. Providers using ambient documentation spend less time at the keyboard and more time making eye contact — patients respond in surveys." },
+      { label: "Sepsis bundle (SEP-1) documentation", description: "Real-time sepsis documentation captures the timing and sequence of clinical actions required for bundle compliance — improving both regulatory performance and downstream DRG accuracy for admitted patients." },
+      { label: "Malpractice documentation exposure", description: "Incomplete documentation is the primary liability risk in retrospective review. A timestamped, verbatim note of clinical reasoning provides defensible documentation that memory-based charting after the fact often cannot." },
+    ] as EDMechanism[],
   },
 ];
 
@@ -256,15 +261,13 @@ function EDDomainCard({
   onToggle: () => void;
 }) {
   const color = domainColors[data.domain];
+  const [expandedMechanism, setExpandedMechanism] = useState<string | null>(null);
 
   return (
     <div className="rounded-lg overflow-hidden border border-[#E5E5E5] mb-4 bg-white shadow-sm">
       <div className="bg-[#1A1A1A] px-7 py-6 flex items-start justify-between gap-6">
         <div className="flex-1">
-          <p
-            className="text-[11px] font-bold uppercase tracking-[2.5px] mb-2"
-            style={{ color }}
-          >
+          <p className="text-[11px] font-bold uppercase tracking-[2.5px] mb-2 text-[#EA2C00]">
             {data.domain}
           </p>
           <h3 className="text-[22px] font-bold text-white leading-tight tracking-tight">{data.tagline}</h3>
@@ -289,11 +292,37 @@ function EDDomainCard({
 
       <div className="bg-white px-7 pb-5 pt-1">
         <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#AAAAAA] mb-3">Value Mechanisms</p>
-        <div className="space-y-0 divide-y divide-[#F2EDE8]">
-          {data.mechanisms.map((m) => (
-            <div key={m} className="flex items-center gap-3 py-2.5">
-              <div className="w-[3px] h-4 rounded-full shrink-0" style={{ backgroundColor: color }} />
-              <span className="text-[13px] text-[#333333] font-medium">{m}</span>
+        <div className="space-y-0">
+          {data.mechanisms.map((mechanism) => (
+            <div key={mechanism.label} className="border-b border-[#F2EDE8] last:border-b-0">
+              <button
+                onClick={() => setExpandedMechanism(expandedMechanism === mechanism.label ? null : mechanism.label)}
+                className="w-full flex items-center gap-3 py-2.5 text-left group"
+                data-testid={`button-mechanism-${data.domain.toLowerCase()}-${mechanism.label.replace(/\s+/g, '-').toLowerCase()}`}
+              >
+                <div
+                  className="w-[3px] h-4 rounded-full shrink-0 transition-opacity"
+                  style={{ backgroundColor: '#EA2C00', opacity: expandedMechanism === mechanism.label ? 1 : 0.4 }}
+                />
+                <span className="flex-1 text-[13px] text-[#333333] font-medium group-hover:text-black transition-colors">
+                  {mechanism.label}
+                </span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-[#AAAAAA] transition-transform shrink-0 ${expandedMechanism === mechanism.label ? 'rotate-180' : ''}`}
+                />
+              </button>
+              {expandedMechanism === mechanism.label && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="pb-3 pl-6 pr-2"
+                >
+                  <p className="text-[12px] text-[#666666] leading-relaxed border-l-2 border-[#EA2C00]/30 pl-3">
+                    {mechanism.description}
+                  </p>
+                </motion.div>
+              )}
             </div>
           ))}
         </div>
@@ -530,8 +559,14 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
 
         <EDValueArcSection />
 
-        <div className="bg-[#F5F0EB] rounded-lg mb-10">
-          <div className="px-6">
+        <div className="mt-12 mb-10">
+          <div className="mb-6">
+            <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Methodology Reference</p>
+            <h2 className="text-[24px] font-bold text-black tracking-tight">The Full Framework</h2>
+            <p className="text-[14px] text-[#888888] mt-1.5">Formulas, assumptions, and honest limits — for the scrutinizers in the room.</p>
+          </div>
+          <div className="divide-y divide-[#E5E5E5] border border-[#E5E5E5] rounded-lg overflow-hidden">
+            <div className="px-6">
             <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -558,6 +593,8 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
               </div>
             </CollapsibleSection>
 
+            </div>
+            <div className="px-6">
             <CollapsibleSection sectionId="assumptions" title="The Assumptions" subtitle="ED-specific defaults and ranges">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -585,6 +622,8 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
               </div>
             </CollapsibleSection>
 
+            </div>
+            <div className="px-6">
             <CollapsibleSection sectionId="honest-limits" title="The Honest Limits" subtitle="What we can prove, what we can support, and what we can only enable">
               <div className="space-y-4">
                 <div className="bg-white border border-[#E5E5E5] rounded-sm p-5">
@@ -616,6 +655,7 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                 </div>
               </div>
             </CollapsibleSection>
+            </div>
           </div>
         </div>
 

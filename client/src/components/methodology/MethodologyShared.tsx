@@ -103,14 +103,11 @@ export function CollapsibleSection({
         className="w-full py-5 flex items-start justify-between text-left"
         data-testid={`button-section-${sectionId}`}
       >
-        <div>
-          <h2
-            className="text-sm font-bold text-black uppercase tracking-[1.5px]"
-            style={accentColor ? { borderLeft: `2px solid ${accentColor}`, paddingLeft: 10 } : undefined}
-          >
+        <div className="border-l-2 border-[#EA2C00] pl-4">
+          <h2 className="text-[15px] font-bold text-black">
             {title}
           </h2>
-          <p className="text-xs text-[#888888] mt-1 ml-[14px]">{subtitle}</p>
+          <p className="text-[12px] text-[#888888] mt-1">{subtitle}</p>
         </div>
         <div className="ml-4 mt-0.5 shrink-0">
           {isOpen
