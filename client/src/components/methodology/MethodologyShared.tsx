@@ -153,7 +153,7 @@ export interface DomainDetailData {
   honestLimit?: string;
 }
 
-function DomainImpactCard({
+export function DomainImpactCard({
   item,
   accentColor,
 }: {
