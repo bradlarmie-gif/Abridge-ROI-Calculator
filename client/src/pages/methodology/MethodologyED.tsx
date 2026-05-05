@@ -230,32 +230,82 @@ const edStageData = [
     badge: "Signal" as BadgeType,
     timing: "Week 6–8",
     title: "The Provider Feels It",
-    description: "After-shift charting drops. Documentation time per encounter measurably shorter in EHR audit logs. The first signals are individual — visible before any aggregate data moves.",
-    metrics: [
-      { domain: "WORKFORCE" as DomainName, label: "After-shift charting time", direction: "↓" },
-      { domain: "CAPACITY" as DomainName, label: "Documentation time per encounter", direction: "↓" },
+    description: "Individual-level, EHR-measurable. The physician's daily experience changes before any aggregate data moves. These signals are visible in audit logs within weeks of consistent use.",
+    domainMetrics: [
+      {
+        domain: "CAPACITY" as DomainName,
+        metrics: [
+          { label: "Documentation time per encounter", direction: "↓" },
+          { label: "End-of-shift note completion rate", direction: "↑" },
+        ],
+      },
+      {
+        domain: "WORKFORCE" as DomainName,
+        metrics: [
+          { label: "After-shift charting time (pajama time)", direction: "↓" },
+        ],
+      },
     ],
   },
   {
     badge: "Trend" as BadgeType,
     timing: "Month 2–3",
     title: "The Chart Shows It",
-    description: "E/M level distribution starts shifting in claims data. CDI query rates on admitted patients start to drop. The note improved at time of service — coding and CDI response take one billing cycle to reflect it.",
-    metrics: [
-      { domain: "REVENUE" as DomainName, label: "E/M level accuracy", direction: "↑" },
-      { domain: "QUALITY" as DomainName, label: "CDI query volume on admits", direction: "↓" },
+    description: "One billing cycle in, coding and CDI patterns shift. Operational data starts reflecting the documentation improvement. These require group-level adoption — not just a few early users.",
+    domainMetrics: [
+      {
+        domain: "REVENUE" as DomainName,
+        metrics: [
+          { label: "E/M level distribution (wRVU per encounter)", direction: "↑" },
+          { label: "Down-coding rate", direction: "↓" },
+        ],
+      },
+      {
+        domain: "QUALITY" as DomainName,
+        metrics: [
+          { label: "CDI query volume on admits", direction: "↓" },
+        ],
+      },
+      {
+        domain: "CAPACITY" as DomainName,
+        metrics: [
+          { label: "Door-to-disposition time", direction: "↓" },
+        ],
+      },
     ],
   },
   {
     badge: "Proof" as BadgeType,
     timing: "Month 3–18",
     title: "The System Measures It",
-    description: "LWBS rate trend, denial rate by root cause, HCAHPS doctor communication composite, physician retention. Downstream of documentation maturity — requires data volume and controlled comparisons for statistical credibility.",
-    metrics: [
-      { domain: "REVENUE" as DomainName, label: "Denial prevention (RCM root cause)", direction: "↑" },
-      { domain: "WORKFORCE" as DomainName, label: "Physician retention savings", direction: "↑" },
-      { domain: "QUALITY" as DomainName, label: "HCAHPS doctor communication", direction: "↑" },
-      { domain: "CAPACITY" as DomainName, label: "LWBS rate", direction: "↓" },
+    description: "Downstream of documentation maturity. These are the metrics that go in the annual business case — they require data volume, controlled comparisons, and time to separate signal from noise.",
+    domainMetrics: [
+      {
+        domain: "CAPACITY" as DomainName,
+        metrics: [
+          { label: "Door-to-provider time", direction: "↓" },
+          { label: "LWBS rate", direction: "↓" },
+        ],
+      },
+      {
+        domain: "REVENUE" as DomainName,
+        metrics: [
+          { label: "Medical necessity denial rate", direction: "↓" },
+        ],
+      },
+      {
+        domain: "WORKFORCE" as DomainName,
+        metrics: [
+          { label: "Provider burnout score", direction: "↑" },
+          { label: "Voluntary physician turnover", direction: "↓" },
+        ],
+      },
+      {
+        domain: "QUALITY" as DomainName,
+        metrics: [
+          { label: "HCAHPS doctor communication score", direction: "↑" },
+        ],
+      },
     ],
   },
 ];
@@ -284,8 +334,8 @@ function EDStorySection({ onExplore }: { onExplore: (domain: DomainName) => void
               >
                 <div className="flex items-center gap-3 flex-wrap">
                   <ImpactBadge type={stage.badge} />
-                  <span className="text-[10px] font-medium text-[#888888] uppercase tracking-wide">{stage.timing}</span>
-                  <span className="font-semibold text-black text-sm">{stage.title}</span>
+                  <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide">{stage.timing}</span>
+                  <span className="font-bold text-black text-sm">{stage.title}</span>
                 </div>
                 <ChevronDown
                   className="w-4 h-4 text-[#888888] shrink-0 transition-transform duration-200"
@@ -300,38 +350,51 @@ function EDStorySection({ onExplore }: { onExplore: (domain: DomainName) => void
                   transition={{ duration: 0.18 }}
                   className="overflow-hidden"
                 >
-                  <div className="px-5 pb-5">
-                    <p className="text-[13px] text-[#666666] leading-relaxed mb-5">{stage.description}</p>
-                    <div className="border-t border-[#F0EDE9] pt-4">
-                      <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-3">
-                        Metrics moving at this stage
-                      </p>
-                      <div className="space-y-2.5">
-                        {stage.metrics.map((m) => (
-                          <div key={m.label} className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <span
-                                className="text-[9px] font-bold uppercase tracking-[1.5px] shrink-0 w-[76px]"
-                                style={{ color: domainColors[m.domain] }}
-                              >
-                                {m.domain}
-                              </span>
-                              <span className="text-[13px] text-[#444444] truncate">
-                                {m.label} <span className="text-[#888888]">{m.direction}</span>
-                              </span>
-                            </div>
+                  <div className="px-5 pb-6">
+                    <p className="text-[13px] text-[#666666] leading-relaxed mb-5 border-t border-[#F0EDE9] pt-4">{stage.description}</p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {stage.domainMetrics.map((group) => (
+                        <div
+                          key={group.domain}
+                          className="rounded-sm border border-[#E5E5E5] overflow-hidden"
+                          style={{ borderTopWidth: 2, borderTopColor: domainColors[group.domain] }}
+                        >
+                          <div className="px-4 py-3 flex items-center justify-between">
+                            <span
+                              className="text-[11px] font-bold uppercase tracking-[1.5px]"
+                              style={{ color: domainColors[group.domain] }}
+                            >
+                              {group.domain}
+                            </span>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onExplore(m.domain);
+                                onExplore(group.domain);
                               }}
-                              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] hover:text-[#C22000] transition-colors whitespace-nowrap shrink-0"
+                              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] hover:text-[#C22000] transition-colors"
                             >
                               Explore <ArrowRight className="w-3 h-3" />
                             </button>
                           </div>
-                        ))}
-                      </div>
+                          <div className="px-4 pb-3 space-y-1.5">
+                            {group.metrics.map((m) => (
+                              <div key={m.label} className="flex items-start gap-2">
+                                <span
+                                  className="mt-[5px] w-1.5 h-1.5 rounded-full shrink-0"
+                                  style={{ backgroundColor: domainColors[group.domain] }}
+                                />
+                                <span className="text-[13px] text-[#444444] leading-snug">
+                                  {m.label}{" "}
+                                  <span className="font-semibold" style={{ color: domainColors[group.domain] }}>
+                                    {m.direction}
+                                  </span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </motion.div>
