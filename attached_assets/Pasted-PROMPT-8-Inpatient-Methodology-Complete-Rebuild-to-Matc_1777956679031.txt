@@ -1,0 +1,335 @@
+PROMPT 8 — Inpatient Methodology: Complete Rebuild to Match ED Layout                                                                                                                                        
+                                                                                                                                                                                                               
+  File: client/src/pages/methodology/MethodologyInpatient.tsx                                                                                                                                                  
+                                                                                                                                                                                                               
+  Complete replacement of this file. Build it from scratch using the exact same component pattern as the redesigned MethodologyED.tsx — IPDomainCard, IPDomainMethodologySection, IPValueArcSection. The       
+  current file uses the old DomainTabExplorer structure; replace it entirely.                                                                                                                                  
+                                                                                                                                                                                                               
+  Story constraints:                                                                                                                                                                                           
+  - Abridge covers H&P notes, progress notes, and consult notes in inpatient today
+  - No discharge summary (coming Q3 2026) — don't put it in the story                                                                                                                                          
+  - No length of stay — multi-factor outcome, we don't claim it
+  - The value story: documentation quality across these three note types → DRG accuracy + clinician time                                                                                                       
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  IMPORTS                                                                                                                                                                                                      
+                                                         
+  Replace existing imports with:
+  import { motion } from "framer-motion";
+  import { ArrowLeft, Download, ArrowRight, Activity, Stethoscope, Heart, Loader2, ChevronDown } from "lucide-react";
+  import { useState } from "react";                                                                                                                                                                            
+  import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+  import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";                                                                                                                                       
+  import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';                                                                                                                               
+  import { CollapsibleSection, ImpactBadge, type BadgeType } from "@/components/methodology/MethodologyShared";
+                                                                                                                                                                                                               
+  Remove all imports of: DomainTabExplorer, ValueAccrualSection, DomainCardData, DomainDetailData, DomainName, QualitativeSignal                                                                               
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                         
+  TYPES
+
+  type IPMechanism = { label: string; description: string; };
+
+  type IPMetricItem = {                                                                                                                                                                                        
+    label: string;
+    badge: BadgeType;                                                                                                                                                                                          
+    explanation: string;                                 
+    whenToExpect?: string;
+    formula?: string;
+  };
+
+  ---
+
+  DOMAIN DATA
+
+  const ipDomainData = [
+    {
+      domain: "CAPACITY",                                                                                                                                                                                      
+      tagline: "Rounding Time & Note Burden",
+      outcomes: [                                                                                                                                                                                              
+        { label: "Physician hours returned", direction: "↑" },
+        { label: "After-hours charting", direction: "↓" },
+      ],                                                                                                                                                                                                       
+      problem: "Hospitalists manage 15–20 patients per day, each requiring an H&P at admission, a daily progress note, and responses to consultant recommendations. Documentation consumes 2–4 hours per shift
+  before a single note is written after the shift ends. The bottleneck isn't clinical complexity — it's the time required to convert what was verbalized into what gets charted.",                             
+      mechanisms: [                                      
+        { label: "H&P time per admission", description: "The H&P is the most documentation-intensive note in the admission. Ambient capture converts it from a 20–45 minute writing exercise to a 5–10 minute  
+  review — generating a draft from the actual admission conversation rather than from memory." },                                                                                                              
+        { label: "Progress note time per patient per day", description: "Hospitalists write a progress note for each of their 15–20 patients every day. At 8–15 minutes per note, that's 2–4 hours of daily
+  charting. Ambient capture drafts each note from the rounding conversation — reducing it to a 2–4 minute review per patient." },                                                                              
+        { label: "Consult documentation time", description: "Specialist consultation notes typically take 20–35 minutes to complete from scratch. Ambient capture drafts the consult note during the encounter
+  — preserving the specialist's clinical reasoning without a separate documentation session." },                                                                                                               
+        { label: "After-hours documentation carry-over", description: "Incomplete notes from the shift carry over into after-hours. When ambient capture handles documentation in real time, the after-shift
+  queue shrinks — what used to be 1–2 hours of midnight charting becomes a quick review queue." },                                                                                                             
+      ],                                                 
+    },                                                                                                                                                                                                         
+    {                                                    
+      domain: "WORKFORCE",
+      tagline: "Clinician Wellbeing & Retention",
+      outcomes: [                                                                                                                                                                                              
+        { label: "Hospitalist satisfaction", direction: "↑" },
+        { label: "Voluntary turnover", direction: "↓" },                                                                                                                                                       
+      ],                                                 
+      problem: "Hospitalist burnout is driven by documentation volume in a way that's uniquely visible — 15 progress notes per shift is not occasional overtime, it's the daily workload. When physicians cite
+  burnout in exit interviews, documentation burden is consistently in the top two reasons. Replacement runs $250K–$500K per departure, and the hospitalist talent market is tight.",                           
+      mechanisms: [
+        { label: "After-shift charting time (pajama time)", description: "Hospitalists average 60–90 minutes of post-shift documentation per shift. Ambient capture generates drafts in real time, so the      
+  post-shift queue is review rather than creation — returning that time to physicians." },                                                                                                                     
+        { label: "Cognitive load during rounding", description: "The mental overhead of knowing you have 15 progress notes to write after seeing 15 patients. When documentation writes itself during the
+  encounter, physicians can be fully present in the conversation instead of mentally composing the note while the patient is talking." },                                                                      
+        { label: "Clinician satisfaction scores", description: "Validated instruments (Mini Z, SHM burnout surveys) show documentation burden as the top driver in hospital medicine. Track the documentation
+  subscore specifically among Abridge users — it's more attributable and moves faster than composite scores." },                                                                                               
+        { label: "Locum utilization rate", description: "Locum coverage spikes when retention falters. Locum hourly rates run 2–3× employed physician costs. Track locum spend as a lagging indicator of
+  retention pressure — when it starts declining, the workforce story is working." },                                                                                                                           
+      ],                                                 
+    },                                                                                                                                                                                                         
+    {                                                    
+      domain: "REVENUE",
+      tagline: "DRG Accuracy & Concurrent Review",
+      outcomes: [                                                                                                                                                                                              
+        { label: "CMI / DRG weight", direction: "↑" },
+        { label: "Medical necessity denials", direction: "↓" },                                                                                                                                                
+      ],                                                 
+      problem: "The H&P sets the DRG foundation. The progress note justifies continued stay. When either is incomplete — because the physician was managing 18 patients and ran out of time — the revenue
+  impact is real: CDI sends a query, the coder downgrades the DRG, or the payer denies the continued stay. These are documentation failures, not clinical ones.",                                              
+      mechanisms: [
+        { label: "CC/MCC capture in H&P and progress notes", description: "Complication and Comorbidity (CC) and Major Comorbidity (MCC) documentation drives DRG weighting. When H&Ps and progress notes      
+  capture qualifying conditions with the specificity required for CC/MCC assignment, DRG weight improves where it's clinically warranted. CDI tracks this daily." },                                           
+        { label: "CDI query-to-documentation loop", description: "When the H&P or progress note doesn't capture what the physician verbalized, CDI sends a query — back to the physician, requiring a response,
+   delaying coding, adding CDI labor. Better documentation breaks this loop before it starts." },                                                                                                              
+        { label: "Concurrent review documentation quality", description: "Payers audit continued inpatient status by reading daily progress notes. When notes capture clinical reasoning for continued stay —
+  not just treatment activities — concurrent review is more defensible and medical necessity denials drop." },                                                                                                 
+        { label: "H&P within CMS 24-hour rule", description: "CMS requires the H&P within 24 hours of admission. Late H&Ps are a regulatory risk and delay CDI engagement that sets the DRG trajectory. Ambient
+   capture makes the H&P faster and more complete — improving both compliance and coding accuracy at admission." },                                                                                            
+      ],                                                 
+    },                                                                                                                                                                                                         
+    {                                                    
+      domain: "QUALITY",
+      tagline: "Documentation Integrity & Clinical Defensibility",
+      outcomes: [
+        { label: "CDI query volume", direction: "↓" },
+        { label: "HCAHPS Doctor Communication", direction: "↑" },                                                                                                                                              
+      ],
+      problem: "Quality documentation in inpatient care is a team sport. CDI, coding, payers, and downstream clinicians all depend on what the physician writes. When notes are incomplete — not because the   
+  clinical work wasn't done but because there wasn't time to document it — every downstream team works harder to recover the clinical picture.",                                                               
+      mechanisms: [
+        { label: "CDI query volume per admission", description: "Each CDI query represents a documentation gap — something said or known that didn't make it into the note. Ambient capture reduces these gaps 
+  at the point of care. Most CDI departments track query rates daily and can show before/after comparison within 60–90 days." },                                                                               
+        { label: "H&P completeness and specificity", description: "The H&P is the foundation of the inpatient record. When it captures the full clinical picture — presenting history, comorbidities, exam
+  findings, and clinical reasoning for admission — downstream CDI, coding, and care team communication all improve." },                                                                                        
+        { label: "Consult note completeness", description: "Specialist consultation notes support complex DRG coding and care coordination. When consult notes are complete and specific — capturing the
+  specialist's assessment and differential — the hospitalist, CDI, and coding teams have richer content to work with." },                                                                                      
+        { label: "HCAHPS Doctor Communication score", description: "The 'doctor listened carefully / explained things clearly' composite in value-based purchasing. When physicians spend less time at the
+  keyboard during rounds, patients notice. CMS puts 2% of Medicare inpatient payments at risk based on HCAHPS scores." },                                                                                      
+      ],                                                 
+    },                                                                                                                                                                                                         
+  ];                                                     
+
+  ---
+
+  METRIC ITEMS PER DOMAIN                                                                                                                                                                                      
+  
+  const ipMetricItems: Record<string, IPMetricItem[]> = {                                                                                                                                                      
+    CAPACITY: [                                          
+      {
+        label: "Documentation Time Per Note Type",
+        badge: "Signal",
+        explanation: "EHR session timestamps show how long H&Ps, progress notes, and consult responses take. In inpatient, savings stack across note types — 15–30 minutes per H&P, 5–10 minutes per daily     
+  progress note across 15–20 patients. Visible in EHR audit data within 4–6 weeks for consistent users.",                                                                                                      
+        whenToExpect: "Week 4–8. EHR session data is the cleanest early metric — no billing cycle, no CDI engagement needed. Often the first metric leaders ask for.",                                         
+        formula: "(Minutes saved per H&P + minutes saved per progress note × avg census) / 60 = physician hours returned per shift",                                                                           
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "After-Shift Documentation Burden",                                                                                                                                                             
+        badge: "Signal",                                 
+        explanation: "Time spent charting after shift end — the most visceral metric for hospitalist buy-in. Hospitalists average 60–90 minutes of post-shift documentation per shift. When ambient capture
+  drafts notes in real time, the after-shift queue becomes a review queue. EHR session data after shift end is directly measurable for the same providers before vs. after deployment.",                       
+        whenToExpect: "Week 4–8. Often the most dramatic early signal in inpatient. Physicians talk about it to each other — and that conversation is your adoption strategy.",
+      },                                                                                                                                                                                                       
+      {                                                  
+        label: "Consult Turnaround Time",                                                                                                                                                                      
+        badge: "Trend",                                  
+        explanation: "Time from consult request to completed consult note. When the consult note drafts from the consultation encounter, turnaround time shrinks — improving the hospitalist's ability to act  
+  on specialist recommendations and reducing note-lag in complex cases.",                                                                                                                                      
+        whenToExpect: "Month 2–3. Track consult request timestamps vs. note completion timestamps in the EHR.",                                                                                                
+      },                                                                                                                                                                                                       
+    ],                                                   
+    WORKFORCE: [
+      {
+        label: "After-Shift Charting Time",                                                                                                                                                                    
+        badge: "Signal",
+        explanation: "Time spent documenting after the shift ends. Hospitalists average 60–90 minutes of post-shift charting per shift — cutting into sleep, family time, and cognitive recovery. Ambient      
+  capture generates note drafts in real time, so the after-shift queue becomes a review queue. EHR session logs after shift end are directly measurable.",                                                     
+        whenToExpect: "Week 4–8 for active users. The fastest physician behavior metric to move — no billing cycle, no downstream process dependency.",
+      },                                                                                                                                                                                                       
+      {                                                  
+        label: "Hospitalist Satisfaction Score",                                                                                                                                                               
+        badge: "Trend",                                  
+        explanation: "Validated instruments (Mini Z, SHM/ACP surveys, internal pulse surveys) consistently rank documentation burden as the top driver of hospitalist burnout. Track the documentation-specific
+   subscore among Abridge users vs. a control group. More attributable and more Abridge-moveable than composite burnout scores.",                                                                              
+        whenToExpect: "Month 2–4 for validated survey signal. Internal pulse surveys can show directional movement earlier.",
+      },                                                                                                                                                                                                       
+      {                                                  
+        label: "Voluntary Hospitalist Turnover",                                                                                                                                                               
+        badge: "Proof",                                  
+        explanation: "Replacing a hospitalist costs $250K–$500K fully loaded — recruitment, credentialing, locum coverage during the gap, productivity ramp. Documentation burden is consistently cited in exit
+   interviews. Use this to anchor the 3-year value story, not to prove short-term ROI. Track exit interview data and compare Abridge-enabled programs vs. those without.",                                     
+        whenToExpect: "Month 12–18 for statistically meaningful data. Don't claim causation without sufficient N and exit interview evidence.",
+      },                                                                                                                                                                                                       
+    ],                                                   
+    REVENUE: [                                                                                                                                                                                                 
+      {                                                  
+        label: "CDI Query Reduction Per Admission",
+        badge: "Signal",
+        explanation: "CDI departments track query rates daily — one of the fastest post-deployment signals. When H&Ps and progress notes capture what was verbalized, CDI specialists receive fewer queries.   
+  ACDIS benchmark: 25–35% query rate, $50/query in CDI specialist time. Even a 20% reduction is meaningful at volume.",                                                                                        
+        whenToExpect: "Month 2–3. CDI teams can pull before/after comparison within two billing cycles. Often the first financial signal leadership asks for.",                                                
+        formula: "Admissions × CDI query rate × reduction % × $50/query = CDI labor savings",                                                                                                                  
+      },                                                 
+      {                                                                                                                                                                                                        
+        label: "CC/MCC Capture Rate",                    
+        badge: "Trend",                                                                                                                                                                                        
+        explanation: "When H&Ps and progress notes capture qualifying comorbidities and complications with the specificity required for CC/MCC coding, DRG weight improves where it's clinically warranted. CDI
+   tracks CC/MCC capture rates per discharge — compare Abridge-enabled providers against a control cohort for a credible signal.",                                                                             
+        whenToExpect: "Month 3–6. Requires sufficient discharge volume for statistical significance. Compare same providers before and after, or Abridge vs. non-Abridge cohorts.",
+        formula: "CC/MCC capture rate improvement × discharges × average DRG weight delta × base payment rate",                                                                                                
+      },                                                                                                                                                                                                       
+      {                                                                                                                                                                                                        
+        label: "Medical Necessity Denial Rate",                                                                                                                                                                
+        badge: "Proof",                                  
+        explanation: "Payers deny continued inpatient status when progress notes document what was done rather than why the patient still needed inpatient-level care. When notes capture clinical reasoning —
+  not just treatment activities — concurrent review is more defensible. RCM teams track documentation-related denial root cause specifically.",                                                                
+        whenToExpect: "Month 4–8. RCM denial root-cause data requires 90+ days of claims volume. Isolate documentation-related denials from other denial causes.",
+        formula: "(denial rate before − after, in pp) × annual admissions × $3,500/case × attribution %",                                                                                                      
+      },                                                 
+    ],                                                                                                                                                                                                         
+    QUALITY: [                                                                                                                                                                                                 
+      {
+        label: "CDI Query Volume Per Admission",                                                                                                                                                               
+        badge: "Signal",                                 
+        explanation: "How often CDI specialists send queries back to the attending to clarify the clinical picture for DRG coding. Better H&Ps and progress notes answer these questions before they're asked.
+  CDI departments track this daily — before/after comparison is fast and clean.",                                                                                                                              
+        whenToExpect: "Month 2–3. CDI query data already exists. This is a before/after comparison with data your CDI team already has.",
+      },                                                                                                                                                                                                       
+      {                                                  
+        label: "H&P Within CMS 24-Hour Rule",                                                                                                                                                                  
+        badge: "Signal",                                 
+        explanation: "CMS requires H&P completion within 24 hours of admission. Late H&Ps are a regulatory risk and delay care plan development, CDI engagement, and consultation requests. Ambient capture
+  makes the H&P faster — improving both compliance rates and the quality of admission documentation.",                                                                                                         
+        whenToExpect: "Week 4–8. EHR timestamps for H&P completion vs. admission time are directly measurable. Often shows rapid improvement as the H&P drafts from the admission conversation.",
+      },                                                                                                                                                                                                       
+      {                                                  
+        label: "HCAHPS Doctor Communication Score",                                                                                                                                                            
+        badge: "Trend",                                  
+        explanation: "The 'doctor listened carefully / explained things clearly' composite. Physicians using ambient documentation spend less time at the keyboard during rounds and more time in direct       
+  patient contact. Reported quarterly — track the doctor communication composite specifically. CMS puts 2% of Medicare inpatient payments at risk based on HCAHPS scores.",                                    
+        whenToExpect: "Month 3–6. HCAHPS is collected quarterly. Need 2–3 cycles for a meaningful trend. Isolate the doctor communication composite — it's the most directly Abridge-attributable HCAHPS       
+  domain.",                                                                                                                                                                                                    
+      },                                                 
+    ],                                                                                                                                                                                                         
+  };                                                     
+
+  ---
+
+  COMPONENTS
+
+  1. IPMetricCard — same visual pattern as DomainImpactCard in ED:                                                                                                                                             
+     - White card, border border-[#E5E5E5], rounded-sm, p-5
+     - Header row: label (14px bold text-black) + ImpactBadge, flex justify-between                                                                                                                            
+     - Explanation: 14px text-[#444444] leading-relaxed mt-2                                                                                                                                                   
+     - whenToExpect callout (if present): bg-[#F5F0EB] rounded-sm px-4 py-2.5 mt-3                                                                                                                             
+       - "When to expect" label: 10px text-[#888888] mb-1                                                                                                                                                      
+       - Text: 12px text-[#666666]                                                                                                                                                                             
+     - formula toggle (if present): same "Show formula / Hide formula" chevron pattern with bg-[#F5F0EB] reveal                                                                                                
+                                                                                                                                                                                                               
+  2. IPDomainCard — COPY EXACTLY from EDDomainCard in MethodologyED.tsx, rename to IPDomainCard.                                                                                                               
+     Same dark #1A1A1A header band, same red domain label, same mechanism expansion (expandedMechanism state), same expand/collapse for metric panel. Renders ipMetricItems[domain] in the expanded panel using
+   IPMetricCard.                                                                                                                                                                                               
+                                                         
+  3. IPDomainMethodologySection — renders 4 IPDomainCards from ipDomainData. Same as EDDomainMethodologySection.                                                                                               
+                                                         
+  4. IPValueArcSection — same 3-cell bordered grid as EDValueArcSection with this data:                                                                                                                        
+                                                         
+     Signal | Week 4–8 | "The Provider Feels It"                                                                                                                                                               
+     H&P and progress note drafts appear in real time. After-shift charting drops measurably. EHR session timestamps show documentation time falling within weeks of consistent use.
+     Domain chips: CAPACITY, WORKFORCE                                                                                                                                                                         
+                                                         
+     Trend | Month 2–4 | "CDI Notices It"                                                                                                                                                                      
+     Progress note specificity improves. CDI query rates drop as notes capture clinical reasoning without prompting. CC/MCC capture begins moving in claims data.
+     Domain chips: QUALITY, REVENUE                                                                                                                                                                            
+  
+     Proof | Month 6–18 | "The System Measures It"                                                                                                                                                             
+     CMI improvement validated against a provider cohort. Medical necessity denial rates traceable to documentation quality. Hospitalist retention signal begins to emerge.
+     Domain chips: REVENUE, WORKFORCE                                                                                                                                                                          
+                                                                                                                                                                                                               
+     Domain chip colors same as ED:
+     CAPACITY: bg-[#F0EEEC] text-[#888888]                                                                                                                                                                     
+     WORKFORCE: bg-[#EDECEB] text-[#555555]                                                                                                                                                                    
+     REVENUE: bg-[#FFF0EC] text-[#EA2C00]                                                                                                                                                                      
+     QUALITY: bg-[#E8E8E8] text-[#1A1A1A]                                                                                                                                                                      
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  MAIN COMPONENT                                         
+
+  export function MethodologyInpatient({ onBack, onNavigateToSetting }) — same header/footer structure as MethodologyED.tsx:                                                                                   
+  
+  Hero:                                                                                                                                                                                                        
+    Eyebrow: "Inpatient" in text-[#EA2C00]               
+    H1: "How We Think\nAbout Value" (32–40px bold)
+    Subtitle: "H&P notes, progress notes, and consult documentation — the three note types where documentation quality becomes DRG accuracy and clinician time."                                               
+  
+  Domain section:                                                                                                                                                                                              
+    Eyebrow: "THE INPATIENT VALUE STORY" in text-[#888888]
+    H2: "Four Domains of Value"                                                                                                                                                                                
+    Then: <IPDomainMethodologySection />                 
+                                                                                                                                                                                                               
+  Value arc section:
+    Eyebrow: "VALUE ARC"                                                                                                                                                                                       
+    H2: "How It Accrues Over Time"                       
+    Subtitle: "Value doesn't arrive all at once. The sequence is mechanistically predictable — not arbitrary."                                                                                                 
+    Then: <IPValueArcSection />                                                                                                                                                                                
+                                                                                                                                                                                                               
+  Methodology Reference section (same "Methodology Reference" wrapper from ED):                                                                                                                                
+    Wrap CollapsibleSections in: border border-[#E5E5E5] rounded-lg overflow-hidden divide-y divide-[#E5E5E5]
+    Section eyebrow + h2 above:                                                                                                                                                                                
+      "Methodology Reference"                                                                                                                                                                                  
+      "The Full Framework"                                                                                                                                                                                     
+      Subtitle: "Formulas, assumptions, and honest limits — for the scrutinizers in the room."                                                                                                                 
+                                                                                                                                                                                                               
+    CollapsibleSection 1: "What Goes Into the Number" / "Exactly what the calculator uses — and what it doesn't"                                                                                               
+    Table (same as current file — preserve all rows, including the DNFB narrative note)                                                                                                                        
+                                                                                                                                                                                                               
+    CollapsibleSection 2: "The Assumptions" / "Inpatient-specific defaults and ranges"                                                                                                                         
+    Table (same as current file, keep all Tooltip rows)                                                                                                                                                        
+    ADD these rows if not present:                                                                                                                                                                             
+      CAPACITY: Time saved per H&P | 15–30 min | 20 min  
+      CAPACITY: Time saved per progress note | 5–12 min | 8 min                                                                                                                                                
+      WORKFORCE: Hospitalist replacement cost | $250K–$500K | $350K
+                                                                                                                                                                                                               
+    CollapsibleSection 3: "The Honest Limits" / "What we can prove, what we can support, and what we can only enable"                                                                                          
+    Same content as current file's honest limits section.
+    ADD to "We Can Only Enable This" panel: "Length of stay — many factors drive LOS beyond documentation. We don't model it."                                                                                 
+    ADD to "We Can Only Enable This" panel: "Discharge summary impact — tracked as narrative today; modeled in dollars when discharge summary capture ships in Q3 2026."                                       
+                                                                                                                                                                                                               
+    CollapsibleSection 4: "The Validation Path" / "How to prove this with your hospitalist program's data"                                                                                                     
+    Same as current file.                                                                                                                                                                                      
+                                                                                                                                                                                                               
+    CollapsibleSection 5: "Connected Value" / "How inpatient documentation connects to your organization"                                                                                                      
+    Same as current file.
+                                                                                                                                                                                                               
+  CTA block: same dark gradient, "Ready to Build Your Model?" → "Build an Inpatient Model" button (data-testid="button-build-model")                                                                           
+  
+  Disclaimer text (same as current file)                                                                                                                                                                       
+                                                         
+  Related methodologies: Emergency (data-testid="link-setting-ed"), Nursing (data-testid="link-setting-nursing"), Outpatient (data-testid="link-setting-outpatient")                                           
+                                                         
+  Toast export: data-testid="toast-pdf-download"                                                                                                                                                               
+                                                         
+  Preserve all other test IDs from the current file.                                                                                                                                                           
+                                                         
+  ---
+  That's the full prompt. The core story is: three note types → three levers (rounding efficiency, DRG accuracy, CDI query reduction) → four domains. The mechanisms are all grounded in H&P/progress/consult —
+   no LOS, no discharge summary.
