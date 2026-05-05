@@ -1,0 +1,119 @@
+ File: client/src/pages/methodology/MethodologyED.tsx   
+
+  This is a visual-only overhaul — no content changes, no data changes, no logic or functional changes. Same components, same props, same test IDs. The goal: make this page feel as premium and editorial as  
+  the Explore flow. The problem now: domain cards are flat white cards with thin colored top borders, all the same visual weight, no hierarchy. Fix that.
+                                                                                                                                                                                                               
+  ---                                                    
+
+  CHANGE 1: EDDomainCard — complete visual redesign                                                                                                                                                            
+  
+  Replace the entire card's visual structure. Same props, same expand/collapse behavior, same data. New layout:                                                                                                
+                                                         
+  Outer wrapper: rounded-lg overflow-hidden border border-[#E5E5E5] mb-4 bg-white shadow-sm                                                                                                                    
+                                                         
+  HEADER BAND (always visible):                                                                                                                                                                                
+    bg-[#1A1A1A], px-7 py-6                              
+    flex items-start justify-between gap-6                                                                                                                                                                     
+                                                                                                                                                                                                               
+    LEFT SIDE (flex-1):
+      Domain label: style={{ color: domainColor }}, text-[11px] font-bold uppercase tracking-[2.5px] mb-2                                                                                                      
+      Domain tagline: text-[22px] font-bold text-white leading-tight tracking-tight (this is the big editorial headline — e.g. "Throughput & Patient Flow")                                                    
+                                                                                                                                                                                                               
+    RIGHT SIDE (shrink-0 flex flex-col items-end gap-2 mt-1):                                                                                                                                                  
+      For each outcome in the outcomes array:                                                                                                                                                                  
+        <div className="flex items-center gap-2 bg-white/8 border border-white/15 rounded-sm px-3 py-1.5">                                                                                                     
+          <span className="text-white/80 text-[12px] font-medium">{outcome.label}</span>
+          <span className="text-[14px] font-bold" style={{ color: domainColor }}>{outcome.direction}</span>                                                                                                    
+        </div>                                                                                                                                                                                                 
+                                                                                                                                                                                                               
+  PROBLEM BLOCK (always visible, below header):                                                                                                                                                                
+    bg-white px-7 pt-5 pb-4                              
+    <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#AAAAAA] mb-2">The Problem</p>                                                                                                          
+    <p className="text-[14px] text-[#444444] leading-relaxed">{problem}</p>
+                                                                                                                                                                                                               
+  MECHANISMS BLOCK (always visible, below problem):      
+    bg-white px-7 pb-5 pt-1                                                                                                                                                                                    
+    <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#AAAAAA] mb-3">Value Mechanisms</p>                                                                                                     
+    <div className="space-y-0 divide-y divide-[#F2EDE8]">                                                                                                                                                      
+      For each mechanism:                                                                                                                                                                                      
+        <div className="flex items-center gap-3 py-2.5">                                                                                                                                                       
+          <div className="w-[3px] h-4 rounded-full shrink-0" style={{ backgroundColor: domainColor }} />                                                                                                       
+          <span className="text-[13px] text-[#333333] font-medium">{mechanism}</span>
+        </div>                                                                                                                                                                                                 
+    </div>                                               
+                                                                                                                                                                                                               
+  EXPAND TOGGLE (always visible, below mechanisms):      
+    bg-[#F5F0EB] px-7 py-4 border-t border-[#EDE8E2]
+    flex items-center justify-between cursor-pointer                                                                                                                                                           
+    onClick: toggles expanded state (same as current)
+    LEFT: <span className="text-[10px] font-bold uppercase tracking-[1.5px]" style={{ color: domainColor }}>Explore the metrics →</span>                                                                       
+    RIGHT: ChevronDown or ChevronUp, size w-4 h-4, style={{ color: domainColor }}                                                                                                                              
+                                                                                                                                                                                                               
+  EXPANDED PANEL (conditional, animated with framer-motion opacity+height):                                                                                                                                    
+    bg-[#F5F0EB] px-7 pb-7 pt-4                                                                                                                                                                                
+    <div className="space-y-3">                                                                                                                                                                                
+      {DomainImpactCards — keep exactly as-is}                                                                                                                                                                 
+    </div>
+                                                                                                                                                                                                               
+  ---                                                    
+                                                                                                                                                                                                               
+  CHANGE 2: Hero section typography upgrade              
+
+  Find the hero motion.div near the top of the MethodologyED component. Replace its contents with:                                                                                                             
+  
+    <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#EA2C00] mb-4">Emergency Department</p>                                                                                               
+    <h1 className="text-[32px] md:text-[40px] font-bold text-black leading-tight tracking-tight mb-4">
+      How We Think<br />About Value                                                                                                                                                                            
+    <p className="text-[15px] text-[#666666] max-w-[500px] mx-auto leading-relaxed">                                                                                                                           
+      A guided framework for building a defensible ROI case with your emergency department leadership team.                                                                                                    
+    </p>                                                                                                                                                                                                       
+                                                         
+  Keep the motion animation (opacity 0→1, y 20→0). Keep mb-12 on the wrapper.                                                                                                                                  
+                                                                                                                                                                                                               
+  ---
+                                                                                                                                                                                                               
+  CHANGE 3: EDValueArcSection — premium 3-cell panel     
+                                                    
+  Replace the current cell styling. The section header (title + subtitle above the cells) stays. The 3 cells:
+                                                                                                                                                                                                               
+  Outer: grid grid-cols-1 md:grid-cols-3 border border-[#E5E5E5] rounded-lg overflow-hidden divide-y md:divide-y-0 md:divide-x divide-[#E5E5E5]
+                                                                                                                                                                                                               
+  Signal cell: bg-white                                  
+  Trend cell: bg-[#F9F7F5]                                                                                                                                                                                     
+  Proof cell: bg-[#F5F0EB]                               
+                                                                                                                                                                                                               
+  Each cell: px-6 py-6                                   
+                                                                                                                                                                                                               
+    TOP ROW: flex items-center justify-between mb-3
+      ImpactBadge (Signal / Trend / Proof)                                                                                                                                                                     
+      Timing: text-[11px] font-medium text-[#888888] (e.g. "Weeks 6–8")
+                                                                                                                                                                                                               
+    TITLE: text-[17px] font-bold text-black tracking-tight mb-2                                                                                                                                                
+                                                                                                                                                                                                               
+    DESCRIPTION: text-[12px] text-[#666666] leading-relaxed mb-4                                                                                                                                               
+                                                                
+    DOMAIN CHIPS (flex flex-wrap gap-1.5):
+      Each chip: rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide                                                                                                                          
+      Use the domain's bg/text colors matching the existing domainColors map:        
+        CAPACITY: bg-[#F0EEEC] text-[#888888]                                                                                                                                                                  
+        WORKFORCE: bg-[#EDECEB] text-[#555555]                                                                                                                                                                 
+        REVENUE: bg-[#FFF0EC] text-[#EA2C00]  
+        QUALITY: bg-[#E8E8E8] text-[#1A1A1A]                                                                                                                                                                   
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+                                                                                                                                                                                                               
+  CHANGE 4: Section label styling (above EDDomainMethodologySection and EDValueArcSection)
+                                                                                                                                                                                                               
+  If there are section eyebrow labels like "THE METHODOLOGY" in red, change them:
+    text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2                                                                                                                                       
+                                                                        
+  Section h2 titles (e.g. "The ED Value Story"):                                                                                                                                                               
+    text-[24px] font-bold text-black tracking-tight                                                                                                                                                            
+                                                   
+  ---                                                                                                                                                                                                          
+                                                         
+  CHANGE 5: EDAdoptionSection — no changes. Keep exactly as-is. The dark background already works well.                                                                                                        
+                                                                                                                                                                                                               
+  ---
+                                                                                                                                                                                                               
+  That is all. Do not change any content, data, test IDs, props, or component interfaces. Do not change MethodologyShared.tsx. Pure visual/styling changes only to MethodologyED.tsx.

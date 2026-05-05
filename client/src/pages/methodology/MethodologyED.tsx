@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, ArrowRight, Stethoscope, Building2, Heart, Loader2, ChevronDown } from "lucide-react";
+import { ArrowLeft, Download, ArrowRight, Stethoscope, Building2, Heart, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
@@ -258,64 +258,60 @@ function EDDomainCard({
   const color = domainColors[data.domain];
 
   return (
-    <div
-      className="bg-white border border-[#E5E5E5] rounded-sm overflow-hidden"
-      style={{ borderTopWidth: 3, borderTopColor: color }}
-    >
-      <div className="p-6">
-        <div className="mb-4">
+    <div className="rounded-lg overflow-hidden border border-[#E5E5E5] mb-4 bg-white shadow-sm">
+      <div className="bg-[#1A1A1A] px-7 py-6 flex items-start justify-between gap-6">
+        <div className="flex-1">
           <p
-            className="text-[11px] font-bold uppercase tracking-[2px] mb-1"
+            className="text-[11px] font-bold uppercase tracking-[2.5px] mb-2"
             style={{ color }}
           >
             {data.domain}
           </p>
-          <h3 className="font-bold text-black text-base leading-snug">{data.tagline}</h3>
+          <h3 className="text-[22px] font-bold text-white leading-tight tracking-tight">{data.tagline}</h3>
         </div>
-
-        <p className="text-[13px] text-[#555555] leading-relaxed mb-5">{data.problem}</p>
-
-        <div className="mb-4">
-          <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-2">Moving toward</p>
-          <div className="flex flex-wrap gap-2">
-            {data.outcomes.map((o) => (
-              <span
-                key={o.label}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-sm text-[12px] font-semibold border"
-                style={{ borderColor: color + "60", color, backgroundColor: color + "08" }}
-              >
-                {o.label} {o.direction}
-              </span>
-            ))}
-          </div>
+        <div className="shrink-0 flex flex-col items-end gap-2 mt-1">
+          {data.outcomes.map((o) => (
+            <div
+              key={o.label}
+              className="flex items-center gap-2 bg-white/8 border border-white/15 rounded-sm px-3 py-1.5"
+            >
+              <span className="text-white/80 text-[12px] font-medium">{o.label}</span>
+              <span className="text-[14px] font-bold" style={{ color }}>{o.direction}</span>
+            </div>
+          ))}
         </div>
+      </div>
 
-        <div className="mb-5">
-          <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-2">Value mechanisms</p>
-          <div className="flex flex-wrap gap-1.5">
-            {data.mechanisms.map((m) => (
-              <span
-                key={m}
-                className="inline-block px-2.5 py-1 bg-[#F5F0EB] rounded-sm text-[11px] text-[#555555]"
-              >
-                {m}
-              </span>
-            ))}
-          </div>
+      <div className="bg-white px-7 pt-5 pb-4">
+        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#AAAAAA] mb-2">The Problem</p>
+        <p className="text-[14px] text-[#444444] leading-relaxed">{data.problem}</p>
+      </div>
+
+      <div className="bg-white px-7 pb-5 pt-1">
+        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#AAAAAA] mb-3">Value Mechanisms</p>
+        <div className="space-y-0 divide-y divide-[#F2EDE8]">
+          {data.mechanisms.map((m) => (
+            <div key={m} className="flex items-center gap-3 py-2.5">
+              <div className="w-[3px] h-4 rounded-full shrink-0" style={{ backgroundColor: color }} />
+              <span className="text-[13px] text-[#333333] font-medium">{m}</span>
+            </div>
+          ))}
         </div>
+      </div>
 
-        <button
-          onClick={onToggle}
-          className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[1.5px] transition-colors"
-          style={{ color: isExpanded ? "#888888" : "#EA2C00" }}
-          data-testid={`button-toggle-domain-${data.domain.toLowerCase()}`}
-        >
-          {isExpanded ? "Hide metrics" : "Explore the metrics"}
-          <ChevronDown
-            className="w-3.5 h-3.5 transition-transform duration-200"
-            style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
-          />
-        </button>
+      <div
+        onClick={onToggle}
+        className="bg-[#F5F0EB] px-7 py-4 border-t border-[#EDE8E2] flex items-center justify-between cursor-pointer"
+        data-testid={`button-toggle-domain-${data.domain.toLowerCase()}`}
+      >
+        <span className="text-[10px] font-bold uppercase tracking-[1.5px]" style={{ color }}>
+          {isExpanded ? "Hide the metrics" : "Explore the metrics →"}
+        </span>
+        {isExpanded ? (
+          <ChevronUp className="w-4 h-4" style={{ color }} />
+        ) : (
+          <ChevronDown className="w-4 h-4" style={{ color }} />
+        )}
       </div>
 
       {isExpanded && detailData && (
@@ -325,16 +321,18 @@ function EDDomainCard({
           transition={{ duration: 0.2 }}
           className="overflow-hidden"
         >
-          <div className="border-t border-[#F0EDE9] bg-[#F5F0EB] px-6 py-5 space-y-4">
-            {detailData.honestLimit && (
-              <div className="border-l-2 border-[#EA2C00] pl-4 py-2 bg-white rounded-sm">
-                <p className="text-[10px] font-semibold text-[#EA2C00] mb-1">Honest limit</p>
-                <p className="text-xs text-[#666666] leading-relaxed">{detailData.honestLimit}</p>
-              </div>
-            )}
-            {detailData.items.map((item) => (
-              <DomainImpactCard key={item.label} item={item} accentColor={color} />
-            ))}
+          <div className="bg-[#F5F0EB] px-7 pb-7 pt-4">
+            <div className="space-y-3">
+              {detailData.honestLimit && (
+                <div className="border-l-2 border-[#EA2C00] pl-4 py-2 bg-white rounded-sm">
+                  <p className="text-[10px] font-semibold text-[#EA2C00] mb-1">Honest limit</p>
+                  <p className="text-xs text-[#666666] leading-relaxed">{detailData.honestLimit}</p>
+                </div>
+              )}
+              {detailData.items.map((item) => (
+                <DomainImpactCard key={item.label} item={item} accentColor={color} />
+              ))}
+            </div>
           </div>
         </motion.div>
       )}
@@ -350,8 +348,8 @@ function EDDomainMethodologySection() {
   return (
     <div className="mb-10">
       <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Methodology</p>
-        <h2 className="text-lg font-bold text-black uppercase tracking-tight">Understanding the Value</h2>
+        <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Methodology</p>
+        <h2 className="text-[24px] font-bold text-black tracking-tight">Understanding the Value</h2>
         <p className="text-sm text-[#888888] mt-1">
           Four domains. Each has a distinct problem, a set of mechanisms, and a measurement path. Start with whichever matters most to your organization.
         </p>
@@ -437,36 +435,43 @@ function EDValueArcSection() {
   return (
     <div className="mb-10">
       <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Value Arc</p>
-        <h2 className="text-lg font-bold text-black uppercase tracking-tight">How It Accrues Over Time</h2>
+        <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Value Arc</p>
+        <h2 className="text-[24px] font-bold text-black tracking-tight">How It Accrues Over Time</h2>
         <p className="text-sm text-[#888888] mt-1">
           Value doesn't arrive all at once. The sequence is mechanistically predictable — not arbitrary.
         </p>
       </div>
-      <div className="border border-[#E5E5E5] rounded-sm overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E5E5E5]">
-          {stages.map((stage) => (
-            <div key={stage.badge} className="p-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 border border-[#E5E5E5] rounded-lg overflow-hidden divide-y md:divide-y-0 md:divide-x divide-[#E5E5E5]">
+        {stages.map((stage) => {
+          const cellBg =
+            stage.badge === "Signal" ? "bg-white" : stage.badge === "Trend" ? "bg-[#F9F7F5]" : "bg-[#F5F0EB]";
+          const chipStyles: Record<DomainName, string> = {
+            CAPACITY: "bg-[#F0EEEC] text-[#888888]",
+            WORKFORCE: "bg-[#EDECEB] text-[#555555]",
+            REVENUE: "bg-[#FFF0EC] text-[#EA2C00]",
+            QUALITY: "bg-[#E8E8E8] text-[#1A1A1A]",
+          };
+          return (
+            <div key={stage.badge} className={`${cellBg} px-6 py-6`}>
               <div className="flex items-center justify-between mb-3">
                 <ImpactBadge type={stage.badge} />
-                <span className="text-[10px] font-medium text-[#888888] uppercase tracking-wide">{stage.timing}</span>
+                <span className="text-[11px] font-medium text-[#888888]">{stage.timing}</span>
               </div>
-              <p className="font-bold text-black text-xs uppercase tracking-wide mb-2">{stage.title}</p>
-              <p className="text-xs text-[#666666] leading-relaxed mb-3">{stage.description}</p>
+              <p className="text-[17px] font-bold text-black tracking-tight mb-2">{stage.title}</p>
+              <p className="text-[12px] text-[#666666] leading-relaxed mb-4">{stage.description}</p>
               <div className="flex flex-wrap gap-1.5">
                 {stage.domains.map((d) => (
                   <span
                     key={d}
-                    className="text-[9px] font-bold uppercase tracking-[1px] px-2 py-0.5 rounded-sm"
-                    style={{ color: domainColors[d], backgroundColor: domainColors[d] + "15" }}
+                    className={`rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${chipStyles[d]}`}
                   >
                     {d}
                   </span>
                 ))}
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -510,8 +515,13 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
 
       <div className="max-w-[800px] mx-auto px-6 py-12">
         <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-3 uppercase tracking-tight">Emergency Department</h1>
-          <p className="text-base text-[#666666]">The methodology behind every number in the ED model — and the story you can tell with it.</p>
+          <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#EA2C00] mb-4">Emergency Department</p>
+          <h1 className="text-[32px] md:text-[40px] font-bold text-black leading-tight tracking-tight mb-4">
+            How We Think<br />About Value
+          </h1>
+          <p className="text-[15px] text-[#666666] max-w-[500px] mx-auto leading-relaxed">
+            A guided framework for building a defensible ROI case with your emergency department leadership team.
+          </p>
         </motion.div>
 
         <EDDomainMethodologySection />
