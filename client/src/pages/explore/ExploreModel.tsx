@@ -381,19 +381,26 @@ export default function ExploreModel({
     }).value);
   }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
 
-  // 3-year projection (Y2/Y3 growth driven by state, one-time benefits in Y1 only)
+  // 3-year projection
+  // Nursing uses a ramp model: Year 1 = 11/12 of run-rate (30-day implementation
+  // period, then 11 months at full deployment), Year 2-3 = steady state. No
+  // arbitrary growth multiplier. Non-nursing settings keep the Y2/Y3
+  // growth-percent model driven by state.
   const implementationCost = state.includeImplementation ? state.implementationFee : 0;
   const year1Value = useMemo(() => {
+    if (isNursing) return Math.round(totalAnnualValue * 11 / 12);
     return totalAnnualValue + totalOneTimeValue;
-  }, [totalAnnualValue, totalOneTimeValue]);
+  }, [isNursing, totalAnnualValue, totalOneTimeValue]);
 
   const year2Value = useMemo(() => {
+    if (isNursing) return totalAnnualValue;
     return Math.round(totalAnnualValue * (1 + state.year2GrowthPercent / 100));
-  }, [totalAnnualValue, state.year2GrowthPercent]);
+  }, [isNursing, totalAnnualValue, state.year2GrowthPercent]);
 
   const year3Value = useMemo(() => {
+    if (isNursing) return totalAnnualValue;
     return Math.round(year2Value * (1 + state.year3GrowthPercent / 100));
-  }, [year2Value, state.year3GrowthPercent]);
+  }, [isNursing, totalAnnualValue, year2Value, state.year3GrowthPercent]);
 
   // Per-year encounter projections (uses the same Y2/Y3 growth as value)
   const year1Encounters = useMemo(() => state.annualEncounters, [state.annualEncounters]);
@@ -1002,6 +1009,15 @@ export default function ExploreModel({
             hcahpsEnabled: dq.nursingHcahpsEnabled,
             medErrorEnabled: td.nursingEarlyDeteriorationEnabled,
             bundleComplianceEnabled: td.nursingBundleComplianceEnabled,
+            cdiResponseEnabled: td.nursingCdiResponseEnabled,
+            docCompletionEnabled: td.nursingDocCompletionEnabled,
+            ...(expandedProviders > expansionBaselineCount ? {
+              expansionBeds: expandedProviders,
+              expansionUtilizationPercent: expandedUtilization,
+              expansionAnnualValue: expandedValue,
+              expansionRoi: Math.round(expandedRoi * 10) / 10,
+              expansionInvestment: expandedInvestment,
+            } : {}),
             pricingModel: state.pricingModel,
             costPerBedPerMonth: state.costPerProvider,
             costPerEncounter: state.pricingModel === 'perEncounter' ? state.costPerEncounter : undefined,
@@ -1012,13 +1028,11 @@ export default function ExploreModel({
             year2Net,
             year3Net,
             threeYearCumulativeNet: threeYearNetTotal,
-            year2GrowthPct: state.year2GrowthPercent,
-            year3GrowthPct: state.year3GrowthPercent,
             workforceTotal: valueByQuadrant.Workforce || 0,
             qualityTotal: valueByQuadrant.Quality || 0,
             totalAnnualValue,
-            netAnnualValue: year1Net,
-            costPerBedPerYear: state.nursingStaffedBeds > 0 ? Math.round(year1Net / state.nursingStaffedBeds) : 0,
+            netAnnualValue: totalAnnualValue - annualInvestment,
+            costPerBedPerYear: state.nursingStaffedBeds > 0 ? Math.round((totalAnnualValue - annualInvestment) / state.nursingStaffedBeds) : 0,
           };
 
           await generateNursingValueAssessmentPDF(nursingInput);
