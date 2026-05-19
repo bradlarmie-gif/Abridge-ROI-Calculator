@@ -272,8 +272,6 @@ const FIXED_INPUT: NursingPDFInput = {
   year2Net: 7_850_000,
   year3Net: 9_220_000,
   threeYearCumulativeNet: 23_613_000,
-  year2GrowthPct: 20,
-  year3GrowthPct: 18,
 
   workforceTotal: 6_830_000,
   qualityTotal: 813_000,

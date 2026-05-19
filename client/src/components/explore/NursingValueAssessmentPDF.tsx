@@ -869,6 +869,9 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
   const clabsiEvents = clabsiCalc.events;
   const sepsisCases = sepsisCalc.events;
 
+  const hasQuantifiedQuality = data.hapi.enabled || data.falls.enabled || data.cauti.enabled || data.clabsi.enabled || data.sepsis.enabled;
+  const hasQualitySignals = data.hcahpsEnabled || data.medErrorEnabled || (data.bundleComplianceEnabled ?? false) || (data.cdiResponseEnabled ?? false) || (data.docCompletionEnabled ?? false);
+
   // Year math — values read directly from the already-computed net figures
   const y1Recurring = data.year1Net + data.annualInvestment;
   const y2Recurring = data.year2Net + data.annualInvestment;
@@ -1257,148 +1260,206 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         </View>
       </Page>
 
-      {/* PAGE 5 — QUALITY
-          The previous version of this page rendered 5 wrap={false} driver
-          cards (≈280pt each) inside a `<Page wrap>` — pagination math
-          guaranteed exactly 1 driver per page after the headline + intro,
-          producing 5 single-driver orphan pages instead of one cohesive
-          quality story. This rewrite collapses each driver into a
-          CompactDriverCard arranged in a 2-column grid (5 cards = 3 rows
-          with the 5th sharing a row with the qualitative-metrics card),
-          and lands the quality subtotal as a HeroSubtotal at the bottom.
-          The full per-driver math still reconciles via the inline italic
-          formula on each card and the Methodology page bullets. */}
-      <Page size="LETTER" style={styles.page}>
-        <View style={styles.pageWrapper}>
-          <SectionLabel>QUALITY</SectionLabel>
-          <Text style={styles.sectionHeadline}>
-            Real-time documentation is the visibility layer that makes early intervention possible.
-          </Text>
-          <Text style={styles.body}>
-            Preventable harm events happen when risk signals are missed or delayed.
-            The hypothesis we model: real-time flowsheet capture surfaces those
-            signals while there's still time to act — with the actual outcome
-            determined by clinical practice on each unit. The values below are
-            <Text style={{ fontWeight: "bold", color: colors.primaryText }}> potential</Text>;
-            documentation creates the visibility, the care team creates the outcome.
-          </Text>
+      {/* PAGE 5 — QUALITY (three variants)
+          hasQuantifiedQuality  → financial cards + HeroSubtotal (existing layout)
+          hasQualitySignals only → "Quality Signals" measurement guide (no dollar totals)
+          neither              → page suppressed entirely */}
+      {hasQuantifiedQuality ? (
+        <Page size="LETTER" style={styles.page}>
+          <View style={styles.pageWrapper}>
+            <SectionLabel>QUALITY</SectionLabel>
+            <Text style={styles.sectionHeadline}>
+              Real-time documentation is the visibility layer that makes early intervention possible.
+            </Text>
+            <Text style={styles.body}>
+              Preventable harm events happen when risk signals are missed or delayed.
+              The hypothesis we model: real-time flowsheet capture surfaces those
+              signals while there's still time to act — with the actual outcome
+              determined by clinical practice on each unit. The values below are
+              <Text style={{ fontWeight: "bold", color: colors.primaryText }}> potential</Text>;
+              documentation creates the visibility, the care team creates the outcome.
+            </Text>
 
-          {/* 2-column grid. Each <View flexDirection: row> is a row of up to
-              two compact cards. The negative marginHorizontal cancels the
-              CompactDriverCard's +4pt marginHorizontal so the row's outer
-              edges align to the page gutter. */}
-          <View style={{ marginHorizontal: -4 }}>
-            <View style={{ flexDirection: "row" }}>
-              {data.hapi.enabled ? (
-                <CompactDriverCard
-                  name="HAPI Risk Reduction"
-                  value={`${fmtCurrency(data.hapi.value)} (pot.)`}
-                  body="Skin assessments at the point of care surface risk earlier than charts reconstructed at shift end."
-                  mathRows={[
-                    { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
-                    { label: "HAPI rate / 1,000 days", value: data.hapi.rate.toFixed(2) },
-                    { label: "Annual HAPI events", value: hapiEvents.toFixed(1) },
-                    { label: "Prevention rate", value: `${data.hapi.preventionPct}%` },
-                    { label: "Cost per event", value: fmtCurrencyExact(data.hapi.costPerEvent) },
-                    { label: "Annual value", value: fmtCurrency(data.hapi.value) },
-                  ]}
-                  source="Source: Dowding et al., JAMIA 2012."
-                />
-              ) : null}
-              {data.falls.enabled ? (
-                <CompactDriverCard
-                  name="Fall Risk Visibility"
-                  value={`${fmtCurrency(data.falls.value)} (pot.)`}
-                  body="Morse Fall Scale assessments completed in real time make risk escalations visible when they matter."
-                  mathRows={[
-                    { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
-                    { label: "Fall rate / 1,000 days", value: data.falls.rate.toFixed(2) },
-                    { label: "Annual fall events", value: fallsEvents.toFixed(1) },
-                    { label: "Prevention rate", value: `${data.falls.preventionPct}%` },
-                    { label: "Cost per event", value: fmtCurrencyExact(data.falls.costPerEvent) },
-                    { label: "Annual value", value: fmtCurrency(data.falls.value) },
-                  ]}
-                  source="Source: AHRQ inpatient fall cost benchmarks."
-                />
-              ) : null}
+            <View style={{ marginHorizontal: -4 }}>
+              <View style={{ flexDirection: "row" }}>
+                {data.hapi.enabled ? (
+                  <CompactDriverCard
+                    name="HAPI Risk Reduction"
+                    value={`${fmtCurrency(data.hapi.value)} (pot.)`}
+                    body="Skin assessments at the point of care surface risk earlier than charts reconstructed at shift end."
+                    mathRows={[
+                      { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
+                      { label: "HAPI rate / 1,000 days", value: data.hapi.rate.toFixed(2) },
+                      { label: "Annual HAPI events", value: hapiEvents.toFixed(1) },
+                      { label: "Prevention rate", value: `${data.hapi.preventionPct}%` },
+                      { label: "Cost per event", value: fmtCurrencyExact(data.hapi.costPerEvent) },
+                      { label: "Annual value", value: fmtCurrency(data.hapi.value) },
+                    ]}
+                    source="Source: Dowding et al., JAMIA 2012."
+                  />
+                ) : null}
+                {data.falls.enabled ? (
+                  <CompactDriverCard
+                    name="Fall Risk Visibility"
+                    value={`${fmtCurrency(data.falls.value)} (pot.)`}
+                    body="Morse Fall Scale assessments completed in real time make risk escalations visible when they matter."
+                    mathRows={[
+                      { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
+                      { label: "Fall rate / 1,000 days", value: data.falls.rate.toFixed(2) },
+                      { label: "Annual fall events", value: fallsEvents.toFixed(1) },
+                      { label: "Prevention rate", value: `${data.falls.preventionPct}%` },
+                      { label: "Cost per event", value: fmtCurrencyExact(data.falls.costPerEvent) },
+                      { label: "Annual value", value: fmtCurrency(data.falls.value) },
+                    ]}
+                    source="Source: AHRQ inpatient fall cost benchmarks."
+                  />
+                ) : null}
+              </View>
+
+              <View style={{ flexDirection: "row" }}>
+                {data.cauti.enabled ? (
+                  <CompactDriverCard
+                    name="CAUTI Prevention"
+                    value={`${fmtCurrency(data.cauti.value)} (pot.)`}
+                    body="Daily catheter-necessity documentation supports earlier removal and bundle adherence."
+                    mathRows={[
+                      { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
+                      { label: "Catheter utilization", value: `${data.cauti.utilizationPct}%` },
+                      { label: "Catheter days / yr", value: fmtNum(Math.round(cathDays)) },
+                      { label: "CAUTI rate / 1,000 cath days", value: data.cauti.rate.toFixed(2) },
+                      { label: "Annual CAUTI events", value: cautiEvents.toFixed(1) },
+                      { label: "Prevention rate", value: `${data.cauti.preventionPct}%` },
+                      { label: "Cost per event", value: fmtCurrencyExact(data.cauti.costPerEvent) },
+                      { label: "Annual value", value: fmtCurrency(data.cauti.value) },
+                    ]}
+                    source="Source: Meddings et al., JAMA Internal Medicine 2014."
+                  />
+                ) : null}
+                {data.clabsi.enabled ? (
+                  <CompactDriverCard
+                    name="CLABSI Prevention"
+                    value={`${fmtCurrency(data.clabsi.value)} (pot.)`}
+                    body="Timely line documentation supports bundle compliance and is associated with fewer central-line bloodstream infections."
+                    mathRows={[
+                      { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
+                      { label: "Central-line utilization", value: `${data.clabsi.utilizationPct}%` },
+                      { label: "Central-line days / yr", value: fmtNum(Math.round(lineDays)) },
+                      { label: "CLABSI rate / 1,000 line days", value: data.clabsi.rate.toFixed(2) },
+                      { label: "Annual CLABSI events", value: clabsiEvents.toFixed(1) },
+                      { label: "Prevention rate", value: `${data.clabsi.preventionPct}%` },
+                      { label: "Cost per event", value: fmtCurrencyExact(data.clabsi.costPerEvent) },
+                      { label: "Annual value", value: fmtCurrency(data.clabsi.value) },
+                    ]}
+                    source="Source: CDC CLABSI cost-of-illness estimates."
+                  />
+                ) : null}
+              </View>
+
+              <View style={{ flexDirection: "row" }}>
+                {data.sepsis.enabled ? (
+                  <CompactDriverCard
+                    name="Sepsis Bundle Compliance"
+                    value={`${fmtCurrency(data.sepsis.value)} (pot.)`}
+                    body="Time-stamped vitals and antibiotic documentation lift SEP-1 compliance. The model captures only the documentation-lag share."
+                    mathRows={[
+                      { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
+                      { label: "Sepsis rate / 1,000 days", value: data.sepsis.ratePerThousand.toFixed(2) },
+                      { label: "Annual sepsis cases", value: sepsisCases.toFixed(1) },
+                      { label: "SEP-1 non-compliant share", value: `${data.sepsis.complianceGapPct}%` },
+                      { label: "Doc lag fraction", value: `${data.sepsis.docLagPct}%` },
+                      { label: "Excess cost / case", value: fmtCurrencyExact(data.sepsis.excessCostPerCase) },
+                      { label: "Realization rate", value: `${data.sepsis.realizationPct}%` },
+                      { label: "Annual value", value: fmtCurrency(data.sepsis.value) },
+                    ]}
+                  />
+                ) : null}
+              </View>
             </View>
 
-            <View style={{ flexDirection: "row" }}>
-              {data.cauti.enabled ? (
-                <CompactDriverCard
-                  name="CAUTI Prevention"
-                  value={`${fmtCurrency(data.cauti.value)} (pot.)`}
-                  body="Daily catheter-necessity documentation supports earlier removal and bundle adherence."
-                  mathRows={[
-                    { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
-                    { label: "Catheter utilization", value: `${data.cauti.utilizationPct}%` },
-                    { label: "Catheter days / yr", value: fmtNum(Math.round(cathDays)) },
-                    { label: "CAUTI rate / 1,000 cath days", value: data.cauti.rate.toFixed(2) },
-                    { label: "Annual CAUTI events", value: cautiEvents.toFixed(1) },
-                    { label: "Prevention rate", value: `${data.cauti.preventionPct}%` },
-                    { label: "Cost per event", value: fmtCurrencyExact(data.cauti.costPerEvent) },
-                    { label: "Annual value", value: fmtCurrency(data.cauti.value) },
-                  ]}
-                  source="Source: Meddings et al., JAMA Internal Medicine 2014."
-                />
-              ) : null}
-              {data.clabsi.enabled ? (
-                <CompactDriverCard
-                  name="CLABSI Prevention"
-                  value={`${fmtCurrency(data.clabsi.value)} (pot.)`}
-                  body="Timely line documentation supports bundle compliance and is associated with fewer central-line bloodstream infections."
-                  mathRows={[
-                    { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
-                    { label: "Central-line utilization", value: `${data.clabsi.utilizationPct}%` },
-                    { label: "Central-line days / yr", value: fmtNum(Math.round(lineDays)) },
-                    { label: "CLABSI rate / 1,000 line days", value: data.clabsi.rate.toFixed(2) },
-                    { label: "Annual CLABSI events", value: clabsiEvents.toFixed(1) },
-                    { label: "Prevention rate", value: `${data.clabsi.preventionPct}%` },
-                    { label: "Cost per event", value: fmtCurrencyExact(data.clabsi.costPerEvent) },
-                    { label: "Annual value", value: fmtCurrency(data.clabsi.value) },
-                  ]}
-                  source="Source: CDC CLABSI cost-of-illness estimates."
-                />
-              ) : null}
-            </View>
+            <HeroSubtotal
+              label="Quality Subtotal (Potential)"
+              total={data.qualityTotal > 0 ? fmtCurrency(data.qualityTotal) : "Tracked"}
+              caption="Validate baseline rates with your infection-control and quality teams before presenting."
+            />
 
-            {/* Sepsis sits on its own row paired with a "Tracked Metrics"
-                summary card so the row reads as one symmetric pair instead
-                of leaving sepsis as an orphan half-row. The tracked-metrics
-                card collapses HCAHPS + medication errors into one block —
-                each was a full driverCard previously, which was three
-                paragraphs to deliver "we are not putting a dollar on this."
-                One block, one beat. */}
-            <View style={{ flexDirection: "row" }}>
-              {data.sepsis.enabled ? (
-                <CompactDriverCard
-                  name="Sepsis Bundle Compliance"
-                  value={`${fmtCurrency(data.sepsis.value)} (pot.)`}
-                  body="Time-stamped vitals and antibiotic documentation lift SEP-1 compliance. The model captures only the documentation-lag share."
-                  mathRows={[
-                    { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
-                    { label: "Sepsis rate / 1,000 days", value: data.sepsis.ratePerThousand.toFixed(2) },
-                    { label: "Annual sepsis cases", value: sepsisCases.toFixed(1) },
-                    { label: "SEP-1 non-compliant share", value: `${data.sepsis.complianceGapPct}%` },
-                    { label: "Doc lag fraction", value: `${data.sepsis.docLagPct}%` },
-                    { label: "Excess cost / case", value: fmtCurrencyExact(data.sepsis.excessCostPerCase) },
-                    { label: "Realization rate", value: `${data.sepsis.realizationPct}%` },
-                    { label: "Annual value", value: fmtCurrency(data.sepsis.value) },
-                  ]}
-                />
-              ) : null}
-            </View>
+            <PageFooter orgName={orgName} />
           </View>
+        </Page>
+      ) : hasQualitySignals ? (
+        /* Quality Signals variant — no quantified drivers selected, but
+           qualitative signals are tracked. Shows a measurement guide:
+           what to watch, at what cadence, and how to establish a baseline.
+           No dollar totals; attribution is explicitly deferred. */
+        <Page size="LETTER" style={styles.page}>
+          <View style={styles.pageWrapper}>
+            <SectionLabel>QUALITY</SectionLabel>
+            <Text style={styles.sectionHeadline}>
+              Quality outcomes are worth measuring — the attribution baseline comes first.
+            </Text>
+            <Text style={styles.body}>
+              These signals are tracked, not modeled. Attribution from documentation
+              to outcome requires a unit-level baseline and a measurement period —
+              both of which this assessment is designed to help establish. The signals
+              below are where to start.
+            </Text>
 
-          <HeroSubtotal
-            label="Quality Subtotal (Potential)"
-            total={data.qualityTotal > 0 ? fmtCurrency(data.qualityTotal) : "Tracked"}
-            caption="Validate baseline rates with your infection-control and quality teams before presenting."
-          />
+            {[
+              ...(data.hcahpsEnabled ? [{
+                title: "HCAHPS — Responsiveness & Communication",
+                cadence: "Quarterly",
+                what: "Top-Box scores for 'responsiveness of hospital staff' and 'communication with nurses' — the two nursing-sensitive domains weighted in the CMS VBP formula.",
+                baseline: "Pull from CMS Hospital Compare for your facility. Track quarterly against the national and peer percentile bands. Bedside time reclaimed from documentation burden is the lever.",
+              }] : []),
+              ...(data.medErrorEnabled ? [{
+                title: "Early Deterioration Documentation",
+                cadence: "Monthly",
+                what: "Proportion of rapid-response activations with contemporaneous nursing documentation in the preceding 4 hours.",
+                baseline: "Audit 20–30 recent rapid-response events; score each for real-time nursing notes. This chart review is the before/after anchor for any future improvement claim.",
+              }] : []),
+              ...(data.bundleComplianceEnabled ? [{
+                title: "Care Bundle Compliance",
+                cadence: "Monthly",
+                what: "Bundle element completion rate by bundle type (CLABSI, VAP, sepsis SEP-1). Nursing documentation of each element at the point of care is the compliance record.",
+                baseline: "Extract current completion rates from your infection-control database by bundle and unit. Segment by shift to identify documentation timing patterns.",
+              }] : []),
+              ...(data.cdiResponseEnabled ? [{
+                title: "CDI Query Reduction",
+                cadence: "Monthly",
+                what: "CDI queries per 100 admissions and average query response lag (days). A volume drop is the earliest signal that nursing notes are arriving more complete at CDI review.",
+                baseline: "Pull a 90-day baseline from your CDI platform (Nuance, 3M, or similar) by unit and attending service. Query response time and DRG specificity index are secondary signals.",
+              }] : []),
+              ...(data.docCompletionEnabled ? [{
+                title: "Documentation Completeness",
+                cadence: "Weekly",
+                what: "Note deficiency rate at final submission, by unit and note type. Lower deficiency rates mean the coding record is usable on first pass — fewer physician interruptions, faster billing cycle.",
+                baseline: "Export a 30-day deficiency rate from your HIM system. Use note type and unit as the segmentation axis; aggregate facility rates hide unit-level variation.",
+              }] : []),
+            ].map((s, i) => (
+              <View key={i} style={{ backgroundColor: colors.cards, borderRadius: 4, padding: 14, marginBottom: 8 }} wrap={false}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, flex: 1, marginRight: 8 }}>{s.title}</Text>
+                  <View style={{ backgroundColor: "#FFFFFF", borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 0.5, borderColor: colors.separatorHeavy }}>
+                    <Text style={{ fontSize: 7.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 1 }}>{s.cadence}</Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 3 }}>WHAT TO MEASURE</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>{s.what}</Text>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: "#888888", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 3 }}>HOW TO ESTABLISH A BASELINE</Text>
+                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>{s.baseline}</Text>
+              </View>
+            ))}
 
-          <PageFooter orgName={orgName} />
-        </View>
-      </Page>
+            <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.separatorHeavy }}>
+              <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, fontStyle: "italic" }}>
+                These signals are excluded from the financial model. Baselines established in Year 1 inform whether quantified modeling
+                is appropriate at renewal. Attribution claims require a pre/post measurement period with consistent denominator data.
+              </Text>
+            </View>
+
+            <PageFooter orgName={orgName} />
+          </View>
+        </Page>
+      ) : null}
 
       {/* PAGE 6 — REVENUE SIGNALS */}
       <Page size="LETTER" style={styles.page}>
