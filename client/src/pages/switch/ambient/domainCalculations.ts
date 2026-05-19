@@ -393,7 +393,7 @@ export function computeRevenueFeedback(
         context: `Your organization has observed changes in ${count} area${count !== 1 ? 's' : ''}:\n${checkedLabels}\n\nEnter an estimated wRVU improvement per encounter above to calculate a directional dollar figure.`,
         formula: '',
         footnote: 'Estimates based on your inputs. Individual results vary.',
-        nextLevelTeaser: 'Organizations with before/after measurement have reported 2–7% revenue improvement.',
+        nextLevelTeaser: 'Organizations with before/after measurement have reported 2–9% revenue improvement.',
       };
     }
 

@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronDown, ChevronUp, Download, Settings, TrendingUp, Clock, DollarSign, Building2, HeartPulse, BedDouble, Stethoscope, Info, Loader2, Users, BarChart3, Shield, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot, CartesianGrid, Legend } from "recharts";
+import { ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from "recharts";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaScenario } from "./proformaTypes";
+import type { ExploreState } from "../explore/ExploreFlow";
 import { SETTING_LABELS, SETTING_UNIT_LABELS, ONSET_DELAY_MONTHS } from "./proformaTypes";
 import { buildMonthlyCashFlows, groupByQuarter, groupByYear, calculateProformaSummary, getYearlySummary, getContractStartDate } from "@/lib/proformaCalculations";
-import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { generateProformaPDF } from "./ProformaPDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,7 @@ interface ProformaViewProps {
   onUpdateSetting: (id: string, updates: Partial<ProformaSettingSnapshot>) => void;
   onBack: () => void;
   onHome: () => void;
+  embedded?: boolean;
 }
 
 const SETTING_ICONS: Record<string, typeof Building2> = {
@@ -82,7 +83,7 @@ function getPricingLabel(settings: ProformaSettingSnapshot[]): string {
     const unitWord = s.careSetting === "nursing" ? "Per Bed" : "Per Provider";
     return varied ? `${unitWord} @ ${fmt(yp!.year1)}→${fmt(yp!.year3)}/mo` : `${unitWord} @ ${fmt(p)}/mo`;
   });
-  const unique = [...new Set(parts)];
+  const unique = Array.from(new Set(parts));
   return unique.join("; ");
 }
 
@@ -179,50 +180,12 @@ function getScenarioDiffs(a: ProformaScenario, b: ProformaScenario): DiffItem[] 
   return diffs;
 }
 
-function DriverInput({ driver, careSetting, hint, onChangeValue }: {
-  driver: { id: string; name: string; value: number; onset: string };
-  careSetting: string;
-  hint: string;
-  onChangeValue: (v: number) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [rawText, setRawText] = useState('');
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <label className="text-xs font-medium text-neutral-700">{driver.name}</label>
-        <span className="text-[10px] text-neutral-400 capitalize">{driver.onset} onset</span>
-      </div>
-      <div className="flex items-center gap-1 mb-1">
-        <span className="text-xs text-neutral-400">$</span>
-        <input
-          type="text"
-          value={editing ? rawText : (driver.value > 0 ? Math.round(driver.value).toLocaleString() : '')}
-          onChange={(e) => {
-            const cleaned = e.target.value.replace(/[^0-9]/g, '');
-            setRawText(cleaned);
-            onChangeValue(parseFloat(cleaned) || 0);
-          }}
-          onFocus={() => {
-            setEditing(true);
-            setRawText(driver.value > 0 ? String(Math.round(driver.value)) : '');
-          }}
-          onBlur={() => { setEditing(false); }}
-          className="w-full border border-neutral-200 rounded px-2 py-1.5 text-sm text-neutral-800 focus:outline-none focus:border-neutral-400"
-          data-testid={`input-driver-${careSetting}-${driver.id}`}
-        />
-        <span className="text-[10px] text-neutral-400 whitespace-nowrap">/yr</span>
-      </div>
-      <p className="text-[10px] text-neutral-400 leading-relaxed">{hint}</p>
-    </div>
-  );
-}
 
 const CHART_COLORS = {
-  doc: "#1E3A5F",
-  time: "#EA2C00",
-  retention: "#D4930A",
+  capacity: "#EA2C00",
+  workforce: "#7A1F04",
+  revenue: "#1E3A5F",
+  quality: "#888888",
   investment: "#6B7280",
 };
 
@@ -233,6 +196,7 @@ export default function ProformaView({
   onUpdateSetting,
   onBack,
   onHome,
+  embedded = false,
 }: ProformaViewProps) {
   const isMobile = useIsMobile();
   const setConfig = (updater: ProformaConfig | ((prev: ProformaConfig) => ProformaConfig)) => {
@@ -242,11 +206,12 @@ export default function ProformaView({
       onConfigChange(updater);
     }
   };
-  const [activeTab, setActiveTab] = useState<'summary' | 'assumptions' | 'detail'>('summary');
   const [showMethodology, setShowMethodology] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [versionA, setVersionA] = useState<ProformaScenario | null>(null);
   const [versionB, setVersionB] = useState<ProformaScenario | null>(null);
+  const [sensitivityRange, setSensitivityRange] = useState(30);
+  const [showSensitivitySettings, setShowSensitivitySettings] = useState(false);
   const { toast } = useToast();
 
   function snapshotCurrent(label: "A" | "B") {
@@ -314,14 +279,16 @@ export default function ProformaView({
       const scaledROI = summary.termInvestment > 0 ? scaledNet / summary.termInvestment : 0;
       const scaledAnnual = summary.runRateValue * factor;
 
-      const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-
+      // scaledCumNet_m = cumulativeNet_m + (factor - 1) * cumValue_m
+      // Investment and impl-fee timing stay exactly as in the base case.
       let scaledPayback: number | null = null;
-      let cumValue = -totalImplFees;
+      let scaledWentNegative = false;
+      let cumValue = 0;
       for (const row of cashFlows) {
-        const scaledMonthValue = row.totalValue * factor;
-        cumValue += scaledMonthValue - row.investment;
-        if (cumValue >= 0 && scaledPayback === null) {
+        cumValue += row.totalValue;
+        const scaledCumNet = row.cumulativeNet + (factor - 1) * cumValue;
+        if (scaledCumNet < 0) scaledWentNegative = true;
+        if (scaledWentNegative && scaledCumNet >= 0 && scaledPayback === null) {
           scaledPayback = row.period;
         }
       }
@@ -336,7 +303,7 @@ export default function ProformaView({
     };
 
     return {
-      conservative: buildScaled(0.7),
+      conservative: buildScaled((100 - sensitivityRange) / 100),
       base: {
         annualValue: summary.runRateValue,
         valueToCost: summary.valueToCost,
@@ -344,111 +311,40 @@ export default function ProformaView({
         termNet: summary.termNet,
         simpleROI: summary.simpleROI,
       },
-      optimistic: buildScaled(1.3),
+      optimistic: buildScaled((100 + sensitivityRange) / 100),
     };
-  }, [settings, config, summary, cashFlows]);
+  }, [settings, config, summary, cashFlows, sensitivityRange]);
 
-  const chartData = useMemo(() => {
-    let cumValue = 0;
-    let cumInvestment = 0;
-    let cumDoc = 0;
-    let cumTime = 0;
-    let cumRetention = 0;
-    const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-    cumInvestment += totalImplFees;
-    return displayData.map(row => {
-      cumValue += row.totalValue;
-      cumInvestment += row.investment;
-      cumDoc += row.docValue;
-      cumTime += row.timeValue;
-      cumRetention += row.retentionValue;
-      const entry: Record<string, number | string> = {
-        label: row.label,
-        period: row.period,
-        investment: row.investment,
-        docValue: row.docValue,
-        timeValue: row.timeValue,
-        retentionValue: row.retentionValue,
-        total: row.totalValue,
-        cumulativeNet: row.cumulativeNet,
-        cumulativeValue: cumValue,
-        cumulativeInvestment: cumInvestment,
-        cumDocValue: cumDoc,
-        cumTimeValue: cumTime,
-        cumRetentionValue: cumRetention,
-      };
-      settings.forEach(s => {
-        entry[s.id] = Math.round(row.bySettings[s.id]?.value || 0);
-      });
-      return entry;
-    });
-  }, [displayData, settings]);
-
-  const monthlyChartData = useMemo(() => {
-    let cumDoc = 0, cumTime = 0, cumRetention = 0, cumInvestment = 0;
-    const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-    cumInvestment += totalImplFees;
-    return cashFlows.map((row, i) => {
-      cumDoc += row.docValue;
-      cumTime += row.timeValue;
-      cumRetention += row.retentionValue;
-      cumInvestment += row.investment;
-      const month = i + 1;
-      const d = new Date(startDate.getFullYear(), startDate.getMonth() + month - 1, 1);
-      const calQ = Math.floor(d.getMonth() / 3) + 1;
-      const yearStr = String(d.getFullYear()).slice(2);
-      const isQuarterEnd = month % 3 === 0;
-      const label = isQuarterEnd ? `Q${calQ} '${yearStr}` : '';
-      return {
-        month,
-        period: month,
-        label: label || `_${month}`,
-        displayLabel: label,
-        cumDocValue: cumDoc,
-        cumTimeValue: cumTime,
-        cumRetentionValue: cumRetention,
-        cumulativeInvestment: cumInvestment,
-        cumulativeValue: cumDoc + cumTime + cumRetention,
-        cumulativeNet: row.cumulativeNet,
-        investment: row.investment,
-        docValue: row.docValue,
-        timeValue: row.timeValue,
-        retentionValue: row.retentionValue,
-      };
-    });
-  }, [cashFlows, settings, startDate]);
 
   const totalProvidersByPeriod = useMemo(() => {
     return displayData.map(row => {
       let total = 0;
       settings.forEach(s => {
-        total += row.bySettings[s.id]?.providers || 0;
+        total += row.bySettings[s.id]?.licensedProviders || 0;
       });
       return total;
     });
   }, [displayData, settings]);
 
   const legendTotals = useMemo(() => {
-    const doc = cashFlows.reduce((s, r) => s + r.docValue, 0);
-    const time = cashFlows.reduce((s, r) => s + r.timeValue, 0);
-    const retention = cashFlows.reduce((s, r) => s + r.retentionValue, 0);
+    const capacity  = cashFlows.reduce((s, r) => s + r.capacityValue, 0);
+    const workforce = cashFlows.reduce((s, r) => s + r.workforceValue, 0);
+    const revenue   = cashFlows.reduce((s, r) => s + r.revenueValue, 0);
+    const quality   = cashFlows.reduce((s, r) => s + r.qualityValue, 0);
     const inv = cashFlows.reduce((s, r) => s + r.investment, 0);
-    const total = doc + time + retention;
-    return { doc, time, retention, inv, total };
+    const total = capacity + workforce + revenue + quality;
+    return { capacity, workforce, revenue, quality, inv, total };
   }, [cashFlows]);
 
-  const isNursingOnly = settings.length > 0 && settings.every(s => s.careSetting === "nursing");
-  const docQualityLabel = isNursingOnly ? "Quality" : "Doc Quality";
-
   const lastChartPoint = useMemo(() => {
-    if (monthlyChartData.length === 0) return null;
-    const last = monthlyChartData[monthlyChartData.length - 1];
+    if (displayData.length === 0) return null;
+    const last = displayData[displayData.length - 1];
     return {
       label: last.label,
-      totalValue: last.cumulativeValue,
-      investment: last.cumulativeInvestment,
+      totalValue: last.totalValue,
+      investment: last.investment,
     };
-  }, [monthlyChartData]);
+  }, [displayData]);
 
   const paybackLabel = useMemo(() => {
     if (!summary.paybackMonth || summary.paybackMonth <= 0) return null;
@@ -475,71 +371,32 @@ export default function ProformaView({
       });
   }, [settings, cashFlows, startDate]);
 
-  const hasDelayedDrivers = settings.some(s => s.drivers.some(d => d.onset === "delayed"));
-  const timeSavingsOnsetLabel = useMemo(() => {
-    const firstGoLive = Math.min(...settings.map(s => s.goLiveMonth));
-    const onsetMonth = firstGoLive + ONSET_DELAY_MONTHS.delayed;
-    const quarterData = groupByQuarter(cashFlows, startDate);
-    const qIdx = Math.ceil(onsetMonth / 3) - 1;
-    return quarterData[qIdx]?.label || `Q${qIdx + 1}`;
-  }, [settings, cashFlows, startDate]);
-
   return (
-    <div className="min-h-screen bg-white">
-      <UnifiedHeader 
-        pathType="explore" 
-        currentStep={2} 
-        totalSteps={2} 
-        stepName="Financial Proforma" 
-        onHome={onHome}
-        showBack={false}
-      />
-      <UnifiedHeaderSpacer />
-
-      <div className="sticky top-[56px] z-30 bg-white border-b border-neutral-200">
-        <div className="max-w-5xl mx-auto px-4 flex gap-0">
-          {(['summary', 'assumptions', 'detail'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-5 py-3 text-sm font-medium capitalize border-b-2 transition-colors ${
-                activeTab === tab
-                  ? 'border-[#EA2C00] text-[#EA2C00]'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-800'
-              }`}
-              data-testid={`tab-${tab}`}
-            >
-              {tab === 'summary' ? 'Summary' : tab === 'assumptions' ? 'Assumptions' : 'Detail'}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className={embedded ? "bg-white" : "min-h-screen bg-white"}>
+      {!embedded && (
+        <>
+          <UnifiedHeader
+            pathType="explore"
+            currentStep={2}
+            totalSteps={2}
+            stepName="Financial Proforma"
+            onHome={onHome}
+            showBack={false}
+          />
+          <UnifiedHeaderSpacer />
+        </>
+      )}
 
       {/* HERO */}
-      {activeTab === 'summary' && (
-      <div className="bg-[#1A1A1A] text-white py-8 sm:py-12 px-4">
+      {!embedded && <div className="bg-[#1A1A1A] text-white py-8 sm:py-12 px-4">
         <div className="max-w-[1000px] mx-auto">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <button onClick={onBack} className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm" data-testid="button-back-hub">
-              <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Back to Hub</span><span className="sm:hidden">Back</span>
-            </button>
+            {!embedded && (
+              <button onClick={onBack} className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm" data-testid="button-back-hub">
+                <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Back to Hub</span><span className="sm:hidden">Back</span>
+              </button>
+            )}
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 bg-white/10 rounded-full px-2 py-1">
-                <button
-                  onClick={() => setConfig(c => ({ ...c, viewMode: "quarterly" }))}
-                  className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "quarterly" ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
-                  data-testid="toggle-quarterly"
-                >
-                  Quarters
-                </button>
-                <button
-                  onClick={() => setConfig(c => ({ ...c, viewMode: "yearly" }))}
-                  className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "yearly" ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
-                  data-testid="toggle-yearly"
-                >
-                  Years
-                </button>
-              </div>
               <div className="flex items-center gap-2">
                 {versionA ? (
                   <motion.div
@@ -676,12 +533,10 @@ export default function ProformaView({
             </div>
           </div>
         </div>
-      </div>
-      )}
+      </div>}
 
       <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
-        {activeTab === 'summary' && (<>
         <AnimatePresence>
         {versionA && (
           <motion.div
@@ -868,42 +723,153 @@ export default function ProformaView({
         )}
         </AnimatePresence>
 
-        {/* Setting strip cards */}
-        <div className="flex gap-3 overflow-x-auto pb-4 mb-6 sm:mb-8 -mx-2 px-2">
-          {settings.map(s => {
-            const Icon = SETTING_ICONS[s.careSetting] || Building2;
-            return (
-              <div
-                key={s.id}
-                className="flex-shrink-0 bg-[#F9F6F2] rounded-xl p-3 sm:p-4 min-w-[160px] sm:min-w-[200px] border-l-4"
-                style={{ borderLeftColor: s.color }}
-                data-testid={`strip-card-${s.careSetting}`}
+        {/* SENSITIVITY ANALYSIS */}
+        <motion.div
+          className="mb-10 sm:mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          data-testid="panel-sensitivity"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Shield className="w-4 h-4 text-neutral-400" />
+            <span className="text-xs font-semibold text-neutral-400 uppercase tracking-widest">Sensitivity Analysis</span>
+            <button
+              onClick={() => setShowSensitivitySettings(v => !v)}
+              className={`ml-auto p-1 rounded transition-colors ${showSensitivitySettings ? "text-[#EA2C00] bg-[#EA2C00]/8" : "text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100"}`}
+              title="Adjust sensitivity range"
+            >
+              <Settings className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showSensitivitySettings && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="overflow-hidden mb-4"
               >
-                <div className="flex items-center gap-2 mb-1 sm:mb-2">
-                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: s.color }} />
-                  <span className="text-xs sm:text-sm font-bold text-neutral-900">{s.label}</span>
+                <div className="flex items-center gap-2 bg-[#F9F6F2] rounded-xl px-4 py-3">
+                  <span className="text-xs text-neutral-500 whitespace-nowrap">Realization range</span>
+                  <div className="flex items-center gap-1.5">
+                    {[15, 20, 25, 30, 40, 50].map(pct => (
+                      <button
+                        key={pct}
+                        onClick={() => setSensitivityRange(pct)}
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium transition-colors ${sensitivityRange === pct ? "bg-[#EA2C00] text-white" : "bg-white border border-neutral-200 text-neutral-600 hover:border-neutral-400"}`}
+                      >
+                        ±{pct}%
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-base sm:text-lg font-bold" style={{ color: s.color }}>{fmt(s.annualValue)}</p>
-                <p className="text-[12px] sm:text-xs text-neutral-500 mt-1">
-                  {(() => {
-                    const cYears = Math.ceil(config.contractTermMonths / 12);
-                    if (s.pricingModel === "perEncounter") {
-                      const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
-                      const finalEnc = cYears >= 3 ? ye.year3 : cYears >= 2 ? ye.year2 : ye.year1;
-                      if (cYears <= 1) return `${fmtNum(ye.year1)} encounters`;
-                      return `Y1: ${fmtNum(ye.year1)} → Y${cYears}: ${fmtNum(finalEnc)} encounters`;
-                    }
-                    const yp = s.yearlyProviders;
-                    if (!yp) return `${fmtNum(s.providerCount)} → ${fmtNum(s.fullScaleProviders || s.providerCount)} ${SETTING_UNIT_LABELS[s.careSetting]}`;
-                    const finalCount = cYears >= 3 ? yp.year3 : cYears >= 2 ? yp.year2 : yp.year1;
-                    if (cYears <= 1) return `${fmtNum(yp.year1)} ${SETTING_UNIT_LABELS[s.careSetting]}`;
-                    return `Y1: ${fmtNum(yp.year1)} → Y${cYears}: ${fmtNum(finalCount)} ${SETTING_UNIT_LABELS[s.careSetting]}`;
-                  })()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-4">
+            {([
+              { key: "conservative" as const, label: "Conservative", sublabel: `${100 - sensitivityRange}% Realization`, dark: false },
+              { key: "base" as const, label: "Base Case", sublabel: "Your Assumptions", dark: true },
+              { key: "optimistic" as const, label: "Optimistic", sublabel: `${100 + sensitivityRange}% Realization`, dark: false },
+            ] as const).map((scenario) => {
+              const data = sensitivityAnalysis[scenario.key];
+              return (
+                <div
+                  key={scenario.key}
+                  className={`rounded-2xl p-4 sm:p-6 ${scenario.dark ? "bg-[#1A1A1A]" : "bg-[#F9F6F2]"}`}
+                  data-testid={`sensitivity-${scenario.key}`}
+                >
+                  <p className={`text-[10px] font-bold uppercase tracking-widest mb-0.5 ${scenario.dark ? "text-white/60" : "text-neutral-400"}`}>
+                    {scenario.label}
+                  </p>
+                  <p className={`text-[10px] mb-4 ${scenario.dark ? "text-white/30" : "text-neutral-400"}`}>
+                    {scenario.sublabel}
+                  </p>
+                  <p className={`text-2xl sm:text-3xl font-bold tracking-tight mb-0.5 ${scenario.dark ? "text-[#EA2C00]" : "text-neutral-900"}`} data-testid={`sensitivity-value-${scenario.key}`}>
+                    {fmt(data.annualValue)}
+                  </p>
+                  <p className={`text-[10px] mb-5 ${scenario.dark ? "text-white/30" : "text-neutral-400"}`}>annual value</p>
+
+                  <div className={`h-px mb-4 ${scenario.dark ? "bg-white/10" : "bg-neutral-200"}`} />
+
+                  <div className="space-y-2.5">
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className={`text-[11px] ${scenario.dark ? "text-white/40" : "text-neutral-500"}`}>Value-to-Cost</span>
+                      <span className={`text-sm font-bold tabular-nums ${scenario.dark ? "text-white" : "text-neutral-900"}`} data-testid={`sensitivity-vtc-${scenario.key}`}>
+                        {hasInvestment ? `${data.valueToCost.toFixed(1)}x` : "—"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className={`text-[11px] ${scenario.dark ? "text-white/40" : "text-neutral-500"}`}>Payback</span>
+                      <span className={`text-sm font-bold tabular-nums ${scenario.dark ? "text-white" : "text-neutral-900"}`} data-testid={`sensitivity-payback-${scenario.key}`}>
+                        {data.paybackMonth ? `${data.paybackMonth} mo` : "—"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className={`text-[11px] ${scenario.dark ? "text-white/40" : "text-neutral-500"}`}>Net Value</span>
+                      <span className={`text-sm font-bold tabular-nums ${scenario.dark ? "text-white" : "text-neutral-900"}`} data-testid={`sensitivity-net-${scenario.key}`}>
+                        {fmt(data.termNet)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Range bar */}
+          {(() => {
+            const consVal = sensitivityAnalysis.conservative.annualValue;
+            const baseVal = sensitivityAnalysis.base.annualValue;
+            const optVal = sensitivityAnalysis.optimistic.annualValue;
+            const minVal = Math.min(consVal, baseVal, optVal);
+            const maxVal = Math.max(consVal, baseVal, optVal);
+            const range = maxVal - minVal || 1;
+            const pos = (v: number) => Math.max(2, Math.min(98, ((v - minVal) / range) * 100));
+            return (
+              <div className="bg-[#F9F6F2] rounded-xl px-5 py-4">
+                <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-2">Realization Factors</p>
+                <p className="text-[11px] text-neutral-500 mb-4 leading-relaxed">
+                  The range reflects organizational context — not Abridge's clinical accuracy. These factors shift where a deployment lands within the {fmt(consVal)}–{fmt(optVal)} band.
                 </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 flex-shrink-0" />
+                      <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Toward Conservative</p>
+                    </div>
+                    <ul className="space-y-2">
+                      {["Competing change initiatives", "Active EHR migration", "Limited exec sponsorship", "High specialty complexity"].map(f => (
+                        <li key={f} className="flex items-start gap-1.5">
+                          <span className="mt-1.5 w-1 h-1 rounded-full bg-neutral-300 flex-shrink-0" />
+                          <span className="text-[11px] text-neutral-500 leading-snug">{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#EA2C00] flex-shrink-0" />
+                      <p className="text-[10px] font-bold text-[#EA2C00]/60 uppercase tracking-wider">Toward Optimistic</p>
+                    </div>
+                    <ul className="space-y-2">
+                      {["Dedicated physician champion", "Stable tech environment", "Strong exec sponsorship", "Focused specialty rollout"].map(f => (
+                        <li key={f} className="flex items-start gap-1.5">
+                          <span className="mt-1.5 w-1 h-1 rounded-full bg-[#EA2C00]/40 flex-shrink-0" />
+                          <span className="text-[11px] text-neutral-500 leading-snug">{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             );
-          })}
-        </div>
+          })()}
+        </motion.div>
 
         {/* CHART */}
         <motion.div
@@ -912,70 +878,43 @@ export default function ProformaView({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="text-base sm:text-lg font-bold text-neutral-900">Value Growth Trajectory</h2>
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-neutral-500">
-              <Users className="w-3.5 h-3.5" />
-              <span>
-                {(() => {
-                  const cYears = Math.ceil(config.contractTermMonths / 12);
-                  const allEnc = settings.every(s => s.pricingModel === "perEncounter");
-                  if (allEnc) {
-                    const y1Enc = settings.reduce((s, v) => s + (v.yearlyEncounters?.year1 || v.encounters), 0);
-                    const yFinalEnc = settings.reduce((s, v) => s + (cYears >= 3 ? (v.yearlyEncounters?.year3 || v.encounters) : cYears >= 2 ? (v.yearlyEncounters?.year2 || v.encounters) : (v.yearlyEncounters?.year1 || v.encounters)), 0);
-                    if (cYears <= 1) return `${fmtNum(y1Enc)} total encounters`;
-                    return `${fmtNum(y1Enc)} → ${fmtNum(yFinalEnc)} total encounters`;
-                  }
-                  const y1 = settings.reduce((s, v) => s + (v.yearlyProviders?.year1 || v.providerCount), 0);
-                  const yFinal = settings.reduce((s, v) => s + (cYears >= 3 ? (v.yearlyProviders?.year3 || v.fullScaleProviders || v.providerCount) : cYears >= 2 ? (v.yearlyProviders?.year2 || v.fullScaleProviders || v.providerCount) : (v.yearlyProviders?.year1 || v.providerCount)), 0);
-                  const label = settings.length > 1 ? "units" : SETTING_UNIT_LABELS[settings[0]?.careSetting];
-                  if (cYears <= 1) return `${fmtNum(y1)} total ${label}`;
-                  return `${fmtNum(y1)} → ${fmtNum(yFinal)} total ${label}`;
-                })()}
-              </span>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-neutral-400" />
+              <span className="text-xs font-semibold text-neutral-400 uppercase tracking-widest">Value Growth Trajectory</span>
+            </div>
+            <div className="flex items-center gap-1 bg-[#F5F0EB] rounded-full p-0.5">
+              <button
+                onClick={() => setConfig(c => ({ ...c, viewMode: "quarterly" }))}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "quarterly" ? "bg-white text-neutral-900 shadow-sm" : "text-[#8C7E6E] hover:text-neutral-900"}`}
+                data-testid="toggle-quarterly"
+              >
+                Quarters
+              </button>
+              <button
+                onClick={() => setConfig(c => ({ ...c, viewMode: "yearly" }))}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${config.viewMode === "yearly" ? "bg-white text-neutral-900 shadow-sm" : "text-[#8C7E6E] hover:text-neutral-900"}`}
+                data-testid="toggle-yearly"
+              >
+                Years
+              </button>
             </div>
           </div>
-          <p className="text-xs sm:text-sm text-neutral-500 mb-3 sm:mb-4">
-            {config.viewMode === "yearly"
-              ? "Annual value by driver type"
-              : isMobile
-                ? "Cumulative value realized by driver type"
-                : `Each line shows cumulative value by driver — the bold line is total. Onset delays and ramps visible in early months. Dashed line is cumulative investment.`}
-          </p>
           <div className="bg-[#F9F6F2] rounded-xl p-3 sm:p-6" data-testid="chart-ramp-up">
-            <ResponsiveContainer width="100%" height={isMobile ? 300 : 420}>
-              <ComposedChart data={monthlyChartData} margin={isMobile ? { top: 20, right: 10, left: 0, bottom: 20 } : { top: 30, right: 60, left: 10, bottom: 10 }}>
-                <defs>
-                  <linearGradient id="grad-doc" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={CHART_COLORS.doc} stopOpacity={0.3} />
-                    <stop offset="100%" stopColor={CHART_COLORS.doc} stopOpacity={0.03} />
-                  </linearGradient>
-                  <linearGradient id="grad-time" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={CHART_COLORS.time} stopOpacity={0.45} />
-                    <stop offset="100%" stopColor={CHART_COLORS.time} stopOpacity={0.05} />
-                  </linearGradient>
-                  <linearGradient id="grad-retention" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={CHART_COLORS.retention} stopOpacity={0.4} />
-                    <stop offset="100%" stopColor={CHART_COLORS.retention} stopOpacity={0.05} />
-                  </linearGradient>
-                  <linearGradient id="grad-investment" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={CHART_COLORS.investment} stopOpacity={0.12} />
-                    <stop offset="100%" stopColor={CHART_COLORS.investment} stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
+            <ResponsiveContainer width="100%" height={isMobile ? 280 : 380}>
+              <ComposedChart data={displayData} margin={isMobile ? { top: 10, right: 10, left: 0, bottom: 20 } : { top: 20, right: 20, left: 10, bottom: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E0DB" vertical={false} />
                 <XAxis
                   dataKey="label"
-                  tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
-                  tickFormatter={(val) => val.startsWith('_') ? '' : val}
-                  interval={2}
+                  tick={{ fontSize: isMobile ? 10 : 11, fill: "#888" }}
                   axisLine={{ stroke: "#D5D0CB" }}
-                  height={30}
+                  tickLine={false}
+                  height={28}
                 />
                 <YAxis
                   tickFormatter={(v: number) => fmt(v)}
-                  tick={{ fontSize: isMobile ? 10 : 12, fill: "#666" }}
-                  width={isMobile ? 55 : 80}
+                  tick={{ fontSize: isMobile ? 10 : 11, fill: "#888" }}
+                  width={isMobile ? 55 : 72}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -986,160 +925,101 @@ export default function ProformaView({
                     key={`golive-${gl.label}`}
                     x={gl.label}
                     stroke={gl.color}
-                    strokeDasharray="6 3"
-                    strokeOpacity={0.45}
-                    strokeWidth={1.5}
+                    strokeDasharray="3 4"
+                    strokeOpacity={0.22}
+                    strokeWidth={1}
                     label={{
                       value: `${gl.name} Go-Live`,
                       position: "insideTopLeft",
-                      fontSize: 9,
+                      fontSize: 8,
                       fill: gl.color,
-                      dy: 8 + idx * 18,
+                      fillOpacity: 0.5,
+                      dy: 8 + idx * 16,
                     }}
                   />
                 ))}
 
-                {paybackLabel && (
+                {paybackLabel && config.viewMode === "quarterly" && (
                   <ReferenceLine
                     x={paybackLabel}
-                    stroke={CHART_COLORS.retention}
+                    stroke="#D4930A"
                     strokeDasharray="6 3"
-                    strokeOpacity={0.6}
-                    strokeWidth={1.5}
+                    strokeOpacity={0.85}
+                    strokeWidth={2}
                     label={isMobile ? undefined : {
                       value: "Payback",
                       position: "insideTopRight",
-                      fontSize: 10,
-                      fill: CHART_COLORS.retention,
-                      fontWeight: 600,
+                      fontSize: 11,
+                      fill: "#D4930A",
+                      fontWeight: 700,
                       dy: 8,
                     }}
                   />
                 )}
 
-                <Line
-                  type="monotone"
-                  dataKey="cumulativeInvestment"
-                  stroke={CHART_COLORS.investment}
-                  strokeWidth={isMobile ? 1.5 : 2}
-                  strokeDasharray="8 4"
-                  dot={{ r: 3, fill: CHART_COLORS.investment, stroke: "#fff", strokeWidth: 1.5 }}
-                  name="Investment"
-                />
-
-                {legendTotals.retention > 0 && (
+                {legendTotals.capacity > 0 && (
+                  <Bar dataKey="capacityValue" stackId="value" fill={CHART_COLORS.capacity} name="Capacity" maxBarSize={config.viewMode === "yearly" ? 56 : 28} radius={[0, 0, 0, 0]} />
+                )}
+                {legendTotals.workforce > 0 && (
+                  <Bar dataKey="workforceValue" stackId="value" fill={CHART_COLORS.workforce} name="Workforce" maxBarSize={config.viewMode === "yearly" ? 56 : 28} />
+                )}
+                {legendTotals.revenue > 0 && (
+                  <Bar dataKey="revenueValue" stackId="value" fill={CHART_COLORS.revenue} name="Revenue" maxBarSize={config.viewMode === "yearly" ? 56 : 28} />
+                )}
+                {legendTotals.quality > 0 && (
+                  <Bar dataKey="qualityValue" stackId="value" fill={CHART_COLORS.quality} name="Quality" maxBarSize={config.viewMode === "yearly" ? 56 : 28} radius={[2, 2, 0, 0]} />
+                )}
+                {hasInvestment && (
                   <Line
                     type="monotone"
-                    dataKey="cumRetentionValue"
-                    stroke={CHART_COLORS.retention}
+                    dataKey="investment"
+                    stroke={CHART_COLORS.investment}
                     strokeWidth={isMobile ? 1.5 : 2}
+                    strokeDasharray="6 3"
                     dot={false}
-                    name="Retention"
-                  />
-                )}
-                {legendTotals.time > 0 && (
-                  <Line
-                    type="monotone"
-                    dataKey="cumTimeValue"
-                    stroke={CHART_COLORS.time}
-                    strokeWidth={isMobile ? 1.5 : 2}
-                    dot={false}
-                    name="Capacity & Efficiency"
-                  />
-                )}
-                {legendTotals.doc > 0 && (
-                  <Line
-                    type="monotone"
-                    dataKey="cumDocValue"
-                    stroke={CHART_COLORS.doc}
-                    strokeWidth={isMobile ? 1.5 : 2}
-                    dot={false}
-                    name={docQualityLabel}
-                  />
-                )}
-                <Line
-                  type="monotone"
-                  dataKey="cumulativeValue"
-                  stroke="#1A1A1A"
-                  strokeWidth={isMobile ? 2 : 3}
-                  dot={false}
-                  name="Total Value"
-                />
-
-                {!isMobile && lastChartPoint && lastChartPoint.totalValue > 0 && (
-                  <ReferenceDot
-                    x={lastChartPoint.label}
-                    y={lastChartPoint.totalValue}
-                    r={0}
-                    label={{
-                      value: fmt(lastChartPoint.totalValue),
-                      position: "right",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      fill: "#1A1A1A",
-                      dx: 4,
-                    }}
-                  />
-                )}
-                {!isMobile && lastChartPoint && lastChartPoint.investment > 0 && (
-                  <ReferenceDot
-                    x={lastChartPoint.label}
-                    y={lastChartPoint.investment}
-                    r={0}
-                    label={{
-                      value: fmt(lastChartPoint.investment),
-                      position: "right",
-                      fontSize: 10,
-                      fontWeight: 600,
-                      fill: "#666",
-                      dx: 4,
-                    }}
+                    name="Investment"
                   />
                 )}
               </ComposedChart>
             </ResponsiveContainer>
 
-            <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-x-4 gap-y-2 sm:gap-6 mt-4 text-xs sm:text-xs">
-              {legendTotals.doc > 0 && (
+            <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-x-4 gap-y-2 sm:gap-6 mt-4 text-xs">
+              {legendTotals.capacity > 0 && (
                 <span className="flex items-center gap-1.5">
-                  <span className="w-5 h-0.5 inline-block rounded-full" style={{ backgroundColor: CHART_COLORS.doc }} />
-                  <span className="text-neutral-600">{docQualityLabel}</span>
-                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.doc)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.doc / legendTotals.total) * 100)}%)` : ""}</span>
+                  <span className="w-3 h-3 inline-block rounded-sm flex-shrink-0" style={{ backgroundColor: CHART_COLORS.capacity }} />
+                  <span className="text-neutral-600">Capacity</span>
+                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.capacity)}{legendTotals.total > 0 ? ` (${Math.round((legendTotals.capacity / legendTotals.total) * 100)}%)` : ""}</span>
                 </span>
               )}
-              {legendTotals.time > 0 && (
+              {legendTotals.workforce > 0 && (
                 <span className="flex items-center gap-1.5">
-                  <span className="w-5 h-0.5 inline-block rounded-full" style={{ backgroundColor: CHART_COLORS.time }} />
-                  <span className="text-neutral-600">Capacity & Efficiency</span>
-                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.time)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.time / legendTotals.total) * 100)}%)` : ""}</span>
+                  <span className="w-3 h-3 inline-block rounded-sm flex-shrink-0" style={{ backgroundColor: CHART_COLORS.workforce }} />
+                  <span className="text-neutral-600">Workforce</span>
+                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.workforce)}{legendTotals.total > 0 ? ` (${Math.round((legendTotals.workforce / legendTotals.total) * 100)}%)` : ""}</span>
                 </span>
               )}
-              {legendTotals.retention > 0 && (
+              {legendTotals.revenue > 0 && (
                 <span className="flex items-center gap-1.5">
-                  <span className="w-5 h-0.5 inline-block rounded-full" style={{ backgroundColor: CHART_COLORS.retention }} />
-                  <span className="text-neutral-600">Retention</span>
-                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.retention)} {legendTotals.total > 0 ? `(${Math.round((legendTotals.retention / legendTotals.total) * 100)}%)` : ""}</span>
+                  <span className="w-3 h-3 inline-block rounded-sm flex-shrink-0" style={{ backgroundColor: CHART_COLORS.revenue }} />
+                  <span className="text-neutral-600">Revenue</span>
+                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.revenue)}{legendTotals.total > 0 ? ` (${Math.round((legendTotals.revenue / legendTotals.total) * 100)}%)` : ""}</span>
                 </span>
               )}
-              <span className="flex items-center gap-1.5">
-                <span className="w-5 h-0.5 inline-block rounded-full bg-[#1A1A1A]" />
-                <span className="text-neutral-600 font-medium">Total</span>
-                {legendTotals.total > 0 && <span className="text-neutral-400 font-medium">{fmt(legendTotals.total)}</span>}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3.5 h-0.5 rounded-full inline-block" style={{ borderTop: `2px dashed ${CHART_COLORS.investment}` }} />
-                <span className="text-neutral-600">Investment</span>
-                {legendTotals.inv > 0 && (
+              {legendTotals.quality > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 inline-block rounded-sm flex-shrink-0" style={{ backgroundColor: CHART_COLORS.quality }} />
+                  <span className="text-neutral-600">Quality</span>
+                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.quality)}{legendTotals.total > 0 ? ` (${Math.round((legendTotals.quality / legendTotals.total) * 100)}%)` : ""}</span>
+                </span>
+              )}
+              {hasInvestment && legendTotals.inv > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-5 h-0 inline-block" style={{ borderTop: `2px dashed ${CHART_COLORS.investment}` }} />
+                  <span className="text-neutral-600">Investment</span>
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.inv)}</span>
-                )}
-              </span>
+                </span>
+              )}
             </div>
-
-            {config.retentionPhasing.year2Pct > 0 && (
-              <div className="flex items-center justify-center gap-4 mt-2 text-[12px] text-neutral-400">
-                <span>Retention: {config.retentionPhasing.year1Pct}% Y1{Math.ceil(config.contractTermMonths / 12) >= 2 ? ` → ${config.retentionPhasing.year2Pct}% Y2` : ""}{Math.ceil(config.contractTermMonths / 12) >= 3 ? ` → ${config.retentionPhasing.year3Pct}% Y3${config.contractTermMonths > 36 ? "+" : ""}` : ""}</span>
-              </div>
-            )}
           </div>
 
           {summary.paybackMonth && (
@@ -1149,574 +1029,7 @@ export default function ProformaView({
           )}
         </motion.div>
 
-        {/* METRIC PANELS - 2x2 on mobile, 4 cols on desktop */}
-        <motion.div
-          className="grid grid-cols-2 min-[820px]:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-vtc">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Value-to-Cost</p>
-            <p className="text-2xl sm:text-3xl font-bold text-[#E8350A]" data-testid="text-vtc-panel">{hasInvestment ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
-            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{hasInvestment ? "total return per $1 spent" : "No cost entered"}</p>
-          </div>
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-simple-roi">
-            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Simple ROI</p>
-            <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{Math.round(summary.simpleROI * 100)}%</p>
-            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">(net value / investment)</p>
-          </div>
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center relative group" data-testid="panel-payback">
-            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#EA2C00] mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">Payback</p>
-            <p className="text-2xl sm:text-3xl font-bold text-neutral-900">{summary.paybackMonth ?? "—"}</p>
-            <p className="text-[9px] sm:text-[12px] text-neutral-400 mt-0.5">{summary.paybackMonth ? "months" : ""}</p>
-            {summary.paybackMonth && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-neutral-800 text-white text-[10px] rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 leading-relaxed" data-testid="tooltip-payback-context">
-                Payback assumes value begins accruing from go-live. Actual time to value may vary based on training, workflow integration, and adoption speed.
-              </div>
-            )}
-          </div>
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-5 text-center" data-testid="panel-3yr-net">
-            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-[#E8350A] mx-auto mb-1.5 sm:mb-2" />
-            <p className="text-[9px] sm:text-[12px] text-neutral-500 uppercase tracking-wide mb-0.5 sm:mb-1">{contractTermLabel(config.contractTermMonths)} Net</p>
-            <p className={`text-2xl sm:text-3xl font-bold ${summary.termNet >= 0 ? "text-[#E8350A]" : "text-red-600"}`}>
-              {fmt(summary.termNet)}
-            </p>
-          </div>
-        </motion.div>
-        </>)}
 
-        {activeTab === 'assumptions' && (<>
-        {/* VALUE DRIVERS */}
-        <div className="mb-8" data-testid="panel-value-drivers">
-          <h2 className="text-base font-semibold text-neutral-800 mb-1">Value Drivers</h2>
-          <p className="text-sm text-neutral-500 mb-4">
-            Annual value per driver. Pre-filled from your assessment — edit to explore scenarios.
-          </p>
-          <div className="space-y-4">
-            {settings.map(s => (
-              <div key={s.id} className="border border-neutral-200 rounded-lg p-4 bg-white">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
-                  <span className="text-sm font-semibold text-neutral-800">{s.label}</span>
-                  <span className="text-xs text-neutral-400">{s.providerCount} providers</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {s.drivers.map(driver => {
-                    const perProvider = s.providerCount > 0
-                      ? Math.round(driver.value / s.providerCount).toLocaleString()
-                      : '—';
-                    const perProviderMonth = s.providerCount > 0
-                      ? Math.round(driver.value / s.providerCount / 12).toLocaleString()
-                      : '—';
-
-                    const contextHints: Record<string, string> = {
-                      patientAccess: `≈ $${perProviderMonth}/provider/month · Benchmark: 1–3 additional patients/mo × ~$200/visit`,
-                      edLwbs: `≈ $${perProviderMonth}/provider/month · LWBS patients recovered × ED visit margin`,
-                      wrvu: `≈ $${perProvider}/provider/year · Benchmark: 0.05–0.15 wRVU/encounter × $33 CMS factor`,
-                      denials: `≈ $${perProvider}/provider/year · Denial volume × reduction rate × avg denial value`,
-                      hcc: `≈ $${perProvider}/provider/year · Additional HCC codes × ~$1,200 revenue/code`,
-                      ipDrg: `≈ $${perProvider}/provider/year · DRG accuracy improvement × case volume`,
-                      ipCdi: `≈ $${perProvider}/provider/year · CDI query reduction × $50/query`,
-                      retention: `≈ $${perProvider}/provider/year · Phased over 3 years (35% → 75% → 100%)`,
-                    };
-                    const hint = contextHints[driver.id] || `≈ $${perProvider}/provider/year`;
-
-                    return (
-                      <DriverInput
-                        key={driver.id}
-                        driver={driver}
-                        careSetting={s.careSetting}
-                        hint={hint}
-                        onChangeValue={(newVal) => {
-                          const updatedDrivers = s.drivers.map(d =>
-                            d.id === driver.id ? { ...d, value: newVal } : d
-                          );
-                          onUpdateSetting(s.id, { drivers: updatedDrivers });
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* PRICING & CONFIG */}
-        <motion.div
-          className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6 mb-8 sm:mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          data-testid="panel-pricing"
-        >
-          <div className="flex items-center gap-2 mb-4 sm:mb-5">
-            <Settings className="w-5 h-5 text-neutral-600" />
-            <h2 className="text-base sm:text-lg font-bold text-neutral-900">Pricing & Configuration</h2>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 flex-wrap">
-            <span className="text-xs sm:text-sm font-medium text-neutral-600">Contract:</span>
-            <div className="flex items-center gap-1 bg-white rounded-full p-0.5 border border-neutral-200">
-              {([24, 36] as const).map(t => (
-                <button
-                  key={t}
-                  onClick={() => setConfig(c => ({ ...c, contractTermMonths: t }))}
-                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${config.contractTermMonths === t && ![24, 36].includes(config.contractTermMonths) ? "" : config.contractTermMonths === t ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900"}`}
-                  data-testid={`toggle-term-${t}`}
-                >
-                  {t / 12}-Year
-                </button>
-              ))}
-              <button
-                onClick={() => setConfig(c => ({ ...c, contractTermMonths: ![24, 36].includes(c.contractTermMonths) ? c.contractTermMonths : 48 }))}
-                className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${![24, 36].includes(config.contractTermMonths) ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900"}`}
-                data-testid="toggle-term-custom"
-              >
-                Custom
-              </button>
-            </div>
-            {![24, 36].includes(config.contractTermMonths) && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={1}
-                  max={6}
-                  value={config.contractTermMonths / 12}
-                  onChange={(e) => {
-                    const years = Math.max(1, Math.min(6, parseInt(e.target.value) || 1));
-                    setConfig(c => ({ ...c, contractTermMonths: years * 12 }));
-                  }}
-                  className="w-16 h-8 rounded-lg border border-neutral-300 bg-white px-2 text-sm text-center"
-                  data-testid="input-custom-years"
-                />
-                <span className="text-xs sm:text-sm text-neutral-500">years</span>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            {settings.map(s => {
-              const Icon = SETTING_ICONS[s.careSetting] || Building2;
-              const yp = s.yearlyProviders || { year1: s.providerCount, year2: s.fullScaleProviders || s.providerCount, year3: s.fullScaleProviders || s.providerCount };
-              const isFlat = s.pricingModel === "annualFlat";
-              const isEnc = s.pricingModel === "perEncounter";
-              const flatFee = s.annualLicenseFee || 0;
-              const encAnnual = (s.costPerEncounter || 0) * s.encounters;
-              const baseProv = s.providerCount || 1;
-              const ye = s.yearlyEncounters ?? { year1: s.encounters, year2: s.encounters, year3: s.encounters };
-              const defaultUtil = s.careSetting === "nursing" && config.nursingYearlyUtilization
-                ? config.nursingYearlyUtilization
-                : config.yearlyUtilization;
-              const yu = s.yearlyUtilization ?? defaultUtil;
-              const yPr = s.yearlyPricing || {
-                year1: isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) : s.costPerUnit,
-                year2: isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) : s.costPerUnit,
-                year3: isFlat ? flatFee : isEnc ? (s.costPerEncounter || 0) : s.costPerUnit,
-              };
-              const y1Months = 13 - s.goLiveMonth;
-              const y1Cost = isFlat ? yPr.year1 * (y1Months / 12) : isEnc ? yPr.year1 * ye.year1 * (y1Months / 12) : yPr.year1 * yp.year1 * y1Months;
-              const y2Cost = isFlat ? yPr.year2 : isEnc ? yPr.year2 * ye.year2 : yPr.year2 * yp.year2 * 12;
-              const y3Cost = isFlat ? yPr.year3 : isEnc ? yPr.year3 * ye.year3 : yPr.year3 * yp.year3 * 12;
-              const unitLabel = SETTING_UNIT_LABELS[s.careSetting];
-              const contractYears = Math.ceil(config.contractTermMonths / 12);
-              const showY2 = contractYears >= 2;
-              const showY3 = contractYears >= 3;
-              return (
-                <div
-                  key={s.id}
-                  className="bg-white rounded-xl overflow-hidden border border-neutral-200"
-                  data-testid={`pricing-card-${s.careSetting}`}
-                >
-                  <div className="flex">
-                    <div className="w-1.5 flex-shrink-0" style={{ backgroundColor: s.color }} />
-                    <div className="flex-1 p-4 sm:p-5">
-                      <div className="flex items-center gap-2.5 mb-4">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${s.color}15` }}>
-                          <Icon className="w-4 h-4" style={{ color: s.color }} />
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-neutral-900">{s.label}</h3>
-                          <p className="text-xs text-neutral-500">{isEnc
-                            ? (showY2 ? `${fmtNum(ye.year1)} → ${fmtNum(showY3 ? ye.year3 : ye.year2)} encounters` : `${fmtNum(ye.year1)} encounters`)
-                            : (showY2 ? `${fmtNum(yp.year1)} → ${fmtNum(showY3 ? yp.year3 : yp.year2)} ${unitLabel}` : `${fmtNum(yp.year1)} ${unitLabel}`)
-                          }</p>
-                        </div>
-                      </div>
-
-                      <div className="mb-4">
-                        <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Rollout Plan</p>
-                        {isEnc ? (
-                          <>
-                          <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : showY2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                            <div>
-                              <label className="block text-[12px] text-neutral-500 mb-1">Y1 encounters</label>
-                              <FormattedNumberInput
-                                value={ye.year1}
-                                onChange={(v) => onUpdateSetting(s.id, { yearlyEncounters: { ...ye, year1: Math.max(v, 1) } })}
-                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                data-testid={`input-y1-enc-${s.careSetting}`}
-                              />
-                            </div>
-                            {showY2 && (
-                              <div>
-                                <label className="block text-[12px] text-neutral-500 mb-1">Y2 encounters</label>
-                                <FormattedNumberInput
-                                  value={ye.year2}
-                                  onChange={(v) => onUpdateSetting(s.id, { yearlyEncounters: { ...ye, year2: Math.max(v, 1) } })}
-                                  className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                  data-testid={`input-y2-enc-${s.careSetting}`}
-                                />
-                              </div>
-                            )}
-                            {showY3 && (
-                              <div>
-                                <label className="block text-[12px] text-neutral-500 mb-1">Y3{contractYears > 3 ? "+" : ""} encounters</label>
-                                <FormattedNumberInput
-                                  value={ye.year3}
-                                  onChange={(v) => onUpdateSetting(s.id, { yearlyEncounters: { ...ye, year3: Math.max(v, 1) } })}
-                                  className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                  data-testid={`input-y3-enc-${s.careSetting}`}
-                                />
-                              </div>
-                            )}
-                          </div>
-                          <div className={`grid gap-3 mt-2 ${showY3 ? 'grid-cols-3' : showY2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                            <div>
-                              <label className="block text-[12px] text-neutral-500 mb-1">Y1 util %</label>
-                              <div className="relative">
-                                <input
-                                  type="number"
-                                  min={1}
-                                  max={100}
-                                  value={yu.year1}
-                                  onChange={(e) => {
-                                    const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
-                                    onUpdateSetting(s.id, { yearlyUtilization: { ...yu, year1: v } });
-                                  }}
-                                  className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2 pr-6"
-                                  data-testid={`input-y1-util-${s.careSetting}`}
-                                />
-                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-neutral-400">%</span>
-                              </div>
-                            </div>
-                            {showY2 && (
-                              <div>
-                                <label className="block text-[12px] text-neutral-500 mb-1">Y2 util %</label>
-                                <div className="relative">
-                                  <input
-                                    type="number"
-                                    min={1}
-                                    max={100}
-                                    value={yu.year2}
-                                    onChange={(e) => {
-                                      const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
-                                      onUpdateSetting(s.id, { yearlyUtilization: { ...yu, year2: v } });
-                                    }}
-                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2 pr-6"
-                                    data-testid={`input-y2-util-${s.careSetting}`}
-                                  />
-                                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-neutral-400">%</span>
-                                </div>
-                              </div>
-                            )}
-                            {showY3 && (
-                              <div>
-                                <label className="block text-[12px] text-neutral-500 mb-1">Y3 util %</label>
-                                <div className="relative">
-                                  <input
-                                    type="number"
-                                    min={1}
-                                    max={100}
-                                    value={yu.year3}
-                                    onChange={(e) => {
-                                      const v = Math.max(1, Math.min(100, Number(e.target.value) || 1));
-                                      onUpdateSetting(s.id, { yearlyUtilization: { ...yu, year3: v } });
-                                    }}
-                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2 pr-6"
-                                    data-testid={`input-y3-util-${s.careSetting}`}
-                                  />
-                                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[12px] text-neutral-400">%</span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-[10px] text-neutral-400 mt-1">% of encounters where Abridge is used</p>
-                          </>
-                        ) : (
-                          <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : showY2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                            <div>
-                              <label className="block text-[12px] text-neutral-500 mb-1">Y1 {unitLabel}</label>
-                              <FormattedNumberInput
-                                value={yp.year1}
-                                onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year1: Math.max(v, 1) } })}
-                                className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                data-testid={`input-y1-${s.careSetting}`}
-                              />
-                            </div>
-                            {showY2 && (
-                              <div>
-                                <label className="block text-[12px] text-neutral-500 mb-1">Y2 {unitLabel}</label>
-                                <FormattedNumberInput
-                                  value={yp.year2}
-                                  onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year2: Math.max(v, 1) } })}
-                                  className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                  data-testid={`input-y2-${s.careSetting}`}
-                                />
-                              </div>
-                            )}
-                            {showY3 && (
-                              <div>
-                                <label className="block text-[12px] text-neutral-500 mb-1">Y3{contractYears > 3 ? "+" : ""} {unitLabel}</label>
-                                <FormattedNumberInput
-                                  value={yp.year3}
-                                  onChange={(v) => onUpdateSetting(s.id, { yearlyProviders: { ...yp, year3: Math.max(v, 1) } })}
-                                  className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                  data-testid={`input-y3-${s.careSetting}`}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mb-4">
-                        <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-2">Pricing</p>
-                        <div className="flex gap-1.5 mb-3">
-                          {(["perUnit", "annualFlat", "perEncounter"] as const).map(pm => (
-                            <button
-                              key={pm}
-                              onClick={() => {
-                                const defaultPrice = pm === "perUnit" ? s.costPerUnit
-                                  : pm === "perEncounter" ? (s.costPerEncounter || 0)
-                                  : (s.annualLicenseFee || 0);
-                                onUpdateSetting(s.id, {
-                                  pricingModel: pm,
-                                  yearlyPricing: { year1: defaultPrice, year2: defaultPrice, year3: defaultPrice },
-                                });
-                              }}
-                              className={`px-2.5 py-1 rounded-full text-[12px] font-medium transition-colors ${(pm === "perUnit" && !s.pricingModel) || s.pricingModel === pm ? "bg-[#1A1A1A] text-white" : "text-neutral-500 hover:text-neutral-900 bg-neutral-100"}`}
-                              data-testid={`toggle-${pm}-${s.careSetting}`}
-                            >
-                              {pm === "perUnit" ? "Per Unit/Mo" : pm === "annualFlat" ? "Annual License" : "Per Encounter"}
-                            </button>
-                          ))}
-                        </div>
-                        {(() => {
-                          const pm = s.pricingModel || "perUnit";
-                          const priceLabel = pm === "annualFlat" ? "Annual Fee"
-                            : pm === "perEncounter" ? "$/Encounter"
-                            : `$/${SETTING_UNIT_LABELS[s.careSetting]?.replace(/s$/, '') || "Unit"}/Mo`;
-                          const defPrice = pm === "annualFlat" ? (s.annualLicenseFee || 0)
-                            : pm === "perEncounter" ? (s.costPerEncounter || 0)
-                            : s.costPerUnit;
-                          const yp2 = s.yearlyPricing || { year1: defPrice, year2: defPrice, year3: defPrice };
-                          const updateYP = (yearKey: "year1" | "year2" | "year3", v: number) => {
-                            const val = Math.max(v, 0);
-                            const updated = { ...yp2, [yearKey]: val };
-                            const lu: Partial<typeof s> = { yearlyPricing: updated };
-                            if (pm === "annualFlat") lu.annualLicenseFee = updated.year1;
-                            else if (pm === "perEncounter") lu.costPerEncounter = updated.year1;
-                            else lu.costPerUnit = updated.year1;
-                            onUpdateSetting(s.id, lu);
-                          };
-                          return (
-                            <div className="grid grid-cols-3 gap-3 mb-3">
-                              {(["year1", "year2", "year3"] as const).map((yk, i) => (
-                                <div key={yk}>
-                                  <label className="block text-[12px] text-neutral-500 mb-1">Y{i + 1} {priceLabel}</label>
-                                  <FormattedNumberInput
-                                    value={yp2[yk]}
-                                    onChange={(v) => updateYP(yk, v)}
-                                    prefix="$"
-                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                                    data-testid={`input-price-y${i + 1}-view-${s.careSetting}`}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })()}
-                        <div className="grid grid-cols-3 gap-3">
-                          <div>
-                            <label className="block text-[12px] text-neutral-500 mb-1">Go-Live</label>
-                            <select
-                              value={s.goLiveMonth}
-                              onChange={(e) => onUpdateSetting(s.id, { goLiveMonth: parseInt(e.target.value) })}
-                              className="w-full h-8 rounded-lg border border-neutral-300 bg-white px-2 text-sm"
-                              data-testid={`select-golive-view-${s.careSetting}`}
-                            >
-                              {Array.from({ length: config.contractTermMonths }, (_, i) => (
-                                <option key={i + 1} value={i + 1}>Month {i + 1}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-[12px] text-neutral-500 mb-1">Impl. Fee</label>
-                            <FormattedNumberInput
-                              value={s.implementationFee}
-                              onChange={(v) => onUpdateSetting(s.id, { implementationFee: v })}
-                              prefix="$"
-                              className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
-                              data-testid={`input-impl-${s.careSetting}`}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-[#F9F6F2] rounded-lg px-3 py-2.5">
-                        {config.granularity === "quarterly" && s.quarterlyPricing ? (() => {
-                          const qPr = s.quarterlyPricing;
-                          const qProv = s.quarterlyProviders;
-                          const qKeys: string[] = ["q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12"];
-                          const yearGroups = [qKeys.slice(0,4), qKeys.slice(4,8), qKeys.slice(8,12)];
-                          return (
-                            <>
-                              <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-1.5">Quarterly Investment</p>
-                              {yearGroups.map((grp, yi) => {
-                                if (yi === 1 && !showY2) return null;
-                                if (yi === 2 && !showY3) return null;
-                                return (
-                                  <div key={yi} className="mb-1.5">
-                                    <p className="text-[10px] text-neutral-400 mb-0.5">Year {yi + 1}</p>
-                                    <div className="grid grid-cols-4 gap-1.5">
-                                      {grp.map((qk, qi) => {
-                                        const price = (qPr as any)[qk] || 0;
-                                        const prov = qProv ? (qProv as any)[qk] || yp[yi === 0 ? 'year1' : yi === 1 ? 'year2' : 'year3'] : yp[yi === 0 ? 'year1' : yi === 1 ? 'year2' : 'year3'];
-                                        const qCost = isFlat ? price / 4 : isEnc ? price * prov * 3 : price * prov * 3;
-                                        return (
-                                          <div key={qk}>
-                                            <p className="text-[10px] text-neutral-500">Q{yi * 4 + qi + 1}</p>
-                                            <p className="text-[11px] font-semibold text-neutral-800">{fmtFull(qCost)}</p>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </>
-                          );
-                        })() : (
-                        <>
-                        <p className="text-[12px] font-medium text-neutral-400 uppercase tracking-[1.5px] mb-1.5">Annual Investment</p>
-                        <div className={`grid gap-3 ${showY3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
-                          <div>
-                            <p className="text-[12px] text-neutral-500">Year 1</p>
-                            <p className="text-sm font-semibold text-neutral-800">{fmtFull(y1Cost)}</p>
-                          </div>
-                          <div>
-                            <p className="text-[12px] text-neutral-500">Year 2</p>
-                            <p className="text-sm font-semibold text-neutral-800">{fmtFull(y2Cost)}</p>
-                          </div>
-                          {showY3 && (
-                            <div>
-                              <p className="text-[12px] text-neutral-500">Year 3</p>
-                              <p className="text-sm font-semibold text-neutral-800">{fmtFull(y3Cost)}</p>
-                            </div>
-                          )}
-                        </div>
-                        </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Retention calculation */}
-          <div className="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t border-neutral-200">
-            <p className="text-sm font-bold text-neutral-700 mb-1">Retention Value Model</p>
-            <p className="text-xs text-neutral-500 mb-1">Estimate avoided turnover costs from reduced documentation burden</p>
-            <p className="text-xs text-neutral-400 mb-3 sm:mb-4">Retention value = full-scale providers × retention improvement rate × replacement cost per provider, phased over years.</p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
-              {settings.map(s => {
-                const rate = s.retentionRate ?? 0.5;
-                const cost = s.replacementCost ?? 400000;
-                const fullScale = s.fullScaleProviders || s.providerCount;
-                const annualVal = fullScale * (rate / 100) * cost;
-                const hasExploreRet = s.drivers.some(d => d.id === "retention" && d.value > 0);
-                return (
-                  <div key={s.id} className="bg-white rounded-lg border border-neutral-200 p-3" data-testid={`retention-config-${s.careSetting}`}>
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-                      <span className="text-xs font-medium text-neutral-700 truncate">{s.label}</span>
-                    </div>
-                    {hasExploreRet ? (
-                      <p className="text-[11px] text-neutral-500">Using Explore-configured retention value ({fmt(s.drivers.find(d => d.id === "retention")?.value || 0)}/yr)</p>
-                    ) : (
-                      <>
-                        <div className="mb-2">
-                          <label className="block text-[11px] text-neutral-500 mb-0.5">Retention improvement %</label>
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="range"
-                              min={0}
-                              max={3}
-                              step={0.1}
-                              value={rate}
-                              onChange={(e) => onUpdateSetting(s.id, { retentionRate: parseFloat(e.target.value) })}
-                              className="flex-1 accent-[#D4930A]"
-                              data-testid={`slider-ret-rate-${s.careSetting}`}
-                            />
-                            <span className="text-[11px] font-bold text-neutral-800 w-10 text-right">{rate.toFixed(1)}%</span>
-                          </div>
-                        </div>
-                        <div className="mb-2">
-                          <label className="block text-[11px] text-neutral-500 mb-0.5">Replacement cost</label>
-                          <FormattedNumberInput
-                            value={cost}
-                            onChange={(v) => onUpdateSetting(s.id, { replacementCost: Math.max(v, 0) })}
-                            prefix="$"
-                            className="w-full text-right text-[11px] h-7 bg-white border border-neutral-300 rounded px-1.5"
-                            data-testid={`input-ret-cost-${s.careSetting}`}
-                          />
-                        </div>
-                        <p className="text-[11px] font-medium text-[#D4930A]">= {fmt(annualVal)}/yr at full scale</p>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <p className="text-xs font-bold text-neutral-600 mb-2">Retention Benefit Phasing</p>
-            <p className="text-xs text-neutral-400 mb-3 sm:mb-4">This reflects the organizational behavior change timeline — separate from the {ONSET_DELAY_MONTHS.delayed}-month clinical onset delay already built into capacity & efficiency cash flows.</p>
-            <div className={`grid gap-3 sm:gap-4 ${Math.ceil(config.contractTermMonths / 12) >= 3 ? 'grid-cols-3' : Math.ceil(config.contractTermMonths / 12) >= 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-              {(["year1Pct", "year2Pct", "year3Pct"] as const).slice(0, Math.min(Math.max(Math.ceil(config.contractTermMonths / 12), 1), 3)).map((key, idx) => (
-                <div key={key}>
-                  <label className="block text-[12px] sm:text-xs text-neutral-500 mb-1">Year {idx + 1}{idx === 2 && config.contractTermMonths > 36 ? "+" : ""}</label>
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={5}
-                      value={config.retentionPhasing[key]}
-                      onChange={(e) => setConfig(c => ({
-                        ...c,
-                        retentionPhasing: { ...c.retentionPhasing, [key]: parseInt(e.target.value) }
-                      }))}
-                      className="flex-1 accent-[#EA2C00]"
-                      data-testid={`slider-retention-y${idx + 1}`}
-                    />
-                    <span className="text-xs sm:text-sm font-bold text-neutral-900 w-8 sm:w-10 text-right">{config.retentionPhasing[key]}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-        </>)}
-
-        {activeTab === 'detail' && (<>
         {/* FINANCIAL SUMMARY */}
         <motion.div
           className="mb-8 sm:mb-10"
@@ -1766,70 +1079,39 @@ export default function ProformaView({
                 {!isMobile && (
                   <>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.doc }}>
-                        {isNursingOnly ? "Quality (delayed)" : "Doc Quality (immediate)"}
-                      </td>
+                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.capacity }}>Capacity</td>
                       {yearlyData.map(y => (
-                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.docValue)}</td>
+                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.capacityValue)}</td>
                       ))}
                       <td className="text-right py-2 px-4 text-xs text-neutral-500">
-                        {fmt(yearlyData.reduce((s, y) => s + y.docValue, 0))}
+                        {fmt(yearlyData.reduce((s, y) => s + y.capacityValue, 0))}
                       </td>
                     </tr>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.time }}>Capacity & Efficiency ({ONSET_DELAY_MONTHS.delayed}mo delay)</td>
+                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.workforce }}>Workforce</td>
                       {yearlyData.map(y => (
-                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.timeValue)}</td>
+                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.workforceValue)}</td>
                       ))}
                       <td className="text-right py-2 px-4 text-xs text-neutral-500">
-                        {fmt(yearlyData.reduce((s, y) => s + y.timeValue, 0))}
+                        {fmt(yearlyData.reduce((s, y) => s + y.workforceValue, 0))}
                       </td>
                     </tr>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.retention }}>Retention (phased)</td>
+                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.revenue }}>Revenue</td>
                       {yearlyData.map(y => (
-                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.retentionValue)}</td>
+                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.revenueValue)}</td>
                       ))}
                       <td className="text-right py-2 px-4 text-xs text-neutral-500">
-                        {fmt(yearlyData.reduce((s, y) => s + y.retentionValue, 0))}
-                      </td>
-                    </tr>
-                  </>
-                )}
-                {!isMobile && (
-                  <>
-                    <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-neutral-500 text-xs">{settings.every(s => s.pricingModel === "perEncounter") ? "Contracted Encounters" : "Licensed Providers"}</td>
-                      {yearlyData.map(y => {
-                        const allEnc = settings.every(s => s.pricingModel === "perEncounter");
-                        const totalVal = allEnc
-                          ? settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.encounters || 0), 0)
-                          : settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.licensedProviders || 0), 0);
-                        return (
-                          <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmtNum(totalVal)}</td>
-                        );
-                      })}
-                      <td className="text-right py-2 px-4 text-xs text-neutral-500">
-                        {(() => {
-                          const finalMonth = cashFlows[cashFlows.length - 1];
-                          const allEnc = settings.every(s => s.pricingModel === "perEncounter");
-                          return finalMonth ? fmtNum(settings.reduce((sum, s) => sum + (allEnc ? (finalMonth.bySettings[s.id]?.encounters || 0) : (finalMonth.bySettings[s.id]?.licensedProviders || 0)), 0)) : "—";
-                        })()}
+                        {fmt(yearlyData.reduce((s, y) => s + y.revenueValue, 0))}
                       </td>
                     </tr>
                     <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-neutral-500 text-xs">{settings.every(s => s.pricingModel === "perEncounter") ? "Utilized Encounters" : settings.some(s => s.pricingModel === "perEncounter") ? "Active Volume" : "Actively Documenting"}</td>
-                      {yearlyData.map(y => {
-                        const totalActive = settings.reduce((sum, s) => sum + (y.bySettings[s.id]?.providers || 0), 0);
-                        return (
-                          <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmtNum(totalActive)}</td>
-                        );
-                      })}
+                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.quality }}>Quality</td>
+                      {yearlyData.map(y => (
+                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.qualityValue)}</td>
+                      ))}
                       <td className="text-right py-2 px-4 text-xs text-neutral-500">
-                        {(() => {
-                          const finalMonth = cashFlows[cashFlows.length - 1];
-                          return finalMonth ? fmtNum(settings.reduce((sum, s) => sum + (finalMonth.bySettings[s.id]?.providers || 0), 0)) : "—";
-                        })()}
+                        {fmt(yearlyData.reduce((s, y) => s + y.qualityValue, 0))}
                       </td>
                     </tr>
                   </>
@@ -1857,161 +1139,6 @@ export default function ProformaView({
           </div>
         </motion.div>
 
-        {/* SENSITIVITY ANALYSIS */}
-        <motion.div
-          className="mb-8 sm:mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.27 }}
-          data-testid="panel-sensitivity"
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-600" />
-            <h2 className="text-base sm:text-lg font-bold text-neutral-900">Sensitivity Analysis</h2>
-          </div>
-          <p className="text-xs sm:text-sm text-neutral-500 mb-3 sm:mb-4">What if value drivers realize at different rates?</p>
-
-          <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-            <div className="grid grid-cols-3">
-              {([
-                { key: "conservative" as const, label: "Conservative", sublabel: "70% Realization", accent: "#78716C", isBase: false },
-                { key: "base" as const, label: "Base Case", sublabel: "Your Assumptions", accent: "#EA2C00", isBase: true },
-                { key: "optimistic" as const, label: "Optimistic", sublabel: "130% Realization", accent: "#1A1A1A", isBase: false },
-              ] as const).map((scenario, idx) => {
-                const data = sensitivityAnalysis[scenario.key];
-                return (
-                  <div
-                    key={scenario.key}
-                    className={`p-3 sm:p-5 ${idx < 2 ? "border-r border-neutral-100" : ""} ${scenario.isBase ? "bg-[#FAFAF9]" : ""}`}
-                    data-testid={`sensitivity-${scenario.key}`}
-                  >
-                    <div className="h-0.5 rounded-full mb-3 sm:mb-4" style={{ backgroundColor: scenario.accent }} />
-                    <p className="text-[12px] sm:text-xs font-bold text-neutral-900 mb-0.5">{scenario.label}</p>
-                    <p className="text-[9px] sm:text-[12px] text-neutral-400 mb-3 sm:mb-4">{scenario.sublabel}</p>
-
-                    <div className="space-y-3 sm:space-y-4">
-                      <div>
-                        <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Annual Value</p>
-                        <p className={`text-sm sm:text-lg font-bold ${scenario.isBase ? "text-[#EA2C00]" : "text-neutral-900"}`} data-testid={`sensitivity-value-${scenario.key}`}>{fmt(data.annualValue)}</p>
-                      </div>
-                      <div>
-                        <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Value-to-Cost</p>
-                        <p className={`text-sm sm:text-lg font-bold ${scenario.isBase ? "text-[#EA2C00]" : "text-neutral-900"}`} data-testid={`sensitivity-vtc-${scenario.key}`}>
-                          {hasInvestment ? `${data.valueToCost.toFixed(1)}x` : "N/A"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Payback</p>
-                        <p className="text-sm sm:text-lg font-bold text-neutral-900" data-testid={`sensitivity-payback-${scenario.key}`}>
-                          {data.paybackMonth ? `${data.paybackMonth} mo` : "—"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[9px] sm:text-[12px] text-neutral-400 uppercase tracking-wider mb-0.5">Net Value</p>
-                        <p className={`text-sm sm:text-lg font-bold ${data.termNet >= 0 ? "text-neutral-900" : "text-red-600"}`} data-testid={`sensitivity-net-${scenario.key}`}>
-                          {fmt(data.termNet)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {(() => {
-              const consVal = sensitivityAnalysis.conservative.annualValue;
-              const baseVal = sensitivityAnalysis.base.annualValue;
-              const optVal = sensitivityAnalysis.optimistic.annualValue;
-              const minVal = Math.min(consVal, baseVal, optVal);
-              const maxVal = Math.max(consVal, baseVal, optVal);
-              const range = maxVal - minVal || 1;
-              const pos = (v: number) => ((v - minVal) / range) * 100;
-              const consPos = pos(consVal);
-              const basePos = pos(baseVal);
-              const optPos = pos(optVal);
-
-              return (
-                <div className="px-4 sm:px-6 py-4 sm:py-5 border-t border-neutral-100">
-                  <p className="text-[12px] sm:text-xs font-medium text-neutral-500 mb-3">Annual Value Range</p>
-                  <div className="relative h-6 mb-1">
-                    <div className="absolute top-1/2 left-0 right-0 h-px bg-neutral-200 -translate-y-1/2" />
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-neutral-400 ring-2 ring-white"
-                      style={{ left: `${consPos}%`, marginLeft: "-4px" }}
-                    />
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#EA2C00] ring-2 ring-white"
-                      style={{ left: `${basePos}%`, marginLeft: "-6px" }}
-                    />
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-neutral-800 ring-2 ring-white"
-                      style={{ left: `${optPos}%`, marginLeft: "-4px" }}
-                    />
-                  </div>
-                  <div className="relative h-4">
-                    <span
-                      className="absolute text-[9px] sm:text-[12px] text-neutral-400 font-medium -translate-x-1/2"
-                      style={{ left: `${consPos}%` }}
-                    >
-                      {fmt(consVal)}
-                    </span>
-                    <span
-                      className="absolute text-[9px] sm:text-[12px] text-[#EA2C00] font-bold -translate-x-1/2"
-                      style={{ left: `${basePos}%` }}
-                    >
-                      {fmt(baseVal)}
-                    </span>
-                    <span
-                      className="absolute text-[9px] sm:text-[12px] text-neutral-700 font-medium -translate-x-1/2"
-                      style={{ left: `${optPos}%` }}
-                    >
-                      {fmt(optVal)}
-                    </span>
-                  </div>
-                </div>
-              );
-            })()}
-
-            <div className="px-4 sm:px-6 pb-4 sm:pb-5">
-              <p className="text-[12px] sm:text-xs text-neutral-400 leading-relaxed">
-                Scenarios vary only value realization (70%–130%). Investment held constant at {fmt(summary.termInvestment)}.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* COST OF WAITING */}
-        <motion.div
-          className="mb-8 sm:mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.29 }}
-          data-testid="panel-cost-of-waiting"
-        >
-          <h2 className="text-base sm:text-lg font-bold text-neutral-900 mb-1">Cost of Waiting</h2>
-          <p className="text-xs sm:text-sm text-neutral-500 mb-4">What the data suggests about delayed implementation</p>
-
-          <div className="bg-[#F9F6F2] rounded-xl p-4 sm:p-6">
-            <div className="grid grid-cols-2 gap-4 mb-3">
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-bold text-neutral-900">
-                  {fmtNum(Math.round(settings.reduce((s, v) => s + v.totalHoursSaved, 0) / 12))}
-                </p>
-                <p className="text-[10px] sm:text-xs text-neutral-500 mt-1">hours/month on manual documentation</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-bold text-neutral-900">
-                  {fmt(Math.round(summary.runRateValue / 12))}
-                </p>
-                <p className="text-[10px] sm:text-xs text-neutral-500 mt-1">estimated monthly value deferred</p>
-              </div>
-            </div>
-            <p className="text-[11px] sm:text-xs text-neutral-500 leading-relaxed">
-              Each month of delayed implementation defers this estimated value while documentation costs continue.
-            </p>
-          </div>
-        </motion.div>
-
         {/* METHODOLOGY */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -2034,28 +1161,28 @@ export default function ProformaView({
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
               <p><strong className="text-neutral-900">Implementation Ramp:</strong> A {config.implementationRampMonths}-month gradual implementation ramp is applied as providers are onboarded. During this period, value scales gradually (e.g. ~33%/67%/100% for a 3-month ramp) while full subscription costs are incurred. This accounts for training, EHR integration, and workflow adjustment.</p>
               <p><strong className="text-neutral-900">Utilization Ramp:</strong> Utilization increases over the contract period: Year 1 target {config.yearlyUtilization.year1}%, Year 2 target {config.yearlyUtilization.year2}%, Year 3 target {config.yearlyUtilization.year3}%.{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` Nursing uses separate targets: ${config.nursingYearlyUtilization.year1}%/${config.nursingYearlyUtilization.year2}%/${config.nursingYearlyUtilization.year3}%.` : ""} These targets reflect realistic organizational adoption curves.</p>
-              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Different value drivers materialize at different speeds. <strong style={{ color: '#1A1A1A' }}>Documentation quality</strong> improvements (wRVU, HCC, denials, DRG) have a {ONSET_DELAY_MONTHS.immediate}-month billing cycle lag before value appears, then ramp over 3 months.{settings.some(s => s.careSetting === "nursing") ? " For nursing care quality drivers (HAPI, falls, bundle compliance), value onset begins at month 5 — clinical outcomes require a full quarter of consistent real-time documentation before measurable improvement occurs in HAPI and fall rates." : ""} <strong className="text-[#EA2C00]">Capacity & efficiency</strong> gains (patient access, throughput, cost reduction, OT) onset at month {ONSET_DELAY_MONTHS.delayed} as organizations operationalize freed-up capacity, then ramp over 3 months. <strong style={{ color: '#B45309' }}>Retention/wellbeing</strong> benefits phase in over years per your configured phasing ({config.retentionPhasing.year1Pct}% Y1 / {config.retentionPhasing.year2Pct}% Y2 / {config.retentionPhasing.year3Pct}% Y3{config.nursingRetentionPhasing && settings.some(s => s.careSetting === "nursing") && (config.nursingRetentionPhasing.year1Pct !== config.retentionPhasing.year1Pct || config.nursingRetentionPhasing.year2Pct !== config.retentionPhasing.year2Pct) ? `; Nursing: ${config.nursingRetentionPhasing.year1Pct}% Y1 / ${config.nursingRetentionPhasing.year2Pct}% Y2 / ${config.nursingRetentionPhasing.year3Pct}% Y3` : ""}).</p>
+              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Value materializes at different speeds across the four domains. <strong style={{ color: '#1E3A5F' }}>Revenue</strong> drivers (wRVU capture, HCC, denial prevention, DRG accuracy, CDI) have a {ONSET_DELAY_MONTHS.immediate}-month billing cycle lag before value appears, then ramp over 3 months. <strong style={{ color: '#EA2C00' }}>Capacity</strong> gains (patient access, throughput, LWBS recovery, bedside time freed) onset at month {ONSET_DELAY_MONTHS.delayed} as organizations operationalize available capacity, then ramp over 3 months. <strong style={{ color: '#888888' }}>Quality</strong> improvements (care gap closure, HEDIS/Stars performance, core measures, {settings.some(s => s.careSetting === "nursing") ? "HAPI, falls, CAUTI, CLABSI, sepsis" : "ED core measures, documentation deficiency"}) also onset at month {ONSET_DELAY_MONTHS.delayed} — clinical outcomes require a full quarter of consistent documentation before measurable improvement occurs. <strong style={{ color: '#7A1F04' }}>Workforce</strong> gains (provider wellbeing, locum/agency reduction, nursing retention) phase in over years per your configured phasing ({config.retentionPhasing.year1Pct}% Y1 / {config.retentionPhasing.year2Pct}% Y2 / {config.retentionPhasing.year3Pct}% Y3{config.nursingRetentionPhasing && settings.some(s => s.careSetting === "nursing") && (config.nursingRetentionPhasing.year1Pct !== config.retentionPhasing.year1Pct || config.nursingRetentionPhasing.year2Pct !== config.retentionPhasing.year2Pct) ? `; Nursing: ${config.nursingRetentionPhasing.year1Pct}% Y1 / ${config.nursingRetentionPhasing.year2Pct}% Y2 / ${config.nursingRetentionPhasing.year3Pct}% Y3` : ""}).</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means for every $1 of Abridge investment, you generate ${summary.simpleROI.toFixed(2)} in net value above the cost.</p>
               <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive, accounting for the implementation ramp and subscription costs from day one.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
-              <p><strong className="text-neutral-900">Retention Phasing:</strong> Clinician/nurse retention benefits are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1{Math.ceil(config.contractTermMonths / 12) >= 2 ? `, ${config.retentionPhasing.year2Pct}% in Year 2` : ""}{Math.ceil(config.contractTermMonths / 12) >= 3 ? `, ${config.retentionPhasing.year3Pct}% in Year 3${config.contractTermMonths > 36 ? "+" : ""}` : ""}. Retention benefits ramp gradually within each year — reaching the configured phasing percentage by year-end.</p>
+              <p><strong className="text-neutral-900">Workforce Phasing:</strong> Workforce gains (provider wellbeing, locum/agency reduction, retention) are conservatively phased — {config.retentionPhasing.year1Pct}% in Year 1{Math.ceil(config.contractTermMonths / 12) >= 2 ? `, ${config.retentionPhasing.year2Pct}% in Year 2` : ""}{Math.ceil(config.contractTermMonths / 12) >= 3 ? `, ${config.retentionPhasing.year3Pct}% in Year 3${config.contractTermMonths > 36 ? "+" : ""}` : ""}. These benefits ramp gradually within each year — reaching the configured phasing percentage by year-end.</p>
               <p><strong className="text-neutral-900">Sensitivity:</strong> Two-sided linear analysis scaling total value realization by 70% (conservative) and 130% (optimistic). Investment is held constant. Derived metrics (VTC, ROI, payback) are recalculated from the scaled values. This brackets the range of likely financial outcomes.</p>
             </div>
           )}
         </motion.div>
-        </>)}
-
         {/* FOOTER ACTIONS */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-6 border-t border-neutral-200">
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="gap-2 order-2 sm:order-1"
-            data-testid="button-edit-settings"
-          >
-            <Settings className="w-4 h-4" /> Edit Settings
-          </Button>
+          {!embedded && (
+            <Button
+              variant="outline"
+              onClick={onBack}
+              className="gap-2 order-2 sm:order-1"
+              data-testid="button-edit-settings"
+            >
+              <Settings className="w-4 h-4" /> Edit Settings
+            </Button>
+          )}
           <Button
             onClick={() => setShowExportModal(true)}
             className="gap-2 bg-[#EA2C00] hover:bg-[#D42800] text-white px-6 sm:px-8 h-12 text-base font-semibold order-1 sm:order-2"
@@ -2086,23 +1213,20 @@ export default function ProformaView({
 function CustomTooltip({ active, payload, label, settings, totalProvidersByPeriod, viewMode }: any) {
   if (!active || !payload) return null;
 
-  const docItem = payload.find((p: any) => p.dataKey === "cumDocValue");
-  const timeItem = payload.find((p: any) => p.dataKey === "cumTimeValue");
-  const retentionItem = payload.find((p: any) => p.dataKey === "cumRetentionValue");
-  const investmentItem = payload.find((p: any) => p.dataKey === "cumulativeInvestment");
+  const capacityItem  = payload.find((p: any) => p.dataKey === "capacityValue");
+  const workforceItem = payload.find((p: any) => p.dataKey === "workforceValue");
+  const revenueItem   = payload.find((p: any) => p.dataKey === "revenueValue");
+  const qualityItem   = payload.find((p: any) => p.dataKey === "qualityValue");
+  const investmentItem = payload.find((p: any) => p.dataKey === "investment");
 
-  const total = (docItem?.value || 0) + (timeItem?.value || 0) + (retentionItem?.value || 0);
-  const monthNum = payload[0]?.payload?.period || 1;
-  const periodIdx = viewMode === "yearly"
-    ? Math.ceil(monthNum / 12) - 1
-    : Math.ceil(monthNum / 3) - 1;
+  const total = (capacityItem?.value || 0) + (workforceItem?.value || 0) + (revenueItem?.value || 0) + (qualityItem?.value || 0);
+  const periodIdx = (payload[0]?.payload?.period || 1) - 1;
   const providerCount = totalProvidersByPeriod?.[periodIdx] || 0;
-  const displayMonth = `Month ${monthNum}`;
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-neutral-200 p-3 sm:p-4 text-xs sm:text-sm min-w-[200px] sm:min-w-[240px]">
       <div className="flex items-center justify-between mb-2 sm:mb-3">
-        <p className="font-bold text-neutral-900">{payload[0]?.payload?.displayLabel || displayMonth}</p>
+        <p className="font-bold text-neutral-900">{label}</p>
         {providerCount > 0 && (
           <span className="text-[12px] sm:text-xs text-neutral-400 flex items-center gap-1">
             <Users className="w-3 h-3" /> {fmtNum(providerCount)}
@@ -2110,41 +1234,50 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
         )}
       </div>
 
-      {(docItem?.value || 0) > 0 && (
+      {(capacityItem?.value || 0) > 0 && (
         <div className="flex justify-between gap-3 mb-1">
           <span className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.doc }} />
-            <span className="text-neutral-600">{settings && settings.length > 0 && settings.every((s: any) => s.careSetting === "nursing") ? "Quality" : "Doc Quality"}</span>
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm" style={{ backgroundColor: CHART_COLORS.capacity }} />
+            <span className="text-neutral-600">Capacity</span>
           </span>
-          <span className="font-medium text-neutral-900">{fmt(docItem.value)}</span>
+          <span className="font-medium text-neutral-900">{fmt(capacityItem.value)}</span>
         </div>
       )}
-      {(timeItem?.value || 0) > 0 && (
+      {(workforceItem?.value || 0) > 0 && (
         <div className="flex justify-between gap-3 mb-1">
           <span className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.time }} />
-            <span className="text-neutral-600">Capacity & Efficiency</span>
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm" style={{ backgroundColor: CHART_COLORS.workforce }} />
+            <span className="text-neutral-600">Workforce</span>
           </span>
-          <span className="font-medium text-neutral-900">{fmt(timeItem.value)}</span>
+          <span className="font-medium text-neutral-900">{fmt(workforceItem.value)}</span>
         </div>
       )}
-      {(retentionItem?.value || 0) > 0 && (
+      {(revenueItem?.value || 0) > 0 && (
         <div className="flex justify-between gap-3 mb-1">
           <span className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: CHART_COLORS.retention }} />
-            <span className="text-neutral-600">Retention</span>
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm" style={{ backgroundColor: CHART_COLORS.revenue }} />
+            <span className="text-neutral-600">Revenue</span>
           </span>
-          <span className="font-medium text-neutral-900">{fmt(retentionItem.value)}</span>
+          <span className="font-medium text-neutral-900">{fmt(revenueItem.value)}</span>
+        </div>
+      )}
+      {(qualityItem?.value || 0) > 0 && (
+        <div className="flex justify-between gap-3 mb-1">
+          <span className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm" style={{ backgroundColor: CHART_COLORS.quality }} />
+            <span className="text-neutral-600">Quality</span>
+          </span>
+          <span className="font-medium text-neutral-900">{fmt(qualityItem.value)}</span>
         </div>
       )}
 
       <div className="border-t border-neutral-200 mt-2 pt-2 flex justify-between">
-        <span className="font-bold text-neutral-900">Cumulative Value</span>
+        <span className="font-bold text-neutral-900">Period Value</span>
         <span className="font-bold text-[#EA2C00]">{fmt(total)}</span>
       </div>
-      {investmentItem && (
+      {investmentItem && (investmentItem.value || 0) > 0 && (
         <div className="flex justify-between mt-1">
-          <span className="text-neutral-500">Total Invested</span>
+          <span className="text-neutral-500">Investment</span>
           <span className="text-neutral-700">({fmt(investmentItem.value)})</span>
         </div>
       )}

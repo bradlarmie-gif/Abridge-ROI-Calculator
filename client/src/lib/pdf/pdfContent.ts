@@ -163,7 +163,7 @@ export function generateDriverExplanation(
             industryRange: '1.2-2.5 depending on specialty mix',
           },
           {
-            label: 'wRVU Improvement',
+            label: 'E/M Level Accuracy',
             value: `${improvementPct}%`,
             description: 'Expected increase from better documentation',
             validation: 'Conservative estimate based on coding gap analyses',

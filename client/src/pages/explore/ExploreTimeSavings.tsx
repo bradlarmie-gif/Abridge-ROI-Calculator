@@ -34,7 +34,7 @@ export default function ExploreTimeSavings({
     : isInpatient
       ? { conservative: 15, typical: 30, aggressive: 40 }  // Per admission for hospitalists
       : isNursing
-        ? { conservative: 15, typical: 20, aggressive: 30 }  // Per shift for nursing
+        ? { conservative: 20, typical: 30, aggressive: 40 }  // Per shift for nursing
         : { conservative: 2, typical: 3, aggressive: 4 };
 
   // Nursing: Shift-based calculation (260 shifts/year per nurse FTE)
@@ -166,7 +166,7 @@ export default function ExploreTimeSavings({
               <div className="h-px bg-[#D1D5DB] mb-6" />
               <p className="text-sm text-black leading-relaxed">
                 {isNursing
-                  ? "Across nursing implementations, nurses typically save 15\u201330 minutes per shift on documentation. The range depends on unit type, documentation scope, and workflow adoption."
+                  ? "Across nursing implementations, nurses typically save 20\u201340 minutes per shift on documentation. The range depends on unit type, documentation scope, and workflow adoption."
                   : isED 
                     ? "Across ED implementations, providers typically save 2\u20134 minutes per encounter on documentation. The range depends on acuity mix, EHR configuration, and workflow adoption."
                     : isInpatient

@@ -19,16 +19,20 @@ interface MeasureQualityProps {
 const QUADRANT = 'Quality' as const;
 
 export default function MeasureQuality({ state, updateState, onNext, onBack, onHome }: MeasureQualityProps) {
-  const setting = ((state.careSetting || 'outpatient') as ExploreSetting);
+  const activeSettings = (
+    state.activeCareSettings && state.activeCareSettings.length > 0
+      ? state.activeCareSettings
+      : [state.careSetting || 'outpatient']
+  ) as ExploreSetting[];
   const tracked = state.trackedDrivers || {};
 
   const trackedDriverIds = Object.keys(tracked);
   const trackedHere = useMemo(() =>
     EXPLORE_DRIVERS
-      .filter(d => d.quadrant === QUADRANT && d.settings.includes(setting) && trackedDriverIds.includes(d.id))
+      .filter(d => d.quadrant === QUADRANT && d.settings.some(s => activeSettings.includes(s)) && trackedDriverIds.includes(d.id))
       .map(d => ({ driver: d, entry: tracked[d.id] })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tracked, setting]
+    [tracked, activeSettings]
   );
 
   const financialDrivers = trackedHere.filter(({ driver }) => driver.visibility === 'quantified');
@@ -57,8 +61,11 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
       withAbridge: 0,
       valuePerUnit: md?.valuePerUnitDefault ?? 0,
       attributionPercent: 100,
-      realizationPercent: md?.realizationDefault ?? 100,
+      realizationPercent: 100,
+      lowerIsBetter: md?.lowerIsBetter ?? false,
       expanded: true,
+      scaleValue: md?.scaleInput?.defaultValue,
+      scaleDivisor: md?.scaleInput?.divisor,
     };
     updateState({
       trackedDrivers: { ...tracked, [driver.id]: entry },
@@ -72,6 +79,31 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
     }, 0);
   }, [trackedHere]);
 
+  const isMultiSetting = activeSettings.length > 1;
+
+  const subtitle = useMemo(() => {
+    if (isMultiSetting) {
+      const names = activeSettings.map(s => ({ outpatient: 'Outpatient', ed: 'ED', inpatient: 'Inpatient', nursing: 'Nursing' }[s] ?? s));
+      return `Quality signals across your ${names.join(' + ')} deployment`;
+    }
+    return {
+      outpatient: 'What quality measures and patient experience signals are tracking?',
+      ed: 'What compliance, deficiency, and patient experience signals are tracking in the ED?',
+      inpatient: 'What clinical documentation quality signals are tracking?',
+      nursing: 'What care quality and safety signals are tracking on your nursing units?',
+    }[activeSettings[0]] ?? 'What clinical and patient outcomes are tracking with Abridge?';
+  }, [activeSettings, isMultiSetting]);
+
+  const howToUse = useMemo(() => {
+    if (isMultiSetting) return 'Outpatient quality focuses on HEDIS, care gaps, and patient experience. ED quality centers on compliance, deficiency rates, and Press Ganey. Add the signals that matter most for this EBR.';
+    return {
+      outpatient: 'These are the signals that show whether the care itself is being captured more accurately. HEDIS, STARS, and CG-CAHPS all trace back to documentation quality at the point of care.',
+      ed: 'Core measure compliance, documentation deficiency rate, and Press Ganey scores are the three quality pillars for an ED EBR. All three are measurable and all three respond to ambient capture.',
+      inpatient: 'CDI query rate per provider is the leading quality signal for inpatient. SOI classification accuracy and H&P timeliness are the two upstream drivers.',
+      nursing: 'HAPI, falls, CAUTI, CLABSI, and SEP-1 are the five nursing safety outcomes that are both measurable and directly affected by documentation timeliness.',
+    }[activeSettings[0]] ?? 'Track the Quality outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
+  }, [activeSettings, isMultiSetting]);
+
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
 
   return (
@@ -79,7 +111,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
       <UnifiedHeader
         pathType="measure"
         currentStep={5}
-        totalSteps={7}
+        totalSteps={6}
         stepName="Quality"
         onBack={onBack}
         onHome={onHome}
@@ -90,7 +122,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
           <div className="flex-1 max-w-[700px]">
             <motion.div className="text-center mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">Quality</h1>
-              <p className="text-base text-[#888888]">What clinical and patient outcomes are tracking with Abridge?</p>
+              <p className="text-base text-[#888888]">{subtitle}</p>
             </motion.div>
 
             <motion.div
@@ -100,9 +132,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
               transition={{ delay: 0.1 }}
             >
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">How to Use This Section</p>
-              <p className="text-sm text-black leading-relaxed">
-                Track the Quality outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.
-              </p>
+              <p className="text-sm text-black leading-relaxed">{howToUse}</p>
             </motion.div>
 
             {financialDrivers.length > 0 && (
@@ -124,6 +154,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
                       entry={entry}
                       onUpdate={(updates) => updateEntry(driver.id, updates)}
                       onRemove={() => removeEntry(driver.id)}
+                      isMultiSetting={isMultiSetting}
                     />
                   ))}
                 </div>
@@ -138,7 +169,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
                 transition={{ delay: 0.18 }}
               >
                 <div className="mb-4">
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Other Metrics to Watch</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Signals to Track</p>
                   <p className="text-xs text-[#AAAAAA]">Outcomes tracked post-deployment that don't carry direct dollar value.</p>
                 </div>
                 <div className="space-y-3">
@@ -149,6 +180,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
                       entry={entry}
                       onUpdate={(updates) => updateEntry(driver.id, updates)}
                       onRemove={() => removeEntry(driver.id)}
+                      isMultiSetting={isMultiSetting}
                     />
                   ))}
                 </div>
@@ -171,7 +203,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
               <AddMeasureDriverPicker
                 quadrant={QUADRANT}
-                setting={setting}
+                settings={activeSettings}
                 alreadyTracked={trackedDriverIds}
                 onAdd={addDriver}
               />
@@ -188,7 +220,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
                 className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full gap-2"
                 data-testid="button-continue-measure-quality-mobile"
               >
-                Continue to Forecast
+                See My Results
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </motion.div>
@@ -204,8 +236,17 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
               <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Quality Realized</p>
               <p className="text-sm text-white/50 mb-4">Quantifiable drivers, attribution-adjusted</p>
 
-              <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-quadrant-total-quality">{formatCurrency(quadrantTotal)}</p>
-              <p className="text-xs text-white/50 mt-1">annualized impact</p>
+              {financialDrivers.length > 0 ? (
+                <>
+                  <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-quadrant-total-quality">{formatCurrency(quadrantTotal)}</p>
+                  <p className="text-xs text-white/50 mt-1">annualized impact</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-white/20" data-testid="text-quadrant-total-quality">—</p>
+                  <p className="text-xs text-white/40 mt-1">{watchMetrics.length > 0 ? 'Signals only — no financial drivers yet' : 'No drivers tracked yet'}</p>
+                </>
+              )}
 
               <div className="h-px bg-[#333333] my-5" />
 
@@ -229,7 +270,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
                   )}
                   {watchMetrics.length > 0 && (
                     <div>
-                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Other Metrics</p>
+                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Signals to Track</p>
                       <ul className="space-y-1.5">
                         {watchMetrics.map(({ driver }) => (
                           <li key={driver.id} className="text-sm text-white/70 flex items-center gap-2">
@@ -249,7 +290,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
                   className="w-full h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full gap-2"
                   data-testid="button-continue-measure-quality"
                 >
-                  Continue to Forecast
+                  See My Results
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>

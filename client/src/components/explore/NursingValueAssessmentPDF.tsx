@@ -3,7 +3,6 @@ import {
   Page,
   Text,
   View,
-  Image,
   StyleSheet,
   pdf,
   Font,
@@ -19,7 +18,6 @@ import {
 } from "@/lib/nursingQualityCalcs";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
-import abridgeWordmark from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -55,13 +53,17 @@ const colors = {
   footerMetaSoft: "#8F8A82",
 };
 
+// Neutral-gray → brand-red progression for S/T/P timeline sections
+const STAGE_COLORS = {
+  signal: { border: "#DDDDDD", bg: "#F8F8F8", label: "#AAAAAA" },
+  trend:  { border: "#999999", bg: "#F2F2F2", label: "#555555" },
+  proof:  { border: "#EA2C00", bg: "#FEF9F7", label: "#EA2C00" },
+} as const;
+
 const styles = StyleSheet.create({
   page: {
     padding: 54,
-    // paddingBottom must reserve room for the fixed footer:
-    //   footer.bottom (24) + footer height (~border 1 + paddingTop 8 + text ~12) ≈ 45pt
-    // Add ~24pt of visual breathing room above the footer to prevent content collisions.
-    paddingBottom: 72,
+    paddingBottom: 54,
     fontFamily: "Manrope",
     fontSize: 10.5,
     color: colors.primaryText,
@@ -198,16 +200,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.footerRule,
   },
-  footerLeft: {
-    width: 90,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  footerLogo: {
-    width: 56,
-    height: 12,
-    objectFit: "contain",
-  },
   footerCenter: {
     flex: 1,
     fontSize: 7.5,
@@ -268,6 +260,7 @@ export interface NursingPDFInput {
 
   hcahpsEnabled: boolean;
   medErrorEnabled: boolean;
+  bundleComplianceEnabled?: boolean;
 
   pricingModel: 'perProvider' | 'perEncounter' | 'annual';
   costPerBedPerMonth: number;
@@ -318,37 +311,8 @@ const fmtNum = (n: number): string => Math.round(n).toLocaleString();
 // All three slots have explicit widths/flex so the center can never grow
 // into the right slot regardless of org-name length. Hairline rule above
 // is tuned to the warm Abridge palette (not slate gray).
-const PageFooter = ({ orgName }: { orgName: string }) => (
-  <View style={styles.footer} fixed>
-    <View style={styles.footerLeft}>
-      <Image src={abridgeWordmark} style={styles.footerLogo} />
-    </View>
-    {/*
-      `wrap={false}` + the parent slot's `flex: 1` means an unusually long
-      org name is clipped at the slot boundary instead of wrapping
-      vertically (which would push the footer off its 23pt height
-      contract) or growing into the right "PAGE X / Y" slot (the shipped
-      collision bug). This is the geometric belt-and-braces; the snapshot
-      test asserts the structural part (no document-title suffix is glued
-      onto the org name).
-    */}
-    <Text style={styles.footerCenter} wrap={false}>
-      <Text style={styles.footerCenterOrg}>{orgName}</Text>
-    </Text>
-    {/* Subtract 1 to skip the unnumbered cover page (currently always page 1). */}
-    <Text
-      style={styles.footerRight}
-      render={({ pageNumber, totalPages }) => (
-        <>
-          <Text>Page </Text>
-          <Text style={styles.footerRightNum}>
-            {`${pageNumber - 1} / ${totalPages - 1}`}
-          </Text>
-        </>
-      )}
-    />
-  </View>
-);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const PageFooter = (_: { orgName: string }) => null;
 
 const StatBlock = ({
   label,
@@ -557,6 +521,7 @@ const CompactDriverCard = ({
   value,
   body,
   formula,
+  mathRows,
   source,
   linkedTo,
 }: {
@@ -564,6 +529,7 @@ const CompactDriverCard = ({
   value: string;
   body: string;
   formula?: string;
+  mathRows?: { label: string; value: string }[];
   source?: string;
   linkedTo?: string;
 }) => (
@@ -571,7 +537,7 @@ const CompactDriverCard = ({
     style={{
       flex: 1,
       backgroundColor: colors.cards,
-      padding: 12,
+      padding: 10,
       borderRadius: 4,
       marginHorizontal: 4,
       marginBottom: 8,
@@ -623,28 +589,29 @@ const CompactDriverCard = ({
         {`↳ Linked to ${linkedTo}`}
       </Text>
     ) : null}
-    <Text
-      style={{
-        fontSize: 9,
-        color: colors.secondary,
-        lineHeight: 1.45,
-        marginBottom: 4,
-      }}
-    >
+    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: 4 }} {...({ numberOfLines: 2 } as any)}>
       {body}
     </Text>
-    {formula ? (
-      <Text
+    {mathRows ? (
+      <MathGrid rows={mathRows} />
+    ) : formula ? (
+      <View
         style={{
-          fontSize: 8.5,
-          fontStyle: "italic",
-          color: colors.primaryText,
-          lineHeight: 1.4,
-          marginTop: 2,
+          marginTop: 6,
+          backgroundColor: "#FDF7F4",
+          borderLeftWidth: 2.5,
+          borderLeftColor: colors.primary,
+          paddingHorizontal: 10,
+          paddingVertical: 5,
+          borderRadius: 2,
         }}
       >
-        {formula}
-      </Text>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <Text style={{ fontSize: 8.5, color: colors.primaryText, lineHeight: 1.5 }} {...({ numberOfLines: 2 } as any)}>
+          {formula}
+        </Text>
+      </View>
     ) : null}
     {source ? (
       <Text
@@ -670,6 +637,110 @@ const SectionLabel = ({ children }: { children: string }) => (
   </View>
 );
 
+// NursingTimelineSection — 3-column Signal/Trend/Proof strip. Appears after
+// the HeroSubtotal on Workforce and Quality pages to fill dead whitespace with
+// content that explains WHEN the modeled value becomes observable.
+const NursingTimelineSection = ({
+  stages,
+}: {
+  stages: Array<{
+    key: "signal" | "trend" | "proof";
+    label: string;
+    window: string;
+    desc: string;
+    metrics: string[];
+    callout?: string;
+  }>;
+}) => (
+  <>
+    <View
+      style={{
+        borderBottomWidth: 1,
+        borderBottomColor: colors.separator,
+        marginTop: 8,
+        marginBottom: 12,
+      }}
+    />
+    <Text
+      style={{
+        fontSize: 7.5,
+        fontWeight: "bold",
+        color: colors.tertiary,
+        textTransform: "uppercase",
+        letterSpacing: 2,
+        marginBottom: 8,
+      }}
+    >
+      When to Expect Results
+    </Text>
+    <View style={{ flexDirection: "row" }}>
+      {stages.map((s, i) => {
+        const c = STAGE_COLORS[s.key];
+        return (
+          <View
+            key={s.key}
+            style={{
+              flex: 1,
+              marginRight: i < 2 ? 7 : 0,
+              backgroundColor: c.bg,
+              borderRadius: 5,
+              padding: 10,
+              borderTopWidth: 2.5,
+              borderTopColor: c.border,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 8,
+                fontWeight: "bold",
+                color: c.label,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+                marginBottom: 1,
+              }}
+            >
+              {s.label}
+            </Text>
+            <Text
+              style={{
+                fontSize: 8.5,
+                fontWeight: "bold",
+                color: "#333333",
+                marginBottom: 1,
+              }}
+            >
+              {s.window}
+            </Text>
+            <Text style={{ fontSize: 7.5, color: "#777777", marginBottom: 8, lineHeight: 1.4 }}>
+              {s.desc}
+            </Text>
+            {s.metrics.map((m, mi) => (
+              <View key={mi} style={{ flexDirection: "row", marginBottom: 5 }}>
+                <Text style={{ fontSize: 8, color: c.border, marginRight: 4, marginTop: 1.5 }}>·</Text>
+                <Text style={{ fontSize: 8, color: "#3A3028", lineHeight: 1.45, flex: 1 }}>{m}</Text>
+              </View>
+            ))}
+            {s.callout ? (
+              <View
+                style={{
+                  borderTopWidth: 1,
+                  borderTopColor: c.border,
+                  marginTop: 6,
+                  paddingTop: 6,
+                }}
+              >
+                <Text style={{ fontSize: 7.5, color: "#666666", lineHeight: 1.5, fontStyle: "italic" }}>
+                  {s.callout}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        );
+      })}
+    </View>
+  </>
+);
+
 // Bloomberg-style compact key/value math grid
 const MathGrid = ({ rows }: { rows: { label: string; value: string }[] }) => (
   <View
@@ -680,28 +751,43 @@ const MathGrid = ({ rows }: { rows: { label: string; value: string }[] }) => (
       borderRadius: 4,
       marginTop: 6,
       marginBottom: 4,
+      overflow: "hidden",
     }}
   >
-    {rows.map((r, i) => (
-      <View
-        key={i}
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          paddingHorizontal: 8,
-          paddingVertical: 3,
-          borderTopWidth: i === 0 ? 0 : 0.5,
-          borderTopColor: colors.separator,
-        }}
-      >
-        <Text style={{ fontSize: 8.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 0.5 }}>
-          {r.label}
-        </Text>
-        <Text style={{ fontSize: 9, color: colors.primaryText, fontWeight: "bold" }}>
-          {r.value}
-        </Text>
-      </View>
-    ))}
+    {rows.map((r, i) => {
+      const isResult = i === rows.length - 1;
+      return (
+        <View
+          key={i}
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingHorizontal: 8,
+            paddingVertical: isResult ? 5 : 3,
+            borderTopWidth: i === 0 ? 0 : isResult ? 1 : 0.5,
+            borderTopColor: isResult ? colors.separatorHeavy : colors.separator,
+            backgroundColor: isResult ? "#FEF9F7" : "transparent",
+          }}
+        >
+          <Text style={{
+            fontSize: 8.5,
+            color: isResult ? colors.primaryText : colors.secondary,
+            textTransform: "uppercase",
+            letterSpacing: 0.5,
+            fontWeight: isResult ? "bold" : "normal",
+          }}>
+            {r.label}
+          </Text>
+          <Text style={{
+            fontSize: isResult ? 10 : 9,
+            color: isResult ? colors.primary : colors.primaryText,
+            fontWeight: "bold",
+          }}>
+            {r.value}
+          </Text>
+        </View>
+      );
+    })}
   </View>
 );
 
@@ -783,6 +869,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
   const y1Recurring = data.year1Net + data.annualInvestment;
   const y2Recurring = Math.round(y1Recurring * (1 + data.year2GrowthPct / 100));
   const y3Recurring = Math.round(y2Recurring * (1 + data.year3GrowthPct / 100));
+  const year1ROI = data.annualInvestment > 0 ? data.totalAnnualValue / data.annualInvestment : 0;
   const cumY1 = data.year1Net;
   const cumY2 = data.year1Net + data.year2Net;
   const cumY3 = data.year1Net + data.year2Net + data.year3Net;
@@ -801,78 +888,207 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         preparedBy={data.preparedBy}
       />
 
-      {/* PAGE 2 — THE THESIS */}
+      {/* PAGE 2 — MODEL SNAPSHOT */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <SectionLabel>THE THESIS</SectionLabel>
-          <Text style={styles.sectionHeadline}>Where Nursing Value Actually Lives</Text>
-          <Text style={styles.body}>
-            Ambient documentation creates value across four distinct buckets. For nursing,
-            three of them carry real dollars in this model — and the fourth, revenue, is
-            tracked separately in the physician and APP models where billing originates.
-            We separate them because the strategic implications of each are different.
+          <SectionLabel>MODEL SNAPSHOT</SectionLabel>
+
+          {/* Org identity */}
+          <Text style={{ fontSize: 36, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.1, marginBottom: 4 }}>
+            {orgName}
+          </Text>
+          <Text style={{ fontSize: 8.5, color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 }}>
+            {`Inpatient Nursing  ·  ${fmtNum(data.staffedBeds)} Staffed Beds  ·  ${fmtNum(data.nurseFTEs)} Nurse FTEs`}
           </Text>
 
-          {/* 2x2 quadrant grid. Each cell adapts to whether the underlying drivers
-              are enabled — a quadrant with no enabled drivers shows "Tracked" in
-              italic accent rather than a literal "$0", which would otherwise
-              make a perfectly valid scenario read as broken. */}
-          <View style={{ flexDirection: "row" }}>
-            <QuadrantThesisCard
-              label="CAPACITY"
-              bigNumber="Tracked"
-              bigNumberItalic
-              framing="Reclaimed documentation time goes back to bedside care. We track the ratio of bedside-to-charting time post-deployment as a leading indicator that the model is working."
-            />
-            <QuadrantThesisCard
-              label="WORKFORCE"
-              bigNumber={data.workforceTotal > 0 ? fmtCurrency(data.workforceTotal) : "Tracked"}
-              bigNumberItalic={data.workforceTotal === 0}
-              framing="Documentation burden is among the top drivers of nurse turnover. The hypothesis we model: reducing end-of-shift charting moves retention, the agency spend that follows every vacancy, and the overtime budget — three distinct labor lines that all share one root cause."
-            />
-          </View>
-          <View style={{ flexDirection: "row" }}>
-            <QuadrantThesisCard
-              label="QUALITY"
-              bigNumber={
-                data.qualityTotal > 0
-                  ? `${fmtCurrency(data.qualityTotal)} (potential)`
-                  : "Tracked"
-              }
-              bigNumberItalic={data.qualityTotal === 0}
-              framing="Preventable harm events — HAPIs, falls, CAUTI, CLABSI — and sepsis bundle compliance are sensitive to documentation timing. The hypothesis we model: real-time flowsheet capture surfaces the visibility for earlier intervention, with each unit's actual outcome shaped by clinical practice."
-            />
-            <QuadrantThesisCard
-              label="REVENUE"
-              bigNumber="Tracked Separately"
-              bigNumberLight
-              framing="Revenue impact from documentation is captured in the physician and APP models, where billing originates. Nursing's measurable value lives in quality outcomes and labor economics — which is what this model focuses on."
-            />
+          <View style={{ borderBottomWidth: 1.5, borderBottomColor: colors.separatorHeavy, marginBottom: 14 }} />
+
+          {/* ─── Thesis ─── */}
+          <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.3, marginBottom: 6 }}>
+            Where Nursing Documentation Value Lives
+          </Text>
+          <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6, marginBottom: 12 }}>
+            {`For a ${fmtNum(data.staffedBeds)}-bed unit with ${fmtNum(data.nurseFTEs)} nurse FTEs, ${fmtNum(data.hoursReturnedAnnual)} hours of documentation time reclaimed per year. When nursing documentation moves from end-of-shift batching to point-of-care, the queue that drives overtime and erodes bedside presence never accumulates. That time shift creates value across three buckets — and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.`}
+          </Text>
+
+          <View style={{ borderBottomWidth: 1, borderBottomColor: colors.separator, marginBottom: 12 }} />
+
+          {/* ─── The Bottom Line — hero first ─── */}
+          <View
+            style={{
+              backgroundColor: colors.cards,
+              borderRadius: 4,
+              paddingHorizontal: 18,
+              paddingVertical: 14,
+              marginBottom: 14,
+            }}
+            wrap={false}
+          >
+            <Text style={{ fontSize: 7.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 10 }}>
+              The Bottom Line
+            </Text>
+            <View style={{ flexDirection: "row" }}>
+              <View style={{ flex: 1.2, paddingRight: 14, borderRightWidth: 1, borderRightColor: colors.separator }}>
+                <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Net Annual Value</Text>
+                <Text style={{ fontSize: 34, fontWeight: "bold", color: colors.primary, lineHeight: 1.0, marginBottom: 5 }}>
+                  {fmtCurrency(data.netAnnualValue)}
+                </Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary }}>After recurring investment, Year 1</Text>
+              </View>
+              <View style={{ flex: 0.65, paddingHorizontal: 14, borderRightWidth: 1, borderRightColor: colors.separator }}>
+                <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Year 1 ROI</Text>
+                <Text style={{ fontSize: 34, fontWeight: "bold", color: colors.primary, lineHeight: 1.0, marginBottom: 5 }}>
+                  {`${year1ROI.toFixed(1)}×`}
+                </Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary }}>Per dollar invested</Text>
+              </View>
+              <View style={{ flex: 1.1, paddingLeft: 14 }}>
+                <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>3-Year Net Value</Text>
+                <Text style={{ fontSize: 34, fontWeight: "bold", color: colors.primary, lineHeight: 1.0, marginBottom: 5 }}>
+                  {fmtCurrency(data.threeYearCumulativeNet)}
+                </Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary }}>
+                  {`Yr 2 +${data.year2GrowthPct}%  ·  Yr 3 +${data.year3GrowthPct}%`}
+                </Text>
+              </View>
+            </View>
           </View>
 
-          <View style={[styles.redBorderCallout, { marginTop: 14 }]}>
-            <Text
-              style={{
-                fontSize: 9,
-                color: colors.primary,
-                textTransform: "uppercase",
-                letterSpacing: 1.5,
-                fontWeight: "bold",
-                marginBottom: 6,
-              }}
-            >
-              What Your Choices Reveal
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              {buildChoicesReveal(data)}
-            </Text>
+          {/* ─── What was modeled ─── */}
+          <Text style={{ fontSize: 7.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 8 }}>
+            What Was Modeled on This Call
+          </Text>
+          <View style={{ flexDirection: "row", marginBottom: 14 }} wrap={false}>
+            <View style={{ flex: 1.2, backgroundColor: colors.cards, borderRadius: 4, padding: 12, marginRight: 6 }}>
+              <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Documentation Time</Text>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.0, marginBottom: 5 }}>
+                {`${fmtNum(data.minutesSavedPerShift)} min / shift`}
+              </Text>
+              <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
+                {`${fmtNum(data.hoursReturnedAnnual)} hrs returned / yr`}
+              </Text>
+            </View>
+            <View style={{ flex: 0.75, backgroundColor: colors.cards, borderRadius: 4, padding: 12, marginRight: 6 }}>
+              <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Abridge Adoption</Text>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.0, marginBottom: 5 }}>
+                {`${data.utilizationPercent}%`}
+              </Text>
+              <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
+                {`${fmtNum(data.nurseFTEs)} nurse FTEs`}
+              </Text>
+            </View>
+            <View style={{ flex: 0.7, backgroundColor: colors.cards, borderRadius: 4, padding: 12, marginRight: 6 }}>
+              <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Bed Occupancy</Text>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.0, marginBottom: 5 }}>
+                {`${data.occupancyPercent}%`}
+              </Text>
+              <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>Of capacity</Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: colors.cards, borderRadius: 4, padding: 12 }}>
+              <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Annual Investment</Text>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.0, marginBottom: 5 }}>
+                {fmtCurrency(data.annualInvestment)}
+              </Text>
+              <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
+                {`$${data.costPerBedPerMonth}/bed/mo · ${fmtNum(data.staffedBeds)} beds`}
+              </Text>
+            </View>
           </View>
+
+          {/* ─── Value by Domain (2×2) + Drivers side-by-side ─── */}
+          {(() => {
+            const quantified: Array<{ label: string; value: string; domain: string }> = [];
+            if (data.retention.enabled) quantified.push({ label: "RN Retention", value: fmtCurrency(data.retention.value), domain: "Workforce" });
+            if (data.agency.enabled) quantified.push({ label: "Agency Reduction", value: fmtCurrency(data.agency.value), domain: "Workforce" });
+            if (data.overtime.enabled) quantified.push({ label: "OT Reduction", value: fmtCurrency(data.overtime.value), domain: "Capacity" });
+            if (data.hapi.enabled) quantified.push({ label: "HAPI Prevention", value: fmtCurrency(data.hapi.value), domain: "Quality" });
+            if (data.falls.enabled) quantified.push({ label: "Fall Prevention", value: fmtCurrency(data.falls.value), domain: "Quality" });
+            if (data.cauti.enabled) quantified.push({ label: "CAUTI Prevention", value: fmtCurrency(data.cauti.value), domain: "Quality" });
+            if (data.clabsi.enabled) quantified.push({ label: "CLABSI Prevention", value: fmtCurrency(data.clabsi.value), domain: "Quality" });
+            if (data.sepsis.enabled) quantified.push({ label: "Sepsis Bundle", value: fmtCurrency(data.sepsis.value), domain: "Quality" });
+
+            const tracked: Array<{ label: string; domain: string }> = [];
+            if (data.bedsideTimeEnabled) tracked.push({ label: "Bedside / Direct Care Time", domain: "Capacity" });
+            if (data.hcahpsEnabled) tracked.push({ label: "HCAHPS / Patient Experience", domain: "Quality" });
+            if (data.medErrorEnabled) tracked.push({ label: "Early Deterioration Documentation", domain: "Quality" });
+            if (data.bundleComplianceEnabled) tracked.push({ label: "Care Bundle Compliance", domain: "Quality" });
+
+            const domainTile = (
+              domain: string,
+              bg: string,
+              value: number,
+              isTracked: boolean,
+              label?: string,
+              marginRight?: number,
+            ) => {
+              const displayValue = isTracked ? (label ?? "Tracked") : value > 0 ? fmtCurrency(value) : "—";
+              return (
+                <View style={{ flex: 1, backgroundColor: colors.cards, borderRadius: 4, padding: 12, marginRight: marginRight ?? 0 }}>
+                  <View style={{ backgroundColor: bg, paddingVertical: 3, paddingHorizontal: 9, borderRadius: 12, alignSelf: "flex-start" }}>
+                    <Text style={{ fontSize: 7, fontWeight: "bold", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: 1 }}>{domain}</Text>
+                  </View>
+                  <Text style={{ fontSize: isTracked ? 13 : 20, fontWeight: "bold", fontStyle: isTracked ? "italic" : "normal", color: isTracked ? colors.secondary : colors.primaryText, lineHeight: 1.0, marginTop: 8, marginBottom: 4 }}>
+                    {displayValue}
+                  </Text>
+                </View>
+              );
+            };
+
+            return (
+              <View style={{ flexDirection: "row" }}>
+                {/* Left: 2×2 domain tiles */}
+                <View style={{ flex: 1, marginRight: 14 }}>
+                  <Text style={{ fontSize: 7.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 10 }}>
+                    Value by Domain
+                  </Text>
+                  <View style={{ flexDirection: "row", marginBottom: 6 }} wrap={false}>
+                    {domainTile("WORKFORCE", "#4A3728", data.workforceTotal, false, undefined, 6)}
+                    {domainTile("QUALITY", "#666666", data.qualityTotal, false)}
+                  </View>
+                  <View style={{ flexDirection: "row" }} wrap={false}>
+                    {domainTile("CAPACITY", "#1A1A1A", data.overtime.enabled ? data.overtime.value : 0, !data.overtime.enabled, undefined, 6)}
+                    {domainTile("REVENUE", "#EA2C00", 0, true, "Separately")}
+                  </View>
+                </View>
+
+                {/* Right: quantified drivers + tracked signals */}
+                <View style={{ flex: 1, borderLeftWidth: 1, borderLeftColor: colors.separator, paddingLeft: 14 }}>
+                  {quantified.length > 0 && (
+                    <>
+                      <Text style={{ fontSize: 7.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 10 }}>
+                        Quantified Drivers
+                      </Text>
+                      {quantified.map((d, i) => (
+                        <View key={i} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 7, paddingBottom: 7, borderBottomWidth: 1, borderBottomColor: colors.separator }} wrap={false}>
+                          <Text style={{ fontSize: 9, color: colors.primaryText, flex: 1, paddingRight: 8, lineHeight: 1.3 }}>
+                            {d.label}
+                            <Text style={{ fontSize: 7.5, color: colors.tertiary }}>{`  ${d.domain}`}</Text>
+                          </Text>
+                          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{d.value}</Text>
+                        </View>
+                      ))}
+                    </>
+                  )}
+                  {tracked.length > 0 && (
+                    <View style={{ marginTop: quantified.length > 0 ? 10 : 0 }}>
+                      <Text style={{ fontSize: 7.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 8 }}>
+                        Tracked Signals
+                      </Text>
+                      <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
+                        {tracked.map((d) => d.label).join("  ·  ")}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            );
+          })()}
 
           <PageFooter orgName={orgName} />
         </View>
       </Page>
 
-      {/* PAGE 2 — WORKFORCE
+      {/* PAGE 3 — WORKFORCE
           Layout discipline note: this page used to ship 3 tall driver cards
           (≈250pt each) with full 6-row MathGrids that duplicated the printed
           formula in two visual styles. The cards are now CompactDriverCard
@@ -886,9 +1102,9 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             Documentation burden is among the top reasons nurses leave — and stay late.
           </Text>
           <Text style={styles.body}>
-            Three labor lines — turnover, agency premium, and overtime — all linked
-            to the same upstream factor: how long it takes to finish charting at the
-            end of a shift.
+            Two labor lines — turnover and agency premium — both linked to the same
+            upstream factor: documentation burden that follows nurses home after their
+            shift.
           </Text>
 
           {/* Cards stack full-width (each in its own row) so the formula
@@ -910,7 +1126,14 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                   name="RN Retention"
                   value={fmtCurrency(data.retention.value)}
                   body="Documentation burden is among the factors associated with burnout and turnover. Reducing burden is modeled to help retain experienced nurses."
-                  formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.retention.turnoverPct}% turnover × ${data.retention.burnoutRelatedPct}% burnout-related × ${data.retention.impactPct}% doc impact × ${fmtCurrencyExact(data.retention.replacementCost)} → ${fmtCurrency(data.retention.value)}`}
+                  mathRows={[
+                    { label: "Nurse FTEs", value: fmtNum(data.nurseFTEs) },
+                    { label: "Annual turnover rate", value: `${data.retention.turnoverPct}%` },
+                    { label: "Burnout-related share", value: `${data.retention.burnoutRelatedPct}%` },
+                    { label: "Doc burden impact", value: `${data.retention.impactPct}%` },
+                    { label: "Replacement cost", value: fmtCurrencyExact(data.retention.replacementCost) },
+                    { label: "Annual value", value: fmtCurrency(data.retention.value) },
+                  ]}
                   source="Source: NSI Nursing Solutions 2024 turnover benchmark."
                 />
               </View>
@@ -934,47 +1157,99 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                   value={fmtCurrency(data.agency.value)}
                   linkedTo={data.retention.enabled ? "retention" : undefined}
                   body="When nurses leave, hospitals typically fill gaps with agency labor at 2–3× the cost. Improved retention reduces that premium-labor dependency."
-                  formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.retention.turnoverPct}% turnover × ${data.retention.burnoutRelatedPct}% burnout × ${data.retention.impactPct}% impact × ${data.agency.weeksPerVacancy} wks/vacancy × ${fmtCurrencyExact(data.agency.weeklyPremium)}/wk → ${fmtCurrency(data.agency.value)}`}
+                  mathRows={[
+                    { label: "Nurse FTEs", value: fmtNum(data.nurseFTEs) },
+                    { label: "Annual turnover rate", value: `${data.retention.turnoverPct}%` },
+                    { label: "Burnout-related share", value: `${data.retention.burnoutRelatedPct}%` },
+                    { label: "Doc burden impact", value: `${data.retention.impactPct}%` },
+                    { label: "Weeks per vacancy", value: `${data.agency.weeksPerVacancy} wks` },
+                    { label: "Weekly agency premium", value: fmtCurrencyExact(data.agency.weeklyPremium) },
+                    { label: "Annual value", value: fmtCurrency(data.agency.value) },
+                  ]}
                 />
               </View>
             ) : null}
 
-            {data.overtime.enabled ? (
-              <View style={{ flexDirection: "row" }}>
-                <CompactDriverCard
-                  name="Overtime Reduction"
-                  value={fmtCurrency(data.overtime.value)}
-                  body="When nurses spend less time documenting at end of shift, OT hours decrease. The most directly measurable line in the payroll budget."
-                  formula={`${fmtNum(data.nurseFTEs)} FTE × ${data.overtime.otHrsPerNurseWeek} OT hrs/wk × ${data.overtime.reductionPct}% reduction × $${data.overtime.otHourlyRate}/hr × 52 wks → ${fmtCurrency(data.overtime.value)}`}
-                />
-              </View>
-            ) : null}
           </View>
 
           <HeroSubtotal
             label="Workforce Subtotal"
             total={data.workforceTotal > 0 ? fmtCurrency(data.workforceTotal) : "Tracked"}
-            caption="Three labor lines, one upstream factor: end-of-shift charting time."
+            caption="Two labor lines, one upstream factor: documentation burden that outlasts the shift."
+          />
+
+          <NursingTimelineSection
+            stages={[
+              {
+                key: "signal",
+                label: "Signal",
+                window: "Wk 4–8",
+                desc: "Documentation workflow shift confirmed.",
+                metrics: [
+                  "End-of-shift charting time per nurse",
+                  "Note completion rate before clock-out",
+                ],
+              },
+              {
+                key: "trend",
+                label: "Trend",
+                window: "Mo 3–6",
+                desc: "First financial signals emerge.",
+                metrics: [
+                  "Turnover intent survey scores (pulse)",
+                  "Agency fill requests vs. prior-year period",
+                ],
+              },
+              {
+                key: "proof",
+                label: "Proof",
+                window: "Mo 9–18",
+                desc: "Retention and agency economics confirmed.",
+                metrics: [
+                  "12-month retention rate vs. baseline",
+                  "Agency premium spend as % of total staffing",
+                ],
+              },
+            ]}
           />
 
           <PageFooter orgName={orgName} />
         </View>
       </Page>
 
-      {/* PAGE 3 — CAPACITY (Leading Indicator) */}
+      {/* PAGE 4 — CAPACITY */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
           <SectionLabel>CAPACITY</SectionLabel>
           <Text style={styles.sectionHeadline}>
-            A leading indicator, not a billable line.
+            Time reclaimed at the end of the shift shows up in the payroll budget — and in the next hour of care.
           </Text>
           <Text style={styles.body}>
-            When nurses finish charting on shift, more of the next hour can go to
-            direct patient care rather than catch-up documentation. We track the
-            ratio of bedside-to-charting time as a leading indicator that the model
-            is taking hold — workforce and quality outcomes are typically downstream
-            of that shift, though the magnitude is unit-specific.
+            When nurses finish charting on shift, the effect lands in two places: fewer
+            overtime hours in the payroll report, and more direct patient care time during
+            the shift itself. Overtime is the quantified financial signal; bedside time is
+            the leading indicator that the model is taking hold.
           </Text>
+
+          {data.overtime.enabled ? (
+            <View style={{ marginHorizontal: -4, marginBottom: 4 }}>
+              <View style={{ flexDirection: "row" }}>
+                <CompactDriverCard
+                  name="Overtime Reduction"
+                  value={fmtCurrency(data.overtime.value)}
+                  body="When nurses complete their notes on shift, end-of-shift overtime decreases. The most directly measurable capacity line in the payroll budget."
+                  mathRows={[
+                    { label: "Nurse FTEs", value: fmtNum(data.nurseFTEs) },
+                    { label: "OT hours / week", value: `${data.overtime.otHrsPerNurseWeek} hrs` },
+                    { label: "Reduction assumed", value: `${data.overtime.reductionPct}%` },
+                    { label: "OT hourly rate", value: `$${data.overtime.otHourlyRate}/hr` },
+                    { label: "Weeks / year", value: "52" },
+                    { label: "Annual value", value: fmtCurrency(data.overtime.value) },
+                  ]}
+                />
+              </View>
+            </View>
+          ) : null}
 
           <View style={[styles.cardBg, { flexDirection: "row", paddingVertical: 18, marginBottom: 14 }]}>
             <StatBlock
@@ -999,25 +1274,32 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           <Text style={styles.subSectionHeader}>How To Read It</Text>
           <Text style={styles.body}>
             <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Hours returned/yr</Text> is the
-            headline — it's what reclaimed end-of-shift documentation time looks like
-            when aggregated across the unit. <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Minutes saved/shift</Text>{" "}
+            headline — it's what reclaimed documentation time looks like aggregated across
+            the unit. <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Minutes saved/shift</Text>{" "}
             is the per-nurse experience that supports adoption. <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Patient days/yr</Text>{" "}
             and <Text style={{ fontWeight: "bold", color: colors.primaryText }}>staffed beds</Text> anchor
             the math to your actual operating footprint.
           </Text>
 
           <Text style={styles.body}>
-            We deliberately don't price capacity. Translating reclaimed minutes into
-            dollars requires assumptions about what the next hour gets used for —
-            assumptions that vary by unit, shift, and patient mix. Tracking the leading
-            indicator is more defensible than monetizing it.
+            We track bedside time as a leading indicator rather than pricing it directly —
+            translating reclaimed minutes into dollars requires assumptions about what the
+            next hour is used for, which vary by unit, shift, and patient mix.
           </Text>
+
+          {data.overtime.enabled && (
+            <HeroSubtotal
+              label="Capacity Subtotal"
+              total={fmtCurrency(data.overtime.value)}
+              caption="Payroll impact of faster end-of-shift documentation."
+            />
+          )}
 
           <PageFooter orgName={orgName} />
         </View>
       </Page>
 
-      {/* PAGE 4 — QUALITY
+      {/* PAGE 5 — QUALITY
           The previous version of this page rendered 5 wrap={false} driver
           cards (≈280pt each) inside a `<Page wrap>` — pagination math
           guaranteed exactly 1 driver per page after the headline + intro,
@@ -1054,7 +1336,14 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                   name="HAPI Risk Reduction"
                   value={`${fmtCurrency(data.hapi.value)} (pot.)`}
                   body="Skin assessments at the point of care surface risk earlier than charts reconstructed at shift end."
-                  formula={`${hapiEvents.toFixed(1)} events × ${data.hapi.preventionPct}% prevention × ${fmtCurrencyExact(data.hapi.costPerEvent)} → ${fmtCurrency(data.hapi.value)}`}
+                  mathRows={[
+                    { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
+                    { label: "HAPI rate / 1,000 days", value: data.hapi.rate.toFixed(2) },
+                    { label: "Annual HAPI events", value: hapiEvents.toFixed(1) },
+                    { label: "Prevention rate", value: `${data.hapi.preventionPct}%` },
+                    { label: "Cost per event", value: fmtCurrencyExact(data.hapi.costPerEvent) },
+                    { label: "Annual value", value: fmtCurrency(data.hapi.value) },
+                  ]}
                   source="Source: Dowding et al., JAMIA 2012."
                 />
               ) : null}
@@ -1063,7 +1352,14 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                   name="Fall Risk Visibility"
                   value={`${fmtCurrency(data.falls.value)} (pot.)`}
                   body="Morse Fall Scale assessments completed in real time make risk escalations visible when they matter."
-                  formula={`${fallsEvents.toFixed(1)} falls × ${data.falls.preventionPct}% prevention × ${fmtCurrencyExact(data.falls.costPerEvent)} → ${fmtCurrency(data.falls.value)}`}
+                  mathRows={[
+                    { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
+                    { label: "Fall rate / 1,000 days", value: data.falls.rate.toFixed(2) },
+                    { label: "Annual fall events", value: fallsEvents.toFixed(1) },
+                    { label: "Prevention rate", value: `${data.falls.preventionPct}%` },
+                    { label: "Cost per event", value: fmtCurrencyExact(data.falls.costPerEvent) },
+                    { label: "Annual value", value: fmtCurrency(data.falls.value) },
+                  ]}
                   source="Source: AHRQ inpatient fall cost benchmarks."
                 />
               ) : null}
@@ -1075,7 +1371,16 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                   name="CAUTI Prevention"
                   value={`${fmtCurrency(data.cauti.value)} (pot.)`}
                   body="Daily catheter-necessity documentation supports earlier removal and bundle adherence."
-                  formula={`${cautiEvents.toFixed(1)} CAUTIs × ${data.cauti.preventionPct}% prevention × ${fmtCurrencyExact(data.cauti.costPerEvent)} → ${fmtCurrency(data.cauti.value)}`}
+                  mathRows={[
+                    { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
+                    { label: "Catheter utilization", value: `${data.cauti.utilizationPct}%` },
+                    { label: "Catheter days / yr", value: fmtNum(Math.round(cathDays)) },
+                    { label: "CAUTI rate / 1,000 cath days", value: data.cauti.rate.toFixed(2) },
+                    { label: "Annual CAUTI events", value: cautiEvents.toFixed(1) },
+                    { label: "Prevention rate", value: `${data.cauti.preventionPct}%` },
+                    { label: "Cost per event", value: fmtCurrencyExact(data.cauti.costPerEvent) },
+                    { label: "Annual value", value: fmtCurrency(data.cauti.value) },
+                  ]}
                   source="Source: Meddings et al., JAMA Internal Medicine 2014."
                 />
               ) : null}
@@ -1084,7 +1389,16 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                   name="CLABSI Prevention"
                   value={`${fmtCurrency(data.clabsi.value)} (pot.)`}
                   body="Timely line documentation supports bundle compliance and is associated with fewer central-line bloodstream infections."
-                  formula={`${clabsiEvents.toFixed(1)} CLABSIs × ${data.clabsi.preventionPct}% prevention × ${fmtCurrencyExact(data.clabsi.costPerEvent)} → ${fmtCurrency(data.clabsi.value)}`}
+                  mathRows={[
+                    { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
+                    { label: "Central-line utilization", value: `${data.clabsi.utilizationPct}%` },
+                    { label: "Central-line days / yr", value: fmtNum(Math.round(lineDays)) },
+                    { label: "CLABSI rate / 1,000 line days", value: data.clabsi.rate.toFixed(2) },
+                    { label: "Annual CLABSI events", value: clabsiEvents.toFixed(1) },
+                    { label: "Prevention rate", value: `${data.clabsi.preventionPct}%` },
+                    { label: "Cost per event", value: fmtCurrencyExact(data.clabsi.costPerEvent) },
+                    { label: "Annual value", value: fmtCurrency(data.clabsi.value) },
+                  ]}
                   source="Source: CDC CLABSI cost-of-illness estimates."
                 />
               ) : null}
@@ -1103,7 +1417,16 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                   name="Sepsis Bundle Compliance"
                   value={`${fmtCurrency(data.sepsis.value)} (pot.)`}
                   body="Time-stamped vitals and antibiotic documentation lift SEP-1 compliance. The model captures only the documentation-lag share."
-                  formula={`${sepsisCases.toFixed(1)} cases × ${data.sepsis.complianceGapPct}% non-comp × ${data.sepsis.docLagPct}% doc-lag × ${fmtCurrencyExact(data.sepsis.excessCostPerCase)} × ${data.sepsis.realizationPct}% real. → ${fmtCurrency(data.sepsis.value)}`}
+                  mathRows={[
+                    { label: "Patient days / yr", value: fmtNum(data.patientDaysAnnual) },
+                    { label: "Sepsis rate / 1,000 days", value: data.sepsis.ratePerThousand.toFixed(2) },
+                    { label: "Annual sepsis cases", value: sepsisCases.toFixed(1) },
+                    { label: "SEP-1 non-compliant share", value: `${data.sepsis.complianceGapPct}%` },
+                    { label: "Doc lag fraction", value: `${data.sepsis.docLagPct}%` },
+                    { label: "Excess cost / case", value: fmtCurrencyExact(data.sepsis.excessCostPerCase) },
+                    { label: "Realization rate", value: `${data.sepsis.realizationPct}%` },
+                    { label: "Annual value", value: fmtCurrency(data.sepsis.value) },
+                  ]}
                 />
               ) : null}
               {hasTrackedMetrics ? (
@@ -1139,9 +1462,15 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                     </Text>
                   ) : null}
                   {data.medErrorEnabled ? (
+                    <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45, marginBottom: data.bundleComplianceEnabled ? 4 : 0 }}>
+                      <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Early Deterioration Documentation.</Text>{" "}
+                      Real-time flowsheet documentation captures subtle clinical changes before they escalate; track post-deployment via rapid-response triggers and preventable harm event rates.
+                    </Text>
+                  ) : null}
+                  {data.bundleComplianceEnabled ? (
                     <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.45 }}>
-                      <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Medication Errors.</Text>{" "}
-                      Cleaner real-time MAR documentation is associated with fewer near misses; track post-deployment via safety-event reporting.
+                      <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Care Bundle Compliance.</Text>{" "}
+                      Consistent flowsheet documentation drives CLABSI, VAP, sepsis, and fall-prevention bundle adherence; track via bundle completion rates and audit-readiness scores.
                     </Text>
                   ) : null}
                 </View>
@@ -1159,56 +1488,71 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         </View>
       </Page>
 
-      {/* PAGE 5 — REVENUE (Tracked Separately) */}
+      {/* PAGE 6 — REVENUE SIGNALS */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
           <SectionLabel>REVENUE</SectionLabel>
           <Text style={styles.sectionHeadline}>
-            Why revenue lives elsewhere in this model.
+            Nursing documentation moves the revenue cycle in two places you can measure.
           </Text>
-          <Text style={styles.subHeadline}>
-            The nursing ROI story is a quality and workforce story.
-          </Text>
-
           <Text style={styles.body}>
-            In the physician and APP care settings, ambient documentation creates a
-            measurable revenue story — wRVU capture, DRG accuracy, denial prevention.
-            For nursing, the picture is different: nursing documentation primarily
-            informs care decisions and shapes labor outcomes rather than driving the
-            revenue cycle, so the financial impact shows up in quality and workforce
-            instead of billing.
+            Direct billing originates with the attesting physician or APP — that's a separate
+            model. But nursing documentation is the upstream record that CDI, quality reporting,
+            and payer contracts all read from. These signals do not appear in the financial totals
+            above; they are the leading indicators that confirm the story those totals tell.
           </Text>
 
-          <Text style={styles.body}>
-            This model focuses on the value drivers where nursing has the strongest,
-            most defensible footprint: the QUALITY bucket (preventable harm events,
-            sepsis bundle compliance) and the WORKFORCE bucket (retention, agency cost
-            avoidance, overtime reduction). Keeping the revenue narrative with the
-            care settings that actually drive billing makes both stories more credible.
-          </Text>
-
-          <View style={styles.redBorderCallout}>
-            <Text
-              style={{
-                fontSize: 9,
-                color: colors.primary,
-                textTransform: "uppercase",
-                letterSpacing: 1.5,
-                fontWeight: "bold",
-                marginBottom: 6,
-              }}
-            >
-              The Indirect Connection
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              Complete nursing documentation does create downstream organizational value:
-              HCAHPS performance affects Value-Based Purchasing scores. HAC scores affect
-              Medicare payment rates. Sepsis SEP-1 compliance affects public reporting
-              and payer relationships. These flow through the model as quality outcomes
-              rather than revenue line items — which keeps the framing both honest and
-              defensible.
-            </Text>
-          </View>
+          {[
+            {
+              number: "01",
+              title: "CDI Query Reduction",
+              mechanism: "When nurses document clinical findings in real time — vital trends, assessment findings, response to treatment — the medical record arrives at CDI review already complete. Specialists can assign a specific, accurate DRG without querying the physician for clarification. Every prevented query is a physician interruption avoided and a coding cycle shortened.",
+              trackLabel: "Signals to track",
+              signals: [
+                { metric: "CDI queries per 100 admissions", why: "Volume drop is the earliest signal that nursing notes are arriving complete." },
+                { metric: "Query response rate & lag (days)", why: "Faster response with fewer open queries = smoother coding throughput." },
+                { metric: "DRG specificity index", why: "More specific DRGs reflect richer source documentation — nursing is the primary contributor." },
+              ],
+            },
+            {
+              number: "02",
+              title: "Value-Based Purchasing — HCAHPS",
+              mechanism: "The HCAHPS responsiveness and communication domains are the two highest-weighted nursing-sensitive items in the CMS Value-Based Purchasing formula. Nurses with more time at the bedside — time reclaimed from documentation burden — score better on both. VBP adjustments compound annually: a 0.5-point HCAHPS improvement at scale shifts the payment multiplier in your favor across the entire Medicare inpatient book.",
+              trackLabel: "Signals to track",
+              signals: [
+                { metric: "HCAHPS: responsiveness of hospital staff", why: "Direct nursing-sensitive domain; moves with bedside time." },
+                { metric: "HCAHPS: communication with nurses", why: "Second nursing-sensitive domain in the VBP formula." },
+                { metric: "VBP total performance score & payment adjustment", why: "The net $ effect of all HCAHPS and clinical domains combined." },
+              ],
+            },
+          ].map((section, si) => (
+            <View key={si} style={{ backgroundColor: colors.cards, borderRadius: 4, padding: 14, marginBottom: 10 }} wrap={false}>
+              <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 8 }}>
+                <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary, marginRight: 10, minWidth: 20 }}>{section.number}</Text>
+                <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText, flex: 1 }}>{section.title}</Text>
+              </View>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 10 }}>
+                {section.mechanism}
+              </Text>
+              <Text style={{ fontSize: 7.5, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 }}>
+                {section.trackLabel}
+              </Text>
+              <View style={{ backgroundColor: "#FFFFFF", borderRadius: 3, overflow: "hidden", borderWidth: 1, borderColor: colors.separatorHeavy }}>
+                {section.signals.map((s, i) => (
+                  <View key={i} style={{
+                    flexDirection: "row",
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderTopWidth: i === 0 ? 0 : 0.5,
+                    borderTopColor: colors.separator,
+                  }}>
+                    <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText, width: 170, paddingRight: 8 }}>{s.metric}</Text>
+                    <Text style={{ fontSize: 8, color: colors.secondary, flex: 1, lineHeight: 1.4 }}>{s.why}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
 
           <PageFooter orgName={orgName} />
         </View>
@@ -1218,7 +1562,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
           <SectionLabel>THE INVESTMENT CASE</SectionLabel>
-          <Text style={styles.sectionHeadline}>Infrastructure, Not Expense.</Text>
+          <Text style={styles.sectionHeadline}>A Strategic Investment.</Text>
           <Text style={styles.body}>
             {(() => {
               const beds = fmtNum(data.staffedBeds);
@@ -1372,7 +1716,6 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               paddingVertical: 18,
               marginBottom: 14,
             }}
-            wrap={false}
           >
             <Text
               style={{
@@ -1487,7 +1830,8 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               { label: "Sepsis Bundle Compliance", value: data.sepsis.enabled ? fmtCurrency(data.sepsis.value) : "—" },
               { label: "HAC Penalty Exposure", value: "Risk display only" },
               { label: "HCAHPS / Patient Experience", value: data.hcahpsEnabled ? "Qualitative" : "—" },
-              { label: "Medication Error Reduction", value: data.medErrorEnabled ? "Qualitative" : "—" },
+              { label: "Early Deterioration Documentation", value: data.medErrorEnabled ? "Qualitative" : "—" },
+              { label: "Care Bundle Compliance", value: data.bundleComplianceEnabled ? "Qualitative" : "—" },
             ]}
           />
 
@@ -1497,14 +1841,14 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             rows={[
               { label: "RN Retention", value: data.retention.enabled ? fmtCurrency(data.retention.value) : "—" },
               { label: "Agency & Travel Nurse Reduction", value: data.agency.enabled ? fmtCurrency(data.agency.value) : "—" },
-              { label: "Overtime Reduction", value: data.overtime.enabled ? fmtCurrency(data.overtime.value) : "—" },
             ]}
           />
 
           <SummaryGroup
             label="CAPACITY"
-            total="Tracked"
+            total={data.overtime.enabled ? fmtCurrency(data.overtime.value) : "Tracked"}
             rows={[
+              { label: "Overtime Reduction", value: data.overtime.enabled ? fmtCurrency(data.overtime.value) : "—" },
               { label: "Bedside / Direct Care Time", value: data.bedsideTimeEnabled ? "Tracked" : "—" },
             ]}
           />
@@ -1542,11 +1886,152 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </Text>
           </View>
 
+          {/* What We're Tracking — qualitative signals on same page as summary */}
+          {(data.hcahpsEnabled || data.medErrorEnabled || data.bundleComplianceEnabled) ? (
+            <View
+              style={{
+                backgroundColor: colors.cards,
+                borderRadius: 4,
+                padding: 14,
+                marginBottom: 10,
+                borderLeftWidth: 3,
+                borderLeftColor: colors.secondary,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 8.5,
+                  color: colors.secondary,
+                  textTransform: "uppercase",
+                  letterSpacing: 1.5,
+                  fontWeight: "bold",
+                  marginBottom: 6,
+                }}
+              >
+                What We're Tracking
+              </Text>
+              {data.hcahpsEnabled ? (
+                <Text style={{ fontSize: 8.5, color: "#444444", lineHeight: 1.55, marginBottom: 4 }}>
+                  <Text style={{ fontWeight: "bold" }}>HCAHPS / Patient Experience</Text>
+                  {" — tracked post-deployment via patient satisfaction surveys. Affects Value-Based Purchasing scores at the 6–12 month mark."}
+                </Text>
+              ) : null}
+              {data.medErrorEnabled ? (
+                <Text style={{ fontSize: 8.5, color: "#444444", lineHeight: 1.55, marginBottom: data.bundleComplianceEnabled ? 4 : 0 }}>
+                  <Text style={{ fontWeight: "bold" }}>Early Deterioration Documentation</Text>
+                  {" — tracked via rapid-response triggers and preventable harm event rates. Leading behavioral signals typically appear at Month 1–3."}
+                </Text>
+              ) : null}
+              {data.bundleComplianceEnabled ? (
+                <Text style={{ fontSize: 8.5, color: "#444444", lineHeight: 1.55 }}>
+                  <Text style={{ fontWeight: "bold" }}>Care Bundle Compliance</Text>
+                  {" — tracked via bundle completion rates (CLABSI, VAP, sepsis, fall prevention). Documentation-driven improvements typically measurable at Month 2–4."}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+
           <PageFooter orgName={orgName} />
         </View>
       </Page>
 
-      {/* PAGE 9 — METHODOLOGY */}
+      {/* PAGE 9 — VALIDATION ROADMAP */}
+      <Page size="LETTER" style={styles.page}>
+        <View style={styles.pageWrapper}>
+          <SectionLabel>VALIDATION ROADMAP</SectionLabel>
+          <Text style={styles.sectionHeadline}>
+            Your post-deployment measurement plan.
+          </Text>
+          <Text style={[styles.body, { marginBottom: 10 }]}>
+            Each phase answers a different question. Assign an owner before deployment — measurement gaps emerge precisely when data would be most useful.
+          </Text>
+
+          {[
+            {
+              phaseLabel: "Phase 1 — Month 1–3",
+              phaseColor: "#EA2C00",
+              title: "Behavioral Foundation",
+              question: "Is Abridge changing how nurses document?",
+              note: "No financial proof exists without this step. Documentation timing must shift before downstream metrics can move.",
+              metrics: [
+                { metric: "End-of-shift charting completion rate", source: "EHR audit logs", owner: "IT / Informatics", target: ">70% before clock-out" },
+                { metric: "Point-of-care documentation rate (real-time vs. batch)", source: "EHR audit logs", owner: "Nurse Manager", target: "Trending up vs. week-1" },
+                { metric: "Monthly active users vs. enrolled nurses", source: "Abridge Analytics", owner: "IT / Informatics", target: ">60% MRU activation" },
+              ],
+            },
+            {
+              phaseLabel: "Phase 2 — Month 3–6",
+              phaseColor: colors.secondary,
+              title: "Financial Signal",
+              question: "Is behavioral change showing up in payroll and quality data?",
+              note: "Overtime is the fastest-moving financial metric; quality leading indicators need a full quarter to stabilize.",
+              metrics: [
+                { metric: "Monthly OT hours (documentation-related)", source: "Payroll", owner: "Nursing Ops / Finance", target: "Declining vs. prior-year" },
+                { metric: "Catheter utilization rate", source: "EHR / Infection Control", owner: "Quality", target: "Toward unit benchmark" },
+                { metric: "Bundle element documentation completion rate", source: "EHR audit logs", owner: "Quality / Informatics", target: ">90% per care event" },
+                { metric: "SEP-1 compliance rate (if sepsis enabled)", source: "Quality dashboard", owner: "Quality", target: "Stable or improving" },
+              ],
+            },
+            {
+              phaseLabel: "Phase 3 — Month 6–18",
+              phaseColor: colors.secondary,
+              title: "Strategic Proof",
+              question: "Is this a durable organizational capability, or a one-time improvement?",
+              note: "Full-year retention and OT comparisons build the renewal and expansion case to a CFO or board.",
+              metrics: [
+                { metric: "12-month RN retention rate vs. rolling baseline", source: "HR", owner: "CNO / HR", target: "≥2–3 pt improvement" },
+                { metric: "Annual HAI event rates (HAPI, CAUTI, CLABSI, falls)", source: "Infection Control", owner: "CNO / Quality", target: "Below prior 12-mo baseline" },
+                { metric: "Annual OT budget vs. prior year (doc-attributable)", source: "Finance", owner: "CFO / CNO", target: "Measurable reduction" },
+                { metric: "Agency / travel premium spend as % of total labor", source: "Finance", owner: "CNO", target: "Declining, ≥1 full cycle" },
+              ],
+            },
+          ].map((phase, pi) => (
+            <View key={pi} wrap={false} style={{ marginBottom: 8, borderLeftWidth: 3, borderLeftColor: phase.phaseColor, backgroundColor: colors.cards, borderRadius: 4, padding: 10 }}>
+              <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 3 }}>
+                <Text style={{ fontSize: 7.5, fontWeight: "bold", color: phase.phaseColor, textTransform: "uppercase", letterSpacing: 1, marginRight: 8 }}>{phase.phaseLabel}</Text>
+                <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>{phase.title}</Text>
+              </View>
+              <Text style={{ fontSize: 7.5, fontStyle: "italic", color: colors.secondary, marginBottom: 3, lineHeight: 1.35 }}>
+                {phase.question}
+              </Text>
+              <Text style={{ fontSize: 7.5, color: colors.tertiary, lineHeight: 1.35, marginBottom: 6 }}>
+                {phase.note}
+              </Text>
+              {phase.metrics.map((row, i) => (
+                <View key={i} style={{ flexDirection: "row", paddingVertical: 4, borderTopWidth: 0.5, borderTopColor: colors.separator }}>
+                  <Text style={{ flex: 2, fontSize: 7.5, color: colors.primaryText, lineHeight: 1.3 }}>{row.metric}</Text>
+                  <Text style={{ flex: 1.1, fontSize: 7, color: colors.tertiary, lineHeight: 1.3 }}>{row.source}</Text>
+                  <Text style={{ flex: 1, fontSize: 7, color: colors.tertiary, textAlign: "center", lineHeight: 1.3 }}>{row.owner}</Text>
+                  <Text style={{ flex: 1.2, fontSize: 7, color: colors.secondary, textAlign: "right", lineHeight: 1.3 }}>{row.target}</Text>
+                </View>
+              ))}
+            </View>
+          ))}
+
+          {/* Governance cadence */}
+          <View wrap={false} style={{ backgroundColor: "#1A1A1A", borderRadius: 4, padding: 10 }}>
+            <Text style={{ fontSize: 7.5, fontWeight: "bold", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: 1, marginBottom: 7 }}>Governance & Reporting Cadence</Text>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 7.5, fontWeight: "bold", color: "#EA2C00", marginBottom: 3 }}>Monthly (Phases 1–2)</Text>
+                <Text style={{ fontSize: 7.5, color: "#BBBBBB", lineHeight: 1.4 }}>Nurse Manager + IT/Informatics review documentation timing and adoption. Escalate to Nursing Ops if MRU rate falls below 50% for two consecutive months.</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 7.5, fontWeight: "bold", color: "#BBBBBB", marginBottom: 3 }}>Quarterly (Phase 3 onset)</Text>
+                <Text style={{ fontSize: 7.5, color: "#BBBBBB", lineHeight: 1.4 }}>CNO + Nursing Ops + Quality + Finance review financial signal data. Confirm methodology is consistent with this document before drawing conclusions.</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 7.5, fontWeight: "bold", color: "#BBBBBB", marginBottom: 3 }}>Annual ROI Summary</Text>
+                <Text style={{ fontSize: 7.5, color: "#BBBBBB", lineHeight: 1.4 }}>Phase 3 data package assembled for CFO and Board reporting. This document is the pre-deployment baseline. Auditable source data retained per institutional policy.</Text>
+              </View>
+            </View>
+          </View>
+
+          <PageFooter orgName={orgName} />
+        </View>
+      </Page>
+
+      {/* PAGE 11 — METHODOLOGY */}
       {/* Methodology was previously appended to the Summary page with
           `wrap`, which produced a non-deterministic 8 vs 9 page render
           depending on how many drivers were enabled. Promoting it to its

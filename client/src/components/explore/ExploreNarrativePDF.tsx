@@ -14,6 +14,7 @@ import type {
   ExploreCareSetting,
   ExplorePDFQuadrantData,
 } from "./ExplorePDFExport";
+import { settingData as methodologySettingData } from "@/lib/methodology-pdf-export";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -52,14 +53,13 @@ const colors = {
   footerMeta: "#5C5751",
 };
 
+
 const styles = StyleSheet.create({
   page: {
-    padding: 54,
-    // paddingBottom must reserve room for the fixed footer:
-    //   footer.bottom (28) + footer height (~border 1 + paddingTop 10 + content ~12) ≈ 51pt.
-    // Leave ~21pt of breathing room above the footer to prevent collisions.
-    // See pdf_layout_guidelines.md §1 for the canonical math check.
-    paddingBottom: 50,
+    paddingTop: 54,
+    paddingLeft: 54,
+    paddingRight: 54,
+    paddingBottom: 0,
     fontFamily: "Manrope",
     fontSize: 10.5,
     color: colors.primaryText,
@@ -68,6 +68,7 @@ const styles = StyleSheet.create({
   pageWrapper: {
     flex: 1,
     flexDirection: "column",
+    paddingBottom: 72,
   },
   // Section label is restrained near-black with strong tracking, rendered by
   // the SectionLabel component below alongside a small red square accent.
@@ -124,18 +125,17 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary,
     marginBottom: 10,
   },
-  // Footer mirrors the Nursing PDF's executive-document chrome with the same
-  // 3-slot geometry codified in pdf_layout_guidelines.md §1a:
-  //   • footerLeft  (width: 90, fixed)  — Abridge wordmark image
-  //   • footerCenter (flex: 1, padded)  — org name only, numberOfLines: 1
-  //   • footerRight (width: 90, fixed)  — `Page X / Y`
-  // The center slot is JUST the org name — never glued to a document-title
-  // suffix. Unbounded text in a flex row physically overflows into the
-  // adjacent slot when the org name is long, producing the
-  // "ORGNAMEPAGE 4/7" glyph collision the Nursing PDF originally shipped
-  // and that this contract exists to prevent.
+  // Footer: two-slot layout (left flex:1, right width:72) separated by a
+  // hairline rule. No wordmark — cover page carries branding. Explicit widths
+  // prevent overflow regardless of org name length.
   footer: {
-    marginTop: "auto",
+    // position: absolute + fixed = always at the physical page bottom,
+    // never pushed to an orphan page by overflowing content above it.
+    // left/right match the page's horizontal padding (54pt each side).
+    position: "absolute",
+    bottom: 28,
+    left: 54,
+    right: 54,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -144,17 +144,15 @@ const styles = StyleSheet.create({
     borderTopColor: "#DDD5C8",
   },
   footerLeftText: {
-    fontSize: 10,
-    color: "#EA2C00",
-    fontWeight: "bold",
-  },
-  footerCenterText: {
     fontSize: 8.5,
     color: "#666666",
+    flex: 1,
   },
   footerRightText: {
     fontSize: 8.5,
     color: "#999999",
+    textAlign: "right",
+    width: 72,
   },
 });
 
@@ -222,23 +220,23 @@ const settingQuadrantFraming: Record<
 > = {
   outpatient: {
     Capacity:
-      "Reclaimed documentation time becomes patient access — more visits per provider, shorter waits, complex patients getting the time their care requires.",
+      "Reclaimed documentation time becomes patient access — more visits per provider, shorter waits, complex patients getting the time their care requires. The model estimates the access value of returning charting time to the schedule.",
     Workforce:
       "Documentation burden is among the most-cited reasons clinicians leave outpatient practice. Reducing after-hours charting protects retention — and the locum spend that follows every vacancy.",
     Revenue:
-      "Faster, more complete notes mean cleaner E/M leveling, fewer denials, and HCC capture that reflects the conditions actually addressed during the visit.",
+      "Faster, more complete notes mean cleaner E/M leveling, fewer denials, and HCC capture that reflects the conditions actually addressed during the visit. Revenue lifts when documentation stops understating the encounter.",
     Quality:
-      "Outpatient quality outcomes — care continuity, note quality, and diagnosis capture — are tracked post-deployment as the leading indicators that documentation lift translates to clinical impact.",
+      "Quality metrics in outpatient care are only as accurate as the documentation feeding them. When problem lists are incomplete, gaps appear in care continuity, care gap closure rates, and quality program performance — not because care was bad, but because it wasn't documented. These are the downstream proofs that documentation completeness improved.",
   },
   ed: {
     Capacity:
       "In the ED, every minute saved on charting is a minute back to the next patient. Recovered LWBS volume is the most measurable line — patients seen and treated instead of walking out the door.",
     Workforce:
-      "Shift-based documentation burden drives ED burnout. Reducing end-of-shift charting protects retention — and the locum / agency spend that follows every gap in coverage.",
+      "Shift-based documentation burden drives ED burnout. Reducing end-of-shift charting protects retention — and the locum and agency spend that follows every gap in coverage.",
     Revenue:
       "Defensible E/M leveling and clean-claim performance both depend on how completely the encounter is documented. Down-coding and denial losses are recovered as documentation tightens.",
     Quality:
-      "ED quality outcomes — note quality, patient experience, and admission hand-off completeness — are tracked post-deployment as leading indicators of clinical impact.",
+      "ED quality metrics — risk-adjusted outcomes, admission hand-off completeness, patient experience — are calculated from the documentation generated during the encounter. When that documentation is complete and specific, quality metrics reflect actual care quality. When it isn't, risk adjustment understates complexity and performance looks worse than it is. CDI query rate on admissions is the earliest observable signal of improvement.",
   },
   inpatient: {
     Capacity:
@@ -248,7 +246,7 @@ const settingQuadrantFraming: Record<
     Revenue:
       "Inpatient revenue lift centers on CMI integrity — DRG accuracy, CC/MCC capture, and CDI query reduction all reflect notes that fully describe the admission's clinical complexity.",
     Quality:
-      "Inpatient quality outcomes — hand-off completeness, discharge documentation, and Leapfrog safety posture — are tracked post-deployment as signals of documentation impact.",
+      "Risk-adjusted quality scores — observed-to-expected mortality, readmission rates, VBP performance — are calculated from documented patient complexity. When documentation understates severity, expected outcomes are set too low and care looks worse than it was. Ambient capture of clinical complexity at the point of care feeds accurate risk adjustment upstream, so downstream quality scores reflect what actually happened.",
   },
 };
 
@@ -263,61 +261,17 @@ const settingQuadrantFraming: Record<
 // callout on the Investment Case page is now the page's punchline; nothing
 // else is needed.
 
-const buildChoicesReveal = (
-  data: ExplorePDFData,
-  setting: Exclude<ExploreCareSetting, "nursing">,
-): string => {
-  const cap = data.quadrants.find((q) => q.quadrant === "Capacity");
-  const wf = data.quadrants.find((q) => q.quadrant === "Workforce");
-  const rev = data.quadrants.find((q) => q.quadrant === "Revenue");
-  const capDollars = (cap?.annualTotal ?? 0) > 0;
-  const wfDollars = (wf?.annualTotal ?? 0) > 0;
-  const revDollars = (rev?.annualTotal ?? 0) > 0;
-  const dollarCount = [capDollars, wfDollars, revDollars].filter(Boolean).length;
-
-  if (dollarCount === 3) {
-    return `Your model layers throughput, workforce economics, and revenue capture — all three financial quadrants where ambient documentation moves dollars in ${settingShortLabel[setting].toLowerCase()}. The qualitative quality signals on the following pages serve as the leading indicators that the upstream lift is doing its work.`;
-  }
-  if (dollarCount === 2 && revDollars && wfDollars) {
-    return "Your model is anchored by revenue capture and workforce economics — the two quadrants where the dollar math is most directly attributable. Worth pairing with capacity drivers (throughput, access) once those baselines are in hand.";
-  }
-  if (dollarCount === 2 && capDollars && wfDollars) {
-    return "Your model is anchored by throughput and workforce economics. Adding revenue drivers — coding accuracy, denial prevention — would close the loop on the financial story.";
-  }
-  if (dollarCount === 2 && capDollars && revDollars) {
-    return "Your model leans on throughput and revenue capture. Workforce drivers (retention, locum avoidance) are usually where the most defensible savings sit — worth modeling once turnover data is available.";
-  }
-  if (dollarCount === 1 && revDollars) {
-    return "Your model is anchored by revenue capture — the most directly measurable line. Worth pairing with workforce and capacity drivers for the full picture.";
-  }
-  if (dollarCount === 1 && wfDollars) {
-    return "Your model is anchored by workforce economics — retention savings and the locum spend behind every vacancy. Worth pairing with throughput and revenue drivers for the full picture.";
-  }
-  if (dollarCount === 1 && capDollars) {
-    return "Your model is anchored by capacity / throughput. Worth pairing with workforce and revenue drivers for a complete financial story.";
-  }
-  return "Your model leans on qualitative outcomes. Validate each driver against your organization's actual data to convert tracked signals into committed value over the contract period.";
-};
 
 // ───────────────────────── Reusable components ─────────────────────────
 
-// PageFooter mirrors NursingValueAssessmentPDF.tsx — Bloomberg/McKinsey
-// executive-document chrome with the 3-slot geometry codified in
-// pdf_layout_guidelines.md §1a:
-//   • Left  (width: 90, fixed)  — Abridge wordmark image
-//   • Center (flex: 1, padded)  — org name only, single-line, never glued
-//     to a document-title suffix
-//   • Right (width: 90, fixed)  — `Page X / Y`
-// The center text used to be `ORG · DOCUMENT TITLE`. The suffix was removed
-// because every page already carries a SectionLabel naming the section, and
-// the suffix was the long-string that overflowed into the right slot in the
-// shipped Nursing PDF bug ("ASSESSPAMGEENT 1/10"). We now refuse the
-// suffix structurally — even on short org names — so the bug class cannot
-// recur regardless of input.
+// PageFooter: two-slot layout — org name + setting label (left, flex: 1) and
+// page number (right, fixed width: 72). No Abridge wordmark — the cover page
+// carries the brand; repeating it on every footer is visual noise. The left
+// slot uses flex: 1 so it never overflows into the right slot regardless of
+// org name length.
 const PageFooter = ({ orgName, settingLabel }: { orgName: string; settingLabel: string }) => (
-  <View style={styles.footer}>
-    <Text style={styles.footerLeftText}>ABRIDGE</Text>
-    <Text style={styles.footerCenterText}>{orgName} · {settingLabel}</Text>
+  <View style={styles.footer} fixed>
+    <Text style={styles.footerLeftText}>{orgName} · {settingLabel}</Text>
     <Text
       style={styles.footerRightText}
       render={({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) =>
@@ -335,17 +289,147 @@ const SectionLabel = ({ children }: { children: string }) => (
   <Text style={[styles.sectionLabel, { marginBottom: 12 }]}>{children}</Text>
 );
 
+// per-setting quality arc data — used by QualityThesisCard to replace the
+// generic "Tracked" big-number with an arc that educates the reader about
+// what moves first and what the downstream proof looks like.
+const settingQualityArcCard: Record<
+  Exclude<ExploreCareSetting, "nursing">,
+  { signal: string; proof: string; framing: string }
+> = {
+  outpatient: {
+    signal: "Documentation completeness ↑",
+    proof: "Quality program performance ↑",
+    framing:
+      "Problem list accuracy and care gap closure typically move first. Quality program performance tends to follow at Month 9–12 as documentation completeness is sustained — timing varies by organization.",
+  },
+  ed: {
+    signal: "CDI query rate on admissions ↓",
+    proof: "Risk-adjusted quality score ↑",
+    framing:
+      "CDI query rate is typically the first quality signal to move. Risk-adjusted scores tend to follow at Month 9–18 as documentation captures clinical complexity consistently — timing varies by organization.",
+  },
+  inpatient: {
+    signal: "Progress note completeness ↑",
+    proof: "O/E mortality ratio improves",
+    framing:
+      "Complete progress notes feed accurate risk adjustment. Observed-to-expected ratios typically begin to improve at Month 6–12 as clinical complexity is more fully captured at point of care — timing varies by organization.",
+  },
+};
+
+// Validation roadmap — 3-phase milestones for post-deployment measurement.
+// Setting-specific because the data sources and owners differ meaningfully:
+// outpatient (E/M + HCC), ED (LWBS + level distribution), inpatient (LOS + CMI).
+const settingValidationMilestones: Record<
+  Exclude<ExploreCareSetting, "nursing">,
+  Array<{ window: string; metric: string; source: string; owner: string }>
+> = {
+  outpatient: [
+    { window: "Month 1–3", metric: "Documentation time per note and note completion rate", source: "EHR audit logs", owner: "IT / Informatics" },
+    { window: "Month 3–6", metric: "E/M level distribution and first-pass denial rate", source: "RCM system", owner: "Revenue Cycle" },
+    { window: "Month 6–12+", metric: "Provider retention rate and HCC capture vs. prior year", source: "HR + Coding audit", owner: "Operations / Revenue Integrity" },
+  ],
+  ed: [
+    { window: "Month 1–3", metric: "Documentation time per encounter and note completion before shift end", source: "EHR audit logs", owner: "IT / Quality" },
+    { window: "Month 3–6", metric: "LWBS rate and E/M level distribution", source: "ED operations + Coding", owner: "ED Operations / RCM" },
+    { window: "Month 6–12+", metric: "ED physician retention and CDI query rate on admissions", source: "HR + CDI program", owner: "HR / CDI team" },
+  ],
+  inpatient: [
+    { window: "Month 1–3", metric: "H&P completion time and progress note completion rate", source: "EHR audit logs", owner: "IT / Quality" },
+    { window: "Month 3–6", metric: "Average LOS trend and case mix index movement", source: "Care Management + Coding", owner: "Care Management / Revenue Integrity" },
+    { window: "Month 6–12+", metric: "Hospitalist retention and observed-to-expected mortality ratio", source: "HR + Quality scorecard", owner: "HR / Quality" },
+  ],
+};
+
 const QuadrantThesisCard = ({
   label,
   bigNumber,
   bigNumberItalic,
   bigNumberLight,
   framing,
+  driverNames,
 }: {
   label: string;
   bigNumber: string;
   bigNumberItalic?: boolean;
   bigNumberLight?: boolean;
+  framing: string;
+  driverNames?: string[];
+}) => (
+  <View
+    style={{
+      flex: 1,
+      backgroundColor: colors.cards,
+      padding: 12,
+      borderRadius: 4,
+      marginHorizontal: 4,
+      marginVertical: 4,
+    }}
+  >
+    <Text
+      style={{
+        fontSize: 8,
+        color: colors.secondary,
+        textTransform: "uppercase",
+        letterSpacing: 1.5,
+        fontWeight: "bold",
+        marginBottom: 6,
+      }}
+    >
+      {label}
+    </Text>
+    <Text
+      style={{
+        fontSize: bigNumberLight ? 16 : 18,
+        fontWeight: bigNumberLight ? 400 : "bold",
+        fontStyle: bigNumberItalic ? "italic" : "normal",
+        color: bigNumberLight
+          ? colors.tertiary
+          : bigNumberItalic
+            ? colors.primary
+            : colors.primaryText,
+        marginBottom: driverNames && driverNames.length > 0 ? 5 : 8,
+        lineHeight: 1.0,
+      }}
+    >
+      {bigNumber}
+    </Text>
+    {driverNames && driverNames.length > 0 ? (
+      <Text
+        style={{
+          fontSize: 7.5,
+          color: colors.primary,
+          lineHeight: 1.4,
+          marginBottom: 7,
+          letterSpacing: 0.3,
+        }}
+      >
+        {driverNames.join("  ·  ")}
+      </Text>
+    ) : null}
+    <Text
+      style={{
+        fontSize: 8.5,
+        color: colors.secondary,
+        lineHeight: 1.45,
+      }}
+    >
+      {framing}
+    </Text>
+  </View>
+);
+
+// QualityThesisCard replaces the generic "Tracked" treatment for the Quality
+// quadrant on the Thesis page with a mini Signal → Proof arc. This educates
+// the reader about what moves first (documentation completeness at Wk 4–8)
+// and what the downstream proof looks like (quality scores at Month 6–18)
+// without fabricating a dollar figure.
+const QualityThesisCard = ({
+  signal,
+  proof,
+  framing,
+}: {
+  signal: string;
+  proof: string;
   framing: string;
 }) => (
   <View
@@ -368,34 +452,119 @@ const QuadrantThesisCard = ({
         marginBottom: 8,
       }}
     >
-      {label}
+      QUALITY
     </Text>
-    <Text
-      style={{
-        fontSize: bigNumberLight ? 16 : 18,
-        fontWeight: bigNumberLight ? 400 : "bold",
-        fontStyle: bigNumberItalic ? "italic" : "normal",
-        color: bigNumberLight
-          ? colors.tertiary
-          : bigNumberItalic
-            ? colors.primary
-            : colors.primaryText,
-        marginBottom: 8,
-      }}
-    >
-      {bigNumber}
-    </Text>
-    <Text
-      style={{
-        fontSize: 8.5,
-        color: colors.secondary,
-        lineHeight: 1.45,
-      }}
-    >
+    <View style={{ flexDirection: "row", alignItems: "stretch", marginBottom: 8 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.background,
+          borderRadius: 3,
+          padding: 6,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 6.5,
+            color: colors.tertiary,
+            textTransform: "uppercase",
+            letterSpacing: 1,
+            marginBottom: 3,
+          }}
+        >
+          Signal · Wk 4–8
+        </Text>
+        <Text
+          style={{
+            fontSize: 8.5,
+            fontWeight: "bold",
+            color: colors.primaryText,
+            lineHeight: 1.3,
+          }}
+        >
+          {signal}
+        </Text>
+      </View>
+      <Text
+        style={{
+          fontSize: 11,
+          color: colors.tertiary,
+          paddingHorizontal: 5,
+          alignSelf: "center",
+        }}
+      >
+        →
+      </Text>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.background,
+          borderRadius: 3,
+          padding: 6,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 6.5,
+            color: colors.tertiary,
+            textTransform: "uppercase",
+            letterSpacing: 1,
+            marginBottom: 3,
+          }}
+        >
+          Proof · Mo 6–18
+        </Text>
+        <Text
+          style={{
+            fontSize: 8.5,
+            fontWeight: "bold",
+            color: colors.primaryText,
+            lineHeight: 1.3,
+          }}
+        >
+          {proof}
+        </Text>
+      </View>
+    </View>
+    <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.45 }}>
       {framing}
     </Text>
   </View>
 );
+
+// DomainPill — colored pill matching the methodology PDF domain color scheme.
+const DomainPill = ({ domain }: { domain: string }) => {
+  const pillColors: Record<string, { bg: string; text: string }> = {
+    CAPACITY:  { bg: "#1A1A1A", text: "#FFFFFF" },
+    WORKFORCE: { bg: "#4A3728", text: "#FFFFFF" },
+    REVENUE:   { bg: "#EA2C00", text: "#FFFFFF" },
+    QUALITY:   { bg: "#666666", text: "#FFFFFF" },
+  };
+  const c = pillColors[domain] ?? { bg: "#1A1A1A", text: "#FFFFFF" };
+  return (
+    <View
+      style={{
+        backgroundColor: c.bg,
+        paddingVertical: 3,
+        paddingHorizontal: 9,
+        borderRadius: 12,
+        alignSelf: "flex-start",
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 7,
+          fontWeight: "bold",
+          color: c.text,
+          textTransform: "uppercase",
+          letterSpacing: 1,
+        }}
+      >
+        {domain}
+      </Text>
+    </View>
+  );
+};
 
 // CompactDriverCard mirrors the dense executive-style card the Nursing PDF
 // canonized in pdf_layout_guidelines.md §9. The original tall
@@ -420,7 +589,6 @@ const CompactDriverCard = ({
   formula,
   linkedTag,
   valueIsTracked,
-  isIncluded = true,
 }: {
   name: string;
   value: string;
@@ -428,16 +596,13 @@ const CompactDriverCard = ({
   formula?: string;
   linkedTag?: boolean;
   valueIsTracked?: boolean;
-  isIncluded?: boolean;
 }) => (
   <View
     style={{
-      backgroundColor: isIncluded ? colors.cards : colors.background,
-      borderWidth: isIncluded ? 0 : 1,
-      borderColor: colors.border,
+      backgroundColor: colors.cards,
       borderRadius: 4,
-      padding: 14,
-      marginBottom: 10,
+      padding: 10,
+      marginBottom: 6,
     }}
     wrap={false}
   >
@@ -446,7 +611,7 @@ const CompactDriverCard = ({
         style={{
           fontSize: 10.5,
           fontWeight: "bold",
-          color: isIncluded ? colors.primaryText : colors.tertiary,
+          color: colors.primaryText,
           textTransform: "uppercase",
           letterSpacing: 0.8,
           flex: 1,
@@ -455,24 +620,18 @@ const CompactDriverCard = ({
       >
         {name}
       </Text>
-      {isIncluded ? (
-        <Text
-          style={{
-            fontSize: valueIsTracked ? 10 : 13,
-            fontWeight: "bold",
-            color: valueIsTracked ? colors.secondary : colors.primary,
-            fontStyle: valueIsTracked ? "italic" : "normal",
-            textTransform: valueIsTracked ? "uppercase" : "none",
-            letterSpacing: valueIsTracked ? 1.2 : 0,
-          }}
-        >
-          {value}
-        </Text>
-      ) : (
-        <Text style={{ fontSize: 8, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1.2 }}>
-          Not included
-        </Text>
-      )}
+      <Text
+        style={{
+          fontSize: valueIsTracked ? 10 : 13,
+          fontWeight: "bold",
+          color: valueIsTracked ? colors.secondary : colors.primary,
+          fontStyle: valueIsTracked ? "italic" : "normal",
+          textTransform: valueIsTracked ? "uppercase" : "none",
+          letterSpacing: valueIsTracked ? 1.2 : 0,
+        }}
+      >
+        {value}
+      </Text>
     </View>
 
     {linkedTag ? (
@@ -481,42 +640,25 @@ const CompactDriverCard = ({
       </Text>
     ) : null}
 
-    <Text
-      style={{
-        fontSize: 9.5,
-        color: isIncluded ? colors.secondary : colors.tertiary,
-        lineHeight: 1.5,
-        marginBottom: isIncluded && formula ? 0 : 0,
-      }}
-    >
+    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+    <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }} {...({ numberOfLines: 2 } as any)}>
       {body}
     </Text>
 
-    {isIncluded && formula ? (
+    {formula ? (
       <View
         style={{
-          marginTop: 8,
-          backgroundColor: colors.background,
-          borderLeftWidth: 2,
-          borderLeftColor: colors.border,
-          paddingHorizontal: 8,
+          marginTop: 6,
+          backgroundColor: "#FDF7F4",
+          borderLeftWidth: 2.5,
+          borderLeftColor: colors.primary,
+          paddingHorizontal: 10,
           paddingVertical: 5,
           borderRadius: 2,
         }}
       >
-        <Text
-          style={{
-            fontSize: 7.5,
-            color: colors.tertiary,
-            textTransform: "uppercase",
-            letterSpacing: 1.2,
-            fontWeight: "bold",
-            marginBottom: 3,
-          }}
-        >
-          How it's calculated
-        </Text>
-        <Text style={{ fontSize: 8.5, color: colors.primaryText, lineHeight: 1.5 }}>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <Text style={{ fontSize: 8.5, color: colors.primaryText, lineHeight: 1.5 }} {...({ numberOfLines: 2 } as any)}>
           {formula}
         </Text>
       </View>
@@ -549,9 +691,9 @@ const HeroSubtotal = ({
       backgroundColor: colors.cards,
       borderRadius: 4,
       paddingHorizontal: 16,
-      paddingVertical: 14,
-      marginTop: 6,
-      marginBottom: 8,
+      paddingVertical: 10,
+      marginTop: 4,
+      marginBottom: 6,
     }}
     wrap={false}
   >
@@ -614,25 +756,21 @@ const QuadrantPage = ({
 }) => {
   const quantified = q.drivers.filter((d) => d.visibility === "quantified");
   const qualitative = q.drivers.filter((d) => d.visibility === "qualitative");
-  const isEmpty =
-    q.drivers.length === 0 && q.otherFinancialBenefits.length === 0;
+  const isEmpty = q.drivers.length === 0 && q.otherFinancialBenefits.length === 0;
+  // Quantified drivers that are included — used to determine "last card" for
+  // the wrap={false} block that keeps HeroSubtotal on the same page.
+  const visibleQuantified = quantified.filter((d) => d.isIncluded !== false);
 
-  const headlineForQuadrant: Record<ExplorePDFQuadrantData["quadrant"], string> = {
-    Capacity: "Capacity is what reclaimed time buys.",
-    Workforce: "Documentation burden is the burnout-and-turnover lever.",
-    Revenue: "Complete notes are the cleanest path to defensible coding.",
-    Quality: isQualityForNonNursing
-      ? "Quality outcomes are tracked post-deployment."
-      : "Quality outcomes follow documentation completeness.",
-  };
+  // Pull the methodology domain entry so we can embed its rich narrative
+  // content (North Star, sub narrative, causal chain, S/T/P callouts) directly
+  // into the Explore value assessment.
+  const domainKey = q.quadrant.toUpperCase() as "CAPACITY" | "WORKFORCE" | "REVENUE" | "QUALITY";
+  const domainData = methodologySettingData[setting]?.domains.find(
+    (d) => d.domain === domainKey,
+  );
 
-  // HeroSubtotal copy: the bottom-of-page anchor. For Quality on non-nursing
-  // settings the underlying drivers are intentionally qualitative-only — the
-  // total renders as italic "Tracked" instead of "$0", per the edge-case
-  // numerics rule (pdf_layout_guidelines.md §9 > Edge-case numerics).
   const subtotalLabel = `${q.quadrant} Subtotal`;
-  const subtotalIsTracked =
-    isQualityForNonNursing && q.annualTotal === 0;
+  const subtotalIsTracked = isQualityForNonNursing && q.annualTotal === 0;
   const subtotalTotal = subtotalIsTracked
     ? "Tracked"
     : q.annualTotal > 0
@@ -651,73 +789,277 @@ const QuadrantPage = ({
   return (
     <Page size="LETTER" style={styles.page} wrap>
       <View style={styles.pageWrapper}>
-        <SectionLabel>{q.quadrant.toUpperCase()}</SectionLabel>
-        <Text style={styles.sectionHeadline}>{headlineForQuadrant[q.quadrant]}</Text>
-        <Text style={styles.body}>{settingQuadrantFraming[setting][q.quadrant]}</Text>
+
+        {/* ─── Domain header ─── */}
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+          <DomainPill domain={domainKey} />
+          {domainData ? (
+            <Text style={{ fontSize: 8, color: colors.tertiary, marginLeft: 8 }}>
+              {domainData.badge}
+            </Text>
+          ) : null}
+        </View>
+
+        {domainData ? (
+          <>
+            {/* North Star */}
+            <Text
+              style={{
+                fontSize: 7.5,
+                fontWeight: "bold",
+                color: colors.tertiary,
+                textTransform: "uppercase",
+                letterSpacing: 2,
+                marginBottom: 2,
+              }}
+            >
+              North Star Metric
+            </Text>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                color: colors.primaryText,
+                lineHeight: 1.1,
+                marginBottom: 5,
+              }}
+            >
+              {domainData.northStar}{" "}
+              <Text style={{ color: colors.primary }}>{domainData.direction}</Text>
+            </Text>
+
+            {/* Sub narrative — capped at 3 lines to fit within one-page budget */}
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <Text
+              style={{ fontSize: 9.5, color: "#444444", lineHeight: 1.5, marginBottom: 8 }}
+              {...({ numberOfLines: 3 } as any)}
+            >
+              {domainData.sub}
+            </Text>
+
+            {/* Matters most if */}
+            <View
+              style={{
+                backgroundColor: colors.cards,
+                padding: 8,
+                borderRadius: 4,
+                marginBottom: 8,
+              }}
+              wrap={false}
+            >
+              <Text
+                style={{
+                  fontSize: 7.5,
+                  fontWeight: "bold",
+                  color: colors.secondary,
+                  textTransform: "uppercase",
+                  letterSpacing: 1.5,
+                  marginBottom: 3,
+                }}
+              >
+                Matters most if…
+              </Text>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              <Text style={{ fontSize: 8.5, color: "#555555", lineHeight: 1.45 }} {...({ numberOfLines: 3 } as any)}>
+                {domainData.matterMostIf}
+              </Text>
+            </View>
+
+            {/* Divider */}
+            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.separator, marginBottom: 6 }} />
+
+            {/* Causal chain */}
+            <Text
+              style={{
+                fontSize: 7.5,
+                fontWeight: "bold",
+                color: colors.tertiary,
+                textTransform: "uppercase",
+                letterSpacing: 2,
+                marginBottom: 4,
+              }}
+            >
+              How Abridge Gets There
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                flexWrap: "wrap",
+                marginBottom: 4,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: colors.primary,
+                  paddingVertical: 4,
+                  paddingHorizontal: 8,
+                  borderRadius: 4,
+                  marginRight: 5,
+                  marginBottom: 4,
+                }}
+              >
+                <Text style={{ fontSize: 7.5, fontWeight: "bold", color: "#FFFFFF" }}>
+                  Abridge Ambient
+                </Text>
+              </View>
+              {domainData.chain.map((step, i) => (
+                <View
+                  key={i}
+                  style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}
+                >
+                  <Text style={{ fontSize: 9, color: "#C4BBAD", marginRight: 5 }}>→</Text>
+                  <View
+                    style={{
+                      backgroundColor: colors.cards,
+                      paddingVertical: 4,
+                      paddingHorizontal: 8,
+                      borderRadius: 4,
+                      marginRight: 5,
+                    }}
+                  >
+                    <Text style={{ fontSize: 7.5, color: "#444444" }}>{step}</Text>
+                  </View>
+                </View>
+              ))}
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                <Text style={{ fontSize: 9, color: "#C4BBAD", marginRight: 5 }}>→</Text>
+                <View
+                  style={{
+                    borderWidth: 1.5,
+                    borderColor: colors.primary,
+                    paddingVertical: 4,
+                    paddingHorizontal: 8,
+                    borderRadius: 4,
+                  }}
+                >
+                  <Text style={{ fontSize: 7.5, fontWeight: "bold", color: colors.primary }}>
+                    {domainData.chainOutput}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+          </>
+        ) : null}
+
+        {/* ─── Divider before model section ─── */}
+        <View
+          style={{
+            borderBottomWidth: 1,
+            borderBottomColor: colors.separator,
+            marginTop: 4,
+            marginBottom: 8,
+          }}
+        />
+
+        {/* ─── What's modeled ─── */}
+        <Text style={[styles.subSectionHeader, { marginTop: 2, marginBottom: 5 }]}>What's Included in Your Model</Text>
 
         {isEmpty ? (
           <Text
-            style={{
-              fontSize: 10,
-              color: colors.tertiary,
-              fontStyle: "italic",
-              paddingVertical: 6,
-            }}
+            style={{ fontSize: 10, color: colors.tertiary, fontStyle: "italic", paddingVertical: 6 }}
           >
-            No drivers selected for this quadrant. Enable drivers on the
-            corresponding {q.quadrant} page in the model to populate this
-            section.
+            No drivers selected for this quadrant. Enable drivers in the model to
+            populate this section.
           </Text>
         ) : (
           <>
-            {quantified.filter(d => d.isIncluded !== false).map((d) => (
-              <CompactDriverCard
-                key={d.id}
-                name={d.label}
-                value={fmtCurrency(d.value)}
-                body={d.shortDescription}
-                formula={d.calcSummary}
-                linkedTag={d.isChild}
-                isIncluded={true}
-              />
-            ))}
-            {q.otherFinancialBenefits.map((b, i) => (
-              <CompactDriverCard
-                key={`b-${i}`}
-                name={b.label}
-                value={`${fmtCurrency(b.amount)} ${b.type === "annual" ? "annual" : "one-time"}`}
-                body="Other financial benefit configured for this quadrant."
-                isIncluded={true}
-              />
-            ))}
-            {qualitative.filter(d => d.isIncluded !== false).map((d) => (
-              <CompactDriverCard
-                key={d.id}
-                name={d.label}
-                value="Tracked"
-                valueIsTracked
-                body={d.shortDescription}
-                isIncluded={true}
-              />
-            ))}
-            {q.drivers.filter(d => d.isIncluded === false).map((d) => (
-              <CompactDriverCard
-                key={`ni-${d.id}`}
-                name={d.label}
-                value=""
-                body={d.shortDescription}
-                isIncluded={false}
-              />
-            ))}
+            {visibleQuantified.map((d, idx) => {
+              // When no benefit cards follow, the last quantified card wraps
+              // with HeroSubtotal so they always land on the same physical page.
+              const isLast = q.otherFinancialBenefits.length === 0 && idx === visibleQuantified.length - 1;
+              if (isLast) {
+                return (
+                  <View key={d.id} wrap={false}>
+                    <CompactDriverCard
+                      name={d.label}
+                      value={fmtCurrency(d.value)}
+                      body={d.shortDescription}
+                      formula={d.calcSummary}
+                      linkedTag={d.isChild}
+                    />
+                    <HeroSubtotal
+                      label={subtotalLabel}
+                      total={subtotalTotal}
+                      caption={subtotalCaption}
+                      totalIsTracked={subtotalIsTracked}
+                    />
+                  </View>
+                );
+              }
+              return (
+                <CompactDriverCard
+                  key={d.id}
+                  name={d.label}
+                  value={fmtCurrency(d.value)}
+                  body={d.shortDescription}
+                  formula={d.calcSummary}
+                  linkedTag={d.isChild}
+                />
+              );
+            })}
+            {q.otherFinancialBenefits.map((b, i, arr) => {
+              const isLast = i === arr.length - 1;
+              if (isLast) {
+                return (
+                  <View key={`b-${i}`} wrap={false}>
+                    <CompactDriverCard
+                      name={b.label}
+                      value={`${fmtCurrency(b.amount)} ${b.type === "annual" ? "annual" : "one-time"}`}
+                      body="Other financial benefit configured for this quadrant."
+                    />
+                    <HeroSubtotal
+                      label={subtotalLabel}
+                      total={subtotalTotal}
+                      caption={subtotalCaption}
+                      totalIsTracked={subtotalIsTracked}
+                    />
+                  </View>
+                );
+              }
+              return (
+                <CompactDriverCard
+                  key={`b-${i}`}
+                  name={b.label}
+                  value={`${fmtCurrency(b.amount)} ${b.type === "annual" ? "annual" : "one-time"}`}
+                  body="Other financial benefit configured for this quadrant."
+                />
+              );
+            })}
+            {/* Qualitative drivers rendered separately below the subtotal */}
           </>
         )}
 
-        <HeroSubtotal
-          label={subtotalLabel}
-          total={subtotalTotal}
-          caption={subtotalCaption}
-          totalIsTracked={subtotalIsTracked}
-        />
+        {/* Standalone HeroSubtotal for: (a) isEmpty — no drivers at all, or
+            (b) all drivers are qualitative-only (e.g. Quality quadrant tracked state) */}
+        {(isEmpty || (visibleQuantified.length === 0 && q.otherFinancialBenefits.length === 0)) && (
+          <HeroSubtotal
+            label={subtotalLabel}
+            total={subtotalTotal}
+            caption={subtotalCaption}
+            totalIsTracked={subtotalIsTracked}
+          />
+        )}
+
+        {/* ─── Tracked Signals — qualitative drivers with their own section ─── */}
+        {qualitative.filter((d) => d.isIncluded !== false).length > 0 ? (
+          <>
+            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.separator, marginTop: 4, marginBottom: 6 }} />
+            <Text style={{ fontSize: 7.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
+              Tracked Signals
+            </Text>
+            {qualitative.filter((d) => d.isIncluded !== false).map((d) => (
+              <View key={d.id} style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 4 }} wrap={false}>
+                <Text style={{ fontSize: 7.5, color: colors.tertiary, marginRight: 5, marginTop: 1 }}>·</Text>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <Text style={{ fontSize: 8.5, color: colors.secondary, flex: 1, lineHeight: 1.35 }} {...({ numberOfLines: 2 } as any)}>
+                  {d.label}
+                </Text>
+              </View>
+            ))}
+          </>
+        ) : null}
 
         <PageFooter orgName={orgName} settingLabel={settingLabel} />
       </View>
@@ -859,9 +1201,11 @@ export const ExploreNarrativePDFDocument = ({
   };
 
   // Investment / 3-year math
+  // Use gross value / investment (same formula as Year 1 ROI and the Expansion card)
+  // so all three multiples in the PDF are directly comparable.
   const cumulativeMultiple =
     data.threeYearInvestmentTotal > 0
-      ? data.threeYearNetTotal / data.threeYearInvestmentTotal
+      ? data.threeYearGrossTotal / data.threeYearInvestmentTotal
       : 0;
 
   const pricingPhrase = (() => {
@@ -903,173 +1247,203 @@ export const ExploreNarrativePDFDocument = ({
         preparedBy={`${data.preparedBy} · ${data.date}`}
       />
 
-      {/* PAGE — THESIS */}
+      {/* PAGE — MODEL SNAPSHOT
+          Executive brief: who this was built for, what was modeled on the
+          call, and the bottom-line financials. Works as a standalone
+          leave-behind — a CFO forwarded this page alone has everything
+          needed to understand the investment case. */}
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
-          <SectionLabel>THE THESIS</SectionLabel>
-          <Text style={styles.sectionHeadline}>{settingThesisHeadline[setting]}</Text>
-          <Text style={styles.body}>{getThesisIntro(data, setting)}</Text>
+          <SectionLabel>MODEL SNAPSHOT</SectionLabel>
 
-          <View style={[styles.cardBg, { marginBottom: 14 }]}>
-            <Text
-              style={{
-                fontSize: 11,
-                fontWeight: "bold",
-                color: colors.primaryText,
-                marginBottom: 6,
-              }}
-            >
-              {settingThesisCardTitle[setting]}
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              {settingThesisCardBody[setting]}
-            </Text>
-          </View>
-
-          <View style={{ flexDirection: "row" }}>
-            <QuadrantThesisCard
-              label="CAPACITY"
-              bigNumber={renderQuadrantBigNumber(capValue, "tracked")}
-              bigNumberItalic={capValue === 0}
-              framing={settingQuadrantFraming[setting].Capacity}
-            />
-            <QuadrantThesisCard
-              label="WORKFORCE"
-              bigNumber={renderQuadrantBigNumber(wfValue, "value")}
-              bigNumberLight={wfValue === 0}
-              framing={settingQuadrantFraming[setting].Workforce}
-            />
-          </View>
-          <View style={{ flexDirection: "row" }}>
-            <QuadrantThesisCard
-              label="REVENUE"
-              bigNumber={renderQuadrantBigNumber(revValue, "value")}
-              bigNumberLight={revValue === 0}
-              framing={settingQuadrantFraming[setting].Revenue}
-            />
-            <QuadrantThesisCard
-              label="QUALITY"
-              bigNumber={qlValue > 0 ? fmtCurrency(qlValue) : "Tracked"}
-              bigNumberItalic={qlValue === 0}
-              framing={settingQuadrantFraming[setting].Quality}
-            />
-          </View>
-
-          <View style={[styles.redBorderCallout, { marginTop: 14 }]}>
-            <Text
-              style={{
-                fontSize: 9,
-                color: colors.primary,
-                textTransform: "uppercase",
-                letterSpacing: 1.5,
-                fontWeight: "bold",
-                marginBottom: 6,
-              }}
-            >
-              What Your Choices Reveal
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              {buildChoicesReveal(data, setting)}
-            </Text>
-          </View>
-
-          <PageFooter orgName={orgName} settingLabel={settingLabel} />
-        </View>
-      </Page>
-
-      {/* PAGE — PRACTICE & SETUP + TIME SAVINGS */}
-      <Page size="LETTER" style={styles.page}>
-        <View style={styles.pageWrapper}>
-          <SectionLabel>PRACTICE &amp; SETUP</SectionLabel>
-          <Text style={styles.sectionHeadline}>The unit we're modeling</Text>
-          <Text style={styles.body}>
-            All financial drivers in this assessment scale off the same
-            baseline. The numbers below ground the rest of the document — change
-            them in the model and every quadrant total moves with them.
+          {/* Org identity */}
+          <Text style={{ fontSize: 36, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.1, marginBottom: 4 }}>
+            {orgName}
+          </Text>
+          <Text style={{ fontSize: 8.5, color: colors.tertiary, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 }}>
+            {`${settingShortLabel[setting]}  ·  ${fmtNum(data.numberOfProviders)} Providers  ·  ${fmtNum(data.annualEncounters)} Encounters / Yr`}
           </Text>
 
-          <View style={[styles.cardBg, { marginBottom: 18 }]}>
-            <Text style={{ fontSize: 10.5, marginBottom: 4 }}>
-              <Text style={{ fontWeight: "bold" }}>Setting:</Text> {settingLabel}
-            </Text>
-            <Text style={{ fontSize: 10.5, marginBottom: 4 }}>
-              <Text style={{ fontWeight: "bold" }}>Providers:</Text>{" "}
-              {fmtNum(data.numberOfProviders)}
-            </Text>
-            <Text style={{ fontSize: 10.5, marginBottom: 4 }}>
-              <Text style={{ fontWeight: "bold" }}>Annual encounters:</Text>{" "}
-              {fmtNum(data.annualEncounters)}
-            </Text>
-            <Text style={{ fontSize: 10.5 }}>
-              <Text style={{ fontWeight: "bold" }}>Adoption / utilization:</Text>{" "}
-              {data.utilizationPercent}%
-            </Text>
-          </View>
+          <View style={{ borderBottomWidth: 1.5, borderBottomColor: colors.separatorHeavy, marginBottom: 14 }} />
 
-          <SectionLabel>TIME SAVINGS</SectionLabel>
-          <Text style={styles.sectionHeadline}>
-            {fmtNum(data.totalHoursSaved)} hours returned annually
+          {/* ─── Thesis — frames the "why" before the numbers ─── */}
+          <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.3, marginBottom: 4 }}>
+            {settingThesisHeadline[setting]}
           </Text>
-          <Text style={styles.body}>
-            Modeled at {data.minutesSavedPerEncounter} minutes saved per
-            encounter using the {(data.timePathScenario || "custom").toLowerCase()}{" "}
-            time-savings scenario. Recovered time fuels the quadrant value
-            drivers on the following pages — it is not double-counted.
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }} {...({ numberOfLines: 3 } as any)}>
+            {getThesisIntro(data, setting)}
           </Text>
 
-          <View style={styles.redBorderCallout}>
-            <Text
-              style={{
-                fontSize: 9,
-                color: colors.primary,
-                textTransform: "uppercase",
-                letterSpacing: 1.5,
-                fontWeight: "bold",
-                marginBottom: 6,
-              }}
-            >
-              Reading the rest of this document
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>
-              The next four pages walk through Capacity, Workforce, Revenue, and
-              Quality one quadrant at a time. Each driver shows the framing,
-              the dollar value (where modeled), and the formula we used so the
-              math is auditable end-to-end.
-            </Text>
-          </View>
+          <View style={{ borderBottomWidth: 1, borderBottomColor: colors.separator, marginBottom: 10 }} />
 
+          {/* ─── The Bottom Line — hero first ─── */}
           <View
             style={{
               backgroundColor: colors.cards,
               borderRadius: 4,
-              padding: 12,
-              marginTop: 10,
+              paddingHorizontal: 18,
+              paddingVertical: 12,
+              marginBottom: 10,
             }}
             wrap={false}
           >
-            <Text
-              style={{
-                fontSize: 8.5,
-                color: colors.secondary,
-                lineHeight: 1.55,
-              }}
-            >
-              <Text style={{ fontWeight: "bold", color: colors.primaryText }}>
-                Every assumption in this model is visible and editable.{" "}
-              </Text>
-              Drivers labeled{" "}
-              <Text style={{ fontStyle: "italic" }}>Tracked</Text>{" "}
-              carry qualitative value we report on post-deployment rather than
-              project upfront — they're in the model because they matter to your
-              care teams, not because we've assigned a dollar figure to them yet.
-              The result is a financial story built to hold up in a budget
-              conversation.
+            <Text style={{ fontSize: 7.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 8 }}>
+              The Bottom Line
             </Text>
+            <View style={{ flexDirection: "row" }}>
+              <View style={{ flex: 1.2, paddingRight: 14, borderRightWidth: 1, borderRightColor: colors.separator }}>
+                <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Net Annual Value</Text>
+                <Text style={{ fontSize: 34, fontWeight: "bold", color: colors.primary, lineHeight: 1.0, marginBottom: 5 }}>
+                  {fmtCurrency(data.netAnnualValue)}
+                </Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary }}>After recurring investment, Year 1</Text>
+              </View>
+              <View style={{ flex: 0.65, paddingHorizontal: 14, borderRightWidth: 1, borderRightColor: colors.separator }}>
+                <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Year 1 ROI</Text>
+                <Text style={{ fontSize: 34, fontWeight: "bold", color: colors.primary, lineHeight: 1.0, marginBottom: 5 }}>
+                  {`${data.roi.toFixed(1)}×`}
+                </Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary }}>Per dollar invested</Text>
+              </View>
+              <View style={{ flex: 1.1, paddingLeft: 14 }}>
+                <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>3-Year Net Value</Text>
+                <Text style={{ fontSize: 34, fontWeight: "bold", color: colors.primary, lineHeight: 1.0, marginBottom: 5 }}>
+                  {fmtCurrency(data.threeYearNetTotal)}
+                </Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary }}>
+                  {`Yr 2 +${data.year2GrowthPercent}%  ·  Yr 3 +${data.year3GrowthPercent}%`}
+                </Text>
+              </View>
+            </View>
           </View>
+
+          {/* ─── What was modeled ─── */}
+          <Text style={{ fontSize: 7.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 6 }}>
+            What Was Modeled on This Call
+          </Text>
+
+          <View style={{ flexDirection: "row", marginBottom: 10 }} wrap={false}>
+            <View style={{ flex: 1.3, backgroundColor: colors.cards, borderRadius: 4, padding: 12, marginRight: 6 }}>
+              <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Time Path</Text>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.0, marginBottom: 5 }}>
+                {data.timePathScenario || "Custom"}
+              </Text>
+              <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
+                {`${data.minutesSavedPerEncounter} min saved/encounter  ·  ${fmtNum(data.totalHoursSaved)} hrs returned/yr`}
+              </Text>
+            </View>
+            <View style={{ flex: 0.75, backgroundColor: colors.cards, borderRadius: 4, padding: 12, marginRight: 6 }}>
+              <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Utilization</Text>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.0, marginBottom: 5 }}>
+                {`${data.utilizationPercent}%`}
+              </Text>
+              <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
+                Of encounters on ambient
+              </Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: colors.cards, borderRadius: 4, padding: 12 }}>
+              <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>Annual Investment</Text>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.0, marginBottom: 5 }}>
+                {fmtCurrency(data.annualInvestment)}
+              </Text>
+              <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
+                {data.pricingModel === "perProvider" && data.costPerProvider
+                  ? `$${data.costPerProvider}/provider/mo · ${fmtNum(data.numberOfProviders)} providers`
+                  : data.pricingModel === "perEncounter" && data.costPerEncounter
+                    ? `$${data.costPerEncounter}/encounter · recurring`
+                    : "Annual license · recurring"}
+              </Text>
+            </View>
+          </View>
+
+          {/* ─── Value by Domain + Drivers side-by-side ─── */}
+          {(() => {
+            const allQ = data.quadrants.flatMap((q) =>
+              q.drivers.filter((d) => d.visibility === "quantified" && d.isIncluded !== false && !d.isChild)
+            );
+            const allT = data.quadrants.flatMap((q) =>
+              q.drivers.filter((d) => d.visibility === "qualitative" && d.isIncluded !== false)
+            );
+
+            const domainTile = (q: typeof cap, marginRight: number) => {
+              if (!q) return null;
+              const isTracked = q.quadrant === "Quality" && q.annualTotal === 0;
+              const value = isTracked ? "Tracked" : q.annualTotal > 0 ? fmtCurrency(q.annualTotal) : "—";
+              const domKey = q.quadrant.toUpperCase() as "CAPACITY" | "WORKFORCE" | "REVENUE" | "QUALITY";
+              const qCount = q.drivers.filter((d) => d.visibility === "quantified" && d.isIncluded !== false).length;
+              const tCount = q.drivers.filter((d) => d.visibility === "qualitative" && d.isIncluded !== false).length;
+              const caption = [qCount > 0 ? `${qCount} quantified` : null, tCount > 0 ? `${tCount} tracked` : null].filter(Boolean).join("  ·  ");
+              return (
+                <View style={{ flex: 1, backgroundColor: colors.cards, borderRadius: 4, padding: 12, marginRight }}>
+                  <DomainPill domain={domKey} />
+                  <Text style={{ fontSize: isTracked ? 13 : 22, fontWeight: "bold", fontStyle: isTracked ? "italic" : "normal", color: isTracked ? colors.secondary : colors.primaryText, lineHeight: 1.0, marginTop: 8, marginBottom: 4 }}>
+                    {value}
+                  </Text>
+                  <Text style={{ fontSize: 7.5, color: colors.tertiary }}>{caption || "—"}</Text>
+                </View>
+              );
+            };
+
+            return (
+              <View style={{ flexDirection: "row" }}>
+                {/* Left: 2×2 domain tiles using explicit rows — no flexWrap */}
+                <View style={{ flex: 1, marginRight: 14 }}>
+                  <Text style={{ fontSize: 7.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 6 }}>
+                    Value by Domain
+                  </Text>
+                  <View style={{ flexDirection: "row", marginBottom: 4 }} wrap={false}>
+                    {domainTile(cap, 6)}
+                    {domainTile(wf, 0)}
+                  </View>
+                  <View style={{ flexDirection: "row" }} wrap={false}>
+                    {domainTile(rev, 6)}
+                    {domainTile(ql, 0)}
+                  </View>
+                </View>
+
+                {/* Right: quantified drivers + tracked signals */}
+                <View style={{ flex: 1, borderLeftWidth: 1, borderLeftColor: colors.separator, paddingLeft: 14 }}>
+                  {allQ.length > 0 && (
+                    <>
+                      <Text style={{ fontSize: 7.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 6 }}>
+                        Quantified Drivers
+                      </Text>
+                      {allQ.map((d) => {
+                        const parentQ = data.quadrants.find((q) => q.drivers.some((dr) => dr.id === d.id));
+                        return (
+                          <View key={d.id} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4, paddingBottom: 4, borderBottomWidth: 1, borderBottomColor: colors.separator }} wrap={false}>
+                            <Text style={{ fontSize: 9, color: colors.primaryText, flex: 1, paddingRight: 8, lineHeight: 1.3 }}>
+                              {d.label}
+                              {parentQ ? <Text style={{ fontSize: 7.5, color: colors.tertiary }}>{`  ${parentQ.quadrant}`}</Text> : null}
+                            </Text>
+                            <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>
+                              {fmtCurrency(d.value)}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                    </>
+                  )}
+                  {allT.length > 0 && (
+                    <View style={{ marginTop: allQ.length > 0 ? 10 : 0 }}>
+                      <Text style={{ fontSize: 7.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 5 }}>
+                        Tracked Signals
+                      </Text>
+                      <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>
+                        {allT.map((d) => d.label).join("  ·  ")}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            );
+          })()}
 
           <PageFooter orgName={orgName} settingLabel={settingLabel} />
         </View>
       </Page>
+
 
       {/* PAGES — One per quadrant in fixed order */}
       {(["Capacity", "Workforce", "Revenue", "Quality"] as const).map((q) => {
@@ -1091,7 +1465,7 @@ export const ExploreNarrativePDFDocument = ({
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
           <SectionLabel>THE INVESTMENT CASE</SectionLabel>
-          <Text style={styles.sectionHeadline}>Infrastructure, Not Expense.</Text>
+          <Text style={styles.sectionHeadline}>A Strategic Investment.</Text>
           <Text style={styles.body}>
             {/* Implementation fee is intentionally NOT folded into the
                 recurring Year 1–3 rows so multi-year ROI math compares
@@ -1100,7 +1474,7 @@ export const ExploreNarrativePDFDocument = ({
                 its own row at the top of the table and a "true Year 1
                 outlay" footnote below — see replit.md > Implementation Fee
                 Treatment for the canonical three-part articulation pattern. */}
-            {`Recurring investment is ${pricingPhrase}.${implPhrase} Years 2–3 apply ${data.year2GrowthPercent}% and ${data.year3GrowthPercent}% growth to recurring annual value as adoption matures and documentation habits stabilize.`}
+            {`Recurring investment is ${pricingPhrase}.${implPhrase} Years 2–3 apply ${data.year2GrowthPercent}% and ${data.year3GrowthPercent}% growth to recurring annual value — adoption deepens across the provider group, documentation habits compound, and clinicians capture progressively more clinical complexity in real-time.`}
           </Text>
 
           {/* 3-Year Projection table.
@@ -1375,58 +1749,177 @@ export const ExploreNarrativePDFDocument = ({
               can stand at 36pt without wrapping. Mirrors the Nursing PDF's
               Investment-page hero geometry exactly (pdf_layout_guidelines.md
               §9 > Investment page hero). */}
-          {cumulativeMultiple > 0 ? (
+          {/* Expansion Opportunity — only renders when full-scale providers > current.
+              Mirrors the UI's "Today vs Full Scale" comparison so the
+              CFO reading this offline can see the same growth story. */}
+          {data.expansionProviders && data.expansionProviders > data.numberOfProviders ? (
             <View
               style={{
                 backgroundColor: colors.cards,
                 borderRadius: 4,
-                paddingHorizontal: 18,
-                paddingVertical: 18,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
                 marginBottom: 14,
               }}
               wrap={false}
             >
-              <Text
-                style={{
-                  fontSize: 8.5,
-                  color: colors.secondary,
-                  textTransform: "uppercase",
-                  letterSpacing: 2.5,
-                  fontWeight: "bold",
-                  marginBottom: 8,
-                }}
-              >
-                By Year 3, For Every $1 Invested
+              <Text style={{ fontSize: 8.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 10 }}>
+                The Expansion Opportunity
               </Text>
-              <Text
-                style={{
-                  fontSize: 36,
-                  fontWeight: "bold",
-                  color: colors.primary,
-                  lineHeight: 1.0,
-                  marginBottom: 10,
-                }}
-              >
-                {`${cumulativeMultiple.toFixed(1)}×`}
-              </Text>
-              <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }}>
-                {`Cumulative net under the modeled assumptions — alongside ${
-                  setting === "ed"
-                    ? "ED clinicians spending more time at the bedside and less time charting at end of shift."
-                    : setting === "inpatient"
-                      ? "hospitalists spending less time finishing notes after hours."
-                      : "providers spending more face-time with patients and less time charting after clinic."
-                }`}
+              <View style={{ flexDirection: "row", alignItems: "stretch" }}>
+                {/* TODAY */}
+                <View style={{ flex: 1, backgroundColor: colors.background, borderRadius: 3, padding: 12, marginRight: 8 }}>
+                  <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4 }}>Today</Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary, marginBottom: data.annualEncounters ? 2 : 8, lineHeight: 1.3 }}>
+                    {`${fmtNum(data.numberOfProviders)} providers  ·  ${data.utilizationPercent}% utilization`}
+                  </Text>
+                  {data.annualEncounters ? (
+                    <Text style={{ fontSize: 9, color: colors.secondary, marginBottom: 8, lineHeight: 1.3 }}>
+                      {`${fmtNum(data.annualEncounters)} total enc / yr`}
+                      {data.utilizationPercent < 100
+                        ? `  ·  ${fmtNum(Math.round(data.annualEncounters * data.utilizationPercent / 100))} Abridge`
+                        : ""}
+                    </Text>
+                  ) : null}
+                  <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.0, marginBottom: 4 }}>
+                    {fmtCurrency(data.netAnnualValue)}
+                  </Text>
+                  <Text style={{ fontSize: 8, color: colors.secondary }}>/year</Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 6 }}>
+                    {`${data.roi.toFixed(1)}× ROI`}
+                  </Text>
+                </View>
+                {/* Arrow */}
+                <View style={{ justifyContent: "center", paddingHorizontal: 8 }}>
+                  <Text style={{ fontSize: 14, color: colors.tertiary }}>→</Text>
+                </View>
+                {/* FULL SCALE */}
+                <View style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 3, padding: 12 }}>
+                  <Text style={{ fontSize: 7, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4 }}>Full Scale</Text>
+                  <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.8)", marginBottom: data.expansionEncounters ? 2 : 8, lineHeight: 1.3 }}>
+                    {`${fmtNum(data.expansionProviders)} providers  ·  ${data.expansionUtilizationPercent ?? data.utilizationPercent}% utilization`}
+                  </Text>
+                  {data.expansionEncounters ? (
+                    <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.8)", marginBottom: 8, lineHeight: 1.3 }}>
+                      {`${fmtNum(data.expansionEncounters)} total enc / yr`}
+                      {(data.expansionUtilizationPercent ?? data.utilizationPercent) < 100
+                        ? `  ·  ${fmtNum(Math.round(data.expansionEncounters * (data.expansionUtilizationPercent ?? data.utilizationPercent) / 100))} Abridge`
+                        : ""}
+                    </Text>
+                  ) : null}
+                  <Text style={{ fontSize: 22, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.0, marginBottom: 4 }}>
+                    {fmtCurrency(data.expansionAnnualValue ?? 0)}
+                  </Text>
+                  <Text style={{ fontSize: 8, color: "rgba(255,255,255,0.7)" }}>/year</Text>
+                  <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.8)", marginTop: 6 }}>
+                    {`${(data.expansionRoi ?? 0).toFixed(1)}× ROI`}
+                  </Text>
+                </View>
+              </View>
+              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 10, lineHeight: 1.4 }}>
+                {`Every provider not yet on Abridge represents ${fmtCurrency(Math.round((data.expansionAnnualValue ?? 0) / (data.expansionProviders)))} in unrealized annual value. Full-scale deployment compounds across the entire group.`}
               </Text>
             </View>
           ) : null}
 
-          {/* The previous version of this page included a "Key Metrics To
-              Track" section with hardcoded targets like "−40%", "+15 pts",
-              "≥ 95%". Removed for the same reason the equivalent block was
-              removed from the Nursing PDF: those numbers were placeholder
-              targets, not partner data. The cumulative-multiple callout
-              above is the page's punchline; nothing else is needed. */}
+          {/* Deployment arc — anchors the financial table to the observable
+              Signal → Proof timeline so the reader knows when to expect
+              the numbers to start showing up. Three milestones rendered
+              as a compact row with red timing labels, matching the arc
+              strip pattern in CompactDriverCard. */}
+          <View
+            style={{
+              backgroundColor: colors.cards,
+              borderRadius: 4,
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              marginBottom: 14,
+            }}
+            wrap={false}
+          >
+            <Text
+              style={{
+                fontSize: 8.5,
+                color: colors.secondary,
+                textTransform: "uppercase",
+                letterSpacing: 2,
+                fontWeight: "bold",
+                marginBottom: 10,
+              }}
+            >
+              When to Expect Results
+            </Text>
+            <View style={{ flexDirection: "row" }}>
+              {(
+                [
+                  {
+                    timing: "Est. Wk 4–8",
+                    label: "Adoption signal",
+                    desc:
+                      "Documentation time ↓, note completion ↑. EHR behavior confirms the workflow has shifted and adoption is real.",
+                  },
+                  {
+                    timing: "Est. Mo 3–6",
+                    label: "Financial signal",
+                    desc:
+                      "Capacity, workforce, and revenue metrics begin to register — early data to validate the model's assumptions.",
+                  },
+                  {
+                    timing: "Est. Mo 6–18",
+                    label: "Proof outcomes",
+                    desc:
+                      "Quality scores, risk adjustment, and retention trends confirm the full modeled case. Timing varies by organization.",
+                  },
+                ] as const
+              ).map((milestone, i, arr) => (
+                <View
+                  key={milestone.timing}
+                  style={{ flex: 1, flexDirection: "row", alignItems: "flex-start" }}
+                >
+                  <View style={{ flex: 1, paddingRight: 6 }}>
+                    <Text
+                      style={{
+                        fontSize: 6.5,
+                        color: colors.primary,
+                        textTransform: "uppercase",
+                        letterSpacing: 1.2,
+                        fontWeight: "bold",
+                        marginBottom: 3,
+                      }}
+                    >
+                      {milestone.timing}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 9,
+                        fontWeight: "bold",
+                        color: colors.primaryText,
+                        marginBottom: 4,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {milestone.label}
+                    </Text>
+                    <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
+                      {milestone.desc}
+                    </Text>
+                  </View>
+                  {i < arr.length - 1 ? (
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        color: colors.tertiary,
+                        paddingTop: 14,
+                        paddingRight: 4,
+                      }}
+                    >
+                      →
+                    </Text>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          </View>
 
           <PageFooter orgName={orgName} settingLabel={settingLabel} />
         </View>
@@ -1567,8 +2060,98 @@ export const ExploreNarrativePDFDocument = ({
             </Text>
           </View>
 
-          {/* METHODOLOGY */}
-          <Text style={styles.subSectionHeader}>Methodology</Text>
+          {/* HOW TO VALIDATE — turns the modeled case into a defended case */}
+          <Text style={[styles.subSectionHeader, { marginTop: 6 }]}>How to Validate</Text>
+          <View style={{ marginBottom: 12 }}>
+            <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>
+              These milestones map to data your team already has access to — each one converts a modeled assumption into an observed result.
+            </Text>
+            {settingValidationMilestones[setting].map((m, i) => (
+              <View
+                key={i}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "flex-start",
+                  paddingVertical: 7,
+                  borderBottomWidth: i < 2 ? 1 : 0,
+                  borderBottomColor: colors.separator,
+                }}
+                wrap={false}
+              >
+                <View style={{ width: 68 }}>
+                  <Text style={{ fontSize: 7.5, fontWeight: "bold", color: colors.primary, letterSpacing: 0.3, lineHeight: 1.3 }}>
+                    {m.window}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 2, lineHeight: 1.3 }}>
+                    {m.metric}
+                  </Text>
+                  <Text style={{ fontSize: 8, color: colors.tertiary, lineHeight: 1.3 }}>
+                    {m.source}
+                  </Text>
+                </View>
+                <View style={{ width: 90, paddingLeft: 8 }}>
+                  <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
+                    {m.owner}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* QUALITATIVE NARRATIVE — gives Provider Wellbeing, Patient Experience,
+              HCAHPS, and similar drivers a framing moment so they read as
+              deliberate tracked signals rather than line items that couldn't
+              be quantified. */}
+          {(() => {
+            const qualDrivers = data.quadrants.flatMap((q) =>
+              q.drivers.filter((d) => d.visibility === "qualitative" && d.isIncluded !== false),
+            );
+            if (qualDrivers.length === 0) return null;
+            return (
+              <View
+                style={{
+                  backgroundColor: colors.cards,
+                  borderRadius: 4,
+                  padding: 14,
+                  marginBottom: 10,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.secondary,
+                }}
+                wrap={false}
+              >
+                <Text
+                  style={{
+                    fontSize: 8.5,
+                    color: colors.secondary,
+                    textTransform: "uppercase",
+                    letterSpacing: 1.5,
+                    fontWeight: "bold",
+                    marginBottom: 6,
+                  }}
+                >
+                  What We're Tracking
+                </Text>
+                <Text style={{ fontSize: 8.5, color: "#444444", lineHeight: 1.55, marginBottom: 6 }}>
+                  {`${qualDrivers.map((d) => d.label).join(", ")} — tracked post-deployment as leading indicators of clinical impact. These aren't monetized because converting them to dollars requires your organization's specific benchmark data. They're in the model because they're the signals that determine whether documentation lift translated to outcomes that matter beyond the financial case.`}
+                </Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary, fontStyle: "italic", lineHeight: 1.4 }}>
+                  Establish baseline measures before go-live so post-deployment movement is attributable.
+                </Text>
+              </View>
+            );
+          })()}
+
+          <PageFooter orgName={orgName} settingLabel={settingLabel} />
+        </View>
+      </Page>
+
+      {/* PAGE — METHODOLOGY */}
+      <Page size="LETTER" style={styles.page} wrap>
+        <View style={styles.pageWrapper}>
+          <SectionLabel>METHODOLOGY</SectionLabel>
+          <Text style={styles.sectionHeadline}>How the Model Works.</Text>
           <View>
             <MethodologyLine
               text={`Time-savings scenario: ${(data.timePathScenario || "custom").toLowerCase()} — ${data.minutesSavedPerEncounter} minutes per encounter, ${fmtNum(data.totalHoursSaved)} hours returned annually across ${fmtNum(data.numberOfProviders)} providers.`}
@@ -1583,13 +2166,24 @@ export const ExploreNarrativePDFDocument = ({
                 const quantified = q.drivers.filter(
                   (d) => d.visibility === "quantified",
                 );
-                if (quantified.length === 0) return null;
-                return quantified.map((d) => (
-                  <MethodologyLine
-                    key={`${qLabel}-${d.id}`}
-                    text={`${d.label} (${qLabel}): ${d.calcSummary || d.shortDescription} = ${fmtCurrency(d.value)}.`}
-                  />
-                ));
+                const qualitative = q.drivers.filter(
+                  (d) => d.visibility === "qualitative",
+                );
+                if (quantified.length === 0 && qualitative.length === 0) return null;
+                return [
+                  ...quantified.map((d) => (
+                    <MethodologyLine
+                      key={`${qLabel}-${d.id}`}
+                      text={`${d.label} (${qLabel}): ${d.calcSummary || d.shortDescription} = ${fmtCurrency(d.value)}.`}
+                    />
+                  )),
+                  ...qualitative.map((d) => (
+                    <MethodologyLine
+                      key={`${qLabel}-${d.id}-qual`}
+                      text={`${d.label} (${qLabel}): ${d.shortDescription} — tracked post-deployment as a leading indicator.`}
+                    />
+                  )),
+                ];
               },
             )}
             <MethodologyLine

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import DriverCard from "@/components/explore/DriverCard";
+import ValueArcDisplay from "@/components/explore/ValueArcDisplay";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
 import { computeRevenueBreakdown, type PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
@@ -127,7 +128,10 @@ export default function ExploreRevenue({ state, updateState, totalHoursSaved, pr
         testId={`toggle-${driver.id}`}
       >
         {isQual ? (
-          <p className="text-sm text-[#444444] leading-relaxed">{driver.shortDescription}</p>
+          <div>
+            <p className="text-sm text-[#444444] leading-relaxed">{driver.shortDescription}</p>
+            {driver.valueArc && <ValueArcDisplay arc={driver.valueArc} />}
+          </div>
         ) : driver.calcComponent ? (
           <driver.calcComponent
             state={state}
@@ -195,7 +199,7 @@ export default function ExploreRevenue({ state, updateState, totalHoursSaved, pr
                 transition={{ delay: 0.18 }}
               >
                 <div>
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Other Metrics to Watch</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Signals to Track</p>
                   <p className="text-xs text-[#AAAAAA] mb-2">Outcomes we track post-deployment that don't carry direct dollar value.</p>
                   <div className="h-px bg-[#D1D5DB] mb-6" />
                 </div>
@@ -315,7 +319,7 @@ export default function ExploreRevenue({ state, updateState, totalHoursSaved, pr
 
                     {showWatchPanelGroup && (
                       <div>
-                        <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Other Metrics</p>
+                        <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Signals to Track</p>
                         <div className="space-y-3">
                           {watchMetricsInPanel.map(d => {
                             const enabled = isEnabled(d);

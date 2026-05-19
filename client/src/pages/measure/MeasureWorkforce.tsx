@@ -19,16 +19,20 @@ interface MeasureWorkforceProps {
 const QUADRANT = 'Workforce' as const;
 
 export default function MeasureWorkforce({ state, updateState, onNext, onBack, onHome }: MeasureWorkforceProps) {
-  const setting = ((state.careSetting || 'outpatient') as ExploreSetting);
+  const activeSettings = (
+    state.activeCareSettings && state.activeCareSettings.length > 0
+      ? state.activeCareSettings
+      : [state.careSetting || 'outpatient']
+  ) as ExploreSetting[];
   const tracked = state.trackedDrivers || {};
 
   const trackedDriverIds = Object.keys(tracked);
   const trackedHere = useMemo(() =>
     EXPLORE_DRIVERS
-      .filter(d => d.quadrant === QUADRANT && d.settings.includes(setting) && trackedDriverIds.includes(d.id))
+      .filter(d => d.quadrant === QUADRANT && d.settings.some(s => activeSettings.includes(s)) && trackedDriverIds.includes(d.id))
       .map(d => ({ driver: d, entry: tracked[d.id] })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tracked, setting]
+    [tracked, activeSettings]
   );
 
   const financialDrivers = trackedHere.filter(({ driver }) => driver.visibility === 'quantified');
@@ -57,8 +61,11 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
       withAbridge: 0,
       valuePerUnit: md?.valuePerUnitDefault ?? 0,
       attributionPercent: 100,
-      realizationPercent: md?.realizationDefault ?? 100,
+      realizationPercent: 100,
+      lowerIsBetter: md?.lowerIsBetter ?? false,
       expanded: true,
+      scaleValue: md?.scaleInput?.defaultValue,
+      scaleDivisor: md?.scaleInput?.divisor,
     };
     updateState({
       trackedDrivers: { ...tracked, [driver.id]: entry },
@@ -72,6 +79,31 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
     }, 0);
   }, [trackedHere]);
 
+  const isMultiSetting = activeSettings.length > 1;
+
+  const subtitle = useMemo(() => {
+    if (isMultiSetting) {
+      const names = activeSettings.map(s => ({ outpatient: 'Outpatient', ed: 'ED', inpatient: 'Inpatient', nursing: 'Nursing' }[s] ?? s));
+      return `Workforce impact across your ${names.join(' + ')} deployment`;
+    }
+    return {
+      outpatient: 'Where is Abridge reducing burnout and improving provider retention?',
+      ed: 'Where is Abridge reducing ED burnout and improving retention?',
+      inpatient: 'Where is Abridge reducing hospitalist burnout and improving retention?',
+      nursing: 'Where is Abridge reducing nursing burnout and improving retention?',
+    }[activeSettings[0]] ?? "What's changed for your workforce because of Abridge?";
+  }, [activeSettings, isMultiSetting]);
+
+  const howToUse = useMemo(() => {
+    if (isMultiSetting) return 'Add workforce drivers relevant to each care setting. Provider Wellbeing and Locum Cost Avoidance apply across all provider settings — enter combined values.';
+    return {
+      outpatient: 'Provider Wellbeing models avoided replacement cost when turnover improves. Locum & Agency Cost Avoidance captures the downstream benefit of reduced reliance on contracted coverage.',
+      ed: 'ED providers experience some of the highest burnout and turnover rates in medicine. Even modest retention improvements produce significant avoided replacement cost.',
+      inpatient: 'Hospitalist turnover is expensive — recruitment, onboarding, and ramp time add up quickly. This section quantifies the workforce value of reducing documentation burden.',
+      nursing: 'Nursing retention drivers model the replacement cost avoided when burnout-driven turnover declines. Charting After Shift and Burnout Score are the leading signals.',
+    }[activeSettings[0]] ?? 'Track the Workforce outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
+  }, [activeSettings, isMultiSetting]);
+
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
 
   return (
@@ -79,7 +111,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
       <UnifiedHeader
         pathType="measure"
         currentStep={3}
-        totalSteps={7}
+        totalSteps={6}
         stepName="Workforce"
         onBack={onBack}
         onHome={onHome}
@@ -90,7 +122,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
           <div className="flex-1 max-w-[700px]">
             <motion.div className="text-center mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">Workforce</h1>
-              <p className="text-base text-[#888888]">What's improved for your team because of Abridge?</p>
+              <p className="text-base text-[#888888]">{subtitle}</p>
             </motion.div>
 
             <motion.div
@@ -100,9 +132,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
               transition={{ delay: 0.1 }}
             >
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">How to Use This Section</p>
-              <p className="text-sm text-black leading-relaxed">
-                Track the Workforce outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.
-              </p>
+              <p className="text-sm text-black leading-relaxed">{howToUse}</p>
             </motion.div>
 
             {financialDrivers.length > 0 && (
@@ -124,6 +154,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
                       entry={entry}
                       onUpdate={(updates) => updateEntry(driver.id, updates)}
                       onRemove={() => removeEntry(driver.id)}
+                      isMultiSetting={isMultiSetting}
                     />
                   ))}
                 </div>
@@ -138,7 +169,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
                 transition={{ delay: 0.18 }}
               >
                 <div className="mb-4">
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Other Metrics to Watch</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Signals to Track</p>
                   <p className="text-xs text-[#AAAAAA]">Outcomes tracked post-deployment that don't carry direct dollar value.</p>
                 </div>
                 <div className="space-y-3">
@@ -149,6 +180,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
                       entry={entry}
                       onUpdate={(updates) => updateEntry(driver.id, updates)}
                       onRemove={() => removeEntry(driver.id)}
+                      isMultiSetting={isMultiSetting}
                     />
                   ))}
                 </div>
@@ -171,7 +203,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
               <AddMeasureDriverPicker
                 quadrant={QUADRANT}
-                setting={setting}
+                settings={activeSettings}
                 alreadyTracked={trackedDriverIds}
                 onAdd={addDriver}
               />
@@ -204,8 +236,17 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
               <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Workforce Realized</p>
               <p className="text-sm text-white/50 mb-4">Quantifiable drivers, attribution-adjusted</p>
 
-              <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-quadrant-total-workforce">{formatCurrency(quadrantTotal)}</p>
-              <p className="text-xs text-white/50 mt-1">annualized impact</p>
+              {financialDrivers.length > 0 ? (
+                <>
+                  <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-quadrant-total-workforce">{formatCurrency(quadrantTotal)}</p>
+                  <p className="text-xs text-white/50 mt-1">annualized impact</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-white/20" data-testid="text-quadrant-total-workforce">—</p>
+                  <p className="text-xs text-white/40 mt-1">{watchMetrics.length > 0 ? 'Signals only — no financial drivers yet' : 'No drivers tracked yet'}</p>
+                </>
+              )}
 
               <div className="h-px bg-[#333333] my-5" />
 
@@ -229,7 +270,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
                   )}
                   {watchMetrics.length > 0 && (
                     <div>
-                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Other Metrics</p>
+                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Signals to Track</p>
                       <ul className="space-y-1.5">
                         {watchMetrics.map(({ driver }) => (
                           <li key={driver.id} className="text-sm text-white/70 flex items-center gap-2">

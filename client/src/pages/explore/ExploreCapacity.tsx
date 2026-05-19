@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import DriverCard from "@/components/explore/DriverCard";
+import ValueArcDisplay from "@/components/explore/ValueArcDisplay";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
@@ -86,6 +87,7 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
   const driverValues = useMemo(() => {
     const result: Record<string, number> = {};
     const td = state.timeDriverInputs;
+    const isNursing = state.careSetting === 'nursing';
 
     if (td.patientAccessEnabled) {
       const effectiveAccessProviders = Math.min(td.accessProviders || state.numberOfProviders, state.numberOfProviders);
@@ -109,6 +111,11 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
       const recovered = lwbsPatients * (td.edLwbsReduction / 100);
       const admissions = recovered * (td.edAdmissionRate / 100);
       result.admissionCapture = Math.round(admissions * td.edAdmissionRevenue * (td.edAdmissionRealization / 100));
+    }
+
+    if (isNursing && td.nursingOtEnabled) {
+      const otHrs = td.nursingOtHoursPerNurseWeek * (td.nursingOtReductionPercent / 100) * state.numberOfProviders * 52;
+      result.nursingOvertime = Math.round(otHrs * td.nursingOtHourlyRate);
     }
 
     return result;
@@ -143,9 +150,10 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
         testId={`toggle-${driver.id}`}
       >
         {driver.visibility === 'qualitative' ? (
-          <p className="text-sm text-[#444444] leading-relaxed">
-            {driver.shortDescription}
-          </p>
+          <div>
+            <p className="text-sm text-[#444444] leading-relaxed">{driver.shortDescription}</p>
+            {driver.valueArc && <ValueArcDisplay arc={driver.valueArc} />}
+          </div>
         ) : driver.calcComponent ? (
           <driver.calcComponent
             state={state}
@@ -265,7 +273,7 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
                 transition={{ delay: 0.18 }}
               >
                 <div>
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Other Metrics to Watch</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Signals to Track</p>
                   <p className="text-xs text-[#AAAAAA] mb-2">Outcomes we track post-deployment that don't carry direct dollar value.</p>
                   <div className="h-px bg-[#D1D5DB] mb-6" />
                 </div>
@@ -422,7 +430,7 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
 
                     {showWatchPanelGroup && (
                       <div>
-                        <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Other Metrics</p>
+                        <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Signals to Track</p>
                         <div className="space-y-3">
                           {watchMetricsInPanel.map(d => {
                             const enabled = isEnabled(d);

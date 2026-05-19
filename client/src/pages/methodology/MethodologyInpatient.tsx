@@ -1,10 +1,16 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, ArrowRight, Activity, Stethoscope, Heart, Loader2, ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ArrowLeft, Download, ArrowRight, Activity, Stethoscope, Heart, Loader2 } from "lucide-react";
 import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
-import { CollapsibleSection, ImpactBadge, type BadgeType } from "@/components/methodology/MethodologyShared";
+import {
+  CollapsibleSection,
+  ImpactBadge,
+  NarrativeText,
+  type BadgeType,
+  type DomainName,
+} from "@/components/methodology/MethodologyShared";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface MethodologyInpatientProps {
   onBack: () => void;
@@ -13,363 +19,1038 @@ interface MethodologyInpatientProps {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type IPDomainName = "CAPACITY" | "WORKFORCE" | "REVENUE" | "QUALITY";
+type NodeCol = { l: string; b: string };
+type NodeDetail = { cols: NodeCol[]; grad?: string };
 
-type IPMechanism = { label: string; description: string };
-
-type IPMetricItem = {
+type ChainNode = {
+  key: string;
   label: string;
-  badge: BadgeType;
-  explanation: string;
-  whenToExpect?: string;
-  formula?: string;
+  sub: string;
+  isSource?: true;
+  isOutcome?: true;
+  detail?: NodeDetail;
 };
 
-type IPDomainData = {
-  domain: IPDomainName;
-  tagline: string;
-  outcomes: { label: string; direction: "↑" | "↓" }[];
-  problem: string;
-  mechanisms: IPMechanism[];
+type TimelineMetric = { name: string; source: string; badge: string; why?: string };
+
+type TimelineStage = {
+  window: string;
+  desc: string;
+  metrics: TimelineMetric[];
+  callout: string;
 };
 
-const ipDomainColors: Record<IPDomainName, string> = {
-  CAPACITY: "#888888",
-  WORKFORCE: "#555555",
-  REVENUE: "#EA2C00",
-  QUALITY: "#1A1A1A",
+type MatterBox = { tag: string; body: string };
+
+type FormulaVar = {
+  v: string;
+  op?: string;
+  kind: 'input' | 'benchmark' | 'default' | 'derived';
+  hint?: string;
+};
+type FormulaStep = { vars: FormulaVar[]; result: string; isFinal?: boolean };
+type FrameworkItem = {
+  domain: DomainName;
+  tag: 'modeled' | 'tracked';
+  narrative: string;
+  chain: string[];
+  chainOutput?: string;
+  steps?: FormulaStep[];
+  note?: string;
 };
 
-// ─── Domain Methodology Data ──────────────────────────────────────────────────
+type IPDomainCardData = {
+  domain: DomainName;
+  number: string;
+  badge: string;
+  northStar: string;
+  direction: '↑' | '↓';
+  northStarSub: string;
+  matterBoxes: MatterBox[];
+  matterLayout?: '2col';
+  alsoNote?: string;
+  chain: ChainNode[];
+  timeline: {
+    signal: TimelineStage;
+    trend: TimelineStage;
+    proof: TimelineStage;
+  };
+};
 
-const ipDomainData: IPDomainData[] = [
+// ─── Domain Data ──────────────────────────────────────────────────────────────
+
+const ipDomainCards: IPDomainCardData[] = [
+  // ── CAPACITY ──────────────────────────────────────────────────────────────
   {
-    domain: "CAPACITY",
-    tagline: "Rounding Time & Note Burden",
-    outcomes: [
-      { label: "Physician hours returned", direction: "↑" },
-      { label: "After-hours charting", direction: "↓" },
+    domain: 'CAPACITY',
+    number: 'Domain 1 of 4',
+    badge: 'Discharge Planning Efficiency',
+    northStar: 'Documentation-Attributed Discharge Delays',
+    direction: '↓',
+    northStarSub: 'Length of stay has too many drivers to claim. Documentation-attributed delays are a specific UM cause code — a trackable gap between when a patient is medically ready to discharge and when the documentation exists to act on it.',
+    matterBoxes: [
+      {
+        tag: 'Matters most if…',
+        body: "Utilization management is flagging documentation gaps as a reason for delayed discharge orders, your avoidable day rate is above peer benchmark, or CDI query loops are slowing down the discharge planning process.",
+      },
     ],
-    problem: "Hospitalists manage 15–20 patients per day, each requiring an H&P at admission, a daily progress note, and responses to consultant recommendations. Documentation consumes 2–4 hours per shift before a single note is written after the shift ends. The bottleneck isn't clinical complexity — it's the time required to convert what was verbalized into what gets charted.",
-    mechanisms: [
-      { label: "H&P time per admission", description: "The H&P is the most documentation-intensive note in the admission. Ambient capture converts it from a 20–45 minute writing exercise to a 5–10 minute review — generating a draft from the actual admission conversation rather than from memory." },
-      { label: "Progress note time per patient per day", description: "Hospitalists write a progress note for each of their 15–20 patients every day. At 8–15 minutes per note, that's 2–4 hours of daily charting. Ambient capture drafts each note from the rounding conversation — reducing it to a 2–4 minute review per patient." },
-      { label: "Consult documentation time", description: "Specialist consultation notes typically take 20–35 minutes to complete from scratch. Ambient capture drafts the consult note during the encounter — preserving the specialist's clinical reasoning without a separate documentation session." },
-      { label: "After-hours documentation carry-over", description: "Incomplete notes from the shift carry over into after-hours. When ambient capture handles documentation in real time, the after-shift queue shrinks — what used to be 1–2 hours of midnight charting becomes a quick review queue." },
+    chain: [
+      { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
+      {
+        key: 'timeliness', label: 'Progress Note Timeliness ↑', sub: 'note available before rounding ends',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The time between when a rounding encounter ends and when the progress note is completed and signed — captured via EHR timestamps.' },
+            { l: 'Why timeliness is the mechanism', b: 'When the progress note is complete before the care team disperses, case managers, social workers, and consultants can act on the clinical picture without waiting for a note that lands hours later. The delay is often the note, not the decision.' },
+            { l: 'What Abridge changes', b: 'Ambient capture drafts the progress note during the rounding conversation. The provider reviews and signs before leaving the patient\'s room — turning a 4–8 hour note lag into a same-encounter turnaround.' },
+          ],
+          grad: "When progress note completion time reaches a consistent same-encounter low, the documentation bottleneck has closed. Start watching whether case management is now getting earlier discharge notification — that's the next signal.",
+        },
+      },
+      {
+        key: 'sharedpicture', label: 'Shared Clinical Picture ↑', sub: 'nurses, case managers, consultants',
+        detail: {
+          cols: [
+            { l: 'What it represents', b: 'The degree to which every member of the care team — nursing, case management, social work, consulting specialists — has access to a current and complete clinical picture at the same time.' },
+            { l: 'Why it matters for discharge', b: 'Discharge planning requires coordinated decisions across multiple teams. When each team is working from a different version of the clinical picture — some from this morning\'s rounding note, some from yesterday\'s — coordination delays compound.' },
+            { l: 'How to observe it', b: 'Indirectly, through case management notes and UM documentation of delay cause. A shared clinical picture shows up as earlier discharge goal documentation and fewer "awaiting provider note" delay codes.' },
+          ],
+        },
+      },
+      {
+        key: 'planning', label: 'Discharge Planning Initiated Earlier', sub: 'goals set day-of, not day-before',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'How early in the admission the care team documents a discharge goal — and how far in advance that goal is acted on by case management, social work, and facilities.' },
+            { l: 'The compounding effect', b: 'Discharge planning that starts on day 2 of a 4-day admission has twice as much runway as planning that starts on day 3. Complete progress notes enable earlier goal-setting, which in turn enables earlier action on the entire discharge chain.' },
+            { l: 'How to track it', b: 'UM system discharge goal entry dates vs. actual discharge date. Case management notes documenting when discharge planning was initiated. EHR-based "anticipated discharge date" documentation by physicians.' },
+          ],
+        },
+      },
+      {
+        key: 'delays', label: 'Documentation-Attributed Delays ↓', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'Days delayed specifically because clinical documentation was incomplete or unavailable — distinct from delays caused by clinical instability, social factors, or placement wait times.' },
+            { l: 'Data source', b: 'UM delay cause codes (typically within the case management or UM system). Filter specifically for documentation-related codes. Compare Abridge provider cohort vs. non-Abridge cohort.' },
+            { l: 'Why it\'s honest attribution', b: "This is the only LOS-adjacent metric where documentation is the direct cause. We don't claim to move LOS broadly — we claim to move the documentation-specific cause codes. That's a defensible attribution." },
+          ],
+        },
+      },
+      {
+        key: 'avoidable', label: 'Avoidable Day Rate ↓', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The percentage of inpatient days that UM classifies as avoidable — days the patient remained admitted when clinical criteria for discharge or step-down were met.' },
+            { l: 'How to track it', b: 'UM system avoidable day flags. Not all avoidable days are documentation-attributed — case management can typically break out which codes relate to documentation vs. placement vs. family vs. clinical.' },
+            { l: 'The financial connection', b: "Payers track avoidable days and use them to challenge medical necessity on concurrent review. A declining avoidable day rate is both an efficiency metric and a denial prevention signal." },
+          ],
+        },
+      },
     ],
+    timeline: {
+      signal: {
+        window: 'Week 4–8',
+        desc: 'Note timeliness moves',
+        metrics: [
+          { name: 'Progress Note Completion Time', source: 'EHR timestamps · time from encounter end to note sign · per-provider · direct Abridge signal', badge: 'Week 4–8', why: "The direct Abridge signal for inpatient. When the progress note is done before the care team disperses, every downstream step — case management, discharge planning, coordination — can start immediately." },
+          { name: 'Same-Encounter Note Completion Rate', source: 'EHR data · % of progress notes signed before provider leaves the unit · Abridge vs. baseline', badge: 'Week 6–10', why: "Measures whether the behavior change is consistent, not just occasional. A high rate means the clinical picture is reliably available early — not just sometimes — enabling earlier discharge planning." },
+        ],
+        callout: "Graduation signal: When progress note completion time reaches a consistent same-encounter low, the documentation bottleneck has closed. Start watching whether case management is now getting earlier discharge notification.",
+      },
+      trend: {
+        window: 'Month 2–5',
+        desc: 'Planning and coordination follow',
+        metrics: [
+          { name: 'Time to Discharge Goal Documentation', source: 'UM or case management system · days from admission to documented discharge goal · Abridge providers vs. non-Abridge', badge: 'Month 2–4', why: "Earlier discharge goal documentation gives case management more runway to arrange next-level-of-care. The earlier the goal is documented, the earlier the entire discharge chain can start." },
+          { name: 'Case Manager Notification Lead Time', source: 'Case management system · hours between physician progress note sign and CM review of note · proxy for shared clinical picture lag', badge: 'Month 2–5', why: "Exposes whether note timeliness improvement is actually translating to earlier discharge planning — or whether case managers are still waiting for notes even after physicians sign them." },
+        ],
+        callout: '',
+      },
+      proof: {
+        window: 'Month 4–12',
+        desc: 'Delay cause codes move',
+        metrics: [
+          { name: 'Documentation-Attributed Delay Rate', source: 'UM cause code data · delays specifically coded as documentation-related · Abridge cohort vs. non-Abridge · requires UM system access', badge: 'Month 4–8', why: "The specific UM cause code that documentation directly causes. This is the only LOS-adjacent metric where documentation is the proximate cause — a defensible, isolated attribution." },
+          { name: 'Avoidable Day Rate', source: 'UM system · avoidable days per 100 admissions · Abridge providers vs. baseline · filter for documentation-related codes', badge: 'Month 6–12', why: "The downstream financial expression of documentation delays. Avoidable days reduce payer revenue and attract concurrent review scrutiny — declining rate is both an efficiency and denial prevention signal." },
+        ],
+        callout: "Why cause codes matter: Avoidable day rate is a broad metric with many drivers. The subset coded as documentation-attributed is the one where Abridge has direct attribution. Always filter to that specific cause code bucket when building the story.",
+      },
+    },
   },
+
+  // ── WORKFORCE ─────────────────────────────────────────────────────────────
   {
-    domain: "WORKFORCE",
-    tagline: "Clinician Wellbeing & Retention",
-    outcomes: [
-      { label: "Hospitalist satisfaction", direction: "↑" },
-      { label: "Voluntary turnover", direction: "↓" },
+    domain: 'WORKFORCE',
+    number: 'Domain 2 of 4',
+    badge: 'Clinician Wellbeing & Retention',
+    northStar: 'Voluntary Turnover',
+    direction: '↓',
+    northStarSub: "Hospitalists manage 15–20 patients per shift, each requiring a progress note. That's 2–4 hours of daily documentation before the shift ends — and another hour after. Burnout here is mathematical, not emotional. Fix the math.",
+    matterBoxes: [
+      {
+        tag: 'CFO conversation',
+        body: "Replacing a hospitalist costs an estimated $250K–$500K fully loaded — recruiting, credentialing, onboarding, productivity ramp. Locum coverage during the vacancy adds further cost at 2–3× employed rates.",
+      },
+      {
+        tag: 'CMO conversation',
+        body: 'Documentation burden is the top-cited driver of hospitalist burnout. Reducing the mechanical charting load is the most direct, fastest-acting lever for improving physician wellbeing — ahead of schedule changes, team restructuring, or wellness programs.',
+      },
     ],
-    problem: "Hospitalist burnout is driven by documentation volume in a way that's uniquely visible — 15 progress notes per shift is not occasional overtime, it's the daily workload. When physicians cite burnout in exit interviews, documentation burden is consistently in the top two reasons. Replacement runs $250K–$500K per departure, and the hospitalist talent market is tight.",
-    mechanisms: [
-      { label: "After-shift charting time (pajama time)", description: "Hospitalists average 60–90 minutes of post-shift documentation per shift. Ambient capture generates drafts in real time, so the post-shift queue is review rather than creation — returning that time to physicians." },
-      { label: "Cognitive load during rounding", description: "The mental overhead of knowing you have 15 progress notes to write after seeing 15 patients. When documentation writes itself during the encounter, physicians can be fully present in the conversation instead of mentally composing the note while the patient is talking." },
-      { label: "Clinician satisfaction scores", description: "Validated instruments (Mini Z, SHM burnout surveys) show documentation burden as the top driver in hospital medicine. Track the documentation subscore specifically among Abridge users — it's more attributable and moves faster than composite scores." },
-      { label: "Locum utilization rate", description: "Locum coverage spikes when retention falters. Locum hourly rates run 2–3× employed physician costs. Track locum spend as a lagging indicator of retention pressure — when it starts declining, the workforce story is working." },
+    matterLayout: '2col',
+    alsoNote: "Hospitalists who aren't burned out document more thoroughly (Quality → DRG accuracy) and are more present in patient conversations (Capacity → HCAHPS). This domain's outcomes connect across the full value story.",
+    chain: [
+      { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
+      {
+        key: 'pajama', label: 'After-Shift Charting ↓', sub: '15 notes × 8 min = 2 hrs nightly',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'Time spent charting after the shift ends — the sum of incomplete progress notes, H&Ps, and consult responses carried over from the shift.' },
+            { l: 'Data source', b: 'EHR audit logs. Session activity after scheduled shift end per provider, pre- and post-Abridge adoption. No survey needed — the behavior is directly measurable.' },
+            { l: 'The math', b: "15 patients × 8 minutes per progress note = 2 hours of nightly charting before anything else. Ambient capture turns this from a creation task into a 2-minute review per note — returning 60–90 minutes per shift." },
+          ],
+          grad: "When post-shift EHR session time reaches a stable low, providers have their evenings back. The next signal to watch is how that recovery translates to wellbeing scores at Month 2–4.",
+        },
+      },
+      {
+        key: 'cogload', label: 'Cognitive Load During Rounding ↓', sub: 'present with patients',
+        detail: {
+          cols: [
+            { l: 'What it represents', b: "The mental overhead of knowing you have 15 progress notes to write after seeing 15 patients. This isn't just fatigue — it's the awareness throughout rounding that every conversation is also a documentation task to be completed later." },
+            { l: 'How to observe it', b: 'Indirectly: documentation time per encounter (EHR logs) and self-reported cognitive fatigue on validated burnout instruments. Not a standalone metric — it manifests in satisfaction scores and wellbeing surveys.' },
+            { l: 'Why it matters beyond hours', b: "Cognitive load reduction is what connects documentation efficiency to care quality and clinical decision-making. Physicians who aren't mentally composing the next note while talking to the current patient are more present — and more thorough." },
+          ],
+        },
+      },
+      {
+        key: 'wellbeing', label: 'Provider Wellbeing ↑', sub: 'leading indicator of retention',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'Physician satisfaction, burnout level, and perceived work-life balance — captured through a validated burnout assessment survey or institutional engagement instrument.' },
+            { l: 'Data source', b: 'Most health systems use an institutional survey or SHM/ACP-provided burnout instrument. Compare Abridge adopters to non-adopters at the same site for a controlled comparison. Quarterly cadence is sufficient.' },
+            { l: "Why it's a financial metric", b: "Wellbeing is a leading indicator of voluntary departure. Improving it is both a mission outcome and a 12-month financial forecast. A CMO can use wellbeing data to make the retention case before turnover numbers mature." },
+          ],
+        },
+      },
+      {
+        key: 'turnover', label: 'Voluntary Turnover ↓', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The percentage of hospitalists who voluntarily leave their role — the primary financial metric for workforce stability.' },
+            { l: 'Data source', b: 'HR data. Voluntary departure rate by department. Compare Abridge units to non-Abridge units, controlling for seniority and program size.' },
+            { l: 'The financial case', b: "Replacing one hospitalist is estimated at $250K–$500K (recruiting, credentialing, onboarding, lost productivity). At 10% turnover on 30 hospitalists, that's 3 replacements per year. Preventing one additional departure can offset a year of Abridge costs." },
+          ],
+        },
+      },
+      {
+        key: 'locum', label: 'Locum Spend ↓', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The cost and volume of locum and agency physicians used to fill open shifts during hospitalist vacancies — the direct financial consequence of turnover.' },
+            { l: 'Data source', b: 'Finance and staffing data. Locum hours × rate per shift. Compare year-over-year as retention improves.' },
+            { l: 'Why it\'s often the faster number', b: "Locum spend responds within months of a departure and is tracked in real time by finance. It's often more visible to CFOs than the longer-term turnover calculation." },
+          ],
+        },
+      },
     ],
+    timeline: {
+      signal: {
+        window: 'Week 4–8',
+        desc: 'Charting behavior changes',
+        metrics: [
+          { name: 'After-Shift Charting Time (Pajama Time)', source: 'EHR session logs · minutes after scheduled shift end · per-provider · no survey needed', badge: 'Week 4–8', why: "Hospitalists finishing notes after shift end is a persistent burnout driver — undone work carries cognitive weight into the next shift. This is the earliest signal that Abridge is recapturing that time." },
+          { name: 'Progress Note Completion Rate (Same Shift)', source: "EHR data · % of notes signed before provider's shift ends · Abridge vs. baseline", badge: 'Week 6–10', why: "Confirms that behavioral change is consistent — notes being done during the shift, not carried to the next. High rate means the documentation burden has genuinely lifted, not just moved." },
+        ],
+        callout: "Why start here: Post-shift EHR data is objective, requires no coordination, and is the most visceral proof point for clinicians. Pajama time reduction is the metric physicians talk about to each other — and that conversation is your organic adoption strategy.",
+      },
+      trend: {
+        window: 'Month 2–5',
+        desc: 'Wellbeing signals emerge',
+        metrics: [
+          { name: 'Provider Wellbeing Score', source: 'Validated burnout assessment survey · Abridge vs. non-Abridge providers at same site · quarterly cadence', badge: 'Month 2–4', why: "Wellbeing improves on a lag from documentation burden reduction. The cognitive load of carrying undone notes has a psychological weight that takes time to lift even after the workflow changes." },
+          { name: 'Intent to Stay', source: 'Institutional engagement survey or validated single-item intent measure · trended quarterly', badge: 'Month 3–5', why: "Intent to stay moves before actual departures, giving organizations a window to intervene. Watch for divergence between Abridge adopters and non-adopters — that divergence is the leading signal." },
+          { name: 'Satisfaction with Documentation Workflow', source: 'Department-specific pulse or EHR satisfaction survey · Abridge adopters vs. non-adopters', badge: 'Month 2–4', why: "Changes faster than wellbeing and is a leading indicator of both retention and adoption sustainability. If satisfaction isn't improving, investigate whether adoption is real." },
+        ],
+        callout: "The CFO bridge: Wellbeing scores don't appear on a balance sheet. Build the bridge explicitly: improved wellbeing is a leading indicator of lower voluntary departure intent, which translates to reduced replacement and locum costs.",
+      },
+      proof: {
+        window: 'Month 12–18',
+        desc: 'Retention and cost impact',
+        metrics: [
+          { name: 'Voluntary Hospitalist Turnover Rate', source: 'HR data · annual voluntary departures / total headcount · Abridge units vs. comparable non-Abridge units', badge: 'Month 12–18', why: "The lagging retention outcome. Requires 12+ months because departure decisions have long lead times and are measured annually — but confirms the workforce story when it arrives." },
+          { name: 'Locum & Agency Utilization', source: 'Finance / staffing data · locum hours and cost per open shift · year-over-year comparison', badge: 'Month 9–18', why: "Open shifts filled by locums represent the financial cost of workforce instability. Declining locum dependence is the CFO's proof that the retention story is real, not just survey-reported." },
+        ],
+        callout: "Why the long timeline: Turnover is a lagging indicator. You need 12–18 months before departures are statistically meaningful. The strategy is to prove wellbeing early, build the CFO bridge at Month 6, and let turnover data confirm the story as it matures.",
+      },
+    },
   },
+
+  // ── REVENUE ───────────────────────────────────────────────────────────────
   {
-    domain: "REVENUE",
-    tagline: "DRG Accuracy & Concurrent Review",
-    outcomes: [
-      { label: "CMI / DRG weight", direction: "↑" },
-      { label: "Medical necessity denials", direction: "↓" },
+    domain: 'REVENUE',
+    number: 'Domain 3 of 4',
+    badge: 'Case Mix & DRG Accuracy',
+    northStar: 'Case Mix Index',
+    direction: '↑',
+    northStarSub: 'CMI is the financial fingerprint of clinical complexity. When documentation captures the full clinical story — comorbidities, complications, severity — DRG weights reflect what was actually managed, not what was minimally documented.',
+    matterBoxes: [
+      {
+        tag: 'Matters most if…',
+        body: "Your CMI is below peer benchmark despite similar patient acuity, your CDI team is running high query volume, your coder query-back rate is above 15%, or your DRG downgrade rate on concurrent review is climbing.",
+      },
     ],
-    problem: "The H&P sets the DRG foundation. The progress note justifies continued stay. When either is incomplete — because the physician was managing 18 patients and ran out of time — the revenue impact is real: CDI sends a query, the coder downgrades the DRG, or the payer denies the continued stay. These are documentation failures, not clinical ones.",
-    mechanisms: [
-      { label: "CC/MCC capture in H&P and progress notes", description: "Complication and Comorbidity (CC) and Major Comorbidity (MCC) documentation drives DRG weighting. When H&Ps and progress notes capture qualifying conditions with the specificity required for CC/MCC assignment, DRG weight improves where it's clinically warranted. CDI tracks this daily." },
-      { label: "CDI query-to-documentation loop", description: "When the H&P or progress note doesn't capture what the physician verbalized, CDI sends a query — back to the physician, requiring a response, delaying coding, adding CDI labor. Better documentation breaks this loop before it starts." },
-      { label: "Concurrent review documentation quality", description: "Payers audit continued inpatient status by reading daily progress notes. When notes capture clinical reasoning for continued stay — not just treatment activities — concurrent review is more defensible and medical necessity denials drop." },
-      { label: "H&P within CMS 24-hour rule", description: "CMS requires the H&P within 24 hours of admission. Late H&Ps are a regulatory risk and delay CDI engagement that sets the DRG trajectory. Ambient capture makes the H&P faster and more complete — improving both compliance and coding accuracy at admission." },
+    alsoNote: "Observation status defense and audit protection. When progress notes capture clinical reasoning for continued inpatient level of care, concurrent review is more defensible — and payer audits have a harder time finding documentation gaps to challenge.",
+    chain: [
+      { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
+      {
+        key: 'detail', label: 'Clinical Detail Captured ↑', sub: 'specificity, complexity documented',
+        detail: {
+          cols: [
+            { l: 'What it means', b: 'The degree to which the H&P and progress notes capture clinical specificity — not just the primary diagnosis but the full constellation of conditions, complications, and comorbidities that characterize the patient\'s actual complexity.' },
+            { l: 'Why documentation is the gap', b: "Physicians verbalize this complexity during rounding. What doesn't make it into the note is what the coder and CDI team can't act on — because documentation is the only evidence that exists for coding purposes." },
+            { l: 'What Abridge changes', b: "Ambient capture preserves the clinical conversation as it happens — comorbidities mentioned in passing, exam findings that would normally be omitted from a hurried note, reasoning that connects diagnosis to plan. All of that is now in the record." },
+          ],
+          grad: "When CDI query-back rates and coder query rates start declining, it means the notes are arriving with what's needed. That's the signal the documentation foundation has changed — watch CC/MCC capture rates as confirmation.",
+        },
+      },
+      {
+        key: 'ccmcc', label: 'CC/MCC Documentation ↑', sub: 'qualifying comorbidities captured',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'Complication and Comorbidity (CC) and Major Complication and Comorbidity (MCC) documentation — the specific coded conditions that drive DRG weight upward when they\'re present and documented with sufficient specificity.' },
+            { l: 'Why specificity is required', b: 'A diagnosis documented as "anemia" doesn\'t qualify as a CC. "Iron deficiency anemia" does. A diagnosis of "heart failure" doesn\'t qualify as an MCC. "Acute systolic heart failure" does. The clinical condition may be the same — the documentation specificity determines the code.' },
+            { l: 'How to track it', b: 'CDI tracks CC/MCC capture rates daily. Compare Abridge-enabled providers to a control cohort — same patient population, same complexity, different documentation tool.' },
+          ],
+        },
+      },
+      {
+        key: 'drg', label: 'DRG Accuracy ↑', sub: 'code reflects clinical reality',
+        detail: {
+          cols: [
+            { l: 'What it means', b: 'The DRG assigned by coding reflects what was actually managed — not the minimum supportable by the documentation. DRG accuracy improvement means fewer CDI queries, fewer coder query-backs, and fewer post-discharge payer challenges.' },
+            { l: 'Why query volume is the signal', b: 'CDI queries are documentation failures made visible. Each query represents a clinical condition that was known but not captured with enough specificity for coding purposes. Reducing queries means the notes are arriving complete.' },
+            { l: 'The lag', b: "DRG accuracy is a lagging metric — it shows up in claims data, which has a 30–90 day lag from service to final code. CDI query volume is the leading signal you can watch in real time." },
+          ],
+        },
+      },
+      {
+        key: 'cmi', label: 'CMI ↑', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The average DRG relative weight across all discharges — the single most useful summary of the mix and complexity of cases a hospital manages. A CMI of 2.0 means cases are, on average, twice as resource-intensive as the national base.' },
+            { l: 'Data source', b: 'Claims data. Tracked monthly by finance and CDI. Compare Abridge provider cohort to non-Abridge cohort — or same providers pre/post adoption — with sufficient discharge volume for statistical significance.' },
+            { l: 'Peer benchmarking', b: "Compare your CMI to peer hospitals with similar payor mix and patient population using CMS IPPS data. If your CMI is consistently below peers with similar complexity, documentation is likely the gap — not case mix." },
+          ],
+        },
+      },
+      {
+        key: 'denials', label: 'Denial Rate ↓', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'Claims denied by payers for documentation-related reasons — primarily medical necessity failures on concurrent review of inpatient stays.' },
+            { l: 'Data source', b: 'Revenue cycle system. Isolate documentation-related denials from total denial volume. The subset where the denial reason cites insufficient documentation of medical necessity or level of care is the attributable bucket.' },
+            { l: 'The concurrent review connection', b: "Payers audit continued inpatient stays by reading daily progress notes. When notes capture the clinical reasoning for why the patient still requires inpatient-level care — not just what was done — concurrent review is far more defensible." },
+          ],
+        },
+      },
     ],
+    timeline: {
+      signal: {
+        window: 'Week 4–8',
+        desc: 'Documentation behavior shifts',
+        metrics: [
+          { name: 'Progress Note Completion Time ↓', source: 'EHR analytics · time from note open to note signed · Abridge providers vs. baseline · available within 2–4 weeks of rollout', badge: 'Week 4–6', why: "When note completion time drops, clinical reasoning is being captured during the encounter rather than reconstructed hours later. This is the upstream gate — CDI query volume, CC/MCC capture, and DRG defensibility all depend on this moving first." },
+          { name: 'Clinical Detail Per Note ↑', source: 'EHR or NLP tool · diagnostic specificity score or codeable diagnosis count per note · Abridge providers vs. baseline · CDI software often tracks this natively', badge: 'Week 4–8', why: "More specific notes — conditions documented with the terminology and detail CDI and coders need — reduce query volume before it starts. This is the behavioral shift that cascades into CC/MCC capture and DRG defensibility." },
+        ],
+        callout: "Why start here: CDI query rates, CC/MCC capture, and case mix index all depend on documentation completeness arriving at the point of care — they can't improve if note specificity isn't changing first.",
+      },
+      trend: {
+        window: 'Month 1–6',
+        desc: 'CDI and coding signals emerge',
+        metrics: [
+          { name: 'CDI Query Rate per Provider', source: 'CDI team data · queries per 100 admissions · Abridge providers vs. baseline · most teams track this daily', badge: 'Month 1–3', why: "CDI queries are a real-time measure of documentation gaps. When Abridge is working, CDI should have less to chase because clinical reasoning is captured during the encounter." },
+          { name: 'CC/MCC Capture Rate', source: 'CDI or coding team · % of eligible admissions with CC or MCC codes assigned · compare Abridge providers vs. control cohort', badge: 'Month 3–5', why: "Complication and comorbidity codes determine DRG weight and reimbursement level. Complete, specific notes allow CDI and coders to assign these codes without physician clarification after the fact." },
+          { name: 'DRG Downgrade Rate', source: 'Revenue cycle · % of DRGs downgraded on coding review or payer challenge · documentation-related downgrades specifically', badge: 'Month 3–6', why: "Payers challenge DRG assignments when the supporting documentation is vague. Declining downgrade rate means notes are holding up to payer review — direct revenue protection." },
+        ],
+        callout: "The CC/MCC capture story: Track this at the provider level, not just in aggregate. Providers who adopt Abridge consistently often show CC/MCC improvement within their own patient cohort before it shows up in hospital-wide CMI data.",
+      },
+      proof: {
+        window: 'Month 6–12',
+        desc: 'CMI and denial trends confirm',
+        metrics: [
+          { name: 'Case Mix Index vs. Peer Benchmark', source: 'CMS IPPS data or internal finance · Abridge provider cohort vs. pre-Abridge baseline · requires sufficient discharge volume', badge: 'Month 6–12', why: "CMI is the aggregate expression of documentation completeness — how complex your documented patient population is relative to peers. Rising CMI reflects better capture of care actually delivered." },
+          { name: 'Denial Rate (Documentation-Related)', source: 'Revenue cycle · documentation-related denials per 100 claims · isolated from coding and eligibility denials', badge: 'Month 6–12', why: "Documentation denials are preventable. Declining rate is the proof that note quality is consistently meeting payer standards — the financial expression of the documentation completeness story." },
+        ],
+        callout: "The peer benchmark frame: If your CMI is improving while peers are flat, documentation quality is the differentiator. CMS IPPS public data lets you build that comparison — and it's more compelling than a before/after that could be explained by case mix shift.",
+      },
+    },
   },
+
+  // ── QUALITY ───────────────────────────────────────────────────────────────
   {
-    domain: "QUALITY",
-    tagline: "Documentation Integrity & Clinical Defensibility",
-    outcomes: [
-      { label: "CDI query volume", direction: "↓" },
-      { label: "HCAHPS Doctor Communication", direction: "↑" },
+    domain: 'QUALITY',
+    number: 'Domain 4 of 4',
+    badge: 'Severity Capture & Risk Adjustment',
+    northStar: 'Risk-Adjusted Quality Score Accuracy',
+    direction: '↑',
+    northStarSub: "Quality programs measure outcomes relative to expected outcomes — and expected outcomes are calculated from documented complexity. When documentation understates severity, quality scores look worse than the care actually was. Documentation is the input to risk adjustment, not an afterthought.",
+    matterBoxes: [
+      {
+        tag: 'Matters most if…',
+        body: "Your observed-to-expected ratios on mortality or readmissions look worse than peer hospitals with similar patient populations, CDI query volume on complex admissions is high, or your CMO is concerned that quality scores don't reflect actual care quality.",
+      },
     ],
-    problem: "Quality documentation in inpatient care is a team sport. CDI, coding, payers, and downstream clinicians all depend on what the physician writes. When notes are incomplete — not because the clinical work wasn't done but because there wasn't time to document it — every downstream team works harder to recover the clinical picture.",
-    mechanisms: [
-      { label: "CDI query volume per admission", description: "Each CDI query represents a documentation gap — something said or known that didn't make it into the note. Ambient capture reduces these gaps at the point of care. Most CDI departments track query rates daily and can show before/after comparison within 60–90 days." },
-      { label: "H&P completeness and specificity", description: "The H&P is the foundation of the inpatient record. When it captures the full clinical picture — presenting history, comorbidities, exam findings, and clinical reasoning for admission — downstream CDI, coding, and care team communication all improve." },
-      { label: "Consult note completeness", description: "Specialist consultation notes support complex DRG coding and care coordination. When consult notes are complete and specific — capturing the specialist's assessment and differential — the hospitalist, CDI, and coding teams have richer content to work with." },
-      { label: "HCAHPS Doctor Communication score", description: "The 'doctor listened carefully / explained things clearly' composite in value-based purchasing. When physicians spend less time at the keyboard during rounds, patients notice. CMS puts 2% of Medicare inpatient payments at risk based on HCAHPS scores." },
+    alsoNote: "CDI graduation — when CDI query volume drops consistently, it's the signal that documentation is capturing complexity at the point of care rather than requiring clarification after the fact. The quality and revenue stories converge here.",
+    chain: [
+      { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
+      {
+        key: 'complexity', label: 'Clinical Complexity Documented ↑', sub: 'conditions, severity captured',
+        detail: {
+          cols: [
+            { l: 'What it means', b: 'The full constellation of a patient\'s clinical conditions — acute and chronic, primary and comorbid — documented with the specificity required for risk adjustment systems to calculate an accurate expected outcome.' },
+            { l: 'Why it\'s the foundation', b: 'Risk adjustment algorithms (APR-DRGs, CMS HCC, 3M) use documented diagnoses to calculate expected outcomes. If the documentation understates how sick the patient was, the expected outcome is set too low — and any death or readmission looks worse than peers.' },
+            { l: 'What Abridge captures', b: "The rounding conversation contains the clinical picture. When ambient capture preserves that conversation in the note — chronic conditions mentioned in passing, comorbidities relevant to the plan — risk adjustment has the data it needs." },
+          ],
+          grad: "When CDI query rates drop, it means documentation is arriving complete. That's the signal complexity documentation has improved. Start watching severity classification rates as the next confirmation.",
+        },
+      },
+      {
+        key: 'severity', label: 'Severity of Illness Captured ↑', sub: 'complex patients classified correctly',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The degree to which patients with high clinical severity are classified at the correct APR-DRG Severity of Illness (SOI) level — particularly SOI 3 (major) and SOI 4 (extreme) for the most complex cases.' },
+            { l: 'Why classification matters', b: "SOI level directly affects expected outcome calculations. A patient classified as SOI 2 who is actually SOI 3 has a lower expected mortality — making any bad outcome look worse than it was on risk-adjusted reports." },
+            { l: 'The documentation connection', b: "SOI assignment is driven by secondary diagnoses — the comorbidities and complications that documentation often omits. Ambient capture preserves these conditions, enabling accurate SOI classification without CDI prompting." },
+          ],
+        },
+      },
+      {
+        key: 'riskadjust', label: 'Risk Adjustment Accurate ↑', sub: 'actual patient mix reflected',
+        detail: {
+          cols: [
+            { l: 'What it means', b: 'Expected outcomes are calculated from an accurate picture of patient severity — so observed-to-expected ratios reflect care quality rather than documentation quality.' },
+            { l: 'The quality program impact', b: "CMS publicly reports observed-to-expected mortality and readmission ratios. Hospitals with inaccurate documentation appear to have worse outcomes than they do — and can receive payment penalties based on that inaccuracy." },
+            { l: 'Where to look', b: "Compare your O/E ratios to peer hospitals. If your documentation is understating severity, your O/E ratios will be higher than peers with similar patient populations. That's the gap ambient documentation is closing." },
+          ],
+        },
+      },
+      {
+        key: 'score', label: 'Quality Score Accuracy ↑', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'Publicly reported quality metrics — CMS Value-Based Purchasing scores, core measure compliance rates, O/E mortality and readmission ratios — that accurately reflect care quality because risk adjustment has the data it needs.' },
+            { l: 'Data source', b: 'CMS public reporting (Hospital Compare), internal quality reporting system, accreditation body reporting. Trended quarterly. Requires 6–12 months of claims data to show meaningful movement.' },
+            { l: 'The reputational value', b: "CMS Overall Hospital Quality Star Rating is publicly visible to patients choosing where to receive care. Improving star ratings through better documentation accuracy — not by changing care — is one of the most defensible quality improvement arguments." },
+          ],
+        },
+      },
+      {
+        key: 'cdiqueries', label: 'CDI Query Volume ↓', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The rate at which CDI specialists send queries back to attending physicians to clarify documented conditions for coding and quality measurement purposes.' },
+            { l: 'Why declining queries is the graduation signal', b: "When CDI query volume drops, it means documentation is arriving with what CDI needs. The query is a lagging correction for a documentation gap that should never have existed. Ambient capture closes the gap at the point of care." },
+            { l: 'The dual impact', b: "Every CDI query that doesn't need to be sent is physician time returned, CDI specialist time freed for higher-complexity review, and a billing cycle accelerated. Query volume reduction is a quality and an operational efficiency outcome simultaneously." },
+          ],
+        },
+      },
     ],
+    timeline: {
+      signal: {
+        window: 'Week 4–8',
+        desc: 'Documentation behavior shifts',
+        metrics: [
+          { name: 'Progress Note Completeness Rate ↑', source: 'EHR analytics or CDI software · % of progress notes meeting completeness criteria (required elements present) · Abridge providers vs. baseline', badge: 'Week 4–6', why: "When progress notes consistently capture the full clinical picture — acute diagnoses, relevant comorbidities, clinical reasoning for the plan — risk adjustment systems have the data they need. This is the earliest observable signal that quality score inputs are improving." },
+          { name: 'Clinical Specificity Per Note ↑', source: 'CDI software or NLP · average number of codeable diagnoses captured per admission · Abridge providers vs. baseline · proxy for documentation depth', badge: 'Week 4–8', why: "CDI queries exist because documentation is missing specificity that risk adjustment requires. When specificity improves at the point of care, CDI has less to chase — and severity classification data follows." },
+        ],
+        callout: "Why start here: CDI query volume, SOI classification, and O/E ratios all follow from note completeness. Documentation specificity is the input; quality scores are the output — and they move in that order.",
+      },
+      trend: {
+        window: 'Month 1–7',
+        desc: 'CDI and severity capture respond',
+        metrics: [
+          { name: 'CDI Query Rate per Provider', source: 'CDI team data · queries per 100 admissions · Abridge providers vs. baseline · CDI teams track this continuously', badge: 'Month 1–3', why: "CDI querying the same notes Abridge drafted means notes aren't yet capturing the clinical specificity CDI expects. A declining query rate confirms that documentation behavior changes are translating into the clinical detail CDI needs." },
+          { name: 'High-Severity Case Classification Rate (SOI Level 3/4)', source: 'CDI or coding team · % of eligible admissions classified at major or extreme severity · Abridge cohort vs. baseline', badge: 'Month 3–6', why: "Accurate severity classification requires documentation of clinical complexity. Rising SOI 3/4 rate means the clinical story being delivered is now being captured in the documentation — not just coded later." },
+          { name: 'Chronic Condition Documentation Rate', source: 'EHR or CDI data · % of admissions where relevant chronic conditions are documented with appropriate specificity · proxy for completeness', badge: 'Month 3–7', why: "Chronic conditions need documentation at every admission to support risk adjustment and quality measure attribution. Abridge captures the clinical reasoning that makes this happen consistently." },
+        ],
+        callout: "The severity capture story: SOI level improvement shows up in CDI and coding data before it appears in publicly reported quality scores. Track it at the provider cohort level to build the attribution story before external reporting reflects it.",
+      },
+      proof: {
+        window: 'Month 6–18',
+        desc: 'Quality scores reflect reality',
+        metrics: [
+          { name: 'Observed vs. Expected Mortality Rate', source: 'Quality reporting system or CMS · O/E ratio trended quarterly · compare Abridge provider cohort to baseline and peers', badge: 'Month 6–12', why: "O/E mortality rate is risk-adjusted — it only improves if documentation accurately reflects patient severity. Improving O/E means the true clinical complexity is now being captured before outcomes are measured." },
+          { name: 'Core Measure Compliance Rate', source: 'Quality program data · % of qualifying encounters meeting core measure documentation requirements · Abridge providers vs. non-Abridge', badge: 'Month 6–12', why: "Core measure compliance requires specific documentation elements captured in real time. Ambient capture during clinical encounters makes these elements available without retrospective documentation." },
+          { name: '30-Day Readmission Rate (Risk-Adjusted)', source: 'CMS or internal quality data · risk-adjusted readmission rate · directional comparison to peer benchmark · affected by accurate risk adjustment input', badge: 'Month 9–18', why: "Risk-adjusted readmission is affected by accurate documentation of patient complexity at discharge. Better documentation of chronic conditions and clinical reasoning supports accurate risk adjustment input." },
+        ],
+        callout: "The long game: Risk-adjusted quality scores reflect care from months prior and change slowly. The strategy is to show CDI query reduction early, SOI capture improvement at mid-term, and quality score movement as the long-term confirmation. Each stage builds credibility for the next.",
+      },
+    },
   },
 ];
 
-// ─── Metric Items ─────────────────────────────────────────────────────────────
+// ─── Value Architecture Data ──────────────────────────────────────────────────
 
-const ipMetricItems: Record<IPDomainName, IPMetricItem[]> = {
+const ipFramework: FrameworkItem[] = [
+  {
+    domain: 'CAPACITY',
+    tag: 'modeled',
+    narrative: "Under DRG reimbursement, each day a patient stays beyond the expected length of stay represents an avoidable cost — the difference between what the payer covers and what the day costs. Documentation-attributed discharge delays occur when progress notes aren't completed in time to support a discharge order, or when the clinical rationale isn't present in the chart. The model estimates savings from reducing documentation-related delays specifically — not total LOS improvement, which has many drivers beyond documentation.",
+    chain: ['Progress Note Timeliness ↑', 'Discharge Documentation Complete ↑', 'Documentation-Attributed Delays ↓'],
+    chainOutput: 'Avoidable Days ↓',
+    steps: [
+      {
+        vars: [
+          { v: 'Annual discharges', kind: 'input' },
+          { v: '% with doc-attributed discharge delay', kind: 'input' },
+        ],
+        result: 'Delay events/year',
+      },
+      {
+        vars: [
+          { v: 'Delay events/year', kind: 'derived' },
+          { v: 'Expected reduction with ambient', kind: 'benchmark', hint: '~30–45%' },
+          { v: 'Avg delay duration (days)', kind: 'benchmark', hint: '~0.5–1.0' },
+        ],
+        result: 'Avoidable days recovered',
+      },
+      {
+        vars: [
+          { v: 'Avoidable days recovered', kind: 'derived' },
+          { v: 'Per-diem cost differential', kind: 'input' },
+        ],
+        result: 'Avoidable day savings',
+        isFinal: true,
+      },
+    ],
+  },
+  {
+    domain: 'WORKFORCE',
+    tag: 'modeled',
+    narrative: "Hospitalists carry documentation obligations across every patient on their panel — progress notes, discharge summaries, and consultation responses that accumulate across a shift. Documentation that isn't completed during rounds often extends into evenings and weekends. Industry sources estimate hospitalist and inpatient physician replacement costs at $350K–$500K per departure, reflecting the competitive recruiting environment, locum coverage, and onboarding time. The model attributes only a defensible fraction of departures to documentation rather than claiming all turnover stems from it.",
+    chain: ['Round Documentation Burden ↓', 'Post-Shift EHR Time ↓', 'Provider Wellbeing ↑', 'Intent to Stay ↑'],
+    chainOutput: 'Voluntary Turnover ↓',
+    steps: [
+      {
+        vars: [
+          { v: 'Annual voluntary departures', kind: 'input' },
+          { v: 'Documentation-attributable fraction', kind: 'benchmark', hint: '~20–30%' },
+          { v: 'Expected improvement with ambient', kind: 'benchmark', hint: '~25–35%' },
+        ],
+        result: 'Est. departures avoided/yr',
+      },
+      {
+        vars: [
+          { v: 'Est. departures avoided', kind: 'derived' },
+          { v: 'Hospitalist replacement cost', kind: 'benchmark', hint: '$350K–$500K' },
+        ],
+        result: 'Estimated retention savings',
+        isFinal: true,
+      },
+    ],
+    note: 'Modeled when burnout survey or intent-to-stay data is available. Treated as a leading indicator otherwise.',
+  },
+  {
+    domain: 'REVENUE',
+    tag: 'modeled',
+    narrative: "Inpatient DRG reimbursement is driven by case complexity — specifically whether complication and comorbidity codes (CCs and MCCs) are captured in the discharge record. When clinical documentation doesn't reflect the full severity of a patient's conditions, CDI teams must issue queries to resolve ambiguity. Unresolved queries or documentation gaps result in lower DRG weights and reduced reimbursement. More thorough clinical documentation may reduce CDI query burden and support higher case mix capture. The model quantifies this through estimated CMI improvement multiplied against discharge volume and base rate.",
+    chain: ['Clinical Documentation Specificity ↑', 'CC/MCC Capture Rate ↑', 'CDI Query Rate ↓'],
+    chainOutput: 'Case Mix Index ↑',
+    steps: [
+      {
+        vars: [
+          { v: 'Annual inpatient discharges', kind: 'input' },
+          { v: 'Estimated CMI improvement', kind: 'input' },
+          { v: 'Hospital base rate', kind: 'input' },
+        ],
+        result: 'DRG revenue impact',
+      },
+      {
+        vars: [
+          { v: 'Annual encounters', kind: 'input' },
+          { v: 'Documentation denial rate reduction', kind: 'input' },
+          { v: 'Avg inpatient denial value', kind: 'benchmark', hint: '~$500–1,200' },
+        ],
+        result: 'Denial recovery',
+      },
+      {
+        vars: [
+          { v: 'DRG revenue impact', kind: 'derived' },
+          { v: 'Denial recovery', kind: 'derived', op: '+' },
+        ],
+        result: 'Total estimated revenue',
+        isFinal: true,
+      },
+    ],
+  },
+  {
+    domain: 'QUALITY',
+    tag: 'tracked',
+    narrative: "Risk-adjusted quality metrics — observed-to-expected mortality, readmission rates, PSI-90 composite — depend on the severity adjustment applied to each case. Severity adjustment is only as accurate as the severity documentation. When comorbidities and complications are underrepresented in the record, risk models underestimate expected outcomes, and performance appears worse than it actually is. More complete documentation may produce more accurate risk adjustment, which in turn may improve O/E ratios and CMS program performance. These signals are tracked over time; dollar amounts are not modeled directly.",
+    chain: ['Comorbidity Documentation ↑', 'Risk Model Inputs Accurate ↑', 'O/E Ratio Improves ↑'],
+    chainOutput: 'VBP Performance ↑',
+    note: "Overlaps with Revenue via VBP, HACRP, and HRRP quality programs. Not modeled in dollars — program payouts use CMS-specific formulas. Tracked as O/E mortality ratio, core measure compliance, and risk-adjusted readmission rate.",
+  },
+];
+
+// ─── Personas & Discovery Questions ──────────────────────────────────────────
+
+const ipFrameworkPersonas: Record<DomainName, string[]> = {
+  CAPACITY:  ['COO', 'Hospitalist Director'],
+  WORKFORCE: ['CMO', 'CHRO'],
+  REVENUE:   ['CFO', 'CDI Director'],
+  QUALITY:   ['VP Quality', 'CMO'],
+};
+
+const ipFrameworkQuestions: Record<DomainName, string[]> = {
   CAPACITY: [
-    {
-      label: "Documentation Time Per Note Type",
-      badge: "Signal",
-      explanation: "EHR session timestamps show how long H&Ps, progress notes, and consult responses take. In inpatient, savings stack across note types — 15–30 minutes per H&P, 5–10 minutes per daily progress note across 15–20 patients. Visible in EHR audit data within 4–6 weeks for consistent users.",
-      whenToExpect: "Week 4–8. EHR session data is the cleanest early metric — no billing cycle, no CDI engagement needed. Often the first metric leaders ask for.",
-      formula: "(Minutes saved per H&P + minutes saved per progress note × avg census) / 60 = physician hours returned per shift",
-    },
-    {
-      label: "After-Shift Documentation Burden",
-      badge: "Signal",
-      explanation: "Time spent charting after shift end — the most visceral metric for hospitalist buy-in. Hospitalists average 60–90 minutes of post-shift documentation per shift. When ambient capture drafts notes in real time, the after-shift queue becomes a review queue. EHR session data after shift end is directly measurable for the same providers before vs. after deployment.",
-      whenToExpect: "Week 4–8. Often the most dramatic early signal in inpatient. Physicians talk about it to each other — and that conversation is your adoption strategy.",
-    },
-    {
-      label: "Consult Turnaround Time",
-      badge: "Trend",
-      explanation: "Time from consult request to completed consult note. When the consult note drafts from the consultation encounter, turnaround time shrinks — improving the hospitalist's ability to act on specialist recommendations and reducing note-lag in complex cases.",
-      whenToExpect: "Month 2–3. Track consult request timestamps vs. note completion timestamps in the EHR.",
-    },
+    'What fraction of your average length of stay is documentation-related — meaning the patient is clinically ready but the discharge summary isn\'t done?',
+    'How are you measuring discharge-before-noon performance, and does documentation completion time factor into that metric?',
+    'When a bed clears late due to documentation delay, what\'s the downstream cost to operations — and are you capturing that anywhere?',
   ],
   WORKFORCE: [
-    {
-      label: "After-Shift Charting Time",
-      badge: "Signal",
-      explanation: "Time spent documenting after the shift ends. Hospitalists average 60–90 minutes of post-shift charting per shift — cutting into sleep, family time, and cognitive recovery. Ambient capture generates note drafts in real time, so the after-shift queue becomes a review queue. EHR session logs after shift end are directly measurable.",
-      whenToExpect: "Week 4–8 for active users. The fastest physician behavior metric to move — no billing cycle, no downstream process dependency.",
-    },
-    {
-      label: "Hospitalist Satisfaction Score",
-      badge: "Trend",
-      explanation: "Validated instruments (Mini Z, SHM/ACP surveys, internal pulse surveys) consistently rank documentation burden as the top driver of hospitalist burnout. Track the documentation-specific subscore among Abridge users vs. a control group. More attributable and more Abridge-moveable than composite burnout scores.",
-      whenToExpect: "Month 2–4 for validated survey signal. Internal pulse surveys can show directional movement earlier.",
-    },
-    {
-      label: "Voluntary Hospitalist Turnover",
-      badge: "Proof",
-      explanation: "Replacing a hospitalist costs $250K–$500K fully loaded — recruitment, credentialing, locum coverage during the gap, productivity ramp. Documentation burden is consistently cited in exit interviews. Use this to anchor the 3-year value story, not to prove short-term ROI. Track exit interview data and compare Abridge-enabled programs vs. those without.",
-      whenToExpect: "Month 12–18 for statistically meaningful data. Don't claim causation without sufficient N and exit interview evidence.",
-    },
+    'What does post-shift EHR activity look like for your hospitalists — are they commonly charting evenings or weekends?',
+    'How are you measuring hospitalist burnout right now, and has documentation come up as a specific driver in exit interviews?',
+    'What\'s it costing you to replace a hospitalist — and do you know how many recent departures were documentation-related?',
   ],
   REVENUE: [
-    {
-      label: "CDI Query Reduction Per Admission",
-      badge: "Signal",
-      explanation: "CDI departments track query rates daily — one of the fastest post-deployment signals. When H&Ps and progress notes capture what was verbalized, CDI specialists receive fewer queries. ACDIS benchmark: 25–35% query rate, $50/query in CDI specialist time. Even a 20% reduction is meaningful at volume.",
-      whenToExpect: "Month 2–3. CDI teams can pull before/after comparison within two billing cycles. Often the first financial signal leadership asks for.",
-      formula: "Admissions × CDI query rate × reduction % × $50/query = CDI labor savings",
-    },
-    {
-      label: "CC/MCC Capture Rate",
-      badge: "Trend",
-      explanation: "When H&Ps and progress notes capture qualifying comorbidities and complications with the specificity required for CC/MCC coding, DRG weight improves where it's clinically warranted. CDI tracks CC/MCC capture rates per discharge — compare Abridge-enabled providers against a control cohort for a credible signal.",
-      whenToExpect: "Month 3–6. Requires sufficient discharge volume for statistical significance. Compare same providers before and after, or Abridge vs. non-Abridge cohorts.",
-      formula: "CC/MCC capture rate improvement × discharges × average DRG weight delta × base payment rate",
-    },
-    {
-      label: "Medical Necessity Denial Rate",
-      badge: "Proof",
-      explanation: "Payers deny continued inpatient status when progress notes document what was done rather than why the patient still needed inpatient-level care. When notes capture clinical reasoning — not just treatment activities — concurrent review is more defensible. RCM teams track documentation-related denial root cause specifically.",
-      whenToExpect: "Month 4–8. RCM denial root-cause data requires 90+ days of claims volume. Isolate documentation-related denials from other denial causes.",
-      formula: "(denial rate before − after, in pp) × annual admissions × $3,500/case × attribution %",
-    },
+    'What\'s your current case mix index, and does your CDI team believe the documentation is reflecting the full complexity of care you\'re delivering?',
+    'How many CDI queries is your team issuing per 100 discharges, and what\'s the query response rate?',
+    'Are there DRG weight losses on your high-complexity cases that your CDI team attributes to documentation gaps?',
   ],
   QUALITY: [
-    {
-      label: "CDI Query Volume Per Admission",
-      badge: "Signal",
-      explanation: "How often CDI specialists send queries back to the attending to clarify the clinical picture for DRG coding. Better H&Ps and progress notes answer these questions before they're asked. CDI departments track this daily — before/after comparison is fast and clean.",
-      whenToExpect: "Month 2–3. CDI query data already exists. This is a before/after comparison with data your CDI team already has.",
-    },
-    {
-      label: "H&P Within CMS 24-Hour Rule",
-      badge: "Signal",
-      explanation: "CMS requires H&P completion within 24 hours of admission. Late H&Ps are a regulatory risk and delay care plan development, CDI engagement, and consultation requests. Ambient capture makes the H&P faster — improving both compliance rates and the quality of admission documentation.",
-      whenToExpect: "Week 4–8. EHR timestamps for H&P completion vs. admission time are directly measurable. Often shows rapid improvement as the H&P drafts from the admission conversation.",
-    },
-    {
-      label: "HCAHPS Doctor Communication Score",
-      badge: "Trend",
-      explanation: "The 'doctor listened carefully / explained things clearly' composite. Physicians using ambient documentation spend less time at the keyboard during rounds and more time in direct patient contact. Reported quarterly — track the doctor communication composite specifically. CMS puts 2% of Medicare inpatient payments at risk based on HCAHPS scores.",
-      whenToExpect: "Month 3–6. HCAHPS is collected quarterly. Need 2–3 cycles for a meaningful trend. Isolate the doctor communication composite — it's the most directly Abridge-attributable HCAHPS domain.",
-    },
+    'When you look at your O/E mortality or readmission ratios, do your hospitalists believe the risk adjustment accurately reflects patient severity?',
+    'How are your VBP or HRRP scores trending — and is documentation quality coming up in root cause analysis of performance gaps?',
+    'How much of your quality team\'s bandwidth is spent resolving documentation-related flags versus driving improvement initiatives?',
   ],
 };
 
-// ─── IPMetricCard ─────────────────────────────────────────────────────────────
+// ─── Value Architecture Component ────────────────────────────────────────────
 
-function IPMetricCard({ item }: { item: IPMetricItem }) {
-  const [showFormula, setShowFormula] = useState(false);
+function IPValueArchitectureSection() {
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set(['CAPACITY', 'WORKFORCE', 'REVENUE', 'QUALITY']));
+  const tagCfg = {
+    modeled: { label: 'Modeled', cls: 'bg-[#1A1A1A] text-white' },
+    tracked: { label: 'Signal',  cls: 'bg-[#F0EDE8] text-[#666666]' },
+  };
   return (
-    <div className="bg-white border border-[#E5E5E5] rounded-sm p-5">
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <p className="text-[14px] font-bold text-black leading-snug">{item.label}</p>
-        <ImpactBadge type={item.badge} />
+    <div className="mt-10 mb-10">
+      <div className="mb-5">
+        <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-1.5">The Value Architecture</p>
+        <h2 className="text-[22px] font-bold text-black tracking-tight">How Abridge Creates Value</h2>
+        <p className="text-[13px] text-[#888888] mt-1">Four domains. Each formula shows the full calculation — which numbers are yours, which are industry estimates, and how they chain together.</p>
       </div>
-      <p className="text-[14px] text-[#444444] leading-relaxed mt-2">{item.explanation}</p>
-      {item.whenToExpect && (
-        <div className="bg-[#F5F0EB] rounded-sm px-4 py-2.5 mt-3">
-          <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1">When to expect</p>
-          <p className="text-[12px] text-[#666666] leading-relaxed">{item.whenToExpect}</p>
-        </div>
-      )}
-      {item.formula && (
-        <div className="mt-3">
-          <button
-            onClick={() => setShowFormula(!showFormula)}
-            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[1.5px] text-[#EA2C00]"
-            data-testid={`button-formula-${item.label.replace(/\s+/g, '-').toLowerCase()}`}
-          >
-            {showFormula ? "Hide formula" : "Show formula"}
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFormula ? 'rotate-180' : ''}`} />
-          </button>
-          {showFormula && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-2 bg-[#F5F0EB] rounded-sm px-4 py-3"
-            >
-              <pre className="text-[12px] text-[#333333] leading-relaxed whitespace-pre-wrap font-mono">{item.formula}</pre>
-            </motion.div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── IPDomainCard ─────────────────────────────────────────────────────────────
-
-function IPDomainCard({
-  data,
-  metrics,
-  isExpanded,
-  onToggle,
-}: {
-  data: IPDomainData;
-  metrics: IPMetricItem[] | undefined;
-  isExpanded: boolean;
-  onToggle: () => void;
-}) {
-  const color = ipDomainColors[data.domain];
-  const [expandedMechanism, setExpandedMechanism] = useState<string | null>(null);
-
-  return (
-    <div className="rounded-lg overflow-hidden border border-[#E5E5E5] mb-4 bg-white shadow-sm">
-      <div className="bg-[#1A1A1A] px-7 py-6 flex items-start justify-between gap-6">
-        <div className="flex-1">
-          <p className="text-[11px] font-bold uppercase tracking-[2.5px] mb-2 text-[#EA2C00]">
-            {data.domain}
-          </p>
-          <h3 className="text-[22px] font-bold text-white leading-tight tracking-tight">{data.tagline}</h3>
-        </div>
-        <div className="shrink-0 flex flex-col items-end gap-2 mt-1">
-          {data.outcomes.map((o) => (
-            <div
-              key={o.label}
-              className="flex items-center gap-2 bg-white/8 border border-white/15 rounded-sm px-3 py-1.5"
-            >
-              <span className="text-white/80 text-[12px] font-medium">{o.label}</span>
-              <span className="text-[14px] font-bold" style={{ color }}>{o.direction}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-white px-7 pt-5 pb-4">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#AAAAAA] mb-2">The Problem</p>
-        <p className="text-[14px] text-[#444444] leading-relaxed">{data.problem}</p>
-      </div>
-
-      <div className="bg-white px-7 pb-5 pt-1">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#AAAAAA] mb-3">Value Mechanisms</p>
-        <div className="space-y-0">
-          {data.mechanisms.map((mechanism) => (
-            <div key={mechanism.label} className="border-b border-[#F2EDE8] last:border-b-0">
+      <div className="divide-y divide-[#EDEBE6] border border-[#E4DDD4] rounded-xl overflow-hidden">
+        {ipFramework.map((item) => {
+          const tc = tagCfg[item.tag];
+          const isCollapsed = collapsed.has(item.domain);
+          const personas = ipFrameworkPersonas[item.domain] ?? [];
+          const questions = ipFrameworkQuestions[item.domain] ?? [];
+          return (
+            <div key={item.domain} className="bg-white">
               <button
-                onClick={() => setExpandedMechanism(expandedMechanism === mechanism.label ? null : mechanism.label)}
-                className="w-full flex items-center gap-3 py-2.5 text-left group"
-                data-testid={`button-mechanism-${data.domain.toLowerCase()}-${mechanism.label.replace(/\s+/g, '-').toLowerCase()}`}
+                onClick={() => setCollapsed(prev => {
+                  const next = new Set(prev);
+                  if (next.has(item.domain)) next.delete(item.domain);
+                  else next.add(item.domain);
+                  return next;
+                })}
+                className="w-full flex items-center gap-3 px-6 py-5 text-left hover:bg-[#FAFAF8] transition-colors outline-none focus:outline-none"
               >
-                <div
-                  className="w-[3px] h-4 rounded-full shrink-0 transition-opacity"
-                  style={{ backgroundColor: '#EA2C00', opacity: expandedMechanism === mechanism.label ? 1 : 0.4 }}
-                />
-                <span className="flex-1 text-[13px] text-[#333333] font-medium group-hover:text-black transition-colors">
-                  {mechanism.label}
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#444444]">
+                  {item.domain.charAt(0) + item.domain.slice(1).toLowerCase()}
+                </p>
+                <span className={`inline-block text-[9px] font-bold tracking-[0.07em] uppercase px-2.5 py-1 rounded-full whitespace-nowrap ${tc.cls}`}>
+                  {tc.label}
                 </span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 text-[#AAAAAA] transition-transform shrink-0 ${expandedMechanism === mechanism.label ? 'rotate-180' : ''}`}
-                />
+                <span className="ml-auto flex items-center gap-3">
+                  {personas.length > 0 && (
+                    <span className="hidden sm:block text-[9px] text-[#C4BBAD] tracking-wide">{personas.join(' · ')}</span>
+                  )}
+                  <svg className={`w-4 h-4 text-[#BBBBBB] shrink-0 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
               </button>
-              {expandedMechanism === mechanism.label && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="pb-3 pl-6 pr-2"
-                >
-                  <p className="text-[12px] text-[#666666] leading-relaxed border-l-2 border-[#EA2C00]/30 pl-3">
-                    {mechanism.description}
-                  </p>
-                </motion.div>
+              {!isCollapsed && (
+              <div className="px-6 pb-6">
+              <NarrativeText text={item.narrative} />
+              {questions.length > 0 && (
+                <div className="mb-4 border-l-2 border-[#F0EDE8] pl-3">
+                  <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#BBBBBB] mb-2">Ask to explore</p>
+                  <ul className="space-y-1.5">
+                    {questions.map((q, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="text-[#C4BBAD] text-[12px] shrink-0 mt-0.5">›</span>
+                        <span className="text-[12px] text-[#777777] italic leading-snug">{q}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                {item.chain.map((step, i) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    {i > 0 && <span className="text-[#C0B8B0] text-xs">→</span>}
+                    <span className="text-[10px] font-medium text-[#444444] bg-[#F6F3EF] border border-[#E4DDD5] rounded-md px-2.5 py-1.5 leading-none whitespace-nowrap">{step}</span>
+                  </div>
+                ))}
+                {item.chainOutput && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#C0B8B0] text-xs">→</span>
+                    <span className="text-[10px] font-semibold text-white bg-[#1A1A1A] rounded-md px-2.5 py-1.5 leading-none whitespace-nowrap">{item.chainOutput}</span>
+                  </div>
+                )}
+              </div>
+              {item.steps && (
+                <div className="rounded-xl overflow-hidden border border-[#DEDAD2]">
+                  <div className="flex items-center justify-between px-5 py-2.5 bg-[#F2EDE5] border-b border-[#DEDAD2]">
+                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-[#999999]">How it's calculated</span>
+                    <div className="flex items-center gap-4">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-[9px] h-[9px] rounded-sm bg-white border border-[#C8BFB4] inline-block"></span>
+                        <span className="text-[8px] text-[#BBBBBB] tracking-wide">your input</span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-[9px] h-[9px] rounded-sm bg-[#FDF5E4] border border-[#DCBF60] inline-block"></span>
+                        <span className="text-[8px] text-[#BBBBBB] tracking-wide">industry est.</span>
+                      </span>
+                    </div>
+                  </div>
+                  {item.steps.map((step, si) => (
+                    <div key={si}>
+                      {step.vars.map((variable, vi) => {
+                        const op = variable.op ?? (vi > 0 ? '×' : '');
+                        const isDerived = variable.kind === 'derived';
+                        const isBenchmark = variable.kind === 'benchmark' || variable.kind === 'default';
+                        const rowBg = isDerived ? 'bg-[#F7F3EE]' : isBenchmark ? 'bg-[#FFFDF6]' : 'bg-white';
+                        return (
+                          <div key={vi} className={`flex items-stretch border-b border-[#EDE7DF] ${rowBg}`}>
+                            <div className="w-10 flex items-center justify-center shrink-0 border-r border-[#EDE7DF]">
+                              <span className="font-mono text-[15px] font-light text-[#C8C0B4]">{op}</span>
+                            </div>
+                            <div className="flex flex-1 items-center justify-between gap-4 px-4 py-[11px]">
+                              <span className={`text-[12.5px] leading-snug ${isDerived ? 'text-[#888888]' : 'text-[#1A1A1A]'}`}>
+                                {variable.v}
+                              </span>
+                              <span className={`text-[8px] font-bold tracking-[0.1em] uppercase shrink-0 ${
+                                isDerived ? 'text-[#C8C0B8]'
+                                : isBenchmark ? 'text-[#9A7000]'
+                                : 'text-[#C8C0B8]'
+                              }`}>
+                                {isDerived ? 'carried forward'
+                                  : variable.kind === 'benchmark' ? (variable.hint ? `est. · ${variable.hint}` : 'industry est.')
+                                  : variable.kind === 'default' ? (variable.hint ? `assumed · ${variable.hint}` : 'assumed')
+                                  : 'your input'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div className={`flex items-stretch ${step.isFinal ? 'bg-[#1A1A1A]' : 'bg-[#EAE4DC] border-b border-[#D8D0C4]'}`}>
+                        <div className={`w-10 flex items-center justify-center shrink-0 border-r ${step.isFinal ? 'border-[#333]' : 'border-[#D8D0C4]'}`}>
+                          <span className={`font-mono text-[15px] font-light ${step.isFinal ? 'text-white/50' : 'text-[#999]'}`}>=</span>
+                        </div>
+                        <div className="flex flex-1 items-center px-4 py-[11px]">
+                          <span className={`leading-snug ${step.isFinal ? 'text-[13px] font-bold text-white tracking-tight' : 'text-[12.5px] font-semibold text-[#3A3630]'}`}>
+                            {step.result}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {item.note && (
+                <p className="text-[11px] text-[#888888] leading-relaxed mt-3">{item.note}</p>
+              )}
+              </div>
               )}
             </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Chain Node Component ─────────────────────────────────────────────────────
+
+function ChainNodeBtn({
+  node,
+  isActive,
+  onClick,
+}: {
+  node: ChainNode;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  const base = "flex-shrink-0 px-4 py-2.5 rounded-lg border text-[11px] font-semibold text-center leading-tight select-none transition-all duration-150 outline-none focus:outline-none";
+
+  let cls = base;
+  if (node.isSource) {
+    cls += " bg-[#EA2C00] border-[#EA2C00] text-white cursor-default";
+  } else if (node.isOutcome) {
+    cls += isActive
+      ? " bg-[#1A1A1A] border-[#1A1A1A] border-solid text-white -translate-y-0.5 shadow-lg shadow-black/20 cursor-pointer"
+      : " bg-[#FAF6EF] border-[#E0D4C0] border-dashed text-[#665544] hover:bg-[#F2EAE0] hover:border-[#D0C0A8] cursor-pointer";
+  } else {
+    cls += isActive
+      ? " bg-[#1A1A1A] border-[#1A1A1A] text-white -translate-y-0.5 shadow-lg shadow-black/20 cursor-pointer"
+      : " bg-[#FAFAFA] border-[#E4E4E4] text-[#333] hover:border-[#C8C8C8] hover:bg-[#F4F4F4] hover:-translate-y-px hover:shadow-md cursor-pointer";
+  }
+
+  return (
+    <button className={cls} onClick={onClick} disabled={!!node.isSource}>
+      <span className="whitespace-nowrap">{node.label}</span>
+      {node.sub && (
+        <span className={`block text-[9px] font-medium mt-0.5 whitespace-nowrap ${node.isSource ? 'text-white/40' : isActive ? 'text-white/55' : 'text-[#888888]'}`}>
+          {node.sub}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// ─── IP Domain Card ───────────────────────────────────────────────────────────
+
+function IPDomainCard({ data }: { data: IPDomainCardData }) {
+  const [activeNode, setActiveNode] = useState<string | null>(null);
+  const [activeStage, setActiveStage] = useState<'s' | 't' | 'p'>('s');
+  const [activeMetric, setActiveMetric] = useState<number | null>(null);
+
+  const mainChain = data.chain.filter(n => !n.isOutcome);
+  const outcomes = data.chain.filter(n => n.isOutcome);
+
+  function handleNodeClick(node: ChainNode) {
+    if (!node.isSource && node.detail) {
+      setActiveNode(prev => (prev === node.key ? null : node.key));
+    }
+  }
+
+  const activeDetail = data.chain.find(n => n.key === activeNode)?.detail ?? null;
+  const stageMap = { s: data.timeline.signal, t: data.timeline.trend, p: data.timeline.proof };
+  const stageLabels = { s: 'Signal', t: 'Trend', p: 'Proof' };
+  const currentStage = stageMap[activeStage];
+
+  return (
+    <div className="rounded-xl overflow-hidden border border-[#E5E5E5] mb-5 bg-white shadow-sm">
+
+      {/* ── HERO ── */}
+      <div className="px-8 pt-7 pb-6 bg-white">
+        <div className="flex items-start justify-between gap-3 mb-5">
+          <div>
+            <p className="text-[10px] font-semibold tracking-[0.12em] uppercase text-[#999999] mb-1.5">{data.number} · Inpatient</p>
+            <p className="text-base font-bold text-[#1A1A1A]">{data.domain.charAt(0) + data.domain.slice(1).toLowerCase()}</p>
+          </div>
+          <div className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-medium text-[#EA2C00] border border-[#EA2C00]/30 bg-[#EA2C00]/[0.06] whitespace-nowrap">
+            {data.badge}
+          </div>
+        </div>
+
+        <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-3">North Star Outcome</p>
+        <div className="text-[40px] font-extrabold leading-none tracking-tight text-[#1A1A1A] mb-3">
+          {data.northStar}{' '}
+          <span className="text-[#EA2C00] font-light text-[36px]">{data.direction}</span>
+        </div>
+        <p className="text-sm text-[#888888] leading-relaxed max-w-[640px]">{data.northStarSub}</p>
+      </div>
+
+      <div className="bg-[#FAF6EF] px-8 py-5 border-t border-b border-[#EDE8E0]">
+        <div className={data.matterLayout === '2col' ? 'grid grid-cols-2 gap-3' : 'space-y-3'}>
+          {data.matterBoxes.map((box, i) => (
+            <div key={i} className="p-4 rounded-xl bg-white border border-[#E8DDD0]">
+              <p className="text-[9px] font-bold tracking-[0.12em] uppercase text-[#777777] mb-1.5">{box.tag}</p>
+              <p className="text-[13px] text-[#555555] leading-[1.55]">{box.body}</p>
+            </div>
           ))}
         </div>
+
+        {data.alsoNote && (
+          <div className="mt-3 px-4 py-4 rounded-xl border border-[#E0D4C4] bg-[#FAF6EF]">
+            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also Enables</p>
+            <p className="text-[12px] text-[#555555] leading-relaxed">{data.alsoNote}</p>
+          </div>
+        )}
       </div>
 
-      <div
-        onClick={onToggle}
-        className="bg-[#F5F0EB] px-7 py-4 border-t border-[#EDE8E2] flex items-center justify-between cursor-pointer"
-        data-testid={`button-toggle-domain-${data.domain.toLowerCase()}`}
-      >
-        <span className="text-[10px] font-bold uppercase tracking-[1.5px]" style={{ color }}>
-          {isExpanded ? "Hide the metrics" : "Explore the metrics →"}
-        </span>
-        <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} style={{ color }} />
-      </div>
+      {/* ── CAUSAL CHAIN ── */}
+      <div className="px-8 py-6 border-b border-[#F0F0F0]">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[10px] font-bold tracking-[0.11em] uppercase text-[#888888]">How Abridge enables progress toward this outcome</p>
+          <p className="text-[11px] text-[#888888] italic">Click any step to explore</p>
+        </div>
 
-      {isExpanded && metrics && metrics.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          transition={{ duration: 0.2 }}
-          className="overflow-hidden"
-        >
-          <div className="bg-[#F5F0EB] px-7 pb-7 pt-4">
-            <div className="space-y-3">
-              {metrics.map((m) => (
-                <IPMetricCard key={m.label} item={m} />
+        <div className="flex items-center overflow-x-auto pb-0.5">
+          {mainChain.map((node, i) => (
+            <div key={node.key} className="flex items-center flex-shrink-0">
+              {i > 0 && <span className="flex-shrink-0 mx-1.5 text-[#999999] text-sm">→</span>}
+              <ChainNodeBtn node={node} isActive={activeNode === node.key} onClick={() => handleNodeClick(node)} />
+            </div>
+          ))}
+          {outcomes.length > 0 && (
+            <>
+              <span className="flex-shrink-0 mx-1.5 text-[#999999] text-sm">→</span>
+              <div className="flex-shrink-0 flex flex-col gap-1.5 border-l border-[#D4D4D4] pl-3 ml-0.5">
+                {outcomes.map(node => (
+                  <ChainNodeBtn key={node.key} node={node} isActive={activeNode === node.key} onClick={() => handleNodeClick(node)} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {activeDetail && (
+          <motion.div
+            key={activeNode}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18 }}
+            className="mt-4 bg-[#FAF6EF] border border-[#E8DDD0] rounded-xl p-5"
+          >
+            <div className="grid grid-cols-3 gap-5">
+              {activeDetail.cols.map((col, i) => (
+                <div key={i}>
+                  <p className="text-[9px] font-bold tracking-[0.1em] uppercase text-[#A89078] mb-1.5">{col.l}</p>
+                  <p className="text-[12px] text-[#444] leading-relaxed">{col.b}</p>
+                </div>
               ))}
             </div>
-          </div>
+            {activeDetail.grad && (
+              <div className="mt-3.5 px-3.5 py-2.5 bg-white border border-[#E0D4C0] rounded-lg text-[12px] text-[#555] leading-relaxed">
+                <span className="font-semibold">Graduation signal:</span> {activeDetail.grad}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </div>
+
+      {/* ── TIMELINE ── */}
+      <div className="px-8 py-6">
+        <p className="text-[10px] font-bold tracking-[0.11em] uppercase text-[#888888] mb-4">What to track — and when to expect movement</p>
+
+        <div className="flex border border-[#E4E4E4] rounded-xl overflow-hidden mb-0">
+          {(['s', 't', 'p'] as const).map((s) => {
+            const stage = stageMap[s];
+            const isOpen = activeStage === s;
+            return (
+              <button
+                key={s}
+                onClick={() => { setActiveStage(s); setActiveMetric(null); }}
+                className={`flex-1 px-4 py-3.5 text-left transition-colors duration-150 border-r border-[#E4E4E4] last:border-r-0 outline-none focus:outline-none ${isOpen ? 'bg-[#1A1A1A]' : 'bg-white hover:bg-[#FAFAFA]'}`}
+              >
+                <p className={`text-[9px] font-bold tracking-[0.12em] uppercase mb-1 ${isOpen ? 'text-white/[0.28]' : 'text-[#888888]'}`}>{stageLabels[s]}</p>
+                <p className={`text-[15px] font-bold leading-none ${isOpen ? 'text-white' : 'text-[#1A1A1A]'}`}>{stage.window}</p>
+                <p className={`text-[11px] mt-0.5 ${isOpen ? 'text-white/[0.32]' : 'text-[#888888]'}`}>{stage.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        <motion.div
+          key={activeStage}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.16 }}
+          className="border border-[#E4E4E4] border-t-0 rounded-b-xl overflow-hidden bg-white"
+        >
+          {currentStage.metrics.map((metric, i) => {
+            const isMetricOpen = activeMetric === i;
+            return (
+              <div key={i} className="border-b border-[#F4F4F4] last:border-b-0">
+                <button
+                  onClick={() => setActiveMetric(isMetricOpen ? null : i)}
+                  className={`w-full flex items-center gap-4 px-5 py-3.5 text-left border-l-[3px] transition-all outline-none focus:outline-none ${isMetricOpen ? 'bg-[#FAF6EF] border-l-[#EA2C00]' : 'bg-white border-l-transparent hover:bg-[#FAFAFA] hover:border-l-[#E8DDD0]'}`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A] mb-0.5">{metric.name}</p>
+                    <p className="text-[11px] text-[#888888] leading-snug">{metric.source}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className={`text-[9px] font-bold tracking-[0.07em] uppercase px-2.5 py-1 rounded whitespace-nowrap ${activeStage === 'p' ? 'bg-[#FAF6EF] text-[#A08060]' : 'bg-[#F4F4F4] text-[#888888]'}`}>
+                      {metric.badge}
+                    </div>
+                    {metric.why && (
+                      <svg className={`w-3 h-3 text-[#BBBBBB] transition-transform duration-150 flex-shrink-0 ${isMetricOpen ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+                {isMetricOpen && metric.why && (
+                  <div className="px-5 py-3 bg-[#FAF6EF] border-l-[3px] border-l-[#EA2C00]">
+                    <p className="text-[9px] font-bold tracking-[0.12em] uppercase text-[#999999] mb-1">Why this metric</p>
+                    <p className="text-[12px] text-[#444444] leading-relaxed">{metric.why}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {currentStage.callout && (
+            <div className="px-5 py-3.5 border-t border-[#EEEBE6] bg-[#FAF7F2] text-[12px] text-[#666] leading-relaxed">
+              {currentStage.callout.startsWith('Graduation signal') || currentStage.callout.startsWith('Why') || currentStage.callout.startsWith('The ') ? (
+                <>
+                  <span className="font-semibold text-[#444]">{currentStage.callout.split(':')[0]}:</span>
+                  {currentStage.callout.split(':').slice(1).join(':')}
+                </>
+              ) : currentStage.callout}
+            </div>
+          )}
         </motion.div>
-      )}
+      </div>
+
+      <div className="px-8 py-3 border-t border-[#F0F0F0] bg-[#FAF7F2] text-[11px] text-[#777777] leading-relaxed">
+        Results vary based on EHR configuration, provider adoption, CDI program maturity, and organizational factors. Timelines represent ranges and should be validated against your organization's baseline data.
+      </div>
     </div>
   );
 }
 
-// ─── IPDomainMethodologySection ───────────────────────────────────────────────
+// ─── IP Domain Methodology Section ───────────────────────────────────────────
 
 function IPDomainMethodologySection() {
-  const [expandedDomain, setExpandedDomain] = useState<IPDomainName | null>(null);
+  const [activeDomain, setActiveDomain] = useState(ipDomainCards[0].domain);
+  const activeCard = ipDomainCards.find(c => c.domain === activeDomain)!;
+
   return (
-    <div className="space-y-4">
-      {ipDomainData.map((d) => (
-        <IPDomainCard
-          key={d.domain}
-          data={d}
-          metrics={ipMetricItems[d.domain]}
-          isExpanded={expandedDomain === d.domain}
-          onToggle={() => setExpandedDomain(expandedDomain === d.domain ? null : d.domain)}
-        />
-      ))}
+    <div className="mb-10">
+      <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
+        <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">The Inpatient Value Story</p>
+        <h2 className="text-[24px] font-bold text-black tracking-tight">Four Domains of Value</h2>
+        <p className="text-sm text-[#888888] mt-1">
+          Each domain has a distinct North Star outcome, a causal chain showing how Abridge enables it, and a measurement path with honest timelines.
+        </p>
+      </div>
+      <div className="bg-[#F5F0EB] rounded-xl p-1 flex mb-5">
+        {ipDomainCards.map(card => {
+          const isActive = activeDomain === card.domain;
+          return (
+            <button
+              key={card.domain}
+              onClick={() => setActiveDomain(card.domain)}
+              className={`flex-1 px-3 py-3 rounded-lg text-center transition-all duration-150 outline-none focus:outline-none ${isActive ? 'bg-[#1A1A1A] shadow-sm' : 'hover:bg-[#EDE8E2]'}`}
+            >
+              <p className={`text-[11px] font-bold uppercase tracking-[0.08em] leading-none mb-1 ${isActive ? 'text-white' : 'text-[#888]'}`}>
+                {card.domain.charAt(0) + card.domain.slice(1).toLowerCase()}
+              </p>
+              <p className={`text-[9px] leading-tight truncate ${isActive ? 'text-white/40' : 'text-[#999999]'}`}>
+                {card.northStar} {card.direction}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+      <motion.div key={activeDomain} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }}>
+        <IPDomainCard data={activeCard} />
+      </motion.div>
     </div>
   );
 }
 
-// ─── IPValueArcSection ────────────────────────────────────────────────────────
+// ─── Value Arc Section ────────────────────────────────────────────────────────
 
 function IPValueArcSection() {
-  const stages: { badge: BadgeType; timing: string; title: string; description: string; domains: IPDomainName[] }[] = [
+  const stages: { badge: BadgeType; timing: string; title: string; description: string; domains: DomainName[] }[] = [
     {
       badge: "Signal",
       timing: "Week 4–8",
@@ -393,7 +1074,7 @@ function IPValueArcSection() {
     },
   ];
 
-  const chipStyles: Record<IPDomainName, string> = {
+  const chipStyles: Record<DomainName, string> = {
     CAPACITY: "bg-[#F0EEEC] text-[#888888]",
     WORKFORCE: "bg-[#EDECEB] text-[#555555]",
     REVENUE: "bg-[#FFF0EC] text-[#EA2C00]",
@@ -401,31 +1082,34 @@ function IPValueArcSection() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 border border-[#E5E5E5] rounded-lg overflow-hidden divide-y md:divide-y-0 md:divide-x divide-[#E5E5E5]">
-      {stages.map((stage) => {
-        const cellBg =
-          stage.badge === "Signal" ? "bg-white" : stage.badge === "Trend" ? "bg-[#F9F7F5]" : "bg-[#F5F0EB]";
-        return (
-          <div key={stage.badge} className={`${cellBg} px-6 py-6`}>
-            <div className="flex items-center justify-between mb-3">
-              <ImpactBadge type={stage.badge} />
-              <span className="text-[11px] font-medium text-[#888888]">{stage.timing}</span>
+    <div className="mb-10">
+      <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
+        <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Value Arc</p>
+        <h2 className="text-[24px] font-bold text-black tracking-tight">How It Accrues Over Time</h2>
+        <p className="text-sm text-[#888888] mt-1">
+          Value doesn't arrive all at once. The sequence is mechanistically predictable — not arbitrary.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 border border-[#E5E5E5] rounded-lg overflow-hidden divide-y md:divide-y-0 md:divide-x divide-[#E5E5E5]">
+        {stages.map((stage) => {
+          const cellBg = stage.badge === "Signal" ? "bg-white" : stage.badge === "Trend" ? "bg-[#F9F7F5]" : "bg-[#F5F0EB]";
+          return (
+            <div key={stage.badge} className={`${cellBg} px-6 py-6`}>
+              <div className="flex items-center justify-between mb-3">
+                <ImpactBadge type={stage.badge} />
+                <span className="text-[11px] font-medium text-[#888888]">{stage.timing}</span>
+              </div>
+              <p className="text-[17px] font-bold text-black tracking-tight mb-2">{stage.title}</p>
+              <p className="text-[12px] text-[#666666] leading-relaxed mb-4">{stage.description}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {stage.domains.map((d) => (
+                  <span key={d} className={`rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${chipStyles[d]}`}>{d}</span>
+                ))}
+              </div>
             </div>
-            <p className="text-[17px] font-bold text-black tracking-tight mb-2">{stage.title}</p>
-            <p className="text-[12px] text-[#666666] leading-relaxed mb-4">{stage.description}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {stage.domains.map((d) => (
-                <span
-                  key={d}
-                  className={`rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${chipStyles[d]}`}
-                >
-                  {d}
-                </span>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -450,7 +1134,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
   return (
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
-        <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-[1100px] mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button onClick={onBack} className="flex items-center cursor-pointer bg-transparent border-none p-0" data-testid="link-home-logo">
               <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
@@ -458,7 +1142,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
             <span className="text-[#E5E5E5]">|</span>
             <button onClick={onBack} className="flex items-center gap-1 text-[#666666] hover:text-black transition-colors" data-testid="button-back">
               <ArrowLeft className="w-3 h-3" />
-              <span className="text-xs font-medium uppercase tracking-wide">Methodology</span>
+              <span className="text-xs font-medium uppercase tracking-wide">Value Story</span>
             </button>
           </div>
           <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50" data-testid="button-export-pdf">
@@ -468,7 +1152,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
         </div>
       </header>
 
-      <div className="max-w-[800px] mx-auto px-6 py-12">
+      <div className="max-w-[1100px] mx-auto px-6 py-12">
         <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#EA2C00] mb-4">Inpatient</p>
           <h1 className="text-[32px] md:text-[40px] font-bold text-black leading-tight tracking-tight mb-4">
@@ -479,218 +1163,11 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
           </p>
         </motion.div>
 
-        <div className="mb-10">
-          <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
-            <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">The Inpatient Value Story</p>
-            <h2 className="text-[24px] font-bold text-black tracking-tight">Four Domains of Value</h2>
-            <p className="text-sm text-[#888888] mt-1">
-              Four domains. Each has a distinct problem, a set of mechanisms, and a measurement path. Start with whichever matters most to your hospitalist program.
-            </p>
-          </div>
-          <IPDomainMethodologySection />
-        </div>
+        <IPDomainMethodologySection />
 
-        <div className="mb-10">
-          <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
-            <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Value Arc</p>
-            <h2 className="text-[24px] font-bold text-black tracking-tight">How It Accrues Over Time</h2>
-            <p className="text-sm text-[#888888] mt-1">
-              Value doesn't arrive all at once. The sequence is mechanistically predictable — not arbitrary.
-            </p>
-          </div>
-          <IPValueArcSection />
-        </div>
+        <IPValueArcSection />
 
-        <div className="mt-12 mb-10">
-          <div className="mb-6">
-            <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Methodology Reference</p>
-            <h2 className="text-[24px] font-bold text-black tracking-tight">The Full Framework</h2>
-            <p className="text-[14px] text-[#888888] mt-1.5">Formulas, assumptions, and honest limits — for the scrutinizers in the room.</p>
-          </div>
-          <div className="divide-y divide-[#E5E5E5] border border-[#E5E5E5] rounded-lg overflow-hidden">
-            <div className="px-6">
-              <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[#D1D5DB]">
-                        <th className="text-left py-3 font-semibold text-black">Value Driver</th>
-                        <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
-                        <th className="text-left py-3 font-semibold text-black">Formula</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-[#666666]">
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#EA2C00', borderColor: '#EA2C00' }}>Revenue</span></td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">CMI / DRG accuracy</td><td className="py-3">✅ Yes</td><td className="py-3">CMI delta × discharges × $6,800</td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Denial rate reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Denial pp delta × encounters × $3,500/case</td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Obs/IP status defense</td><td className="py-3">✅ Yes (if denial data provided)</td><td className="py-3">Admissions at risk × denial rate × avg claim delta × doc-attributable %</td></tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">DNFB / billing cycle influence</td>
-                        <td className="py-3 text-[#F59E0B] font-medium">Narrative only — not modeled in $</td>
-                        <td className="py-3">DNFB days × daily IP revenue (illustrative; live in Q3 with discharge capture)</td>
-                      </tr>
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#1A1A1A', borderColor: '#1A1A1A' }}>Quality</span></td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">CDI query reduction</td><td className="py-3 text-[#F59E0B] font-medium">Explore model: ✅ calculated · Measure model: signal only</td><td className="py-3">Admissions × query rate × reduction % × $50/query</td></tr>
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#888888', borderColor: '#888888' }}>Capacity</span></td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Documentation time returned</td><td className="py-3 text-[#F59E0B] font-medium">Hours only — not monetized</td><td className="py-3">Physician time is salaried</td></tr>
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#555555', borderColor: '#555555' }}>Workforce</span></td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Hospitalist retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers avoided × $250K–$500K</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CollapsibleSection>
-            </div>
-
-            <div className="px-6">
-              <CollapsibleSection sectionId="assumptions" title="The Assumptions" subtitle="Inpatient-specific defaults and ranges">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[#D1D5DB]">
-                        <th className="text-left py-3 font-semibold text-black">Assumption</th>
-                        <th className="text-left py-3 font-semibold text-black">Range</th>
-                        <th className="text-left py-3 font-semibold text-black">Our Default</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-[#666666]">
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#888888', borderColor: '#888888' }}>Capacity</span></td></tr>
-                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Time saved per admission</td><td className="py-3">15-45 minutes</td><td className="py-3">30 minutes</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Total documentation time saved across H&P, progress notes, and discharge summary. Higher for complex admissions.</p></TooltipContent></Tooltip>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Time saved per H&P</td><td className="py-3">15–30 min</td><td className="py-3">20 min</td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Time saved per progress note</td><td className="py-3">5–12 min</td><td className="py-3">8 min</td></tr>
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#EA2C00', borderColor: '#EA2C00' }}>Revenue</span></td></tr>
-                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">DRG base rate</td><td className="py-3">$6,000–$8,000</td><td className="py-3">$6,800</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">CMS IPPS base rate; varies by hospital wage index and DSH adjustment.</p></TooltipContent></Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
-                            <td className="py-3">DNFB days (industry baseline)</td>
-                            <td className="py-3">5–7 days</td>
-                            <td className="py-3">5.5 days (illustrative only)</td>
-                          </tr>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-xs">Discharge Not Final Billed days — a working-capital metric tracked by hospital revenue cycle. We use this baseline to illustrate potential influence, but do not model dollars in the calculator until discharge summary capture is live.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#555555', borderColor: '#555555' }}>Workforce</span></td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Hospitalist replacement cost</td><td className="py-3">$250K–$500K</td><td className="py-3">$350K</td></tr>
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#1A1A1A', borderColor: '#1A1A1A' }}>Quality</span></td></tr>
-                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">CDI query rate</td><td className="py-3">25-35%</td><td className="py-3">30%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">ACDIS benchmark. Shown here as context for the signal — query reduction is not included as a direct financial line in the calculator.</p></TooltipContent></Tooltip>
-                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Query reduction %</td><td className="py-3">15-35%</td><td className="py-3">25%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Expected reduction in CDI queries when documentation is more complete at point of care.</p></TooltipContent></Tooltip>
-                      <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Cost per query</td><td className="py-3">$40-$60</td><td className="py-3">$50</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">CDI specialist time cost per query including creation, tracking, and follow-up. Based on ACDIS productivity benchmarks.</p></TooltipContent></Tooltip>
-                    </tbody>
-                  </table>
-                </div>
-              </CollapsibleSection>
-            </div>
-
-            <div className="px-6">
-              <CollapsibleSection sectionId="honest-limits" title="The Honest Limits" subtitle="What we can prove, what we can support, and what we can only enable in inpatient">
-                <div className="space-y-6">
-                  <p className="text-[15px] text-black leading-relaxed">Inpatient revenue is team-produced. Documentation is step one, but CDI, coding, and clinical operations all affect the final outcome. We're honest about what documentation improvement can and can't claim credit for.</p>
-                  <div className="grid gap-4">
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#22C55E] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Measure This</h4></div>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                        <li><strong>Documentation time per note type:</strong> EHR session data for H&Ps, progress notes, discharge summaries. Visible in weeks.</li>
-                        <li><strong>CDI query rates:</strong> CDI departments track this daily. Before/after comparison is clean and fast.</li>
-                        <li><strong>CMI trends:</strong> Claims data, tracked quarterly. Compare Abridge providers vs. control group.</li>
-                        <li><strong>Note completeness:</strong> CDI can assess documentation quality directly. Audit-ready evidence.</li>
-                        <li><strong>Discharge documentation lag:</strong> Time from discharge order to completed discharge summary is an EHR-measurable metric.</li>
-                        <li><strong>H&P completion vs. CMS 24-hour rule:</strong> EHR timestamps show whether H&Ps are landing inside the regulatory window. Direct measurement of whether ambient is closing the front of the documentation cycle.</li>
-                        <li><strong>Obs/IP status defense:</strong> Medical necessity denial rates by root cause are tracked by revenue cycle.</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#F59E0B] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Influence This</h4></div>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                        <li><strong>DRG accuracy:</strong> Documentation is the input; CDI, coding, and payer response determine the output. Trackable, but multi-factorial.</li>
-                        <li><strong>Denial prevention:</strong> Documentation-related denials are identifiable. Requires 6+ months of data to see trends.</li>
-                        <li><strong>Readmission-related documentation:</strong> Better discharge summaries may reduce readmissions, but many factors contribute.</li>
-                        <li><strong>Billing cycle (DNFB days):</strong> Faster H&P + cleaner progress notes pull CDI engagement forward, reducing end-of-stay query backlog. Discharge summary timing dominates DNFB and is outside today's product scope. Track as a working-capital influence signal — don't promise specific day reductions yet.</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#EF4444] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Only Enable This</h4></div>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                        <li><strong>Length of stay:</strong> Many factors drive LOS beyond documentation — staffing, bed management, discharge planning, social determinants. We don't model it.</li>
-                        <li><strong>Discharge summary impact:</strong> Tracked as narrative today; modeled in dollars when discharge summary capture ships in Q3 2026.</li>
-                        <li><strong>Rounding efficiency:</strong> Real in hours, harder to convert to dollars. We show hours, not revenue.</li>
-                        <li><strong>Retention:</strong> Long-term measurement needed. Track, but don't claim causation prematurely.</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div className="bg-white rounded-lg p-5 border-l-2 border-[#EA2C00]">
-                    <p className="text-sm text-[#666666] leading-relaxed"><strong className="text-black">Our philosophy:</strong> We'd rather show you a defensible DRG improvement number based on CDI data than a speculative LOS reduction based on assumptions. Key variables in our model are editable — because your CDI team knows your gaps better than any default can.</p>
-                  </div>
-                </div>
-              </CollapsibleSection>
-            </div>
-
-            <div className="px-6">
-              <CollapsibleSection sectionId="validation-path" title="The Validation Path" subtitle="How to prove this with your hospitalist program's data">
-                <div className="space-y-6">
-                  <p className="text-[15px] text-black leading-relaxed">Inpatient has an advantage: your CDI department already tracks most of the metrics you need. Here's how to leverage that existing infrastructure for a credible ROI story.</p>
-                  <div className="space-y-4">
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">Before Implementation</h4><span className="text-xs text-[#888888] font-medium">Baseline period</span></div>
-                      <p className="text-sm text-[#666666] mb-3">Work with CDI and coding to establish baselines. Most of this data already exists.</p>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                        <li>12 months of CMI data by hospitalist — you need provider-level granularity</li>
-                        <li>CDI query rates by provider and query type</li>
-                        <li>DRG denial rates with documentation-related root cause analysis</li>
-                        <li>Documentation time estimates (if EHR data is available)</li>
-                        <li>CC/MCC capture rates — your CDI team tracks this</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 90 Days</h4><span className="text-xs text-[#888888] font-medium">Early signal</span></div>
-                      <p className="text-sm text-[#666666] mb-3">CDI query reduction shows up fast. CMI takes longer because of claims lag.</p>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                        <li>Documentation time by note type — H&Ps, progress notes, discharges</li>
-                        <li>CDI query rate trends (this is often the earliest financial signal)</li>
-                        <li>Note quality assessment from CDI perspective</li>
-                        <li>Hospitalist satisfaction surveys — qualitative signal matters</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 6-12 Months</h4><span className="text-xs text-[#888888] font-medium">Revenue validation</span></div>
-                      <p className="text-sm text-[#666666] mb-3">CMI and denial data become statistically meaningful. This is your board presentation window.</p>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                        <li>Year-over-year CMI comparison by provider cohort</li>
-                        <li>CC/MCC capture rate trends</li>
-                        <li>DRG denial rate trends — isolate documentation-related categories</li>
-                        <li>CDI productivity metrics — are CDI specialists covering more cases?</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 18+ Months</h4><span className="text-xs text-[#888888] font-medium">Long-term impact</span></div>
-                      <p className="text-sm text-[#666666] mb-3">Retention and culture shifts. Don't rush this measurement.</p>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                        <li>Hospitalist turnover: Abridge-enabled program vs. pre-implementation</li>
-                        <li>LOS trends (with appropriate controls for patient acuity changes)</li>
-                        <li>Exit interview data — is documentation still cited as a burnout factor?</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </CollapsibleSection>
-            </div>
-
-            <div className="px-6">
-              <CollapsibleSection sectionId="connected-value" title="Connected Value" subtitle="How inpatient documentation connects to your organization">
-                <div className="space-y-4 text-[15px] text-black leading-relaxed">
-                  <p>Inpatient sits at the center of the hospital value chain. Documentation here connects to almost every other care setting:</p>
-                  <div className="space-y-4 mt-4">
-                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">ED → Inpatient (upstream feed)</h4><p className="text-sm text-[#666666] leading-relaxed">ED documentation quality directly affects the starting point of inpatient care. When ED notes capture presenting conditions and comorbidities completely, CDI teams have a stronger foundation. We quantify this in the ED methodology to avoid double-counting.</p></div>
-                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Nursing → Inpatient (CC/MCC support)</h4><p className="text-sm text-[#666666] leading-relaxed">Nursing documentation captures clinical observations that support CC/MCC coding — skin assessments, fall risk documentation, nutritional status. When nursing notes are complete, CDI teams have additional evidence to support DRG accuracy.</p></div>
-                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Inpatient → Outpatient (discharge quality)</h4><p className="text-sm text-[#666666] leading-relaxed">Complete discharge summaries improve post-discharge follow-up care. When the PCP receives a comprehensive discharge note, medication reconciliation, follow-up, and care continuity all improve. This connects to readmission reduction, though attribution is indirect.</p></div>
-                  </div>
-                  <p className="text-[#666666] italic mt-4">We don't sum cross-setting values into the inpatient model — the attribution gets complex when value flows through multiple teams. But when building a system-level business case, these connections matter.</p>
-                </div>
-              </CollapsibleSection>
-            </div>
-          </div>
-        </div>
+        <IPValueArchitectureSection />
 
         <motion.div className="mt-4 mb-10 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
@@ -700,7 +1177,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
           </button>
         </motion.div>
 
-        <p className="text-xs text-[#888888] leading-relaxed mb-6">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial outcomes.</p>
+        <p className="text-xs text-[#888888] leading-relaxed mb-6">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting.</p>
 
         <div className="mb-8">
           <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">Related Methodologies</p>
@@ -722,7 +1199,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
       </div>
 
       {isExporting && (
-        <div className="fixed bottom-4 right-4 bg-[#EA2C00] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50" data-testid="toast-pdf-download">
+        <div className="fixed bottom-4 right-4 bg-[#EA2C00] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50" data-testid="toast-pdf-download">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-sm font-medium">Preparing your PDF...</span>
         </div>

@@ -29,8 +29,11 @@ function computeRealizedBaseline(driver: ExploreDriver, entry: MeasureDriverEntr
   const latest = sortedMonthly[sortedMonthly.length - 1];
   const effWith = entry.isMonthlyMode && latest ? latest.withAbridge : entry.withAbridge;
   const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;
-  const delta = effWith - effWithout;
-  return Math.round(delta * entry.valuePerUnit * (entry.attributionPercent / 100) * (entry.realizationPercent / 100));
+  const delta = entry.lowerIsBetter ? effWithout - effWith : effWith - effWithout;
+  const scale = (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
+    ? entry.scaleValue / entry.scaleDivisor
+    : 1;
+  return Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100));
 }
 
 function computeScaleFactor(
@@ -301,7 +304,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={6}
+        currentStep={7}
         totalSteps={7}
         stepName="Forecast"
         onBack={onBack}

@@ -1,10 +1,15 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, ArrowRight, Activity, Building2, Heart, Loader2, ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ArrowLeft, Download, ArrowRight, Activity, Building2, Heart, Loader2 } from "lucide-react";
 import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
-import { CollapsibleSection, ImpactBadge, type BadgeType } from "@/components/methodology/MethodologyShared";
+import {
+  CollapsibleSection,
+  ImpactBadge,
+  NarrativeText,
+  type BadgeType,
+  type DomainName,
+} from "@/components/methodology/MethodologyShared";
 
 interface MethodologyOutpatientProps {
   onBack: () => void;
@@ -13,388 +18,1069 @@ interface MethodologyOutpatientProps {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type OPDomainName = "CAPACITY" | "WORKFORCE" | "REVENUE" | "QUALITY";
+type NodeCol = { l: string; b: string };
+type NodeDetail = { cols: NodeCol[]; grad?: string };
 
-type OPMechanism = { label: string; description: string };
-
-type OPMetricItem = {
+type ChainNode = {
+  key: string;
   label: string;
-  badge: BadgeType;
-  explanation: string;
-  whenToExpect?: string;
-  formula?: string;
+  sub: string;
+  isSource?: true;
+  isOutcome?: true;
+  detail?: NodeDetail;
 };
 
-type OPDomainData = {
-  domain: OPDomainName;
-  tagline: string;
-  outcomes: { label: string; direction: "↑" | "↓" }[];
-  problem: string;
-  mechanisms: OPMechanism[];
+type TimelineMetric = { name: string; source: string; badge: string; why?: string };
+
+type TimelineStage = {
+  window: string;
+  desc: string;
+  metrics: TimelineMetric[];
+  callout: string;
 };
 
-const opDomainColors: Record<OPDomainName, string> = {
-  CAPACITY: "#888888",
-  WORKFORCE: "#555555",
-  REVENUE: "#EA2C00",
-  QUALITY: "#1A1A1A",
+type MatterBox = { tag: string; body: string };
+
+type FormulaVar = {
+  v: string;
+  op?: string;
+  kind: 'input' | 'benchmark' | 'default' | 'derived';
+  hint?: string;
+};
+type FormulaStep = { vars: FormulaVar[]; result: string; isFinal?: boolean };
+type FrameworkItem = {
+  domain: DomainName;
+  tag: 'modeled' | 'tracked';
+  narrative: string;
+  chain: string[];
+  chainOutput?: string;
+  steps?: FormulaStep[];
+  note?: string;
 };
 
-// ─── Domain Methodology Data ──────────────────────────────────────────────────
+type OPDomainCardData = {
+  domain: DomainName;
+  number: string;
+  badge: string;
+  northStar: string;
+  direction: '↑' | '↓';
+  northStarSub: string;
+  matterBoxes: MatterBox[];
+  matterLayout?: '2col';
+  alsoNote?: string;
+  chain: ChainNode[];
+  timeline: {
+    signal: TimelineStage;
+    trend: TimelineStage;
+    proof: TimelineStage;
+  };
+};
 
-const opDomainData: OPDomainData[] = [
+// ─── Domain Data ──────────────────────────────────────────────────────────────
+
+const opDomainCards: OPDomainCardData[] = [
+  // ── CAPACITY ──────────────────────────────────────────────────────────────
   {
-    domain: "CAPACITY",
-    tagline: "Patient Access & Clinical Time",
-    outcomes: [
-      { label: "Patients seen per provider", direction: "↑" },
-      { label: "After-hours charting", direction: "↓" },
+    domain: 'CAPACITY',
+    number: 'Domain 1 of 4',
+    badge: 'Panel Capacity & Appointment Access',
+    northStar: 'Patient Access',
+    direction: '↑',
+    northStarSub: "Third next available, same-day slot availability, and panel size are the metrics — but Patient Access is the outcome. When providers spend less time documenting per visit, they have more time for visits.",
+    matterBoxes: [
+      {
+        tag: 'Matters most if…',
+        body: "Your third next available appointment is above benchmark, same-day access is limited, providers are running behind schedule due to documentation, or you're competing on access in a market with alternative care options.",
+      },
     ],
-    problem: "The average outpatient encounter generates 8–15 minutes of documentation. Multiplied by 20 patients per day and 240 clinic days per year, that's 640–1,200 hours of physician documentation time annually — per provider. Most of it happens after clinic ends. The time saved per encounter is modest; the scale is the leverage.",
-    mechanisms: [
-      { label: "Documentation time per encounter", description: "How long the physician spends in the EHR charting each patient. Ambient capture reduces this from 8–15 minutes of writing to 2–4 minutes of note review — the draft exists before the patient leaves the room." },
-      { label: "Same-day note closure rate", description: "The share of encounter notes signed before the provider leaves clinic. Goes from 40–60% baseline to 85–95% for consistent Abridge users. This metric eliminates the carry-forward queue that fuels pajama time." },
-      { label: "Patient access slots", description: "When documentation time drops, providers have headroom to see additional patients — or to stop working after hours. For practices with wait lists, this headroom converts to incremental volume. For practices at capacity, it converts to physician wellbeing." },
-      { label: "Third-next-available appointment", description: "The industry standard outpatient access metric — days until a new patient can be seen. When providers close more of their schedule by seeing additional patients with reclaimed time, this number shrinks. Moves slowly but compounds." },
+    chain: [
+      { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
+      {
+        key: 'doctime', label: 'Visit Documentation Time ↓', sub: 'per encounter',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'Minutes spent on documentation per outpatient visit — captured via EHR session timestamps. This is the primary lever Abridge directly controls in the outpatient setting.' },
+            { l: 'Data source', b: 'EHR audit logs. Time from encounter open to note sign per provider. No additional infrastructure needed — compare same providers before and after Abridge adoption.' },
+            { l: 'When it moves', b: 'Visible within 4–8 weeks for consistent users. The most reliable early signal before any downstream access metrics are available.' },
+          ],
+          grad: "When documentation time reaches a consistent low across your panel, providers have recaptured shift time. That's the signal to start watching whether same-day availability and appointment density are increasing.",
+        },
+      },
+      {
+        key: 'clintime', label: 'Available Clinical Time ↑', sub: 'per provider per shift',
+        detail: {
+          cols: [
+            { l: 'What it represents', b: "Minutes freed from documentation that become available for additional patient encounters, care coordination, or inbox management — without extending the provider's workday." },
+            { l: 'How to observe it', b: 'Aggregate EHR session time reduction × provider panel size. Also visible in appointment density changes and same-day slot fill rates as scheduling utilizes recaptured time.' },
+            { l: 'Why it matters', b: "Clinical time is the constraint in outpatient access. When documentation consumes less of it, the same provider can handle more appointments — without asking anyone to work longer." },
+          ],
+        },
+      },
+      {
+        key: 'panelcap', label: 'Panel Capacity ↑', sub: 'visits the panel can absorb',
+        detail: {
+          cols: [
+            { l: 'What it means', b: 'The total number of patient visits a provider\'s panel can accommodate per day or week — a function of available clinical time and visit length.' },
+            { l: 'The documentation connection', b: 'If a provider saves 3 minutes per visit and sees 24 patients per day, that\'s 72 minutes of documentation time returned — enough for 1–2 additional visits at typical outpatient visit lengths.' },
+            { l: 'How scheduling sees it', b: 'Recaptured time shows up as available appointment slots. Scheduling teams see it as the ability to offer same-day or next-day access they couldn\'t offer before.' },
+          ],
+        },
+      },
+      {
+        key: 'access', label: 'Patient Access ↑', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The ease with which patients can get an appointment — measured by Third Next Available (TNA) appointment days, same-day slot availability rate, and new patient acceptance rate.' },
+            { l: 'Data source', b: 'Scheduling system. Third Next Available is the primary industry standard metric — it reflects true availability, not just open slots on a calendar. Track by provider and department.' },
+            { l: 'Why access matters competitively', b: "In markets where patients choose providers, access is a competitive differentiator. Reducing TNA from 21 days to 14 days can measurably affect patient satisfaction scores and market share." },
+          ],
+        },
+      },
+      {
+        key: 'sameday', label: 'Same-Day Availability ↑', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The percentage of appointment slots that remain available for same-day scheduling — a direct measure of panel flexibility and documentation-time efficiency.' },
+            { l: 'Data source', b: 'Scheduling system. Track same-day fill rate and how often same-day slots are offered versus unavailable by provider.' },
+            { l: 'Why it\'s separate from TNA', b: "Third Next Available measures planned access. Same-day availability measures urgent access — the ability to accommodate a patient who calls this morning. Both improve when documentation time decreases." },
+          ],
+        },
+      },
     ],
+    timeline: {
+      signal: {
+        window: 'Week 4–8',
+        desc: 'Documentation time drops',
+        metrics: [
+          { name: 'Post-Visit Note Completion Time', source: 'EHR audit logs · time from encounter end to note sign · per-provider · pre/post comparison', badge: 'Week 4–8', why: "The upstream driver of everything in this domain. If providers aren't completing notes faster, no downstream access or throughput improvements are possible — this is the first gate to check." },
+          { name: 'Same-Day Note Completion Rate', source: "EHR data · % of outpatient notes signed same calendar day as encounter · Abridge vs. baseline", badge: 'Week 4–8', why: "Notes signed the same day mean no evening documentation backlog and no charge lag. It's the cleanest early proof that real-time documentation is taking hold, not just deferred." },
+        ],
+        callout: "Graduation signal: When documentation time reaches a consistent low and same-day note completion rate is high, providers have recaptured shift time. Start watching whether scheduling teams are seeing new appointment availability.",
+      },
+      trend: {
+        window: 'Month 2–4',
+        desc: 'Scheduling absorbs recaptured time',
+        metrics: [
+          { name: 'After-Hours EHR Activity', source: 'EHR session logs · documentation activity outside scheduled clinic hours · per-provider · pajama time proxy', badge: 'Month 2–4', why: "Pajama time dropping means providers have genuinely recaptured shift hours — not just deferred work to the next day. Without after-hours activity falling, same-day slot availability won't open up." },
+          { name: 'Same-Day Appointment Slot Availability', source: 'Scheduling system · % of shifts with same-day slots open vs. fully booked · by provider', badge: 'Month 2–4', why: "The first scheduling signal that recaptured documentation time is turning into real capacity. Watch this before TNA improves — it moves faster because it reflects day-level flexibility, not average access." },
+        ],
+        callout: '',
+      },
+      proof: {
+        window: 'Month 4–12',
+        desc: 'Access metrics confirm',
+        metrics: [
+          { name: 'Third Next Available Appointment', source: 'Scheduling system · days from "today" to third open appointment slot · industry-standard access metric · track monthly by provider and department', badge: 'Month 4–8', why: "The gold standard outpatient access metric. It reflects true availability, not just open calendar slots. Takes 4–8 months because scheduling systems need time to fill new capacity and establish a trend." },
+          { name: 'Panel Size per Provider', source: 'Practice management system · active patients per provider · trended quarterly · higher panel size = more patients served', badge: 'Month 6–12', why: "A rising panel means the practice is absorbing more patients with the same providers — the ultimate proof that documentation efficiency translated to real access expansion, not just returned hours." },
+        ],
+        callout: "Why Third Next Available: It's the gold standard outpatient access metric because it reflects true availability, not just calendar white space. A declining TNA shows that documentation efficiency is translating into schedulable capacity — not just hours returned to providers.",
+      },
+    },
   },
+
+  // ── WORKFORCE ─────────────────────────────────────────────────────────────
   {
-    domain: "WORKFORCE",
-    tagline: "Clinician Wellbeing & Retention",
-    outcomes: [
-      { label: "Physician satisfaction", direction: "↑" },
-      { label: "Voluntary turnover", direction: "↓" },
+    domain: 'WORKFORCE',
+    number: 'Domain 2 of 4',
+    badge: 'Provider Wellbeing & Retention',
+    northStar: 'Voluntary Turnover',
+    direction: '↓',
+    northStarSub: "Outpatient providers spend more time on documentation than nearly any other clinical activity. The average office-based physician spends 2 hours per day on EHR-related tasks outside of patient care — most of it after clinic hours.",
+    matterBoxes: [
+      {
+        tag: 'CFO conversation',
+        body: "Replacing a primary care physician costs an estimated $250K–$350K in recruiting, credentialing, and practice rebuild costs. Replacing a specialist is often higher. Reducing documentation-driven turnover has direct financial impact.",
+      },
+      {
+        tag: 'CMO conversation',
+        body: "Documentation burden is the #1 cited driver of outpatient physician burnout. It shows up specifically as pajama time — the hours spent finishing notes after patients have left and the clinic has closed for the day.",
+      },
     ],
-    problem: "Medscape has ranked documentation and EHR burden as the #1 or #2 cause of physician burnout for over a decade. In outpatient, it manifests as a predictable, measurable daily ritual: clinic ends, patients go home, physician opens the laptop. 'Pajama time' is the term physicians use for it. It's not a metaphor — it's EHR session data logged between 8pm and midnight.",
-    mechanisms: [
-      { label: "After-hours documentation time (pajama time)", description: "Time spent charting outside scheduled clinical hours. EHR session logs show exactly when this happens and for how long. When notes draft themselves during the encounter, the post-clinic queue becomes a review queue — and that time returns to physicians." },
-      { label: "Same-day note closure rate", description: "The behavioral outcome that correlates most directly with burnout reduction. When providers sign notes before leaving clinic instead of carrying them home, the psychological boundary between work and home is restored." },
-      { label: "Burnout score on validated instruments", description: "Mini Z, Maslach Burnout Inventory, or internal pulse surveys. Track the documentation burden subscore specifically among Abridge users — it's more attributable and moves faster than the overall composite." },
-      { label: "Locum utilization and vacancy rate", description: "Locum coverage spikes when retention falters — at 2–3× the cost of employed physicians. Track locum spend as a lagging indicator of retention pressure. When it starts declining, the workforce story is working." },
+    matterLayout: '2col',
+    alsoNote: "Providers who aren't burned out document more thoroughly (Revenue → E/M accuracy) and are more present in patient conversations (Quality → patient-reported experience). The workforce and quality stories reinforce each other.",
+    chain: [
+      { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
+      {
+        key: 'pajama', label: 'After-Visit Charting Time ↓', sub: 'pajama time',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'Time spent charting after clinic hours end — captured via EHR session logs comparing activity timestamps to scheduled clinic end time.' },
+            { l: 'Data source', b: 'EHR audit logs. Session activity after last scheduled appointment per provider, pre- and post-Abridge adoption. No survey needed.' },
+            { l: 'The outpatient specificity', b: "Outpatient pajama time is driven by volume. A provider seeing 24 patients per day who carries 3 minutes of incomplete documentation per visit enters the evening with 72 minutes of charting backlog. Ambient capture eliminates the backlog at the point of care." },
+          ],
+          grad: "When post-clinic EHR session time approaches zero consistently, providers have their evenings back. The next signal to watch is whether that recovery translates to wellbeing scores at the next survey cycle.",
+        },
+      },
+      {
+        key: 'burden', label: 'Evening Documentation Burden ↓', sub: 'clinic ends when clinic ends',
+        detail: {
+          cols: [
+            { l: 'What it captures', b: 'The total accumulation of documentation left incomplete after the last patient leaves — inbox responses, prior authorization documentation, and unsigned notes all compound into the evening burden.' },
+            { l: 'Why it compounds', b: 'For outpatient providers, documentation burden is a nightly reset problem — each day starts fresh but the incomplete work from the previous evening competes with the day ahead. Ambient capture prevents the backlog from forming.' },
+            { l: 'How to observe it', b: 'EHR session activity after 6pm by provider. InBasket message response rates and timing. Patient satisfaction with provider availability (a proxy for attentiveness).' },
+          ],
+        },
+      },
+      {
+        key: 'wellbeing', label: 'Provider Wellbeing ↑', sub: 'leading indicator of retention',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'Physician satisfaction, burnout level, and perceived work-life balance — captured through a validated burnout assessment survey or institutional engagement instrument.' },
+            { l: 'Data source', b: 'Most health systems use institutional surveys or AMA/ACP-provided burnout instruments. Compare Abridge adopters to non-adopters at the same site. Quarterly cadence is sufficient.' },
+            { l: 'Why it predicts turnover', b: "Wellbeing scores respond within 2–4 months of pajama time reduction. That's 6–8 months before voluntary turnover data becomes statistically meaningful. Survey data lets you tell the retention story proactively." },
+          ],
+        },
+      },
+      {
+        key: 'turnover', label: 'Voluntary Turnover ↓', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The percentage of outpatient physicians and advanced practice providers who voluntarily leave their practice in a given year.' },
+            { l: 'Data source', b: 'HR data. Voluntary departure rate by department. Compare Abridge providers to non-Abridge providers, controlling for specialty and seniority.' },
+            { l: 'The financial case', b: "At $250K–$350K per replacement for primary care and higher for specialists, even one additional retention per year covers a significant portion of program cost. Documentation burden is consistently cited in exit interviews as a contributing factor." },
+          ],
+        },
+      },
+      {
+        key: 'locum', label: 'Locum & Temp Spend ↓', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The cost and volume of locum, agency, and temporary provider coverage used to fill gaps during vacancies and during periods of reduced provider availability.' },
+            { l: 'Data source', b: 'Finance and staffing data. Locum hours × rate per shift. Compare year-over-year as retention improves.' },
+            { l: 'Why it shows up quickly', b: "Locum spend responds within months of a departure and is tracked in real time. It's often the number that CFOs associate most concretely with turnover cost." },
+          ],
+        },
+      },
     ],
+    timeline: {
+      signal: {
+        window: 'Week 4–8',
+        desc: 'Pajama time drops',
+        metrics: [
+          { name: 'After-Hours Charting Time (Pajama Time)', source: 'EHR session logs · documentation activity after scheduled clinic end · per-provider · most direct Abridge signal', badge: 'Week 4–8', why: "Documentation burden shows up first in after-hours work. If pajama time isn't dropping, adoption needs to be investigated before expecting any retention improvements downstream." },
+          { name: 'Post-Visit Note Completion Time', source: 'EHR timestamps · time from encounter end to note sign · proxy for real-time documentation adoption', badge: 'Week 4–8', why: "Confirms that documentation is happening during the encounter, not after. Faster note completion means less carry-home cognitive load per shift — the root cause of burnout." },
+        ],
+        callout: "Why start here: EHR audit data is objective and requires no survey coordination. Pajama time reduction is the metric physicians talk about to each other — and that word-of-mouth conversation is your most effective adoption strategy.",
+      },
+      trend: {
+        window: 'Month 2–5',
+        desc: 'Wellbeing signals emerge',
+        metrics: [
+          { name: 'Provider Wellbeing Score', source: 'Validated burnout assessment survey · Abridge vs. non-Abridge providers at same site · quarterly', badge: 'Month 2–4', why: "Burnout improvement lags documentation relief by 2–4 months — the psychological recovery takes time. This is the mechanism that connects reduced documentation burden to eventual retention improvement." },
+          { name: 'Intent to Stay', source: 'Institutional engagement survey or validated single-item measure · trended quarterly', badge: 'Month 3–5', why: "Intent to stay moves before actual departures, giving you a window to act. Watch for divergence between Abridge adopters and non-adopters before annual turnover data is available." },
+          { name: 'Satisfaction with Documentation Workflow', source: 'EHR satisfaction survey or department pulse · Abridge adopters vs. non-adopters', badge: 'Month 2–4', why: "The most direct attitudinal signal — do providers feel the tool is helping? Tracks separately from wellbeing because satisfaction can improve faster and is a leading indicator of adoption sustainability." },
+        ],
+        callout: "The CFO bridge: Wellbeing scores don't appear on a balance sheet. Build the connection explicitly: improved wellbeing is a leading indicator of lower voluntary departure intent, which translates directly into reduced replacement and locum costs at quantifiable rates.",
+      },
+      proof: {
+        window: 'Month 12–18',
+        desc: 'Retention and cost confirmed',
+        metrics: [
+          { name: 'Voluntary Turnover Rate', source: 'HR data · annual voluntary departures / headcount · Abridge providers vs. non-Abridge or pre-adoption baseline', badge: 'Month 12–18', why: "The lagging outcome — takes 12–18 months because departure decisions have long lead times and are measured annually. Meaningful only in comparison to a baseline cohort, not in isolation." },
+          { name: 'Locum & Agency Utilization', source: 'Finance / staffing data · locum hours and cost per open shift · year-over-year comparison', badge: 'Month 9–18', why: "Locum spend drops when fewer providers are leaving or on medical leave from burnout. It's the financial proof of the workforce story that CFOs can see directly in the budget." },
+        ],
+        callout: "Why the long timeline: Voluntary turnover is a lagging indicator — you need 12–18 months before departure rates are statistically meaningful. The strategy is to demonstrate pajama time reduction early, link it to wellbeing at Month 4, and let turnover data confirm the story as it matures.",
+      },
+    },
   },
+
+  // ── REVENUE ───────────────────────────────────────────────────────────────
   {
-    domain: "REVENUE",
-    tagline: "wRVU Capture & Denial Prevention",
-    outcomes: [
-      { label: "wRVU per encounter", direction: "↑" },
-      { label: "Documentation-related denials", direction: "↓" },
+    domain: 'REVENUE',
+    number: 'Domain 3 of 4',
+    badge: 'E/M Accuracy & Denial Prevention',
+    northStar: 'Revenue Per Visit',
+    direction: '↑',
+    northStarSub: "E/M coding in outpatient runs on Medical Decision Making. When documentation captures the full complexity of the clinical conversation, codes reflect what was actually managed — and revenue per visit reflects the work actually done.",
+    matterBoxes: [
+      {
+        tag: 'Matters most if…',
+        body: "Your E/M level distribution is skewed toward lower codes despite high-complexity panels, your first-pass claim acceptance rate is below 95%, or your revenue cycle team is citing documentation gaps as a root cause of write-offs.",
+      },
     ],
-    problem: "Outpatient E/M coding runs from 99211 to 99215. Under time pressure, physicians default to mid-level codes — not because the clinical work was simple, but because there wasn't time to document the complexity. The result is a systematic pattern of undercoding that shows up in E/M distribution data and is directly recoverable when documentation captures what actually happened.",
-    mechanisms: [
-      { label: "E/M level distribution (99211–99215)", description: "The five outpatient E/M levels. When documentation captures history, exam findings, and clinical decision-making with the specificity that supports higher-complexity codes, the distribution shifts toward 99214 and 99215 where the work was done. Claims data shows this shift directly." },
-      { label: "wRVU per encounter", description: "The aggregate revenue signal that rolls up E/M level accuracy. Published studies and deployment observations show 2–7% wRVU lift from better documentation, depending on baseline quality and specialty. At $33.40/wRVU (CMS 2026 MPFS), even a 3% lift across 10,000 encounters per provider is meaningful annual revenue." },
-      { label: "Documentation-related denial rate", description: "Medical necessity denials that occur because the documentation didn't support the level of care billed. RCM teams track denial root cause — documentation-related denials are an identifiable subset. 30–40% of claim denials are unappealable because the documentation gap existed at the time of service." },
-      { label: "Charge lag reduction", description: "Days from service to billing. When notes are signed same-day instead of 2–5 days later, the billing queue advances — improving cash flow and reducing the risk of late notes missing billing windows." },
+    alsoNote: "HCC capture for Medicare Advantage contracts. Accurate documentation of chronic conditions supports accurate risk adjustment for value-based care contracts — connecting the revenue story to the quality infrastructure. Coding accuracy, not upcoding.",
+    chain: [
+      { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
+      {
+        key: 'completeness', label: 'Documentation Completeness ↑', sub: 'full clinical conversation captured',
+        detail: {
+          cols: [
+            { l: 'What it means', b: "The degree to which a note captures the full clinical encounter — presenting complaint, HPI depth, relevant history, exam findings, and Medical Decision Making. Under time pressure, providers document the minimum. Ambient capture preserves what was actually discussed." },
+            { l: 'Why the conversation is the evidence', b: "The medical decision-making that justifies a Level 4 or Level 5 code happens in the conversation — the review of prior records, the weighing of diagnostic options, the reasoning behind the plan. If that reasoning isn't in the note, the code isn't supportable." },
+            { l: 'How to measure it', b: 'Charge lag (days to bill) is the behavioral proxy — faster, more complete notes close the billing cycle sooner. E/M level distribution shifts are the financial signal.' },
+          ],
+          grad: "When same-day note completion rate reaches a consistent high and charge lag drops, the documentation foundation is set. Start watching E/M distribution data as the next signal.",
+        },
+      },
+      {
+        key: 'emlevels', label: 'E/M Level Support ↑', sub: 'visit complexity documented',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The degree to which visit notes contain the documentation elements required to support higher E/M levels — specifically the Medical Decision Making complexity that distinguishes Level 3 from Level 4 and Level 4 from Level 5.' },
+            { l: 'The under-coding pattern', b: "Providers under time pressure default to lower E/M codes because the note doesn't support the complexity of what was actually managed. This is revenue earned but not captured — and it happens at scale across a full panel." },
+            { l: 'Data source', b: 'Billing system. Pull E/M distribution per provider and compare pre/post Abridge adoption. Use same-provider comparison to control for patient acuity differences.' },
+          ],
+        },
+      },
+      {
+        key: 'mdm', label: 'Medical Decision Making Documented ↑', sub: 'the "why" behind the plan',
+        detail: {
+          cols: [
+            { l: 'What it captures', b: "The clinical reasoning behind diagnosis and treatment decisions — the provider's assessment of the number of diagnoses, data reviewed, and risk of complications. Under AMA 2021 guidelines, MDM is the primary E/M level driver." },
+            { l: 'Why the reasoning is often missing', b: "Providers articulate their reasoning during the encounter — out loud, to the patient. Under time pressure, that reasoning doesn't make it into the note. Ambient capture preserves it without requiring the provider to type it separately." },
+            { l: 'Where it matters most', b: 'Level 4 (moderate MDM) and Level 5 (high MDM) documentation. These are the codes most frequently under-captured and most frequently challenged in payer audits.' },
+          ],
+        },
+      },
+      {
+        key: 'revenuepervisit', label: 'Revenue Per Visit ↑', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'Average wRVUs per encounter × conversion factor, net of payer mix adjustments. The primary financial metric for outpatient physician productivity and practice revenue.' },
+            { l: 'Data source', b: 'Billing system. Per-provider comparison. Show both the mean and the E/M distribution — a distribution shift toward higher codes often looks small in the mean but is significant in aggregate.' },
+            { l: 'Expectation setting', b: 'Outpatient E/M improvement is recovering revenue already earned but not fully captured. Expected lift of 5–8% in wRVU per encounter for consistent users. The distribution shift matters more than the mean.' },
+          ],
+        },
+      },
+      {
+        key: 'denials', label: 'Denial Rate ↓', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: "Claims denied by payers for documentation-related reasons — primarily insufficient medical necessity documentation or E/M level not supported by the note." },
+            { l: 'Data source', b: 'Revenue cycle system. Isolate documentation-related denials from coverage and eligibility denials. First-pass acceptance rate is the positive framing of this metric.' },
+            { l: 'Why documentation denials are preventable', b: "Unlike eligibility or authorization denials, documentation-related denials happen because the note didn't contain what the payer needed to adjudicate. When the note captures the clinical reasoning, those denials don't happen." },
+          ],
+        },
+      },
     ],
+    timeline: {
+      signal: {
+        window: 'Week 2–8',
+        desc: 'Documentation behavior shifts',
+        metrics: [
+          { name: 'Documentation Time Per Visit ↓', source: 'EHR audit logs · active documentation time per encounter · pre/post per-provider · most direct Abridge signal', badge: 'Week 2–4', why: "When documentation time per visit drops, the note is being completed during or immediately after the encounter rather than in the evening. This is the upstream behavior that E/M accuracy, first-pass rates, and wRVU per encounter all depend on." },
+          { name: 'Same-Day Note Completion Rate ↑', source: 'EHR data · % of outpatient notes signed same calendar day as encounter · Abridge providers vs. baseline', badge: 'Week 4–8', why: "Notes signed the same day are the foundation for accurate coding, same-day charge submission, and lower denial risk. When this rate is consistently high, the documentation behavior has changed — the revenue metrics follow." },
+        ],
+        callout: "Why start here: E/M level distribution, first-pass acceptance rate, and wRVU per encounter all follow from documentation completeness. These metrics can't move if the notes aren't changing first — documentation behavior is the gate.",
+      },
+      trend: {
+        window: 'Month 1–5',
+        desc: 'Coding and billing signals emerge',
+        metrics: [
+          { name: 'E/M Level Distribution per Provider', source: 'Billing system · % of visits at each level (99202–99215) · same-provider pre/post comparison · show distribution, not just mean', badge: 'Month 1–3', why: "Complete notes enable accurate E/M coding at the level of care actually delivered. Watch the distribution shift toward appropriate higher levels — the story is in the mix, not just the average." },
+          { name: 'First-Pass Claim Acceptance Rate', source: 'Revenue cycle system · % of claims accepted without denial or revision on first submission · trended monthly', badge: 'Month 1–3', why: "Notes with sufficient specificity pass coding review without queries. A rising first-pass rate means less rework, faster cash flow, and proof that note quality is improving before the revenue numbers confirm it." },
+          { name: 'HCC Capture Rate', source: 'Coding or quality team · % of eligible Medicare Advantage patients with documented HCC codes · Abridge vs. baseline · connects revenue and quality stories', badge: 'Month 3–5', why: "Accurate chronic condition documentation allows HCC codes to be assigned — not upcoding, but complete capture. This bridges the revenue and quality stories: better documentation supports both risk adjustment and quality measure attribution." },
+        ],
+        callout: "The HCC connection: For Medicare Advantage panels, accurate chronic condition documentation supports both E/M level and HCC risk adjustment. These are not competing narratives — they're the same documentation quality story told to two different audiences.",
+      },
+      proof: {
+        window: 'Month 4–9',
+        desc: 'Revenue impact confirmed',
+        metrics: [
+          { name: 'wRVU Per Encounter', source: 'Billing system · per-provider pre/post · show distribution (99202–99215), not just mean · provider-level granularity required', badge: 'Month 3–6', why: "The financial proof that documentation completeness translates to appropriate reimbursement. Provider-level pre/post comparison shows the attribution — and the distribution shift (not just the mean) is the real signal." },
+          { name: 'Documentation-Related Denial Rate', source: 'Revenue cycle · documentation denials per 100 claims · isolated from coding and eligibility denials', badge: 'Month 4–9', why: "Denials caused by documentation gaps are entirely preventable. A declining rate is the clearest proof that note quality is consistently meeting payer standards — not just improving on average." },
+        ],
+        callout: "The honest attribution: E/M improvement is recovery, not inflation. Providers were managing the complexity — the documentation wasn't supporting the code. When the note reflects what happened, revenue per visit reflects the work actually done.",
+      },
+    },
   },
+
+  // ── QUALITY ───────────────────────────────────────────────────────────────
   {
-    domain: "QUALITY",
-    tagline: "Risk Capture & Care Gap Closure",
-    outcomes: [
-      { label: "HCC / RAF score accuracy", direction: "↑" },
-      { label: "Care gap closure rate", direction: "↑" },
+    domain: 'QUALITY',
+    number: 'Domain 4 of 4',
+    badge: 'HEDIS & Preventive Care Attribution',
+    northStar: 'Care Gap Closure Rate',
+    direction: '↑',
+    northStarSub: "Care gaps aren't just clinical failures — they're documentation failures. When preventive services and chronic disease management are delivered but not captured with the specificity quality systems require, HEDIS and STARS scores suffer even when care quality is high.",
+    matterBoxes: [
+      {
+        tag: 'Matters most if…',
+        body: "Your HEDIS composite scores are below benchmark despite high clinical quality, your value-based contracts include quality performance incentives tied to care gap closure, or your Medicare Advantage STARS rating affects CMS bonus payment eligibility.",
+      },
     ],
-    problem: "For practices with Medicare Advantage populations, HCC coding accuracy is the difference between being paid for the risk you're actually managing and being systematically underpaid for it. Chronic conditions discussed during the visit but not documented create HCC gaps that accumulate year over year — each missing diagnosis is a capitated payment reduction that compounds across the panel.",
-    mechanisms: [
-      { label: "HCC capture rate (MA populations)", description: "Hierarchical Condition Category coding drives Risk Adjustment Factor scores in Medicare Advantage. When ambient capture preserves the chronic condition documentation discussed during the visit, HCC gap rates fall and RAF scores reflect the actual complexity of the panel." },
-      { label: "Care gap closure (HEDIS measures)", description: "HEDIS-aligned quality measures — A1c documentation, blood pressure, preventive screenings — depend on documentation completeness. When the note captures what was discussed and ordered, care gap closure rates improve on population health dashboards and payer scorecards." },
-      { label: "Referral note completeness", description: "When primary care documentation is complete, specialists receive better clinical context — fewer repeat tests, faster diagnoses, better care continuity. Hard to quantify directly, but practices competing on value-based contracts cite this as a differentiator in specialist partnership conversations." },
-      { label: "MIPS / quality reporting performance", description: "MIPS quality scores aggregate documentation-dependent measures. As care gap closure and diagnosis specificity improve, MIPS quality category performance trends upward — affecting performance-based payment adjustments." },
+    alsoNote: "HCC capture and RAF score accuracy for value-based contracts. When chronic condition documentation is complete and specific, risk adjustment reflects the actual patient population — which protects per-member-per-month revenue in capitated arrangements.",
+    chain: [
+      { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
+      {
+        key: 'capture', label: 'Preventive & Chronic Care Captured ↑', sub: 'delivered care documented',
+        detail: {
+          cols: [
+            { l: 'What it means', b: "Preventive services (screenings, counseling, immunizations) and chronic disease management activities documented with the specificity quality measurement systems require — not just a notation that they were addressed." },
+            { l: 'The documentation gap', b: "Providers often deliver the care and document it briefly. Quality measurement systems require specific terminology, codes, and clinical context to attribute the service. When documentation is minimal, services are missed even when care is delivered." },
+            { l: 'What Abridge preserves', b: "The clinical conversation typically includes the preventive care discussion — the recommendation, the patient response, and the plan. Ambient capture preserves this specificity in the note automatically." },
+          ],
+          grad: "When post-visit note completeness reaches a consistent high for preventive and chronic care visits, the documentation foundation is in place. Start watching quality measure attribution rates as confirmation.",
+        },
+      },
+      {
+        key: 'attribution', label: 'Quality Measure Attribution ↑', sub: 'care mapped to measures',
+        detail: {
+          cols: [
+            { l: 'What it means', b: 'The degree to which documented clinical care can be attributed by quality measurement systems (HEDIS, STARS) to the specific measures they track — diabetes management, preventive screenings, medication adherence, and others.' },
+            { l: 'The attribution gap', b: "Providers may have counseled a patient on colorectal cancer screening, but if the note says 'discussed preventive care' rather than documenting the specific screening recommendation and patient decision, HEDIS can't attribute it as a care gap closure." },
+            { l: 'How complete notes close the gap', b: "Specific documentation — naming the screening, documenting the result or referral, capturing the patient conversation — is what turns a clinical activity into an attributed care gap closure." },
+          ],
+        },
+      },
+      {
+        key: 'hedis', label: 'HEDIS Compliance ↑', sub: 'measures met and attributed',
+        detail: {
+          cols: [
+            { l: 'What it measures', b: "HEDIS (Healthcare Effectiveness Data and Information Set) — the primary quality measurement framework used by health plans to evaluate clinical performance. Over 90 measures spanning preventive care, chronic disease management, and behavioral health." },
+            { l: 'Why documentation is the gap', b: "HEDIS measurement relies on administrative claims and medical record review. For medical record measures, the record must contain the evidence. Incomplete documentation means measures go unmet even when care was delivered." },
+            { l: 'The plan relationship', b: "Payers report HEDIS scores and use them to evaluate network performance. Better HEDIS scores strengthen value-based contract negotiations and can affect network inclusion for high-performing practices." },
+          ],
+        },
+      },
+      {
+        key: 'caregap', label: 'Care Gap Closure Rate ↑', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: 'The percentage of identified care gaps — preventive services due, chronic disease management protocols needed, screenings overdue — that are documented as closed in the measurement period.' },
+            { l: 'Data source', b: 'Health plan data, population health platform, or practice\'s own care gap tracking system. Compare Abridge providers vs. baseline or non-Abridge cohort. Monthly or quarterly trending.' },
+            { l: 'Why it connects to revenue', b: "In value-based contracts, care gap closure rate often ties directly to quality bonus payments. Better documentation that closes gaps faster means faster access to quality-performance revenue." },
+          ],
+        },
+      },
+      {
+        key: 'stars', label: 'STARS Rating ↑', sub: '', isOutcome: true,
+        detail: {
+          cols: [
+            { l: 'What it measures', b: "CMS Medicare Advantage STARS rating — a 1–5 star quality rating that affects CMS bonus payments to health plans and influences patient plan selection. Higher star ratings earn higher bonus payments." },
+            { l: 'The financial connection', b: "CMS bonus payments for 4-star and 5-star plans can run into the hundreds of millions of dollars for large insurers — creating strong financial incentives for plans to improve provider documentation quality." },
+            { l: 'The provider relationship', b: "Practices that consistently document quality measure elements are preferred partners for high-performing MA plans. Better STARS performance strengthens network relationships and value-based contract terms." },
+          ],
+        },
+      },
     ],
+    timeline: {
+      signal: {
+        window: 'Week 4–8',
+        desc: 'Note specificity improves',
+        metrics: [
+          { name: 'Care Gap Documentation Rate', source: "EHR or population health platform · % of scheduled care gap visits resulting in a documented care gap closure · Abridge vs. baseline · early proxy for attribution quality", badge: 'Week 4–8', why: "The upstream gate for everything downstream. If care gaps are being closed but not documented with sufficient specificity, quality systems can't attribute the closure. This measures whether documentation is opening that door." },
+          { name: 'Post-Visit Note Specificity', source: 'Qualitative or CDI audit · % of notes containing specific terminology for preventive services vs. generic "discussed" language · directional signal', badge: 'Week 6–10', why: "Specific language (e.g., 'mammogram discussed, patient declined due to preference') is the difference between a closeable quality measure and a missed attribution. Generic notes can't be acted on by quality systems." },
+        ],
+        callout: "Graduation signal: When post-visit note specificity for preventive and chronic care visits reaches a consistent high, the documentation foundation is in place. Start watching quality measure attribution rates as the next confirmation.",
+      },
+      trend: {
+        window: 'Month 2–5',
+        desc: 'Measure attribution improves',
+        metrics: [
+          { name: 'Quality Measure Attribution Rate', source: 'Population health platform or health plan data · % of qualifying visits resulting in attributed quality measure closure · Abridge providers vs. baseline', badge: 'Month 2–4', why: "Connects documentation specificity to actual quality measure closure — this is where better notes turn into performance credit. The transition from documenting to attributing is the key signal." },
+          { name: 'HEDIS Composite Score', source: 'Health plan or practice-level HEDIS reporting · composite across relevant measures · compare Abridge providers to non-Abridge cohort', badge: 'Month 3–5', why: "The first composite quality signal reportable to health plans. Takes 3–5 months because it requires sufficient encounter volume to show a trend — but this is what payers and VBC contracts actually measure." },
+        ],
+        callout: "The attribution lag: HEDIS measurement uses claims and records from the measurement year. Real-time documentation improvement shows up in population health platforms first, then in formal HEDIS reporting at year-end. Track the leading indicator, not just the annual score.",
+      },
+      proof: {
+        window: 'Month 6–18',
+        desc: 'Quality scores confirm',
+        metrics: [
+          { name: 'HEDIS Composite Score vs. Benchmark', source: 'Health plan reporting · annual HEDIS composite score · Abridge provider cohort vs. prior year and peer practices', badge: 'Month 9–18', why: "The annual strategic proof point — how Abridge-enabled practices compare to peers on the measures health plans use to allocate bonuses. Documentation is not the only driver, but it's the foundational one." },
+          { name: 'MA STARS Rating', source: 'CMS plan-level reporting · annual STARS rating · directional comparison to prior year · documentation quality is one of many contributors', badge: 'Month 12–18', why: "STARS ratings affect rebate dollars and quality bonuses in Medicare Advantage. Documentation is one of many contributors, but accurate and complete notes are the foundation every other quality intervention builds on." },
+        ],
+        callout: "The long game: STARS ratings reflect care from the prior measurement year and change slowly. The strategy is to demonstrate care gap closure rate improvement early, link it to HEDIS intermediate scores at Month 6, and let the annual STARS data confirm the story at Year 2.",
+      },
+    },
   },
 ];
 
-// ─── Metric Items ─────────────────────────────────────────────────────────────
+// ─── Value Architecture Data ──────────────────────────────────────────────────
 
-const opMetricItems: Record<OPDomainName, OPMetricItem[]> = {
+const opFramework: FrameworkItem[] = [
+  {
+    domain: 'CAPACITY',
+    tag: 'modeled',
+    narrative: 'Clinical time is the binding constraint on outpatient panel capacity. Published research suggests physicians spend 1–2 hours daily on EHR tasks outside patient care. When ambient documentation reduces time per visit, that recovered time may become available for additional appointments — though not all of it converts directly to schedulable slots. Workflow absorption, administrative tasks, and scheduling constraints mean a realistic conversion is typically 40–50% of documentation time saved. The model applies that realization rate explicitly, then divides by visit length to produce an actual appointment count.',
+    chain: ['Documentation Time/Visit ↓', 'Available Clinical Time ↑', 'Panel Capacity ↑'],
+    chainOutput: 'Patient Access ↑',
+    steps: [
+      {
+        vars: [
+          { v: 'Minutes saved per visit', kind: 'input' },
+          { v: 'Daily E/M visits per provider', kind: 'input' },
+          { v: 'Time-to-visit realization rate', kind: 'benchmark', hint: '~45%' },
+        ],
+        result: 'Realizable min/provider/day',
+      },
+      {
+        vars: [
+          { v: 'Realizable min/provider/day', kind: 'derived' },
+          { v: 'Avg E/M visit length (min)', kind: 'input', op: '÷' },
+        ],
+        result: 'Additional appts/provider/day',
+      },
+      {
+        vars: [
+          { v: 'Additional appts/day', kind: 'derived' },
+          { v: 'Provider FTEs', kind: 'input' },
+          { v: 'Working days/year', kind: 'default', hint: '240' },
+          { v: 'Net revenue per visit', kind: 'input' },
+        ],
+        result: 'Annual capacity revenue',
+        isFinal: true,
+      },
+    ],
+  },
+  {
+    domain: 'WORKFORCE',
+    tag: 'modeled',
+    narrative: 'Documentation burden is consistently cited in published research as a leading contributor to outpatient physician burnout — particularly work extending beyond scheduled clinic hours. Industry estimates (MGMA, AAFP) place voluntary physician replacement costs at $250K–$500K per departure, accounting for recruiting, locum coverage, credentialing, and productivity ramp. Not all voluntary departures are documentation-attributable; the model explicitly applies an estimated fraction rather than claiming all turnover stems from documentation, making the connection defensible.',
+    chain: ['After-Hours Charting ↓', 'Evening Documentation Burden ↓', 'Provider Wellbeing ↑', 'Intent to Stay ↑'],
+    chainOutput: 'Voluntary Turnover ↓',
+    steps: [
+      {
+        vars: [
+          { v: 'Annual voluntary departures', kind: 'input' },
+          { v: 'Documentation-attributable fraction', kind: 'benchmark', hint: '~20%' },
+          { v: 'Expected improvement with ambient', kind: 'benchmark', hint: '~25–35%' },
+        ],
+        result: 'Est. departures avoided/yr',
+      },
+      {
+        vars: [
+          { v: 'Est. departures avoided', kind: 'derived' },
+          { v: 'Physician replacement cost', kind: 'benchmark', hint: '$250K–$450K' },
+        ],
+        result: 'Estimated retention savings',
+        isFinal: true,
+      },
+    ],
+    note: 'Modeled when burnout survey or intent-to-stay data is available. Treated as a leading indicator otherwise.',
+  },
+  {
+    domain: 'REVENUE',
+    tag: 'modeled',
+    narrative: 'Outpatient E/M codes under MDM-based guidelines require specific documentation of problems addressed, data reviewed, and management risk. When documentation is incomplete, coding may land at a lower level than the encounter warranted — not because care wasn\'t delivered, but because the record doesn\'t fully reflect it. This effect applies specifically to E/M-coded visits, not all encounters, so the model denominates by E/M visit volume explicitly. A separate denial component captures claim-integrity benefit, as documentation gaps are a commonly cited root cause of first-pass outpatient billing failures.',
+    chain: ['Documentation Completeness ↑', 'MDM Elements Captured ↑', 'E/M Level Accuracy ↑'],
+    chainOutput: 'Revenue Per Visit ↑',
+    steps: [
+      {
+        vars: [
+          { v: 'Total annual visits', kind: 'input' },
+          { v: 'E/M-coded visit fraction', kind: 'benchmark', hint: '~75%' },
+        ],
+        result: 'Annual E/M visit volume',
+      },
+      {
+        vars: [
+          { v: 'Annual E/M visits', kind: 'derived' },
+          { v: 'E/M level improvement rate', kind: 'input' },
+          { v: 'Avg revenue delta per level', kind: 'benchmark', hint: '~$40–60' },
+        ],
+        result: 'E/M coding impact',
+      },
+      {
+        vars: [
+          { v: 'Annual E/M visits', kind: 'derived' },
+          { v: 'Documentation denial rate reduction', kind: 'input' },
+          { v: 'Avg outpatient denial value', kind: 'benchmark', hint: '~$150–250' },
+        ],
+        result: 'Denial recovery',
+      },
+      {
+        vars: [
+          { v: 'E/M coding impact', kind: 'derived' },
+          { v: 'Denial recovery', kind: 'derived', op: '+' },
+        ],
+        result: 'Total estimated revenue',
+        isFinal: true,
+      },
+    ],
+  },
+  {
+    domain: 'QUALITY',
+    tag: 'tracked',
+    narrative: 'HEDIS and STARS performance is partly a documentation attribution problem. Care provided but not recorded with the specificity quality measurement systems require may not be attributed as a care gap closure. When ambient documentation captures the encounter more completely — the specific screening discussed, the patient\'s response, the clinical plan — there may be more attributable evidence available for measure review. Attribution improvements are tracked over time but not modeled in dollars, as quality incentive amounts are health plan- and contract-specific.',
+    chain: ['Documentation Specificity ↑', 'Care Gap Attribution ↑', 'HEDIS Composite ↑'],
+    chainOutput: 'STARS Performance ↑',
+    note: 'Not modeled in dollars — quality incentive amounts depend on health plan contracts, measure thresholds, and payer mix. Tracked as HEDIS composite score, care gap closure rate, and MA STARS directional movement.',
+  },
+];
+
+// ─── Personas & Discovery Questions ──────────────────────────────────────────
+
+const opFrameworkPersonas: Record<DomainName, string[]> = {
+  CAPACITY:  ['CMO', 'Practice Administrator'],
+  WORKFORCE: ['CMO', 'CHRO'],
+  REVENUE:   ['CFO', 'VP Revenue Cycle'],
+  QUALITY:   ['VP Quality', 'Health Plan Lead'],
+};
+
+const opFrameworkQuestions: Record<DomainName, string[]> = {
   CAPACITY: [
-    {
-      label: "Documentation Time Per Encounter",
-      badge: "Signal",
-      explanation: "EHR session data shows exactly when documentation happens and how long it takes. This is the most immediate and unambiguous post-deployment signal. Deployment observations suggest time savings of 2–4 minutes per encounter for consistent users. Illustratively, 20 patients/day × 240 days × 3 minutes = 240 physician hours annually per provider — returned to patients or to life.",
-      whenToExpect: "Week 4–6 for active users. EHR session timestamps are the cleanest early metric — no billing cycle, no coding team, no CDI engagement needed.",
-      formula: "Minutes saved × daily encounters × working days = estimated annual physician hours returned",
-    },
-    {
-      label: "Same-Day Note Closure Rate",
-      badge: "Signal",
-      explanation: "The share of encounter notes signed before the provider leaves clinic. Typically runs 40–60% at baseline — the rest carry forward to evenings and weekends. For consistent Abridge users, this often rises to 85–95% within 60 days. EHR audit logs show this directly, and it's often the most dramatic early metric that physicians talk about with colleagues.",
-      whenToExpect: "Week 4–8. Track as the share of encounters with a note signed before 6pm (or end of scheduled clinic). Compare same providers before and after.",
-    },
-    {
-      label: "Patient Access Capacity",
-      badge: "Trend",
-      explanation: "For practices with patient demand outpacing supply, reclaimed documentation time converts to additional patient visits. We model the capacity potential — your leadership decides how to deploy it. For practices with wait lists, an additional 1–2 patients per provider per day is meaningful access expansion and incremental revenue.",
-      whenToExpect: "Month 2–4, but only if patient demand exists. If you're scheduling-constrained, track third-next-available appointment as the access signal.",
-      formula: "Additional patients/provider/month × providers × 12 months × avg revenue per visit",
-    },
+    'Are you tracking third-next-available-appointment, and is documentation time a known contributor to the access constraint?',
+    'If providers could see 1–2 more patients per day without extending their day, what would that mean for your access and revenue?',
+    'Are you tracking after-hours EHR time for outpatient physicians — and do you know how much is documentation versus other tasks?',
   ],
   WORKFORCE: [
-    {
-      label: "After-Hours Documentation Time",
-      badge: "Signal",
-      explanation: "Time spent charting outside scheduled clinical hours — the canonical outpatient burnout metric. EHR session data shows exactly when this happens. Medscape 2023: outpatient physicians average 1–2 hours of after-hours charting per clinic day. When notes draft themselves during the encounter, the post-clinic queue becomes a review queue. This is the metric physicians ask about most.",
-      whenToExpect: "Week 4–6 for active users. EHR session logs outside clinic hours are directly measurable. Compare same providers, same days of week, before vs. after.",
-    },
-    {
-      label: "Physician Satisfaction Score",
-      badge: "Trend",
-      explanation: "Validated instruments (Mini Z, Maslach Burnout Inventory, internal pulse surveys) consistently rank documentation burden as the top outpatient burnout driver. Track the documentation burden subscore specifically among Abridge users — it's more attributable and moves faster than the composite score. A 2-point improvement on the documentation subscale is a meaningful signal.",
-      whenToExpect: "Month 2–4 for validated survey signal. Internal pulse surveys can show directional movement sooner. Run documentation-specific questions — not just overall satisfaction.",
-    },
-    {
-      label: "Voluntary Physician Turnover",
-      badge: "Proof",
-      explanation: "Replacing a physician costs $250K–$500K fully loaded — recruiting, credentialing, onboarding, and the productivity ramp of a new hire. Documentation burden is consistently cited in exit interviews as a top reason physicians leave. This is the 3-year value story metric — anchor it in the contract renewal conversation, not the 90-day check-in.",
-      whenToExpect: "Month 12–18. Track exit interview data from day one so you have the attribution evidence when you need it.",
-    },
+    'What does voluntary physician turnover look like in your outpatient setting, and has documentation burden come up in exit conversations?',
+    'Are providers frequently completing notes during evenings or weekends — and is that reflected in your EHR data?',
+    'What would it mean for your physician satisfaction scores if after-hours charting dropped significantly?',
   ],
   REVENUE: [
-    {
-      label: "E/M Level Distribution Shift",
-      badge: "Signal",
-      explanation: "Claims data shows the distribution of visits at each E/M level (99211–99215) per provider. When documentation captures complexity more completely, the distribution shifts toward 99214 and 99215 where the clinical work supports it. Compare the same provider's distribution before and after — it's a clean before/after with data your billing team already has.",
-      whenToExpect: "Month 2–3. Claims data requires one full billing cycle. Compare at least 90 days of post-deployment claims against the same 90 days prior year — same provider, same patient mix.",
-    },
-    {
-      label: "wRVU Per Encounter",
-      badge: "Trend",
-      explanation: "The aggregate revenue signal that rolls up E/M level accuracy. Industry data and deployment observations show 2–7% wRVU lift from better documentation, depending on baseline quality and specialty. At $33.40/wRVU (CMS 2026 MPFS), a 4% lift on 8,000 annual encounters at 1.8 baseline wRVU = ~$19,300 per provider. Scale by provider count for the practice total.",
-      whenToExpect: "Month 3–6 for a statistically meaningful trend. Requires sufficient encounter volume and a controlled comparison — same providers, same patient mix.",
-      formula: "wRVU delta per encounter × adopted encounters × $33.40 (CMS 2026 MPFS) × realization %",
-    },
-    {
-      label: "Documentation-Related Denial Rate",
-      badge: "Trend",
-      explanation: "Medical necessity denials that occur because the note didn't support the level of care billed. RCM teams track denial root cause — documentation-related denials are an identifiable subset. 30–40% of claim denials are unappealable because the documentation gap existed at service. Work with your RCM team to isolate documentation-related denials before attributing the improvement.",
-      whenToExpect: "Month 4–8. Requires 90+ days of claims volume and root-cause categorization by your RCM team. Establish the documentation-related denial baseline before deployment.",
-      formula: "(denial rate before − after, in pp) × annual encounters × $350/encounter × attribution %",
-    },
+    'How does your E/M distribution compare to what your clinical leadership thinks reflects the actual complexity mix you\'re seeing?',
+    'What\'s your current first-pass denial rate, and do you know what fraction is driven by documentation gaps versus eligibility or coding issues?',
+    'Are your coders flagging documentation gaps as a root cause of coding downgrades or claims rejections?',
   ],
   QUALITY: [
-    {
-      label: "HCC Capture Rate (MA Populations)",
-      badge: "Trend",
-      explanation: "Hierarchical Condition Category documentation drives Risk Adjustment Factor scores in Medicare Advantage. When ambient capture preserves chronic condition documentation discussed during the visit, HCC gap rates fall and RAF scores reflect actual panel complexity. For a practice with 2,000 MA patients, closing a 5% HCC gap rate can represent significant capitated payment recovery.",
-      whenToExpect: "Month 3–6. Risk adjustment teams track suspected vs. confirmed HCC closures per provider quarterly. Compare Abridge-enabled providers against a control group.",
-      formula: "MA patients × HCC gap rate × recapture % × RAF point value × capitation rate",
-    },
-    {
-      label: "Care Gap Closure Rate",
-      badge: "Trend",
-      explanation: "HEDIS-aligned quality measures — A1c documentation, blood pressure control, preventive screenings — depend on what gets captured in the note. When ambient documentation preserves what was discussed and ordered during the visit, care gap closure rates improve on population health dashboards and payer quality scorecards.",
-      whenToExpect: "Month 3–6. Track on your population health platform or payer quality scorecard. Compare gap closure rates per measure for Abridge-enabled providers vs. control.",
-    },
-    {
-      label: "MIPS Quality Score",
-      badge: "Proof",
-      explanation: "MIPS quality category performance aggregates documentation-dependent measures. As care gap closure and diagnosis specificity improve, MIPS quality scores trend upward — affecting the performance-based payment adjustment CMS applies to Medicare revenue. Long-game metric: annual reporting cadence, but the upstream signals (HCC capture, care gap closure) move faster and confirm the direction.",
-      whenToExpect: "Annual MIPS reporting cycle. Track upstream signals (HCC capture, care gap closure) quarterly as leading indicators. Don't use MIPS score as a short-term ROI proof point.",
-    },
+    'What are your HEDIS or STARS scores, and is care gap attribution — care that was delivered but not credited — a factor in your performance?',
+    'When your quality team looks at care gap closures that didn\'t get attributed, how often is the root cause documentation rather than care delivery?',
+    'Are health plan contracts tying any bonuses or risk arrangements to quality performance that your documentation gaps might be affecting?',
   ],
 };
 
-// ─── OPMetricCard ─────────────────────────────────────────────────────────────
+// ─── Value Architecture Component ────────────────────────────────────────────
 
-function OPMetricCard({ item }: { item: OPMetricItem }) {
-  const [showFormula, setShowFormula] = useState(false);
+function OPValueArchitectureSection() {
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set(['CAPACITY', 'WORKFORCE', 'REVENUE', 'QUALITY']));
+  const tagCfg = {
+    modeled: { label: 'Modeled', cls: 'bg-[#1A1A1A] text-white' },
+    tracked: { label: 'Signal',  cls: 'bg-[#F0EDE8] text-[#666666]' },
+  };
   return (
-    <div className="bg-white border border-[#E5E5E5] rounded-sm p-5">
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <p className="text-[14px] font-bold text-black leading-snug">{item.label}</p>
-        <ImpactBadge type={item.badge} />
+    <div className="mt-10 mb-10">
+      <div className="mb-5">
+        <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-1.5">The Value Architecture</p>
+        <h2 className="text-[22px] font-bold text-black tracking-tight">How Abridge Creates Value</h2>
+        <p className="text-[13px] text-[#888888] mt-1">Four domains. Each formula shows the full calculation — which numbers are yours, which are industry estimates, and how they chain together.</p>
       </div>
-      <p className="text-[14px] text-[#444444] leading-relaxed mt-2">{item.explanation}</p>
-      {item.whenToExpect && (
-        <div className="bg-[#F5F0EB] rounded-sm px-4 py-2.5 mt-3">
-          <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#888888] mb-1">When to expect</p>
-          <p className="text-[12px] text-[#666666] leading-relaxed">{item.whenToExpect}</p>
-        </div>
-      )}
-      {item.formula && (
-        <div className="mt-3">
-          <button
-            onClick={() => setShowFormula(!showFormula)}
-            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[1.5px] text-[#EA2C00]"
-            data-testid={`button-formula-${item.label.replace(/\s+/g, '-').toLowerCase()}`}
-          >
-            {showFormula ? "Hide formula" : "Show formula"}
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFormula ? 'rotate-180' : ''}`} />
-          </button>
-          {showFormula && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-2 bg-[#F5F0EB] rounded-sm px-4 py-3"
-            >
-              <pre className="text-[12px] text-[#333333] leading-relaxed whitespace-pre-wrap font-mono">{item.formula}</pre>
-            </motion.div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── OPDomainCard ─────────────────────────────────────────────────────────────
-
-function OPDomainCard({
-  data,
-  metrics,
-  isExpanded,
-  onToggle,
-}: {
-  data: OPDomainData;
-  metrics: OPMetricItem[] | undefined;
-  isExpanded: boolean;
-  onToggle: () => void;
-}) {
-  const color = opDomainColors[data.domain];
-  const [expandedMechanism, setExpandedMechanism] = useState<string | null>(null);
-
-  return (
-    <div className="rounded-lg overflow-hidden border border-[#E5E5E5] mb-4 bg-white shadow-sm">
-      <div className="bg-[#1A1A1A] px-7 py-6 flex items-start justify-between gap-6">
-        <div className="flex-1">
-          <p className="text-[11px] font-bold uppercase tracking-[2.5px] mb-2 text-[#EA2C00]">
-            {data.domain}
-          </p>
-          <h3 className="text-[22px] font-bold text-white leading-tight tracking-tight">{data.tagline}</h3>
-        </div>
-        <div className="shrink-0 flex flex-col items-end gap-2 mt-1">
-          {data.outcomes.map((o) => (
-            <div
-              key={o.label}
-              className="flex items-center gap-2 bg-white/8 border border-white/15 rounded-sm px-3 py-1.5"
-            >
-              <span className="text-white/80 text-[12px] font-medium">{o.label}</span>
-              <span className="text-[14px] font-bold" style={{ color }}>{o.direction}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-white px-7 pt-5 pb-4">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#AAAAAA] mb-2">The Problem</p>
-        <p className="text-[14px] text-[#444444] leading-relaxed">{data.problem}</p>
-      </div>
-
-      <div className="bg-white px-7 pb-5 pt-1">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#AAAAAA] mb-3">Value Mechanisms</p>
-        <div className="space-y-0">
-          {data.mechanisms.map((mechanism) => (
-            <div key={mechanism.label} className="border-b border-[#F2EDE8] last:border-b-0">
+      <div className="divide-y divide-[#EDEBE6] border border-[#E4DDD4] rounded-xl overflow-hidden">
+        {opFramework.map((item) => {
+          const tc = tagCfg[item.tag];
+          const isCollapsed = collapsed.has(item.domain);
+          const personas = opFrameworkPersonas[item.domain] ?? [];
+          const questions = opFrameworkQuestions[item.domain] ?? [];
+          return (
+            <div key={item.domain} className="bg-white">
               <button
-                onClick={() => setExpandedMechanism(expandedMechanism === mechanism.label ? null : mechanism.label)}
-                className="w-full flex items-center gap-3 py-2.5 text-left group"
-                data-testid={`button-mechanism-${data.domain.toLowerCase()}-${mechanism.label.replace(/\s+/g, '-').toLowerCase()}`}
+                onClick={() => setCollapsed(prev => {
+                  const next = new Set(prev);
+                  if (next.has(item.domain)) next.delete(item.domain);
+                  else next.add(item.domain);
+                  return next;
+                })}
+                className="w-full flex items-center gap-3 px-6 py-5 text-left hover:bg-[#FAFAF8] transition-colors outline-none focus:outline-none"
               >
-                <div
-                  className="w-[3px] h-4 rounded-full shrink-0 transition-opacity"
-                  style={{ backgroundColor: '#EA2C00', opacity: expandedMechanism === mechanism.label ? 1 : 0.4 }}
-                />
-                <span className="flex-1 text-[13px] text-[#333333] font-medium group-hover:text-black transition-colors">
-                  {mechanism.label}
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#444444]">
+                  {item.domain.charAt(0) + item.domain.slice(1).toLowerCase()}
+                </p>
+                <span className={`inline-block text-[9px] font-bold tracking-[0.07em] uppercase px-2.5 py-1 rounded-full whitespace-nowrap ${tc.cls}`}>
+                  {tc.label}
                 </span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 text-[#AAAAAA] transition-transform shrink-0 ${expandedMechanism === mechanism.label ? 'rotate-180' : ''}`}
-                />
+                <span className="ml-auto flex items-center gap-3">
+                  {personas.length > 0 && (
+                    <span className="hidden sm:block text-[9px] text-[#C4BBAD] tracking-wide">{personas.join(' · ')}</span>
+                  )}
+                  <svg className={`w-4 h-4 text-[#BBBBBB] shrink-0 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
               </button>
-              {expandedMechanism === mechanism.label && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="pb-3 pl-6 pr-2"
-                >
-                  <p className="text-[12px] text-[#666666] leading-relaxed border-l-2 border-[#EA2C00]/30 pl-3">
-                    {mechanism.description}
-                  </p>
-                </motion.div>
+              {!isCollapsed && (
+              <div className="px-6 pb-6">
+              <NarrativeText text={item.narrative} />
+              {questions.length > 0 && (
+                <div className="mb-4 border-l-2 border-[#F0EDE8] pl-3">
+                  <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#BBBBBB] mb-2">Ask to explore</p>
+                  <ul className="space-y-1.5">
+                    {questions.map((q, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="text-[#C4BBAD] text-[12px] shrink-0 mt-0.5">›</span>
+                        <span className="text-[12px] text-[#777777] italic leading-snug">{q}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                {item.chain.map((step, i) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    {i > 0 && <span className="text-[#C0B8B0] text-xs">→</span>}
+                    <span className="text-[10px] font-medium text-[#444444] bg-[#F6F3EF] border border-[#E4DDD5] rounded-md px-2.5 py-1.5 leading-none whitespace-nowrap">{step}</span>
+                  </div>
+                ))}
+                {item.chainOutput && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#C0B8B0] text-xs">→</span>
+                    <span className="text-[10px] font-semibold text-white bg-[#1A1A1A] rounded-md px-2.5 py-1.5 leading-none whitespace-nowrap">{item.chainOutput}</span>
+                  </div>
+                )}
+              </div>
+              {item.steps && (
+                <div className="rounded-xl overflow-hidden border border-[#DEDAD2]">
+                  <div className="flex items-center justify-between px-5 py-2.5 bg-[#F2EDE5] border-b border-[#DEDAD2]">
+                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-[#999999]">How it's calculated</span>
+                    <div className="flex items-center gap-4">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-[9px] h-[9px] rounded-sm bg-white border border-[#C8BFB4] inline-block"></span>
+                        <span className="text-[8px] text-[#BBBBBB] tracking-wide">your input</span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-[9px] h-[9px] rounded-sm bg-[#FDF5E4] border border-[#DCBF60] inline-block"></span>
+                        <span className="text-[8px] text-[#BBBBBB] tracking-wide">industry est.</span>
+                      </span>
+                    </div>
+                  </div>
+                  {item.steps.map((step, si) => (
+                    <div key={si}>
+                      {step.vars.map((variable, vi) => {
+                        const op = variable.op ?? (vi > 0 ? '×' : '');
+                        const isDerived = variable.kind === 'derived';
+                        const isBenchmark = variable.kind === 'benchmark' || variable.kind === 'default';
+                        const rowBg = isDerived ? 'bg-[#F7F3EE]' : isBenchmark ? 'bg-[#FFFDF6]' : 'bg-white';
+                        return (
+                          <div key={vi} className={`flex items-stretch border-b border-[#EDE7DF] ${rowBg}`}>
+                            <div className="w-10 flex items-center justify-center shrink-0 border-r border-[#EDE7DF]">
+                              <span className="font-mono text-[15px] font-light text-[#C8C0B4]">{op}</span>
+                            </div>
+                            <div className="flex flex-1 items-center justify-between gap-4 px-4 py-[11px]">
+                              <span className={`text-[12.5px] leading-snug ${isDerived ? 'text-[#888888]' : 'text-[#1A1A1A]'}`}>
+                                {variable.v}
+                              </span>
+                              <span className={`text-[8px] font-bold tracking-[0.1em] uppercase shrink-0 ${
+                                isDerived ? 'text-[#C8C0B8]'
+                                : isBenchmark ? 'text-[#9A7000]'
+                                : 'text-[#C8C0B8]'
+                              }`}>
+                                {isDerived ? 'carried forward'
+                                  : variable.kind === 'benchmark' ? (variable.hint ? `est. · ${variable.hint}` : 'industry est.')
+                                  : variable.kind === 'default' ? (variable.hint ? `assumed · ${variable.hint}` : 'assumed')
+                                  : 'your input'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div className={`flex items-stretch ${step.isFinal ? 'bg-[#1A1A1A]' : 'bg-[#EAE4DC] border-b border-[#D8D0C4]'}`}>
+                        <div className={`w-10 flex items-center justify-center shrink-0 border-r ${step.isFinal ? 'border-[#333]' : 'border-[#D8D0C4]'}`}>
+                          <span className={`font-mono text-[15px] font-light ${step.isFinal ? 'text-white/50' : 'text-[#999]'}`}>=</span>
+                        </div>
+                        <div className="flex flex-1 items-center px-4 py-[11px]">
+                          <span className={`leading-snug ${step.isFinal ? 'text-[13px] font-bold text-white tracking-tight' : 'text-[12.5px] font-semibold text-[#3A3630]'}`}>
+                            {step.result}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {item.note && (
+                <p className="text-[11px] text-[#888888] leading-relaxed mt-3">{item.note}</p>
+              )}
+              </div>
               )}
             </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Chain Node Component ─────────────────────────────────────────────────────
+
+function ChainNodeBtn({
+  node,
+  isActive,
+  onClick,
+}: {
+  node: ChainNode;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  const base = "flex-shrink-0 px-4 py-2.5 rounded-lg border text-[11px] font-semibold text-center leading-tight select-none transition-all duration-150 outline-none focus:outline-none";
+
+  let cls = base;
+  if (node.isSource) {
+    cls += " bg-[#EA2C00] border-[#EA2C00] text-white cursor-default";
+  } else if (node.isOutcome) {
+    cls += isActive
+      ? " bg-[#1A1A1A] border-[#1A1A1A] border-solid text-white -translate-y-0.5 shadow-lg shadow-black/20 cursor-pointer"
+      : " bg-[#FAF6EF] border-[#E0D4C0] border-dashed text-[#665544] hover:bg-[#F2EAE0] hover:border-[#D0C0A8] cursor-pointer";
+  } else {
+    cls += isActive
+      ? " bg-[#1A1A1A] border-[#1A1A1A] text-white -translate-y-0.5 shadow-lg shadow-black/20 cursor-pointer"
+      : " bg-[#FAFAFA] border-[#E4E4E4] text-[#333] hover:border-[#C8C8C8] hover:bg-[#F4F4F4] hover:-translate-y-px hover:shadow-md cursor-pointer";
+  }
+
+  return (
+    <button className={cls} onClick={onClick} disabled={!!node.isSource}>
+      <span className="whitespace-nowrap">{node.label}</span>
+      {node.sub && (
+        <span className={`block text-[9px] font-medium mt-0.5 whitespace-nowrap ${node.isSource ? 'text-white/40' : isActive ? 'text-white/55' : 'text-[#888888]'}`}>
+          {node.sub}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// ─── OP Domain Card ───────────────────────────────────────────────────────────
+
+function OPDomainCard({ data }: { data: OPDomainCardData }) {
+  const [activeNode, setActiveNode] = useState<string | null>(null);
+  const [activeStage, setActiveStage] = useState<'s' | 't' | 'p'>('s');
+  const [activeMetric, setActiveMetric] = useState<number | null>(null);
+
+  const mainChain = data.chain.filter(n => !n.isOutcome);
+  const outcomes = data.chain.filter(n => n.isOutcome);
+
+  function handleNodeClick(node: ChainNode) {
+    if (!node.isSource && node.detail) {
+      setActiveNode(prev => (prev === node.key ? null : node.key));
+    }
+  }
+
+  const activeDetail = data.chain.find(n => n.key === activeNode)?.detail ?? null;
+  const stageMap = { s: data.timeline.signal, t: data.timeline.trend, p: data.timeline.proof };
+  const stageLabels = { s: 'Signal', t: 'Trend', p: 'Proof' };
+  const currentStage = stageMap[activeStage];
+
+  return (
+    <div className="rounded-xl overflow-hidden border border-[#E5E5E5] mb-5 bg-white shadow-sm">
+
+      {/* ── HERO ── */}
+      <div className="px-8 pt-7 pb-6 bg-white">
+        <div className="flex items-start justify-between gap-3 mb-5">
+          <div>
+            <p className="text-[10px] font-semibold tracking-[0.12em] uppercase text-[#999999] mb-1.5">{data.number} · Outpatient</p>
+            <p className="text-base font-bold text-[#1A1A1A]">{data.domain.charAt(0) + data.domain.slice(1).toLowerCase()}</p>
+          </div>
+          <div className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-medium text-[#EA2C00] border border-[#EA2C00]/30 bg-[#EA2C00]/[0.06] whitespace-nowrap">
+            {data.badge}
+          </div>
+        </div>
+
+        <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-3">North Star Outcome</p>
+        <div className="text-[40px] font-extrabold leading-none tracking-tight text-[#1A1A1A] mb-3">
+          {data.northStar}{' '}
+          <span className="text-[#EA2C00] font-light text-[36px]">{data.direction}</span>
+        </div>
+        <p className="text-sm text-[#888888] leading-relaxed max-w-[640px]">{data.northStarSub}</p>
+      </div>
+
+      <div className="bg-[#FAF6EF] px-8 py-5 border-t border-b border-[#EDE8E0]">
+        <div className={data.matterLayout === '2col' ? 'grid grid-cols-2 gap-3' : 'space-y-3'}>
+          {data.matterBoxes.map((box, i) => (
+            <div key={i} className="p-4 rounded-xl bg-white border border-[#E8DDD0]">
+              <p className="text-[9px] font-bold tracking-[0.12em] uppercase text-[#777777] mb-1.5">{box.tag}</p>
+              <p className="text-[13px] text-[#555555] leading-[1.55]">{box.body}</p>
+            </div>
           ))}
         </div>
+
+        {data.alsoNote && (
+          <div className="mt-3 px-4 py-4 rounded-xl border border-[#E0D4C4] bg-[#FAF6EF]">
+            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also Enables</p>
+            <p className="text-[12px] text-[#555555] leading-relaxed">{data.alsoNote}</p>
+          </div>
+        )}
       </div>
 
-      <div
-        onClick={onToggle}
-        className="bg-[#F5F0EB] px-7 py-4 border-t border-[#EDE8E2] flex items-center justify-between cursor-pointer"
-        data-testid={`button-toggle-domain-${data.domain.toLowerCase()}`}
-      >
-        <span className="text-[10px] font-bold uppercase tracking-[1.5px]" style={{ color }}>
-          {isExpanded ? "Hide the metrics" : "Explore the metrics →"}
-        </span>
-        <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} style={{ color }} />
-      </div>
+      {/* ── CAUSAL CHAIN ── */}
+      <div className="px-8 py-6 border-b border-[#F0F0F0]">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[10px] font-bold tracking-[0.11em] uppercase text-[#888888]">How Abridge enables progress toward this outcome</p>
+          <p className="text-[11px] text-[#888888] italic">Click any step to explore</p>
+        </div>
 
-      {isExpanded && metrics && metrics.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          transition={{ duration: 0.2 }}
-          className="overflow-hidden"
-        >
-          <div className="bg-[#F5F0EB] px-7 pb-7 pt-4">
-            <div className="space-y-3">
-              {metrics.map((m) => (
-                <OPMetricCard key={m.label} item={m} />
+        <div className="flex items-center overflow-x-auto pb-0.5">
+          {mainChain.map((node, i) => (
+            <div key={node.key} className="flex items-center flex-shrink-0">
+              {i > 0 && <span className="flex-shrink-0 mx-1.5 text-[#999999] text-sm">→</span>}
+              <ChainNodeBtn node={node} isActive={activeNode === node.key} onClick={() => handleNodeClick(node)} />
+            </div>
+          ))}
+          {outcomes.length > 0 && (
+            <>
+              <span className="flex-shrink-0 mx-1.5 text-[#999999] text-sm">→</span>
+              <div className="flex-shrink-0 flex flex-col gap-1.5 border-l border-[#D4D4D4] pl-3 ml-0.5">
+                {outcomes.map(node => (
+                  <ChainNodeBtn key={node.key} node={node} isActive={activeNode === node.key} onClick={() => handleNodeClick(node)} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {activeDetail && (
+          <motion.div
+            key={activeNode}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18 }}
+            className="mt-4 bg-[#FAF6EF] border border-[#E8DDD0] rounded-xl p-5"
+          >
+            <div className="grid grid-cols-3 gap-5">
+              {activeDetail.cols.map((col, i) => (
+                <div key={i}>
+                  <p className="text-[9px] font-bold tracking-[0.1em] uppercase text-[#A89078] mb-1.5">{col.l}</p>
+                  <p className="text-[12px] text-[#444] leading-relaxed">{col.b}</p>
+                </div>
               ))}
             </div>
-          </div>
+            {activeDetail.grad && (
+              <div className="mt-3.5 px-3.5 py-2.5 bg-white border border-[#E0D4C0] rounded-lg text-[12px] text-[#555] leading-relaxed">
+                <span className="font-semibold">Graduation signal:</span> {activeDetail.grad}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </div>
+
+      {/* ── TIMELINE ── */}
+      <div className="px-8 py-6">
+        <p className="text-[10px] font-bold tracking-[0.11em] uppercase text-[#888888] mb-4">What to track — and when to expect movement</p>
+
+        <div className="flex border border-[#E4E4E4] rounded-xl overflow-hidden mb-0">
+          {(['s', 't', 'p'] as const).map((s) => {
+            const stage = stageMap[s];
+            const isOpen = activeStage === s;
+            return (
+              <button
+                key={s}
+                onClick={() => { setActiveStage(s); setActiveMetric(null); }}
+                className={`flex-1 px-4 py-3.5 text-left transition-colors duration-150 border-r border-[#E4E4E4] last:border-r-0 outline-none focus:outline-none ${isOpen ? 'bg-[#1A1A1A]' : 'bg-white hover:bg-[#FAFAFA]'}`}
+              >
+                <p className={`text-[9px] font-bold tracking-[0.12em] uppercase mb-1 ${isOpen ? 'text-white/[0.28]' : 'text-[#888888]'}`}>{stageLabels[s]}</p>
+                <p className={`text-[15px] font-bold leading-none ${isOpen ? 'text-white' : 'text-[#1A1A1A]'}`}>{stage.window}</p>
+                <p className={`text-[11px] mt-0.5 ${isOpen ? 'text-white/[0.32]' : 'text-[#888888]'}`}>{stage.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        <motion.div
+          key={activeStage}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.16 }}
+          className="border border-[#E4E4E4] border-t-0 rounded-b-xl overflow-hidden bg-white"
+        >
+          {currentStage.metrics.map((metric, i) => {
+            const isMetricOpen = activeMetric === i;
+            return (
+              <div key={i} className="border-b border-[#F4F4F4] last:border-b-0">
+                <button
+                  onClick={() => setActiveMetric(isMetricOpen ? null : i)}
+                  className={`w-full flex items-center gap-4 px-5 py-3.5 text-left border-l-[3px] transition-all outline-none focus:outline-none ${isMetricOpen ? 'bg-[#FAF6EF] border-l-[#EA2C00]' : 'bg-white border-l-transparent hover:bg-[#FAFAFA] hover:border-l-[#E8DDD0]'}`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-[#1A1A1A] mb-0.5">{metric.name}</p>
+                    <p className="text-[11px] text-[#888888] leading-snug">{metric.source}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className={`text-[9px] font-bold tracking-[0.07em] uppercase px-2.5 py-1 rounded whitespace-nowrap ${activeStage === 'p' ? 'bg-[#FAF6EF] text-[#A08060]' : 'bg-[#F4F4F4] text-[#888888]'}`}>
+                      {metric.badge}
+                    </div>
+                    {metric.why && (
+                      <svg className={`w-3 h-3 text-[#BBBBBB] transition-transform duration-150 flex-shrink-0 ${isMetricOpen ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+                {isMetricOpen && metric.why && (
+                  <div className="px-5 py-3 bg-[#FAF6EF] border-l-[3px] border-l-[#EA2C00]">
+                    <p className="text-[9px] font-bold tracking-[0.12em] uppercase text-[#999999] mb-1">Why this metric</p>
+                    <p className="text-[12px] text-[#444444] leading-relaxed">{metric.why}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {currentStage.callout && (
+            <div className="px-5 py-3.5 border-t border-[#EEEBE6] bg-[#FAF7F2] text-[12px] text-[#666] leading-relaxed">
+              {currentStage.callout.startsWith('Graduation signal') || currentStage.callout.startsWith('Why') || currentStage.callout.startsWith('The ') ? (
+                <>
+                  <span className="font-semibold text-[#444]">{currentStage.callout.split(':')[0]}:</span>
+                  {currentStage.callout.split(':').slice(1).join(':')}
+                </>
+              ) : currentStage.callout}
+            </div>
+          )}
         </motion.div>
-      )}
+      </div>
+
+      <div className="px-8 py-3 border-t border-[#F0F0F0] bg-[#FAF7F2] text-[11px] text-[#777777] leading-relaxed">
+        Results vary based on EHR configuration, provider adoption, payer mix, and organizational factors. Timelines represent ranges and should be validated against your organization's baseline data.
+      </div>
     </div>
   );
 }
 
-// ─── OPDomainMethodologySection ───────────────────────────────────────────────
+// ─── OP Domain Methodology Section ───────────────────────────────────────────
 
 function OPDomainMethodologySection() {
-  const [expandedDomain, setExpandedDomain] = useState<OPDomainName | null>(null);
+  const [activeDomain, setActiveDomain] = useState(opDomainCards[0].domain);
+  const activeCard = opDomainCards.find(c => c.domain === activeDomain)!;
+
   return (
-    <div className="space-y-4">
-      {opDomainData.map((d) => (
-        <OPDomainCard
-          key={d.domain}
-          data={d}
-          metrics={opMetricItems[d.domain]}
-          isExpanded={expandedDomain === d.domain}
-          onToggle={() => setExpandedDomain(expandedDomain === d.domain ? null : d.domain)}
-        />
-      ))}
+    <div className="mb-10">
+      <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
+        <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">The Outpatient Value Story</p>
+        <h2 className="text-[24px] font-bold text-black tracking-tight">Four Domains of Value</h2>
+        <p className="text-sm text-[#888888] mt-1">
+          Each domain has a distinct North Star outcome, a causal chain showing how Abridge enables it, and a measurement path with honest timelines.
+        </p>
+      </div>
+      <div className="bg-[#F5F0EB] rounded-xl p-1 flex mb-5">
+        {opDomainCards.map(card => {
+          const isActive = activeDomain === card.domain;
+          return (
+            <button
+              key={card.domain}
+              onClick={() => setActiveDomain(card.domain)}
+              className={`flex-1 px-3 py-3 rounded-lg text-center transition-all duration-150 outline-none focus:outline-none ${isActive ? 'bg-[#1A1A1A] shadow-sm' : 'hover:bg-[#EDE8E2]'}`}
+            >
+              <p className={`text-[11px] font-bold uppercase tracking-[0.08em] leading-none mb-1 ${isActive ? 'text-white' : 'text-[#888]'}`}>
+                {card.domain.charAt(0) + card.domain.slice(1).toLowerCase()}
+              </p>
+              <p className={`text-[9px] leading-tight truncate ${isActive ? 'text-white/40' : 'text-[#999999]'}`}>
+                {card.northStar} {card.direction}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+      <motion.div key={activeDomain} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }}>
+        <OPDomainCard data={activeCard} />
+      </motion.div>
     </div>
   );
 }
 
-// ─── OPValueArcSection ────────────────────────────────────────────────────────
+// ─── Value Arc Section ────────────────────────────────────────────────────────
 
 function OPValueArcSection() {
-  const stages: { badge: BadgeType; timing: string; title: string; description: string; domains: OPDomainName[] }[] = [
+  const stages: { badge: BadgeType; timing: string; title: string; description: string; domains: DomainName[] }[] = [
     {
       badge: "Signal",
-      timing: "Week 4–6",
+      timing: "Week 4–8",
       title: "The Provider Feels It",
-      description: "Documentation time per encounter drops measurably. Same-day note closure rises. After-hours EHR sessions shrink. All visible in EHR audit logs before any billing cycle closes.",
-      domains: ["CAPACITY", "WORKFORCE"],
+      description: "Post-visit note completion time drops. Pajama time approaches zero. EHR audit logs show documentation closing at the point of care before providers leave the exam room.",
+      domains: ["WORKFORCE", "CAPACITY"],
     },
     {
       badge: "Trend",
       timing: "Month 2–4",
-      title: "The Chart Shows It",
-      description: "E/M level distribution begins shifting in claims data. wRVU per encounter starts moving. HCC gap closure improves for MA populations. The coding team and risk adjustment team start to notice.",
+      title: "The Schedule and Chart Show It",
+      description: "E/M level distribution shifts in billing data. Care gap documentation rates rise. Same-day appointment availability improves as clinical time is recaptured.",
       domains: ["REVENUE", "QUALITY"],
     },
     {
       badge: "Proof",
       timing: "Month 6–18",
       title: "The Practice Measures It",
-      description: "wRVU improvement validated against controlled comparison. Denial rate reduction attributable to documentation. Physician retention signal emerges in satisfaction surveys and exit data.",
-      domains: ["REVENUE", "WORKFORCE"],
+      description: "Third Next Available improves. HEDIS composite scores respond. Provider retention data begins to confirm what wellbeing surveys predicted at Month 3.",
+      domains: ["CAPACITY", "REVENUE", "WORKFORCE", "QUALITY"],
     },
   ];
 
-  const chipStyles: Record<OPDomainName, string> = {
+  const chipStyles: Record<DomainName, string> = {
     CAPACITY: "bg-[#F0EEEC] text-[#888888]",
     WORKFORCE: "bg-[#EDECEB] text-[#555555]",
     REVENUE: "bg-[#FFF0EC] text-[#EA2C00]",
@@ -402,31 +1088,34 @@ function OPValueArcSection() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 border border-[#E5E5E5] rounded-lg overflow-hidden divide-y md:divide-y-0 md:divide-x divide-[#E5E5E5]">
-      {stages.map((stage) => {
-        const cellBg =
-          stage.badge === "Signal" ? "bg-white" : stage.badge === "Trend" ? "bg-[#F9F7F5]" : "bg-[#F5F0EB]";
-        return (
-          <div key={stage.badge} className={`${cellBg} px-6 py-6`}>
-            <div className="flex items-center justify-between mb-3">
-              <ImpactBadge type={stage.badge} />
-              <span className="text-[11px] font-medium text-[#888888]">{stage.timing}</span>
+    <div className="mb-10">
+      <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
+        <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Value Arc</p>
+        <h2 className="text-[24px] font-bold text-black tracking-tight">How It Accrues Over Time</h2>
+        <p className="text-sm text-[#888888] mt-1">
+          Value doesn't arrive all at once. The sequence is mechanistically predictable — not arbitrary.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 border border-[#E5E5E5] rounded-lg overflow-hidden divide-y md:divide-y-0 md:divide-x divide-[#E5E5E5]">
+        {stages.map((stage) => {
+          const cellBg = stage.badge === "Signal" ? "bg-white" : stage.badge === "Trend" ? "bg-[#F9F7F5]" : "bg-[#F5F0EB]";
+          return (
+            <div key={stage.badge} className={`${cellBg} px-6 py-6`}>
+              <div className="flex items-center justify-between mb-3">
+                <ImpactBadge type={stage.badge} />
+                <span className="text-[11px] font-medium text-[#888888]">{stage.timing}</span>
+              </div>
+              <p className="text-[17px] font-bold text-black tracking-tight mb-2">{stage.title}</p>
+              <p className="text-[12px] text-[#666666] leading-relaxed mb-4">{stage.description}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {stage.domains.map((d) => (
+                  <span key={d} className={`rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${chipStyles[d]}`}>{d}</span>
+                ))}
+              </div>
             </div>
-            <p className="text-[17px] font-bold text-black tracking-tight mb-2">{stage.title}</p>
-            <p className="text-[12px] text-[#666666] leading-relaxed mb-4">{stage.description}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {stage.domains.map((d) => (
-                <span
-                  key={d}
-                  className={`rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${chipStyles[d]}`}
-                >
-                  {d}
-                </span>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -451,7 +1140,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
   return (
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
-        <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-[1100px] mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button onClick={onBack} className="flex items-center cursor-pointer bg-transparent border-none p-0" data-testid="link-home-logo">
               <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
@@ -459,7 +1148,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
             <span className="text-[#E5E5E5]">|</span>
             <button onClick={onBack} className="flex items-center gap-1 text-[#666666] hover:text-black transition-colors" data-testid="button-back">
               <ArrowLeft className="w-3 h-3" />
-              <span className="text-xs font-medium uppercase tracking-wide">Methodology</span>
+              <span className="text-xs font-medium uppercase tracking-wide">Value Story</span>
             </button>
           </div>
           <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50" data-testid="button-export-pdf">
@@ -469,210 +1158,22 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
         </div>
       </header>
 
-      <div className="max-w-[800px] mx-auto px-6 py-12">
+      <div className="max-w-[1100px] mx-auto px-6 py-12">
         <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#EA2C00] mb-4">Outpatient</p>
           <h1 className="text-[32px] md:text-[40px] font-bold text-black leading-tight tracking-tight mb-4">
             How We Think<br />About Value
           </h1>
           <p className="text-[15px] text-[#666666] max-w-[560px] mx-auto leading-relaxed">
-            Every encounter creates documentation debt. Multiply that by 4,000+ annual encounters per provider and the math becomes the case.
+            Office visits, primary care, and specialty — where documentation burden is daily and access is the competitive constraint.
           </p>
         </motion.div>
 
-        <div className="mb-10">
-          <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
-            <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">The Outpatient Value Story</p>
-            <h2 className="text-[24px] font-bold text-black tracking-tight">Four Domains of Value</h2>
-            <p className="text-sm text-[#888888] mt-1">
-              Four domains. Each has a distinct problem, a set of mechanisms, and a measurement path. Start with whichever matters most to your practice.
-            </p>
-          </div>
-          <OPDomainMethodologySection />
-        </div>
+        <OPDomainMethodologySection />
 
-        <div className="mb-10">
-          <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
-            <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Value Arc</p>
-            <h2 className="text-[24px] font-bold text-black tracking-tight">How It Accrues Over Time</h2>
-            <p className="text-sm text-[#888888] mt-1">
-              Value doesn't arrive all at once. The sequence is mechanistically predictable — not arbitrary.
-            </p>
-          </div>
-          <OPValueArcSection />
-        </div>
+        <OPValueArcSection />
 
-        <div className="mt-12 mb-10">
-          <div className="mb-6">
-            <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Methodology Reference</p>
-            <h2 className="text-[24px] font-bold text-black tracking-tight">The Full Framework</h2>
-            <p className="text-[14px] text-[#888888] mt-1.5">Formulas, assumptions, and honest limits — for the scrutinizers in the room.</p>
-          </div>
-          <div className="divide-y divide-[#E5E5E5] border border-[#E5E5E5] rounded-lg overflow-hidden">
-            <div className="px-6">
-              <CollapsibleSection sectionId="what-goes-in" title="What Goes Into the Number" subtitle="Exactly what the calculator uses — and what it doesn't">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[#D1D5DB]">
-                        <th className="text-left py-3 font-semibold text-black">Value Driver</th>
-                        <th className="text-left py-3 font-semibold text-black">In the Calculator?</th>
-                        <th className="text-left py-3 font-semibold text-black">Formula</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-[#666666]">
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#EA2C00', borderColor: '#EA2C00' }}>Revenue</span></td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">wRVU lift</td><td className="py-3">✅ Yes</td><td className="py-3">wRVU delta × adopted encounters × $33/wRVU</td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">E/M level improvement</td><td className="py-3">✅ Yes</td><td className="py-3">E/M level delta × adopted encounters × ~$45/level</td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Denial rate reduction</td><td className="py-3">✅ Yes</td><td className="py-3">Denial pp delta × encounters × $350/encounter</td></tr>
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#888888', borderColor: '#888888' }}>Capacity</span></td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Patient capacity revenue</td><td className="py-3">✅ Yes (if data provided)</td><td className="py-3">Additional patients/mo × providers × 12 × $200/visit</td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">After-hours time savings</td><td className="py-3 text-[#F59E0B] font-medium">Signal only — not monetized</td><td className="py-3">Tracked as hours, not dollars (salaried providers)</td></tr>
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#1A1A1A', borderColor: '#1A1A1A' }}>Quality</span></td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">HCC / risk adjustment</td><td className="py-3">✅ Yes (if MA data provided)</td><td className="py-3">MA patients × gap rate × recapture % × RAF point value</td></tr>
-                      <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#555555', borderColor: '#555555' }}>Workforce</span></td></tr>
-                      <tr className="border-b border-[#E5E5E5]"><td className="py-3">Physician retention</td><td className="py-3">✅ Yes (if survey data provided)</td><td className="py-3">Turnovers avoided × $250K–$500K replacement cost</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CollapsibleSection>
-            </div>
-
-            <div className="px-6">
-              <CollapsibleSection sectionId="assumptions" title="The Assumptions" subtitle="Outpatient-specific defaults and ranges">
-                <div className="space-y-6">
-                  <p className="text-[15px] text-black leading-relaxed">Every model rests on assumptions. Here are ours—with ranges, not point estimates.</p>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-[#D1D5DB]">
-                          <th className="text-left py-3 font-semibold text-black">Assumption</th>
-                          <th className="text-left py-3 font-semibold text-black">Range</th>
-                          <th className="text-left py-3 font-semibold text-black">Our Default</th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-[#666666]">
-                        <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#888888', borderColor: '#888888' }}>Capacity</span></td></tr>
-                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Time saved per encounter</td><td className="py-3">2–4 minutes</td><td className="py-3">3 minutes</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Based on aggregated deployment experience across outpatient implementations. Primary care typically 2–4 min, specialists 2–3 min.</p></TooltipContent></Tooltip>
-                        <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#EA2C00', borderColor: '#EA2C00' }}>Revenue</span></td></tr>
-                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">wRVU baseline per visit</td><td className="py-3">1.5-2.5</td><td className="py-3">1.8</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">MGMA median wRVU per visit. Varies significantly by specialty and payer mix.</p></TooltipContent></Tooltip>
-                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">wRVU lift %</td><td className="py-3">2-7%</td><td className="py-3">4%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Better documentation captures visit complexity more accurately. Studies show 2-7% improvement in E&M level accuracy.</p></TooltipContent></Tooltip>
-                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">wRVU conversion factor</td><td className="py-3">$30-$50</td><td className="py-3">$33.40 (CMS 2026 MPFS)</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">CMS MPFS Medicare conversion factor $33.40 (CMS 2026 MPFS). Commercial payers often higher. Blended rate depends on payer mix.</p></TooltipContent></Tooltip>
-                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Denial rate</td><td className="py-3">5-12%</td><td className="py-3">8%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">MGMA data shows average denial rates 5-12%. Documentation-related denials are a subset but often preventable.</p></TooltipContent></Tooltip>
-                        <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#1A1A1A', borderColor: '#1A1A1A' }}>Quality</span></td></tr>
-                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">HCC gap rate</td><td className="py-3">20-30%</td><td className="py-3">25%</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">Percentage of chronic conditions not captured in documentation. Industry research shows 25-40% gap rate in typical practices.</p></TooltipContent></Tooltip>
-                        <tr><td colSpan={3} className="pt-5 pb-1"><span className="text-xs font-bold uppercase tracking-[1.5px] pl-3 border-l-2" style={{ color: '#555555', borderColor: '#555555' }}>Workforce</span></td></tr>
-                        <Tooltip><TooltipTrigger asChild><tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors"><td className="py-3">Physician replacement cost</td><td className="py-3">$250K–$500K</td><td className="py-3">$350,000</td></tr></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><p className="text-xs">AMGA Physician Retention Survey; range reflects recruiting, onboarding, and lost productivity. Excludes lost revenue during vacancy.</p></TooltipContent></Tooltip>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </CollapsibleSection>
-            </div>
-
-            <div className="px-6">
-              <CollapsibleSection sectionId="honest-limits" title="The Honest Limits" subtitle="What we can prove, what we can support, and what we can only enable">
-                <div className="space-y-6">
-                  <p className="text-[15px] text-black leading-relaxed">Most vendors will tell you their product saves money. We think you deserve to know exactly how confident we are in each claim — and what it takes to verify it in your specific practice.</p>
-                  <div className="grid gap-4">
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#22C55E] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Measure This</h4></div>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                        <li><strong>Documentation time per encounter:</strong> EHR session data, before/after studies. You'll see this in weeks.</li>
-                        <li><strong>wRVU per visit:</strong> Claims data shows E/M distribution shifts. Measurable at 90 days.</li>
-                        <li><strong>Same-day note closure:</strong> EHR timestamps. Immediate and unambiguous.</li>
-                        <li><strong>After-hours documentation:</strong> Session data shows when charting happens. This is the "pajama time" metric.</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#F59E0B] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Influence This</h4></div>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                        <li><strong>Capacity expansion:</strong> Requires patient demand and scheduling intent. We provide the time; you decide how to use it.</li>
-                        <li><strong>HCC recapture:</strong> Depends on MA population, baseline gap rate, and coding workflows. Trackable but multi-factorial.</li>
-                        <li><strong>Denial prevention:</strong> Doc-related denials are identifiable, but denial rates reflect many process factors.</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center gap-2 mb-3"><div className="w-3 h-3 bg-[#EF4444] rounded-full" /><h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Only Enable This</h4></div>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                        <li><strong>Retention:</strong> Documentation burden is one of many burnout drivers. Impact takes 12-18 months to observe. Track it, but don't bet on it alone.</li>
-                        <li><strong>Patient satisfaction:</strong> More present providers may improve experience, but CAHPS is influenced by everything from wait times to parking.</li>
-                        <li><strong>Referral patterns:</strong> Better documentation may improve referral quality, but attribution is indirect.</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div className="bg-white rounded-lg p-5 border-l-2 border-[#EA2C00]">
-                    <p className="text-sm text-[#666666] leading-relaxed"><strong className="text-black">Our philosophy:</strong> We'd rather show you a smaller number you can defend in a board presentation than a larger number that falls apart under scrutiny. Key assumptions in our model are editable — because your data should drive the answer, not ours.</p>
-                  </div>
-                </div>
-              </CollapsibleSection>
-            </div>
-
-            <div className="px-6">
-              <CollapsibleSection sectionId="validation-path" title="The Validation Path" subtitle="How to prove this with your own data — before, during, and after">
-                <div className="space-y-6">
-                  <p className="text-[15px] text-black leading-relaxed">A model is only as good as its validation. Here's exactly what to measure and when — so you're not relying on our assumptions when you could be relying on your data.</p>
-                  <div className="space-y-4">
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">Before Implementation</h4><span className="text-xs text-[#888888] font-medium">Baseline period</span></div>
-                      <p className="text-sm text-[#666666] mb-3">Lock in your baselines before anything changes. This is what makes before/after credible.</p>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                        <li>Pull 12 months of wRVU data by provider and specialty — you need enough volume to see patterns</li>
-                        <li>Baseline E/M level distribution (what % at each level, by provider)</li>
-                        <li>Document current denial rates by reason code — isolate documentation-related denials</li>
-                        <li>Survey physicians on documentation burden — you'll want to repeat this</li>
-                        <li>EHR session data: when does charting happen? How much is after-hours?</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 90 Days</h4><span className="text-xs text-[#888888] font-medium">Early signal</span></div>
-                      <p className="text-sm text-[#666666] mb-3">Time savings and documentation quality show up fast. Revenue impact takes longer.</p>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                        <li>Repeat time studies — compare doc time per encounter, after-hours charting</li>
-                        <li>E/M level comparison: pilot providers vs. baseline (same providers, not just average)</li>
-                        <li>Same-day note closure rate — often the most dramatic early metric</li>
-                        <li>Provider satisfaction survey — qualitative signal matters here</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 6-12 Months</h4><span className="text-xs text-[#888888] font-medium">Revenue validation</span></div>
-                      <p className="text-sm text-[#666666] mb-3">This is where financial impact becomes statistically meaningful.</p>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                        <li>Year-over-year wRVU comparison — control for patient mix and volume changes</li>
-                        <li>Denial rate trends by category — isolate documentation-related improvement</li>
-                        <li>Capacity utilization: did volumes increase? Were new slots added?</li>
-                        <li>HCC recapture rates for MA populations (if applicable)</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3"><h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 18+ Months</h4><span className="text-xs text-[#888888] font-medium">Long-term impact</span></div>
-                      <p className="text-sm text-[#666666] mb-3">Retention and culture shifts take time. Don't rush this measurement.</p>
-                      <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                        <li>Turnover rates: Abridge providers vs. control group</li>
-                        <li>Exit interview data — is documentation still cited as a burnout driver?</li>
-                        <li>Recruiting pipeline — are candidates asking about AI documentation tools?</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </CollapsibleSection>
-            </div>
-
-            <div className="px-6">
-              <CollapsibleSection sectionId="connected-value" title="Connected Value" subtitle="How outpatient documentation connects to your organization">
-                <div className="space-y-4 text-[15px] text-black leading-relaxed">
-                  <p>Outpatient documentation doesn't exist in isolation. The quality of what's captured in the office visit ripples across the organization:</p>
-                  <div className="space-y-4 mt-4">
-                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Downstream referrals</h4><p className="text-sm text-[#666666] leading-relaxed">When primary care documentation is complete, specialists receive better context. Fewer repeat tests, faster diagnoses, better outcomes. Hard to quantify, but real.</p></div>
-                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Value-based contracts</h4><p className="text-sm text-[#666666] leading-relaxed">HCC accuracy drives risk adjustment in MA plans. Complete documentation supports accurate RAF scores, which determine capitated payments. This is quantified separately in our model for practices with significant MA populations.</p></div>
-                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]"><h4 className="font-bold text-black mb-2 text-sm">Pre-authorization efficiency</h4><p className="text-sm text-[#666666] leading-relaxed">Complete clinical documentation reduces prior auth denials and the back-and-forth that consumes staff time. We don't model this directly, but organizations with high prior auth volumes report meaningful time savings.</p></div>
-                  </div>
-                  <p className="text-[#666666] italic mt-4">We don't sum these into the ROI model because the attribution gets fuzzy. But they're real — and they're part of the strategic case for documentation quality that goes beyond the numbers.</p>
-                </div>
-              </CollapsibleSection>
-            </div>
-          </div>
-        </div>
+        <OPValueArchitectureSection />
 
         <motion.div className="mt-4 mb-10 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
@@ -682,29 +1183,29 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
           </button>
         </motion.div>
 
-        <p className="text-xs text-[#888888] leading-relaxed mb-6">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting. This methodology does not constitute a guarantee of financial outcomes.</p>
+        <p className="text-xs text-[#888888] leading-relaxed mb-6">Projections are modeled estimates based on user-provided inputs, published industry benchmarks, and aggregated deployment experience. Actual results may vary based on implementation approach, provider adoption, organizational factors, and care setting.</p>
 
         <div className="mb-8">
           <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">Related Methodologies</p>
           <div className="grid md:grid-cols-3 gap-4">
             <button onClick={() => onNavigateToSetting?.("ed")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left" data-testid="link-setting-ed">
               <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Activity className="w-5 h-5 text-[#EA2C00]" /></div>
-              <div><p className="font-medium text-black text-sm">Emergency</p><p className="text-xs text-[#888888]">Throughput & LWBS</p></div>
+              <div><p className="font-medium text-black text-sm">Emergency</p><p className="text-xs text-[#888888]">High-volume documentation pressure</p></div>
             </button>
             <button onClick={() => onNavigateToSetting?.("inpatient")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left" data-testid="link-setting-inpatient">
               <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Building2 className="w-5 h-5 text-[#EA2C00]" /></div>
-              <div><p className="font-medium text-black text-sm">Inpatient</p><p className="text-xs text-[#888888]">DRG & documentation quality</p></div>
+              <div><p className="font-medium text-black text-sm">Inpatient</p><p className="text-xs text-[#888888]">DRG accuracy & CMI</p></div>
             </button>
             <button onClick={() => onNavigateToSetting?.("nursing")} className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left" data-testid="link-setting-nursing">
               <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center"><Heart className="w-5 h-5 text-[#EA2C00]" /></div>
-              <div><p className="font-medium text-black text-sm">Nursing</p><p className="text-xs text-[#888888]">OT reduction & retention</p></div>
+              <div><p className="font-medium text-black text-sm">Nursing</p><p className="text-xs text-[#888888]">Flowsheet & care documentation</p></div>
             </button>
           </div>
         </div>
       </div>
 
       {isExporting && (
-        <div className="fixed bottom-4 right-4 bg-[#EA2C00] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50" data-testid="toast-pdf-download">
+        <div className="fixed bottom-4 right-4 bg-[#EA2C00] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50" data-testid="toast-pdf-download">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-sm font-medium">Preparing your PDF...</span>
         </div>

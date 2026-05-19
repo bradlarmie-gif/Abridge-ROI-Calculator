@@ -13,7 +13,6 @@ import manropeRegular from "../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../assets/fonts/manrope-bold.ttf";
 
 Font.registerHyphenationCallback((word) => [word]);
-
 Font.register({
   family: "Manrope",
   fonts: [
@@ -24,1219 +23,1167 @@ Font.register({
 
 export type MethodologyCareSetting = "outpatient" | "ed" | "inpatient" | "nursing";
 
-const colors = {
-  background: "#FFFFFF",
-  cards: "#F5F0EB",
-  primary: "#EA2C00",
-  primaryText: "#1A1A1A",
-  secondary: "#666666",
-  tertiary: "#999999",
-  border: "#E0E0E0",
-};
+// ─── Data Types ───────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  page: {
-    padding: 54,
-    paddingBottom: 50,
-    fontFamily: "Manrope",
-    fontSize: 10.5,
-    color: colors.primaryText,
-    backgroundColor: colors.background,
-  },
-  pageWrapper: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-  },
-  sectionLabel: {
-    fontSize: 9,
-    color: colors.primary,
-    textTransform: "uppercase",
-    letterSpacing: 2,
-    marginBottom: 8,
-    fontWeight: "bold",
-  },
-  sectionLabelGray: {
-    fontSize: 9,
-    color: colors.secondary,
-    textTransform: "uppercase",
-    letterSpacing: 2,
-    marginBottom: 8,
-    fontWeight: "bold",
-  },
-  body: {
-    fontSize: 10.5,
-    color: colors.secondary,
-    lineHeight: 1.5,
-    marginBottom: 10,
-  },
-  divider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    marginVertical: 10,
-  },
-  thickDivider: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.border,
-    marginVertical: 12,
-  },
-  cardBg: {
-    backgroundColor: colors.cards,
-    padding: 14,
-    borderRadius: 4,
-  },
-  calloutBox: {
-    backgroundColor: colors.cards,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-    padding: 12,
-  },
-  footer: {
-    marginTop: "auto",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  footerLeft: {
-    fontSize: 10,
-    color: colors.primary,
-    fontWeight: "bold",
-  },
-  footerCenter: {
-    fontSize: 8.5,
-    color: colors.secondary,
-  },
-  footerRight: {
-    fontSize: 8.5,
-    color: colors.tertiary,
-  },
-  twoColRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  col: {
-    flex: 1,
-  },
-});
-
-interface MechanismData {
-  name: string;
-  attribution: string;
-  description: string;
-  formula: string;
-  formulaColor?: string;
+interface TimelineStage {
+  window: string;
+  desc: string;
+  metrics: string[];
+  callout: string;
 }
 
-interface CategoryData {
+interface DomainEntry {
+  domain: "CAPACITY" | "WORKFORCE" | "REVENUE" | "QUALITY";
+  badge: string;
+  northStar: string;
+  direction: "↑" | "↓";
+  sub: string;
+  matterMostIf: string;
+  alsoNote?: string;
+  chain: string[];
+  chainOutput: string;
+  tag: "modeled" | "tracked";
+  narrative: string;
+  signal: TimelineStage;
+  trend: TimelineStage;
+  proof: TimelineStage;
+}
+
+interface SettingPDFData {
   label: string;
-  labelColor: string;
-  mechanisms: MechanismData[];
-}
-
-interface HonestLimitsData {
-  measure: string[];
-  influence: string[];
-  enable: string[];
-}
-
-interface AssumptionRow {
-  assumption: string;
-  range: string;
-  defaultVal: string;
-  source: string;
-}
-
-interface ValidationCard {
-  name: string;
-  before: string[];
-  after: string[];
-  timeline: string;
-}
-
-interface DomainCard {
-  label: string;
-  description: string;
-  footer: string;
-  accentColor: string;
-}
-
-interface SettingData {
-  settingLabel: string;
-  settingLabelLower: string;
   coverSubtitle: string;
   contextHeadline: string;
   contextBody: string;
-  contextQuestion: string;
-  cat1Label: string;
-  cat1Description: string;
-  cat1Footer: string;
-  cat2Label: string;
-  cat2Description: string;
-  cat2Footer: string;
-  domains?: DomainCard[];
-  frameworkCallout: string;
-  categories: CategoryData[];
-  honestLimits: HonestLimitsData;
-  connectedValueLabel: string;
-  connectedValue: string;
-  mechanismsSubtitle: string;
-  careQualityCallout: string;
-  assumptions: AssumptionRow[];
-  conservativeCallout: string;
-  validation: ValidationCard[];
-  closingNote: string;
+  adoptionCallout: string;
+  domains: DomainEntry[];
 }
 
-const settingData: Record<MethodologyCareSetting, SettingData> = {
-  nursing: {
-    settingLabel: "Nursing",
-    settingLabelLower: "nursing",
-    coverSubtitle: "A transparent framework for understanding where\nvalue lives when there\u2019s no billing relationship",
-    contextHeadline: "Nursing is the hardest setting to model ROI\u2014and the most important to get right.",
-    contextBody: "In outpatient medicine, a physician saves 3 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. In nursing, the same time saved flows differently: documentation burden accounts for 25\u201335% of every shift, and reclaiming that time shows up in overtime reduction, retention improvement, and more bedside time. The four-domain framework applies here\u2014revenue flows through quality outcomes, workforce stability, and support for physician coding accuracy. What nursing has is the largest quality footprint in the building: HAPI, falls, CAUTI, CLABSI, sepsis SEP-1, HAC penalties, and HCAHPS scores all run through nursing documentation. That\u2019s where the value lives.",
-    contextQuestion: "Three active domains \u2014 Quality, Workforce, and Capacity.",
-    cat1Label: "WORKFORCE",
-    cat1Description: "Retention and agency reduction.",
-    cat1Footer: "Measurable",
-    cat2Label: "QUALITY",
-    cat2Description: "HAPI, falls, CAUTI, CLABSI, sepsis, HCAHPS.",
-    cat2Footer: "Potential",
-    domains: [
-      {
-        label: "QUALITY",
-        description: "Nursing documentation drives the largest quality footprint in the hospital: HAPI prevention, falls, CAUTI, CLABSI, sepsis SEP-1 bundle compliance, and HCAHPS. When documentation is real-time and complete, assessments are captured when they happen\u2014not reconstructed hours later. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Potential \u2014 documentation enables, clinical practice realizes",
-        accentColor: colors.primary,
-      },
-      {
-        label: "WORKFORCE",
-        description: "Nursing turnover and agency dependency are the most expensive workforce problems in healthcare, and documentation burden is a measurable contributor. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Measurable \u2014 retention and agency spend tracked",
-        accentColor: colors.secondary,
-      },
-      {
-        label: "CAPACITY",
-        description: "When nurses spend less time documenting, on-time shift completion improves and a portion of that time tends to show up as reduced overtime\u2014the most direct, payroll-verified financial signal in nursing. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Measurable \u2014 OT hours visible within 2\u20133 months",
-        accentColor: colors.primary,
-      },
-      {
-        label: "REVENUE",
-        description: "Nurses don\u2019t bill directly. Revenue impact flows through quality, workforce stability, and support for physician documentation\u2014not a billing line. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Revenue flows through Quality and Workforce \u2014 tracked there",
-        accentColor: colors.tertiary,
-      },
-    ],
-    frameworkCallout: "Three domains are active in nursing: Quality, Workforce, and Capacity. Nursing\u2019s financial impact flows through quality outcomes, workforce stability, and documentation that supports physician coding accuracy\u2014not direct billing. Track it there\u2014those numbers are real and defensible.",
-    categories: [
-      {
-        label: "QUALITY",
-        labelColor: colors.primary,
-        mechanisms: [
-          {
-            name: "HAPI Prevention",
-            attribution: "Trend",
-            description: "Real-time documentation ensures skin assessments and risk factors are captured when they\u2019re observed\u2014not reconstructed at end of shift when the picture has already changed. Complete risk documentation enables earlier intervention for pressure injuries. CMS does not reimburse for hospital-acquired pressure injuries; each HAPI represents both a clinical failure and a financial penalty.",
-            formula: "Current HAPIs \u00D7 Doc-preventable % (3\u201310%) \u00D7 Cost per HAPI ($10K\u2013$100K+, severity-dependent)",
-          },
-          {
-            name: "Falls Prevention",
-            attribution: "Trend",
-            description: "Real-time fall risk scores and mobility status documentation enable earlier preventive action. When risk assessments are completed and documented at the right intervals, fall prevention protocols can be activated before an event occurs. CMS does not reimburse for hospital-acquired fall injuries.",
-            formula: "Current falls \u00D7 Doc-preventable % (3\u201310%) \u00D7 Cost per fall ($14\u201335K)",
-          },
-          {
-            name: "CAUTI & CLABSI Prevention",
-            attribution: "Trend",
-            description: "Device-associated infection prevention depends on insertion documentation, daily necessity assessments, and removal timing. When nursing documentation captures device placement dates, indication reviews, and care bundle compliance in real time, infection prevention teams have the data to act. CMS penalizes HAI rates through the HAC Reduction Program.",
-            formula: "CAUTI/CLABSI rates \u00D7 Doc-preventable % (3\u20138%) \u00D7 Cost per event \u00D7 HAC penalty exposure",
-          },
-          {
-            name: "Sepsis SEP-1 Bundle Compliance",
-            attribution: "Trend",
-            description: "Sepsis SEP-1 bundle compliance requires timely documentation of screening, assessment, and intervention\u2014across nursing and physician notes. When nursing documentation captures vital sign changes, mental status shifts, and suspected infection in real time, the clinical picture that triggers sepsis recognition is clearer and faster. Earlier recognition improves outcomes and supports bundle compliance rates reported to CMS.",
-            formula: "Measured: SEP-1 bundle compliance rate, time-to-recognition for sepsis alerts \u2014 not monetized directly",
-            formulaColor: colors.tertiary,
-          },
-          {
-            name: "HCAHPS & Patient Experience",
-            attribution: "Proof",
-            description: "More bedside time correlates with higher patient experience scores. When documentation is faster, nurses spend more time at the bedside\u2014which is where responsiveness, communication, and care perception are shaped. HCAHPS scores affect VBP reimbursement by approximately 2% for top-quartile performers. We treat this as a directional indicator, not a direct attribution.",
-            formula: "Top quartile HCAHPS \u2248 2% higher VBP reimbursement \u2014 tracked as indicator, not outcome",
-            formulaColor: colors.tertiary,
-          },
-        ],
-      },
-      {
-        label: "WORKFORCE",
-        labelColor: colors.secondary,
-        mechanisms: [
-          {
-            name: "Nurse Retention Savings",
-            attribution: "Trend",
-            description: "Documentation burden is among the top drivers of nursing burnout and departure. When nurses finish shifts on time and spend less time on administrative documentation, the friction that precedes burnout decreases. At $50K\u2013$100K per nurse replacement (NSI 2023), even modest retention improvement compounds significantly across a large nursing staff. We use conservative impact rates (10\u201325%) because documentation is one of many burnout factors.",
-            formula: "Nurses \u00D7 Turnover (15\u201325%) \u00D7 Burnout % (30\u201350%) \u00D7 Burnout attribution (10\u201325%) \u00D7 Replacement cost ($50\u2013100K)",
-          },
-          {
-            name: "Agency Labor Reduction",
-            attribution: "Trend",
-            description: "When nurses leave, hospitals fill coverage gaps with agency and travel nurses at 2\u20133\u00D7 the cost of permanent staff. Better retention directly reduces agency dependency. This is the highest-dollar workforce outcome in nursing\u2014agency premiums of $2,000\u2013$4,000 per week per nurse add up quickly across a unit with persistent vacancies.",
-            formula: "Nurses retained \u00D7 Coverage weeks needed (8\u201316 wks) \u00D7 Weekly agency premium ($2\u20134K)",
-          },
-        ],
-      },
-      {
-        label: "CAPACITY",
-        labelColor: colors.primary,
-        mechanisms: [
-          {
-            name: "Overtime Reduction",
-            attribution: "Signal",
-            description: "When nurses document faster, they finish their shift workload on time. Not all time saved reduces overtime\u2014some returns to patient care, which is the right use of it. But a measurable portion of time saved does convert to shift completion, reducing mandatory and voluntary overtime hours. This is the most immediately trackable financial outcome in nursing ROI, visible in payroll data within 2\u20133 months.",
-            formula: "Nurses \u00D7 Shifts/year \u00D7 Time saved/shift \u00D7 OT conversion rate (15\u201340%) \u00D7 OT rate (1.5\u00D7 base hourly)",
-          },
-        ],
-      },
-    ],
-    careQualityCallout: "The link between documentation and care quality is indirect. We don\u2019t cause fewer falls\u2014we enable the visibility that helps prevent them. Clinical practice matters more than documentation. We model Quality outcomes separately from Labor Economics for exactly this reason: the causal chain is real but longer, and conflating them overstates confidence.",
-    honestLimits: {
-      measure: [
-        "OT hours per unit per month \u2014 payroll data, 2\u20133 months",
-        "Documentation time per shift \u2014 EHR session data, weeks",
-        "Shift completion rate \u2014 scheduling data",
-        "Agency utilization hours and cost",
-      ],
-      influence: [
-        "Turnover rates \u2014 12\u201318 months to measure",
-        "HAPI and falls rates \u2014 clinical practice dependent",
-        "SEP-1 bundle compliance \u2014 multi-disciplinary",
-        "HCAHPS scores \u2014 many factors beyond documentation",
-      ],
-      enable: [
-        "HAC penalty reduction \u2014 payer and CMS timing dependent",
-        "VBP reimbursement improvement \u2014 annual settlement",
-        "Care coordination quality \u2014 downstream",
-        "Inpatient DRG accuracy \u2014 quantified in Inpatient model",
-      ],
-    },
-    connectedValueLabel: "CONNECTED VALUE",
-    connectedValue: "When nurses document thoroughly and in real time, it directly impacts inpatient revenue. Nursing assessments capture clinical indicators\u2014skin integrity, nutritional status, fall risk, mental status\u2014that CDI teams use to support CC/MCC coding and DRG accuracy. Complete nursing documentation also strengthens the inpatient record for payer audit defense. These benefits are quantified in the Inpatient methodology to avoid double-counting.",
-    mechanismsSubtitle: "How Each Domain Creates Value in Nursing",
-    assumptions: [
-      { assumption: "Time saved/shift", range: "15\u201330 min", defaultVal: "20 min", source: "Customer data" },
-      { assumption: "OT conversion rate", range: "15\u201340%", defaultVal: "25%", source: "Studies" },
-      { assumption: "Nurse base hourly rate", range: "$35\u201355/hr", defaultVal: "$42/hr", source: "BLS 2024" },
-      { assumption: "Nurse turnover", range: "15\u201325%", defaultVal: "18%", source: "NSI 2024" },
-      { assumption: "Burnout-related %", range: "30\u201350%", defaultVal: "40%", source: "ANA" },
-      { assumption: "Retention impact", range: "10\u201325%", defaultVal: "15%", source: "Conservative" },
-      { assumption: "Replacement cost", range: "$50\u2013100K", defaultVal: "$65K", source: "NSI 2023" },
-      { assumption: "Agency coverage weeks", range: "8\u201316 wks", defaultVal: "12 wks", source: "Industry avg" },
-      { assumption: "Agency weekly premium", range: "$2\u20134K/wk", defaultVal: "$2,500", source: "Travel nursing" },
-      { assumption: "Doc-preventable HAE %", range: "3\u201310%", defaultVal: "5%", source: "Conservative" },
-      { assumption: "Cost per HAPI", range: "$10K\u2013$100K+", defaultVal: "$40K", source: "AHRQ \u2014 severity-dependent" },
-      { assumption: "Cost per fall", range: "$14\u201335K", defaultVal: "$25K", source: "Industry estimates" },
-    ],
-    conservativeCallout: "We\u2019d rather show a smaller number you can defend than a larger number that falls apart under scrutiny. Quality outcomes are shown separately from Labor Economics because the causal chain is longer and the attribution is indirect. We\u2019d rather be honest about that than bundle everything into a single inflated number.",
-    validation: [
-      {
-        name: "CAPACITY (OVERTIME)",
-        before: ["OT hours per unit per month \u2014 baseline by season", "Shift completion rate \u2014 mandatory vs. voluntary OT split"],
-        after: ["Track OT hours \u2014 Abridge vs. control units", "Compare shift completion rate pre/post"],
-        timeline: "2\u20133 months",
-      },
-      {
-        name: "QUALITY (HAPI + FALLS)",
-        before: ["HAPI and falls rates per unit \u2014 12-month baseline", "Bundle compliance rates (SEP-1, CAUTI, CLABSI)"],
-        after: ["Track event rates \u2014 Abridge vs. control units", "Be cautious on attribution \u2014 use as indicator, not proof"],
-        timeline: "6\u201312 months \u2014 treat as bonus, not promise",
-      },
-      {
-        name: "WORKFORCE (RETENTION + AGENCY)",
-        before: ["Turnover by unit \u2014 baseline and exit interview data", "Agency hours and spend per unit per month"],
-        after: ["Track turnover Abridge vs. control units", "Track agency utilization monthly"],
-        timeline: "12\u201318 months",
-      },
-      {
-        name: "REVENUE",
-        before: ["Baseline VBP scores and HAC penalty exposure", "CC/MCC capture rate \u2014 see Inpatient methodology"],
-        after: ["Track VBP reimbursement trend annually", "Revenue impact of nursing documentation tracked in Inpatient model"],
-        timeline: "Tracked through Quality and Workforce timelines",
-      },
-    ],
-    closingNote: "This methodology reflects Abridge\u2019s approach to modeling nursing ROI across four domains: Quality, Workforce, Capacity, and Revenue. Three domains are active. Revenue flows through quality outcomes and workforce stability\u2014those numbers are real and defensible, they just live in different domains than physician ROI. All defaults are conservative and editable. The goal is a framework you can walk into a CFO conversation with\u2014not a number that falls apart under the first question.",
-  },
-  outpatient: {
-    settingLabel: "Outpatient",
-    settingLabelLower: "outpatient",
-    coverSubtitle: "A transparent framework for understanding where\ntime saved becomes measurable value across four domains",
-    contextHeadline: "Outpatient has the clearest path from time saved to dollars\u2014which is exactly why the assumptions matter most here.",
-    contextBody: "A physician saves 2\u20134 minutes per visit. That time can become more patients, less pajama-time charting, or better documentation quality. Billing creates traceability, but traceability isn\u2019t the same as simplicity. Every conversion step has a realization rate, and we model each one honestly. The four-domain framework keeps the story organized: Quality is about what gets documented. Workforce is about who stays. Capacity is about throughput. Revenue is about what coding and billing recover.",
-    contextQuestion: "Four value domains \u2014 each with a different measurement timeline.",
-    cat1Label: "CAPACITY",
-    cat1Description: "More patients seen, less after-hours work.",
-    cat1Footer: "Measurable",
-    cat2Label: "REVENUE",
-    cat2Description: "wRVU accuracy, HCC capture, denial prevention.",
-    cat2Footer: "Auditable",
-    domains: [
-      {
-        label: "QUALITY",
-        description: "Documentation completeness drives referral quality and risk adjustment accuracy for value-based contracts. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Proof \u2014 qualitative, tracked not monetized",
-        accentColor: colors.primary,
-      },
-      {
-        label: "WORKFORCE",
-        description: "Physician burnout and turnover represent the largest hidden cost in outpatient practices, with documentation burden a measurable driver. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Influenceable \u2014 retention impact at 12\u201318 months",
-        accentColor: colors.secondary,
-      },
-      {
-        label: "CAPACITY",
-        description: "Time saved per encounter is the outpatient multiplier\u2014translating directly into capacity or clinical headroom depending on scheduling and demand. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Measurable \u2014 visit volume and schedule utilization",
-        accentColor: colors.primary,
-      },
-      {
-        label: "REVENUE",
-        description: "wRVU accuracy and denial prevention are the most directly attributable revenue drivers in outpatient. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Auditable \u2014 billing data within 90 days",
-        accentColor: colors.secondary,
-      },
-    ],
-    frameworkCallout: "We model all four domains\u2014but we\u2019re transparent about what each requires to measure. Capacity is visible in weeks. Revenue (wRVU, denials) is auditable from claims data within 90 days. Workforce (retention) takes 12\u201318 months. Quality drives downstream outcomes we track and report\u2014because honest measurement is more defensible than a made-up number.",
-    categories: [
-      {
-        label: "QUALITY",
-        labelColor: colors.primary,
-        mechanisms: [
-          {
-            name: "Referral & Downstream Documentation",
-            attribution: "Proof",
-            description: "When outpatient notes capture full clinical context\u2014differential reasoning, exam findings, medication rationale\u2014specialist referrals arrive with the information needed to act. Thin referral notes create redundant workups, delays, and patient frustration. Documentation quality is the upstream input to care coordination quality.",
-            formula: "Measured: referral note completeness rate, prior auth approval rate, specialist query volume on incoming referrals",
-          },
-          {
-            name: "HCC Accuracy (Medicare Advantage)",
-            attribution: "Trend",
-            description: "Medicare Advantage populations require annual documentation of active chronic conditions to maintain RAF scores. When documentation is complete and specific\u2014using the right ICD-10 codes, capturing status and treatment\u2014risk adjustment payments follow. When conditions are documented inconsistently year-over-year, RAF scores drift downward and per-member payments fall.",
-            formula: "MA patients \u00D7 Condition gap rate \u00D7 Recapture % (20\u201335%) \u00D7 RAF impact \u00D7 Per-member payment",
-          },
-        ],
-      },
-      {
-        label: "WORKFORCE",
-        labelColor: colors.secondary,
-        mechanisms: [
-          {
-            name: "Provider Retention Savings",
-            attribution: "Trend",
-            description: "Documentation burden is the single most-cited driver of physician burnout in outpatient medicine. Ambient AI documentation can reduce after-hours charting\u2014pajama time\u2014and between-patient documentation time. At $250K\u2013$500K per physician replacement (recruiting, onboarding, productivity ramp, and coverage), even a modest reduction in burnout-driven departures generates significant avoided cost. We use conservative impact rates because documentation is one of many burnout factors.",
-            formula: "Providers \u00D7 Turnover (4\u20138%) \u00D7 Burnout % (30\u201350%) \u00D7 Burnout attribution (10\u201320%) \u00D7 Replacement cost ($250\u2013500K)",
-          },
-        ],
-      },
-      {
-        label: "CAPACITY",
-        labelColor: colors.primary,
-        mechanisms: [
-          {
-            name: "Patient Access Expansion",
-            attribution: "Trend",
-            description: "When documentation per encounter takes less time, that time can be reallocated to additional patient visits. The conversion rate is not 100%\u2014scheduling, demand, and practice model constrain it. We apply a realistic conversion rate (15\u201330%) and let you adjust based on your scheduling patterns. Practices with open access models and unmet demand see higher capacity conversion than fully booked panels.",
-            formula: "Hours saved \u00D7 % to capacity (15\u201330%) \u00D7 Revenue per visit \u00D7 Realization (70\u201385%)",
-          },
-          {
-            name: "Operational Time Recovery",
-            attribution: "Signal",
-            description: "Time saved that doesn\u2019t convert to additional patients still has value\u2014it reduces after-hours overtime, lowers per-encounter labor cost, and improves the economics of the practice day. We show this as a floor scenario: even if zero additional patients are seen, documentation time has a dollar value based on the hourly cost of physician time.",
-            formula: "Providers \u00D7 Encounters \u00D7 Time saved (2\u20134 min) \u00D7 Conversion (15\u201330%) \u00D7 Physician hourly rate ($100\u2013250)",
-          },
-        ],
-      },
-      {
-        label: "REVENUE",
-        labelColor: colors.secondary,
-        mechanisms: [
-          {
-            name: "wRVU Capture",
-            attribution: "Trend",
-            description: "Better documentation supports accurate coding. Notes that capture full clinical complexity\u2014multiple diagnoses addressed, medical decision-making detail, time-based billing eligibility\u2014yield higher wRVUs. The mechanism is documentation of complexity that was already delivered, not upcoding. wRVU lift is auditable from billing data by comparing level mix before and after implementation.",
-            formula: "Encounters \u00D7 Avg wRVU (specialty-specific) \u00D7 Lift % (2\u20137%) \u00D7 Conversion factor ($33\u201336) \u00D7 Realization (75\u201385%)",
-          },
-          {
-            name: "Denial Prevention",
-            attribution: "Trend",
-            description: "Documentation gaps drive unappealable denials\u2014revenue that is permanently lost, not just delayed. The most common outpatient denial root causes are missing medical necessity language, incomplete exam documentation, and absent clinical rationale for ordered services. Real-time capture prevents these gaps at the point of care. Your RCM team can identify documentation-related denials by root cause code.",
-            formula: "Encounters \u00D7 Denial rate \u00D7 Doc-related % \u00D7 Prevention rate (25\u201350%) \u00D7 Avg claim value",
-          },
-        ],
-      },
-    ],
-    careQualityCallout: "Revenue optimization depends on coding workflows, payer mix, and practice patterns. We provide the framework\u2014your data determines the magnitude. HCC accuracy is most valuable for MA-heavy practices; wRVU lift matters most in fee-for-service contexts. The model lets you weight each lever based on your payer mix.",
-    honestLimits: {
-      measure: [
-        "Time per encounter \u2014 EHR timestamps, visible in weeks",
-        "wRVU per visit \u2014 claims data, auditable at 90 days",
-        "Same-day note closure rate",
-        "After-hours charting volume (EHR session data)",
-      ],
-      influence: [
-        "Patient capacity \u2014 requires demand + scheduling alignment",
-        "HCC recapture \u2014 MA-dependent, requires coding workflow",
-        "Denial prevention \u2014 multi-factorial, RCM team dependent",
-        "Provider satisfaction \u2014 survey-based, directional",
-      ],
-      enable: [
-        "Retention \u2014 12\u201318 months to measure",
-        "Referral quality \u2014 downstream, hard to attribute",
-        "Patient satisfaction (CAHPS) \u2014 multi-factorial",
-        "Quality metrics \u2014 clinical practice dependent",
-      ],
-    },
-    connectedValueLabel: "CONNECTED VALUE",
-    connectedValue: "Outpatient documentation quality impacts downstream referrals (specialists receive better context), HCC accuracy for value-based contracts (RAF scores depend on annual documentation), and pre-authorization efficiency (complete clinical notes reduce prior auth denials). When outpatient notes are strong, the entire care continuum benefits.",
-    mechanismsSubtitle: "How Each Domain Creates Value in Outpatient",
-    assumptions: [
-      { assumption: "Time saved/encounter", range: "2\u20134 min", defaultVal: "3 min", source: "Deployment data" },
-      { assumption: "Time conversion rate", range: "15\u201330%", defaultVal: "25%", source: "Impl. data" },
-      { assumption: "Physician hourly rate", range: "$100\u2013250", defaultVal: "$150", source: "MGMA" },
-      { assumption: "Visit duration", range: "15\u201330 min", defaultVal: "20 min", source: "Specialty avg" },
-      { assumption: "Revenue per visit", range: "$150\u2013350", defaultVal: "$200", source: "Practice data" },
-      { assumption: "wRVU baseline per visit", range: "1.5\u20132.5", defaultVal: "1.8", source: "MGMA" },
-      { assumption: "wRVU conversion factor", range: "$30\u201350", defaultVal: "$33", source: "CMS MPFS" },
-      { assumption: "wRVU lift %", range: "2\u20137%", defaultVal: "4%", source: "Deployment data" },
-      { assumption: "Denial rate", range: "5\u201312%", defaultVal: "8%", source: "MGMA" },
-      { assumption: "HCC gap rate (MA)", range: "20\u201330%", defaultVal: "25%", source: "MA benchmarks" },
-      { assumption: "HCC recapture %", range: "20\u201335%", defaultVal: "25%", source: "Conservative" },
-      { assumption: "Denial prevention rate", range: "25\u201350%", defaultVal: "35%", source: "RCM benchmarks" },
-      { assumption: "Physician turnover", range: "4\u20138%", defaultVal: "6%", source: "AAMC" },
-      { assumption: "Burnout-related %", range: "30\u201350%", defaultVal: "40%", source: "AMA research" },
-      { assumption: "Retention impact", range: "10\u201320%", defaultVal: "15%", source: "Conservative" },
-      { assumption: "Replacement cost", range: "$250\u2013500K", defaultVal: "$350K", source: "AMGA" },
-    ],
-    conservativeCallout: "We\u2019d rather show a smaller number you can defend than a larger number that falls apart under scrutiny. The answer depends on your practice\u2014payer mix, scheduling model, and specialty all move the levers. We give you the framework; you supply the data that determines the magnitude.",
-    validation: [
-      {
-        name: "CAPACITY (TIME SAVINGS)",
-        before: ["EHR session data \u2014 time per encounter, after-hours charting", "Schedule utilization and open slot rate"],
-        after: ["Repeat EHR session data \u2014 Abridge vs. control providers", "Track encounter volume changes"],
-        timeline: "2\u20134 weeks",
-      },
-      {
-        name: "REVENUE (wRVU + DENIALS)",
-        before: ["wRVU distribution by provider and E/M level mix", "Denial rate by reason code \u2014 documentation-related"],
-        after: ["Compare wRVU distribution pre/post \u2014 Abridge vs. control", "Track denial rate trend quarterly"],
-        timeline: "3\u20136 months",
-      },
-      {
-        name: "QUALITY (HCC + REFERRALS)",
-        before: ["HCC capture rate for MA population", "Prior auth approval rate, referral note completeness"],
-        after: ["Track HCC recapture on Abridge providers vs. control", "Survey specialist partners on referral note quality"],
-        timeline: "3\u20136 months",
-      },
-      {
-        name: "WORKFORCE (RETENTION)",
-        before: ["Baseline turnover rate by provider group", "Exit interview data \u2014 documentation burnout attribution"],
-        after: ["Track turnover Abridge vs. pre-implementation", "Survey on documentation satisfaction at 6 and 12 months"],
-        timeline: "12\u201318 months",
-      },
-    ],
-    closingNote: "This methodology reflects Abridge\u2019s approach to modeling outpatient ROI across four domains: Quality, Workforce, Capacity, and Revenue. We lead with what\u2019s measurable (time savings, wRVU accuracy) and are transparent about what takes longer to prove (retention) and what we track without monetizing (referral quality, care coordination). All defaults are conservative and editable. The goal is a defensible framework, not a predetermined answer.",
-  },
+// ─── Content Data ─────────────────────────────────────────────────────────────
+
+export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
   ed: {
-    settingLabel: "Emergency",
-    settingLabelLower: "emergency",
-    coverSubtitle: "A transparent framework for understanding where\nvalue lives across four domains in the ED",
-    contextHeadline: "In the ED, you can\u2019t schedule value\u2014it shows up in the patients you keep, the complexity you capture, and the physicians who stay.",
-    contextBody: "Time savings per encounter are smaller here\u20142\u20134 minutes vs. outpatient\u2014because ED documentation is already faster-paced with more templated workflows. But the ED is a volume engine. At 40,000\u201380,000 visits per year, those minutes compound: three minutes across 50,000 visits is 2,500 hours of physician time. The ED\u2019s unique challenge is that notes get worse when volume gets high. During surges, documentation quality drops\u2014E/M levels understate complexity, medical necessity gets under-documented, and for admitted patients, the ED note becomes the foundation of the entire inpatient DRG. Ambient AI doesn\u2019t get tired during a surge.",
-    contextQuestion: "Four value domains \u2014 each with a different measurement timeline.",
-    cat1Label: "CAPACITY",
-    cat1Description: "LWBS recovery and throughput improvement.",
-    cat1Footer: "Trackable",
-    cat2Label: "REVENUE",
-    cat2Description: "E/M accuracy and denial prevention.",
-    cat2Footer: "Auditable",
+    label: "Emergency Department",
+    coverSubtitle:
+      "A transparent framework for understanding\nwhere Abridge creates value in the emergency department",
+    contextHeadline:
+      "Every minute a physician spends documenting is a minute not available for the next patient.",
+    contextBody:
+      "In the ED, documentation is a throughput constraint, a physician retention risk, and a revenue integrity gap — all simultaneously. Abridge addresses the documentation bottleneck at the source: the encounter itself, not the end of the shift.",
+    adoptionCallout:
+      "All outcomes in this framework require consistent Abridge adoption. Partial use produces partial results. The Signal / Trend / Proof timeline on each domain page shows what to track, and when — starting with the metrics most directly influenced by documentation behavior.",
     domains: [
       {
-        label: "QUALITY",
-        description: "Documentation accuracy under pressure\u2014capturing complexity that determines DRG, E/M level, and clinical defensibility. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Proof \u2014 qualitative, with measurable CDI impact",
-        accentColor: colors.primary,
+        domain: "CAPACITY",
+        badge: "Throughput & Patient Flow",
+        northStar: "LWBS Rate",
+        direction: "↓",
+        sub: "The bottleneck in ED throughput is physician availability — and physician availability is constrained by documentation time. When a note takes 12 minutes instead of 4, the physician can't give full attention to the next patient for 8 additional minutes. Across 30 encounters per shift, that's 4 hours of clinical capacity absorbed by documentation. Reducing LWBS requires two sequential steps: throughput must improve first, then recaptured capacity must be filled with volume — LWBS won't move until both conditions are met.",
+        matterMostIf:
+          "Your LWBS rate is above benchmark (1–2% is strong; 3–5%+ warrants active intervention), you're competing on patient access, or your CFO is asking why throughput hasn't improved despite staffing investments.",
+        alsoNote:
+          "Throughput improvement also supports physician wellbeing (Workforce) — providers who aren't carrying documentation backlog are more present for each patient interaction.",
+        chain: ["Documentation Time ↓", "Physician Availability ↑", "Bed Cycle Time ↓"],
+        chainOutput: "LWBS Rate ↓",
+        tag: "modeled",
+        narrative:
+          "LWBS events represent visits the ED attempted to serve but lost to wait times. Documentation burden is one contributor to throughput delays. The model estimates revenue recovery from LWBS reduction, attributing only a defensible fraction to documentation-related delays — not total throughput, which has many drivers.",
+        signal: {
+          window: "Month 1–3",
+          desc: "Documentation behavior shifts",
+          metrics: ["Documentation Time Per Encounter", "After-Shift Charting Time"],
+          callout:
+            "Documentation time is the upstream gate. Until it reaches a consistent low, physician availability, bed cycle time, and LWBS all stay locked. Stabilizing this metric isn't the goal — it's the precondition for every outcome downstream.",
+        },
+        trend: {
+          window: "Month 3–7",
+          desc: "Throughput improves",
+          metrics: ["Door-to-Provider Time", "Patients Per Provider Per Hour"],
+          callout:
+            "Aggregate throughput improvement takes 3–7 months because one physician going faster doesn't shift department-level wait dynamics. The change requires enough adopting physicians to create system-wide capacity. Watch door-to-provider time at the department level — not per provider. When it starts moving, adoption has reached a threshold where individual behavior is becoming collective throughput.",
+        },
+        proof: {
+          window: "Month 7–12+",
+          desc: "Access outcomes confirmed",
+          metrics: ["LWBS Rate (%)", "Additional Patient Volume"],
+          callout:
+            "LWBS moves at 7–12 months for two reasons that compound: throughput improvement has to be consistent enough that patients who would have left are actually being seen before they leave — that requires department-wide adoption; and volume has to be present to fill the recaptured capacity. Both conditions have to hold simultaneously.",
+        },
       },
       {
-        label: "WORKFORCE",
-        description: "Physician burnout and turnover are the ED\u2019s slow bleed\u2014documentation burden is a measurable contributor. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Influenceable \u2014 retention impact at 12\u201318 months",
-        accentColor: colors.secondary,
+        domain: "WORKFORCE",
+        badge: "Clinician Wellbeing & Retention",
+        northStar: "Voluntary Turnover",
+        direction: "↓",
+        sub: "After a 10-hour ED shift, documentation often doesn't end when the shift does. Sixty to ninety minutes of charting follows physicians home. Ambient capture removes this backlog by capturing documentation during the encounter rather than after it — so the post-shift queue is empty when the shift ends. The mechanism matters: Abridge doesn't just speed up documentation, it moves it from a deferred task to a completed one. The physician who leaves knowing their notes are done experiences something categorically different from one who leaves 90 minutes faster but still behind.",
+        matterMostIf:
+          "Each physician departure costs an estimated $250K–$500K to replace — recruiting, credentialing, onboarding, lost productivity. Locum coverage during vacancy adds further cost at 2–3× employed rates. Even one additional retention per year covers a significant portion of program cost.",
+        alsoNote:
+          "Engaged, non-burned-out physicians document more thoroughly (Quality) and see patients more efficiently (Capacity). Workforce outcomes ripple across the full value story.",
+        chain: ["After-Shift Charting ↓", "Cognitive Load ↓", "Provider Wellbeing ↑"],
+        chainOutput: "Voluntary Turnover ↓",
+        tag: "modeled",
+        narrative:
+          "Emergency medicine physicians frequently complete documentation after their shift ends. Industry sources estimate EM physician replacement costs at $350K–$600K per departure. The model attributes only a defensible fraction of departures to documentation burden — not all turnover stems from it, and the calculation makes that explicit.",
+        signal: {
+          window: "Month 1–3",
+          desc: "EHR behavior changes",
+          metrics: ["After-Shift Charting Time (Pajama Time)", "Documentation Time Per Encounter"],
+          callout:
+            "For consistent adopters, EHR audit data typically shows pajama time reduction within the first month, requires no coordination, and is the most visceral proof point for physicians. It's also your adoption infrastructure — physicians who experience reduced pajama time tell each other. The peer conversation that happens around this metric is what drives adoption in months 2–6.",
+        },
+        trend: {
+          window: "Month 3–6",
+          desc: "Wellbeing signals emerge",
+          metrics: ["Provider Wellbeing Score", "Intent to Stay"],
+          callout:
+            "Wellbeing scores move at Month 3–6 because sustained relief from documentation burden takes months to change how a physician thinks about their situation. A physician who has been considering leaving doesn't reverse that after one good week — the reversal requires experiencing a structurally different workload over time. This is the window to build the financial bridge: wellbeing improvement is the most defensible leading indicator available before the 12-month turnover window.",
+        },
+        proof: {
+          window: "Month 12–18",
+          desc: "Retention confirmed",
+          metrics: ["Voluntary Physician Turnover Rate", "Locum & Agency Utilization"],
+          callout:
+            "Voluntary turnover requires 12–18 months for two reasons: individual departure decisions accumulate and reverse slowly, and annual departure counts are small enough that statistical movement requires a full measurement year. A group of 30 physicians at 10% voluntary turnover produces 3 departures per year — preventing 1 additional departure is meaningful financially, but requires a full year to see.",
+        },
       },
       {
-        label: "CAPACITY",
-        description: "Throughput is the ED\u2019s operating system. Faster documentation is one lever\u2014not the only one. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Measurable \u2014 LWBS rate tracks weekly",
-        accentColor: colors.primary,
+        domain: "REVENUE",
+        badge: "Coding Integrity & Denial Prevention",
+        northStar: "Revenue Per Visit",
+        direction: "↑",
+        sub: "E/M level 4 and 5 codes require documentation of High Medical Decision Making — the differential reasoning, the data reviewed, the risk assessment. That clinical thinking happens in the conversation; under time pressure, it rarely makes it into the note. A provider works through a careful differential on a high-acuity chest pain, orders appropriately, and then writes 'chest pain workup, 12-lead ordered' because three more patients are waiting. Ambient capture preserves the MDM as it happens. The coding change isn't upcoding — it's the note finally reflecting what was actually managed.",
+        matterMostIf:
+          "Your E/M distribution is skewed toward mid-level codes despite high-acuity encounters, your medical necessity denial rate is above 3–5%, or your revenue cycle team is flagging documentation gaps as a root cause of write-offs.",
+        alsoNote:
+          "Denial reduction is frequently the larger financial impact of the two tracks — and it lives in your revenue cycle team, not just with the physician. Cross-departmental visibility is required to tell the full story.",
+        chain: ["Documentation Completeness ↑", "E/M Level Support ↑", "Medical Necessity Evidence ↑"],
+        chainOutput: "Revenue Per Visit ↑",
+        tag: "modeled",
+        narrative:
+          "More complete notes support higher E/M levels and withstand payer scrutiny. The model applies separate components for coding lift (E/M distribution improvement × volume) and denial prevention (documentation denial rate reduction × encounter volume). At scale across thousands of ED encounters, denial reduction frequently exceeds the coding story in total dollar impact.",
+        signal: {
+          window: "Month 1–3",
+          desc: "Documentation behavior shifts",
+          metrics: ["Same-Day Note Closure Rate", "Charge Lag (Days to Bill)"],
+          callout:
+            "Same-day note closure is the upstream gate for the entire revenue chain. Notes that close the day of service have charges submitted faster, with more complete MDM documentation. Watch charge lag and E/M distribution together — distribution shift (fewer Level 3, more Level 4) is visible before revenue numbers move, because coding changes precede payment by 60–90 days.",
+        },
+        trend: {
+          window: "Month 2–4",
+          desc: "Coding patterns emerge",
+          metrics: ["E/M Level Distribution (99281–99285 mix)", "CDI Query Rate on Admissions"],
+          callout:
+            "A single wRVU average can sit flat while the distribution shifts meaningfully — fewer mid-level codes, more high-acuity codes. Always show the full distribution alongside the mean. When providers who adopt consistently show more high-level codes in their distribution, documentation is improving — revenue follows the coding, and coding follows the note quality.",
+        },
+        proof: {
+          window: "Month 4–9",
+          desc: "Financial recovery confirmed",
+          metrics: ["wRVU Per Encounter", "Medical Necessity Denial Rate"],
+          callout:
+            "Revenue impact at Month 4–9 is the full chain completing: better notes → correct coding → clean claims → payment received. Medical necessity denials have an additional lag — denial, appeal, adjudication. When documentation quality is genuinely better, both paths improve simultaneously. E/M improvement is recovery, not inflation — the work was done; the note now reflects it.",
+        },
       },
       {
-        label: "REVENUE",
-        description: "ED coding is the most audit-vulnerable setting. Every surge creates under-documented complexity. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Auditable \u2014 claims data within 90 days",
-        accentColor: colors.secondary,
+        domain: "QUALITY",
+        badge: "Protocol Adherence & Clinical Evidence",
+        northStar: "Quality Measure Compliance",
+        direction: "↑",
+        sub: "Quality measure compliance is partly a documentation attribution problem: if the clinical action wasn't documented with the right specificity, quality systems can't attribute it. Time-sensitive decisions — when to start antibiotics in sepsis, the reasoning behind a thrombolytics decision, the triage-to-treatment timeline — happen at high speed during the encounter. Notes reconstructed hours later compress or lose that clinical reasoning. Ambient capture records the why at the moment it was articulated, not when the provider finally gets to the chart.",
+        matterMostIf:
+          "Your quality program shows compliance gaps that don't match your clinical team's account of care delivered, you're facing CMS core measure pressure, or your quality director is spending bandwidth resolving documentation deficiencies rather than driving improvement initiatives.",
+        alsoNote:
+          "Documentation quality in the ED has downstream effects beyond quality scores — it reduces CDI query burden on ED-to-admit transitions and strengthens the clinical record for risk and compliance review.",
+        chain: ["In-Encounter Documentation ↑", "Clinical Reasoning Captured ↑", "Quality Attribution ↑"],
+        chainOutput: "Quality Measure Compliance ↑",
+        tag: "tracked",
+        narrative:
+          "Quality program compliance requires documentation of clinical reasoning — not just actions taken. Real-time capture via Abridge preserves the 'why' as it was articulated during the encounter, enabling attribution to core measures, sepsis bundles, and protocol elements. The signal here is tracked rather than modeled because quality incentive structures are health system- and payer-specific.",
+        signal: {
+          window: "Month 1–3",
+          desc: "Documentation behavior shifts",
+          metrics: ["Note Completion Rate (Same Shift)", "CDI Query Rate on ED Admissions"],
+          callout:
+            "CDI query rate on ED admissions drops in the first 1–3 months because clinical documentation is capturing complexity during the encounter rather than requiring clarification after it. A declining rate is evidence that documentation quality is improving — observable months before any quality score moves.",
+        },
+        trend: {
+          window: "Month 3–6",
+          desc: "Measure attribution improves",
+          metrics: ["Core Measure Documentation Rate", "Documentation Deficiency Rate"],
+          callout:
+            "Core measure documentation rates move at Month 3–6 because quality teams need time to review whether the documentation elements are present before reporting cycles reflect the change. Attribution logic has a lag of several weeks. Track whether the note contains the required clinical content — did the provider document the specific element the measure requires? — before expecting the compliance score to move.",
+        },
+        proof: {
+          window: "Month 6–12",
+          desc: "Quality scores confirmed",
+          metrics: ["Quality Measure Compliance Score", "Deficiency Resolution Rate"],
+          callout:
+            "Quality scores at Month 6–12 represent documentation improvements from earlier periods processed through quality reporting systems. Every hour a quality team spends resolving deficiencies is an hour not spent on improvement initiatives. A declining deficiency rate means quality capacity is being freed — that operational return is often larger than the compliance score improvement itself.",
+        },
       },
     ],
-    frameworkCallout: "We model all four domains\u2014but we\u2019re transparent about what each requires to measure. Capacity (LWBS) is trackable in weeks. Revenue (E/M accuracy, denials) is auditable from claims data. Workforce (retention) takes 12\u201318 months. Quality drives clinical outcomes that we measure but don\u2019t monetize\u2014because doing so honestly is harder than making up a number.",
-    categories: [
-      {
-        label: "QUALITY",
-        labelColor: colors.primary,
-        mechanisms: [
-          {
-            name: "CDI Query Volume on Admits",
-            attribution: "Signal",
-            description: "When ED documentation captures presenting conditions and comorbidities completely, CDI specialists receive fewer queries to clarify the clinical picture. This is tracked daily by most CDI departments\u2014before/after comparison is fast and clean. Better ED notes also form the foundation of inpatient DRG accuracy for admitted patients (quantified in the Inpatient methodology to avoid double-counting).",
-            formula: "Admissions \u00D7 query rate \u00D7 reduction % \u2014 tracked by CDI department",
-          },
-          {
-            name: "Note Completeness Rate",
-            attribution: "Signal",
-            description: "EHR timestamp data shows exactly when notes are completed and how long they take. During surges, note quality often drops\u2014key elements get abbreviated or omitted. The hypothesis we model is that ambient capture, by removing the typing bottleneck, reduces volume-driven completeness loss; organizations have observed this pattern, and CDI and compliance teams can audit directly to confirm whether it holds in your environment.",
-            formula: "EHR session data: note completion time, completeness scores (CDI audit-based)",
-          },
-          {
-            name: "Sepsis / Stroke Protocol Documentation",
-            attribution: "Proof",
-            description: "Proper documentation of sepsis and stroke presentations affects both regulatory compliance (CMS sepsis bundle measures) and downstream coding accuracy. The documentation is real and the clinical stakes are high\u2014but direct financial attribution is indirect and multi-factorial. Track as a quality signal, not a revenue line.",
-            formula: "Tracked as a quality signal: bundle compliance %, time-to-recognition \u2014 not monetized directly",
-            formulaColor: colors.tertiary,
-          },
-        ],
-      },
-      {
-        label: "WORKFORCE",
-        labelColor: colors.secondary,
-        mechanisms: [
-          {
-            name: "Physician Retention Savings",
-            attribution: "Trend",
-            description: "ED burnout is a workforce crisis. Documentation burden is consistently cited in ACEP surveys and Medscape reports as a top contributor. At $250K\u2013$500K per physician replacement (AMGA Physician Retention Survey), retaining even one additional physician could offset a significant portion of implementation cost. The link is attributable; the measurement takes 12\u201318 months. Documentation is one of many burnout drivers\u2014don\u2019t attribute all turnover change to documentation.",
-            formula: "ED physicians \u00D7 Turnover (8\u201315%) \u00D7 Burnout attribution (10\u201320%) \u00D7 Replacement cost ($250\u2013500K)",
-          },
-        ],
-      },
-      {
-        label: "CAPACITY",
-        labelColor: colors.primary,
-        mechanisms: [
-          {
-            name: "Documentation Time Per Encounter (EHR)",
-            attribution: "Signal",
-            description: "EHR timestamps show exactly when charting begins and ends. In the ED, time savings per encounter are smaller (2\u20134 minutes) than outpatient\u2014but the ED is a volume engine. At 40,000\u201380,000 visits/year, 3 minutes \u00D7 50,000 visits \u2248 2,500 hours of physician time annually (illustrative). Early signals are often visible within weeks in deployment data.",
-            formula: "Minutes saved \u00D7 annual ED visits / 60 = estimated physician hours potentially returned",
-          },
-          {
-            name: "LWBS Recovery (Wait Time Sensitivity)",
-            attribution: "Trend",
-            description: "Each patient who leaves without being seen represents $300\u2013$500+ in lost revenue. Faster documentation contributes to faster throughput, which can reduce wait times and recover some LWBS patients. Attribution is the challenge\u2014documentation is one lever among staffing, bed management, triage protocol, and acuity mix. We use conservative recovery rates (5\u201315%) and are explicit about attribution. If your LWBS rate is already below 2%, this lever is smaller.",
-            formula: "(LWBS rate before \u2212 after, in pp) \u00D7 annual ED visits \u00D7 $300\u2013500/visit \u00D7 attribution %",
-          },
-          {
-            name: "Admission Capture (Downstream of LWBS)",
-            attribution: "Trend",
-            description: "Of patients recovered from LWBS, some require inpatient admission\u2014converting a lost ED visit into DRG-based inpatient revenue. This driver only activates when LWBS recovery is calculated first. Without real LWBS data, don\u2019t estimate this\u2014compounding two estimates produces a number that won\u2019t survive scrutiny.",
-            formula: "Recovered LWBS patients \u00D7 Admission rate (15\u201320%) \u00D7 Avg admission revenue \u00D7 Realization",
-          },
-        ],
-      },
-      {
-        label: "REVENUE",
-        labelColor: colors.secondary,
-        mechanisms: [
-          {
-            name: "E/M Level Accuracy (Claims Data)",
-            attribution: "Trend",
-            description: "During surges, ED notes understate what actually happened\u2014a physician manages a complex differential but the note reflects a simpler encounter because time was short. Claims data shows E/M level distribution shifts before and after. ED wRVU lift is typically 2\u20134% (lower than outpatient because ED workflows are more structured). We use your observed delta, not an assumed percentage.",
-            formula: "(wRVU per encounter after \u2212 before) \u00D7 adopted encounters \u00D7 $33/wRVU \u00D7 attribution % \u00D7 realization %",
-          },
-          {
-            name: "Denial Prevention (RCM Root Cause)",
-            attribution: "Trend",
-            description: "Medical necessity is the ED\u2019s denial vulnerability. The mechanism we\u2019re modeling: capturing clinical reasoning in real time creates an opportunity to close medical-necessity gaps at the point of care\u2014before the note is finalized and the claim is sent. When a note doesn\u2019t capture why a test was ordered or why admission was necessary, that\u2019s a denial waiting to happen, and many ED denials are unappealable because the documentation gap existed at time of service. RCM teams track documentation-related denials as a specific root cause category\u2014that\u2019s where you validate whether the mechanism is showing up in your data.",
-            formula: "(denial rate before \u2212 after, in pp) \u00D7 annual encounters \u00D7 avg denial cost per encounter \u00D7 attribution %  (ED default: $500/encounter)",
-          },
-        ],
-      },
-    ],
-    careQualityCallout: "Quality outcomes in the ED are real but indirect\u2014we capture the documentation, clinical teams act on it. E/M accuracy is auditable from claims data: compare high-volume vs. low-volume shifts for similar patient populations. If high-volume shifts show lower E/M levels, that gap is documentation-driven, not clinical.",
-    honestLimits: {
-      measure: [
-        "E/M level distribution by shift volume (claims data, 90 days)",
-        "Denial rates by root cause \u2014 RCM data",
-        "LWBS rate \u2014 every ED tracks this weekly",
-        "CDI query volume on admitted patients",
-      ],
-      influence: [
-        "Throughput / door-to-doc time (staffing, triage, bed management)",
-        "Retention (12\u201318 months to measure)",
-        "Sepsis/stroke bundle compliance (clinical practice dependent)",
-        "DRG accuracy on admits (team-produced, quantified in Inpatient model)",
-      ],
-      enable: [
-        "Care continuity (downstream \u2014 outpatient follow-up quality)",
-        "Patient experience (multi-factorial)",
-        "Readmission reduction (too indirect to model)",
-        "Coding accuracy (coder-dependent downstream step)",
-      ],
-    },
-    connectedValueLabel: "CONNECTED VALUE",
-    connectedValue: "ED documentation drives downstream inpatient revenue\u2014when ED notes capture presenting conditions and comorbidities, inpatient CDI has a stronger foundation for DRG accuracy. For admitted patients, the ED note is where the inpatient stay begins. ED nursing notes also feed into inpatient handoff quality. We quantify this connection in the Inpatient methodology to avoid double-counting across settings.",
-    mechanismsSubtitle: "How Each Domain Creates Value in the ED",
-    assumptions: [
-      { assumption: "Time saved/encounter", range: "2\u20134 min", defaultVal: "3 min", source: "Abridge data" },
-      { assumption: "ED wRVU baseline", range: "1.4\u20132.0", defaultVal: "1.6", source: "ACEP benchmarks" },
-      { assumption: "wRVU lift % (ED)", range: "1\u20134%", defaultVal: "2.5%", source: "Abridge data" },
-      { assumption: "LWBS rate", range: "2\u20134%", defaultVal: "3%", source: "National benchmark" },
-      { assumption: "LWBS recovery rate", range: "5\u201315%", defaultVal: "10%", source: "Conservative" },
-      { assumption: "Avg ED visit revenue", range: "$300\u2013500", defaultVal: "$400", source: "Blended avg" },
-      { assumption: "LWBS admission rate", range: "15\u201320%", defaultVal: "18%", source: "Literature" },
-      { assumption: "Avg admission revenue", range: "$7\u201310K", defaultVal: "$8,000", source: "ED-to-IP contribution" },
-      { assumption: "Denial reduction (Conservative)", range: "15\u201320%", defaultVal: "15%", source: "RCM benchmarks" },
-      { assumption: "Denial reduction (Typical)", range: "25\u201335%", defaultVal: "30%", source: "RCM benchmarks" },
-      { assumption: "Physician turnover", range: "8\u201315%", defaultVal: "10%", source: "ACEP surveys" },
-      { assumption: "Burnout attribution %", range: "10\u201320%", defaultVal: "15%", source: "Conservative" },
-      { assumption: "Replacement cost", range: "$250\u2013500K", defaultVal: "$375K", source: "AMGA Physician Retention Survey" },
-    ],
-    conservativeCallout: "We\u2019d rather show a smaller number you can defend than a larger number that falls apart under scrutiny. If your LWBS rate is already below 2%, that lever is smaller. If your E/M distribution looks consistent across shift volumes, the documentation gap may be minimal. We let you adjust based on your reality.",
-    validation: [
-      {
-        name: "CAPACITY (LWBS)",
-        before: ["Current LWBS rate by shift", "Door-to-disposition time by hour"],
-        after: ["Track LWBS rate weekly \u2014 Abridge vs. control shifts", "Measure wait time delta"],
-        timeline: "4\u20138 weeks",
-      },
-      {
-        name: "REVENUE (E/M + DENIALS)",
-        before: ["E/M level distribution by shift volume", "Denial rate by root cause code"],
-        after: ["Compare E/M level mix pre/post \u2014 high vs. low volume shifts", "Track documentation-related denial rate quarterly"],
-        timeline: "3\u20136 months",
-      },
-      {
-        name: "QUALITY (CDI)",
-        before: ["CDI query volume on ED-admitted patients", "Sepsis/stroke bundle documentation compliance %"],
-        after: ["Track CDI queries on Abridge-documented admits vs. control", "Compare bundle compliance rates"],
-        timeline: "2\u20133 months",
-      },
-      {
-        name: "WORKFORCE (RETENTION)",
-        before: ["Baseline turnover rate", "Exit interview data \u2014 documentation burnout attribution"],
-        after: ["Track turnover on Abridge vs. pre-implementation", "Survey on documentation satisfaction at 6 and 12 months"],
-        timeline: "12\u201318 months",
-      },
-    ],
-    closingNote: "This methodology reflects Abridge\u2019s approach to modeling ED ROI across four domains: Quality, Workforce, Capacity, and Revenue. We lead with what\u2019s measurable (LWBS, E/M accuracy) and are transparent about what takes longer to prove (retention) and what we influence but don\u2019t monetize (clinical quality outcomes). All defaults are conservative and editable. The goal is a defensible framework, not a predetermined answer.",
   },
+
   inpatient: {
-    settingLabel: "Inpatient",
-    settingLabelLower: "inpatient",
-    coverSubtitle: "A transparent framework for understanding where\ndocumentation accuracy drives DRG economics across four domains",
-    contextHeadline: "Inpatient is where documentation has the highest per-note financial impact in healthcare\u2014and the most complex attribution chain.",
-    contextBody: "A single admission note that captures an additional CC/MCC can shift DRG weight by 0.3\u20130.5\u2014worth $2,000\u2013$4,000 in reimbursement. But inpatient revenue is team-produced: the hospitalist documents, CDI reviews, coders assign, and the DRG determines payment. Ambient AI improves step one\u2014and when step one is better, every downstream step benefits. Unlike outpatient, hospitalists can\u2019t \u2018see more patients\u2019 with saved time. They have an assigned census. That\u2019s why Capacity in the inpatient setting means rounding efficiency and time returned to clinical care\u2014not throughput expansion.",
-    contextQuestion: "Four value domains \u2014 each with a different attribution timeline.",
-    cat1Label: "QUALITY",
-    cat1Description: "CDI query reduction and documentation completeness.",
-    cat1Footer: "Measurable",
-    cat2Label: "REVENUE",
-    cat2Description: "DRG accuracy, obs/IP defense, concurrent review.",
-    cat2Footer: "Auditable",
+    label: "Inpatient",
+    coverSubtitle:
+      "A transparent framework for understanding\nwhere Abridge creates value in inpatient medicine",
+    contextHeadline:
+      "In inpatient medicine, documentation is the clinical record that drives length of stay, DRG accuracy, and risk-adjusted quality scores.",
+    contextBody:
+      "Hospitalists manage 15–20 patients per shift, each requiring a complete progress note. The documentation obligation is mathematical: 15 patients × 8 minutes = 2 hours of daily charting before anything else. Abridge addresses this at the point of care — during rounding, not afterward.",
+    adoptionCallout:
+      "All outcomes in this framework require consistent Abridge adoption. Partial use produces partial results. The Signal / Trend / Proof timeline on each domain page shows what to track, and when — starting with the metrics directly visible in existing EHR and clinical data.",
     domains: [
       {
-        label: "QUALITY",
-        description: "CDI query reduction and CC/MCC capture are daily, trackable signals of documentation improvement. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Measurable \u2014 CDI query data tracked daily",
-        accentColor: colors.primary,
+        domain: "CAPACITY",
+        badge: "Discharge Planning Efficiency",
+        northStar: "Documentation-Attributed Discharge Delays",
+        direction: "↓",
+        sub: "Hospital discharge is a multi-party coordination problem: the attending writes the progress note, case management acts on it, social work arranges placement, pharmacy reviews medications, the patient and family prepare. If the progress note arrives at 2pm instead of 8am, every downstream party starts 6 hours late. A discharge goal documented at 8am means placement can be confirmed by 10am. The same decision at 2pm means placement confirmed at 5pm — after SNF intake coordinators have gone home, extending the stay by a full day. Documentation timing is a direct upstream input to discharge timing.",
+        matterMostIf:
+          "Utilization management is flagging documentation gaps as a reason for delayed discharge orders, your avoidable day rate is above peer benchmark, or CDI query loops are slowing the discharge planning process. Payers track avoidable days and use them to challenge medical necessity on concurrent review.",
+        alsoNote:
+          "Progress notes that arrive before the care team disperses also support more thorough rounding — hospitalists present with the patient rather than mentally composing the next note.",
+        chain: ["Progress Note Timeliness ↑", "Shared Clinical Picture ↑", "Discharge Planning Earlier"],
+        chainOutput: "Documentation-Attributed Delays ↓",
+        tag: "modeled",
+        narrative:
+          "When progress notes are complete before the care team disperses, case managers, social workers, and consultants can act on the clinical picture without waiting for a note that lands hours later. The model estimates savings from reducing documentation-related delays specifically — not total LOS improvement. The discharge delay is often the note, not the decision.",
+        signal: {
+          window: "Week 4–8",
+          desc: "Note timeliness moves",
+          metrics: ["Progress Note Completion Time", "Same-Encounter Note Completion Rate"],
+          callout:
+            "Progress note completion time shows up in EHR audit data within the first month. This is the first upstream signal: when notes complete before rounding ends, the clinical picture is available to the full care team earlier in the day. Without this changing, nothing downstream in the discharge chain can improve — case managers can't act on notes that don't exist yet.",
+        },
+        trend: {
+          window: "Month 2–5",
+          desc: "Planning and coordination follow",
+          metrics: ["Time to Discharge Goal Documentation", "Case Manager Notification Lead Time"],
+          callout:
+            "Case management notification lead time moves at Month 2–5 because it requires the full care team to adapt their workflow, not just the physician to change documentation behavior. Case managers need to update their rounding patterns to check early notes; social workers need new expectations. Workflow coordination change has an inherent lag after individual behavior changes — the system has to catch up to the individual.",
+        },
+        proof: {
+          window: "Month 4–12",
+          desc: "Delay cause codes move",
+          metrics: ["Documentation-Attributed Delay Rate", "Avoidable Day Rate"],
+          callout:
+            "Always filter to the documentation-specific cause code bucket — total avoidable day rate has too many concurrent drivers to attribute cleanly. The documentation-attributed subset is where Abridge has direct attribution. Avoidable day measurement requires administrative coding of delay causes, which is reviewed retrospectively — that's the source of the Month 4–12 lag.",
+        },
       },
       {
-        label: "WORKFORCE",
-        description: "Hospitalist burnout from documentation burden is real and expensive, and turnover drives operational and financial risk. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Influenceable \u2014 retention impact at 12\u201318 months",
-        accentColor: colors.secondary,
+        domain: "WORKFORCE",
+        badge: "Clinician Wellbeing & Retention",
+        northStar: "Voluntary Turnover",
+        direction: "↓",
+        sub: "The hospitalist documentation burden is mathematical: a 15-patient panel with 8-minute progress notes requires 2 hours of charting per shift before rounding even begins. That 2 hours either compresses patient interactions during the shift or converts to post-shift work that follows the physician home. Ambient capture changes the math: a 15-patient panel with 2-minute note reviews instead of 8-minute note creation returns 60–90 minutes per shift. The cognitive weight of knowing a documentation backlog is accumulating also dissipates — and that sustained relief is what drives the wellbeing change that leads retention.",
+        matterMostIf:
+          "Replacing a hospitalist costs an estimated $250K–$500K fully loaded — recruiting, credentialing, onboarding, productivity ramp. Locum coverage during vacancy adds further cost at 2–3× employed rates. At 10% turnover on 30 hospitalists, that's 3 replacements per year. Preventing one additional departure can offset a year of Abridge costs.",
+        alsoNote:
+          "Hospitalists who aren't burned out document more thoroughly (Revenue → DRG accuracy) and are more present in patient conversations (Quality → HCAHPS scores). Workforce outcomes ripple across the full value story.",
+        chain: ["After-Shift Charting ↓", "Cognitive Load During Rounding ↓", "Provider Wellbeing ↑"],
+        chainOutput: "Voluntary Turnover ↓",
+        tag: "modeled",
+        narrative:
+          "Documentation extending beyond shift hours is a persistent burnout driver for hospitalists. Industry sources estimate hospitalist replacement costs at $350K–$500K per departure. The model attributes only a defensible fraction of departures to documentation burden — the same conservative approach applied to every workforce calculation across all care settings.",
+        signal: {
+          window: "Week 4–8",
+          desc: "Charting behavior changes",
+          metrics: ["After-Shift Charting Time (Pajama Time)", "Progress Note Completion Rate (Same Shift)"],
+          callout:
+            "Post-shift EHR time is the most objective, most visceral early signal. It's visible in audit logs, requires no surveys, and reflects what hospitalists feel most strongly. When post-shift charting time drops consistently, something categorically different is happening — the shift ending and the work actually being done are no longer separated. That experience is what drives peer-to-peer adoption.",
+        },
+        trend: {
+          window: "Month 2–5",
+          desc: "Wellbeing signals emerge",
+          metrics: ["Provider Wellbeing Score", "Intent to Stay"],
+          callout:
+            "Wellbeing surveys at Month 2–5 connect documentation relief to the retention forecast. The important framing: wellbeing improvement is not a soft metric — it's the leading indicator for a financial outcome (turnover cost avoidance) with a longer measurement window. Build the financial bridge from wellbeing improvement to retention forecast explicitly, so the story is credible by Month 6 when you need it.",
+        },
+        proof: {
+          window: "Month 12–18",
+          desc: "Retention and cost impact",
+          metrics: ["Voluntary Hospitalist Turnover Rate", "Locum & Agency Utilization"],
+          callout:
+            "Hospitalist retention data takes 12–18 months because voluntary departure decisions accumulate slowly and reverse slowly. A group of 30 hospitalists at 10% voluntary turnover produces 3 departures per year. The strategy: establish post-shift charting reduction as objective early evidence (Month 1), connect wellbeing improvement to the retention forecast (Month 6), and let turnover data confirm as the program matures.",
+        },
       },
       {
-        label: "CAPACITY",
-        description: "Time returned from documentation becomes rounding time, discharge planning time, or clinical headroom\u2014not throughput, because hospitalists have an assigned census. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Honest \u2014 hours returned to clinical care, not throughput",
-        accentColor: colors.primary,
+        domain: "REVENUE",
+        badge: "Case Mix & DRG Accuracy",
+        northStar: "Case Mix Index",
+        direction: "↑",
+        sub: "DRG reimbursement is driven by clinical complexity — specifically whether complication and comorbidity codes are captured with sufficient specificity to affect the DRG weight. A patient hospitalized for acute systolic heart failure with iron deficiency anemia and stage 3 CKD carries three separate conditions that each affect DRG weight — but only if documented with that clinical specificity. 'Heart failure' and 'anemia' don't carry MCC designation. 'Acute systolic heart failure' and 'iron deficiency anemia' do. That clinical nuance existed in the encounter — ambient capture preserves it in the note.",
+        matterMostIf:
+          "Your CMI is below peer benchmark despite similar patient acuity, your CDI team is running high query volume, your coder query-back rate is above 15%, or your DRG downgrade rate on concurrent review is climbing. If your CMI is consistently below peers with similar complexity, documentation is likely the gap — not case mix.",
+        alsoNote:
+          "Better inpatient documentation also strengthens observation status defense and audit protection — when progress notes capture clinical reasoning for continued inpatient level of care, concurrent review is more defensible.",
+        chain: ["Clinical Detail Captured ↑", "CC/MCC Documentation ↑", "DRG Accuracy ↑"],
+        chainOutput: "Case Mix Index ↑",
+        tag: "modeled",
+        narrative:
+          "Inpatient DRG reimbursement is driven by case complexity — specifically whether CC and MCC codes are captured in the discharge record. CDI queries are documentation failures made visible: each query represents a clinical condition that was known but not captured with sufficient specificity. More thorough documentation reduces CDI query burden and supports higher case mix capture.",
+        signal: {
+          window: "Month 1–3",
+          desc: "CDI query volume drops",
+          metrics: ["Coder Query-Back Rate", "CDI Query Rate per Provider"],
+          callout:
+            "CDI query rate is the most direct early signal of documentation quality improvement, and it's already tracked in most health systems. Each CDI query is a documentation failure made visible — a clinical condition the provider knew about that wasn't captured with sufficient specificity for DRG accuracy. When query rates drop, documentation is improving — observable months before claims data reflects the change.",
+        },
+        trend: {
+          window: "Month 3–6",
+          desc: "Coding accuracy shifts",
+          metrics: ["CC/MCC Capture Rate", "DRG Downgrade Rate"],
+          callout:
+            "Track CC/MCC capture at the provider cohort level, not just in aggregate. Providers who adopt Abridge consistently often show clear improvement in their own CC/MCC rates before it shows in hospital-wide CMI data. Cohort-level analysis separates Abridge's effect from concurrent case mix shifts — that separation is what makes the story defensible to a skeptical CFO.",
+        },
+        proof: {
+          window: "Month 6–12",
+          desc: "CMI and denial trends confirm",
+          metrics: ["Case Mix Index vs. Peer Benchmark", "Denial Rate (Documentation-Related)"],
+          callout:
+            "CMI movement at Month 6–12 is the aggregate result of provider-level capture improvements processed through a quarterly claims cycle. CMS IPPS public data allows a peer comparison — if your CMI is improving while peer hospitals with similar acuity are flat, documentation quality is the differentiator. That comparison is more compelling than a before/after that could be explained by patient mix shift.",
+        },
       },
       {
-        label: "REVENUE",
-        description: "DRG accuracy and concurrent review are the core inpatient revenue levers\u2014both tied directly to documentation quality. We model this domain to help surface where your data could tell the story\u2014not to set a number before you\u2019ve looked.",
-        footer: "Auditable \u2014 CMI and DRG data in claims within 90 days",
-        accentColor: colors.secondary,
+        domain: "QUALITY",
+        badge: "Severity Capture & Risk Adjustment",
+        northStar: "Risk-Adjusted Quality Score Accuracy",
+        direction: "↑",
+        sub: "Risk-adjusted quality metrics — observed-to-expected mortality, readmission rates, PSI-90 — use documented complexity to calculate the expected outcome. If documentation understates how sick the patient was, the risk model assumes a lower-acuity case, sets a lower expected mortality, and any adverse outcome looks worse relative to peers. Documentation doesn't change what care was delivered — but it does determine whether quality systems credit the care appropriately. Complete severity documentation improves the denominator (expected outcomes), which improves the O/E ratio, even when actual care quality is unchanged.",
+        matterMostIf:
+          "Your observed-to-expected ratios on mortality or readmissions look worse than peer hospitals with similar patient populations, CDI query volume on complex admissions is high, or your CMO is concerned that quality scores don't reflect actual care quality. If your O/E ratios are higher than peers with similar complexity, documentation is likely the gap.",
+        alsoNote:
+          "CDI graduation signal: when CDI query volume drops consistently, it means documentation is capturing complexity at the point of care rather than requiring clarification after the fact. The quality and revenue stories converge here.",
+        chain: ["Clinical Complexity Documented ↑", "Severity of Illness Captured ↑", "Risk Adjustment Accurate ↑"],
+        chainOutput: "Quality Score Accuracy ↑",
+        tag: "tracked",
+        narrative:
+          "Risk-adjusted quality metrics — observed-to-expected mortality, readmission rates, PSI-90 composite — depend on the severity adjustment applied to each case. Severity adjustment is only as accurate as the severity documentation. When comorbidities are underrepresented, risk models underestimate expected outcomes and performance appears worse than it actually is.",
+        signal: {
+          window: "Month 2–4",
+          desc: "CDI query rates respond",
+          metrics: ["CDI Query Rate per Provider", "CDI Query Agreement Rate"],
+          callout:
+            "When CDI query rate drops consistently and agreement rate on remaining queries also drops (CDI is increasingly sending queries on ambiguous cases rather than clear documentation gaps), the documentation quality baseline has improved. This is the graduation signal: documentation is capturing complexity at the point of care rather than requiring clarification after the fact. Start watching severity classification data.",
+        },
+        trend: {
+          window: "Month 3–7",
+          desc: "Severity capture improves",
+          metrics: ["High-Severity Case Classification Rate (SOI 3/4)", "Chronic Condition Documentation Rate"],
+          callout:
+            "SOI level improvement shows up in CDI and coding data before it appears in publicly reported quality scores. Track it at the provider cohort level — SOI improvement on Abridge-adopting providers builds the attribution story before external reporting reflects it. Building this cohort-level evidence is how you get ahead of the annual quality reporting cycle.",
+        },
+        proof: {
+          window: "Month 6–18",
+          desc: "Quality scores reflect reality",
+          metrics: ["Observed vs. Expected Mortality Rate", "Core Measure Compliance Rate"],
+          callout:
+            "CMS risk-adjusted quality scores reflect the prior measurement year — changes in documentation quality made today won't appear in public reporting for 12–18 months. The internal signal path is shorter: CDI query reduction at 3–4 months, SOI classification improvement at 4–7 months, O/E ratio improvement in internal quality reports at 6–9 months. Each stage builds the evidentiary chain before the public score confirms it.",
+        },
       },
     ],
-    frameworkCallout: "We model all four domains\u2014but we lead with Quality (CDI queries) because that\u2019s the most defensible, most measurable outcome in the building. Revenue (DRG accuracy) is auditable from claims data. Capacity is honest: we show time returned to clinical care, not throughput expansion. Workforce (retention) takes 12\u201318 months to measure. We explicitly do not claim LOS reduction, readmission reduction, or capacity expansion\u2014the causal chains are too long.",
-    categories: [
+  },
+
+  nursing: {
+    label: "Nursing",
+    coverSubtitle:
+      "A transparent framework for understanding\nwhere value lives when there's no billing relationship",
+    contextHeadline:
+      "Nursing is the hardest setting to model ROI — and the most important to get right.",
+    contextBody:
+      "Research consistently places documentation burden at 25–35% of each nursing shift. Reclaiming that time shows up in overtime reduction, retention improvement, and more time at the bedside. The quality footprint is the largest in the building: falls, HAPIs, CAUTIs, CLABSIs, and sepsis bundle compliance all run through nursing documentation.",
+    adoptionCallout:
+      "All outcomes in this framework require consistent Abridge Nursing adoption. Partial use produces partial results. The Signal / Trend / Proof timeline on each domain page shows what to track, and when — starting with the metrics directly visible in existing EHR and payroll data.",
+    domains: [
       {
-        label: "QUALITY",
-        labelColor: colors.primary,
-        mechanisms: [
-          {
-            name: "CDI Query Reduction",
-            attribution: "Signal",
-            description: "Every CDI query represents a documentation gap\u2014something that should have been in the note but wasn\u2019t. Each query costs $40\u2013$60 in CDI labor (creation, tracking, follow-up, physician response time). When documentation captures clinical detail at the point of care, fewer queries are needed. CDI departments track query volume daily\u2014this is one of the cleanest metrics to measure pre/post implementation.",
-            formula: "Admissions \u00D7 Query rate (25\u201335%) \u00D7 Reduction % (15\u201335%) \u00D7 Cost per query ($40\u2013$60)",
-          },
-          {
-            name: "Documentation Completeness",
-            attribution: "Proof",
-            description: "Complete documentation at the point of care means fewer CDI queries, more accurate DRG assignment, and stronger payer audit defense\u2014all from the same root cause. When hospitalists discuss AKI, malnutrition, or respiratory failure at bedside and the note reflects it in real time, every downstream step benefits: CDI, coding, billing, and appeals. This is the mechanism that connects Quality to Revenue.",
-            formula: "Measured: note completeness rate (CDI audit), CC/MCC capture rate, same-day note closure rate",
-          },
-        ],
+        domain: "CAPACITY",
+        badge: "Shift Efficiency & Direct Care Time",
+        northStar: "Point-of-Care Documentation Rate",
+        direction: "↑",
+        sub: "A nursing shift has a fixed amount of time. When documentation is batched at the end — assessments recalled from memory, flowsheets completed after twelve hours of care — the shift ends with an open queue rather than a closed chart. That queue is what generates overtime, erodes bedside presence during the shift, and produces documentation lag that delays every downstream consumer of the nursing record. Point-of-care documentation rate is the upstream behavior that changes all of it: when nurses document at the moment of care, the queue never accumulates. The financial consequence — overtime reduction — is quantified in the Workforce domain, where it belongs as a labor cost. The capacity story is what causes it.",
+        matterMostIf:
+          "Nurses are consistently leaving after their scheduled shift end to finish charting, bedside time ratio is low relative to benchmark, or the charge nurse is managing a unit where documentation lag affects care coordination — oncoming shifts reading outdated charts, care plans that don't reflect current patient status.",
+        alsoNote:
+          "Point-of-care documentation also feeds the HCAHPS nurse communication story: a nurse documenting at the bedside is present and engaged rather than mentally composing the next batch entry. That attentional presence is what the nurse communication composite measures.",
+        chain: ["Documentation at Point of Care ↑", "End-of-Shift Queue ↓", "Shift Completes On Time ↑"],
+        chainOutput: "Bedside Time ↑  |  Overtime ↓ (see Workforce)",
+        tag: "tracked",
+        narrative:
+          "Point-of-care documentation rate is measured from EHR audit logs — the share of documentation entries timestamped within 15 minutes of the associated care event. It is the behavioral leading indicator that predicts every downstream nursing outcome: bundle compliance, harm event reduction, and overtime elimination. Watch this metric first; everything else follows it.",
+        signal: {
+          window: "Week 2–6",
+          desc: "Documentation timing shifts to point of care",
+          metrics: ["Point-of-Care Documentation Rate", "Post-Shift EHR Session Time"],
+          callout:
+            "Point-of-care documentation rate and post-shift EHR session time are visible from EHR audit logs within the first two to six weeks of deployment. No new infrastructure required. These are the earliest behavioral signals that the documentation habit has shifted — and the data that drives peer adoption on the unit when nurses who leave on time tell each other.",
+        },
+        trend: {
+          window: "Month 1–3",
+          desc: "Documentation lag compresses, bedside time rises",
+          metrics: ["Median Documentation Lag (Minutes)", "Bedside Time Ratio (Direct Care %)"],
+          callout:
+            "Documentation lag — median minutes from care event to chart entry — compresses at Month 1–3 as point-of-care documentation rate stabilizes. Bedside time ratio follows as the cognitive load of the accumulating queue lifts. These two metrics together confirm that the behavioral change is translating into a different shift experience, not just a different documentation timing.",
+        },
+        proof: {
+          window: "Month 3–6",
+          desc: "Shift efficiency confirmed; Workforce outcomes begin",
+          metrics: ["On-Time Shift Completion Rate", "Documentation Queue Size at Shift End"],
+          callout:
+            "On-time shift completion rate — the share of shifts ending without a post-shift documentation queue — is the capacity proof metric. When it stabilizes above baseline, the downstream Workforce outcomes (overtime cost reduction, burnout score improvement) have the behavioral foundation they need to emerge. The capacity story closes here; the financial story continues in Workforce.",
+        },
       },
       {
-        label: "WORKFORCE",
-        labelColor: colors.secondary,
-        mechanisms: [
-          {
-            name: "Hospitalist Retention Savings",
-            attribution: "Trend",
-            description: "Documentation burden during overnight admits and weekend shifts is a leading driver of hospitalist burnout and turnover. Ambient AI documentation can reduce time spent on H&Ps, daily progress notes, and discharge summaries that previously took 15\u201340 minutes. At $250K\u2013$500K per replacement (recruiting, locum coverage during gap, and months of onboarding), every hospitalist retained represents significant avoided cost. The financial impact extends far beyond recruitment fees.",
-            formula: "Hospitalists \u00D7 Turnover (8\u201312%) \u00D7 Burnout % (40\u201350%) \u00D7 Burnout attribution (15%) \u00D7 Replacement cost ($250\u2013500K)",
-          },
-        ],
+        domain: "WORKFORCE",
+        badge: "Nurse Wellbeing & Staffing Economics",
+        northStar: "Overtime Cost + Voluntary Turnover",
+        direction: "↓",
+        sub: "Nursing documentation burden creates two distinct financial exposures — one immediate, one deferred. The immediate exposure is overtime: nurses are hourly employees, and post-shift charting is a hard cost in the payroll register. Eight minutes saved per patient across a 6-patient panel is 48 minutes per shift, which sits inside a typical overtime threshold. The deferred exposure is turnover: a 12-hour shift with 60–90 minutes of post-shift documentation compresses recovery time structurally, and documentation burden appears consistently in exit surveys and ANA research as a top driver of departure intent. The mechanism is cumulative — no single shift drives a resignation, but the accumulated weight of hundreds eventually does. Both exposures respond to the same upstream change: documentation that happens during the shift rather than after it.",
+        matterMostIf:
+          "Overtime is a visible line item in your nursing budget, time-and-attendance data shows consistent post-shift EHR activity, or turnover on high-documentation units is above your system average. Replacing one bedside RN costs $50K–$100K fully loaded — recruiting, onboarding, orientation, productivity ramp. A unit with 20 nurses at 18% turnover replaces 3–4 nurses per year, and each vacancy drives agency and travel spend at 2–3× employed rates.",
+        alsoNote:
+          "Stable nursing workforce reduces the institutional knowledge loss that compounds when experienced nurses leave. Fewer open shifts means less per diem and agency exposure — and the nurses who stay are less likely to be covering for absent colleagues, which compounds burnout.",
+        chain: ["Documentation Burden Per Shift ↓", "Post-Shift Queue Eliminated ↓", "Overtime Cost ↓  |  Nurse Wellbeing ↑"],
+        chainOutput: "Overtime ↓  +  Voluntary Turnover ↓",
+        tag: "modeled",
+        narrative:
+          "Two separate financial models run in this domain. Overtime is payroll-verifiable within 90 days — no attribution model needed, just a before-after comparison on the same units. Turnover requires a longer horizon: the model attributes a defensible fraction of departures to documentation burden rather than claiming all turnover stems from it, and the leading indicators (charting-after-shift time, burnout scores, likelihood-to-stay surveys) are what you watch while waiting for the turnover data to accumulate.",
+        signal: {
+          window: "Week 2–6",
+          desc: "Post-shift charting drops; OT trajectory visible",
+          metrics: ["Charting After Shift (Minutes)", "Post-Shift EHR Session Time"],
+          callout:
+            "Charting-after-shift time is the earliest financial signal in the nursing workforce story — it's the behavior that directly generates overtime, and it shows up in EHR audit logs within weeks of consistent adoption. When this metric drops, the payroll consequence follows at the next comparison period. This is also the data that drives peer adoption: nurses who leave on time tell each other.",
+        },
+        trend: {
+          window: "Month 2–6",
+          desc: "OT cost confirmed; wellbeing signal emerges",
+          metrics: ["Overtime Hours Per Unit Per Pay Period", "Burnout Score (Survey)", "Likelihood to Stay"],
+          callout:
+            "Overtime data becomes confirmable at Month 2–4 when payroll has a full prior period for comparison — before versus after, same units, controlled for census. Present it simply: overtime hours these units, before deployment versus after. Meanwhile, wellbeing survey scores at Month 2–4 connect documentation relief to the retention forecast. A burnout score improving and likelihood-to-stay rising is evidence that the departure calculus is changing before the turnover data can confirm it.",
+        },
+        proof: {
+          window: "Month 6–18",
+          desc: "Retention cost and annual OT savings confirmed",
+          metrics: ["Annual OT Spend Comparison (Pilot Units)", "Voluntary Nurse Turnover Rate", "Agency and Travel Nurse Spend"],
+          callout:
+            "The 12-month payroll comparison closes the overtime story without any model — OT spend on Abridge units this year versus last year, adjusted for census and unit mix. Turnover data requires 12–18 months; a unit with 20 nurses at 18% turnover produces only 3–4 departures per year, which is too small to show a statistically meaningful trend in a shorter window. The near-term financial proxy is agency and travel spend: open shifts that would have been filled at 2–3× employed rates are the first financial signal that retention is stabilizing.",
+        },
       },
       {
-        label: "CAPACITY",
-        labelColor: colors.primary,
-        mechanisms: [
-          {
-            name: "Documentation Time Returned",
-            attribution: "Signal",
-            description: "Documentation that previously extended the post-rounding workday now completes during or immediately after rounds. We measure this as hours returned per physician per week\u2014not as additional patient capacity, because hospitalists have an assigned census. Hours returned go to clinical care: more thorough rounding conversations, earlier discharge planning, better handoffs to the next shift. We show this as time value, not revenue.",
-            formula: "Hospitalists \u00D7 Time saved/admission (15\u201330 min) \u00D7 Admissions/month \u00D7 Physician hourly rate \u2014 shown as hours returned",
-          },
-          {
-            name: "Discharge Planning Timeliness",
-            attribution: "Proof",
-            description: "When documentation completes earlier in the day, discharge summaries are available sooner, post-acute placement requests can go earlier, and case management has more lead time. Earlier discharges free beds earlier\u2014a capacity benefit that accrues to the institution rather than to the hospitalist directly. We note this connection without assigning a dollar value, because the attribution chain runs through bed management and case management, not documentation alone.",
-            formula: "Noted as downstream benefit \u2014 not monetized to avoid attribution overreach",
-            formulaColor: colors.tertiary,
-          },
-        ],
+        domain: "REVENUE",
+        badge: "Clinical Record Integrity",
+        northStar: "Compliance Deficiency Rate",
+        direction: "↓",
+        sub: "Nurses don't generate billing codes, but nursing documentation is directly audited by CMS, state surveyors, and commercial payers. Incomplete assessments, late-documented vital signs, and missing flowsheet elements aren't administrative gaps — for audit purposes, an assessment that wasn't documented wasn't done. A Braden scale assessment completed correctly but charted 6 hours later is a documentation deficiency. Payers conducting concurrent review look at nursing records for medical necessity support; gaps in nursing documentation give them grounds to reduce or deny level-of-care authorization. There are two distinct revenue mechanisms: deficiency reduction (preventing denials) and documentation completion at discharge (removing the billing hold that keeps clean claims in the DNFB bucket).",
+        matterMostIf:
+          "Your compliance team is flagging nursing documentation as a risk area, CMS surveys or Joint Commission reviews have cited nursing record deficiencies, concurrent review by payers is finding documentation gaps that support denial activity, or revenue cycle is reporting DNFB days attributable to incomplete nursing discharge documentation.",
+        alsoNote:
+          "Complete nursing documentation corroborates CDI evidence for CC/MCC capture. Nursing observations — wound measurements, functional status, intake/output trends, and pain trajectory — are the supporting data that makes a physician's severity specificity claim credible when CDI queries for condition specificity. When nursing charting is concurrent and complete, CDI reviewers find fewer gaps between what physicians documented and what the nursing record shows.",
+        chain: ["Flowsheet Completeness ↑", "Discharge Documentation Complete at Discharge ↑", "Audit Vulnerability ↓  |  DNFB Days ↓"],
+        chainOutput: "Compliance Deficiency Rate ↓  +  Billing Holds Released",
+        tag: "modeled",
+        narrative:
+          "Two financial paths run through nursing documentation completeness. The deficiency reduction path: payer and regulatory auditors can't review care that wasn't documented — a fall risk assessment that wasn't charted is, for audit purposes, a fall risk assessment that wasn't done. The billing hold path: nursing discharge documentation is a prerequisite for claim submission; every day a claim sits in DNFB because nursing documentation is incomplete is cash flow deferred. Both paths are modeled by applying reduction rates to encounter volume, restricted to documentation-attributable fractions.",
+        signal: {
+          window: "Week 2–6",
+          desc: "Completeness and timeliness rates respond",
+          metrics: ["Flowsheet Completion Rate", "On-Time Assessment Completion Rate", "Documentation Completion Rate at Discharge"],
+          callout:
+            "Flowsheet completion rates and discharge documentation completion rates are visible in existing EHR dashboards within the first weeks of deployment. Compliance teams often track completion rates already. A rising completion rate is the first signal that documentation behavior has changed — and the most direct leading indicator for both audit vulnerability reduction and DNFB improvement.",
+        },
+        trend: {
+          window: "Month 2–5",
+          desc: "Internal audit findings improve; DNFB moves",
+          metrics: ["Internal Compliance Audit Score", "Documentation Deficiency Finding Rate", "DNFB Days (Nursing-Attributable)"],
+          callout:
+            "Internal audit scores move at Month 2–5 as compliance review cycles process documentation from prior weeks. DNFB days attributable to nursing documentation holds are trackable in revenue cycle reporting and often show movement at the same horizon — discharge documentation completeness is close to the billing event, so the hold-release cycle responds faster than audit findings.",
+        },
+        proof: {
+          window: "Month 6–18",
+          desc: "Denial trends and audit exposure confirmed",
+          metrics: ["Regulatory Survey Deficiency Rate", "Documentation-Related Denial Rate", "CDI Query Response Rate (Nursing-Supported)"],
+          callout:
+            "Regulatory survey deficiency rates are infrequent and multi-factorial. The continuous proof metric is documentation-related denial rates in concurrent payer review — attributable, already tracked by revenue cycle, and responsive to nursing documentation quality specifically. CDI query response rate — the share of physician queries where complete nursing documentation already provides the supporting evidence — is the metric that shows how nursing documentation quality is lifting the inpatient DRG accuracy story in parallel.",
+        },
       },
       {
-        label: "REVENUE",
-        labelColor: colors.secondary,
-        mechanisms: [
-          {
-            name: "DRG Accuracy (CC/MCC Capture)",
-            attribution: "Trend",
-            description: "When hospitalists discuss AKI, malnutrition, or respiratory failure at bedside but the note says \u2018renal function stable,\u2019 that missing specificity costs $2,000\u2013$4,000 in DRG weight. Ambient AI captures the clinical conversation so the note reflects what actually happened\u2014ensuring documentation reflects care delivered. This is the highest-value mechanism in inpatient medicine, auditable from CMI trend data.",
-            formula: "Admissions at risk (20\u201330%) \u00D7 Protection rate (20%) \u00D7 DRG weight increase (0.4) \u00D7 Base payment ($6,800) \u00D7 Realization (50%)",
-          },
-          {
-            name: "Observation vs. Inpatient Defense",
-            attribution: "Trend",
-            description: "Appropriate inpatient admission status requires documentation that supports medical necessity\u2014acuity, complexity, and the clinical reasoning for why outpatient or observation care was insufficient. When documentation captures this at point of care, status determinations hold up to payer review. When it doesn\u2019t, downgrades from IP to observation are common and expensive. We include this within DRG accuracy to avoid double-counting.",
-            formula: "Combined with DRG accuracy \u2014 documentation quality supports both appropriate DRG assignment and status defense",
-            formulaColor: colors.tertiary,
-          },
-          {
-            name: "Concurrent Review & Denial Prevention",
-            attribution: "Trend",
-            description: "Inpatient denials are expensive\u2014documentation-related cases average $3,500+ per denial, with complex medical necessity and DRG downgrade audits running higher. Medical necessity denials, DRG downgrade audits, and concurrent review failures all stem from documentation gaps. Complete notes that capture clinical reasoning for continued stay, discharge barriers, and comorbidity burden support concurrent review and reduce unappealable denials.",
-            formula: "(denial rate before \u2212 after, in pp) \u00D7 annual discharges \u00D7 $3,500/case \u00D7 attribution %",
-          },
-        ],
+        domain: "QUALITY",
+        badge: "Patient Safety & Bundle Compliance",
+        northStar: "Nursing-Sensitive Harm Events",
+        direction: "↓",
+        sub: "A care bundle completed but not documented is, for compliance measurement, a bundle step not completed. CAUTI prevention protocols, CLABSI insertion checklists, fall prevention interventions, and HAPI repositioning logs all run through nursing documentation. The mechanism is specific to each harm type: HAPIs are prevented when Stage 1 skin changes are documented while still Stage 1, triggering repositioning before injury progresses. Falls are prevented when Morse Fall Scale scores are updated at point of care after medication changes and ambulation events — not recalled at shift end. CAUTIs are prevented when daily catheter necessity documentation creates the workflow trigger that prompts removal. CLABSIs are prevented when bundle elements are timestamped as performed, creating an auditable compliance record. SEP-1 compliance is protected when antibiotics are documented at administration rather than recalled later — a 45-minute documentation lag can flip a compliant case to non-compliant in the quality system.",
+        matterMostIf:
+          "Your CNO or VP of Patient Safety is tracking nursing-sensitive harm event rates as a safety program goal, your hospital participates in the CMS HAC Reduction Program, or your patient safety program has specific targets for fall rates, HAPI incidence, or bundle compliance that nursing documentation quality directly enables.",
+        alsoNote:
+          "Improvement in CMS Overall Hospital Quality Star Rating — nursing-sensitive harm event rates feed into multiple safety and quality domains that determine the publicly visible star rating patients and families use when choosing where to receive care. CMS does not reimburse for Stage 3+ HAPIs or certain CLABSIs that develop during a hospital stay, making the financial exposure both the treatment cost and the lost reimbursement.",
+        chain: ["Real-Time Assessment Documentation ↑", "Protocol & Bundle Compliance ↑", "Harm Event Attribution Accurate ↑"],
+        chainOutput: "Harm Event Rate ↓",
+        tag: "tracked",
+        narrative:
+          "Bundle compliance cannot be measured if documentation is incomplete — and it cannot be improved if the compliance data is lagging by a shift. When assessment and intervention documentation happens at point of care, quality teams have same-day visibility into protocol adherence patterns rather than discovering gaps at weekly incident review. Bundle compliance is the process measure; harm events are the outcome. Watch the process first.",
+        signal: {
+          window: "Week 2–Month 2",
+          desc: "Assessment timeliness and reassessment frequency respond",
+          metrics: ["Fall Risk Reassessment Completion Rate (Post-Medication / Post-Ambulation)", "Skin & Pressure Injury Assessment Rate", "Catheter Utilization Ratio", "SEP-1 Documentation Timeliness"],
+          callout:
+            "Assessment completion and reassessment frequency are the fastest-moving quality signals — already tracked by quality departments and visible within weeks of consistent adoption. Fall risk reassessment frequency after clinical events (medication changes, ambulation) and catheter utilization ratio are the metrics that confirm the mechanism is working: not just that documentation is happening, but that it is happening at the right moment to trigger the prevention protocol.",
+        },
+        trend: {
+          window: "Month 2–6",
+          desc: "Bundle compliance moves; harm event exposure compresses",
+          metrics: ["Care Bundle Compliance Rate (SEP-1, CAUTI, CLABSI)", "HAPI Stage 1 Detection Rate", "Catheter Days per Admission"],
+          callout:
+            "Graduation signal: don't expect harm event rates to move until bundle compliance is consistently high on Abridge units. Bundle compliance is the process measure; harm events are the outcome. HAPI Stage 1 detection rate — the share of pressure injury documentation captured at Stage 1 rather than Stage 2+ — is the mechanism-specific trend metric that confirms early documentation is intercepting injuries before they progress. Catheter days per admission declining means the daily necessity review is working.",
+        },
+        proof: {
+          window: "Month 6–18",
+          desc: "Harm event rates confirm",
+          metrics: ["Nursing-Sensitive Harm Event Rate (Falls, HAPI, CAUTI, CLABSI)", "SEP-1 Bundle Compliance Rate", "CMS HAC Reduction Score"],
+          callout:
+            "Harm events are low-frequency outcomes that require substantial volume and time to show statistically meaningful trends. Build the quality narrative in sequence: assessment timeliness up (Month 1) → bundle compliance up (Month 3–6) → harm events declining (Month 12+). Leading with harm event data and waiting for it to move is the wrong approach — the process measures are what confirm the program is working while waiting for the outcome data to accumulate.",
+        },
       },
     ],
-    careQualityCallout: "Documentation value in inpatient is about accuracy, not speed. We capture what was discussed\u2014that\u2019s where the DRG value lives. Unlike outpatient, time savings in inpatient don\u2019t convert to additional visits. They return to clinical care: more thorough rounds, earlier discharge planning, better handoffs. We show hours returned rather than dollar value for time savings\u2014because that\u2019s the honest story.",
-    honestLimits: {
-      measure: [
-        "CDI query rates \u2014 tracked daily by CDI department",
-        "Documentation time per note type \u2014 EHR timestamps, weeks",
-        "CMI trends \u2014 claims data, quarterly",
-        "Note completeness \u2014 CDI audit",
-      ],
-      influence: [
-        "DRG accuracy \u2014 team-produced revenue (CDI + coding)",
-        "Denial rates \u2014 payer-dependent, 6+ months",
-        "DRG finalization speed",
-        "Coder productivity downstream",
-      ],
-      enable: [
-        "Length of stay \u2014 not defensible as direct attribution",
-        "Readmission reduction \u2014 too indirect to model",
-        "Capacity expansion \u2014 not applicable in inpatient",
-        "Rounding efficiency (hours, not $)",
-      ],
-    },
-    connectedValueLabel: "CONNECTED VALUE",
-    connectedValue: "Inpatient sits at the center of the hospital value chain. ED documentation feeds in (stronger admission notes, comorbidity capture from ED). Nursing documentation supports CC/MCC coding (skin assessments, fall risk, nutritional status). Complete discharge summaries improve outpatient follow-up and reduce readmissions. We don\u2019t sum cross-setting values\u2014attribution gets complex\u2014but when building a system-level business case, these connections matter.",
-    mechanismsSubtitle: "How Each Domain Creates Value in Inpatient",
-    assumptions: [
-      { assumption: "Time saved/admission", range: "15\u201345 min", defaultVal: "30 min", source: "Deployment data" },
-      { assumption: "At-risk admissions", range: "20\u201330%", defaultVal: "25%", source: "CDI benchmarks" },
-      { assumption: "DRG protection rate", range: "15\u201325%", defaultVal: "20%", source: "Conservative" },
-      { assumption: "DRG weight increase", range: "0.3\u20130.5", defaultVal: "0.4", source: "CMS differentials" },
-      { assumption: "DRG base rate", range: "$6,000\u2013$8,000", defaultVal: "$6,800", source: "CMS IPPS base rate" },
-      { assumption: "CDI query rate", range: "25\u201335%", defaultVal: "30%", source: "ACDIS benchmarks" },
-      { assumption: "Query reduction %", range: "15\u201335%", defaultVal: "25%", source: "Impl. data" },
-      { assumption: "Cost per CDI query", range: "$40\u201360", defaultVal: "$50", source: "ACDIS productivity" },
-      { assumption: "Concurrent review denial rate", range: "3\u20136%", defaultVal: "4%", source: "Inpatient RCM" },
-      { assumption: "Denial prevention rate", range: "15\u201325%", defaultVal: "20%", source: "Conservative" },
-      { assumption: "Avg case denial value", range: "$3.5\u201315K", defaultVal: "$3,500", source: "Inpatient RCM" },
-      { assumption: "Hospitalist turnover", range: "8\u201312%", defaultVal: "8%", source: "SHM benchmarks" },
-      { assumption: "Burnout-related %", range: "40\u201350%", defaultVal: "45%", source: "Research" },
-      { assumption: "Retention impact", range: "10\u201320%", defaultVal: "15%", source: "Conservative" },
-      { assumption: "Replacement cost", range: "$250\u2013500K", defaultVal: "$350K", source: "AMGA" },
-      { assumption: "Realization rate", range: "40\u201360%", defaultVal: "50%", source: "Conservative" },
+  },
+
+  outpatient: {
+    label: "Outpatient",
+    coverSubtitle:
+      "A transparent framework for understanding\nwhere Abridge creates value in outpatient medicine",
+    contextHeadline:
+      "Outpatient physicians spend more time on documentation than nearly any other clinical activity.",
+    contextBody:
+      "Studies consistently show office-based physicians spend roughly 2 hours per day on EHR tasks outside direct patient care. When ambient documentation reduces time per visit, that recovered time becomes available for additional appointments, reduced after-hours charting, and more accurate clinical records.",
+    adoptionCallout:
+      "All outcomes in this framework require consistent Abridge adoption. Partial use produces partial results. The Signal / Trend / Proof timeline on each domain page shows what to track, and when — starting with the metrics most directly influenced by documentation behavior.",
+    domains: [
+      {
+        domain: "CAPACITY",
+        badge: "Panel Capacity & Appointment Access",
+        northStar: "Patient Access",
+        direction: "↑",
+        sub: "Each outpatient visit slot is scheduled, but documentation extends beyond it. When a 20-minute visit requires 12 minutes of note completion afterward, the provider is running behind by visit 5. By the end of a 24-patient day, the provider is 1–2 hours behind — which either extends the day or converts into evening charting. When documentation time drops, that time is recovered — but the capacity story requires that scheduling operations actually absorb recovered time into new appointments, not just leave schedule white space. That scheduling coordination is the step between documentation improvement and access improvement.",
+        matterMostIf:
+          "Your third next available appointment is above benchmark (14+ days warrants active attention), same-day access is limited, providers are running behind due to documentation, or you're competing on access in a market where patients actively choose providers based on wait time.",
+        alsoNote:
+          "In markets where patients choose providers, access is a competitive differentiator. Reducing TNA from 21 days to 14 days can measurably affect patient satisfaction scores and market share.",
+        chain: ["Visit Documentation Time ↓", "Available Clinical Time ↑", "Panel Capacity ↑"],
+        chainOutput: "Patient Access ↑",
+        tag: "modeled",
+        narrative:
+          "Clinical time is the binding constraint on outpatient panel capacity. The model applies a realistic conversion rate of 40–50% of documentation time saved to account for workflow absorption and scheduling constraints — not all recovered time becomes schedulable appointments. The output is a defensible estimate, not a theoretical maximum.",
+        signal: {
+          window: "Week 4–8",
+          desc: "Documentation time drops",
+          metrics: ["Post-Visit Note Completion Time", "Same-Day Note Completion Rate"],
+          callout:
+            "Post-visit note completion time and same-day note completion rate are the upstream behavioral gates. When note completion time reaches a consistent low and same-day rate is high, the provider has recaptured time from the schedule. The next question is whether scheduling is using it — that's the transition to Trend stage. The behavioral change has to stabilize before the scheduling change can begin.",
+        },
+        trend: {
+          window: "Month 2–4",
+          desc: "Scheduling absorbs recaptured time",
+          metrics: ["After-Hours EHR Activity", "Same-Day Appointment Slot Availability"],
+          callout:
+            "After-hours EHR activity is the critical Trend-stage metric because it distinguishes two scenarios: did the provider genuinely recapture shift time, or did the work just shift to later in the day? If pajama time isn't dropping, same-day slot availability won't open — the recovered time has been reabsorbed elsewhere. When both metrics move together, the system has genuinely freed capacity.",
+        },
+        proof: {
+          window: "Month 4–12",
+          desc: "Access metrics confirm",
+          metrics: ["Third Next Available Appointment", "Panel Size per Provider"],
+          callout:
+            "Third Next Available (TNA) moves at Month 4–12 because scheduling reflects bookings made weeks to months in advance. TNA doesn't improve until new slots are added to the schedule, new slots aren't added until scheduling operations are confident in the new capacity, and that confidence requires a sustained behavioral change that scheduling managers can observe. The lag is operational, not clinical.",
+        },
+      },
+      {
+        domain: "WORKFORCE",
+        badge: "Provider Wellbeing & Retention",
+        northStar: "Voluntary Turnover",
+        direction: "↓",
+        sub: "A provider seeing 24 patients per day carrying 3 minutes of incomplete documentation per visit enters the evening with 72 minutes of charting backlog — every day, structurally, not occasionally. Ambient capture eliminates that backlog at the point of care. The mechanism that matters most for the retention story isn't time savings in the abstract — it's the difference between leaving the clinic knowing the work is done versus leaving knowing it isn't. That psychological shift, experienced consistently, is what eventually changes departure calculus.",
+        matterMostIf:
+          "At $250K–$350K per replacement for primary care and higher for specialists, even one additional retention per year covers a significant portion of program cost. Documentation burden is consistently cited in exit interviews as a contributing factor — the attribution is already in your own data.",
+        alsoNote:
+          "Providers who aren't burned out document more thoroughly (Revenue → E/M accuracy) and are more present in patient conversations (Quality → patient-reported experience). Workforce and quality stories reinforce each other.",
+        chain: ["After-Visit Charting Time ↓", "Evening Documentation Burden ↓", "Provider Wellbeing ↑"],
+        chainOutput: "Voluntary Turnover ↓",
+        tag: "modeled",
+        narrative:
+          "Industry estimates place voluntary physician replacement costs at $250K–$500K per departure, accounting for recruiting, locum coverage, credentialing, and productivity ramp. The model explicitly attributes only an estimated fraction of departures to documentation burden rather than claiming all turnover stems from it — the connection is defensible and the estimate is conservative.",
+        signal: {
+          window: "Week 4–8",
+          desc: "Pajama time drops",
+          metrics: ["After-Hours Charting Time (Pajama Time)", "Post-Visit Note Completion Time"],
+          callout:
+            "After-hours charting time reduction shows up in EHR audit logs within the first month, is objective, and doesn't require survey coordination. This is the proof point physicians reference when recommending Abridge to colleagues — that peer recommendation is more effective than any formal communication. Signal-stage data isn't just evidence of program success; it's the word-of-mouth engine for adoption.",
+        },
+        trend: {
+          window: "Month 2–5",
+          desc: "Wellbeing signals emerge",
+          metrics: ["Provider Wellbeing Score", "Intent to Stay"],
+          callout:
+            "Wellbeing surveys at Month 2–5 translate documentation burden relief into the retention narrative. The key framing: wellbeing improvement isn't a soft HR metric — it's a leading indicator for a financial outcome. A provider wellbeing score moving in the right direction at Month 3 is evidence that the departure calculus is shifting, and that's the foundation for the CFO bridge conversation about retention cost avoidance.",
+        },
+        proof: {
+          window: "Month 12–18",
+          desc: "Retention and cost confirmed",
+          metrics: ["Voluntary Turnover Rate", "Locum & Agency Utilization"],
+          callout:
+            "Voluntary departures are a small absolute number annually — a 10-physician practice at 15% turnover produces 1–2 departures per year. Preventing even one additional departure pays back a significant fraction of program cost, but that story requires 12 months of data to tell credibly. The wellbeing data from Month 4 is what makes the conversation defensible before the turnover data arrives.",
+        },
+      },
+      {
+        domain: "REVENUE",
+        badge: "E/M Accuracy & Denial Prevention",
+        northStar: "Revenue Per Visit",
+        direction: "↑",
+        sub: "Under AMA 2021 E/M guidelines, a Level 4 or Level 5 code requires documentation of High Medical Decision Making — the number and complexity of problems addressed, the data reviewed and analyzed, the risk of complications. That clinical reasoning happens in the conversation: the differential the provider worked through, the records they reviewed, the risk they discussed. Under time pressure, providers code defensively at Level 3 because documenting the MDM elements takes longer than documenting the action. Ambient capture records the MDM as it's happening. The code change isn't upcoding — it's the note finally reflecting the work that was actually done.",
+        matterMostIf:
+          "Your E/M level distribution is skewed toward lower codes despite high-complexity panels, your first-pass claim acceptance rate is below 95%, or your revenue cycle team is citing documentation gaps as a root cause of write-offs. Providers under time pressure default to lower codes because the note doesn't support the complexity of what was actually managed.",
+        alsoNote:
+          "For Medicare Advantage panels, accurate chronic condition documentation supports HCC capture — not upcoding, but complete capture. This bridges the revenue and quality stories: better documentation supports both risk adjustment and quality measure attribution.",
+        chain: ["Documentation Completeness ↑", "E/M Level Support ↑", "MDM Elements Captured ↑"],
+        chainOutput: "Revenue Per Visit ↑",
+        tag: "modeled",
+        narrative:
+          "E/M improvement is recovering revenue already earned but not fully captured — the note wasn't supporting the complexity of what was managed. A separate denial component captures the claim-integrity benefit of documentation that consistently meets payer standards. The distribution shift matters more than the mean.",
+        signal: {
+          window: "Week 4–8",
+          desc: "Note quality and speed improve",
+          metrics: ["E/M Level Distribution per Provider", "First-Pass Claim Acceptance Rate"],
+          callout:
+            "E/M level distribution per provider shows improvement within 4–8 weeks for consistent adopters. Always show the distribution, not just the mean wRVU — a single average can sit flat while Level 3 codes decline and Level 4 codes increase meaningfully. First-pass claim acceptance rate is the complementary signal: cleaner notes mean fewer initial rejections before the revenue shows up in the data.",
+        },
+        trend: {
+          window: "Month 2–5",
+          desc: "Coding accuracy confirmed",
+          metrics: ["Charge Lag (Days to Bill)", "HCC Capture Rate"],
+          callout:
+            "Charge lag and HCC capture move at Month 2–5 because coding changes precede payment by 60–90 days in the revenue cycle. For Medicare Advantage panels, the HCC capture story connects revenue improvement and quality improvement in a single documentation change — the same note that supports a Level 4 code also supports chronic condition specificity for risk adjustment. These are not competing narratives; they're the same documentation improvement.",
+        },
+        proof: {
+          window: "Month 4–9",
+          desc: "Revenue impact confirmed",
+          metrics: ["wRVU Per Encounter", "Documentation-Related Denial Rate"],
+          callout:
+            "Revenue impact at Month 4–9 is the full chain completing: better notes → correct coding → clean claims → payment received. Denial reduction adds a second payment path — fewer denials at first submission means less revenue held in the appeals cycle. When documentation quality is genuinely better, both paths improve simultaneously: coding lift and denial reduction compound each other.",
+        },
+      },
+      {
+        domain: "QUALITY",
+        badge: "HEDIS & Preventive Care Attribution",
+        northStar: "Care Gap Closure Rate",
+        direction: "↑",
+        sub: "HEDIS measures care gap closure — whether specific preventive care activities and chronic disease management steps happened and were documented. For medical record review measures, 'happened' means 'is documented with the right specificity.' A provider who counseled on colorectal cancer screening but documented 'discussed preventive care' rather than the specific screening, the recommendation, and the patient's response hasn't given HEDIS enough to close the care gap. Ambient capture preserves the specificity of preventive and chronic care conversations because the provider articulates them to the patient — the note captures what was said, not a compressed summary written afterward.",
+        matterMostIf:
+          "Your HEDIS composite scores are below benchmark despite high clinical quality, your value-based contracts include quality performance incentives tied to care gap closure, or your Medicare Advantage STARS rating affects CMS bonus payment eligibility. Better HEDIS scores strengthen value-based contract negotiations and can affect network inclusion for high-performing practices.",
+        alsoNote:
+          "HCC capture and RAF score accuracy for value-based contracts. When chronic condition documentation is complete and specific, risk adjustment reflects the actual patient population — which protects per-member-per-month revenue in capitated arrangements.",
+        chain: ["Preventive & Chronic Care Captured ↑", "Quality Measure Attribution ↑", "HEDIS Compliance ↑"],
+        chainOutput: "Care Gap Closure Rate ↑",
+        tag: "tracked",
+        narrative:
+          "HEDIS and STARS performance is partly a documentation attribution problem. Specific documentation — naming the screening, documenting the patient response, capturing the clinical plan — is what turns a clinical activity into an attributed care gap closure. Attribution improvements are tracked over time, not modeled in dollars, because quality incentive amounts are health plan- and contract-specific.",
+        signal: {
+          window: "Week 4–8",
+          desc: "Note specificity improves",
+          metrics: ["Care Gap Documentation Rate", "Post-Visit Note Specificity"],
+          callout:
+            "Care gap documentation rate and post-visit note specificity for preventive visits are the earliest-moving quality signals. When notes start containing the specific clinical content required for HEDIS attribution, that's the documentation change — not a modeled estimate, but a direct observation of what's in the record. Population health platforms that track care gap documentation show this within 4–8 weeks.",
+        },
+        trend: {
+          window: "Month 2–5",
+          desc: "Measure attribution improves",
+          metrics: ["Quality Measure Attribution Rate", "HEDIS Composite Score"],
+          callout:
+            "Quality measure attribution rate in population health platforms moves at Month 2–5, before formal HEDIS reporting reflects it, because population health tools aggregate documentation in near-real-time while HEDIS reporting is annual. Track the leading indicator — care gap documentation rate in the platform — and use formal HEDIS scores as annual confirmation, not primary evidence.",
+        },
+        proof: {
+          window: "Month 6–18",
+          desc: "Quality scores confirmed",
+          metrics: ["HEDIS Composite Score vs. Benchmark", "MA STARS Rating"],
+          callout:
+            "HEDIS composite scores and MA STARS ratings reflect prior-year data and change slowly — the annual measurement creates a structural lag between documentation improvement and score improvement. Establish the internal documentation quality evidence in months 4–8, and treat the annual STARS data as the long-term confirmation of a story that was already visible internally.",
+        },
+      },
     ],
-    conservativeCallout: "We\u2019d rather show a defensible DRG improvement number based on CDI data than a speculative LOS reduction based on assumptions. Every variable in our model is editable\u2014because your CDI team knows your gaps better than any default can. We do not model LOS, readmissions, or capacity expansion.",
-    validation: [
-      {
-        name: "QUALITY (CDI QUERIES)",
-        before: ["Query volume by physician \u2014 current baseline", "Query types (specificity, POA, status) and resolution time"],
-        after: ["Track query rates \u2014 Abridge vs. control physicians", "Measure CDI productivity: queries per admission"],
-        timeline: "2\u20133 months",
-      },
-      {
-        name: "REVENUE (DRG / CMI)",
-        before: ["12 months CMI by hospitalist", "CC/MCC capture rates by provider and service line"],
-        after: ["Compare CMI \u2014 Abridge vs. control group", "Track CC/MCC rate changes quarterly"],
-        timeline: "3\u20136 months",
-      },
-      {
-        name: "CAPACITY (ROUNDING TIME)",
-        before: ["EHR session data \u2014 documentation time per admission type", "Post-rounding charting hours per physician"],
-        after: ["Repeat EHR session data \u2014 Abridge vs. control", "Survey hospitalists on time-of-note-completion"],
-        timeline: "2\u20134 weeks",
-      },
-      {
-        name: "WORKFORCE (RETENTION)",
-        before: ["Baseline turnover by program", "Exit interview data \u2014 documentation burnout attribution"],
-        after: ["Track turnover Abridge vs. pre-implementation", "Survey on documentation satisfaction at 6 and 12 months"],
-        timeline: "12\u201318 months",
-      },
-    ],
-    closingNote: "This methodology reflects Abridge\u2019s approach to modeling inpatient ROI across four domains: Quality, Workforce, Capacity, and Revenue. We lead with Quality (CDI queries) because that\u2019s the most measurable outcome and the one your CDI department can validate fastest. Revenue (DRG accuracy) is auditable from claims data. Capacity is honest: hours returned to clinical care, not throughput expansion. All defaults are conservative and editable. The goal is a defensible framework\u2014not a predetermined answer.",
   },
 };
 
-function CoverPage({ setting }: { setting: MethodologyCareSetting }) {
-  const data = settingData[setting];
-  return (
-    <PDFCoverPage
-      reportLabel="ROI METHODOLOGY"
-      title={`${data.settingLabel}: How We Think About Value`}
-      subtitle={data.coverSubtitle}
-      showPreparedBy={false}
-      disclaimerText="Every assumption is visible. Every calculation is transparent."
-    />
-  );
-}
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
-function PageFooter({ pageNum, setting }: { pageNum: number; setting: MethodologyCareSetting }) {
-  const data = settingData[setting];
+const S = StyleSheet.create({
+  page: {
+    padding: 48,
+    paddingBottom: 40,
+    fontFamily: "Manrope",
+    backgroundColor: "#FFFFFF",
+    color: "#1A1A1A",
+    fontSize: 10,
+  },
+  wrap: { flex: 1, display: "flex", flexDirection: "column" },
+
+  eyebrow: {
+    fontSize: 7.5,
+    fontWeight: 700,
+    color: "#EA2C00",
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    marginBottom: 5,
+  },
+  eyebrowGray: {
+    fontSize: 7.5,
+    fontWeight: 700,
+    color: "#999999",
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    marginBottom: 5,
+  },
+
+  h1: { fontSize: 21, fontWeight: 700, color: "#1A1A1A", marginBottom: 7, lineHeight: 1.15 },
+  h2: { fontSize: 16, fontWeight: 700, color: "#1A1A1A", marginBottom: 6, lineHeight: 1.15 },
+
+  body: { fontSize: 9.5, color: "#555555", lineHeight: 1.55, marginBottom: 7 },
+  small: { fontSize: 8.5, color: "#666666", lineHeight: 1.5 },
+  tiny: { fontSize: 8, color: "#999999", lineHeight: 1.45 },
+
+  divider: { borderBottomWidth: 1, borderBottomColor: "#E4DDD4", marginBottom: 12, marginTop: 5 },
+
+  redLeftBorder: {
+    borderLeftWidth: 3,
+    borderLeftColor: "#EA2C00",
+    paddingLeft: 10,
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingRight: 10,
+    backgroundColor: "#FEFAF9",
+  },
+
+  row: { flexDirection: "row" },
+
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 7,
+    borderTopWidth: 1,
+    borderTopColor: "#E4DDD4",
+    marginTop: "auto",
+  },
+  footerBrand: { fontSize: 8.5, fontWeight: 700, color: "#EA2C00" },
+  footerMid: { fontSize: 7.5, color: "#AAAAAA" },
+  footerPage: { fontSize: 7.5, color: "#CCCCCC" },
+});
+
+// Signal → Trend → Proof: neutral gray progression to brand red
+const STAGE_COLORS = {
+  signal: { border: "#DDDDDD", bg: "#F8F8F8", label: "#AAAAAA" },
+  trend:  { border: "#999999", bg: "#F2F2F2", label: "#555555" },
+  proof:  { border: "#EA2C00", bg: "#FEF9F7", label: "#EA2C00" },
+};
+
+// ─── Shared Components ────────────────────────────────────────────────────────
+
+function PageFooter({ setting, pageNum, total }: { setting: string; pageNum: number; total: number }) {
   return (
-    <View style={styles.footer} fixed>
-      <Text style={styles.footerLeft}>ABRIDGE</Text>
-      <Text style={styles.footerCenter}>ROI Methodology {"\u00B7"} {data.settingLabel}</Text>
-      <Text style={styles.footerRight}>Page {pageNum} of 3</Text>
+    <View style={S.footer}>
+      <Text style={S.footerBrand}>Abridge</Text>
+      <Text style={S.footerMid}>Methodology Reference · {setting}</Text>
+      <Text style={S.footerPage}>{pageNum} / {total}</Text>
     </View>
   );
 }
 
-function MechanismItem({ mechanism, isLast }: { mechanism: MechanismData; isLast: boolean }) {
+function DomainPill({ domain }: { domain: string }) {
+  const colors: Record<string, { bg: string; text: string }> = {
+    CAPACITY:  { bg: "#1A1A1A", text: "#FFFFFF" },
+    WORKFORCE: { bg: "#4A3728", text: "#FFFFFF" },
+    REVENUE:   { bg: "#EA2C00", text: "#FFFFFF" },
+    QUALITY:   { bg: "#666666", text: "#FFFFFF" },
+  };
+  const c = colors[domain] ?? { bg: "#1A1A1A", text: "#FFFFFF" };
   return (
-    <View>
-      <View style={{ paddingLeft: 10, borderLeftWidth: 2, borderLeftColor: colors.primary }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-          <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>{mechanism.name}</Text>
-          <Text style={{ fontSize: 8.5, color: colors.tertiary }}>{mechanism.attribution}</Text>
-        </View>
-        <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 3 }}>{mechanism.description}</Text>
-        <Text style={{ fontSize: 9, color: mechanism.formulaColor || colors.primary }}>{mechanism.formula}</Text>
-      </View>
-      {!isLast && <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 6 }} />}
+    <View style={{ backgroundColor: c.bg, paddingVertical: 3, paddingHorizontal: 9, borderRadius: 20, alignSelf: "flex-start" }}>
+      <Text style={{ fontSize: 7, fontWeight: 700, color: c.text, textTransform: "uppercase", letterSpacing: 1 }}>
+        {domain}
+      </Text>
     </View>
   );
 }
 
-function Page1Content({ setting }: { setting: MethodologyCareSetting }) {
-  const data = settingData[setting];
+function TagPill({ tag }: { tag: "modeled" | "tracked" }) {
+  const modeled = tag === "modeled";
   return (
-    <Page size="LETTER" style={styles.page} wrap={false}>
-      <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>THE CONTEXT</Text>
+    <View style={{ backgroundColor: modeled ? "#1A1A1A" : "#F0EDE8", paddingVertical: 3, paddingHorizontal: 9, borderRadius: 20, alignSelf: "flex-start" }}>
+      <Text style={{ fontSize: 7, fontWeight: 700, color: modeled ? "#FFFFFF" : "#666666", textTransform: "uppercase", letterSpacing: 1 }}>
+        {modeled ? "Modeled" : "Signal"}
+      </Text>
+    </View>
+  );
+}
 
-        <View style={[styles.cardBg, { marginBottom: 10 }]}>
-          <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText, marginBottom: 8 }}>{data.contextHeadline}</Text>
-          <Text style={{ fontSize: 10.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>{data.contextBody}</Text>
-          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText }}>{data.contextQuestion}</Text>
+// ─── Page 1: Overview ─────────────────────────────────────────────────────────
+
+function OverviewPage({ sd, pageNum }: { sd: SettingPDFData; pageNum: number }) {
+  return (
+    <Page size="LETTER" style={S.page} wrap={false}>
+      <View style={S.wrap}>
+        <Text style={S.eyebrow}>Methodology Overview</Text>
+        <Text style={S.h1}>{sd.contextHeadline}</Text>
+        <Text style={[S.body, { marginBottom: 12 }]}>{sd.contextBody}</Text>
+        <View style={S.divider} />
+
+        <Text style={[S.eyebrowGray, { marginBottom: 8 }]}>Four Domains of Value</Text>
+        <View style={{ flexDirection: "row", marginBottom: 8 }}>
+          {sd.domains.slice(0, 2).map((d, i) => (
+            <View
+              key={d.domain}
+              style={{ flex: 1, marginRight: i === 0 ? 8 : 0, backgroundColor: "#F5F0EB", padding: 14, borderRadius: 6 }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 7 }}>
+                <DomainPill domain={d.domain} />
+                <Text style={{ fontSize: 7.5, color: "#AAAAAA", marginLeft: 6 }}>{d.badge}</Text>
+              </View>
+              <Text style={{ fontSize: 8, fontWeight: 700, color: "#AAAAAA", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>
+                North Star
+              </Text>
+              <Text style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.2, marginBottom: 5 }}>
+                {d.northStar} <Text style={{ color: "#EA2C00" }}>{d.direction}</Text>
+              </Text>
+              <Text style={{ fontSize: 8.5, color: "#666666", lineHeight: 1.5 }}>{d.sub.split('.')[0]}.</Text>
+            </View>
+          ))}
+        </View>
+        <View style={{ flexDirection: "row", marginBottom: 12 }}>
+          {sd.domains.slice(2, 4).map((d, i) => (
+            <View
+              key={d.domain}
+              style={{ flex: 1, marginRight: i === 0 ? 8 : 0, backgroundColor: "#F5F0EB", padding: 14, borderRadius: 6 }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 7 }}>
+                <DomainPill domain={d.domain} />
+                <Text style={{ fontSize: 7.5, color: "#AAAAAA", marginLeft: 6 }}>{d.badge}</Text>
+              </View>
+              <Text style={{ fontSize: 8, fontWeight: 700, color: "#AAAAAA", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>
+                North Star
+              </Text>
+              <Text style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.2, marginBottom: 5 }}>
+                {d.northStar} <Text style={{ color: "#EA2C00" }}>{d.direction}</Text>
+              </Text>
+              <Text style={{ fontSize: 8.5, color: "#666666", lineHeight: 1.5 }}>{d.sub.split('.')[0]}.</Text>
+            </View>
+          ))}
         </View>
 
-        <View style={styles.thickDivider} />
-
-        {data.domains ? (
-          <>
-            <Text style={styles.sectionLabel}>FOUR VALUE DOMAINS</Text>
-            <View style={{ flexDirection: "row", gap: 10, marginBottom: 6 }}>
-              {data.domains.slice(0, 2).map((d, i) => (
-                <View key={i} style={[styles.col, { backgroundColor: colors.cards, padding: 12, borderRadius: 4 }]}>
-                  <View style={{ borderLeftWidth: 3, borderLeftColor: d.accentColor, paddingLeft: 8, marginBottom: 6 }}>
-                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, letterSpacing: 1, textTransform: "uppercase" }}>{d.label}</Text>
-                  </View>
-                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>{d.description}</Text>
-                  <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
-                    <Text style={{ fontSize: 8.5, fontWeight: "bold", color: d.accentColor }}>{d.footer}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-            <View style={{ flexDirection: "row", gap: 10, marginBottom: 10 }}>
-              {data.domains.slice(2, 4).map((d, i) => (
-                <View key={i} style={[styles.col, { backgroundColor: colors.cards, padding: 12, borderRadius: 4 }]}>
-                  <View style={{ borderLeftWidth: 3, borderLeftColor: d.accentColor, paddingLeft: 8, marginBottom: 6 }}>
-                    <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, letterSpacing: 1, textTransform: "uppercase" }}>{d.label}</Text>
-                  </View>
-                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>{d.description}</Text>
-                  <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
-                    <Text style={{ fontSize: 8.5, fontWeight: "bold", color: d.accentColor }}>{d.footer}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </>
-        ) : (
-          <>
-            <Text style={styles.sectionLabel}>TWO VALUE CATEGORIES</Text>
-            <View style={[styles.twoColRow, { marginBottom: 10 }]}>
-              <View style={[styles.col, styles.cardBg]}>
-                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>{data.cat1Label}</Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>{data.cat1Description}</Text>
-                <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
-                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>{data.cat1Footer}</Text>
-                </View>
-              </View>
-              <View style={[styles.col, { backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary, paddingLeft: 12, paddingVertical: 10 }]}>
-                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>{data.cat2Label}</Text>
-                <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4, marginBottom: 6 }}>{data.cat2Description}</Text>
-                <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 5 }}>
-                  <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText }}>{data.cat2Footer}</Text>
-                </View>
-              </View>
-            </View>
-          </>
-        )}
-
-        <View style={{ marginBottom: 10 }}>
-          <Text style={[styles.sectionLabel, { marginBottom: 6 }]}>HOW VALUE ACCRUES</Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {[
-              { stage: "SIGNAL", timeline: "30–90 days", description: "Provider-level, EHR-measurable. Documentation time, CDI queries, note completion rate." },
-              { stage: "TREND", timeline: "3–6 months", description: "Documentation patterns emerge. Billing distributions, retention signals, coding accuracy." },
-              { stage: "PROOF", timeline: "6–18 months", description: "System-level statistical credibility. Claims validation, CMI trending, retention data." },
-            ].map((s, i) => (
-              <View key={i} style={{ flex: 1, backgroundColor: colors.cards, borderLeftWidth: 2, borderLeftColor: colors.primary, padding: 8 }}>
-                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 2 }}>{s.stage}</Text>
-                <Text style={{ fontSize: 8.5, color: colors.primary, fontWeight: "bold" as const, marginBottom: 3 }}>{s.timeline}</Text>
-                <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>{s.description}</Text>
-              </View>
-            ))}
-          </View>
+        <View style={S.redLeftBorder}>
+          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#EA2C00", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
+            Adoption & Attribution
+          </Text>
+          <Text style={{ fontSize: 8.5, color: "#555555", lineHeight: 1.55 }}>{sd.adoptionCallout}</Text>
         </View>
 
-        <View style={styles.thickDivider} />
-
-        <Text style={styles.sectionLabel}>THE HONEST LIMITS</Text>
-        <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 4, padding: 10, marginBottom: 8 }}>
-          <View style={{ flexDirection: "row", gap: 10, marginBottom: 8 }}>
-            <View style={{ flex: 1, borderLeftWidth: 2, borderLeftColor: colors.primary, paddingLeft: 8 }}>
-              <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>WHAT WE MEASURE</Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 4 }}>Direct attribution</Text>
-              {data.honestLimits.measure.map((item, i) => (
-                <Text key={i} style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>{"\u00B7"} {item}</Text>
-              ))}
-            </View>
-            <View style={{ flex: 1, borderLeftWidth: 2, borderLeftColor: colors.primary, paddingLeft: 8 }}>
-              <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>WHAT WE INFLUENCE</Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 4 }}>Indirect attribution</Text>
-              {data.honestLimits.influence.map((item, i) => (
-                <Text key={i} style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>{"\u00B7"} {item}</Text>
-              ))}
-            </View>
-          </View>
-          <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 8 }}>
-            <View style={{ borderLeftWidth: 2, borderLeftColor: colors.primary, paddingLeft: 8 }}>
-              <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>WHAT WE ENABLE</Text>
-              <Text style={{ fontSize: 8, color: colors.tertiary, marginBottom: 4 }}>Supportive only</Text>
-              <View style={{ flexDirection: "row", gap: 20 }}>
-                <View style={{ flex: 1 }}>
-                  {data.honestLimits.enable.slice(0, 2).map((item, i) => (
-                    <Text key={i} style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>{"\u00B7"} {item}</Text>
-                  ))}
-                </View>
-                <View style={{ flex: 1 }}>
-                  {data.honestLimits.enable.slice(2).map((item, i) => (
-                    <Text key={i} style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>{"\u00B7"} {item}</Text>
-                  ))}
-                </View>
-              </View>
-              {setting === "nursing" && (
-                <View style={{ marginTop: 6 }}>
-                  <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5 }}>Documentation creates visibility.{"\n"}Clinical teams act on it.</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        <Text style={styles.sectionLabelGray}>{data.connectedValueLabel}</Text>
-        <Text style={{ fontSize: 9, color: colors.tertiary, lineHeight: 1.5 }}>{data.connectedValue}</Text>
-
-        <PageFooter pageNum={1} setting={setting} />
+        <PageFooter setting={sd.label} pageNum={pageNum} total={8} />
       </View>
     </Page>
   );
 }
 
-function Page2Content({ setting }: { setting: MethodologyCareSetting }) {
-  const data = settingData[setting];
+// ─── Pages 2–5: Domain Pages ──────────────────────────────────────────────────
+
+function DomainPage({ d, sd, pageNum }: { d: DomainEntry; sd: SettingPDFData; pageNum: number }) {
+  const domainIdx = sd.domains.indexOf(d) + 1;
+  const stages = [
+    { key: "signal", label: "Signal",  c: STAGE_COLORS.signal, stage: d.signal },
+    { key: "trend",  label: "Trend",   c: STAGE_COLORS.trend,  stage: d.trend  },
+    { key: "proof",  label: "Proof",   c: STAGE_COLORS.proof,  stage: d.proof  },
+  ];
+
   return (
-    <Page size="LETTER" style={styles.page} wrap={false}>
-      <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>VALUE MECHANISMS</Text>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 8 }}>{data.mechanismsSubtitle}</Text>
+    <Page size="LETTER" style={S.page} wrap={false}>
+      <View style={S.wrap}>
+        {/* Header row */}
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+          <DomainPill domain={d.domain} />
+          <Text style={{ fontSize: 8, color: "#AAAAAA", marginLeft: 8 }}>Domain {domainIdx} of 4 · {d.badge}</Text>
+        </View>
 
-        <View style={styles.divider} />
+        {/* North Star */}
+        <View style={{ marginBottom: 9 }}>
+          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#AAAAAA", textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
+            North Star Metric
+          </Text>
+          <Text style={{ fontSize: 23, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.1, marginBottom: 6 }}>
+            {d.northStar} <Text style={{ color: "#EA2C00" }}>{d.direction}</Text>
+          </Text>
+          <Text style={{ fontSize: 9.5, color: "#444444", lineHeight: 1.6 }}>{d.sub}</Text>
+        </View>
 
-        {data.categories.map((cat, ci) => (
-          <View key={ci}>
-            <Text style={{ fontSize: 9, color: cat.labelColor, textTransform: "uppercase", letterSpacing: 2, marginTop: ci > 0 ? 10 : 0, marginBottom: 6, fontWeight: "bold" }}>{cat.label}</Text>
-            <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 4, padding: 10, marginBottom: 6 }}>
-              {cat.mechanisms.map((m, mi) => (
-                <MechanismItem key={mi} mechanism={m} isLast={mi === cat.mechanisms.length - 1} />
-              ))}
+        {/* Matters most if */}
+        <View style={{ backgroundColor: "#F5F0EB", padding: 10, borderRadius: 5, marginBottom: 10 }}>
+          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#9A8F84", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
+            Matters most if…
+          </Text>
+          <Text style={{ fontSize: 8.5, color: "#555555", lineHeight: 1.55 }}>{d.matterMostIf}</Text>
+        </View>
+
+        <View style={S.divider} />
+
+        {/* Causal chain */}
+        <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#AAAAAA", textTransform: "uppercase", letterSpacing: 2, marginBottom: 7 }}>
+          How Abridge Gets There
+        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", marginBottom: 5 }}>
+          <View style={{ backgroundColor: "#EA2C00", paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, marginRight: 5, marginBottom: 4 }}>
+            <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#FFFFFF" }}>Abridge Ambient</Text>
+          </View>
+          {d.chain.map((step, i) => (
+            <View key={i} style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+              <Text style={{ fontSize: 9, color: "#C4BBAD", marginRight: 5 }}>→</Text>
+              <View style={{ backgroundColor: "#F5F0EB", paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, marginRight: 5 }}>
+                <Text style={{ fontSize: 7.5, color: "#444444" }}>{step}</Text>
+              </View>
             </View>
-            {ci < data.categories.length - 1 && <View style={styles.divider} />}
+          ))}
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+            <Text style={{ fontSize: 9, color: "#C4BBAD", marginRight: 5 }}>→</Text>
+            <View style={{ borderWidth: 1.5, borderColor: "#EA2C00", paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4 }}>
+              <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#EA2C00" }}>{d.chainOutput}</Text>
+            </View>
+          </View>
+        </View>
+
+        {d.alsoNote && (
+          <Text style={{ fontSize: 8, color: "#AAAAAA", lineHeight: 1.5, marginBottom: 5, fontStyle: "italic" }}>
+            Also note: {d.alsoNote}
+          </Text>
+        )}
+
+        <View style={S.divider} />
+
+        {/* Signal / Trend / Proof */}
+        <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#AAAAAA", textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>
+          What to Track and When
+        </Text>
+        <View style={{ flexDirection: "row" }}>
+          {stages.map((s, i) => (
+            <View
+              key={s.key}
+              style={{
+                flex: 1,
+                marginRight: i < 2 ? 7 : 0,
+                backgroundColor: s.c.bg,
+                borderRadius: 5,
+                padding: 10,
+                borderTopWidth: 2.5,
+                borderTopColor: s.c.border,
+              }}
+            >
+              <Text style={{ fontSize: 8, fontWeight: 700, color: s.c.label, textTransform: "uppercase", letterSpacing: 1, marginBottom: 1 }}>
+                {s.label}
+              </Text>
+              <Text style={{ fontSize: 8.5, fontWeight: 700, color: "#333333", marginBottom: 1 }}>{s.stage.window}</Text>
+              <Text style={{ fontSize: 7.5, color: "#777777", marginBottom: 8, lineHeight: 1.4 }}>{s.stage.desc}</Text>
+              {s.stage.metrics.map((m, mi) => (
+                <View key={mi} style={{ flexDirection: "row", marginBottom: 5 }}>
+                  <Text style={{ fontSize: 8, color: s.c.border, marginRight: 4, marginTop: 1.5 }}>·</Text>
+                  <Text style={{ fontSize: 8, color: "#3A3028", lineHeight: 1.45, flex: 1 }}>{m}</Text>
+                </View>
+              ))}
+              {s.stage.callout ? (
+                <View style={{ borderTopWidth: 1, borderTopColor: s.c.border, marginTop: 6, paddingTop: 6 }}>
+                  <Text style={{ fontSize: 7.5, color: "#666666", lineHeight: 1.5, fontStyle: "italic" }}>
+                    {s.stage.callout}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          ))}
+        </View>
+
+        <PageFooter setting={sd.label} pageNum={pageNum} total={8} />
+      </View>
+    </Page>
+  );
+}
+
+// ─── Page 6: Value Architecture ───────────────────────────────────────────────
+
+function ValueArchitecturePage({ sd, pageNum }: { sd: SettingPDFData; pageNum: number }) {
+  return (
+    <Page size="LETTER" style={S.page} wrap={false}>
+      <View style={S.wrap}>
+        <Text style={S.eyebrow}>The Value Architecture</Text>
+        <Text style={S.h1}>How Abridge Creates Value</Text>
+        <Text style={[S.body, { marginBottom: 10 }]}>
+          Four domains. Each shows the causal chain — how Abridge documentation improvement connects to the financial or operational outcome. Modeled domains are quantified in the ROI Calculator. Signal domains are tracked over time as program performance evidence.
+        </Text>
+        <View style={S.divider} />
+
+        {sd.domains.map((d, i) => (
+          <View key={d.domain} style={{ marginBottom: i < sd.domains.length - 1 ? 13 : 0 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 5 }}>
+              <DomainPill domain={d.domain} />
+              <View style={{ marginLeft: 7 }}><TagPill tag={d.tag} /></View>
+              <Text style={{ fontSize: 8, color: "#AAAAAA", marginLeft: 7 }}>{d.badge}</Text>
+            </View>
+            <Text style={{ fontSize: 9, color: "#444444", lineHeight: 1.55, marginBottom: 6 }}>{d.narrative}</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
+              <View style={{ backgroundColor: "#EA2C00", paddingVertical: 3, paddingHorizontal: 7, borderRadius: 3, marginRight: 5, marginBottom: 3 }}>
+                <Text style={{ fontSize: 7, fontWeight: 700, color: "#FFFFFF" }}>Abridge</Text>
+              </View>
+              {d.chain.map((step, si) => (
+                <View key={si} style={{ flexDirection: "row", alignItems: "center", marginBottom: 3 }}>
+                  <Text style={{ fontSize: 8.5, color: "#C4BBAD", marginRight: 4 }}>→</Text>
+                  <View style={{ backgroundColor: "#F5F0EB", paddingVertical: 3, paddingHorizontal: 7, borderRadius: 3, marginRight: 5 }}>
+                    <Text style={{ fontSize: 7, color: "#555555" }}>{step}</Text>
+                  </View>
+                </View>
+              ))}
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 3 }}>
+                <Text style={{ fontSize: 8.5, color: "#C4BBAD", marginRight: 4 }}>→</Text>
+                <View style={{ borderWidth: 1, borderColor: "#EA2C00", paddingVertical: 3, paddingHorizontal: 7, borderRadius: 3 }}>
+                  <Text style={{ fontSize: 7, fontWeight: 700, color: "#EA2C00" }}>{d.chainOutput}</Text>
+                </View>
+              </View>
+            </View>
+            {i < sd.domains.length - 1 && (
+              <View style={{ borderBottomWidth: 1, borderBottomColor: "#EDEBE6", marginTop: 11 }} />
+            )}
           </View>
         ))}
 
-        <View style={{ marginTop: 8 }}>
-          <View style={[styles.calloutBox, { marginBottom: 0 }]}>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.5 }}>{data.careQualityCallout}</Text>
-          </View>
-        </View>
-
-        <PageFooter pageNum={2} setting={setting} />
+        <PageFooter setting={sd.label} pageNum={pageNum} total={8} />
       </View>
     </Page>
   );
 }
 
-function Page3Content({ setting }: { setting: MethodologyCareSetting }) {
-  const data = settingData[setting];
+// ─── Page 7: Honest Limits ────────────────────────────────────────────────────
+
+function HonestLimitsPage({ sd, pageNum }: { sd: SettingPDFData; pageNum: number }) {
+  const cols = [
+    {
+      title: "What Abridge Measures Directly",
+      c: STAGE_COLORS.signal,
+      items: [
+        "Documentation time per encounter (EHR audit logs)",
+        "Note completion rate — same-shift or same-day",
+        "After-hours / post-shift EHR session time",
+        "Charge lag from date of service to billing submission",
+      ],
+    },
+    {
+      title: "What Abridge Influences",
+      c: STAGE_COLORS.trend,
+      items: [
+        "Throughput and patient flow (requires volume & scheduling alignment)",
+        "Physician and nurse retention (requires consistent adoption and time)",
+        "Coding accuracy and E/M or DRG level distribution",
+        "Quality measure attribution (requires quality team coordination)",
+      ],
+    },
+    {
+      title: "What Your Organization Brings",
+      c: STAGE_COLORS.proof,
+      items: [
+        "Annual visit, encounter, or discharge volumes",
+        "Baseline rates: LWBS, turnover, denial rate, CMI",
+        "Financial benchmarks: replacement cost, base rate, denial value",
+        "Internal data access: EHR logs, HR data, revenue cycle, payroll",
+      ],
+    },
+  ];
+
   return (
-    <Page size="LETTER" style={styles.page} wrap={false}>
-      <View style={styles.pageWrapper}>
-        <Text style={styles.sectionLabel}>TRANSPARENCY</Text>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Every Number Has a Source</Text>
-        <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 8 }}>We don{"\u2019"}t hide assumptions. If your data is different, the model adapts.</Text>
+    <Page size="LETTER" style={S.page} wrap={false}>
+      <View style={S.wrap}>
+        <Text style={S.eyebrow}>Honest Limits</Text>
+        <Text style={S.h1}>What This Framework Does and Doesn't Claim</Text>
+        <Text style={[S.body, { marginBottom: 12 }]}>
+          Abridge improves documentation quality. Documentation quality influences — but doesn't fully determine — the operational and financial outcomes in this framework. The distinctions below matter when building the business case for your organization, and they're the same distinctions your CFO and CMO will apply when they evaluate the evidence.
+        </Text>
+        <View style={S.divider} />
 
-        <View style={styles.divider} />
-
-        <Text style={styles.sectionLabelGray}>KEY ASSUMPTIONS</Text>
-
-        <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 4, marginBottom: 8 }}>
-          <View style={{ flexDirection: "row", backgroundColor: colors.cards, paddingVertical: 6, paddingHorizontal: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-            <Text style={{ flex: 3, fontSize: 8, fontWeight: "bold", color: colors.primaryText }}>ASSUMPTION</Text>
-            <Text style={{ flex: 1.5, fontSize: 8, fontWeight: "bold", color: colors.primaryText }}>RANGE</Text>
-            <Text style={{ flex: 1.5, fontSize: 8, fontWeight: "bold", color: colors.primary }}>DEFAULT</Text>
-            <Text style={{ flex: 1.5, fontSize: 8, fontWeight: "bold", color: colors.primaryText }}>SOURCE</Text>
-          </View>
-          {data.assumptions.map((row, i) => (
-            <View key={i} style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 10, backgroundColor: i % 2 === 1 ? colors.cards : colors.background, borderBottomWidth: i < data.assumptions.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
-              <Text style={{ flex: 3, fontSize: 8.5, color: colors.primaryText }}>{row.assumption}</Text>
-              <Text style={{ flex: 1.5, fontSize: 8.5, color: colors.secondary }}>{row.range}</Text>
-              <Text style={{ flex: 1.5, fontSize: 8.5, color: colors.primary, fontWeight: "bold" }}>{row.defaultVal}</Text>
-              <Text style={{ flex: 1.5, fontSize: 8.5, color: colors.secondary }}>{row.source}</Text>
+        <View style={{ flexDirection: "row", marginBottom: 14 }}>
+          {cols.map((col, i) => (
+            <View
+              key={i}
+              style={{
+                flex: 1,
+                marginRight: i < 2 ? 8 : 0,
+                backgroundColor: col.c.bg,
+                borderRadius: 5,
+                padding: 12,
+                borderTopWidth: 2.5,
+                borderTopColor: col.c.border,
+              }}
+            >
+              <Text style={{ fontSize: 8.5, fontWeight: 700, color: col.c.label, marginBottom: 9, lineHeight: 1.35 }}>
+                {col.title}
+              </Text>
+              {col.items.map((item, ii) => (
+                <View key={ii} style={{ flexDirection: "row", marginBottom: 7 }}>
+                  <Text style={{ fontSize: 8, color: col.c.border, marginRight: 5, marginTop: 1.5 }}>·</Text>
+                  <Text style={{ fontSize: 8.5, color: "#444444", lineHeight: 1.5, flex: 1 }}>{item}</Text>
+                </View>
+              ))}
             </View>
           ))}
         </View>
 
-        <View style={[styles.calloutBox, { marginBottom: 10 }]}>
-          <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>{data.conservativeCallout}</Text>
+        <View style={[S.redLeftBorder, { marginBottom: 12 }]}>
+          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#EA2C00", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
+            Adoption is the variable
+          </Text>
+          <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6 }}>
+            Every outcome in this framework assumes consistent, sustained Abridge use by the provider cohort being measured. Providers who use Abridge occasionally will show occasional results. The measurement approach on each domain page is designed to isolate Abridge adopters — so adoption rate and outcome size are visible together, not conflated. Partial adoption is visible, not hidden.
+          </Text>
         </View>
 
-        <View style={styles.thickDivider} />
-
-        <Text style={styles.sectionLabel}>VALIDATION PATH</Text>
-        <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 8 }}>Our projections are starting points. The real answers come from your data.</Text>
-
-        <View style={[styles.twoColRow, { marginBottom: 8 }]}>
-          {data.validation.slice(0, 2).map((v, i) => (
-            <View key={i} style={[styles.col, styles.cardBg, { padding: 10 }]}>
-              <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 5 }}>{v.name}</Text>
-              <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.secondary, marginBottom: 2 }}>Before:</Text>
-              {v.before.map((b, bi) => (
-                <Text key={bi} style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.4 }}>{"\u2022"} {b}</Text>
-              ))}
-              <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.secondary, marginTop: 4, marginBottom: 2 }}>After:</Text>
-              {v.after.map((a, ai) => (
-                <Text key={ai} style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.4 }}>{"\u2022"} {a}</Text>
-              ))}
-              <Text style={{ fontSize: 9, color: colors.primary, marginTop: 4, fontWeight: "bold" }}>Timeline: {v.timeline}</Text>
-            </View>
-          ))}
-        </View>
-        <View style={[styles.twoColRow, { marginBottom: 8 }]}>
-          {data.validation.slice(2, 4).map((v, i) => (
-            <View key={i} style={[styles.col, styles.cardBg, { padding: 10 }]}>
-              <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 5 }}>{v.name}</Text>
-              <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.secondary, marginBottom: 2 }}>Before:</Text>
-              {v.before.map((b, bi) => (
-                <Text key={bi} style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.4 }}>{"\u2022"} {b}</Text>
-              ))}
-              <Text style={{ fontSize: 8.5, fontWeight: "bold", color: colors.secondary, marginTop: 4, marginBottom: 2 }}>After:</Text>
-              {v.after.map((a, ai) => (
-                <Text key={ai} style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.4 }}>{"\u2022"} {a}</Text>
-              ))}
-              <Text style={{ fontSize: 9, color: colors.primary, marginTop: 4, fontWeight: "bold" }}>Timeline: {v.timeline}</Text>
-            </View>
-          ))}
+        <View style={{ backgroundColor: "#1A1A1A", padding: 16, borderRadius: 6 }}>
+          <Text style={{ fontSize: 8, fontWeight: 700, color: "#EA2C00", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 }}>
+            What Comes Next
+          </Text>
+          <Text style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", marginBottom: 7, lineHeight: 1.25 }}>
+            The ROI Calculator takes this methodology and shows you the number.
+          </Text>
+          <Text style={{ fontSize: 9, color: "#AAAAAA", lineHeight: 1.6 }}>
+            Enter your volumes, baselines, and organization-specific inputs. The calculator applies the same causal logic from this document — the formulas are transparent, the assumptions are yours to adjust, and the output is a defensible estimate built on your data, not ours. This document is the 'why.' The calculator is the 'how much.'
+          </Text>
         </View>
 
-        <View style={styles.divider} />
-
-        <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>{data.closingNote}</Text>
-
-        <PageFooter pageNum={3} setting={setting} />
+        <PageFooter setting={sd.label} pageNum={pageNum} total={8} />
       </View>
     </Page>
   );
 }
 
-function MethodologyDocument({ setting }: { setting: MethodologyCareSetting }) {
+// ─── Document Assembly ────────────────────────────────────────────────────────
+
+function MethodologyPDFDocument({ setting }: { setting: MethodologyCareSetting }) {
+  const sd = settingData[setting];
   return (
     <Document>
-      <CoverPage setting={setting} />
-      <Page1Content setting={setting} />
-      <Page2Content setting={setting} />
-      <Page3Content setting={setting} />
+      <PDFCoverPage
+        reportLabel="Methodology Reference"
+        title={`${sd.label} Value Framework`}
+        subtitle={sd.coverSubtitle}
+        showPreparedBy={false}
+      />
+      <OverviewPage sd={sd} pageNum={2} />
+      {sd.domains.map((d, i) => (
+        <DomainPage key={d.domain} d={d} sd={sd} pageNum={i + 3} />
+      ))}
+      <ValueArchitecturePage sd={sd} pageNum={7} />
+      <HonestLimitsPage sd={sd} pageNum={8} />
     </Document>
   );
 }
 
-export async function generateMethodologyPDF(setting: MethodologyCareSetting): Promise<void> {
-  const data = settingData[setting];
-  const doc = <MethodologyDocument setting={setting} />;
-  const blob = await pdf(doc).toBlob();
-  const filename = `Abridge-${data.settingLabel}-ROI-Methodology.pdf`;
+// ─── Public API ───────────────────────────────────────────────────────────────
 
-  await savePdfBlob(blob, filename, data.settingLabel + " ROI Methodology");
+export async function generateMethodologyPDF(setting: MethodologyCareSetting): Promise<void> {
+  const blob = await pdf(<MethodologyPDFDocument setting={setting} />).toBlob();
+  const sd = settingData[setting];
+  await savePdfBlob(blob, `abridge-methodology-${sd.label.toLowerCase().replace(/\s+/g, "-")}.pdf`);
 }

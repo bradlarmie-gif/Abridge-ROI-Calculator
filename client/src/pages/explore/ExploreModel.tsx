@@ -186,8 +186,8 @@ export default function ExploreModel({
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
   const isEDForScenarios = state.careSetting === 'ed';
   const wrvuScenarios: Record<string, number> = isEDForScenarios
-    ? { conservative: 2, typical: 4, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
-    : { conservative: 2, typical: 5, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
+    ? { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
+    : { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
   const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
   const denialsScenarios: Record<string, number> = isEDForScenarios
     ? { conservative: 15, typical: 30, aggressive: 50 }
@@ -442,9 +442,29 @@ export default function ExploreModel({
   const expansionBaselineCount = isNursing ? state.nursingStaffedBeds : state.numberOfProviders;
   const expandedProviders = state.fullScaleProviders;
   const [expandedUtilization, setExpandedUtilization] = useState(80);
-  const expansionMultiplier = expansionBaselineCount > 0
-    ? (expandedProviders / expansionBaselineCount) * (expandedUtilization / state.utilizationPercent)
+
+  // Full-scale total encounters — defaults to linear provider scaling, but the
+  // rep can override it when the prospect's per-provider volume differs at scale.
+  const derivedFullScaleEncounters = !isNursing && state.numberOfProviders > 0
+    ? Math.round(state.annualEncounters * expandedProviders / state.numberOfProviders)
+    : null;
+  const [customFullScaleEncounters, setCustomFullScaleEncounters] = useState<number | null>(null);
+  const effectiveFullScaleEncounters = customFullScaleEncounters ?? derivedFullScaleEncounters;
+
+  // Value scales by Abridge encounter ratio (total × util%), so that a custom
+  // encounter override flows through to the expansion value correctly.
+  const currentAbridgeEncounters = !isNursing
+    ? state.annualEncounters * (state.utilizationPercent / 100)
     : 0;
+  const fullScaleAbridgeEncounters = !isNursing && effectiveFullScaleEncounters !== null
+    ? effectiveFullScaleEncounters * (expandedUtilization / 100)
+    : null;
+
+  const expansionMultiplier = !isNursing && currentAbridgeEncounters > 0 && fullScaleAbridgeEncounters !== null
+    ? fullScaleAbridgeEncounters / currentAbridgeEncounters
+    : expansionBaselineCount > 0
+      ? (expandedProviders / expansionBaselineCount) * (expandedUtilization / state.utilizationPercent)
+      : 0;
   const expandedValue = Math.round(netAnnualValue * expansionMultiplier);
 
   // Full scale investment scales with the baseline unit (you pay per provider, or
@@ -458,26 +478,26 @@ export default function ExploreModel({
     const cs = state.careSetting;
     const drivers: ProformaSettingSnapshot["drivers"] = [];
 
-    if (patientAccessValue > 0) drivers.push({ id: "patientAccess", name: "Patient Access", value: patientAccessValue, category: "time", onset: "delayed" as const });
-    if (edLwbsValue > 0) drivers.push({ id: "edLwbs", name: "LWBS Recovery", value: edLwbsValue, category: "time", onset: "delayed" as const });
-    if (edAdmissionCaptureValue > 0) drivers.push({ id: "edAdmission", name: "Admission Capture", value: edAdmissionCaptureValue, category: "time", onset: "delayed" as const });
-    if (costReductionValue > 0) drivers.push({ id: "costReduction", name: "Cost Reduction", value: costReductionValue, category: "time", onset: "delayed" as const });
-    if (nursingOtValue > 0) drivers.push({ id: "nursingOt", name: "OT Reduction", value: nursingOtValue, category: "time", onset: "delayed" as const });
-    if (wrvuValue > 0) drivers.push({ id: "wrvu", name: "wRVU Uplift", value: wrvuValue, category: "documentation", onset: "immediate" as const });
-    if (hccValue > 0) drivers.push({ id: "hcc", name: "HCC Recapture", value: hccValue, category: "documentation", onset: "immediate" as const });
-    if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", onset: "immediate" as const });
-    if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", onset: "immediate" as const });
-    if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", onset: "immediate" as const });
-    if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", onset: "immediate" as const });
-    if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk Reduction", value: nursingHapiValue, category: "documentation", onset: "delayed" as const });
-    if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility", value: nursingFallsValue, category: "documentation", onset: "delayed" as const });
-    if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", onset: "delayed" as const });
-    if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", onset: "delayed" as const });
-    if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", onset: "delayed" as const });
+    if (patientAccessValue > 0) drivers.push({ id: "patientAccess", name: "Patient Access", value: patientAccessValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
+    if (edLwbsValue > 0) drivers.push({ id: "edLwbs", name: "LWBS Recovery", value: edLwbsValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
+    if (edAdmissionCaptureValue > 0) drivers.push({ id: "edAdmission", name: "Admission Capture", value: edAdmissionCaptureValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
+    if (costReductionValue > 0) drivers.push({ id: "costReduction", name: "Cost Reduction", value: costReductionValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
+    if (nursingOtValue > 0) drivers.push({ id: "nursingOt", name: "OT Reduction", value: nursingOtValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
+    if (wrvuValue > 0) drivers.push({ id: "wrvu", name: "E/M Level Accuracy", value: wrvuValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+    if (hccValue > 0) drivers.push({ id: "hcc", name: "HCC Recapture", value: hccValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+    if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+    if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+    if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+    if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+    if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk Reduction", value: nursingHapiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
+    if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility", value: nursingFallsValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
+    if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
+    if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
+    if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
 
     for (const item of state.timeDriverInputs.nursingAdditionalCostSavings) {
       if (item.amount > 0 && item.label) {
-        drivers.push({ id: `additionalCost-${item.id}`, name: item.label, value: item.amount, category: "time", onset: "immediate" as const });
+        drivers.push({ id: `additionalCost-${item.id}`, name: item.label, value: item.amount, category: "time", quadrant: "Workforce", onset: "immediate" as const });
       }
     }
 
@@ -494,7 +514,7 @@ export default function ExploreModel({
           : 150;
         const impliedDocValue = Math.round(docQualityHours * Math.max(providerValuePerHour, 50));
         if (impliedDocValue > 0) {
-          drivers.push({ id: "docQuality", name: "Documentation Quality", value: impliedDocValue, category: "documentation", onset: "immediate" as const });
+          drivers.push({ id: "docQuality", name: "Documentation Quality", value: impliedDocValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
         }
       }
     }
@@ -504,11 +524,34 @@ export default function ExploreModel({
       : clinicianRetentionValue;
 
     if (retentionValue > 0) {
-      drivers.push({ id: "retention", name: isNursing ? "Nurse Retention" : "Clinician Retention", value: retentionValue, category: "time", onset: "phased" as const });
+      drivers.push({ id: "retention", name: isNursing ? "Nurse Retention" : "Clinician Retention", value: retentionValue, category: "time", quadrant: "Workforce", onset: "phased" as const });
     }
 
     const pilotProviders = isNursing ? state.nursingStaffedBeds : state.numberOfProviders;
     const fullScale = isNursing ? pilotProviders : state.fullScaleProviders;
+
+    // The expansion multiplier in buildMonthlyCashFlows ramps 0→1 relative to
+    // terminalProviders, so driver.value must represent the full-scale annual value.
+    // Explore computes drivers at pilotProviders; scale them up so investment and
+    // value track each other correctly when the deal expands beyond the pilot.
+    const providerScaleFactor = fullScale > 0 && pilotProviders > 0 && fullScale > pilotProviders
+      ? fullScale / pilotProviders
+      : 1;
+    if (providerScaleFactor > 1) {
+      for (let i = 0; i < drivers.length; i++) {
+        drivers[i] = { ...drivers[i], value: Math.round(drivers[i].value * providerScaleFactor) };
+      }
+    }
+
+    const rawAnnualValue = totalAnnualValue + drivers.filter(d => d.id === "docQuality").reduce((s, d) => s + d.value / providerScaleFactor, 0);
+    const scaledAnnualValue = Math.round(rawAnnualValue * providerScaleFactor);
+    const scaledDocValue = docValue * providerScaleFactor + drivers.filter(d => d.id === "docQuality").reduce((s, d) => s + d.value, 0);
+
+    const capacityValue = drivers.filter(d => d.quadrant === "Capacity").reduce((s, d) => s + d.value, 0);
+    const workforceValue = drivers.filter(d => d.quadrant === "Workforce").reduce((s, d) => s + d.value, 0);
+    const revenueValue = drivers.filter(d => d.quadrant === "Revenue").reduce((s, d) => s + d.value, 0);
+    const qualityValue = drivers.filter(d => d.quadrant === "Quality").reduce((s, d) => s + d.value, 0);
+
     const y2Providers = Math.round(pilotProviders + (fullScale - pilotProviders) * 0.4);
     const encountersPerProvider = pilotProviders > 0 ? state.annualEncounters / pilotProviders : 0;
     const snapshot: ProformaSettingSnapshot = {
@@ -525,10 +568,10 @@ export default function ExploreModel({
       },
       encounters: state.annualEncounters,
       utilizationPercent: state.utilizationPercent,
-      annualValue: totalAnnualValue + drivers.filter(d => d.id === "docQuality").reduce((s, d) => s + d.value, 0),
-      timeValue,
-      docValue: docValue + drivers.filter(d => d.id === "docQuality").reduce((s, d) => s + d.value, 0),
-      retentionValue,
+      annualValue: scaledAnnualValue,
+      timeValue: Math.round(timeValue * providerScaleFactor),
+      docValue: Math.round(scaledDocValue),
+      retentionValue: Math.round(retentionValue * providerScaleFactor),
       totalHoursSaved,
       drivers,
       costPerUnit: state.pricingModel === 'perProvider' ? state.costPerProvider : 0,
@@ -554,6 +597,10 @@ export default function ExploreModel({
       },
       retentionRate: retentionValue > 0 ? 0 : (isNursing ? 0 : 0.5),
       replacementCost: isNursing ? (state.timeDriverInputs.nursingReplacementCost || 56300) : (state.timeDriverInputs.replacementCost || 400000),
+      capacityValue,
+      workforceValue,
+      revenueValue,
+      qualityValue,
     };
 
     onAddToProforma(snapshot);
@@ -564,30 +611,34 @@ export default function ExploreModel({
   };
 
   // Scaling pace options
-  const [selectedPace, setSelectedPace] = useState<'measured' | 'steady' | 'aggressive'>('steady');
-
-  const PACE_GROWTH_PRESETS: Record<'measured' | 'steady' | 'aggressive', { y2: number; y3: number }> = {
-    measured: { y2: 5, y3: 5 },
-    steady: { y2: 10, y3: 10 },
-    aggressive: { y2: 15, y3: 15 },
-  };
+  const [selectedPace, setSelectedPace] = useState<'measured' | 'steady' | 'aggressive' | 'custom'>('steady');
+  const [customMonths, setCustomMonths] = useState<number | null>(null);
 
   const handlePaceChange = (paceKey: 'measured' | 'steady' | 'aggressive') => {
-    const preset = PACE_GROWTH_PRESETS[paceKey] ?? { y2: 10, y3: 10 };
     setSelectedPace(paceKey);
-    updateState({
-      year2GrowthPercent: preset.y2,
-      year3GrowthPercent: preset.y3,
-    });
+    setCustomMonths(null);
+    updateState({ year2GrowthPercent: 0, year3GrowthPercent: 0 });
   };
-  
+
+  const handleCustomMonthsChange = (months: number) => {
+    const clamped = Math.max(1, Math.min(120, months));
+    setCustomMonths(clamped);
+    // Snap back to the matching preset if the user types its exact value
+    if (clamped === 36) { setSelectedPace('measured'); setCustomMonths(null); return; }
+    if (clamped === 24) { setSelectedPace('steady');   setCustomMonths(null); return; }
+    if (clamped === 18) { setSelectedPace('aggressive'); setCustomMonths(null); return; }
+    setSelectedPace('custom');
+  };
+
   const paceConfig = {
-    measured: { months: 36, label: '36mo', maturityMultiplier: 1.05 },
-    steady: { months: 24, label: '24mo', maturityMultiplier: 1.10 },
+    measured:   { months: 36, label: '36mo', maturityMultiplier: 1.05 },
+    steady:     { months: 24, label: '24mo', maturityMultiplier: 1.10 },
     aggressive: { months: 18, label: '18mo', maturityMultiplier: 1.15 },
+    custom:     { months: customMonths ?? 24, label: `${customMonths ?? 24}mo`, maturityMultiplier: 1.10 },
   };
 
   const currentPace = paceConfig[selectedPace];
+
 
   // Chart data for growth trajectory
   const chartData = useMemo(() => {
@@ -610,12 +661,13 @@ export default function ExploreModel({
     const fullScaleProviders = expandedProviders;
     const fullScaleUtil = expandedUtilization;
 
-    // Create milestone points
-    const milestones = [0, 6, 12, 18, 24].filter(m => m <= totalMonths);
-    if (!milestones.includes(totalMonths)) {
-      milestones.push(totalMonths);
-    }
-    milestones.sort((a, b) => a - b);
+    // Create milestone points — interval scales with total horizon so the chart
+    // never has too many or too few tick marks regardless of custom month value.
+    const tickInterval = totalMonths <= 24 ? 6 : totalMonths <= 48 ? 12 : 24;
+    const milestoneSet = new Set<number>([0]);
+    for (let m = tickInterval; m < totalMonths; m += tickInterval) milestoneSet.add(m);
+    milestoneSet.add(totalMonths);
+    const milestones = Array.from(milestoneSet).sort((a, b) => a - b);
 
     milestones.forEach((month) => {
       const progress = month / totalMonths;
@@ -750,6 +802,7 @@ export default function ExploreModel({
                 isChild: false,
                 calcSummary: included ? allDriverCalcSummaries[d.id] : undefined,
                 isIncluded: included,
+                valueArc: included ? d.valueArc : undefined,
               };
             });
 
@@ -769,11 +822,11 @@ export default function ExploreModel({
               isChild: true,
               calcSummary: allDriverCalcSummaries[d.id],
               isIncluded: true,
+              valueArc: d.valueArc,
             }));
 
           const includedFirst = drivers.filter(d => d.isIncluded);
-          const notIncluded = drivers.filter(d => !d.isIncluded);
-          const finalDrivers = [...includedFirst, ...childDrivers, ...notIncluded];
+          const finalDrivers = [...includedFirst, ...childDrivers];
 
           const benefits = (state.otherFinancialBenefits ?? [])
             .filter(b => b.quadrant === quadrant && b.label.trim() && b.amount > 0)
@@ -855,6 +908,15 @@ export default function ExploreModel({
           netAnnualValue: year1Net,
           roi: annualInvestment > 0 ? totalAnnualValue / annualInvestment : 0,
           valuePerProvider: state.numberOfProviders > 0 ? Math.round(year1Net / state.numberOfProviders) : 0,
+
+          // Expansion opportunity
+          ...(expandedProviders > expansionBaselineCount ? {
+            expansionProviders: expandedProviders,
+            expansionUtilizationPercent: expandedUtilization,
+            expansionAnnualValue: expandedValue,
+            expansionRoi: expandedRoi,
+            ...(effectiveFullScaleEncounters !== null ? { expansionEncounters: effectiveFullScaleEncounters } : {}),
+          } : {}),
         };
 
         if (state.careSetting === 'nursing') {
@@ -938,7 +1000,8 @@ export default function ExploreModel({
               realizationPct: dq.nursingSepsisRealization,
             },
             hcahpsEnabled: dq.nursingHcahpsEnabled,
-            medErrorEnabled: td.nursingMedErrorEnabled,
+            medErrorEnabled: td.nursingEarlyDeteriorationEnabled,
+            bundleComplianceEnabled: td.nursingBundleComplianceEnabled,
             pricingModel: state.pricingModel,
             costPerBedPerMonth: state.costPerProvider,
             costPerEncounter: state.pricingModel === 'perEncounter' ? state.costPerEncounter : undefined,
@@ -999,7 +1062,7 @@ export default function ExploreModel({
       driver3: '',
       docCardTitle: 'Documentation Quality',
       docCardDescription: 'When documentation is complete and accurate, downstream revenue follows.',
-      docDriver1: 'wRVU Improvement',
+      docDriver1: 'E/M Level Accuracy',
       docDriver2: 'HCC Capture',
       docDriver3: 'Denial Prevention',
       showHCC: true,
@@ -1437,7 +1500,10 @@ export default function ExploreModel({
               const benefits = benefitsByQuadrant[quadrant];
               const driverSum = valueByQuadrant[quadrant];
               const cardAnnual = driverSum + benefits.annual;
-              const hasContent = drivers.length > 0 || benefits.items.length > 0;
+
+              const quantifiedDrivers = drivers.filter(d => d.visibility === 'quantified');
+              const qualitativeCount = drivers.filter(d => d.visibility === 'qualitative').length;
+              const hasQuantified = quantifiedDrivers.length > 0 || benefits.items.length > 0;
 
               const subtitleByQuadrant: Record<ExploreQuadrant, string> = {
                 Capacity: 'Throughput, access, and reinvested time',
@@ -1449,49 +1515,60 @@ export default function ExploreModel({
               return (
                 <div
                   key={quadrant}
-                  className="bg-white border border-[#E5E5E5] rounded-xl p-5 flex flex-col"
+                  className="rounded-xl overflow-hidden border border-[#E0D9D0] flex flex-col"
                   data-testid={`quadrant-card-${quadrant.toLowerCase()}`}
                 >
-                  <div className="mb-3">
-                    <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">{quadrant}</p>
-                    <p className="text-xs text-[#888888] leading-tight">{subtitleByQuadrant[quadrant]}</p>
-                  </div>
+                  <div className="h-1 bg-[#EA2C00]" />
+                  <div className="bg-[#F5F0EB] p-5 flex flex-col flex-1">
+                    <div className="mb-3">
+                      <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">{quadrant}</p>
+                      <p className="text-xs text-[#888888] leading-tight">{subtitleByQuadrant[quadrant]}</p>
+                    </div>
 
-                  <div className="mb-4">
-                    <p className="text-2xl font-bold text-black">
-                      {cardAnnual > 0 ? formatCurrency(cardAnnual) : '—'}
-                    </p>
-                    <p className="text-xs text-[#888888]">annual</p>
-                    {benefits.oneTime > 0 && (
-                      <p className="text-xs text-[#666666] mt-1">+ {formatCurrency(benefits.oneTime)} one-time (Y1)</p>
-                    )}
-                  </div>
+                    <div className="mb-4">
+                      <p className="text-3xl font-bold text-black">
+                        {cardAnnual > 0 ? formatCurrency(cardAnnual) : '—'}
+                      </p>
+                      <p className="text-xs text-[#888888]">annual</p>
+                      {benefits.oneTime > 0 && (
+                        <p className="text-xs text-[#666666] mt-1">+ {formatCurrency(benefits.oneTime)} one-time (Y1)</p>
+                      )}
+                    </div>
 
-                  <div className="flex-1 space-y-1.5">
-                    {!hasContent && (
-                      <p className="text-xs text-[#AAAAAA] italic">No drivers selected.</p>
-                    )}
-                    {drivers.map(d => {
-                      const isQual = d.visibility === 'qualitative';
-                      const value = allDriverValues[d.id] || 0;
-                      return (
-                        <div key={d.id} className="flex items-center justify-between gap-2 text-xs">
-                          <span className="text-[#666666] truncate flex-1 min-w-0">{d.label}</span>
-                          <span className={`font-medium flex-shrink-0 ${isQual ? 'text-[#888888] italic' : 'text-black'}`}>
-                            {isQual ? 'Qualitative' : (value > 0 ? formatCurrency(value) : '—')}
-                          </span>
+                    <div className="flex-1">
+                      {!hasQuantified && qualitativeCount === 0 && (
+                        <p className="text-xs text-[#AAAAAA] italic">No drivers selected.</p>
+                      )}
+                      {hasQuantified && (
+                        <div className="space-y-1 mb-3">
+                          {quantifiedDrivers.map(d => {
+                            const value = allDriverValues[d.id] || 0;
+                            return (
+                              <div key={d.id} className="flex items-center justify-between gap-3">
+                                <span className="text-xs text-[#666666]">{d.label}</span>
+                                <span className="text-xs font-semibold text-black flex-shrink-0">
+                                  {value > 0 ? formatCurrency(value) : '—'}
+                                </span>
+                              </div>
+                            );
+                          })}
+                          {benefits.items.map(b => (
+                            <div key={b.id} className="flex items-center justify-between gap-3">
+                              <span className="text-xs text-[#666666]">{b.label || 'Other benefit'}</span>
+                              <span className="text-xs font-semibold text-black flex-shrink-0">
+                                {formatCurrency(b.amount)}
+                                {b.type === 'oneTime' && <span className="text-[10px] text-[#888888] ml-1">Y1</span>}
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      );
-                    })}
-                    {benefits.items.map(b => (
-                      <div key={b.id} className="flex items-center justify-between gap-2 text-xs">
-                        <span className="text-[#666666] truncate flex-1 min-w-0">{b.label || 'Other benefit'}</span>
-                        <span className="font-medium text-black flex-shrink-0">
-                          {formatCurrency(b.amount)}
-                          {b.type === 'oneTime' && <span className="text-[10px] text-[#888888] ml-1">Y1</span>}
-                        </span>
-                      </div>
-                    ))}
+                      )}
+                      {qualitativeCount > 0 && (
+                        <p className="text-[11px] text-[#AAAAAA]">
+                          {qualitativeCount} signal metric{qualitativeCount > 1 ? 's' : ''} tracked
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -1507,83 +1584,20 @@ export default function ExploreModel({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
           >
-            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
-                  <Link className="w-5 h-5 text-[#EA2C00]" />
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6">
+              <p className="text-[10px] font-semibold text-[#AAAAAA] uppercase tracking-widest mb-4">Connected Value</p>
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">MA Risk & RAF</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">HCCs documented here feed the patient's risk score across every downstream setting for the year.</p>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
-                  <p className="text-sm text-[#888888] italic">The OP visit is where the chart starts</p>
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">Specialist Referrals</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">Complete referral notes accelerate specialist intake and eliminate back-and-forth before the appointment.</p>
                 </div>
-              </div>
-
-              <p className="text-sm text-[#666666] mb-5">
-                Outpatient is the front door for most patient relationships. Documentation that starts
-                in primary care or specialty visits flows into ED encounters, hospital admissions,
-                referrals, and payer audits. Every adjacent care setting inherits the quality — or the
-                gaps — of the OP note.
-              </p>
-
-              <p className="text-sm font-semibold text-black mb-3">Better OP documentation directly impacts:</p>
-
-              <div className="space-y-3 mb-5">
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <BarChart3 className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">MA Risk Capture & RAF</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">
-                    HCCs documented during OP visits feed the patient's annual RAF score. Each captured
-                    condition compounds across every downstream setting that touches that patient for
-                    the rest of the year.
-                  </p>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FileText className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">Specialist Referral Velocity</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">
-                    Complete referral notes accelerate specialist intake and reduce the back-and-forth.
-                    Specialty teams see the patient sooner with a clearer picture.
-                  </p>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Check className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">Care Continuity Across Settings</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">
-                    When the OP note is complete, the ED clinician, the hospitalist, and the care team
-                    seeing the same patient downstream spend less time piecing together history. Inbox
-                    burden drops across the organization.
-                  </p>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FileCheck className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">Audit & Compliance Posture</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">
-                    Documentation completeness in OP sets the floor for audit defensibility. Payer
-                    reviews of any encounter pull the OP record into context.
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
-                <div className="flex items-start gap-3">
-                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">
-                      OP value compounds when Abridge is also used in <span className="font-bold">ED</span> and <span className="font-bold">Inpatient</span>.
-                    </p>
-                    <p className="text-sm opacity-80 mt-1">
-                      The chart that starts here flows into every downstream encounter — better OP
-                      documentation makes everything else easier.
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">Care Continuity</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">ED and inpatient clinicians inherit a complete record — not a gap — when this patient arrives downstream.</p>
                 </div>
               </div>
             </div>
@@ -1598,63 +1612,20 @@ export default function ExploreModel({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
           >
-            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
-                  <Link className="w-5 h-5 text-[#EA2C00]" />
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6">
+              <p className="text-[10px] font-semibold text-[#AAAAAA] uppercase tracking-widest mb-4">Downstream Value</p>
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">DRG & Case Mix</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">CCs and MCCs documented in ED carry forward to inpatient coding — what's captured here determines the case mix.</p>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-base text-black uppercase tracking-wide">Downstream Value</h3>
-                  <p className="text-sm text-[#888888] italic">The ED admission note is just the beginning</p>
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">Medical Necessity</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">The admission decision is documented in ED — the first line of defense against inpatient status denials.</p>
                 </div>
-              </div>
-              
-              <p className="text-sm text-[#666666] mb-5">
-                When an ED physician decides to admit a patient, their documentation becomes the foundation for 
-                inpatient revenue. The conditions they capture, the medical necessity they establish, and the clinical 
-                reasoning they document all determine what happens downstream.
-              </p>
-
-              <p className="text-sm font-semibold text-black mb-3">Better ED documentation directly impacts:</p>
-              
-              <div className="space-y-3 mb-5">
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <BarChart3 className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">DRG & CMI Capture</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines your case mix.</p>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Check className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">Medical Necessity</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">The admission decision is documented in ED. This is your first line of defense against status denials and downgrades.</p>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FileText className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">CDI Efficiency</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">When the ED note is complete, CDI teams spend less time querying physicians and more time on complex cases.</p>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <AlertTriangle className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">Denial Prevention</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">Payer audits start with the admission note. Complete documentation from day one means stronger appeals.</p>
-                </div>
-              </div>
-              
-              <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
-                <div className="flex items-start gap-3">
-                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">These benefits are quantified in the <span className="font-bold">Inpatient Setting</span>.</p>
-                    <p className="text-sm opacity-80 mt-1">If your organization admits patients from the ED, the value compounds when both settings use Abridge.</p>
-                  </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">CDI Efficiency</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">A complete ED note means CDI teams query less on admissions and spend time on genuinely complex cases.</p>
                 </div>
               </div>
             </div>
@@ -1669,48 +1640,20 @@ export default function ExploreModel({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
           >
-            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
-                  <Link className="w-5 h-5 text-[#EA2C00]" />
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6">
+              <p className="text-[10px] font-semibold text-[#AAAAAA] uppercase tracking-widest mb-4">Connected Value</p>
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">DRG Foundation</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">CCs/MCCs documented in ED carry forward — case mix starts stronger from the moment of admission.</p>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
-                  <p className="text-sm text-[#888888] italic">ED + Inpatient compounds your results</p>
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">CDI Efficiency</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">A complete ED note means CDI teams query less on admissions and focus time on genuinely complex cases.</p>
                 </div>
-              </div>
-              
-              <div className="bg-black rounded-xl p-4 text-white mb-5">
-                <div className="flex items-start gap-3">
-                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">If you're also using Abridge in <span className="font-bold">ED</span>, the documentation quality benefits are amplified.</p>
-                    <p className="text-sm opacity-80 mt-1">The admission documentation that starts in ED flows directly into inpatient coding and denial defense.</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-3 mb-5">
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <BarChart3 className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">DRG Capture</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">CCs/MCCs documented in ED carry forward — your case mix starts stronger from admission.</p>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FileText className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">CDI Efficiency</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">When the ED note is complete, CDI teams query less and focus on complex cases.</p>
-                </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <div className="flex items-center gap-2 mb-1">
-                    <AlertTriangle className="w-4 h-4 text-[#888888]" />
-                    <span className="font-semibold text-black">Denial Prevention</span>
-                  </div>
-                  <p className="text-sm text-[#666666]">Medical necessity documented at admission is your first line of defense against payer audits.</p>
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">Denial Defense</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">Medical necessity documented at admission is the first line of defense against payer audits on every case.</p>
                 </div>
               </div>
             </div>
@@ -1720,35 +1663,16 @@ export default function ExploreModel({
         {/* Nursing-specific Connected Value section */}
         {state.careSetting === 'nursing' && (
           <motion.div className="mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-[#F5F0EB] flex items-center justify-center">
-                <Link className="w-5 h-5 text-[#EA2C00]" />
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
-                <p className="text-sm text-[#888888]">Nursing flowsheet documentation amplifies value in connected care settings</p>
-              </div>
-            </div>
-            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-8">
-              <p className="text-sm text-[#666666] mb-5">
-                Real-time flowsheet documentation creates the clinical record that downstream teams depend on — from inpatient coders to hospitalist billers.
-              </p>
-              <div className="grid md:grid-cols-2 gap-4 mb-5">
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <p className="font-semibold text-black mb-1">CC/MCC Capture</p>
-                  <p className="text-sm text-[#666666]">Nursing assessments capture clinical indicators that support accurate DRG assignment. &quot;Patient appears malnourished&quot; feeds coding directly.</p>
+            <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6">
+              <p className="text-[10px] font-semibold text-[#AAAAAA] uppercase tracking-widest mb-4">Connected Value</p>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">CC/MCC Corroboration</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">Nursing assessments — skin findings, functional status, intake/output — corroborate physician severity claims and support accurate DRG assignment.</p>
                 </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
-                  <p className="font-semibold text-black mb-1">Medical Necessity</p>
-                  <p className="text-sm text-[#666666]">Real-time nursing docs provide evidence of patient acuity—critical for payer appeals.</p>
-                </div>
-              </div>
-              <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
-                <div className="flex items-start gap-3">
-                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm opacity-90">The value above reflects nursing-only documentation. If your organization also uses Abridge for Hospitalists, the clinical record built by nursing directly extends the ROI of the Inpatient model — no double-counting.</p>
-                  </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#555555] mb-1">Medical Necessity Evidence</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">Real-time nursing documentation provides the patient acuity evidence that supports inpatient status and strengthens payer appeals.</p>
                 </div>
               </div>
             </div>
@@ -1770,42 +1694,6 @@ export default function ExploreModel({
           </p>
 
           <div className="bg-[#F5F0EB] rounded-xl p-4 sm:p-6">
-            {/* Today vs Full Scale Header */}
-            <div className="flex items-center justify-between gap-2 mb-6">
-              <div className="text-center min-w-0 flex-shrink-0">
-                <p className="text-xs sm:text-sm font-medium text-[#888888] mb-1">TODAY</p>
-                <p className="text-xl sm:text-2xl font-bold text-black">{isNursing ? formatNumber(state.nursingStaffedBeds) : formatNumber(state.numberOfProviders)}</p>
-                <p className="text-xs sm:text-sm text-[#888888]">{isNursing ? 'beds' : 'providers'}</p>
-                <p className="text-xs sm:text-sm text-[#888888]">{state.utilizationPercent}% {isNursing ? 'adoption' : 'util'}</p>
-              </div>
-              
-              <div className="flex-1 px-2 sm:px-6 flex items-center justify-center">
-                <span className="text-xs sm:text-sm text-[#888888]">expansion →</span>
-              </div>
-
-              <div className="text-center min-w-0 flex-shrink-0">
-                <p className="text-xs sm:text-sm font-medium text-[#888888] mb-1">FULL SCALE</p>
-                <FormattedNumberInput
-                  value={state.fullScaleProviders}
-                  onChange={(v: number) => updateState({ fullScaleProviders: v })}
-                  onBlurValue={(v: number) => updateState({ fullScaleProviders: Math.max(v, isNursing ? state.nursingStaffedBeds : state.numberOfProviders) })}
-                  className="h-9 sm:h-10 w-20 sm:w-24 text-center text-xl sm:text-2xl font-bold bg-white border border-[#E5E5E5] rounded-lg"
-                  data-testid="input-full-scale-providers"
-                />
-                <p className="text-xs sm:text-sm text-[#888888]">{isNursing ? 'beds' : 'providers'}</p>
-                <div className="flex items-center justify-center gap-1">
-                  <FormattedNumberInput
-                    value={expandedUtilization}
-                    onChange={(v: number) => setExpandedUtilization(v)}
-                    onBlurValue={(v: number) => setExpandedUtilization(Math.min(Math.max(v, 1), 100))}
-                    className="h-6 w-12 text-center text-sm bg-white border border-[#E5E5E5] rounded"
-                    data-testid="input-full-scale-utilization"
-                  />
-                  <span className="text-xs sm:text-sm text-[#888888]">% {isNursing ? 'adoption' : 'util'}</span>
-                </div>
-              </div>
-            </div>
-
             {/* Comparison Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="bg-white rounded-lg p-4 sm:p-5">
@@ -1813,12 +1701,92 @@ export default function ExploreModel({
                 <p className="text-2xl sm:text-3xl font-bold text-black mb-1">{formatCurrency(netAnnualValue)}</p>
                 <p className="text-sm text-[#888888]">/ year</p>
                 <p className="text-sm sm:text-base text-[#888888] mt-2">{roi.toFixed(1)}× ROI</p>
+                <div className="mt-3 pt-3 border-t border-[#E8E2DA] flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <div className="flex items-baseline gap-1">
+                    <FormattedNumberInput
+                      value={isNursing ? state.nursingStaffedBeds : state.numberOfProviders}
+                      onChange={(v: number) => updateState(isNursing ? { nursingStaffedBeds: v } : { numberOfProviders: v })}
+                      onBlurValue={(v: number) => updateState(isNursing ? { nursingStaffedBeds: Math.max(v, 1) } : { numberOfProviders: Math.max(v, 1) })}
+                      className="w-14 bg-transparent text-black font-bold text-base border-0 border-b border-[#C4BBAD] focus:border-[#EA2C00] focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none outline-none text-center leading-none px-0 h-7"
+                    />
+                    <span className="text-[#AAAAAA] text-xs">{isNursing ? 'beds' : 'providers'}</span>
+                  </div>
+                  <div className="flex items-baseline gap-0.5">
+                    <FormattedNumberInput
+                      value={state.utilizationPercent}
+                      onChange={(v: number) => updateState({ utilizationPercent: v })}
+                      onBlurValue={(v: number) => updateState({ utilizationPercent: Math.min(Math.max(v, 1), 100) })}
+                      className="w-10 bg-transparent text-black font-bold text-base border-0 border-b border-[#C4BBAD] focus:border-[#EA2C00] focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none outline-none text-center leading-none px-0 h-7"
+                    />
+                    <span className="text-black font-bold text-base leading-none">%</span>
+                    <span className="text-[#AAAAAA] text-xs ml-0.5">{isNursing ? 'adoption' : 'util'}</span>
+                  </div>
+                  {!isNursing && (
+                    <div className="flex items-baseline gap-1">
+                      <FormattedNumberInput
+                        value={state.annualEncounters}
+                        onChange={(v: number) => updateState({ annualEncounters: v })}
+                        onBlurValue={(v: number) => updateState({ annualEncounters: Math.max(v, 1) })}
+                        className="w-20 bg-transparent text-black font-bold text-base border-0 border-b border-[#C4BBAD] focus:border-[#EA2C00] focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none outline-none text-center leading-none px-0 h-7"
+                      />
+                      <span className="text-[#AAAAAA] text-xs">enc / yr</span>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="bg-[#EA2C00] rounded-lg p-4 sm:p-5">
                 <p className="text-xs sm:text-sm font-medium text-white/80 mb-1 sm:mb-2">FULL SCALE VALUE</p>
                 <p className="text-2xl sm:text-3xl font-bold text-white mb-1">{formatCurrency(expandedValue)}</p>
                 <p className="text-sm text-white/80">/ year</p>
                 <p className="text-sm sm:text-base text-white/80 mt-2">{expandedRoi.toFixed(1)}× ROI</p>
+                <div className="mt-3 pt-3 border-t border-white/20 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <div className="flex items-baseline gap-1">
+                    <FormattedNumberInput
+                      value={state.fullScaleProviders}
+                      onChange={(v: number) => updateState({ fullScaleProviders: v })}
+                      onBlurValue={(v: number) => updateState({ fullScaleProviders: Math.max(v, isNursing ? state.nursingStaffedBeds : state.numberOfProviders) })}
+                      className="w-14 bg-transparent text-white font-bold text-base border-0 border-b border-white/50 focus:border-white focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none outline-none text-center leading-none px-0 h-7"
+                      data-testid="input-full-scale-providers"
+                    />
+                    <span className="text-white/70 text-xs">{isNursing ? 'beds' : 'providers'}</span>
+                  </div>
+                  <div className="flex items-baseline gap-0.5">
+                    <FormattedNumberInput
+                      value={expandedUtilization}
+                      onChange={(v: number) => setExpandedUtilization(v)}
+                      onBlurValue={(v: number) => setExpandedUtilization(Math.min(Math.max(v, 1), 100))}
+                      className="w-10 bg-transparent text-white font-bold text-base border-0 border-b border-white/50 focus:border-white focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none outline-none text-center leading-none px-0 h-7"
+                      data-testid="input-full-scale-utilization"
+                    />
+                    <span className="text-white font-bold text-base leading-none">%</span>
+                    <span className="text-white/70 text-xs ml-0.5">{isNursing ? 'adoption' : 'util'}</span>
+                  </div>
+                  {!isNursing && effectiveFullScaleEncounters !== null && (
+                    <div className="flex items-baseline gap-1">
+                      <FormattedNumberInput
+                        value={effectiveFullScaleEncounters}
+                        onChange={(v: number) => setCustomFullScaleEncounters(v > 0 ? v : null)}
+                        onBlurValue={(v: number) => {
+                          if (v <= 0 || v === derivedFullScaleEncounters) {
+                            setCustomFullScaleEncounters(null);
+                          } else {
+                            setCustomFullScaleEncounters(v);
+                          }
+                        }}
+                        className={`w-20 bg-transparent font-bold text-base border-0 border-b focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none outline-none text-center leading-none px-0 h-7 transition-colors ${
+                          customFullScaleEncounters !== null
+                            ? 'border-white text-white'
+                            : 'border-white/50 text-white focus:border-white'
+                        }`}
+                        data-testid="input-full-scale-encounters"
+                      />
+                      <span className="text-white/70 text-xs">enc / yr</span>
+                      {customFullScaleEncounters !== null && (
+                        <button onClick={() => setCustomFullScaleEncounters(null)} className="text-[10px] text-white/60 underline whitespace-nowrap ml-1">reset</button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1848,35 +1816,11 @@ export default function ExploreModel({
           <div className="bg-white rounded-xl border border-[#E5E5E5] p-3 sm:p-6">
             {/* Growth Profile: pace presets + Y2/Y3 overrides */}
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-semibold text-[#888888] uppercase tracking-[1.5px]">Growth Profile</p>
-                <div className="flex items-center gap-3 text-xs text-[#666666]">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[#888888]">Year 2</span>
-                    <input
-                      type="number"
-                      value={state.year2GrowthPercent}
-                      onChange={(e) => updateState({ year2GrowthPercent: parseFloat(e.target.value) || 0 })}
-                      className="w-14 h-7 text-center bg-white border border-[#E5E5E5] rounded text-sm font-semibold text-black focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
-                      data-testid="input-y2-growth"
-                    />
-                    <span className="text-[#888888]">%</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[#888888]">Year 3</span>
-                    <input
-                      type="number"
-                      value={state.year3GrowthPercent}
-                      onChange={(e) => updateState({ year3GrowthPercent: parseFloat(e.target.value) || 0 })}
-                      className="w-14 h-7 text-center bg-white border border-[#E5E5E5] rounded text-sm font-semibold text-black focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
-                      data-testid="input-y3-growth"
-                    />
-                    <span className="text-[#888888]">%</span>
-                  </div>
-                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                 {(['measured', 'steady', 'aggressive'] as const).map((pace) => {
                   const isActive = selectedPace === pace;
                   const paceLabels: Record<string, { title: string; subtitle: string }> = {
@@ -1904,12 +1848,38 @@ export default function ExploreModel({
                           {paceConfig[pace].months} mo to full scale
                         </span>
                       </div>
-                      <p className="text-[10px] text-[#AAAAAA] mt-1">
-                        Y2 +{PACE_GROWTH_PRESETS[pace].y2}% · Y3 +{PACE_GROWTH_PRESETS[pace].y3}%
-                      </p>
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Custom timeline override */}
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-xs text-[#888888]">Custom timeline:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={120}
+                  value={selectedPace === 'custom' ? (customMonths ?? '') : paceConfig[selectedPace].months}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    if (!isNaN(v)) handleCustomMonthsChange(v);
+                  }}
+                  className={`w-16 h-7 text-center border rounded text-sm font-semibold outline-none transition-colors ${
+                    selectedPace === 'custom'
+                      ? 'border-[#EA2C00] bg-white text-black ring-1 ring-[#EA2C00]/20'
+                      : 'border-[#E5E5E5] bg-white text-[#666666] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20'
+                  }`}
+                  data-testid="input-custom-months"
+                />
+                <span className="text-xs text-[#888888]">months to full scale</span>
+                {selectedPace === 'custom' && (
+                  <span className="text-[10px] font-semibold text-[#EA2C00] bg-[#FFF0ED] px-1.5 py-0.5 rounded">
+                    {customMonths !== null && customMonths >= 12
+                      ? `${(customMonths / 12).toFixed(1).replace(/\.0$/, '')} yr`
+                      : `${customMonths}mo`}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -2060,6 +2030,11 @@ export default function ExploreModel({
           <div className="text-center mb-6">
             <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">Year by Year</p>
             <p className="text-xl font-bold text-black">3-Year Projection</p>
+            {expandedProviders > expansionBaselineCount && (
+              <p className="text-xs text-[#AAAAAA] mt-1">
+                Based on current pilot scale ({isNursing ? formatNumber(expansionBaselineCount) + ' beds' : formatNumber(state.numberOfProviders) + ' providers'}) with Y2/Y3 growth. Expansion opportunity modeled separately above.
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
@@ -2088,7 +2063,6 @@ export default function ExploreModel({
             <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-2">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Year 2</p>
-                <span className="text-[10px] font-semibold text-[#666666] bg-[#F5F0EB] px-1.5 py-0.5 rounded">+{state.year2GrowthPercent}%</span>
               </div>
               <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year2Value)}</p>
               <p className="text-xs text-[#888888]">gross value</p>
@@ -2109,7 +2083,6 @@ export default function ExploreModel({
             <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-3">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Year 3</p>
-                <span className="text-[10px] font-semibold text-[#666666] bg-[#F5F0EB] px-1.5 py-0.5 rounded">+{state.year3GrowthPercent}%</span>
               </div>
               <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year3Value)}</p>
               <p className="text-xs text-[#888888]">gross value</p>
@@ -2144,8 +2117,8 @@ export default function ExploreModel({
           </div>
 
           <p className="text-sm text-[#888888] text-center max-w-3xl mx-auto">
-            Years 2 and 3 apply {state.year2GrowthPercent}% and {state.year3GrowthPercent}% growth to annual recurring value. {state.pricingModel === 'perEncounter'
-              ? 'For per-encounter pricing, encounter volume scales by the same percentages, so investment grows alongside value.'
+            {state.pricingModel === 'perEncounter'
+              ? 'For per-encounter pricing, investment scales with encounter volume across years.'
               : 'For per-provider or annual-license pricing, investment is held constant across years.'}
           </p>
         </motion.div>
@@ -2250,12 +2223,9 @@ export default function ExploreModel({
                   )}
                   {docQualityInputs.wrvuEnabled && (
                     <p>
-                      <strong className="text-black">wRVU:</strong> {wrvuScenarios[docQualityInputs.wrvuScenario]}% improvement × ${docQualityInputs.conversionFactor} conversion factor × {docQualityInputs.wrvuRealization}% realization.
+                      <strong className="text-black">E/M Level Accuracy:</strong> {wrvuScenarios[docQualityInputs.wrvuScenario]}% improvement × ${docQualityInputs.conversionFactor} conversion factor × {docQualityInputs.wrvuRealization}% realization.
                     </p>
                   )}
-                  <p>
-                    <strong className="text-black">Growth assumptions:</strong> Year 2 uses {state.year2GrowthPercent}% growth and Year 3 uses {state.year3GrowthPercent}% growth (compounded over Year 2). Adjust the pace selector or override the percentages directly.
-                  </p>
                 </div>
               </motion.div>
             )}

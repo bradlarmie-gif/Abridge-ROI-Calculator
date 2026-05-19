@@ -319,7 +319,7 @@ export default function ExploreDocQuality({
   }, [state.annualEncounters, state.utilizationPercent]);
 
   // Scenario percentages
-  const wrvuScenarios: Record<ScenarioLevel, number> = { conservative: 2, typical: 5, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
+  const wrvuScenarios: Record<ScenarioLevel, number> = { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
   const hccScenarios: Record<ScenarioLevel, number> = { conservative: 6, typical: 10, aggressive: 15 };
   const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typical: 50, aggressive: 75 };
   const ipDrgProtectionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 20, aggressive: 25 };
@@ -422,7 +422,7 @@ export default function ExploreDocQuality({
     outpatient: {
       pageTitle: 'Revenue Impact',
       pageSubtitle: 'Better documentation creates downstream revenue. Select the drivers that apply to your organization.',
-      driver1Title: 'wRVU Improvement',
+      driver1Title: 'E/M Level Accuracy',
       driver1Subtitle: 'Capture the complexity you\'re already delivering',
       driver2Title: 'HCC Capture',
       driver2Subtitle: 'Recapture missed diagnoses for MA population',
@@ -1683,7 +1683,7 @@ export default function ExploreDocQuality({
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
                     When notes fully reflect visit complexity, E/M levels often code higher. 
-                    Industry data shows 2-7% wRVU lift from better documentation.
+                    Industry data shows 2–9% E/M level accuracy lift from better documentation.
                   </p>
 
                   <p className="text-sm font-medium text-black mb-2">Choose your scenario:</p>
@@ -1721,7 +1721,7 @@ export default function ExploreDocQuality({
 
                   {docQualityInputs.wrvuScenario === 'custom' && (
                     <div className="flex items-center gap-3 mb-4">
-                      <label className="text-sm text-[#666666] flex-shrink-0">wRVU lift</label>
+                      <label className="text-sm text-[#666666] flex-shrink-0">E/M lift</label>
                       <div className="relative flex-1">
                         <input
                           type="text"
@@ -1782,7 +1782,7 @@ export default function ExploreDocQuality({
                         <span className="font-semibold text-black">{wrvuLiftPercent}%</span>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <span className="text-[#666666]">= wRVU lift per visit</span>
+                        <span className="text-[#666666]">= E/M lift per visit</span>
                         <span className="font-semibold text-black">{wrvuLiftPerVisit.toFixed(3)} wRVU</span>
                       </div>
                       <div className="flex justify-between gap-2">
@@ -1815,7 +1815,7 @@ export default function ExploreDocQuality({
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between gap-2">
-                        <span className="font-semibold text-black">Annual wRVU Value</span>
+                        <span className="font-semibold text-black">Annual E/M Value</span>
                         <span className="font-bold text-[#EA2C00]">{formatCurrency(Math.round(wrvuRevenueNet))}</span>
                       </div>
                     </div>

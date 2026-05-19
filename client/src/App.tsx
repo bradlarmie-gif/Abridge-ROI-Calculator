@@ -45,7 +45,6 @@ import MeasureDataReceipt from "@/pages/intake/MeasureDataReceipt";
 import { type IntakeFormPreseed, type ExploreIntakeResponse, decodeIntakePreseed, decodeIntake } from "@/lib/intakeUrlState";
 import { type DataFormPreseed, type MeasureDataRequestResponse, decodeDataFormPreseed, decodeDataRequest } from "@/lib/dataRequestUrlState";
 import ProformaHub from "@/pages/proforma/ProformaHub";
-import ProformaView from "@/pages/proforma/ProformaView";
 import type { ProformaSettingSnapshot, ProformaConfig } from "@/pages/proforma/proformaTypes";
 import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
 
@@ -592,6 +591,12 @@ export default function App() {
     navigateTo("journey");
   };
 
+  const handleBackToProforma = useCallback(() => {
+    setProformaAddCareSetting(undefined);
+    setProformaEditExploreState(undefined);
+    navigateTo("proforma-hub");
+  }, [navigateTo]);
+
   const hasSelection = selectionState.selectedSettings.length > 0;
 
   return (
@@ -634,6 +639,7 @@ export default function App() {
             {currentView === "explore" && (
               <ExploreFlow
                 onBackToJourney={handleBackToJourney}
+                onBackToProforma={(proformaAddCareSetting || proformaEditExploreState) ? handleBackToProforma : undefined}
                 onContinueToInvestment={handleExploreComplete}
                 initialCareSetting={proformaAddCareSetting || exploreInitialSettings.careSetting}
                 initialPhase={exploreInitialSettings.phase}
@@ -750,11 +756,18 @@ export default function App() {
               }} />
             )}
 
-            {currentView === "proforma-hub" && (
+            {(currentView === "proforma-hub" || currentView === "proforma-view") && (
               <ProformaHub
                 settings={proformaSettings}
                 config={proformaConfig}
-                onConfigChange={setProformaConfig}
+                onConfigChange={(newConfig) => {
+                  // Clamp any setting's goLiveMonth to the new contract term - 1
+                  const maxGoLive = Math.max(1, newConfig.contractTermMonths - 1);
+                  setProformaSettings(prev => prev.map(s =>
+                    s.goLiveMonth > maxGoLive ? { ...s, goLiveMonth: maxGoLive } : s
+                  ));
+                  setProformaConfig(newConfig);
+                }}
                 onAddSetting={(careSetting) => {
                   setProformaAddCareSetting(careSetting as ExploreCareSetting);
                   setProformaEditExploreState(undefined);
@@ -772,19 +785,8 @@ export default function App() {
                 }}
                 onRemoveSetting={handleRemoveFromProforma}
                 onUpdateSetting={handleUpdateProformaSetting}
-                onViewProforma={() => navigateTo("proforma-view")}
-                onBack={() => navigateTo("journey")}
-              />
-            )}
-
-            {currentView === "proforma-view" && proformaSettings.length > 0 && (
-              <ProformaView
-                settings={proformaSettings}
-                config={proformaConfig}
-                onConfigChange={setProformaConfig}
-                onUpdateSetting={handleUpdateProformaSetting}
-                onBack={() => navigateTo("proforma-hub")}
                 onHome={() => navigateTo("journey")}
+                onBack={() => navigateTo("journey")}
               />
             )}
             </PageTransition>

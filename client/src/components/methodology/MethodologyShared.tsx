@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import type { ReactNode } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ─── Evidence Badge ───────────────────────────────────────────────────────────
 
@@ -385,10 +387,10 @@ export function DomainTabExplorer({
               </div>
             )}
 
-            {/* Qualitative signals — Metrics to Watch */}
+            {/* Qualitative signals — Signals to Track */}
             {activeSignals.length > 0 && (
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Metrics to Watch</p>
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#888888] mb-3">Signals to Track</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {activeSignals.map((signal) => (
                     <QualitativeSignalCard key={signal.label} signal={signal} />
@@ -455,5 +457,69 @@ export function ValueAccrualSection({ stages: customStages }: { stages?: ValueAc
       </div>
     </div>
   );
+}
+
+// ─── Methodology Glossary & NarrativeText ─────────────────────────────────────
+
+export const METHODOLOGY_GLOSSARY: Record<string, string> = {
+  'LWBS':    'Left Without Being Seen — patients who register at the ED but leave before a provider sees them, typically due to long wait times.',
+  'wRVU':    'Work Relative Value Unit — the productivity metric used to measure and compensate physician clinical work. Higher-complexity visits carry more wRVUs.',
+  'E/M':     'Evaluation and Management — CPT code category for office and ED visits. Level (1–5) is determined by complexity and drives reimbursement.',
+  'CDI':     'Clinical Documentation Integrity — a hospital program that reviews records to ensure diagnoses and comorbidities are fully and accurately documented for appropriate coding.',
+  'DRG':     'Diagnosis-Related Group — the payment category CMS uses for inpatient stays. Which DRG is assigned — and what it pays — depends on the diagnoses and severity documented.',
+  'CC/MCC':  'Complication or Comorbidity / Major Complication or Comorbidity — when these are documented, DRG weight increases, raising reimbursement for that discharge.',
+  'CMI':     'Case Mix Index — average DRG weight across all inpatient discharges. Higher CMI reflects more complex (and better-reimbursed) patients on paper.',
+  'MDM':     'Medical Decision Making — the complexity assessment in E/M coding. Captures number of problems addressed, data reviewed, and management risk level.',
+  'VBP':     'Value-Based Purchasing — the CMS program that ties a portion of hospital Medicare payments to quality and patient experience scores.',
+  'HACRP':   'Hospital-Acquired Condition Reduction Program — CMS penalizes hospitals in the worst-performing quartile for hospital-acquired conditions.',
+  'HRRP':    'Hospital Readmissions Reduction Program — CMS reduces payments to hospitals with above-expected readmission rates for select conditions.',
+  'HEDIS':   'Healthcare Effectiveness Data and Information Set — the standard quality measure framework used by health plans. Performance affects plan ratings and provider contracts.',
+  'STARS':   'CMS Star Ratings — the 1–5 star quality rating for Medicare Advantage plans. Higher ratings unlock bonus payments and affect member acquisition.',
+  'HCAHPS':  'Hospital Consumer Assessment of Healthcare Providers and Systems — standardized patient satisfaction survey used in CMS quality and VBP reporting.',
+  'CAUTI':   'Catheter-Associated Urinary Tract Infection — a hospital-acquired infection tracked as a nursing-sensitive quality and safety measure.',
+  'CLABSI':  'Central Line-Associated Bloodstream Infection — a serious hospital-acquired infection tracked as a nursing-sensitive quality measure.',
+  'HAPI':    'Hospital-Acquired Pressure Injury — a pressure injury that develops during a hospital stay, reported as a nursing-sensitive quality indicator.',
+  'PSI-90':  'Patient Safety Indicator 90 — a CMS composite measure of hospital-acquired complications including post-surgical infections and other safety events.',
+  'NDNQI':   'National Database of Nursing Quality Indicators — the primary benchmarking database for nursing-sensitive quality measures, used by Magnet-designated hospitals.',
+  'O/E':     'Observed-to-Expected Ratio — compares actual patient outcomes to risk-adjusted expected outcomes. A lower ratio means better-than-expected performance.',
+};
+
+export function NarrativeText({ text }: { text: string }) {
+  const matches: { start: number; end: number; term: string; key: string }[] = [];
+
+  for (const key of Object.keys(METHODOLOGY_GLOSSARY)) {
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`(?<![A-Za-z])${escaped}(?![A-Za-z])`, 'g');
+    re.lastIndex = 0;
+    const m = re.exec(text);
+    if (m) matches.push({ start: m.index, end: m.index + m[0].length, term: m[0], key });
+  }
+
+  matches.sort((a, b) => a.start - b.start);
+  const clean: typeof matches = [];
+  let cursor = 0;
+  for (const m of matches) {
+    if (m.start >= cursor) { clean.push(m); cursor = m.end; }
+  }
+
+  const parts: ReactNode[] = [];
+  let pos = 0;
+  for (const m of clean) {
+    if (m.start > pos) parts.push(text.slice(pos, m.start));
+    parts.push(
+      <Tooltip key={m.start}>
+        <TooltipTrigger asChild>
+          <span className="border-b border-dotted border-[#BBBBBB] cursor-help">{m.term}</span>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-[280px] text-[12px] leading-relaxed">
+          {METHODOLOGY_GLOSSARY[m.key]}
+        </TooltipContent>
+      </Tooltip>
+    );
+    pos = m.end;
+  }
+  if (pos < text.length) parts.push(text.slice(pos));
+
+  return <p className="text-[13px] text-[#333333] leading-[1.65] mb-4">{parts}</p>;
 }
 

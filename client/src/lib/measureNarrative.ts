@@ -243,32 +243,32 @@ const CONFIRMED_TEMPLATES: Record<Phase, Partial<Record<MaturityStage, Narrative
       body: "Across {{encounters}} Abridge-documented encounters, your {{strongestDomain}} signal is the clearest yet \u2014 {{strongestMetric}}. This is exactly what we expect in the Documentation Fidelity phase: the foundation is setting, and the compounding hasn't started yet. {{preSignalNote}}",
       handoff: "Now let's look at what the math shows in dollar terms.",
     },
-    signaling: {
+    emerging: {
       headline: "{{months}} months in, your data is establishing the baseline everything else builds on.",
       body: "Across {{encounters}} Abridge-documented encounters, your {{strongestDomain}} signal is the clearest yet \u2014 {{strongestMetric}}. This is exactly what we expect in the Documentation Fidelity phase: the foundation is setting, and the compounding hasn't started yet. {{preSignalNote}}",
       handoff: "Now let's look at what the math shows in dollar terms.",
     },
   },
   2: {
-    signaling: {
+    emerging: {
       headline: "At {{months}} months, your Efficiency phase gains are showing up in the data.",
       body: "Your {{providers}} providers have recovered {{hoursReclaimed}} hours \u2014 {{hoursPerProvider}} hours each \u2014 over the deployment period. {{strongestDomainSentence}} {{revenueSignalNote}}",
       handoff: "Here's what those gains translate to in annual value.",
     },
-    validated: {
+    demonstrated: {
       headline: "Your data across {{activeDomains}} domains is telling a consistent story.",
       body: "{{confirmedLow}}\u2013{{confirmedHigh}} per year, confirmed across {{encounters}} encounters. At {{hoursPerProvider}} hours returned per provider, your Workforce story is strong enough to take to the CHRO. {{revenueNote}}",
       handoff: "Let's look at what full adoption could add.",
     },
   },
   3: {
-    signaling: {
+    emerging: {
       headline: "At {{months}} months, your {{phaseLabel}} phase data is revealing the full picture.",
       body: "{{confirmedLow}}\u2013{{confirmedHigh}} per year confirmed across {{encounters}} encounters with {{providers}} providers. {{strongestDomainSentence}} The compounding effect is visible \u2014 your per-provider value of {{perProvider}} exceeds early-phase benchmarks. {{singleDomainNote}}",
       handoff: "Here's the dollar breakdown by domain.",
     },
-    validated: {
-      headline: "Multi-domain validation at {{months}} months \u2014 your data tells a compelling story.",
+    demonstrated: {
+      headline: "Multi-domain demonstration at {{months}} months \u2014 your data tells a compelling story.",
       body: "{{activeDomains}} of 4 domains are active, confirming {{confirmedLow}}\u2013{{confirmedHigh}} per year. At {{perProvider}} per provider, the per-provider economics are strong and defensible. {{revenueSignalNote}} {{timeSavingsWarning}}",
       handoff: "Let's see the domain-by-domain value breakdown.",
     },
@@ -279,7 +279,7 @@ const CONFIRMED_TEMPLATES: Record<Phase, Partial<Record<MaturityStage, Narrative
     },
   },
   4: {
-    validated: {
+    demonstrated: {
       headline: "At {{months}} months with {{activeDomains}} active domains, your data supports a board-level conversation.",
       body: "{{confirmedLow}}\u2013{{confirmedHigh}} per year confirmed \u2014 {{perProvider}} per provider. The multi-domain signal means this isn't a single-metric story anymore; it's an organizational capability story. {{revenueSignalNote}}",
       handoff: "Let's put that into the financial framework.",
@@ -311,14 +311,14 @@ const SCENARIO_TEMPLATES = {
 };
 
 const OPPORTUNITY_TEMPLATES: Partial<Record<MaturityStage, NarrativeTemplate>> = {
-  signaling: {
-    headline: "You've demonstrated the model. Now it's about deepening it.",
-    body: "At {{currentAdoption}}% adoption across {{providers}} providers, you're in the Signaling stage. Reaching Validated means confirming trends in {{domainsNeeded}} more domain(s) \u2014 and deepening to {{targetAdoption}}% adoption captures +{{deepenValue}} per year on its own.",
+  emerging: {
+    headline: "You've started the model. Now it's about deepening it.",
+    body: "At {{currentAdoption}}% adoption across {{providers}} providers, you're in the Emerging stage. Reaching Demonstrated means confirming trends in {{domainsNeeded}} more domain(s) \u2014 and deepening to {{targetAdoption}}% adoption captures +{{deepenValue}} per year on its own.",
     handoff: "Let's put this into your Executive Summary.",
   },
-  validated: {
-    headline: "The model is validated. The question is how fast you want to scale it.",
-    body: "Multi-domain confirmation puts you at Validated \u2014 the stage where renewal is a given and the conversation shifts to expansion. At {{perProvider}} per provider, each additional provider added to the program represents proven, defensible value. {{expandNote}}",
+  demonstrated: {
+    headline: "The impact is demonstrated. The question is how fast you want to scale it.",
+    body: "Multi-domain confirmation puts you at Demonstrated \u2014 the stage where renewal is a given and the conversation shifts to expansion. At {{perProvider}} per provider, each additional provider added to the program represents proven, defensible value. {{expandNote}}",
     handoff: "Here's the summary to take to your leadership.",
   },
   strategic: {
@@ -402,12 +402,12 @@ function selectConfirmedTemplate(phase: Phase, maturity: MaturityStage): Narrati
   if (phaseTemplates) {
     const exact = phaseTemplates[maturity];
     if (exact) return exact;
-    const fallbackOrder: MaturityStage[] = ['signaling', 'validated', 'strategic', 'unmeasured'];
+    const fallbackOrder: MaturityStage[] = ['emerging', 'demonstrated', 'strategic', 'unmeasured'];
     for (const fb of fallbackOrder) {
       if (phaseTemplates[fb]) return phaseTemplates[fb]!;
     }
   }
-  return CONFIRMED_TEMPLATES[1].signaling!;
+  return CONFIRMED_TEMPLATES[1].emerging!;
 }
 
 function isDataSufficient(state: MeasureState): boolean {
@@ -492,7 +492,7 @@ export function generateNarrative(
       break;
     }
     case 'opportunity': {
-      template = OPPORTUNITY_TEMPLATES[context.maturityStage] || OPPORTUNITY_TEMPLATES.signaling!;
+      template = OPPORTUNITY_TEMPLATES[context.maturityStage] || OPPORTUNITY_TEMPLATES.emerging!;
       break;
     }
     case 'summary': {

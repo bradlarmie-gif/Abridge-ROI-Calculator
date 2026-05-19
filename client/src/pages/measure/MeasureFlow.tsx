@@ -235,7 +235,7 @@ export default function MeasureFlow({ onBackToJourney, initialPhase }: MeasureFl
           <MeasureQuality
             state={state}
             updateState={updateState}
-            onNext={() => navigate('forecast')}
+            onNext={() => navigate('output')}
             onBack={() => navigate('revenue')}
             onHome={goHome}
           />
@@ -244,12 +244,12 @@ export default function MeasureFlow({ onBackToJourney, initialPhase }: MeasureFl
 
     case 'forecast':
       return (
-        <MeasureErrorBoundary onBack={() => navigate('quality')}>
+        <MeasureErrorBoundary onBack={() => navigate('output')}>
           <MeasureForecast
             state={state}
             updateState={updateState}
             onNext={() => navigate('output')}
-            onBack={() => navigate('quality')}
+            onBack={() => navigate('output')}
             onHome={goHome}
           />
         </MeasureErrorBoundary>
@@ -257,12 +257,12 @@ export default function MeasureFlow({ onBackToJourney, initialPhase }: MeasureFl
 
     case 'output':
       return (
-        <MeasureErrorBoundary onBack={() => navigate('forecast')}>
+        <MeasureErrorBoundary onBack={() => navigate('quality')}>
           <MeasureOutput
             state={state}
             updateState={updateState}
-            onNext={() => {}}
-            onBack={() => navigate('setup')}
+            onNext={() => navigate('forecast')}
+            onBack={() => navigate('quality')}
             onHome={goHome}
           />
         </MeasureErrorBoundary>

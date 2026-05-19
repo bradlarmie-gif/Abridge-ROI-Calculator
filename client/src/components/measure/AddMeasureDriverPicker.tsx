@@ -3,21 +3,40 @@ import { Plus, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EXPLORE_DRIVERS, type ExploreQuadrant, type ExploreSetting, type ExploreDriver } from "@/lib/exploreDrivers";
 
+const PHASE_LABEL: Record<string, string> = {
+  emerging: 'Emerging',
+  demonstrated: 'Demonstrated',
+  strategic: 'Strategic',
+};
+
+const PHASE_COLOR: Record<string, string> = {
+  emerging: 'bg-amber-50 text-amber-700',
+  demonstrated: 'bg-blue-50 text-blue-700',
+  strategic: 'bg-purple-50 text-purple-700',
+};
+
 interface AddMeasureDriverPickerProps {
   quadrant: ExploreQuadrant;
-  setting: ExploreSetting;
+  settings: ExploreSetting[];
   alreadyTracked: string[];
   onAdd: (driver: ExploreDriver) => void;
 }
 
-export default function AddMeasureDriverPicker({ quadrant, setting, alreadyTracked, onAdd }: AddMeasureDriverPickerProps) {
+const SETTING_BADGE: Record<ExploreSetting, string> = {
+  outpatient: 'OP',
+  ed: 'ED',
+  inpatient: 'IP',
+  nursing: 'Nsg',
+};
+
+export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTracked, onAdd }: AddMeasureDriverPickerProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
   const inScope = EXPLORE_DRIVERS.filter(d =>
-    d.quadrant === quadrant && d.settings.includes(setting)
+    d.quadrant === quadrant && d.settings.some(s => settings.includes(s))
   );
-  const inScopeTrackedCount = inScope.filter(d => alreadyTracked.includes(d.id)).length;
+  const inScopeTrackedCount = inScope.filter(d => alreadyTracked.includes(d.id) && !d.comingSoon).length;
   const available = inScope.filter(d =>
     !alreadyTracked.includes(d.id) &&
     (search === '' || d.label.toLowerCase().includes(search.toLowerCase()) || d.shortDescription.toLowerCase().includes(search.toLowerCase()))
@@ -88,24 +107,34 @@ export default function AddMeasureDriverPicker({ quadrant, setting, alreadyTrack
                   <p className="text-sm text-[#888888] text-center py-8 italic">
                     {inScope.length === 0
                       ? 'No drivers available for this care setting.'
-                      : inScopeTrackedCount === inScope.length
+                      : inScopeTrackedCount === inScope.filter(d => !d.comingSoon).length
                         ? 'All drivers in this quadrant are already tracked.'
                         : 'No drivers match your search.'}
                   </p>
                 )}
                 {available.map(driver => {
                   const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
+                  const isComingSoon = Boolean(driver.comingSoon);
+                  const prereqLabels = driver.prerequisites?.map(pid => {
+                    const d = EXPLORE_DRIVERS.find(x => x.id === pid);
+                    return d?.label ?? pid;
+                  });
                   return (
                     <button
                       key={driver.id}
-                      onClick={() => handleAdd(driver)}
-                      className="w-full p-3 text-left rounded-lg hover:bg-[#F5F0EB] transition-colors flex items-start gap-3"
+                      onClick={() => !isComingSoon && handleAdd(driver)}
+                      disabled={isComingSoon}
+                      className={`w-full p-3 text-left rounded-lg transition-colors flex items-start gap-3 ${
+                        isComingSoon
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:bg-[#F5F0EB]'
+                      }`}
                       data-testid={`add-driver-${driver.id}`}
                     >
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-black">{driver.label}</p>
-                          {isQuantifiable && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className={`font-semibold ${isComingSoon ? 'text-[#888888]' : 'text-black'}`}>{driver.label}</p>
+                          {isQuantifiable && !isComingSoon && (
                             <span
                               className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#F5F0EB] text-[10px] font-semibold text-[#888888]"
                               title="Quantifiable — carries dollar value"
@@ -113,10 +142,32 @@ export default function AddMeasureDriverPicker({ quadrant, setting, alreadyTrack
                               $
                             </span>
                           )}
+                          {driver.measurePhase && !isComingSoon && (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${PHASE_COLOR[driver.measurePhase]}`}>
+                              {PHASE_LABEL[driver.measurePhase]}
+                            </span>
+                          )}
+                          {settings.length > 1 && driver.settings.map(s => (
+                            settings.includes(s) ? (
+                              <span key={s} className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#F5F0EB] text-[10px] font-semibold text-[#888888] uppercase tracking-wide">
+                                {SETTING_BADGE[s]}
+                              </span>
+                            ) : null
+                          ))}
+                          {isComingSoon && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#F5F0EB] text-[10px] font-semibold text-[#AAAAAA] uppercase tracking-wide">
+                              Coming soon
+                            </span>
+                          )}
                         </div>
                         <p className="text-sm text-[#888888] mt-0.5">{driver.shortDescription}</p>
+                        {prereqLabels && prereqLabels.length > 0 && (
+                          <p className="text-[10px] text-[#AAAAAA] mt-1 italic">
+                            Builds on: {prereqLabels.join(', ')}
+                          </p>
+                        )}
                       </div>
-                      <Plus className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-1" />
+                      {!isComingSoon && <Plus className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-1" />}
                     </button>
                   );
                 })}

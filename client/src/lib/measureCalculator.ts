@@ -198,6 +198,7 @@ export interface MeasureState {
   censusConstrained?: boolean;
   trackedDrivers: Record<string, MeasureDriverEntry>;
   forecastScenario: ForecastScenario;
+  maturityPhase: MaturityStage | null;
 }
 
 export interface MeasureDriverEntry {
@@ -211,6 +212,10 @@ export interface MeasureDriverEntry {
   notes?: string;
   isMonthlyMode?: boolean;
   monthlyData?: Array<{ month: string; withAbridge: number; withoutAbridge: number }>;
+  lowerIsBetter?: boolean;
+  distributionData?: { before: Record<string, number>; after: Record<string, number> };
+  scaleValue?: number;
+  scaleDivisor?: number;
 }
 
 export function getEffectiveWithWithout(entry: MeasureDriverEntry): { withAbridge: number; withoutAbridge: number } {
@@ -228,14 +233,17 @@ export function getRealizedValueForEntry(
 ): number {
   if (!isQuantifiable) return 0;
   const { withAbridge, withoutAbridge } = getEffectiveWithWithout(entry);
-  const delta = withAbridge - withoutAbridge;
-  return Math.round(delta * entry.valuePerUnit * (entry.attributionPercent / 100) * (entry.realizationPercent / 100));
+  const delta = entry.lowerIsBetter ? withoutAbridge - withAbridge : withAbridge - withoutAbridge;
+  const scale = (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
+    ? entry.scaleValue / entry.scaleDivisor
+    : 1;
+  return Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100));
 }
 
 export const CONFIDENCE_LABELS: Record<string, string> = {
   unmeasured: 'Benchmark estimate',
-  signaling: 'Directional estimate',
-  validated: 'Based on measured outcomes',
+  emerging: 'Directional estimate',
+  demonstrated: 'Based on measured outcomes',
   strategic: 'Financially documented',
 };
 
@@ -356,6 +364,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     addedSettings: [],
     pricingScenarios: [],
   },
+  maturityPhase: null,
 };
 
 export function syncOutpatientMetricsToLegacy(state: MeasureState): Partial<MeasureState> {
@@ -797,7 +806,7 @@ export interface ExpansionResults {
   remainingProviders: number;
 }
 
-export type MaturityStage = 'unmeasured' | 'signaling' | 'validated' | 'strategic';
+export type MaturityStage = 'unmeasured' | 'emerging' | 'demonstrated' | 'strategic';
 export type DomainStatus = 'no-data' | 'baseline-only' | 'signaling' | 'validated';
 
 export interface EngagementContext {
@@ -840,11 +849,11 @@ export function deriveEngagementContext(state: MeasureState): EngagementContext 
   let maturityLabel: string;
   if (months < 3 || util < 20) { maturityStage = 'unmeasured'; maturityLabel = 'Unmeasured'; }
   else if (months > 18 && util > 70) { maturityStage = 'strategic'; maturityLabel = 'Strategic'; }
-  else if (months >= 9 || (util > 60 && activeDomains >= 3)) { maturityStage = 'validated'; maturityLabel = 'Validated'; }
-  else { maturityStage = 'signaling'; maturityLabel = 'Signaling'; }
+  else if (months >= 9 || (util > 60 && activeDomains >= 3)) { maturityStage = 'demonstrated'; maturityLabel = 'Demonstrated'; }
+  else { maturityStage = 'emerging'; maturityLabel = 'Emerging'; }
 
-  const stageOrder: MaturityStage[] = ['unmeasured', 'signaling', 'validated', 'strategic'];
-  const stageLabels: Record<MaturityStage, string> = { unmeasured: 'Unmeasured', signaling: 'Signaling', validated: 'Validated', strategic: 'Strategic' };
+  const stageOrder: MaturityStage[] = ['unmeasured', 'emerging', 'demonstrated', 'strategic'];
+  const stageLabels: Record<MaturityStage, string> = { unmeasured: 'Unmeasured', emerging: 'Emerging', demonstrated: 'Demonstrated', strategic: 'Strategic' };
   const idx = stageOrder.indexOf(maturityStage);
   const maturityNext = idx < stageOrder.length - 1 ? stageLabels[stageOrder[idx + 1]] : 'Strategic';
 
@@ -1274,13 +1283,13 @@ function getDefensibleClaims(
         'Baseline metrics are establishing',
         'No outcome claims yet — foundation building',
       ];
-    case 'signaling':
+    case 'emerging':
       return [
         'Documentation patterns are changing with Abridge',
         `Early efficiency signals are present in ${strongestDomain}`,
         'Trend direction is confirmed — too early for magnitude',
       ];
-    case 'validated':
+    case 'demonstrated':
       return [
         `${activeDomainCount} domains show consistent positive trends`,
         `Time reclaimed: ${formatNumber(Math.round(totalHoursSaved))} hours across ${providers} providers`,
@@ -1339,11 +1348,11 @@ export function deriveSettingStage(
   let maturityLabel: string;
   if (months < 3 || util < 20) { maturityStage = 'unmeasured'; maturityLabel = 'Unmeasured'; }
   else if (months > 18 && util > 70 && coverageRatio > 0.5) { maturityStage = 'strategic'; maturityLabel = 'Strategic'; }
-  else if (months >= 9 || (util > 60 && activeDomainCount >= 3) || coverageRatio > 0.7) { maturityStage = 'validated'; maturityLabel = 'Validated'; }
-  else { maturityStage = 'signaling'; maturityLabel = 'Signaling'; }
+  else if (months >= 9 || (util > 60 && activeDomainCount >= 3) || coverageRatio > 0.7) { maturityStage = 'demonstrated'; maturityLabel = 'Demonstrated'; }
+  else { maturityStage = 'emerging'; maturityLabel = 'Emerging'; }
 
-  const stageOrder: MaturityStage[] = ['unmeasured', 'signaling', 'validated', 'strategic'];
-  const stageLabels: Record<MaturityStage, string> = { unmeasured: 'Unmeasured', signaling: 'Signaling', validated: 'Validated', strategic: 'Strategic' };
+  const stageOrder: MaturityStage[] = ['unmeasured', 'emerging', 'demonstrated', 'strategic'];
+  const stageLabels: Record<MaturityStage, string> = { unmeasured: 'Unmeasured', emerging: 'Emerging', demonstrated: 'Demonstrated', strategic: 'Strategic' };
   const idx = stageOrder.indexOf(maturityStage);
   const maturityNext = idx < stageOrder.length - 1 ? stageLabels[stageOrder[idx + 1]] : 'Strategic';
 

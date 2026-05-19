@@ -299,7 +299,7 @@ function DriverCard({ d }: { d: MeasurePDFDriver }) {
             {"  ("}\u0394 {d.delta >= 0 ? "+" : ""}{fmtN(d.delta)} {unit}{")"}
           </Text>
           <Text style={s.calcLine}>
-            \u0394 {fmtN(d.delta)} {unit} \u00D7 {valPrefix}{fmtN(d.valuePerUnit)} {valLabel} \u00D7 {fmtPct(d.attributionPercent)} attribution \u00D7 {fmtPct(d.realizationPercent)} realization
+            \u0394 {fmtN(d.delta)} {unit} \u00D7 {valPrefix}{fmtN(d.valuePerUnit)} {valLabel} \u00D7 {fmtPct(d.attributionPercent)} attribution
           </Text>
           <Text style={s.calcResult}>= {fmtC(d.realizedValue)}</Text>
           {showMonthly && d.monthlyData ? <MonthlySparkline data={d.monthlyData} /> : null}
@@ -696,7 +696,7 @@ export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFDat
       const delta = effWith - effWithout;
       const isQuant = d.visibility === "quantified" && Boolean(md);
       const realizedValue = isQuant
-        ? Math.round(delta * entry.valuePerUnit * (entry.attributionPercent / 100) * (entry.realizationPercent / 100))
+        ? Math.round(delta * entry.valuePerUnit * (entry.attributionPercent / 100))
         : 0;
       const driver: MeasurePDFDriver = {
         id: d.id,

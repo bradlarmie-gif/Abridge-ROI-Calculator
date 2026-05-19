@@ -1,12 +1,14 @@
 import { type ExploreState } from "../explore/ExploreFlow";
 
 export type DriverOnset = "immediate" | "delayed" | "phased" | "longTerm";
+export type ExploreQuadrant = "Capacity" | "Workforce" | "Revenue" | "Quality";
 
 export interface ProformaDriver {
   id: string;
   name: string;
   value: number;
   category: "time" | "documentation";
+  quadrant: ExploreQuadrant;
   onset: DriverOnset;
 }
 
@@ -40,6 +42,21 @@ export interface QuarterlyUtilization {
   q9: number; q10: number; q11: number; q12: number;
 }
 
+export interface ScenarioDealTerms {
+  pricingModel?: "perUnit" | "annualFlat" | "perEncounter" | "platform";
+  costPerUnit?: number;
+  costPerEncounter?: number;
+  annualLicenseFee?: number;
+  platformEncRate?: number;
+  yearlyPricing?: YearlyPricing;
+  providerCount?: number;
+  fullScaleProviders?: number;
+  yearlyProviders?: YearlyProviders;
+  yearlyUtilization?: YearlyUtilization;
+  yearlyEncounters?: { year1: number; year2: number; year3: number };
+  goLiveMonth?: number;
+}
+
 export interface ProformaSettingSnapshot {
   id: string;
   careSetting: "outpatient" | "ed" | "inpatient" | "nursing";
@@ -56,7 +73,8 @@ export interface ProformaSettingSnapshot {
   totalHoursSaved: number;
   drivers: ProformaDriver[];
   costPerUnit: number;
-  pricingModel?: "perUnit" | "annualFlat" | "perEncounter";
+  pricingModel?: "perUnit" | "annualFlat" | "perEncounter" | "platform";
+  platformEncRate?: number;
   annualLicenseFee?: number;
   costPerEncounter?: number;
   yearlyPricing?: YearlyPricing;
@@ -72,6 +90,11 @@ export interface ProformaSettingSnapshot {
   quarterlyProviders?: QuarterlyProviders;
   quarterlyPricing?: QuarterlyPricing;
   quarterlyUtilization?: QuarterlyUtilization;
+  capacityValue: number;
+  workforceValue: number;
+  revenueValue: number;
+  qualityValue: number;
+  scenarioB?: ScenarioDealTerms;
 }
 
 export interface RetentionPhasing {
@@ -104,13 +127,14 @@ export interface ProformaCashFlowRow {
   period: number;
   label: string;
   investment: number;
-  docValue: number;
-  timeValue: number;
-  retentionValue: number;
+  capacityValue: number;
+  workforceValue: number;
+  revenueValue: number;
+  qualityValue: number;
   totalValue: number;
   netValue: number;
   cumulativeNet: number;
-  bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; docValue: number; timeValue: number; retentionValue: number }>;
+  bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number }>;
 }
 
 export interface ProformaSummary {

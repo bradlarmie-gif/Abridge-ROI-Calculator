@@ -275,7 +275,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               className="text-sm font-medium text-[#EA2C00] shrink-0 gap-1"
               data-testid="link-learn"
             >
-              View Methodology
+              Understand the Value Story
               <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>

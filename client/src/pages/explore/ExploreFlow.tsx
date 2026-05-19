@@ -174,45 +174,47 @@ export interface TimeDriverInputs {
   edThroughputExpanded: boolean;
   ipRoundingExpanded: boolean;
 
-  // OP qualitative Quality drivers (3 — trimmed by R-IA-3)
-  opCareContinuityEnabled: boolean;
-  opCareContinuityExpanded: boolean;
-  opNoteStarRatingEnabled: boolean;
-  opNoteStarRatingExpanded: boolean;
-  opDiagnosisCaptureEnabled: boolean;
-  opDiagnosisCaptureExpanded: boolean;
-  // ED qualitative Quality drivers (3 — expanded by R-IA-4)
-  edNoteStarRatingEnabled: boolean;
-  edNoteStarRatingExpanded: boolean;
-  edProviderCommunicationEnabled: boolean;
-  edProviderCommunicationExpanded: boolean;
+  // OP qualitative Quality drivers (3 — methodology-aligned: Care Gap Closure / HEDIS / STARS)
+  opCdiQueryTrendEnabled: boolean;
+  opCdiQueryTrendExpanded: boolean;
+  opCareGapClosureRateEnabled: boolean;
+  opCareGapClosureRateExpanded: boolean;
+  opHedisCompositeScoreEnabled: boolean;
+  opHedisCompositeScoreExpanded: boolean;
+  opMaStarsPerformanceEnabled: boolean;
+  opMaStarsPerformanceExpanded: boolean;
+  // ED qualitative Quality (3)
+  edCoreMeasureDocRateEnabled: boolean;
+  edCoreMeasureDocRateExpanded: boolean;
+  edDocDeficiencyRateEnabled: boolean;
+  edDocDeficiencyRateExpanded: boolean;
   // IP qualitative Quality drivers (legacy state vars retained for compatibility)
   ipHcahpsCompositeEnabled: boolean;
   ipHcahpsCompositeExpanded: boolean;
   ipReadmissionEnabled: boolean;
   ipReadmissionExpanded: boolean;
-  // IP Capacity (R-IP-1 — replaces roundingEfficiency)
+  // IP Capacity (4)
   ipHnpCompletion24hEnabled: boolean;
   ipHnpCompletion24hExpanded: boolean;
-  // IP Quality (R-IP-1 + Quality refresh — Hand-Off, Discharge Doc, HCAHPS Doctor, Readmission Rate, CMS Star)
-  ipHandoffCompletenessEnabled: boolean;
-  ipHandoffCompletenessExpanded: boolean;
-  ipDischargeDocCompletenessEnabled: boolean;
-  ipDischargeDocCompletenessExpanded: boolean;
+  ipConsultThroughputEnabled: boolean;
+  ipConsultThroughputExpanded: boolean;
+  // IP Quality (4)
+  ipCdiQueryRateEnabled: boolean;
+  ipCdiQueryRateExpanded: boolean;
+  ipSoiClassificationEnabled: boolean;
+  ipSoiClassificationExpanded: boolean;
   ipHcahpsDoctorEnabled: boolean;
   ipHcahpsDoctorExpanded: boolean;
   ipReadmissionRateEnabled: boolean;
   ipReadmissionRateExpanded: boolean;
-  ipConsultThroughputEnabled: boolean;
-  ipConsultThroughputExpanded: boolean;
   // ED qualitative Quality (patient experience addition)
   edPatientExperienceEnabled: boolean;
   edPatientExperienceExpanded: boolean;
-  // Nursing qualitative Quality (1 new — HCAHPS already exists in docQualityInputs)
-  nursingMedErrorEnabled: boolean;
-  nursingMedErrorExpanded: boolean;
-  nursingHandoffQualityEnabled: boolean;
-  nursingHandoffQualityExpanded: boolean;
+  // Nursing qualitative Quality
+  nursingEarlyDeteriorationEnabled: boolean;
+  nursingEarlyDeteriorationExpanded: boolean;
+  nursingBundleComplianceEnabled: boolean;
+  nursingBundleComplianceExpanded: boolean;
   // Nursing qualitative Revenue
   nursingCdiResponseEnabled: boolean;
   nursingCdiResponseExpanded: boolean;
@@ -225,8 +227,8 @@ export interface TimeDriverInputs {
   opThirdNextAvailableExpanded: boolean;
   opSameDayAccessEnabled: boolean;
   opSameDayAccessExpanded: boolean;
-  opExtendedVisitTimeEnabled: boolean;
-  opExtendedVisitTimeExpanded: boolean;
+  opPanelSizePerProviderEnabled: boolean;
+  opPanelSizePerProviderExpanded: boolean;
   // OP Workforce qualitative (3 — trimmed by R-IA-3)
   opAfterHoursDocEnabled: boolean;
   opAfterHoursDocExpanded: boolean;
@@ -237,55 +239,50 @@ export interface TimeDriverInputs {
   // OP Revenue qualitative (3 — trimmed by R-IA-3)
   opEmLevelDistributionEnabled: boolean;
   opEmLevelDistributionExpanded: boolean;
-  opCdiQueryTrendEnabled: boolean;
-  opCdiQueryTrendExpanded: boolean;
   opCodingSpecificityEnabled: boolean;
   opCodingSpecificityExpanded: boolean;
-  // ED Capacity qualitative (3 — expanded by R-IA-4)
+  opFirstPassClaimRateEnabled: boolean;
+  opFirstPassClaimRateExpanded: boolean;
+  opCgCahpsEnabled: boolean;
+  opCgCahpsExpanded: boolean;
+  // ED Capacity qualitative (3)
   edDoorToProviderEnabled: boolean;
   edDoorToProviderExpanded: boolean;
-  edDoorToDispositionEnabled: boolean;
-  edDoorToDispositionExpanded: boolean;
-  edBedTurnoverEnabled: boolean;
-  edBedTurnoverExpanded: boolean;
-  // ED Workforce qualitative (3 — expanded by R-IA-4)
+  edEncountersPerShiftEnabled: boolean;
+  edEncountersPerShiftExpanded: boolean;
+  edLwbsRateEnabled: boolean;
+  edLwbsRateExpanded: boolean;
+  // ED Workforce qualitative (4)
   edAfterHoursDocEnabled: boolean;
   edAfterHoursDocExpanded: boolean;
+  edEndOfShiftCompletionEnabled: boolean;
+  edEndOfShiftCompletionExpanded: boolean;
   edBurnoutTrackingEnabled: boolean;
   edBurnoutTrackingExpanded: boolean;
   edLikelihoodToStayEnabled: boolean;
   edLikelihoodToStayExpanded: boolean;
-  // ED Revenue qualitative (3 — expanded by R-IA-4)
-  edCleanClaimEnabled: boolean;
-  edCleanClaimExpanded: boolean;
+  // ED Revenue qualitative (3)
   edEmLevelDistributionEnabled: boolean;
   edEmLevelDistributionExpanded: boolean;
-  edCdiQueryTrendEnabled: boolean;
-  edCdiQueryTrendExpanded: boolean;
-  // ───── R-ED-1: ED qualitative driver consolidation + polish ─────
-  // ED Capacity (R-ED-1 — replaces edDoorToDisposition + edBedTurnover)
-  edEncountersPerShiftEnabled: boolean;
-  edEncountersPerShiftExpanded: boolean;
-  edEndOfShiftCompletionEnabled: boolean;
-  edEndOfShiftCompletionExpanded: boolean;
-  // ED Revenue (R-ED-1 — replaces edCdiQueryTrend)
+  edCdiQueryAdmissionsEnabled: boolean;
+  edCdiQueryAdmissionsExpanded: boolean;
   edDowncodingRateEnabled: boolean;
   edDowncodingRateExpanded: boolean;
-  // ED Quality (R-ED-1 — replaces edProviderCommunication)
-  edAdmissionHandoffEnabled: boolean;
-  edAdmissionHandoffExpanded: boolean;
   // IP Capacity qualitative (3 — restructured by R-IA-5; ALOS removed)
+  // IP Capacity qualitative (4)
   ipDocumentationLagEnabled: boolean;
   ipDocumentationLagExpanded: boolean;
-  ipDischargeSummaryTimeEnabled: boolean;
-  ipDischargeSummaryTimeExpanded: boolean;
-  // IP Workforce qualitative (3 — restructured by R-IA-5; Likelihood to Stay removed)
+  ipDischargeGoalDocEnabled: boolean;
+  ipDischargeGoalDocExpanded: boolean;
+  // IP Workforce qualitative (4)
   ipAfterHoursDocEnabled: boolean;
   ipAfterHoursDocExpanded: boolean;
+  ipProgressNoteCompletionEnabled: boolean;
+  ipProgressNoteCompletionExpanded: boolean;
   ipBurnoutTrackingEnabled: boolean;
   ipBurnoutTrackingExpanded: boolean;
-  ipTimeToSignNoteEnabled: boolean;
-  ipTimeToSignNoteExpanded: boolean;
+  ipLikelihoodToStayEnabled: boolean;
+  ipLikelihoodToStayExpanded: boolean;
   // IP Revenue qualitative (3 — expanded by R-IA-5)
   ipCmiTrackingEnabled: boolean;
   ipCmiTrackingExpanded: boolean;
@@ -305,6 +302,21 @@ export interface TimeDriverInputs {
   nursingBurnoutExpanded: boolean;
   nursingChartingAfterShiftEnabled: boolean;
   nursingChartingAfterShiftExpanded: boolean;
+  // Doc time per note (all care settings)
+  opDocTimePerNoteEnabled: boolean;
+  opDocTimePerNoteExpanded: boolean;
+  edDocTimePerEncounterEnabled: boolean;
+  edDocTimePerEncounterExpanded: boolean;
+  ipDocTimeHnpEnabled: boolean;
+  ipDocTimeHnpExpanded: boolean;
+  ipDocTimeProgressNoteEnabled: boolean;
+  ipDocTimeProgressNoteExpanded: boolean;
+  ipDocTimeConsultNoteEnabled: boolean;
+  ipDocTimeConsultNoteExpanded: boolean;
+  ipDocTimeDischargeEnabled: boolean;
+  ipDocTimeDischargeExpanded: boolean;
+  nursingDocTimePerEventEnabled: boolean;
+  nursingDocTimePerEventExpanded: boolean;
 }
 
 // Documentation Quality inputs
@@ -517,11 +529,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edLwbsRate: 3, // 3% baseline LWBS rate
     edLwbsReduction: 10, // 10% reduction in LWBS (conservative default)
     edRevenuePerVisit: 480, // Higher than outpatient
-    edLwbsRealization: 75, // 75% realization (not all recovered patients complete visits)
+    edLwbsRealization: 80, // 80% realization (not all recovered patients complete visits)
     edThroughputEnabled: false,
     edAdmissionRate: 18, // 18% of recovered patients get admitted
     edAdmissionRevenue: 8000, // Average admission revenue
-    edAdmissionRealization: 40, // 40% realization (bed availability, payer mix)
+    edAdmissionRealization: 60, // 60% realization (bed availability, payer mix)
     // Inpatient-specific defaults
     ipRoundingEnabled: false,
     ipAnnualTurnoverRate: 8, // Hospitalist turnover: 8%
@@ -583,42 +595,44 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edLwbsExpanded: false,
     edThroughputExpanded: false,
     ipRoundingExpanded: false,
-    // Quality qualitative driver defaults (R-IA-3 trim)
-    opCareContinuityEnabled: false,
-    opCareContinuityExpanded: false,
-    opNoteStarRatingEnabled: false,
-    opNoteStarRatingExpanded: false,
-    opDiagnosisCaptureEnabled: false,
-    opDiagnosisCaptureExpanded: false,
-    edNoteStarRatingEnabled: false,
-    edNoteStarRatingExpanded: false,
-    edProviderCommunicationEnabled: false,
-    edProviderCommunicationExpanded: false,
+    // OP Quality qualitative driver defaults (methodology-aligned)
+    opCdiQueryTrendEnabled: false,
+    opCdiQueryTrendExpanded: false,
+    opCareGapClosureRateEnabled: false,
+    opCareGapClosureRateExpanded: false,
+    opHedisCompositeScoreEnabled: false,
+    opHedisCompositeScoreExpanded: false,
+    opMaStarsPerformanceEnabled: false,
+    opMaStarsPerformanceExpanded: false,
+    edCoreMeasureDocRateEnabled: false,
+    edCoreMeasureDocRateExpanded: false,
+    edDocDeficiencyRateEnabled: false,
+    edDocDeficiencyRateExpanded: false,
     ipHcahpsCompositeEnabled: false,
     ipHcahpsCompositeExpanded: false,
     ipReadmissionEnabled: false,
     ipReadmissionExpanded: false,
-    // IP Capacity (R-IP-1)
+    // IP Capacity (4)
     ipHnpCompletion24hEnabled: false,
     ipHnpCompletion24hExpanded: false,
-    // IP Quality (R-IP-1 + Quality refresh)
-    ipHandoffCompletenessEnabled: false,
-    ipHandoffCompletenessExpanded: false,
-    ipDischargeDocCompletenessEnabled: false,
-    ipDischargeDocCompletenessExpanded: false,
+    ipConsultThroughputEnabled: false,
+    ipConsultThroughputExpanded: false,
+    // IP Quality (4)
+    ipCdiQueryRateEnabled: false,
+    ipCdiQueryRateExpanded: false,
+    ipSoiClassificationEnabled: false,
+    ipSoiClassificationExpanded: false,
     ipHcahpsDoctorEnabled: false,
     ipHcahpsDoctorExpanded: false,
     ipReadmissionRateEnabled: false,
     ipReadmissionRateExpanded: false,
-    ipConsultThroughputEnabled: false,
-    ipConsultThroughputExpanded: false,
     // ED Quality (patient experience)
     edPatientExperienceEnabled: false,
     edPatientExperienceExpanded: false,
-    nursingMedErrorEnabled: false,
-    nursingMedErrorExpanded: false,
-    nursingHandoffQualityEnabled: false,
-    nursingHandoffQualityExpanded: false,
+    nursingEarlyDeteriorationEnabled: false,
+    nursingEarlyDeteriorationExpanded: false,
+    nursingBundleComplianceEnabled: false,
+    nursingBundleComplianceExpanded: false,
     nursingCdiResponseEnabled: false,
     nursingCdiResponseExpanded: false,
     nursingDocCompletionEnabled: false,
@@ -628,8 +642,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     opThirdNextAvailableExpanded: false,
     opSameDayAccessEnabled: false,
     opSameDayAccessExpanded: false,
-    opExtendedVisitTimeEnabled: false,
-    opExtendedVisitTimeExpanded: false,
+    opPanelSizePerProviderEnabled: false,
+    opPanelSizePerProviderExpanded: false,
     opAfterHoursDocEnabled: false,
     opAfterHoursDocExpanded: false,
     opNotesBeforeLeavingEnabled: false,
@@ -638,47 +652,44 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     opBurnoutTrackingExpanded: false,
     opEmLevelDistributionEnabled: false,
     opEmLevelDistributionExpanded: false,
-    opCdiQueryTrendEnabled: false,
-    opCdiQueryTrendExpanded: false,
     opCodingSpecificityEnabled: false,
     opCodingSpecificityExpanded: false,
+    opFirstPassClaimRateEnabled: false,
+    opFirstPassClaimRateExpanded: false,
+    opCgCahpsEnabled: false,
+    opCgCahpsExpanded: false,
     edDoorToProviderEnabled: false,
     edDoorToProviderExpanded: false,
-    edDoorToDispositionEnabled: false,
-    edDoorToDispositionExpanded: false,
-    edBedTurnoverEnabled: false,
-    edBedTurnoverExpanded: false,
+    edEncountersPerShiftEnabled: false,
+    edEncountersPerShiftExpanded: false,
+    edLwbsRateEnabled: false,
+    edLwbsRateExpanded: false,
     edAfterHoursDocEnabled: false,
     edAfterHoursDocExpanded: false,
+    edEndOfShiftCompletionEnabled: false,
+    edEndOfShiftCompletionExpanded: false,
     edBurnoutTrackingEnabled: false,
     edBurnoutTrackingExpanded: false,
     edLikelihoodToStayEnabled: false,
     edLikelihoodToStayExpanded: false,
-    edCleanClaimEnabled: false,
-    edCleanClaimExpanded: false,
     edEmLevelDistributionEnabled: false,
     edEmLevelDistributionExpanded: false,
-    edCdiQueryTrendEnabled: false,
-    edCdiQueryTrendExpanded: false,
-    // R-ED-1 defaults
-    edEncountersPerShiftEnabled: false,
-    edEncountersPerShiftExpanded: false,
-    edEndOfShiftCompletionEnabled: false,
-    edEndOfShiftCompletionExpanded: false,
+    edCdiQueryAdmissionsEnabled: false,
+    edCdiQueryAdmissionsExpanded: false,
     edDowncodingRateEnabled: false,
     edDowncodingRateExpanded: false,
-    edAdmissionHandoffEnabled: false,
-    edAdmissionHandoffExpanded: false,
     ipDocumentationLagEnabled: false,
     ipDocumentationLagExpanded: false,
-    ipDischargeSummaryTimeEnabled: false,
-    ipDischargeSummaryTimeExpanded: false,
+    ipDischargeGoalDocEnabled: false,
+    ipDischargeGoalDocExpanded: false,
     ipAfterHoursDocEnabled: false,
     ipAfterHoursDocExpanded: false,
+    ipProgressNoteCompletionEnabled: false,
+    ipProgressNoteCompletionExpanded: false,
     ipBurnoutTrackingEnabled: false,
     ipBurnoutTrackingExpanded: false,
-    ipTimeToSignNoteEnabled: false,
-    ipTimeToSignNoteExpanded: false,
+    ipLikelihoodToStayEnabled: false,
+    ipLikelihoodToStayExpanded: false,
     ipCmiTrackingEnabled: false,
     ipCmiTrackingExpanded: false,
     ipCcMccCaptureEnabled: false,
@@ -695,6 +706,20 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingBurnoutExpanded: false,
     nursingChartingAfterShiftEnabled: false,
     nursingChartingAfterShiftExpanded: false,
+    opDocTimePerNoteEnabled: false,
+    opDocTimePerNoteExpanded: false,
+    edDocTimePerEncounterEnabled: false,
+    edDocTimePerEncounterExpanded: false,
+    ipDocTimeHnpEnabled: false,
+    ipDocTimeHnpExpanded: false,
+    ipDocTimeProgressNoteEnabled: false,
+    ipDocTimeProgressNoteExpanded: false,
+    ipDocTimeConsultNoteEnabled: false,
+    ipDocTimeConsultNoteExpanded: false,
+    ipDocTimeDischargeEnabled: false,
+    ipDocTimeDischargeExpanded: false,
+    nursingDocTimePerEventEnabled: false,
+    nursingDocTimePerEventExpanded: false,
   },
   otherFinancialBenefits: [],
   // Documentation quality inputs
@@ -810,6 +835,7 @@ type ExplorePhase =
 
 interface ExploreFlowProps {
   onBackToJourney?: () => void;
+  onBackToProforma?: () => void;
   onContinueToInvestment?: (state: ExploreState) => void;
   initialCareSetting?: ExploreCareSetting;
   initialPhase?: ExplorePhase;
@@ -818,7 +844,7 @@ interface ExploreFlowProps {
   disabledCareSettings?: ExploreCareSetting[];
 }
 
-export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [] }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney, onBackToProforma, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [] }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(() => {
     const requested = initialPhase || (initialExploreState ? 'practice' : 'careSetting');
     const legacyMap: Record<string, ExplorePhase> = {
@@ -839,7 +865,12 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     return fresh;
   });
 
+  const fullScaleManualRef = useRef(false);
+
   const updateState = useCallback((updates: Partial<ExploreState>) => {
+    if ('fullScaleProviders' in updates) {
+      fullScaleManualRef.current = true;
+    }
     setState(prev => {
       const next = { ...prev, ...updates };
       if (updates.numberOfProviders !== undefined && next.timeDriverInputs.accessProviders > 0) {
@@ -874,12 +905,10 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
 
   const prevBaselineRef = useRef({ providers: state.numberOfProviders, beds: state.nursingStaffedBeds });
   useEffect(() => {
+    if (fullScaleManualRef.current) return;
     const baselineCount = state.careSetting === 'nursing' ? state.nursingStaffedBeds : state.numberOfProviders;
     if (baselineCount > 0) {
-      const target = baselineCount * 3;
-      if (state.fullScaleProviders < target) {
-        setState(prev => ({ ...prev, fullScaleProviders: target }));
-      }
+      setState(prev => ({ ...prev, fullScaleProviders: baselineCount * 2 }));
     }
     prevBaselineRef.current = { providers: state.numberOfProviders, beds: state.nursingStaffedBeds };
   }, [state.numberOfProviders, state.nursingStaffedBeds, state.careSetting]);
@@ -912,33 +941,37 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         setPhase(resolved);
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (event.state?.view === 'journey' || !event.state?.view) {
-        if (onBackToJourney) {
+        if (onBackToProforma) {
+          onBackToProforma();
+        } else if (onBackToJourney) {
           onBackToJourney();
         }
       }
     };
-    
+
     window.addEventListener('popstate', handlePopState);
-    
+
     const currentState = window.history.state || {};
     if (!currentState.explorePhase || currentState.view !== 'explore') {
-      window.history.replaceState({ 
-        ...currentState, 
+      window.history.replaceState({
+        ...currentState,
         view: 'explore',
-        explorePhase: phase 
+        explorePhase: phase
       }, '');
     }
-    
+
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [onBackToJourney]);
+  }, [onBackToJourney, onBackToProforma]);
 
   const goHome = useCallback(() => {
-    if (onBackToJourney) {
+    if (onBackToProforma) {
+      onBackToProforma();
+    } else if (onBackToJourney) {
       onBackToJourney();
     } else {
       window.location.href = '/';
     }
-  }, [onBackToJourney]);
+  }, [onBackToProforma, onBackToJourney]);
 
   const navigate = useCallback((nextPhase: ExplorePhase) => {
     setPhase(nextPhase);
@@ -1112,8 +1145,8 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     let total = 0;
     
     const wrvuScenarios: Record<string, number> = isEDLocal
-      ? { conservative: 1, typical: 2.5, aggressive: 4, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
-      : { conservative: 2, typical: 5, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
+      ? { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
+      : { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
     const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
     const denialsScenarios: Record<string, number> = isEDLocal
       ? { conservative: 15, typical: 30, aggressive: 50 }

@@ -19,16 +19,20 @@ interface MeasureRevenueProps {
 const QUADRANT = 'Revenue' as const;
 
 export default function MeasureRevenue({ state, updateState, onNext, onBack, onHome }: MeasureRevenueProps) {
-  const setting = ((state.careSetting || 'outpatient') as ExploreSetting);
+  const activeSettings = (
+    state.activeCareSettings && state.activeCareSettings.length > 0
+      ? state.activeCareSettings
+      : [state.careSetting || 'outpatient']
+  ) as ExploreSetting[];
   const tracked = state.trackedDrivers || {};
 
   const trackedDriverIds = Object.keys(tracked);
   const trackedHere = useMemo(() =>
     EXPLORE_DRIVERS
-      .filter(d => d.quadrant === QUADRANT && d.settings.includes(setting) && trackedDriverIds.includes(d.id))
+      .filter(d => d.quadrant === QUADRANT && d.settings.some(s => activeSettings.includes(s)) && trackedDriverIds.includes(d.id))
       .map(d => ({ driver: d, entry: tracked[d.id] })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tracked, setting]
+    [tracked, activeSettings]
   );
 
   const financialDrivers = trackedHere.filter(({ driver }) => driver.visibility === 'quantified');
@@ -57,8 +61,11 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
       withAbridge: 0,
       valuePerUnit: md?.valuePerUnitDefault ?? 0,
       attributionPercent: 100,
-      realizationPercent: md?.realizationDefault ?? 100,
+      realizationPercent: 100,
+      lowerIsBetter: md?.lowerIsBetter ?? false,
       expanded: true,
+      scaleValue: md?.scaleInput?.defaultValue,
+      scaleDivisor: md?.scaleInput?.divisor,
     };
     updateState({
       trackedDrivers: { ...tracked, [driver.id]: entry },
@@ -72,6 +79,31 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
     }, 0);
   }, [trackedHere]);
 
+  const isMultiSetting = activeSettings.length > 1;
+
+  const subtitle = useMemo(() => {
+    if (isMultiSetting) {
+      const names = activeSettings.map(s => ({ outpatient: 'Outpatient', ed: 'ED', inpatient: 'Inpatient', nursing: 'Nursing' }[s] ?? s));
+      return `Revenue integrity across your ${names.join(' + ')} deployment`;
+    }
+    return {
+      outpatient: 'Where is Abridge improving coding accuracy and revenue capture?',
+      ed: 'Where is Abridge improving ED revenue integrity?',
+      inpatient: 'Where is Abridge improving inpatient coding accuracy and revenue integrity?',
+      nursing: 'Where is Abridge affecting nursing-related revenue signals?',
+    }[activeSettings[0]] ?? 'How has documentation quality shown up in revenue capture?';
+  }, [activeSettings, isMultiSetting]);
+
+  const howToUse = useMemo(() => {
+    if (isMultiSetting) return 'Add revenue drivers relevant to each care setting. Some drivers (like Denial Prevention) apply across multiple settings — enter the combined impact.';
+    return {
+      outpatient: 'wRVU Capture and HCC Capture are the two highest-leverage outpatient revenue drivers. Denial Prevention is a clean, defensible metric — often the easiest for a CFO to verify independently.',
+      ed: 'E&M Level Accuracy is the primary ED revenue lever. Documentation that fully captures visit complexity supports accurate leveling at the point of care rather than through retrospective coding.',
+      inpatient: 'DRG Accuracy and CDI Query Reduction quantify how documentation completeness affects inpatient payment. SOI 3/4 classification is the upstream signal.',
+      nursing: 'Nursing documentation directly affects the accuracy of inpatient billing — particularly for HAI reporting and accurate capture of care interventions.',
+    }[activeSettings[0]] ?? 'Track the Revenue outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
+  }, [activeSettings, isMultiSetting]);
+
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
 
   return (
@@ -79,7 +111,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
       <UnifiedHeader
         pathType="measure"
         currentStep={4}
-        totalSteps={7}
+        totalSteps={6}
         stepName="Revenue"
         onBack={onBack}
         onHome={onHome}
@@ -90,7 +122,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
           <div className="flex-1 max-w-[700px]">
             <motion.div className="text-center mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">Revenue</h1>
-              <p className="text-base text-[#888888]">How has documentation showed up in revenue capture?</p>
+              <p className="text-base text-[#888888]">{subtitle}</p>
             </motion.div>
 
             <motion.div
@@ -100,9 +132,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
               transition={{ delay: 0.1 }}
             >
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">How to Use This Section</p>
-              <p className="text-sm text-black leading-relaxed">
-                Track the Revenue outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.
-              </p>
+              <p className="text-sm text-black leading-relaxed">{howToUse}</p>
             </motion.div>
 
             {financialDrivers.length > 0 && (
@@ -124,6 +154,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
                       entry={entry}
                       onUpdate={(updates) => updateEntry(driver.id, updates)}
                       onRemove={() => removeEntry(driver.id)}
+                      isMultiSetting={isMultiSetting}
                     />
                   ))}
                 </div>
@@ -138,7 +169,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
                 transition={{ delay: 0.18 }}
               >
                 <div className="mb-4">
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Other Metrics to Watch</p>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Signals to Track</p>
                   <p className="text-xs text-[#AAAAAA]">Outcomes tracked post-deployment that don't carry direct dollar value.</p>
                 </div>
                 <div className="space-y-3">
@@ -149,6 +180,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
                       entry={entry}
                       onUpdate={(updates) => updateEntry(driver.id, updates)}
                       onRemove={() => removeEntry(driver.id)}
+                      isMultiSetting={isMultiSetting}
                     />
                   ))}
                 </div>
@@ -171,7 +203,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
               <AddMeasureDriverPicker
                 quadrant={QUADRANT}
-                setting={setting}
+                settings={activeSettings}
                 alreadyTracked={trackedDriverIds}
                 onAdd={addDriver}
               />
@@ -204,8 +236,17 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
               <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Revenue Realized</p>
               <p className="text-sm text-white/50 mb-4">Quantifiable drivers, attribution-adjusted</p>
 
-              <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-quadrant-total-revenue">{formatCurrency(quadrantTotal)}</p>
-              <p className="text-xs text-white/50 mt-1">annualized impact</p>
+              {financialDrivers.length > 0 ? (
+                <>
+                  <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-quadrant-total-revenue">{formatCurrency(quadrantTotal)}</p>
+                  <p className="text-xs text-white/50 mt-1">annualized impact</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-white/20" data-testid="text-quadrant-total-revenue">—</p>
+                  <p className="text-xs text-white/40 mt-1">{watchMetrics.length > 0 ? 'Signals only — no financial drivers yet' : 'No drivers tracked yet'}</p>
+                </>
+              )}
 
               <div className="h-px bg-[#333333] my-5" />
 
@@ -229,7 +270,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
                   )}
                   {watchMetrics.length > 0 && (
                     <div>
-                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Other Metrics</p>
+                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">Signals to Track</p>
                       <ul className="space-y-1.5">
                         {watchMetrics.map(({ driver }) => (
                           <li key={driver.id} className="text-sm text-white/70 flex items-center gap-2">

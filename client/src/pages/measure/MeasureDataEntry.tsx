@@ -202,7 +202,7 @@ export default function MeasureDataEntry({
       <UnifiedHeader
         pathType="measure"
         currentStep={1}
-        totalSteps={5}
+        totalSteps={6}
         stepName="Partner Profile"
         onBack={onBack}
         onHome={onHome}
@@ -345,6 +345,48 @@ export default function MeasureDataEntry({
                 <p className="text-[10px] text-[#BBBBBB] hidden md:block">Auto-calculated from go-live date</p>
               )}
             </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="rounded-xl p-3.5 md:p-5 mb-3.5 md:mb-5 bg-[#FAF8F5] border border-[#E8E2DA]"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+        >
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <span className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
+              Measurement Phase
+            </span>
+          </div>
+          <div className="h-px bg-[#E8E2DA] mb-3 md:mb-4" />
+          <p className="text-xs text-[#888888] mb-3">Where is this partner in their measurement journey?</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {([
+              { value: 'unmeasured', label: 'Unmeasured', description: 'Deployed but no metrics tracked yet' },
+              { value: 'emerging', label: 'Emerging', description: 'Early signals, directional data' },
+              { value: 'demonstrated', label: 'Demonstrated', description: 'Consistent trends across domains' },
+              { value: 'strategic', label: 'Strategic', description: 'Multi-domain, board-ready proof' },
+            ] as const).map(({ value, label, description }) => {
+              const isActive = state.maturityPhase === value;
+              return (
+                <button
+                  key={value}
+                  onClick={() => updateState({ maturityPhase: isActive ? null : value })}
+                  className={`flex flex-col items-start gap-1 p-2.5 md:p-3 rounded-xl border-2 transition-all text-left ${
+                    isActive
+                      ? 'bg-[#FAF8F5] border-[#EA2C00] shadow-sm'
+                      : 'bg-white border-[#E5E5E5] hover:border-[#CCCCCC]'
+                  }`}
+                  data-testid={`phase-${value}`}
+                >
+                  <span className={`text-xs font-semibold ${isActive ? 'text-[#EA2C00]' : 'text-[#1A1A1A]'}`}>
+                    {label}
+                  </span>
+                  <span className="text-[10px] text-[#AAAAAA] leading-tight">{description}</span>
+                </button>
+              );
+            })}
           </div>
         </motion.div>
 

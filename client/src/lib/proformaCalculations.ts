@@ -245,21 +245,9 @@ function getUtilizationRamp(
   if (monthsSinceGoLive < 0) return 0;
 
   if (yearlyUtilization) {
-    const y1 = yearlyUtilization.year1;
-    const y2 = yearlyUtilization.year2;
-    const y3 = yearlyUtilization.year3;
-
-    if (monthsSinceGoLive < 12) {
-      return y1;
-    } else if (monthsSinceGoLive < 24) {
-      const progress = (monthsSinceGoLive - 12) / 12;
-      return y1 + (y2 - y1) * sigmoidRamp(progress);
-    } else if (monthsSinceGoLive < 36) {
-      const progress = (monthsSinceGoLive - 24) / 12;
-      return y2 + (y3 - y2) * sigmoidRamp(progress);
-    } else {
-      return y3;
-    }
+    if (monthsSinceGoLive < 12) return yearlyUtilization.year1;
+    if (monthsSinceGoLive < 24) return yearlyUtilization.year2;
+    return yearlyUtilization.year3;
   }
 
   const rampMonths = Math.max(contractMonths - goLiveMonth, 12);
@@ -277,15 +265,16 @@ export function buildMonthlyCashFlows(
 
   for (let m = 1; m <= months; m++) {
     let totalInvestment = 0;
-    let totalDocValue = 0;
-    let totalTimeValue = 0;
-    let totalRetentionValue = 0;
-    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; docValue: number; timeValue: number; retentionValue: number }> = {};
+    let totalCapacityValue = 0;
+    let totalWorkforceValue = 0;
+    let totalRevenueValue = 0;
+    let totalQualityValue = 0;
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number }> = {};
 
     for (const setting of settings) {
       const monthsSinceGoLive = m - setting.goLiveMonth;
       if (monthsSinceGoLive < 0) {
-        bySettings[setting.id] = { value: 0, investment: 0, providers: 0, licensedProviders: 0, encounters: 0, docValue: 0, timeValue: 0, retentionValue: 0 };
+        bySettings[setting.id] = { value: 0, investment: 0, providers: 0, licensedProviders: 0, encounters: 0, capacityValue: 0, workforceValue: 0, revenueValue: 0, qualityValue: 0 };
         continue;
       }
 
@@ -311,9 +300,10 @@ export function buildMonthlyCashFlows(
       if (isPerEncounter) {
         currentUtil = yearIndex === 0 ? encUtil.year1 : yearIndex === 1 ? encUtil.year2 : encUtil.year3;
       } else {
-        const settingYearlyUtil = setting.careSetting === "nursing" && config.nursingYearlyUtilization
-          ? config.nursingYearlyUtilization
-          : config.yearlyUtilization;
+        const settingYearlyUtil = setting.yearlyUtilization
+          ?? (setting.careSetting === "nursing" && config.nursingYearlyUtilization
+            ? config.nursingYearlyUtilization
+            : config.yearlyUtilization);
         currentUtil = setting.quarterlyUtilization
           ? getQuarterlyValue(setting.quarterlyUtilization, monthsSinceGoLive)
           : getUtilizationRamp(
@@ -327,6 +317,10 @@ export function buildMonthlyCashFlows(
       let expansionMultiplier: number;
       let currentYearEncounters = 0;
 
+      // Terminal state = Explore full-scale assumptions (where annualValue was computed).
+      // Multiplier climbs from ~0 at go-live toward 1.0 when we reach those assumptions.
+      const terminalUtil = setting.utilizationPercent;
+
       if (isPerEncounter) {
         if (setting.yearlyEncounters) {
           const ye = setting.yearlyEncounters;
@@ -337,22 +331,22 @@ export function buildMonthlyCashFlows(
           currentYearEncounters = currentProviders * encountersPerProvider;
         }
         activelyDocumenting = Math.round(currentYearEncounters * currentUtil / 100);
-        const baseEncounters = setting.yearlyEncounters?.year1 || setting.encounters;
-        const baseUtil = encUtil.year1;
-        const encounterScale = baseEncounters > 0
-          ? currentYearEncounters / baseEncounters : 1;
-        const utilScale = baseUtil > 0 ? currentUtil / baseUtil : 1;
-        expansionMultiplier = encounterScale * utilScale;
+        const terminalEncounters = setting.encounters;
+        const encounterScale = terminalEncounters > 0 ? currentYearEncounters / terminalEncounters : 1;
+        const utilScale = terminalUtil > 0 ? currentUtil / terminalUtil : 1;
+        expansionMultiplier = Math.min(encounterScale * utilScale, 1);
       } else {
         activelyDocumenting = Math.round(currentProviders * currentUtil / 100);
-        const providerScale = currentProviders / setting.providerCount;
-        const utilScale = currentUtil / setting.utilizationPercent;
-        expansionMultiplier = providerScale * utilScale;
+        const terminalProviders = setting.fullScaleProviders || setting.providerCount;
+        const providerScale = terminalProviders > 0 ? currentProviders / terminalProviders : 1;
+        const utilScale = terminalUtil > 0 ? currentUtil / terminalUtil : 1;
+        expansionMultiplier = Math.min(providerScale * utilScale, 1);
       }
 
-      let settingDocValue = 0;
-      let settingTimeValue = 0;
-      let settingRetentionValue = 0;
+      let settingCapacityValue = 0;
+      let settingWorkforceValue = 0;
+      let settingRevenueValue = 0;
+      let settingQualityValue = 0;
 
       const retentionRate = setting.retentionRate ?? 0;
       const replacementCost = setting.replacementCost ?? 400000;
@@ -367,7 +361,7 @@ export function buildMonthlyCashFlows(
         if (existingIdx >= 0) {
           effectiveDrivers[existingIdx] = { ...effectiveDrivers[existingIdx], value: proformaRetentionAnnual };
         } else {
-          effectiveDrivers.push({ id: "retention", name: "Retention", value: proformaRetentionAnnual, category: "time", onset: "phased" });
+          effectiveDrivers.push({ id: "retention", name: "Retention", value: proformaRetentionAnnual, category: "time", quadrant: "Workforce", onset: "phased" });
         }
       }
 
@@ -383,19 +377,19 @@ export function buildMonthlyCashFlows(
         const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, retentionPhasingToUse, setting.careSetting);
         const monthlyDriverValue = (driver.value / 12) * adoptionRamp * expansionMultiplier * onsetMult;
 
-        if (onset === "phased") {
-          settingRetentionValue += monthlyDriverValue;
-        } else if (driver.category === "documentation") {
-          settingDocValue += monthlyDriverValue;
-        } else {
-          settingTimeValue += monthlyDriverValue;
+        switch (driver.quadrant) {
+          case "Capacity":  settingCapacityValue  += monthlyDriverValue; break;
+          case "Workforce": settingWorkforceValue += monthlyDriverValue; break;
+          case "Revenue":   settingRevenueValue   += monthlyDriverValue; break;
+          case "Quality":   settingQualityValue   += monthlyDriverValue; break;
+          default:          settingRevenueValue   += monthlyDriverValue; break;
         }
       }
 
       const nonDriverValue = setting.annualValue - setting.drivers.reduce((s, d) => s + d.value, 0);
       if (nonDriverValue > 0) {
         const nonDriverRamp = getAdoptionRamp(monthsSinceGoLive, 3);
-        settingDocValue += (nonDriverValue / 12) * nonDriverRamp * expansionMultiplier;
+        settingRevenueValue += (nonDriverValue / 12) * nonDriverRamp * expansionMultiplier;
       }
 
       const licensedProviders = getLicensedProviders(
@@ -431,25 +425,42 @@ export function buildMonthlyCashFlows(
         }
         const monthlyEncounters = annualEncounters / 12;
         monthlyInvestment = price * monthlyEncounters;
+      } else if (setting.pricingModel === "platform") {
+        const platformFee = setting.annualLicenseFee || 0;
+        const encRate = setting.platformEncRate ?? setting.costPerEncounter ?? 0;
+        let annualEncounters: number;
+        if (setting.yearlyEncounters) {
+          const ye = setting.yearlyEncounters;
+          annualEncounters = yearIndex === 0 ? ye.year1 : yearIndex === 1 ? ye.year2 : ye.year3;
+        } else {
+          const encountersPerProvider = setting.providerCount > 0
+            ? setting.encounters / setting.providerCount
+            : 0;
+          annualEncounters = licensedProviders * encountersPerProvider;
+        }
+        const monthlyEncounters = annualEncounters / 12;
+        monthlyInvestment = platformFee / 12 + encRate * monthlyEncounters;
       } else {
         const price = resolvedPrice ?? setting.costPerUnit;
         monthlyInvestment = price * licensedProviders;
       }
 
-      totalDocValue += settingDocValue;
-      totalTimeValue += settingTimeValue;
-      totalRetentionValue += settingRetentionValue;
+      totalCapacityValue  += settingCapacityValue;
+      totalWorkforceValue += settingWorkforceValue;
+      totalRevenueValue   += settingRevenueValue;
+      totalQualityValue   += settingQualityValue;
       totalInvestment += monthlyInvestment;
 
       bySettings[setting.id] = {
-        value: settingDocValue + settingTimeValue + settingRetentionValue,
+        value: settingCapacityValue + settingWorkforceValue + settingRevenueValue + settingQualityValue,
         investment: monthlyInvestment,
         providers: activelyDocumenting,
         licensedProviders,
         encounters: currentYearEncounters,
-        docValue: settingDocValue,
-        timeValue: settingTimeValue,
-        retentionValue: settingRetentionValue,
+        capacityValue: settingCapacityValue,
+        workforceValue: settingWorkforceValue,
+        revenueValue: settingRevenueValue,
+        qualityValue: settingQualityValue,
       };
 
       if (m === setting.goLiveMonth) {
@@ -459,7 +470,7 @@ export function buildMonthlyCashFlows(
 
     
 
-    const totalValue = totalDocValue + totalTimeValue + totalRetentionValue;
+    const totalValue = totalCapacityValue + totalWorkforceValue + totalRevenueValue + totalQualityValue;
     const netValue = totalValue - totalInvestment;
     cumulativeNet += netValue;
 
@@ -467,9 +478,10 @@ export function buildMonthlyCashFlows(
       period: m,
       label: `M${m}`,
       investment: Math.round(totalInvestment),
-      docValue: Math.round(totalDocValue),
-      timeValue: Math.round(totalTimeValue),
-      retentionValue: Math.round(totalRetentionValue),
+      capacityValue: Math.round(totalCapacityValue),
+      workforceValue: Math.round(totalWorkforceValue),
+      revenueValue: Math.round(totalRevenueValue),
+      qualityValue: Math.round(totalQualityValue),
       totalValue: Math.round(totalValue),
       netValue: Math.round(netValue),
       cumulativeNet: Math.round(cumulativeNet),
@@ -504,7 +516,7 @@ export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): P
     const allSettingIds = new Set<string>();
     chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
 
-    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; docValue: number; timeValue: number; retentionValue: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number }> = {};
     allSettingIds.forEach(id => {
       const avgProviders = chunk.length > 0
         ? Math.round(chunk.reduce((s, r) => s + (r.bySettings[id]?.providers || 0), 0) / chunk.length)
@@ -521,9 +533,10 @@ export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): P
         providers: avgProviders,
         licensedProviders: endLicensed,
         encounters: endEncounters,
-        docValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.docValue || 0), 0),
-        timeValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.timeValue || 0), 0),
-        retentionValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.retentionValue || 0), 0),
+        capacityValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.capacityValue || 0), 0),
+        workforceValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.workforceValue || 0), 0),
+        revenueValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.revenueValue || 0), 0),
+        qualityValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.qualityValue || 0), 0),
       };
     });
 
@@ -532,9 +545,10 @@ export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): P
       period: q + 1,
       label: getCalendarQuarterLabel(firstMonthIndex, start),
       investment: chunk.reduce((s, r) => s + r.investment, 0),
-      docValue: chunk.reduce((s, r) => s + r.docValue, 0),
-      timeValue: chunk.reduce((s, r) => s + r.timeValue, 0),
-      retentionValue: chunk.reduce((s, r) => s + r.retentionValue, 0),
+      capacityValue: chunk.reduce((s, r) => s + r.capacityValue, 0),
+      workforceValue: chunk.reduce((s, r) => s + r.workforceValue, 0),
+      revenueValue: chunk.reduce((s, r) => s + r.revenueValue, 0),
+      qualityValue: chunk.reduce((s, r) => s + r.qualityValue, 0),
       totalValue: chunk.reduce((s, r) => s + r.totalValue, 0),
       netValue: chunk.reduce((s, r) => s + r.netValue, 0),
       cumulativeNet: chunk[chunk.length - 1]?.cumulativeNet || 0,
@@ -554,7 +568,7 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
     const allSettingIds = new Set<string>();
     chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
 
-    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; docValue: number; timeValue: number; retentionValue: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number }> = {};
     allSettingIds.forEach(id => {
       const avgProviders = chunk.length > 0
         ? Math.round(chunk.reduce((s, r) => s + (r.bySettings[id]?.providers || 0), 0) / chunk.length)
@@ -571,9 +585,10 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
         providers: avgProviders,
         licensedProviders: endLicensed,
         encounters: endEncounters,
-        docValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.docValue || 0), 0),
-        timeValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.timeValue || 0), 0),
-        retentionValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.retentionValue || 0), 0),
+        capacityValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.capacityValue || 0), 0),
+        workforceValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.workforceValue || 0), 0),
+        revenueValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.revenueValue || 0), 0),
+        qualityValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.qualityValue || 0), 0),
       };
     });
 
@@ -582,9 +597,10 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
       period: y + 1,
       label: getCalendarYearLabel(firstMonthIndex, start),
       investment: chunk.reduce((s, r) => s + r.investment, 0),
-      docValue: chunk.reduce((s, r) => s + r.docValue, 0),
-      timeValue: chunk.reduce((s, r) => s + r.timeValue, 0),
-      retentionValue: chunk.reduce((s, r) => s + r.retentionValue, 0),
+      capacityValue: chunk.reduce((s, r) => s + r.capacityValue, 0),
+      workforceValue: chunk.reduce((s, r) => s + r.workforceValue, 0),
+      revenueValue: chunk.reduce((s, r) => s + r.revenueValue, 0),
+      qualityValue: chunk.reduce((s, r) => s + r.qualityValue, 0),
       totalValue: chunk.reduce((s, r) => s + r.totalValue, 0),
       netValue: chunk.reduce((s, r) => s + r.netValue, 0),
       cumulativeNet: chunk[chunk.length - 1]?.cumulativeNet || 0,
@@ -603,8 +619,10 @@ export function calculateProformaSummary(
   const totalHours = settings.reduce((s, v) => s + v.totalHoursSaved, 0);
 
   let paybackMonth: number | null = null;
+  let cumulativeWentNegative = false;
   for (const row of cashFlows) {
-    if (row.cumulativeNet >= 0 && paybackMonth === null) {
+    if (row.cumulativeNet < 0) cumulativeWentNegative = true;
+    if (cumulativeWentNegative && row.cumulativeNet >= 0 && paybackMonth === null) {
       paybackMonth = row.period;
     }
   }
@@ -670,7 +688,7 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
   return years
     .filter(y => y.rows.length > 0)
     .map((y, idx) => {
-      const bySettings: Record<string, { value: number; retention: number; investment: number; providers: number; licensedProviders: number; encounters: number }> = {};
+      const bySettings: Record<string, { value: number; workforceValue: number; investment: number; providers: number; licensedProviders: number; encounters: number }> = {};
       settings.forEach(s => {
         const avgProviders = y.rows.length > 0
           ? Math.round(y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.providers || 0), 0) / y.rows.length)
@@ -683,7 +701,7 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
           : 0;
         bySettings[s.id] = {
           value: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.value || 0), 0),
-          retention: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.retentionValue || 0), 0),
+          workforceValue: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.workforceValue || 0), 0),
           investment: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.investment || 0), 0),
           providers: avgProviders,
           licensedProviders,
@@ -702,12 +720,73 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
       return {
         label: yearLabel,
         totalValue: y.rows.reduce((s, r) => s + r.totalValue, 0),
-        docValue: y.rows.reduce((s, r) => s + r.docValue, 0),
-        timeValue: y.rows.reduce((s, r) => s + r.timeValue, 0),
-        retentionValue: y.rows.reduce((s, r) => s + r.retentionValue, 0),
+        capacityValue: y.rows.reduce((s, r) => s + r.capacityValue, 0),
+        workforceValue: y.rows.reduce((s, r) => s + r.workforceValue, 0),
+        revenueValue: y.rows.reduce((s, r) => s + r.revenueValue, 0),
+        qualityValue: y.rows.reduce((s, r) => s + r.qualityValue, 0),
         investment: subscriptionInvestment + implInvestment,
         netValue: y.rows.reduce((s, r) => s + r.netValue, 0) - implInvestment,
         bySettings,
       };
     });
+}
+
+/**
+ * Computes the Year 1 value contribution for a single driver given a specific onset type.
+ * Used to show live "≈ $X in Year 1" estimates in the Adjust Assumptions panel.
+ * "Year 1" = contract months 1–12, respecting the setting's go-live month.
+ */
+export function computeDriverYear1Value(
+  driverValue: number,
+  onset: DriverOnset,
+  setting: ProformaSettingSnapshot,
+  config: ProformaConfig
+): number {
+  const goLiveMonth = setting.goLiveMonth;
+  const rampMonths = config.implementationRampMonths ?? 3;
+  const contractMonths = config.contractTermMonths;
+  const fullScale = setting.fullScaleProviders || setting.providerCount;
+  const terminalUtil = setting.utilizationPercent;
+  const terminalProviders = fullScale;
+
+  const retentionPhasingToUse =
+    onset === "phased" && setting.careSetting === "nursing" && config.nursingRetentionPhasing
+      ? config.nursingRetentionPhasing
+      : config.retentionPhasing;
+
+  let total = 0;
+  for (let m = 1; m <= Math.min(12, contractMonths); m++) {
+    const monthsSinceGoLive = m - goLiveMonth;
+    if (monthsSinceGoLive < 0) continue;
+
+    const currentProviders = getProviderExpansion(
+      m, goLiveMonth, contractMonths,
+      setting.providerCount, fullScale,
+      setting.yearlyProviders, setting.quarterlyProviders, rampMonths
+    );
+
+    const settingYearlyUtil = setting.yearlyUtilization
+      ?? (setting.careSetting === "nursing" && config.nursingYearlyUtilization
+        ? config.nursingYearlyUtilization
+        : config.yearlyUtilization);
+    const currentUtil = setting.quarterlyUtilization
+      ? getQuarterlyValue(setting.quarterlyUtilization, monthsSinceGoLive)
+      : getUtilizationRamp(
+          m, goLiveMonth, contractMonths,
+          setting.utilizationPercent, setting.fullScaleUtilization || setting.utilizationPercent,
+          settingYearlyUtil
+        );
+
+    const providerScale = terminalProviders > 0 ? currentProviders / terminalProviders : 1;
+    const utilScale = terminalUtil > 0 ? currentUtil / terminalUtil : 1;
+    const expansionMultiplier = Math.min(providerScale * utilScale, 1);
+
+    const monthsSinceOnset = monthsSinceGoLive - (ONSET_DELAY_MONTHS[onset] || 0);
+    const adoptionRamp = getAdoptionRamp(monthsSinceOnset, rampMonths);
+    const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, retentionPhasingToUse, setting.careSetting);
+
+    total += (driverValue / 12) * adoptionRamp * expansionMultiplier * onsetMult;
+  }
+
+  return total;
 }

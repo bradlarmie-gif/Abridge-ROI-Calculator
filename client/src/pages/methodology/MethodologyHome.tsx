@@ -68,7 +68,7 @@ export function MethodologyHome({ onBack, onSelectSetting }: MethodologyHomeProp
               <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
             </button>
             <span className="text-[#E5E5E5]">|</span>
-            <span className="text-xs font-medium text-[#888888] uppercase tracking-wide">Methodology</span>
+            <span className="text-xs font-medium text-[#888888] uppercase tracking-wide">Value Story</span>
           </div>
           <button
             onClick={onBack}

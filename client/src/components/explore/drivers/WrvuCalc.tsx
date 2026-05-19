@@ -19,8 +19,8 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
 
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
   const wrvuScenarios: Record<string, number> = isED
-    ? { conservative: 2, typical: 4, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
-    : { conservative: 2, typical: 5, aggressive: 7, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
+    ? { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
+    : { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
 
   const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
   const wrvuLiftPerVisit = (docQualityInputs.currentWrvu * wrvuLiftPercent) / 100;
@@ -36,8 +36,8 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
       <p className="text-sm text-black mb-4">
         When notes fully reflect visit complexity, E/M levels code to the right level.
         {isED
-          ? ' Documentation improvement drives 2–7% E&M lift in ED settings — largest when surge-driven under-documentation is highest.'
-          : ' Industry data shows 2–7% wRVU lift from better documentation.'}
+          ? ' Documentation improvement drives 2–9% E/M level accuracy lift in ED settings — largest when surge-driven under-documentation is highest.'
+          : ' Industry data shows 2–9% E/M level accuracy lift from better documentation.'}
       </p>
 
       <p className="text-sm font-medium text-black mb-2">Choose your scenario:</p>
@@ -76,7 +76,7 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
 
       {customMode && (
         <div className="flex items-center gap-3 mb-4">
-          <label className="text-sm text-[#666666] flex-shrink-0">{isED ? 'E&M' : 'wRVU'} lift</label>
+          <label className="text-sm text-[#666666] flex-shrink-0">E/M lift</label>
           <div className="relative flex-1">
             <input
               type="text"
@@ -145,7 +145,7 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
             <span className="font-semibold text-black">{wrvuLiftPercent}%</span>
           </div>
           <div className="flex justify-between gap-2">
-            <span className="text-[#666666]">= wRVU lift per visit</span>
+            <span className="text-[#666666]">= E/M lift per visit</span>
             <span className="font-semibold text-black">{wrvuLiftPerVisit.toFixed(3)} wRVU</span>
           </div>
           <div className="flex justify-between gap-2">
@@ -207,7 +207,7 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
           </div>
           <div className="h-px bg-[#E5E5E5] my-2" />
           <div className="flex justify-between gap-2">
-            <span className="font-semibold text-black">Annual {isED ? 'E&M' : 'wRVU'} Value</span>
+            <span className="font-semibold text-black">Annual E/M Value</span>
             <span className="font-bold text-[#EA2C00]" data-testid="text-wrvu-net">{formatCurrency(wrvuRevenueNet)}</span>
           </div>
         </div>

@@ -19,6 +19,17 @@ export interface ExploreDriver {
   inputs?: Record<string, number | string>;
 }
 
+export interface ExplorePDFValueArcStage {
+  timing: string;
+  metric: string;
+}
+
+export interface ExplorePDFValueArc {
+  signal?: ExplorePDFValueArcStage;
+  trend?: ExplorePDFValueArcStage;
+  proof?: ExplorePDFValueArcStage;
+}
+
 export interface ExplorePDFQuadrantDriver {
   id: string;
   label: string;
@@ -28,6 +39,7 @@ export interface ExplorePDFQuadrantDriver {
   isChild?: boolean;
   calcSummary?: string;
   isIncluded?: boolean;
+  valueArc?: ExplorePDFValueArc;
 }
 
 export interface ExplorePDFOtherBenefit {
@@ -98,6 +110,13 @@ export interface ExplorePDFData {
   netAnnualValue: number;
   roi: number;
   valuePerProvider: number;
+
+  // Expansion opportunity (optional — only populated if user configured full-scale)
+  expansionProviders?: number;
+  expansionUtilizationPercent?: number;
+  expansionAnnualValue?: number;
+  expansionRoi?: number;
+  expansionEncounters?: number;
 }
 
 // ───────────────────────── Public API ─────────────────────────

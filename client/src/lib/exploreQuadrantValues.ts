@@ -104,8 +104,8 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
   const isIP = state.careSetting === 'inpatient';
 
   const wrvuScenarios: Record<string, number> = isED
-    ? { conservative: 1, typical: 2.5, aggressive: 4, custom: dq.wrvuCustomPercent ?? 5 }
-    : { conservative: 2, typical: 5, aggressive: 7, custom: dq.wrvuCustomPercent ?? 5 };
+    ? { conservative: 2, typical: 5, aggressive: 9, custom: dq.wrvuCustomPercent ?? 5 }
+    : { conservative: 2, typical: 5, aggressive: 9, custom: dq.wrvuCustomPercent ?? 5 };
   const denialsScenarios: Record<string, number> = isED
     ? { conservative: 15, typical: 30, aggressive: 50 }
     : { conservative: 25, typical: 50, aggressive: 75 };

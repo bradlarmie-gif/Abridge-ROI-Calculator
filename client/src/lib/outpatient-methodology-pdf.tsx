@@ -119,13 +119,13 @@ function Page2() {
       <View style={styles.twoColumn}>
         <View style={[styles.mechanismCard, styles.column, { borderTopColor: brand.directAccent }]}>
           <Badge type="direct" />
-          <Text style={styles.mechanismTitle}>wRVU IMPROVEMENT</Text>
+          <Text style={styles.mechanismTitle}>E/M LEVEL ACCURACY</Text>
           <Text style={styles.mechanismText}>
             Better documentation supports accurate coding. When the note fully captures medical decision-making and complexity, codes reflect actual work performed.
           </Text>
           <Text style={[styles.cardLabel, { marginTop: 4 }]}>THE CALCULATION</Text>
           <Text style={styles.mechanismText}>
-            Encounters × Current avg wRVU × Lift % (2-7%) × Conversion factor × Realization = wRVU value
+            Encounters × Current avg wRVU × Lift % (2-9%) × Conversion factor × Realization = E/M value
           </Text>
         </View>
         
@@ -224,8 +224,8 @@ function Page3() {
           <Text style={[styles.tableCell, { flex: 2 }]}>Org-dependent choice</Text>
         </View>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2.5 }]}>wRVU lift</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>2-7%</Text>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>E/M lift</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>2-9%</Text>
           <Text style={[styles.tableCell, { flex: 1 }]}>5%</Text>
           <Text style={[styles.tableCell, { flex: 2 }]}>Coding analysis</Text>
         </View>
