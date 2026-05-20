@@ -65,10 +65,11 @@ const brand = {
   negative:      "#DC2626",
   amber:         "#D4930A",
   // Domain
-  capacity:  "#EA2C00",
-  workforce: "#7A1F04",
-  revenue:   "#1E3A5F",
-  quality:   "#888888",
+  capacity:     "#EA2C00",
+  workforce:    "#7A1F04",
+  revenue:      "#1E3A5F",
+  quality:      "#888888",
+  displacement: "#2D6F6B",
 };
 
 // ─── STYLES ──────────────────────────────────────────────────────────────────
@@ -372,17 +373,19 @@ const S = StyleSheet.create({
 const TOTAL_PDF_PAGES = 7;
 
 const DOMAIN_COLORS: Record<string, string> = {
-  Capacity:  brand.capacity,
-  Workforce: brand.workforce,
-  Revenue:   brand.revenue,
-  Quality:   brand.quality,
+  Capacity:          brand.capacity,
+  Workforce:         brand.workforce,
+  Revenue:           brand.revenue,
+  Quality:           brand.quality,
+  "Cost Displacement": brand.displacement,
 };
 
 const DOMAIN_NORTH_STARS: Record<string, string> = {
-  Capacity:  "More patients served with current staff  ↑",
-  Workforce: "Lower voluntary turnover and burnout-driven attrition  ↓",
-  Revenue:   "Coding accuracy and claim integrity improvements  ↑",
-  Quality:   "Fewer adverse events and documentation deficiencies  ↓",
+  Capacity:            "More patients served with current staff  ↑",
+  Workforce:           "Lower voluntary turnover and burnout-driven attrition  ↓",
+  Revenue:             "Coding accuracy and claim integrity improvements  ↑",
+  Quality:             "Fewer adverse events and documentation deficiencies  ↓",
+  "Cost Displacement": "Legacy tool spend converted to investment capacity  ↓",
 };
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -443,12 +446,13 @@ function DomainPill({ domain }: { domain: string }) {
 
 interface ChartBar {
   label: string;
-  capacityValue:  number;
-  workforceValue: number;
-  revenueValue:   number;
-  qualityValue:   number;
-  investment:     number;
-  total:          number;
+  capacityValue:     number;
+  workforceValue:    number;
+  revenueValue:      number;
+  qualityValue:      number;
+  displacementValue: number;
+  investment:        number;
+  total:             number;
 }
 
 function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuarter: string | null }) {
@@ -490,23 +494,26 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
             ))}
             {data.map((bar, i) => {
               const x = i * groupW + barGap;
-              const qualH = (bar.qualityValue   / niceMax) * svgH;
-              const workH = (bar.workforceValue / niceMax) * svgH;
-              const revH  = (bar.revenueValue   / niceMax) * svgH;
-              const capH  = (bar.capacityValue  / niceMax) * svgH;
+              const qualH = (bar.qualityValue      / niceMax) * svgH;
+              const workH = (bar.workforceValue    / niceMax) * svgH;
+              const revH  = (bar.revenueValue      / niceMax) * svgH;
+              const capH  = (bar.capacityValue     / niceMax) * svgH;
+              const dispH = (bar.displacementValue / niceMax) * svgH;
               const qualY = scaleY(bar.qualityValue);
               const workY = scaleY(bar.qualityValue + bar.workforceValue);
               const revY  = scaleY(bar.qualityValue + bar.workforceValue + bar.revenueValue);
               const capY  = scaleY(bar.qualityValue + bar.workforceValue + bar.revenueValue + bar.capacityValue);
+              const dispY = scaleY(bar.qualityValue + bar.workforceValue + bar.revenueValue + bar.capacityValue + bar.displacementValue);
               const invH  = (bar.investment / niceMax) * svgH;
               const invY  = scaleY(bar.investment);
               const invBarW = Math.max(barW * 0.2, 3);
               return (
                 <G key={`bar-${i}`}>
-                  {qualH > 0.5 && <Rect x={x} y={qualY}  width={barW} height={qualH} fill={brand.quality}   fillOpacity={0.65} rx={1} />}
-                  {workH > 0.5 && <Rect x={x} y={workY}  width={barW} height={workH} fill={brand.workforce} fillOpacity={0.72} />}
-                  {revH  > 0.5 && <Rect x={x} y={revY}   width={barW} height={revH}  fill={brand.revenue}   fillOpacity={0.72} />}
-                  {capH  > 0.5 && <Rect x={x} y={capY}   width={barW} height={capH}  fill={brand.capacity}  fillOpacity={0.80} rx={1} />}
+                  {qualH > 0.5 && <Rect x={x} y={qualY}  width={barW} height={qualH} fill={brand.quality}      fillOpacity={0.65} rx={1} />}
+                  {workH > 0.5 && <Rect x={x} y={workY}  width={barW} height={workH} fill={brand.workforce}    fillOpacity={0.72} />}
+                  {revH  > 0.5 && <Rect x={x} y={revY}   width={barW} height={revH}  fill={brand.revenue}      fillOpacity={0.72} />}
+                  {capH  > 0.5 && <Rect x={x} y={capY}   width={barW} height={capH}  fill={brand.capacity}     fillOpacity={0.80} />}
+                  {dispH > 0.5 && <Rect x={x} y={dispY}  width={barW} height={dispH} fill={brand.displacement} fillOpacity={0.80} rx={1} />}
                   {invH  > 0.5 && (
                     <>
                       <Rect x={x + barW + 2} y={invY} width={invBarW} height={invH} fill="#6B7280" fillOpacity={0.3} rx={1} />
@@ -549,6 +556,12 @@ function PDFValueChart({ data, paybackQuarter }: { data: ChartBar[]; paybackQuar
             <Text style={{ fontSize: 7, color: brand.textSecondary }}>{label}</Text>
           </View>
         ))}
+        {data.some(d => d.displacementValue > 0) && (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <View style={{ width: 8, height: 5, backgroundColor: brand.displacement, borderRadius: 1 }} />
+            <Text style={{ fontSize: 7, color: brand.textSecondary }}>Cost Displacement</Text>
+          </View>
+        )}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <View style={{ width: 8, height: 5, backgroundColor: "#6B7280", opacity: 0.4, borderRadius: 1 }} />
           <Text style={{ fontSize: 7, color: brand.textSecondary }}>Investment</Text>
@@ -602,12 +615,15 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
   const totalQuality   = settings.reduce((s, x) => s + x.drivers.filter(d => d.quadrant === "Quality"   && d.value > 0).reduce((a, d) => a + d.value, 0), 0);
   const driverTotal    = totalCapacity + totalWorkforce + totalRevenue + totalQuality;
 
-  const pct = (v: number) => driverTotal > 0 ? Math.round((v / driverTotal) * 100) : 0;
+  const totalDisplacement = yearlyData.reduce((s, y) => s + y.displacementValue, 0);
+  const grandTotal = driverTotal + totalDisplacement;
+  const pct = (v: number) => grandTotal > 0 ? Math.round((v / grandTotal) * 100) : 0;
   const activeDomains = [
-    { domain: "Capacity",  total: totalCapacity,  p: pct(totalCapacity)  },
-    { domain: "Workforce", total: totalWorkforce, p: pct(totalWorkforce) },
-    { domain: "Revenue",   total: totalRevenue,   p: pct(totalRevenue)   },
-    { domain: "Quality",   total: totalQuality,   p: pct(totalQuality)   },
+    { domain: "Capacity",          total: totalCapacity,     p: pct(totalCapacity)     },
+    { domain: "Workforce",         total: totalWorkforce,    p: pct(totalWorkforce)    },
+    { domain: "Revenue",           total: totalRevenue,      p: pct(totalRevenue)      },
+    { domain: "Quality",           total: totalQuality,      p: pct(totalQuality)      },
+    { domain: "Cost Displacement", total: totalDisplacement, p: pct(totalDisplacement) },
   ].filter(d => d.total > 0);
 
   // ── INVESTMENT THESIS ────────────────────────────────────────────────────────
@@ -893,10 +909,11 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
   const hasInvestment = summary.termInvestment > 0;
 
   // Totals across all years
-  const totalCapVal  = yearlyData.reduce((s, y) => s + y.capacityValue,  0);
-  const totalWorkVal = yearlyData.reduce((s, y) => s + y.workforceValue, 0);
-  const totalRevVal  = yearlyData.reduce((s, y) => s + y.revenueValue,   0);
-  const totalQualVal = yearlyData.reduce((s, y) => s + y.qualityValue,   0);
+  const totalCapVal  = yearlyData.reduce((s, y) => s + y.capacityValue,     0);
+  const totalWorkVal = yearlyData.reduce((s, y) => s + y.workforceValue,    0);
+  const totalRevVal  = yearlyData.reduce((s, y) => s + y.revenueValue,      0);
+  const totalQualVal = yearlyData.reduce((s, y) => s + y.qualityValue,      0);
+  const totalDispVal = yearlyData.reduce((s, y) => s + y.displacementValue, 0);
 
   // Cell font scales down for longer contracts
   const cellFontSize = contractYears <= 3 ? 8.5 : contractYears <= 4 ? 8 : 7.5;
@@ -979,10 +996,11 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
 
         {/* Domain breakdown sub-rows */}
         {[
-          { label: "Capacity",  color: brand.capacity,  vals: yearlyData.map(y => y.capacityValue),  total: totalCapVal },
-          { label: "Workforce", color: brand.workforce, vals: yearlyData.map(y => y.workforceValue), total: totalWorkVal },
-          { label: "Revenue",   color: brand.revenue,   vals: yearlyData.map(y => y.revenueValue),   total: totalRevVal },
-          { label: "Quality",   color: brand.quality,   vals: yearlyData.map(y => y.qualityValue),   total: totalQualVal },
+          { label: "Capacity",          color: brand.capacity,     vals: yearlyData.map(y => y.capacityValue),     total: totalCapVal  },
+          { label: "Workforce",         color: brand.workforce,    vals: yearlyData.map(y => y.workforceValue),    total: totalWorkVal },
+          { label: "Revenue",           color: brand.revenue,      vals: yearlyData.map(y => y.revenueValue),      total: totalRevVal  },
+          { label: "Quality",           color: brand.quality,      vals: yearlyData.map(y => y.qualityValue),      total: totalQualVal },
+          { label: "Cost Displacement", color: brand.displacement, vals: yearlyData.map(y => y.displacementValue), total: totalDispVal },
         ].filter(d => d.total > 0).map(d => (
           <View key={d.label} style={S.tableRowSubtle}>
             <View style={{ flex: labelFlex, flexDirection: "row", alignItems: "center", paddingLeft: 14, gap: 5 }}>
@@ -1845,13 +1863,14 @@ export async function generateProformaPDF(
 
   const quarterlyData = groupByQuarter(cashFlows, startDate);
   const chartData: ChartBar[] = quarterlyData.map(q => ({
-    label:          q.label,
-    capacityValue:  q.capacityValue,
-    workforceValue: q.workforceValue,
-    revenueValue:   q.revenueValue,
-    qualityValue:   q.qualityValue,
-    investment:     q.investment,
-    total:          q.capacityValue + q.workforceValue + q.revenueValue + q.qualityValue,
+    label:             q.label,
+    capacityValue:     q.capacityValue,
+    workforceValue:    q.workforceValue,
+    revenueValue:      q.revenueValue,
+    qualityValue:      q.qualityValue,
+    displacementValue: q.displacementValue,
+    investment:        q.investment,
+    total:             q.capacityValue + q.workforceValue + q.revenueValue + q.qualityValue + q.displacementValue,
   }));
 
   let paybackQuarter: string | null = null;
