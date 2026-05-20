@@ -57,6 +57,14 @@ export interface ScenarioDealTerms {
   goLiveMonth?: number;
 }
 
+export interface CostOffset {
+  id: string;
+  label: string;
+  annualSpend: number;
+  displacementPct: number;
+  transitionMonths: number;
+}
+
 export interface ProformaSettingSnapshot {
   id: string;
   careSetting: "outpatient" | "ed" | "inpatient" | "nursing";
@@ -95,6 +103,7 @@ export interface ProformaSettingSnapshot {
   revenueValue: number;
   qualityValue: number;
   scenarioB?: ScenarioDealTerms;
+  costOffsets?: CostOffset[];
 }
 
 export interface RetentionPhasing {
@@ -134,7 +143,8 @@ export interface ProformaCashFlowRow {
   totalValue: number;
   netValue: number;
   cumulativeNet: number;
-  bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number }>;
+  displacementValue: number;
+  bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number; displacementValue: number }>;
 }
 
 export interface ProformaSummary {

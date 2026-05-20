@@ -4,6 +4,7 @@ import { Plus, Trash2, Edit, ArrowRight, ArrowLeftRight, Building2, Stethoscope,
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaSummary, ScenarioDealTerms } from "./proformaTypes";
+import type { CostOffset } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, CONTRACT_TERM_OPTIONS } from "./proformaTypes";
 import { buildMonthlyCashFlows, calculateProformaSummary, computeYearlyEncounters, groupByQuarter } from "@/lib/proformaCalculations";
 import { ComposedChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, ResponsiveContainer } from "recharts";
@@ -133,6 +134,8 @@ const QUADRANT_COLORS: Record<string, string> = {
   Revenue: "#1A1A1A",
   Quality: "#888888",
 };
+
+const DISPLACEMENT_COLOR = "#2D6F6B";
 
 function ValueCompositionBar({ setting }: { setting: ProformaSettingSnapshot }) {
   const total = setting.annualValue;
@@ -513,6 +516,145 @@ function CompareDealPricingModal({
   );
 }
 
+const TRANSITION_OPTIONS = [
+  { label: "Day 1", months: 0 },
+  { label: "6 mo",  months: 6 },
+  { label: "12 mo", months: 12 },
+  { label: "18 mo", months: 18 },
+  { label: "24 mo", months: 24 },
+  { label: "36 mo", months: 36 },
+] as const;
+
+function CostOffsetsSection({
+  setting,
+  onUpdateSetting,
+}: {
+  setting: ProformaSettingSnapshot;
+  onUpdateSetting: (id: string, updates: Partial<ProformaSettingSnapshot>) => void;
+}) {
+  const offsets = setting.costOffsets ?? [];
+
+  const updateOffset = (id: string, updates: Partial<CostOffset>) => {
+    onUpdateSetting(setting.id, {
+      costOffsets: offsets.map(o => o.id === id ? { ...o, ...updates } : o),
+    });
+  };
+
+  const addOffset = () => {
+    const newOffset: CostOffset = {
+      id: `offset-${Date.now()}`,
+      label: "",
+      annualSpend: 0,
+      displacementPct: 100,
+      transitionMonths: 12,
+    };
+    onUpdateSetting(setting.id, { costOffsets: [...offsets, newOffset] });
+  };
+
+  const removeOffset = (id: string) => {
+    onUpdateSetting(setting.id, { costOffsets: offsets.filter(o => o.id !== id) });
+  };
+
+  return (
+    <div className="mt-4 pt-4 border-t border-[#F0EAE2]">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: DISPLACEMENT_COLOR }} />
+          <p className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">Cost Offsets</p>
+        </div>
+        <button
+          onClick={addOffset}
+          className="inline-flex items-center gap-1 text-xs text-[#EA2C00] hover:text-[#D42800] font-medium transition-colors"
+        >
+          <Plus className="w-3.5 h-3.5" /> Add offset
+        </button>
+      </div>
+
+      {offsets.length === 0 && (
+        <p className="text-xs text-neutral-400 italic text-center py-3">
+          Add a tool or service you're replacing — displaced cost appears as additional value in the proforma.
+        </p>
+      )}
+
+      <div className="space-y-3">
+        {offsets.map(o => {
+          const targetAnnual = o.annualSpend * o.displacementPct / 100;
+          return (
+            <div key={o.id} className="bg-[#F5F0EB] rounded-lg p-3 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Tool or service (e.g. Dragon Medical One)"
+                  value={o.label}
+                  onChange={e => updateOffset(o.id, { label: e.target.value })}
+                  className="flex-1 h-8 text-xs border border-[#DDD6CC] rounded-lg px-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20"
+                />
+                <button onClick={() => removeOffset(o.id)} className="p-1 text-neutral-400 hover:text-red-500 transition-colors">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-neutral-500 whitespace-nowrap">Current spend</span>
+                <span className="text-[11px] text-neutral-400">$</span>
+                <FormattedNumberInput
+                  value={o.annualSpend}
+                  onChange={v => updateOffset(o.id, { annualSpend: v })}
+                  className="flex-1 h-7 text-xs border border-[#DDD6CC] rounded-lg px-2 text-right bg-white focus:outline-none"
+                />
+                <span className="text-[11px] text-neutral-400 whitespace-nowrap">/ yr</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-neutral-500 whitespace-nowrap">% displaced</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={o.displacementPct}
+                  onChange={e => updateOffset(o.id, { displacementPct: parseInt(e.target.value) })}
+                  className="flex-1 accent-[#2D6F6B]"
+                  style={{ height: "6px" }}
+                />
+                <span className="text-[11px] font-semibold text-neutral-700 w-10 text-right">{o.displacementPct}%</span>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-neutral-500 mb-1.5">Transition completes in</p>
+                <div className="flex items-center gap-1 flex-wrap">
+                  {TRANSITION_OPTIONS.map(({ label, months }) => (
+                    <button
+                      key={months}
+                      onClick={() => updateOffset(o.id, { transitionMonths: months })}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${
+                        o.transitionMonths === months
+                          ? "bg-[#1A1A1A] text-white"
+                          : "bg-white text-neutral-500 hover:bg-neutral-100 border border-[#DDD6CC]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {targetAnnual > 0 && (
+                <div className="flex items-center justify-end gap-1.5 pt-0.5">
+                  <div className="w-2 h-2 rounded-sm flex-shrink-0" style={{ backgroundColor: DISPLACEMENT_COLOR }} />
+                  <span className="text-[11px] font-semibold" style={{ color: DISPLACEMENT_COLOR }}>
+                    {fmt(targetAnnual)} / yr displaced at scale
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function ProformaHub({
   settings,
   config,
@@ -885,6 +1027,7 @@ export default function ProformaHub({
                                 config={config}
                                 onUpdateSetting={onUpdateSetting}
                               />
+                              <CostOffsetsSection setting={setting} onUpdateSetting={onUpdateSetting} />
                               <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#F0EAE2]">
                                 <button
                                   onClick={() => onEditSetting(setting.id)}

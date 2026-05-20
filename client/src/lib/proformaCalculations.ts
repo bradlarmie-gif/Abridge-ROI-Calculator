@@ -269,12 +269,13 @@ export function buildMonthlyCashFlows(
     let totalWorkforceValue = 0;
     let totalRevenueValue = 0;
     let totalQualityValue = 0;
-    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number }> = {};
+    let totalDisplacementValue = 0;
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number; displacementValue: number }> = {};
 
     for (const setting of settings) {
       const monthsSinceGoLive = m - setting.goLiveMonth;
       if (monthsSinceGoLive < 0) {
-        bySettings[setting.id] = { value: 0, investment: 0, providers: 0, licensedProviders: 0, encounters: 0, capacityValue: 0, workforceValue: 0, revenueValue: 0, qualityValue: 0 };
+        bySettings[setting.id] = { value: 0, investment: 0, providers: 0, licensedProviders: 0, encounters: 0, capacityValue: 0, workforceValue: 0, revenueValue: 0, qualityValue: 0, displacementValue: 0 };
         continue;
       }
 
@@ -386,6 +387,15 @@ export function buildMonthlyCashFlows(
         }
       }
 
+      let settingDisplacementValue = 0;
+      for (const offset of (setting.costOffsets ?? [])) {
+        const targetMonthly = (offset.annualSpend * offset.displacementPct / 100) / 12;
+        const rampFactor = offset.transitionMonths <= 0
+          ? 1
+          : Math.min((monthsSinceGoLive + 1) / offset.transitionMonths, 1);
+        settingDisplacementValue += targetMonthly * rampFactor;
+      }
+
       const nonDriverValue = setting.annualValue - setting.drivers.reduce((s, d) => s + d.value, 0);
       if (nonDriverValue > 0) {
         const nonDriverRamp = getAdoptionRamp(monthsSinceGoLive, 3);
@@ -449,10 +459,11 @@ export function buildMonthlyCashFlows(
       totalWorkforceValue += settingWorkforceValue;
       totalRevenueValue   += settingRevenueValue;
       totalQualityValue   += settingQualityValue;
+      totalDisplacementValue += settingDisplacementValue;
       totalInvestment += monthlyInvestment;
 
       bySettings[setting.id] = {
-        value: settingCapacityValue + settingWorkforceValue + settingRevenueValue + settingQualityValue,
+        value: settingCapacityValue + settingWorkforceValue + settingRevenueValue + settingQualityValue + settingDisplacementValue,
         investment: monthlyInvestment,
         providers: activelyDocumenting,
         licensedProviders,
@@ -461,6 +472,7 @@ export function buildMonthlyCashFlows(
         workforceValue: settingWorkforceValue,
         revenueValue: settingRevenueValue,
         qualityValue: settingQualityValue,
+        displacementValue: settingDisplacementValue,
       };
 
       if (m === setting.goLiveMonth) {
@@ -470,7 +482,7 @@ export function buildMonthlyCashFlows(
 
     
 
-    const totalValue = totalCapacityValue + totalWorkforceValue + totalRevenueValue + totalQualityValue;
+    const totalValue = totalCapacityValue + totalWorkforceValue + totalRevenueValue + totalQualityValue + totalDisplacementValue;
     const netValue = totalValue - totalInvestment;
     cumulativeNet += netValue;
 
@@ -482,6 +494,7 @@ export function buildMonthlyCashFlows(
       workforceValue: Math.round(totalWorkforceValue),
       revenueValue: Math.round(totalRevenueValue),
       qualityValue: Math.round(totalQualityValue),
+      displacementValue: Math.round(totalDisplacementValue),
       totalValue: Math.round(totalValue),
       netValue: Math.round(netValue),
       cumulativeNet: Math.round(cumulativeNet),
@@ -516,7 +529,7 @@ export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): P
     const allSettingIds = new Set<string>();
     chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
 
-    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number; displacementValue: number }> = {};
     allSettingIds.forEach(id => {
       const avgProviders = chunk.length > 0
         ? Math.round(chunk.reduce((s, r) => s + (r.bySettings[id]?.providers || 0), 0) / chunk.length)
@@ -537,6 +550,7 @@ export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): P
         workforceValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.workforceValue || 0), 0),
         revenueValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.revenueValue || 0), 0),
         qualityValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.qualityValue || 0), 0),
+        displacementValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.displacementValue || 0), 0),
       };
     });
 
@@ -549,6 +563,7 @@ export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): P
       workforceValue: chunk.reduce((s, r) => s + r.workforceValue, 0),
       revenueValue: chunk.reduce((s, r) => s + r.revenueValue, 0),
       qualityValue: chunk.reduce((s, r) => s + r.qualityValue, 0),
+      displacementValue: chunk.reduce((s, r) => s + r.displacementValue, 0),
       totalValue: chunk.reduce((s, r) => s + r.totalValue, 0),
       netValue: chunk.reduce((s, r) => s + r.netValue, 0),
       cumulativeNet: chunk[chunk.length - 1]?.cumulativeNet || 0,
@@ -568,7 +583,7 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
     const allSettingIds = new Set<string>();
     chunk.forEach(r => Object.keys(r.bySettings).forEach(k => allSettingIds.add(k)));
 
-    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number }> = {};
+    const bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number; displacementValue: number }> = {};
     allSettingIds.forEach(id => {
       const avgProviders = chunk.length > 0
         ? Math.round(chunk.reduce((s, r) => s + (r.bySettings[id]?.providers || 0), 0) / chunk.length)
@@ -589,6 +604,7 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
         workforceValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.workforceValue || 0), 0),
         revenueValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.revenueValue || 0), 0),
         qualityValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.qualityValue || 0), 0),
+        displacementValue: chunk.reduce((s, r) => s + (r.bySettings[id]?.displacementValue || 0), 0),
       };
     });
 
@@ -601,6 +617,7 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
       workforceValue: chunk.reduce((s, r) => s + r.workforceValue, 0),
       revenueValue: chunk.reduce((s, r) => s + r.revenueValue, 0),
       qualityValue: chunk.reduce((s, r) => s + r.qualityValue, 0),
+      displacementValue: chunk.reduce((s, r) => s + r.displacementValue, 0),
       totalValue: chunk.reduce((s, r) => s + r.totalValue, 0),
       netValue: chunk.reduce((s, r) => s + r.netValue, 0),
       cumulativeNet: chunk[chunk.length - 1]?.cumulativeNet || 0,
@@ -724,6 +741,7 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
         workforceValue: y.rows.reduce((s, r) => s + r.workforceValue, 0),
         revenueValue: y.rows.reduce((s, r) => s + r.revenueValue, 0),
         qualityValue: y.rows.reduce((s, r) => s + r.qualityValue, 0),
+        displacementValue: y.rows.reduce((s, r) => s + r.displacementValue, 0),
         investment: subscriptionInvestment + implInvestment,
         netValue: y.rows.reduce((s, r) => s + r.netValue, 0) - implInvestment,
         bySettings,

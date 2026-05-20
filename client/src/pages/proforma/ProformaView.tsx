@@ -186,6 +186,7 @@ const CHART_COLORS = {
   workforce: "#7A1F04",
   revenue: "#1E3A5F",
   quality: "#888888",
+  displacement: "#2D6F6B",
   investment: "#6B7280",
 };
 
@@ -327,13 +328,14 @@ export default function ProformaView({
   }, [displayData, settings]);
 
   const legendTotals = useMemo(() => {
-    const capacity  = cashFlows.reduce((s, r) => s + r.capacityValue, 0);
-    const workforce = cashFlows.reduce((s, r) => s + r.workforceValue, 0);
-    const revenue   = cashFlows.reduce((s, r) => s + r.revenueValue, 0);
-    const quality   = cashFlows.reduce((s, r) => s + r.qualityValue, 0);
+    const capacity     = cashFlows.reduce((s, r) => s + r.capacityValue, 0);
+    const workforce    = cashFlows.reduce((s, r) => s + r.workforceValue, 0);
+    const revenue      = cashFlows.reduce((s, r) => s + r.revenueValue, 0);
+    const quality      = cashFlows.reduce((s, r) => s + r.qualityValue, 0);
+    const displacement = cashFlows.reduce((s, r) => s + r.displacementValue, 0);
     const inv = cashFlows.reduce((s, r) => s + r.investment, 0);
-    const total = capacity + workforce + revenue + quality;
-    return { capacity, workforce, revenue, quality, inv, total };
+    const total = capacity + workforce + revenue + quality + displacement;
+    return { capacity, workforce, revenue, quality, displacement, inv, total };
   }, [cashFlows]);
 
   const lastChartPoint = useMemo(() => {
@@ -967,7 +969,10 @@ export default function ProformaView({
                   <Bar dataKey="revenueValue" stackId="value" fill={CHART_COLORS.revenue} name="Revenue" maxBarSize={config.viewMode === "yearly" ? 56 : 28} />
                 )}
                 {legendTotals.quality > 0 && (
-                  <Bar dataKey="qualityValue" stackId="value" fill={CHART_COLORS.quality} name="Quality" maxBarSize={config.viewMode === "yearly" ? 56 : 28} radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="qualityValue" stackId="value" fill={CHART_COLORS.quality} name="Quality" maxBarSize={config.viewMode === "yearly" ? 56 : 28} />
+                )}
+                {legendTotals.displacement > 0 && (
+                  <Bar dataKey="displacementValue" stackId="value" fill={CHART_COLORS.displacement} name="Cost Displacement" maxBarSize={config.viewMode === "yearly" ? 56 : 28} radius={[2, 2, 0, 0]} />
                 )}
                 {hasInvestment && (
                   <Line
@@ -1010,6 +1015,13 @@ export default function ProformaView({
                   <span className="w-3 h-3 inline-block rounded-sm flex-shrink-0" style={{ backgroundColor: CHART_COLORS.quality }} />
                   <span className="text-neutral-600">Quality</span>
                   <span className="text-neutral-400 font-medium">{fmt(legendTotals.quality)}{legendTotals.total > 0 ? ` (${Math.round((legendTotals.quality / legendTotals.total) * 100)}%)` : ""}</span>
+                </span>
+              )}
+              {legendTotals.displacement > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 inline-block rounded-sm flex-shrink-0" style={{ backgroundColor: CHART_COLORS.displacement }} />
+                  <span className="text-neutral-600">Cost Displacement</span>
+                  <span className="text-neutral-400 font-medium">{fmt(legendTotals.displacement)}{legendTotals.total > 0 ? ` (${Math.round((legendTotals.displacement / legendTotals.total) * 100)}%)` : ""}</span>
                 </span>
               )}
               {hasInvestment && legendTotals.inv > 0 && (
@@ -1114,6 +1126,17 @@ export default function ProformaView({
                         {fmt(yearlyData.reduce((s, y) => s + y.qualityValue, 0))}
                       </td>
                     </tr>
+                    {yearlyData.some(y => (y as any).displacementValue > 0) && (
+                      <tr className="border-b border-neutral-100">
+                        <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.displacement }}>Cost Displacement</td>
+                        {yearlyData.map(y => (
+                          <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt((y as any).displacementValue || 0)}</td>
+                        ))}
+                        <td className="text-right py-2 px-4 text-xs text-neutral-500">
+                          {fmt(yearlyData.reduce((s, y) => s + ((y as any).displacementValue || 0), 0))}
+                        </td>
+                      </tr>
+                    )}
                   </>
                 )}
                 <tr className="border-b border-neutral-200">
@@ -1213,13 +1236,14 @@ export default function ProformaView({
 function CustomTooltip({ active, payload, label, settings, totalProvidersByPeriod, viewMode }: any) {
   if (!active || !payload) return null;
 
-  const capacityItem  = payload.find((p: any) => p.dataKey === "capacityValue");
-  const workforceItem = payload.find((p: any) => p.dataKey === "workforceValue");
-  const revenueItem   = payload.find((p: any) => p.dataKey === "revenueValue");
-  const qualityItem   = payload.find((p: any) => p.dataKey === "qualityValue");
-  const investmentItem = payload.find((p: any) => p.dataKey === "investment");
+  const capacityItem    = payload.find((p: any) => p.dataKey === "capacityValue");
+  const workforceItem   = payload.find((p: any) => p.dataKey === "workforceValue");
+  const revenueItem     = payload.find((p: any) => p.dataKey === "revenueValue");
+  const qualityItem     = payload.find((p: any) => p.dataKey === "qualityValue");
+  const displacementItem = payload.find((p: any) => p.dataKey === "displacementValue");
+  const investmentItem  = payload.find((p: any) => p.dataKey === "investment");
 
-  const total = (capacityItem?.value || 0) + (workforceItem?.value || 0) + (revenueItem?.value || 0) + (qualityItem?.value || 0);
+  const total = (capacityItem?.value || 0) + (workforceItem?.value || 0) + (revenueItem?.value || 0) + (qualityItem?.value || 0) + (displacementItem?.value || 0);
   const periodIdx = (payload[0]?.payload?.period || 1) - 1;
   const providerCount = totalProvidersByPeriod?.[periodIdx] || 0;
 
@@ -1268,6 +1292,15 @@ function CustomTooltip({ active, payload, label, settings, totalProvidersByPerio
             <span className="text-neutral-600">Quality</span>
           </span>
           <span className="font-medium text-neutral-900">{fmt(qualityItem.value)}</span>
+        </div>
+      )}
+      {(displacementItem?.value || 0) > 0 && (
+        <div className="flex justify-between gap-3 mb-1">
+          <span className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm" style={{ backgroundColor: CHART_COLORS.displacement }} />
+            <span className="text-neutral-600">Cost Displacement</span>
+          </span>
+          <span className="font-medium text-neutral-900">{fmt(displacementItem.value)}</span>
         </div>
       )}
 
