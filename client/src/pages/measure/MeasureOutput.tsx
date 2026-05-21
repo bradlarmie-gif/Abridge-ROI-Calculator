@@ -10,11 +10,11 @@ import {
 } from "@/lib/exploreDrivers";
 import { SETTING_LABELS } from "@/lib/forecastDefaults";
 import {
-  generateMeasurePDF,
   type MeasurePDFData,
   type MeasurePDFDriver,
   type MeasurePDFQuadrantSection,
 } from "@/components/measure/MeasurePDFExport";
+import { generateMeasureNarrativePDF } from "@/components/measure/MeasureNarrativePDF";
 import { type MeasureState, type MeasureDriverEntry } from "@/lib/measureCalculator";
 import { useToast } from "@/hooks/use-toast";
 
@@ -353,7 +353,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
   const handleExport = async () => {
     setExporting(true);
     try {
-      await generateMeasurePDF(buildPDFData());
+      await generateMeasureNarrativePDF(buildPDFData());
       toast({ title: "Evidence doc generated", description: "PDF download has started." });
     } catch (err) {
       console.error("PDF generation failed", err);
