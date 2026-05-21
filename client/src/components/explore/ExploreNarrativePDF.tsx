@@ -596,75 +596,94 @@ const CompactDriverCard = ({
   formula?: string;
   linkedTag?: boolean;
   valueIsTracked?: boolean;
-}) => (
-  <View
-    style={{
-      backgroundColor: colors.cards,
-      borderRadius: 4,
-      padding: 10,
-      marginBottom: 6,
-    }}
-    wrap={false}
-  >
-    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
-      <Text
-        style={{
-          fontSize: 10.5,
-          fontWeight: "bold",
-          color: colors.primaryText,
-          textTransform: "uppercase",
-          letterSpacing: 0.8,
-          flex: 1,
-          paddingRight: 6,
-        }}
-      >
-        {name}
-      </Text>
-      <Text
-        style={{
-          fontSize: valueIsTracked ? 10 : 13,
-          fontWeight: "bold",
-          color: valueIsTracked ? colors.secondary : colors.primary,
-          fontStyle: valueIsTracked ? "italic" : "normal",
-          textTransform: valueIsTracked ? "uppercase" : "none",
-          letterSpacing: valueIsTracked ? 1.2 : 0,
-        }}
-      >
-        {value}
-      </Text>
-    </View>
-
-    {linkedTag ? (
-      <Text style={{ fontSize: 7.5, color: colors.primary, textTransform: "uppercase", letterSpacing: 1.2, fontWeight: "bold", marginBottom: 4 }}>
-        ↳ Linked driver
-      </Text>
-    ) : null}
-
-    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-    <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }} {...({ numberOfLines: 2 } as any)}>
-      {body}
-    </Text>
-
-    {formula ? (
-      <View
-        style={{
-          marginTop: 6,
-          backgroundColor: "#FDF7F4",
-          borderLeftWidth: 2.5,
-          borderLeftColor: colors.primary,
-          paddingHorizontal: 10,
-          paddingVertical: 5,
-          borderRadius: 2,
-        }}
-      >
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        <Text style={{ fontSize: 8.5, color: colors.primaryText, lineHeight: 1.5 }} {...({ numberOfLines: 2 } as any)}>
-          {formula}
+}) => {
+  // Parse "A × B × C" into an array so each factor gets its own line.
+  const formulaSteps = formula ? formula.split(" × ") : [];
+  return (
+    <View
+      style={{
+        backgroundColor: colors.cards,
+        borderRadius: 4,
+        padding: 10,
+        marginBottom: 6,
+      }}
+      wrap={false}
+    >
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+        <Text
+          style={{
+            fontSize: 10.5,
+            fontWeight: "bold",
+            color: colors.primaryText,
+            textTransform: "uppercase",
+            letterSpacing: 0.8,
+            flex: 1,
+            paddingRight: 6,
+          }}
+        >
+          {name}
+        </Text>
+        <Text
+          style={{
+            fontSize: valueIsTracked ? 10 : 13,
+            fontWeight: "bold",
+            color: valueIsTracked ? colors.secondary : colors.primary,
+            fontStyle: valueIsTracked ? "italic" : "normal",
+            textTransform: valueIsTracked ? "uppercase" : "none",
+            letterSpacing: valueIsTracked ? 1.2 : 0,
+          }}
+        >
+          {value}
         </Text>
       </View>
-    ) : null}
-  </View>
-);
+
+      {linkedTag ? (
+        <Text style={{ fontSize: 7.5, color: colors.primary, textTransform: "uppercase", letterSpacing: 1.2, fontWeight: "bold", marginBottom: 4 }}>
+          ↳ Linked driver
+        </Text>
+      ) : null}
+
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.5 }} {...({ numberOfLines: 2 } as any)}>
+        {body}
+      </Text>
+
+      {formulaSteps.length > 0 ? (
+        <View
+          style={{
+            marginTop: 7,
+            backgroundColor: "#FDF7F4",
+            borderLeftWidth: 2.5,
+            borderLeftColor: colors.primary,
+            paddingLeft: 10,
+            paddingRight: 8,
+            paddingVertical: 6,
+            borderRadius: 2,
+          }}
+        >
+          {formulaSteps.map((step, i) => (
+            <Text
+              key={i}
+              style={{
+                fontSize: 9,
+                color: i === 0 ? colors.primaryText : colors.secondary,
+                lineHeight: 1.55,
+                fontWeight: i === 0 ? "bold" : "normal",
+              }}
+            >
+              {i === 0 ? step : `× ${step}`}
+            </Text>
+          ))}
+          <View style={{ marginTop: 4, borderTopWidth: 0.5, borderTopColor: "#E8DDD5", paddingTop: 3 }}>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>
+              = {value}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+    </View>
+  );
+};
 
 // HeroSubtotal — full-width tinted band that promotes a quadrant's dollar
 // total to the page's punchline. Replaces the right-aligned "Quadrant
@@ -1140,10 +1159,10 @@ const SummaryGroup = ({
 const MethodologyLine = ({ text }: { text: string }) => (
   <Text
     style={{
-      fontSize: 9,
+      fontSize: 8.5,
       color: colors.secondary,
-      lineHeight: 1.5,
-      marginBottom: 4,
+      lineHeight: 1.4,
+      marginBottom: 3,
     }}
     wrap={false}
   >
@@ -1304,7 +1323,7 @@ export const ExploreNarrativePDFDocument = ({
                 <Text style={{ fontSize: 34, fontWeight: "bold", color: colors.primary, lineHeight: 1.0, marginBottom: 5 }}>
                   {`${data.roi.toFixed(1)}×`}
                 </Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary }}>Per dollar invested</Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary }}>Per dollar invested (projected)</Text>
               </View>
               <View style={{ flex: 1.1, paddingLeft: 14 }}>
                 <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>3-Year Net Value</Text>
@@ -1465,252 +1484,80 @@ export const ExploreNarrativePDFDocument = ({
       <Page size="LETTER" style={styles.page}>
         <View style={styles.pageWrapper}>
           <SectionLabel>THE INVESTMENT CASE</SectionLabel>
-          <Text style={styles.sectionHeadline}>A Strategic Investment.</Text>
+          <Text style={styles.sectionHeadline}>The Investment Case.</Text>
           <Text style={styles.body}>
-            {/* Implementation fee is intentionally NOT folded into the
-                recurring Year 1–3 rows so multi-year ROI math compares
-                apples-to-apples (a one-time setup charge would distort Year 1
-                economics and the 3-year cumulative multiple). It surfaces as
-                its own row at the top of the table and a "true Year 1
-                outlay" footnote below — see replit.md > Implementation Fee
-                Treatment for the canonical three-part articulation pattern. */}
-            {`Recurring investment is ${pricingPhrase}.${implPhrase} Years 2–3 apply ${data.year2GrowthPercent}% and ${data.year3GrowthPercent}% growth to recurring annual value — adoption deepens across the provider group, documentation habits compound, and clinicians capture progressively more clinical complexity in real-time.`}
+            {`Recurring investment is ${pricingPhrase}.${implPhrase} The table below shows Year 1 outcomes at three adoption levels — conservative (−25% of modeled value), base case, and optimistic (+25%). No growth assumptions are applied; each column reflects the annual value at that utilization level held constant.`}
           </Text>
 
-          {/* 3-Year Projection table.
-              When an implementation fee is configured, a dedicated "One-Time
-              · Implementation" row renders ABOVE Year 1 with a tinted
-              background and italic "tracked separately" cells in the Net /
-              Cumulative columns. This makes the fee visually unmissable
-              (users were searching the Year 1 row for it before this
-              change) without folding it into the recurring multi-year
-              math — see the canonical implementation on the Nursing PDF. */}
-          <View style={{ marginBottom: 10 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                backgroundColor: colors.cards,
-                paddingVertical: 8,
-                paddingHorizontal: 10,
-                borderTopLeftRadius: 4,
-                borderTopRightRadius: 4,
-              }}
-            >
-              <Text
-                style={{
-                  flex: 1,
-                  fontSize: 8.5,
-                  fontWeight: "bold",
-                  color: colors.secondary,
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                }}
-              >
-                Period
-              </Text>
-              <Text
-                style={{
-                  flex: 1.2,
-                  fontSize: 8.5,
-                  fontWeight: "bold",
-                  color: colors.secondary,
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  textAlign: "right",
-                }}
-              >
-                Value
-              </Text>
-              <Text
-                style={{
-                  flex: 1.2,
-                  fontSize: 8.5,
-                  fontWeight: "bold",
-                  color: colors.secondary,
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  textAlign: "right",
-                }}
-              >
-                Investment
-              </Text>
-              <Text
-                style={{
-                  flex: 1.2,
-                  fontSize: 8.5,
-                  fontWeight: "bold",
-                  color: colors.secondary,
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  textAlign: "right",
-                }}
-              >
-                Net Value
-              </Text>
-              <Text
-                style={{
-                  flex: 1.2,
-                  fontSize: 8.5,
-                  fontWeight: "bold",
-                  color: colors.secondary,
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  textAlign: "right",
-                }}
-              >
-                Cumulative
-              </Text>
-            </View>
+          {/* Sensitivity Analysis table — Year 1 at ±25% adoption */}
+          {(() => {
+            const baseValue = data.totalAnnualValue;
+            const inv = data.annualInvestment;
+            const conservativeValue = Math.round(baseValue * 0.75);
+            const optimisticValue = Math.round(baseValue * 1.25);
+            const conservativeNet = conservativeValue - inv;
+            const baseNet = baseValue - inv;
+            const optimisticNet = optimisticValue - inv;
+            const conservativeRoi = inv > 0 ? conservativeValue / inv : 0;
+            const baseRoi = inv > 0 ? baseValue / inv : 0;
+            const optimisticRoi = inv > 0 ? optimisticValue / inv : 0;
 
-            {/* One-Time Implementation row — only renders when impl fee > 0.
-                Visually demarcated with cardBg tint + italic Net/Cumulative
-                cells reading "tracked separately" so it cannot be misread
-                as a recurring annual line. Bold investment figure makes it
-                the first thing the eye lands on. */}
-            {showImplFeeRow && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  paddingVertical: 8,
-                  paddingHorizontal: 10,
-                  backgroundColor: colors.cards,
-                  borderBottomWidth: 1,
-                  borderBottomColor: colors.separator,
-                }}
-                wrap={false}
-              >
-                <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>
-                  One-Time
-                  <Text style={{ fontSize: 9, fontWeight: "normal", color: colors.secondary }}> · Implementation</Text>
-                </Text>
-                <Text style={{ flex: 1.2, fontSize: 10, color: colors.secondary, textAlign: "right" }}>—</Text>
-                <Text style={{ flex: 1.2, fontSize: 10, color: colors.primaryText, textAlign: "right", fontWeight: "bold" }}>
-                  {fmtCurrency(data.implementationFee)}
-                </Text>
-                <Text style={{ flex: 1.2, fontSize: 9, fontStyle: "italic", color: colors.secondary, textAlign: "right" }}>
-                  Setup investment
-                </Text>
-                <Text style={{ flex: 1.2, fontSize: 9, fontStyle: "italic", color: colors.secondary, textAlign: "right" }}>
-                  Tracked separately
-                </Text>
-              </View>
-            )}
+            const rows = [
+              { label: "Annual Value", conservative: fmtCurrency(conservativeValue), base: fmtCurrency(baseValue), optimistic: fmtCurrency(optimisticValue), highlight: false, muted: false },
+              { label: "Annual Investment", conservative: fmtCurrency(inv), base: fmtCurrency(inv), optimistic: fmtCurrency(inv), highlight: false, muted: true },
+              { label: "Net Annual Value", conservative: fmtCurrency(conservativeNet), base: fmtCurrency(baseNet), optimistic: fmtCurrency(optimisticNet), highlight: true, muted: false },
+              { label: "Year 1 ROI", conservative: `${conservativeRoi.toFixed(1)}×`, base: `${baseRoi.toFixed(1)}×`, optimistic: `${optimisticRoi.toFixed(1)}×`, highlight: true, muted: false },
+            ];
 
-            {[
-              {
-                label: "Year 1",
-                value: data.year1Value,
-                inv: data.year1Investment,
-                net: data.year1Net,
-                cum: data.year1Net,
-              },
-              {
-                label: "Year 2",
-                value: data.year2Value,
-                inv: data.year2Investment,
-                net: data.year2Net,
-                cum: data.year1Net + data.year2Net,
-              },
-              {
-                label: "Year 3",
-                value: data.year3Value,
-                inv: data.year3Investment,
-                net: data.year3Net,
-                cum: data.year1Net + data.year2Net + data.year3Net,
-              },
-            ].map((row, idx) => (
-              <View
-                key={row.label}
-                style={{
-                  flexDirection: "row",
-                  paddingVertical: 8,
-                  paddingHorizontal: 10,
-                  borderBottomWidth: idx === 2 ? 0 : 1,
-                  borderBottomColor: colors.separator,
-                  backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#F5F0EB",
-                }}
-              >
-                <Text
-                  style={{
-                    flex: 1,
-                    fontSize: 10,
-                    fontWeight: "bold",
-                    color: colors.primaryText,
-                  }}
-                >
-                  {row.label}
-                </Text>
-                <Text
-                  style={{
-                    flex: 1.2,
-                    fontSize: 10,
-                    color: colors.primaryText,
-                    textAlign: "right",
-                  }}
-                >
-                  {fmtCurrency(row.value)}
-                </Text>
-                <Text
-                  style={{
-                    flex: 1.2,
-                    fontSize: 10,
-                    color: colors.secondary,
-                    textAlign: "right",
-                  }}
-                >
-                  {fmtCurrency(row.inv)}
-                </Text>
-                <Text
-                  style={{
-                    flex: 1.2,
-                    fontSize: 10,
-                    color: colors.primary,
-                    fontWeight: "bold",
-                    textAlign: "right",
-                  }}
-                >
-                  {fmtCurrency(row.net)}
-                </Text>
-                <Text
-                  style={{
-                    flex: 1.2,
-                    fontSize: 10,
-                    color: colors.primaryText,
-                    textAlign: "right",
-                  }}
-                >
-                  {fmtCurrency(row.cum)}
-                </Text>
+            return (
+              <View style={{ marginBottom: 10, borderRadius: 4, borderWidth: 1, borderColor: "#E5DCD0" }}>
+                {/* Header */}
+                <View style={{ flexDirection: "row", backgroundColor: colors.cards, paddingVertical: 8, paddingHorizontal: 10, borderTopLeftRadius: 4, borderTopRightRadius: 4 }}>
+                  <View style={{ flex: 1.5 }} />
+                  <View style={{ flex: 1.1, alignItems: "flex-end" }}>
+                    <Text style={{ fontSize: 7.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 0.8 }}>Conservative</Text>
+                    <Text style={{ fontSize: 7, color: colors.tertiary }}>−25% adoption</Text>
+                  </View>
+                  <View style={{ flex: 1.1, alignItems: "flex-end" }}>
+                    <Text style={{ fontSize: 7.5, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 0.8 }}>Base Case</Text>
+                    <Text style={{ fontSize: 7, color: colors.secondary }}>configured model</Text>
+                  </View>
+                  <View style={{ flex: 1.1, alignItems: "flex-end" }}>
+                    <Text style={{ fontSize: 7.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 0.8 }}>Optimistic</Text>
+                    <Text style={{ fontSize: 7, color: colors.tertiary }}>+25% adoption</Text>
+                  </View>
+                </View>
+                {/* Rows */}
+                {rows.map((row, idx) => (
+                  <View
+                    key={row.label}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 7,
+                      paddingHorizontal: 10,
+                      backgroundColor: idx % 2 === 0 ? "#FFFFFF" : "#F5F0EB",
+                      borderTopWidth: row.highlight ? 1.5 : 0,
+                      borderTopColor: "#E5DCD0",
+                    }}
+                  >
+                    <Text style={{ flex: 1.5, fontSize: 9, color: row.highlight ? colors.primaryText : colors.secondary, fontWeight: row.highlight ? "bold" : "normal" }}>{row.label}</Text>
+                    <Text style={{ flex: 1.1, fontSize: 9, color: row.muted ? colors.tertiary : colors.secondary, textAlign: "right" }}>{row.conservative}</Text>
+                    <Text style={{ flex: 1.1, fontSize: row.highlight ? 10 : 9, fontWeight: row.highlight ? "bold" : "normal", color: row.highlight ? colors.primary : (row.muted ? colors.tertiary : colors.primaryText), textAlign: "right" }}>{row.base}</Text>
+                    <Text style={{ flex: 1.1, fontSize: 9, color: row.muted ? colors.tertiary : colors.secondary, textAlign: "right" }}>{row.optimistic}</Text>
+                  </View>
+                ))}
+                {showImplFeeRow && (
+                  <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: colors.cards, borderTopWidth: 1, borderTopColor: "#E5DCD0" }}>
+                    <Text style={{ fontSize: 8, fontStyle: "italic", color: colors.secondary }}>
+                      {`One-time implementation: ${fmtCurrency(data.implementationFee)} — tracked separately, not included in rows above.`}
+                    </Text>
+                  </View>
+                )}
               </View>
-            ))}
-            <View
-              style={{
-                flexDirection: "row",
-                paddingVertical: 10,
-                paddingHorizontal: 10,
-                borderTopWidth: 2,
-                borderTopColor: "#E5DCD0",
-                backgroundColor: "#F5F0EB",
-              }}
-              wrap={false}
-            >
-              <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: "#1A1A1A" }}>
-                3-Year Total
-              </Text>
-              <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: "#1A1A1A", textAlign: "right" }}>
-                {fmtCurrency(data.threeYearGrossTotal)}
-              </Text>
-              <Text style={{ flex: 1.2, fontSize: 10, color: "#666666", textAlign: "right" }}>
-                {fmtCurrency(data.threeYearInvestmentTotal)}
-              </Text>
-              <Text style={{ flex: 1.2, fontSize: 11, fontWeight: "bold", color: "#EA2C00", textAlign: "right" }}>
-                {fmtCurrency(data.threeYearNetTotal)}
-              </Text>
-              <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: "#1A1A1A", textAlign: "right" }}>
-                {fmtCurrency(data.threeYearNetTotal)}
-              </Text>
-            </View>
-          </View>
+            );
+          })()}
+
 
           {/* True Year 1 outlay footnote — only renders when an impl fee
               exists. Directly answers the most common reader question:
@@ -1743,183 +1590,186 @@ export const ExploreNarrativePDFDocument = ({
             </View>
           )}
 
-          {/* Cumulative-multiple HERO. Replaces the previous redBorderCallout
-              that buried the punchline in body copy. Eyebrow / number /
-              footnote stack — three separate Text nodes — so the multiple
-              can stand at 36pt without wrapping. Mirrors the Nursing PDF's
-              Investment-page hero geometry exactly (pdf_layout_guidelines.md
-              §9 > Investment page hero). */}
-          {/* Expansion Opportunity — only renders when full-scale providers > current.
-              Mirrors the UI's "Today vs Full Scale" comparison so the
-              CFO reading this offline can see the same growth story. */}
-          {data.expansionProviders && data.expansionProviders > data.numberOfProviders ? (
-            <View
-              style={{
-                backgroundColor: colors.cards,
-                borderRadius: 4,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                marginBottom: 14,
-              }}
-              wrap={false}
-            >
-              <Text style={{ fontSize: 8.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 10 }}>
-                The Expansion Opportunity
-              </Text>
-              <View style={{ flexDirection: "row", alignItems: "stretch" }}>
-                {/* TODAY */}
-                <View style={{ flex: 1, backgroundColor: colors.background, borderRadius: 3, padding: 12, marginRight: 8 }}>
-                  <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4 }}>Today</Text>
-                  <Text style={{ fontSize: 9, color: colors.secondary, marginBottom: data.annualEncounters ? 2 : 8, lineHeight: 1.3 }}>
-                    {`${fmtNum(data.numberOfProviders)} providers  ·  ${data.utilizationPercent}% utilization`}
-                  </Text>
-                  {data.annualEncounters ? (
-                    <Text style={{ fontSize: 9, color: colors.secondary, marginBottom: 8, lineHeight: 1.3 }}>
-                      {`${fmtNum(data.annualEncounters)} total enc / yr`}
-                      {data.utilizationPercent < 100
-                        ? `  ·  ${fmtNum(Math.round(data.annualEncounters * data.utilizationPercent / 100))} Abridge`
-                        : ""}
+          {/* Cost Displacement callout — only renders when items are present */}
+          {(data.costDisplacementItems ?? []).length > 0 && (
+            <SectionLabel>COST DISPLACEMENT</SectionLabel>
+          )}
+          {(data.costDisplacementItems ?? []).length > 0 && (() => {
+            const items = data.costDisplacementItems!;
+            const totals = data.costDisplacementTotals ?? (() => {
+              const annual = items.reduce((s, item) => s + (item.annualSpend * item.displacementPct / 100), 0);
+              return { year1: Math.round(annual * 0.5), year2: Math.round(annual), year3: Math.round(annual) };
+            })();
+            const threeYear = totals.year1 + totals.year2 + totals.year3;
+            return (
+              <View
+                style={{
+                  marginBottom: 14,
+                  borderWidth: 1,
+                  borderColor: "#E5DCD0",
+                  borderRadius: 4,
+                }}
+              >
+                {/* Dark header */}
+                <View style={{ backgroundColor: "#1A1A1A", paddingHorizontal: 12, paddingVertical: 5, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                  <View>
+                    <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primary, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 1 }}>
+                      Cost Displacement
                     </Text>
-                  ) : null}
-                  <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.0, marginBottom: 4 }}>
-                    {fmtCurrency(data.netAnnualValue)}
-                  </Text>
-                  <Text style={{ fontSize: 8, color: colors.secondary }}>/year</Text>
-                  <Text style={{ fontSize: 9, color: colors.secondary, marginTop: 6 }}>
-                    {`${data.roi.toFixed(1)}× ROI`}
-                  </Text>
-                </View>
-                {/* Arrow */}
-                <View style={{ justifyContent: "center", paddingHorizontal: 8 }}>
-                  <Text style={{ fontSize: 14, color: colors.tertiary }}>→</Text>
-                </View>
-                {/* FULL SCALE */}
-                <View style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 3, padding: 12 }}>
-                  <Text style={{ fontSize: 7, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4 }}>Full Scale</Text>
-                  <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.8)", marginBottom: data.expansionEncounters ? 2 : 8, lineHeight: 1.3 }}>
-                    {`${fmtNum(data.expansionProviders)} providers  ·  ${data.expansionUtilizationPercent ?? data.utilizationPercent}% utilization`}
-                  </Text>
-                  {data.expansionEncounters ? (
-                    <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.8)", marginBottom: 8, lineHeight: 1.3 }}>
-                      {`${fmtNum(data.expansionEncounters)} total enc / yr`}
-                      {(data.expansionUtilizationPercent ?? data.utilizationPercent) < 100
-                        ? `  ·  ${fmtNum(Math.round(data.expansionEncounters * (data.expansionUtilizationPercent ?? data.utilizationPercent) / 100))} Abridge`
-                        : ""}
-                    </Text>
-                  ) : null}
-                  <Text style={{ fontSize: 22, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.0, marginBottom: 4 }}>
-                    {fmtCurrency(data.expansionAnnualValue ?? 0)}
-                  </Text>
-                  <Text style={{ fontSize: 8, color: "rgba(255,255,255,0.7)" }}>/year</Text>
-                  <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.8)", marginTop: 6 }}>
-                    {`${(data.expansionRoi ?? 0).toFixed(1)}× ROI`}
-                  </Text>
-                </View>
-              </View>
-              <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 10, lineHeight: 1.4 }}>
-                {`Every provider not yet on Abridge represents ${fmtCurrency(Math.round((data.expansionAnnualValue ?? 0) / (data.expansionProviders)))} in unrealized annual value. Full-scale deployment compounds across the entire group.`}
-              </Text>
-            </View>
-          ) : null}
-
-          {/* Deployment arc — anchors the financial table to the observable
-              Signal → Proof timeline so the reader knows when to expect
-              the numbers to start showing up. Three milestones rendered
-              as a compact row with red timing labels, matching the arc
-              strip pattern in CompactDriverCard. */}
-          <View
-            style={{
-              backgroundColor: colors.cards,
-              borderRadius: 4,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              marginBottom: 14,
-            }}
-            wrap={false}
-          >
-            <Text
-              style={{
-                fontSize: 8.5,
-                color: colors.secondary,
-                textTransform: "uppercase",
-                letterSpacing: 2,
-                fontWeight: "bold",
-                marginBottom: 10,
-              }}
-            >
-              When to Expect Results
-            </Text>
-            <View style={{ flexDirection: "row" }}>
-              {(
-                [
-                  {
-                    timing: "Est. Wk 4–8",
-                    label: "Adoption signal",
-                    desc:
-                      "Documentation time ↓, note completion ↑. EHR behavior confirms the workflow has shifted and adoption is real.",
-                  },
-                  {
-                    timing: "Est. Mo 3–6",
-                    label: "Financial signal",
-                    desc:
-                      "Capacity, workforce, and revenue metrics begin to register — early data to validate the model's assumptions.",
-                  },
-                  {
-                    timing: "Est. Mo 6–18",
-                    label: "Proof outcomes",
-                    desc:
-                      "Quality scores, risk adjustment, and retention trends confirm the full modeled case. Timing varies by organization.",
-                  },
-                ] as const
-              ).map((milestone, i, arr) => (
-                <View
-                  key={milestone.timing}
-                  style={{ flex: 1, flexDirection: "row", alignItems: "flex-start" }}
-                >
-                  <View style={{ flex: 1, paddingRight: 6 }}>
-                    <Text
-                      style={{
-                        fontSize: 6.5,
-                        color: colors.primary,
-                        textTransform: "uppercase",
-                        letterSpacing: 1.2,
-                        fontWeight: "bold",
-                        marginBottom: 3,
-                      }}
-                    >
-                      {milestone.timing}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        fontWeight: "bold",
-                        color: colors.primaryText,
-                        marginBottom: 4,
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {milestone.label}
-                    </Text>
-                    <Text style={{ fontSize: 8, color: colors.secondary, lineHeight: 1.4 }}>
-                      {milestone.desc}
+                    <Text style={{ fontSize: 7.5, color: "#999999" }}>
+                      Existing tool spend displaced by Abridge — separate from clinical value above
                     </Text>
                   </View>
-                  {i < arr.length - 1 ? (
-                    <Text
+                  <Text style={{ fontSize: 13, fontWeight: "bold", color: "#FFFFFF" }}>
+                    {fmtCurrency(threeYear)}
+                  </Text>
+                </View>
+                {/* Items */}
+                {items.map((item, i) => {
+                  const displaced = item.annualSpend * item.displacementPct / 100;
+                  return (
+                    <View
+                      key={item.id}
                       style={{
-                        fontSize: 10,
-                        color: colors.tertiary,
-                        paddingTop: 14,
-                        paddingRight: 4,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingHorizontal: 12,
+                        paddingVertical: 5,
+                        borderBottomWidth: i < items.length - 1 ? 1 : 0,
+                        borderBottomColor: "#F0EDED",
+                        backgroundColor: "#FFFFFF",
                       }}
                     >
-                      →
-                    </Text>
-                  ) : null}
+                      <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, flex: 2 }}>
+                        {item.label || "Unnamed tool"}
+                      </Text>
+                      <Text style={{ fontSize: 8.5, color: colors.secondary, flex: 1.2, textAlign: "right" }}>
+                        {`${item.displacementPct}% of ${fmtCurrency(item.annualSpend)}/yr`}
+                      </Text>
+                      <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary, flex: 0.8, textAlign: "right" }}>
+                        {`${fmtCurrency(displaced)}/yr`}
+                      </Text>
+                    </View>
+                  );
+                })}
+                {/* Per-year summary footer — single row: label inline with value */}
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: colors.cards, paddingHorizontal: 12, paddingVertical: 6, borderTopWidth: 1, borderTopColor: "#E5DCD0" }}>
+                  <View style={{ flexDirection: "row" }}>
+                    {[
+                      { label: "Yr 1", value: totals.year1 },
+                      { label: "Yr 2", value: totals.year2 },
+                      { label: "Yr 3", value: totals.year3 },
+                    ].map(({ label, value }) => (
+                      <View key={label} style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
+                        <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.8, marginRight: 4 }}>{label}</Text>
+                        <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText }}>{fmtCurrency(value)}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 0.8, marginRight: 4 }}>3-Yr Total</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(threeYear)}</Text>
+                  </View>
                 </View>
-              ))}
+                {/* Combined case footer — single row */}
+                {(() => {
+                  const combinedNetY1 = data.netAnnualValue + totals.year1;
+                  const combinedRoiY1 = data.annualInvestment > 0
+                    ? (data.roi * data.annualInvestment + totals.year1) / data.annualInvestment
+                    : 0;
+                  const combinedThreeYear = data.threeYearNetTotal + threeYear;
+                  return (
+                    <View style={{ backgroundColor: "#1A1A1A", paddingHorizontal: 12, paddingVertical: 7, flexDirection: "row", alignItems: "center" }}>
+                      <Text style={{ fontSize: 6.5, color: "#555555", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: "bold", marginRight: 14 }}>
+                        w/ displacement:
+                      </Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
+                        <Text style={{ fontSize: 6.5, color: "#777777", textTransform: "uppercase", letterSpacing: 0.8, marginRight: 4 }}>Net Annual</Text>
+                        <Text style={{ fontSize: 11, fontWeight: "bold", color: "#FFFFFF" }}>{fmtCurrency(combinedNetY1)}</Text>
+                      </View>
+                      <View style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
+                        <Text style={{ fontSize: 6.5, color: "#777777", textTransform: "uppercase", letterSpacing: 0.8, marginRight: 4 }}>Yr 1 ROI</Text>
+                        <Text style={{ fontSize: 11, fontWeight: "bold", color: "#FFFFFF" }}>{combinedRoiY1.toFixed(1)}×</Text>
+                      </View>
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Text style={{ fontSize: 6.5, color: "#777777", textTransform: "uppercase", letterSpacing: 0.8, marginRight: 4 }}>3-Yr Net</Text>
+                        <Text style={{ fontSize: 11, fontWeight: "bold", color: "#FFFFFF" }}>{fmtCurrency(combinedThreeYear)}</Text>
+                      </View>
+                    </View>
+                  );
+                })()}
+              </View>
+            );
+          })()}
+
+          {/* Expansion Opportunity — nursing-style two-card layout */}
+          {data.expansionProviders && (data.expansionProviders > data.numberOfProviders || (data.expansionUtilizationPercent ?? 0) > data.utilizationPercent) ? (
+            <View style={{ marginBottom: 10 }}>
+              <Text style={{ fontSize: 8, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 4 }}>
+                The Expansion Opportunity
+              </Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 5, lineHeight: 1.2 }}>
+                The same model, applied at full deployment.
+              </Text>
+              <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.5, marginBottom: 8 }}>
+                {`The base case above reflects your current configuration — ${fmtNum(data.numberOfProviders)} providers at ${data.utilizationPercent}% utilization. The scenario below applies identical unit economics at full-scale deployment. Cost per provider is unchanged; the return scales with volume.`}
+              </Text>
+              <View style={{ flexDirection: "row", marginBottom: 6 }}>
+                {/* Left — Today's Value (gray) */}
+                <View style={{ flex: 1, backgroundColor: colors.cards, borderRadius: 4, padding: 10, marginRight: 6 }}>
+                  <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 5 }}>
+                    Today's Value
+                  </Text>
+                  <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.0, marginBottom: 1 }}>
+                    {fmtCurrency(data.netAnnualValue)}
+                  </Text>
+                  <Text style={{ fontSize: 7.5, color: colors.secondary, marginBottom: 6 }}>/ year net</Text>
+                  <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 6 }}>
+                    {`${data.roi.toFixed(1)}× ROI`}
+                  </Text>
+                  <View style={{ borderTopWidth: 1, borderTopColor: colors.separator, paddingTop: 6, flexDirection: "row", gap: 10 }}>
+                    <Text style={{ fontSize: 8, color: colors.secondary }}>
+                      {`${fmtNum(data.numberOfProviders)} providers`}
+                    </Text>
+                    <Text style={{ fontSize: 8, color: colors.secondary }}>
+                      {`${data.utilizationPercent}% util`}
+                    </Text>
+                    {data.annualEncounters ? (
+                      <Text style={{ fontSize: 8, color: colors.secondary }}>
+                        {`${fmtNum(data.annualEncounters)} enc/yr`}
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+                {/* Right — Full Scale Value (red) */}
+                <View style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 4, padding: 10 }}>
+                  <Text style={{ fontSize: 7, color: "#FFCABB", textTransform: "uppercase", letterSpacing: 2, fontWeight: "bold", marginBottom: 5 }}>
+                    Full Scale Value
+                  </Text>
+                  <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.0, marginBottom: 1 }}>
+                    {fmtCurrency(data.expansionAnnualValue ?? 0)}
+                  </Text>
+                  <Text style={{ fontSize: 7.5, color: "#FFCABB", marginBottom: 6 }}>/ year net</Text>
+                  <Text style={{ fontSize: 9.5, fontWeight: "bold", color: "#FFFFFF", marginBottom: 6 }}>
+                    {`${(data.expansionRoi ?? 0).toFixed(1)}× ROI`}
+                  </Text>
+                  <View style={{ borderTopWidth: 1, borderTopColor: "#EF6140", paddingTop: 6, flexDirection: "row", gap: 10 }}>
+                    <Text style={{ fontSize: 8, color: "#FFCABB" }}>
+                      {`${fmtNum(data.expansionProviders)} providers`}
+                    </Text>
+                    <Text style={{ fontSize: 8, color: "#FFCABB" }}>
+                      {`${data.expansionUtilizationPercent ?? data.utilizationPercent}% util`}
+                    </Text>
+                    {data.expansionEncounters ? (
+                      <Text style={{ fontSize: 8, color: "#FFCABB" }}>
+                        {`${fmtNum(data.expansionEncounters)} enc/yr`}
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+              </View>
             </View>
-          </View>
+          ) : null}
 
           <PageFooter orgName={orgName} settingLabel={settingLabel} />
         </View>
@@ -2100,49 +1950,6 @@ export const ExploreNarrativePDFDocument = ({
             ))}
           </View>
 
-          {/* QUALITATIVE NARRATIVE — gives Provider Wellbeing, Patient Experience,
-              HCAHPS, and similar drivers a framing moment so they read as
-              deliberate tracked signals rather than line items that couldn't
-              be quantified. */}
-          {(() => {
-            const qualDrivers = data.quadrants.flatMap((q) =>
-              q.drivers.filter((d) => d.visibility === "qualitative" && d.isIncluded !== false),
-            );
-            if (qualDrivers.length === 0) return null;
-            return (
-              <View
-                style={{
-                  backgroundColor: colors.cards,
-                  borderRadius: 4,
-                  padding: 14,
-                  marginBottom: 10,
-                  borderLeftWidth: 3,
-                  borderLeftColor: colors.secondary,
-                }}
-                wrap={false}
-              >
-                <Text
-                  style={{
-                    fontSize: 8.5,
-                    color: colors.secondary,
-                    textTransform: "uppercase",
-                    letterSpacing: 1.5,
-                    fontWeight: "bold",
-                    marginBottom: 6,
-                  }}
-                >
-                  What We're Tracking
-                </Text>
-                <Text style={{ fontSize: 8.5, color: "#444444", lineHeight: 1.55, marginBottom: 6 }}>
-                  {`${qualDrivers.map((d) => d.label).join(", ")} — tracked post-deployment as leading indicators of clinical impact. These aren't monetized because converting them to dollars requires your organization's specific benchmark data. They're in the model because they're the signals that determine whether documentation lift translated to outcomes that matter beyond the financial case.`}
-                </Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, fontStyle: "italic", lineHeight: 1.4 }}>
-                  Establish baseline measures before go-live so post-deployment movement is attributable.
-                </Text>
-              </View>
-            );
-          })()}
-
           <PageFooter orgName={orgName} settingLabel={settingLabel} />
         </View>
       </Page>
@@ -2154,10 +1961,10 @@ export const ExploreNarrativePDFDocument = ({
           <Text style={styles.sectionHeadline}>How the Model Works.</Text>
           <View>
             <MethodologyLine
-              text={`Time-savings scenario: ${(data.timePathScenario || "custom").toLowerCase()} — ${data.minutesSavedPerEncounter} minutes per encounter, ${fmtNum(data.totalHoursSaved)} hours returned annually across ${fmtNum(data.numberOfProviders)} providers.`}
+              text={`Time-savings scenario: ${(data.timePathScenario || "custom").toLowerCase()} — ${data.minutesSavedPerEncounter} minutes saved per encounter, totaling ${fmtNum(data.totalHoursSaved)} hours returned annually across ${fmtNum(data.numberOfProviders)} providers at ${fmtNum(data.annualEncounters)} encounters per year. Recovered time is not counted as value itself — it is the resource pool that drives Capacity and Workforce calculations downstream.`}
             />
             <MethodologyLine
-              text="Quadrant structure: Value is grouped into Capacity, Workforce, Revenue, and Quality. Each quadrant is an audit-ready slice — financial drivers carry $ math, qualitative drivers are tracked post-deployment as leading indicators."
+              text="Quadrant structure: Value is organized into four independent domains. Capacity captures time freed for additional patient volume or visit throughput. Workforce captures burnout reduction, turnover avoidance, and time-on-task improvements. Revenue captures new or recovered billing opportunity from documentation completeness and care gap closure. Quality captures documentation accuracy and compliance improvements that drive downstream program performance. Each quadrant is modeled independently so individual assumptions can be tested or replaced without affecting others. Financial drivers carry explicit $ math; qualitative drivers are excluded from totals and tracked post-deployment as leading indicators."
             />
             {(["Capacity", "Workforce", "Revenue", "Quality"] as const).map(
               (qLabel) => {
@@ -2166,35 +1973,23 @@ export const ExploreNarrativePDFDocument = ({
                 const quantified = q.drivers.filter(
                   (d) => d.visibility === "quantified",
                 );
-                const qualitative = q.drivers.filter(
-                  (d) => d.visibility === "qualitative",
-                );
-                if (quantified.length === 0 && qualitative.length === 0) return null;
-                return [
-                  ...quantified.map((d) => (
-                    <MethodologyLine
-                      key={`${qLabel}-${d.id}`}
-                      text={`${d.label} (${qLabel}): ${d.calcSummary || d.shortDescription} = ${fmtCurrency(d.value)}.`}
-                    />
-                  )),
-                  ...qualitative.map((d) => (
-                    <MethodologyLine
-                      key={`${qLabel}-${d.id}-qual`}
-                      text={`${d.label} (${qLabel}): ${d.shortDescription} — tracked post-deployment as a leading indicator.`}
-                    />
-                  )),
-                ];
+                if (quantified.length === 0) return null;
+                return quantified.map((d) => (
+                  <MethodologyLine
+                    key={`${qLabel}-${d.id}`}
+                    text={`${d.label} (${qLabel}): ${d.shortDescription} The modeled value for this driver is ${fmtCurrency(d.value)} annually, based on the inputs configured for this assessment. This figure reflects the realization-adjusted estimate; the gross calculation and per-factor breakdown appear on the ${qLabel} page.`}
+                  />
+                ));
               },
             )}
             <MethodologyLine
-              text={`Year-over-year growth: Year 2 +${data.year2GrowthPercent}%, Year 3 +${data.year3GrowthPercent}%. ${
-                data.pricingModel === "perEncounter"
-                  ? "Per-encounter pricing scales investment alongside volume."
-                  : "Per-provider and annual pricing hold investment constant across all three years."
-              }`}
+              text={`Investment basis: The recurring annual investment is calculated ${data.pricingModel === "perProvider" ? `per provider at the configured rate across ${fmtNum(data.numberOfProviders)} providers` : data.pricingModel === "perEncounter" ? `per encounter across ${fmtNum(data.annualEncounters)} annual encounters — investment scales proportionally with volume` : "as a fixed annual license fee regardless of provider count or volume"}. ${data.includeImplementation && data.implementationFee > 0 ? `A one-time implementation fee of ${fmtCurrency(data.implementationFee)} is excluded from the Year 1 base case and surfaced separately so the ROI reflects steady-state economics, not a setup-loaded first year.` : "No implementation fee is included in this assessment."}`}
             />
             <MethodologyLine
-              text="Realization & confidence: Each driver applies a realization rate that haircuts the gross modeled value to reflect operational adoption and partner-specific factors. Validate against historical data when available."
+              text={`Scenario sensitivity: Instead of projecting multi-year growth, this assessment presents Year 1 outcomes across three adoption levels — conservative (−25%), base case (configured inputs), and optimistic (+25%). Investment is held constant in each scenario. This framing is more defensible than applying assumed annual growth rates, which carry meaningful uncertainty in early-stage deployments. If utilization and adoption play out as modeled, the base case is the expected outcome; conservative and optimistic bound the realistic range.`}
+            />
+            <MethodologyLine
+              text="Realization & confidence: Every financial driver applies a realization rate that scales back the gross modeled figure to reflect real-world operational adoption, workflow variation, and partner-specific factors. Rates are calibrated to published benchmarks from comparable deployments and are visible on each driver card. This assessment uses inputs you provided; no figure is fabricated or extrapolated beyond the configured scenario. Treat this as a planning-stage estimate — validate all key assumptions against your organization's own operational data before using these projections in contracting or budgeting decisions."
             />
           </View>
 
@@ -2203,14 +1998,17 @@ export const ExploreNarrativePDFDocument = ({
               fontSize: 8.5,
               fontStyle: "italic",
               color: colors.tertiary,
-              lineHeight: 1.5,
-              marginTop: 14,
+              lineHeight: 1.45,
+              marginTop: 10,
             }}
           >
-            This assessment is for planning purposes. Hard value projections are
-            based on user-provided inputs. Qualitative drivers are tracked
-            post-deployment and not monetized in totals. Validate with your
-            organization's data after implementation.
+            This assessment is for planning purposes only. Financial projections
+            are based on user-provided inputs and published benchmarks; actual
+            results will vary based on implementation, clinical workflow, and
+            adoption factors specific to your organization. Qualitative drivers
+            are tracked post-deployment and excluded from financial totals.
+            Validate all assumptions with your organization's data before
+            making financial decisions.
           </Text>
 
           <PageFooter orgName={orgName} settingLabel={settingLabel} />

@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers, Users, Clock, DollarSign, Building2 } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers, Users, Clock, DollarSign, Building2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type ExploreState, type OtherFinancialBenefitItem } from "./ExploreFlow";
+import { type ExploreState, type OtherFinancialBenefitItem, type CostDisplacementItem } from "./ExploreFlow";
 import { EXPLORE_DRIVERS, isDriverEnabled, type ExploreQuadrant } from "@/lib/exploreDrivers";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
@@ -58,6 +58,7 @@ export default function ExploreModel({
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);
+  const [displacementExpanded, setDisplacementExpanded] = useState(true);
   const { toast } = useToast();
 
   const isNursingForTotal = state.careSetting === 'nursing';
@@ -125,6 +126,23 @@ export default function ExploreModel({
   const netAnnualValue = totalAnnualValue - annualInvestment;
   const roi = annualInvestment > 0 ? totalAnnualValue / annualInvestment : 0;
   const valuePerProvider = state.numberOfProviders > 0 ? Math.round(netAnnualValue / state.numberOfProviders) : 0;
+
+  // Cost displacement — 1-year ramp: Y1 = ~50% (average over linear ramp), Y2/Y3 = 100%
+  const displacementItems: CostDisplacementItem[] = state.costDisplacementItems ?? [];
+  const totalDisplacementAnnual = useMemo(() =>
+    displacementItems.reduce((s, item) => s + (item.annualSpend * item.displacementPct / 100), 0),
+    [displacementItems],
+  );
+  const displacementYear1Auto = Math.round(totalDisplacementAnnual * 0.5);
+  const displacementYear2Auto = Math.round(totalDisplacementAnnual);
+  const displacementYear3Auto = Math.round(totalDisplacementAnnual);
+  const displacementYear1 = state.costDisplacementY1Override ?? displacementYear1Auto;
+  const displacementYear2 = state.costDisplacementY2Override ?? displacementYear2Auto;
+  const displacementYear3 = state.costDisplacementY3Override ?? displacementYear3Auto;
+  const hasDisplacementOverrides =
+    state.costDisplacementY1Override !== undefined ||
+    state.costDisplacementY2Override !== undefined ||
+    state.costDisplacementY3Override !== undefined;
 
   const hasQualitativeDrivers = useMemo(() => {
     const { timeDriverInputs: t, docQualityInputs: d } = state;
@@ -443,6 +461,11 @@ export default function ExploreModel({
   const threeYearNetTotal = useMemo(() => year1Net + year2Net + year3Net, [year1Net, year2Net, year3Net]);
   const threeYearInvestmentTotal = useMemo(() => year1Investment + year2Investment + year3Investment, [year1Investment, year2Investment, year3Investment]);
 
+  // Combined ROI including cost displacement (Option B: clinical + displaced budget)
+  const combinedNetY1 = year1Net + displacementYear1;
+  const combinedRoiY1 = annualInvestment > 0 ? (totalAnnualValue + displacementYear1) / annualInvestment : 0;
+  const combinedThreeYearNet = threeYearNetTotal + displacementYear1 + displacementYear2 + displacementYear3;
+
   // Expansion opportunity (use fullScaleProviders from state, editable utilization)
   // For nursing, the baseline unit is staffed beds (not nurse FTEs, which is what
   // numberOfProviders stores). Using the wrong baseline made the trajectory point down.
@@ -743,8 +766,14 @@ export default function ExploreModel({
             };
 
             switch (driverId) {
-              case 'patientAccess':
-                return `${fmt(hoursSaved)} hours returned across ${fmt(providers)} providers. Reinvesting a portion of recovered documentation time into additional visits generates ${fmtCur(value)} annually${providers > 0 ? ` — ${fmtCur(Math.round(value / providers))} per provider` : ''}.`;
+              case 'patientAccess': {
+                const td = state.timeDriverInputs as any;
+                const realizePct = td.capacityRealizationPercent ?? 25;
+                const hrsPerProvWk = providers > 0 ? hoursSaved / providers / 48 : 0;
+                const visitHrs = (td.visitDuration ?? 30) / 60;
+                const visitsPerWk = visitHrs > 0 ? Math.round((hrsPerProvWk * (realizePct / 100) / visitHrs) * 10) / 10 : 0;
+                return `${fmt(hoursSaved)} hours returned across ${fmt(providers)} providers. Reinvesting ${realizePct}% of that time into additional visits at ${visitsPerWk} visit${visitsPerWk === 1 ? '' : 's'}/provider/week generates ${fmtCur(value)} annually${providers > 0 ? ` — ${fmtCur(Math.round(value / providers))} per provider` : ''}.`;
+              }
               case 'lwbsRecovery':
                 return `Across ${fmt(encounters)} annual ED visits, reducing LWBS through faster documentation generates ${fmtCur(value)} in recovered visit revenue annually.`;
               case 'admissionCapture':
@@ -916,14 +945,20 @@ export default function ExploreModel({
           roi: annualInvestment > 0 ? totalAnnualValue / annualInvestment : 0,
           valuePerProvider: state.numberOfProviders > 0 ? Math.round(year1Net / state.numberOfProviders) : 0,
 
-          // Expansion opportunity
-          ...(expandedProviders > expansionBaselineCount ? {
+          // Expansion opportunity — show when providers OR utilization differs from current model
+          ...(expandedProviders > expansionBaselineCount || expandedUtilization > state.utilizationPercent ? {
             expansionProviders: expandedProviders,
             expansionUtilizationPercent: expandedUtilization,
             expansionAnnualValue: expandedValue,
             expansionRoi: expandedRoi,
             ...(effectiveFullScaleEncounters !== null ? { expansionEncounters: effectiveFullScaleEncounters } : {}),
           } : {}),
+
+          // Cost displacement
+          costDisplacementItems: displacementItems.length > 0 ? displacementItems : undefined,
+          costDisplacementTotals: displacementItems.length > 0
+            ? { year1: displacementYear1, year2: displacementYear2, year3: displacementYear3 }
+            : undefined,
         };
 
         if (state.careSetting === 'nursing') {
@@ -1033,6 +1068,11 @@ export default function ExploreModel({
             totalAnnualValue,
             netAnnualValue: totalAnnualValue - annualInvestment,
             costPerBedPerYear: state.nursingStaffedBeds > 0 ? Math.round((totalAnnualValue - annualInvestment) / state.nursingStaffedBeds) : 0,
+
+            costDisplacementItems: displacementItems.length > 0 ? displacementItems : undefined,
+            costDisplacementTotals: displacementItems.length > 0
+              ? { year1: displacementYear1, year2: displacementYear2, year3: displacementYear3 }
+              : undefined,
           };
 
           await generateNursingValueAssessmentPDF(nursingInput);
@@ -1485,7 +1525,213 @@ export default function ExploreModel({
             </p>
           )}
         </motion.div>
-        
+
+        {/* Cost Displacement Callout */}
+        <motion.div
+          className="mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="rounded-xl overflow-hidden border border-neutral-200">
+            {/* Dark header — click to collapse, Add tool on the right */}
+            <div className="flex items-center justify-between px-5 py-4 bg-[#1A1A1A]">
+              <button
+                onClick={() => setDisplacementExpanded(!displacementExpanded)}
+                className="flex items-center gap-3 flex-1 min-w-0 text-left"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-0.5">Cost Displacement</p>
+                  {displacementExpanded ? (
+                    <p className="text-xs text-neutral-400">Existing tools replaced by Abridge — savings on top of clinical ROI</p>
+                  ) : (
+                    <p className="text-xs text-neutral-400">
+                      {displacementItems.length === 0
+                        ? 'No tools added'
+                        : `${displacementItems.length} tool${displacementItems.length > 1 ? 's' : ''} · ${formatCurrency(displacementYear1 + displacementYear2 + displacementYear3)} over 3 years`}
+                    </p>
+                  )}
+                </div>
+                {displacementExpanded
+                  ? <ChevronUp className="w-4 h-4 text-neutral-500 shrink-0" />
+                  : <ChevronDown className="w-4 h-4 text-neutral-500 shrink-0" />}
+              </button>
+              <button
+                onClick={() => {
+                  const newItem: CostDisplacementItem = {
+                    id: `disp-${Date.now()}`,
+                    label: '',
+                    annualSpend: 0,
+                    displacementPct: 100,
+                  };
+                  updateState({ costDisplacementItems: [...displacementItems, newItem] });
+                  setDisplacementExpanded(true);
+                }}
+                className="flex items-center gap-1.5 text-xs font-medium text-white hover:text-neutral-300 transition-colors shrink-0 ml-4 border border-neutral-600 rounded-full px-3 py-1"
+              >
+                <Plus className="w-3 h-3" />
+                Add tool
+              </button>
+            </div>
+
+            <AnimatePresence initial={false}>
+              {displacementExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  {displacementItems.length === 0 ? (
+                    <div className="px-5 py-4 bg-white text-xs text-neutral-400 italic border-t border-neutral-100">
+                      No tools added — click "Add tool" to capture a cost being displaced.
+                    </div>
+                  ) : (
+                    <div className="bg-white divide-y divide-neutral-100">
+                      {displacementItems.map((item, idx) => {
+                        const displaced = item.annualSpend * item.displacementPct / 100;
+                        return (
+                          <div key={item.id} className="px-5 py-3 space-y-2">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="text"
+                                placeholder="Tool or contract name"
+                                value={item.label}
+                                onChange={(e) => {
+                                  const updated = displacementItems.map((x, i) => i === idx ? { ...x, label: e.target.value } : x);
+                                  updateState({ costDisplacementItems: updated });
+                                }}
+                                className="flex-1 text-sm h-8 bg-neutral-50 border border-neutral-200 rounded-lg px-3 focus:outline-none focus:border-neutral-400 placeholder:text-neutral-300"
+                              />
+                              <button
+                                onClick={() => updateState({ costDisplacementItems: displacementItems.filter((_, i) => i !== idx) })}
+                                className="text-neutral-300 hover:text-red-400 transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <div className="flex items-center gap-1.5">
+                                <label className="text-[11px] text-neutral-500 whitespace-nowrap">Annual spend</label>
+                                <div className="relative">
+                                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-neutral-400 pointer-events-none">$</span>
+                                  <FormattedNumberInput
+                                    value={item.annualSpend}
+                                    onChange={(v) => {
+                                      const updated = displacementItems.map((x, i) => i === idx ? { ...x, annualSpend: Math.max(v, 0) } : x);
+                                      updateState({ costDisplacementItems: updated });
+                                    }}
+                                    className="w-28 text-right text-sm h-7 bg-neutral-50 border border-neutral-200 rounded-lg pl-5 pr-2 focus:outline-none focus:border-neutral-400"
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <label className="text-[11px] text-neutral-500 whitespace-nowrap">% displaced</label>
+                                <div className="relative">
+                                  <FormattedNumberInput
+                                    value={item.displacementPct}
+                                    onChange={(v) => {
+                                      const updated = displacementItems.map((x, i) => i === idx ? { ...x, displacementPct: Math.min(Math.max(v, 0), 100) } : x);
+                                      updateState({ costDisplacementItems: updated });
+                                    }}
+                                    className="w-16 text-right text-sm h-7 bg-neutral-50 border border-neutral-200 rounded-lg px-2 pr-5 focus:outline-none focus:border-neutral-400"
+                                  />
+                                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-neutral-400 pointer-events-none">%</span>
+                                </div>
+                              </div>
+                              {displaced > 0 && (
+                                <span className="text-xs font-semibold text-neutral-800 ml-auto">
+                                  {formatCurrency(displaced)}/yr at scale
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Per-year totals — editable for live-call overrides */}
+                      {totalDisplacementAnnual > 0 && (
+                        <div className="px-5 py-4 bg-neutral-50 border-t border-neutral-200">
+                          <div className="flex items-center justify-between mb-3">
+                            <p className="text-[11px] font-semibold text-neutral-700 uppercase tracking-wide">Per-year displaced cost</p>
+                            {hasDisplacementOverrides && (
+                              <button
+                                onClick={() => updateState({
+                                  costDisplacementY1Override: undefined,
+                                  costDisplacementY2Override: undefined,
+                                  costDisplacementY3Override: undefined,
+                                })}
+                                className="text-[10px] text-[#EA2C00] hover:underline"
+                              >
+                                Reset to auto
+                              </button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-3 gap-3">
+                            {([
+                              { label: 'Year 1', value: displacementYear1, auto: displacementYear1Auto, key: 'costDisplacementY1Override' as const, override: state.costDisplacementY1Override },
+                              { label: 'Year 2', value: displacementYear2, auto: displacementYear2Auto, key: 'costDisplacementY2Override' as const, override: state.costDisplacementY2Override },
+                              { label: 'Year 3', value: displacementYear3, auto: displacementYear3Auto, key: 'costDisplacementY3Override' as const, override: state.costDisplacementY3Override },
+                            ]).map(({ label, value, auto, key, override }) => (
+                              <div key={label}>
+                                <p className="text-[10px] text-neutral-400 mb-1">{label}</p>
+                                <div className="relative">
+                                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-neutral-400 pointer-events-none">$</span>
+                                  <FormattedNumberInput
+                                    value={value}
+                                    onChange={(v) => updateState({ [key]: Math.max(v, 0) })}
+                                    className="w-full text-right text-sm h-8 bg-white border border-neutral-200 rounded-lg pl-5 pr-2 focus:outline-none focus:border-neutral-400"
+                                  />
+                                </div>
+                                {override !== undefined && (
+                                  <p className="text-[9px] text-neutral-400 mt-0.5 text-right">auto: {formatCurrency(auto)}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-3 flex items-center justify-between">
+                            <p className="text-xs text-neutral-400 italic">
+                              {!hasDisplacementOverrides ? '1-year transition assumed' : 'Custom per-year values'}
+                            </p>
+                            <div className="text-right">
+                              <p className="text-[10px] text-neutral-400 uppercase tracking-wide">3-Year Total</p>
+                              <p className="text-lg font-bold text-neutral-900">
+                                {formatCurrency(displacementYear1 + displacementYear2 + displacementYear3)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Combined case — always visible when items are entered */}
+            {displacementItems.length > 0 && (
+              <div className="border-t border-neutral-700 px-4 pt-3 pb-4 bg-[#1A1A1A]">
+                <p className="text-[10px] text-neutral-400 uppercase tracking-widest mb-3">Including cost displacement</p>
+                <div className="flex gap-6">
+                  <div>
+                    <p className="text-[10px] text-neutral-400 mb-1">Net Annual Value</p>
+                    <p className="text-base font-bold text-white">{formatCurrency(combinedNetY1)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-neutral-400 mb-1">Year 1 ROI</p>
+                    <p className="text-base font-bold text-white">{combinedRoiY1.toFixed(1)}×</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-neutral-400 mb-1">3-Year Net</p>
+                    <p className="text-base font-bold text-white">{formatCurrency(combinedThreeYearNet)}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
         {/* How Your Numbers Were Built — quadrant cards */}
         <motion.div
           className="mb-8"

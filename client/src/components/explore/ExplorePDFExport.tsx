@@ -5,6 +5,13 @@ import { savePdfBlob } from "@/lib/pdf-save";
 
 export type ExploreCareSetting = "outpatient" | "ed" | "inpatient" | "nursing";
 
+export interface ExploreCostDisplacementItem {
+  id: string;
+  label: string;
+  annualSpend: number;
+  displacementPct: number;
+}
+
 /**
  * @deprecated Legacy alias preserved for backward import compatibility.
  * The unified Sprint 2H PDF uses the quadrant-aware shape below.
@@ -117,6 +124,10 @@ export interface ExplorePDFData {
   expansionAnnualValue?: number;
   expansionRoi?: number;
   expansionEncounters?: number;
+
+  // Cost displacement (optional)
+  costDisplacementItems?: ExploreCostDisplacementItem[];
+  costDisplacementTotals?: { year1: number; year2: number; year3: number };
 }
 
 // ───────────────────────── Public API ─────────────────────────

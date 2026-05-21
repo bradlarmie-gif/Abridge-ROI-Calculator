@@ -288,6 +288,9 @@ export interface NursingPDFInput {
   totalAnnualValue: number;
   netAnnualValue: number;
   costPerBedPerYear: number;
+
+  costDisplacementItems?: Array<{ id: string; label: string; annualSpend: number; displacementPct: number }>;
+  costDisplacementTotals?: { year1: number; year2: number; year3: number };
 }
 
 // ───────────────────────── Helpers ─────────────────────────
@@ -1680,6 +1683,85 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 14 }}>
             {`Unit size, staffing, and adoption rate are held constant across all three years. No volume growth is assumed. Year 2 and Year 3 values reflect a full calendar year at the inputs above. The ${fmtCurrency(data.threeYearCumulativeNet)} cumulative net is the sum of the rows above — no compounding or incremental growth is embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.`}
           </Text>
+
+          {/* Cost Displacement callout — only renders when items are present */}
+          {(data.costDisplacementItems ?? []).length > 0 && (() => {
+            const items = data.costDisplacementItems!;
+            const totals = data.costDisplacementTotals ?? (() => {
+              const annual = items.reduce((s, item) => s + (item.annualSpend * item.displacementPct / 100), 0);
+              return { year1: Math.round(annual * 0.5), year2: Math.round(annual), year3: Math.round(annual) };
+            })();
+            const threeYear = totals.year1 + totals.year2 + totals.year3;
+            return (
+              <View
+                style={{
+                  marginBottom: 14,
+                  borderWidth: 1,
+                  borderColor: colors.separatorHeavy,
+                  borderRadius: 4,
+                  overflow: "hidden",
+                }}
+                wrap={false}
+              >
+                <View style={{ backgroundColor: "#1A1A1A", paddingHorizontal: 12, paddingVertical: 8, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                  <View>
+                    <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primary, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 2 }}>
+                      Cost Displacement
+                    </Text>
+                    <Text style={{ fontSize: 8, color: "#999999" }}>
+                      Existing tools replaced by Abridge — savings layer on top of clinical ROI
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 14, fontWeight: "bold", color: "#FFFFFF" }}>
+                    {fmtCurrency(threeYear)}
+                  </Text>
+                </View>
+                {items.map((item, i) => {
+                  const displaced = item.annualSpend * item.displacementPct / 100;
+                  return (
+                    <View
+                      key={item.id}
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        backgroundColor: i % 2 === 0 ? "#FFFFFF" : "#F9F9F9",
+                      }}
+                    >
+                      <Text style={{ fontSize: 9, color: colors.primaryText, flex: 2 }}>
+                        {item.label || "Unnamed tool"}
+                      </Text>
+                      <Text style={{ fontSize: 8, color: colors.secondary, flex: 1, textAlign: "right" }}>
+                        {`${item.displacementPct}% of ${fmtCurrency(item.annualSpend)}`}
+                      </Text>
+                      <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, flex: 1, textAlign: "right" }}>
+                        {`${fmtCurrency(displaced)}/yr`}
+                      </Text>
+                    </View>
+                  );
+                })}
+                <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#F5F5F5", paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: 1, borderTopColor: "#E8E8E8" }}>
+                  <View style={{ flexDirection: "row", gap: 18 }}>
+                    {[
+                      { label: "Year 1", value: totals.year1 },
+                      { label: "Year 2", value: totals.year2 },
+                      { label: "Year 3", value: totals.year3 },
+                    ].map(({ label, value }) => (
+                      <View key={label}>
+                        <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>{label}</Text>
+                        <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(value)}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text style={{ fontSize: 7, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>3-Year Total</Text>
+                    <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(threeYear)}</Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })()}
 
           {/* Expansion Opportunity — two-card layout: gray Today's Scale / red Full Scale */}
           {data.expansionBeds ? (

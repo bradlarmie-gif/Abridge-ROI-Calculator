@@ -27,6 +27,13 @@ export interface OtherFinancialBenefitItem {
   quadrant: 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
 }
 
+export interface CostDisplacementItem {
+  id: string;
+  label: string;
+  annualSpend: number;
+  displacementPct: number;
+}
+
 export type TimePathScenario = 'conservative' | 'typical' | 'aggressive' | null;
 
 export type TimeAllocationFocus = 'patientAccess' | 'reducingLocums' | 'clinicianWellbeing';
@@ -470,6 +477,10 @@ export interface ExploreState {
   calculatedValues?: CalculatedValues;
 
   otherFinancialBenefits: OtherFinancialBenefitItem[];
+  costDisplacementItems: CostDisplacementItem[];
+  costDisplacementY1Override?: number;
+  costDisplacementY2Override?: number;
+  costDisplacementY3Override?: number;
 
   year2GrowthPercent: number;
   year3GrowthPercent: number;
@@ -722,6 +733,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingDocTimePerEventExpanded: false,
   },
   otherFinancialBenefits: [],
+  costDisplacementItems: [],
   // Documentation quality inputs
   docQualityInputs: {
     wrvuEnabled: false,
