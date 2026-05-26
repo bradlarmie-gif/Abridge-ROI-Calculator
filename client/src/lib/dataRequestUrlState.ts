@@ -105,7 +105,11 @@ export function decodeDataFormPreseed(encoded: string): DataFormPreseed | null {
 export async function generateDataFormUrl(preseed: DataFormPreseed): Promise<string> {
   const { createShortLink } = await import('./shortLinks');
   const encoded = encodeDataFormPreseed(preseed);
-  return createShortLink('data_form', encoded);
+  try {
+    return await createShortLink('data_form', encoded);
+  } catch {
+    return `${window.location.origin}/?data_form=${encoded}`;
+  }
 }
 
 const SETTING_LABELS: Record<MeasureCareSetting, string> = {

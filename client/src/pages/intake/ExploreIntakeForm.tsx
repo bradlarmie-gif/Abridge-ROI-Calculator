@@ -148,9 +148,10 @@ interface IntakeFormState {
   opCurrentWrvu: number | null; opConversionFactor: number | null; opDenialRate: number | null;
   opAvgClaimValue: number | null; opPanelSize: number | null; opMaEnrollmentRate: number | null;
   opAnnualPaymentPerRaf: number | null; opTurnoverRate: number | null; opReplacementCost: number | null;
+  opScribeAnnualSpend: number | null;
   edProviders: number | null; edVisits: number | null; edLwbsRate: number | null;
   edRevenuePerVisit: number | null; edAdmissionRate: number | null; edAdmissionRevenue: number | null;
-  edTurnoverRate: number | null; edReplacementCost: number | null;
+  edTurnoverRate: number | null; edReplacementCost: number | null; edScribeAnnualSpend: number | null;
   ipProviders: number | null; ipAdmissions: number | null; ipDenialRate: number | null;
   ipAvgClaimValue: number | null; ipTurnoverRate: number | null; ipReplacementCost: number | null;
   ipDrgAtRiskRate: number | null; ipDrgWeightIncrease: number | null; ipDrgBasePayment: number | null;
@@ -174,9 +175,10 @@ function getEmptyState(preseed?: IntakeFormPreseed): IntakeFormState {
     opCurrentWrvu: null, opConversionFactor: null, opDenialRate: null,
     opAvgClaimValue: null, opPanelSize: null, opMaEnrollmentRate: null,
     opAnnualPaymentPerRaf: null, opTurnoverRate: null, opReplacementCost: null,
+    opScribeAnnualSpend: null,
     edProviders: null, edVisits: null, edLwbsRate: null,
     edRevenuePerVisit: null, edAdmissionRate: null, edAdmissionRevenue: null,
-    edTurnoverRate: null, edReplacementCost: null,
+    edTurnoverRate: null, edReplacementCost: null, edScribeAnnualSpend: null,
     ipProviders: null, ipAdmissions: null, ipDenialRate: null,
     ipAvgClaimValue: null, ipTurnoverRate: null, ipReplacementCost: null,
     ipDrgAtRiskRate: null, ipDrgWeightIncrease: null, ipDrgBasePayment: null,
@@ -229,10 +231,10 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
       opCurrentWrvu: s.opCurrentWrvu, opConversionFactor: s.opConversionFactor, opDenialRate: s.opDenialRate,
       opAvgClaimValue: s.opAvgClaimValue, opPanelSize: s.opPanelSize,
       opMaEnrollmentRate: s.opMaEnrollmentRate, opAnnualPaymentPerRaf: s.opAnnualPaymentPerRaf,
-      opTurnoverRate: s.opTurnoverRate, opReplacementCost: s.opReplacementCost,
+      opTurnoverRate: s.opTurnoverRate, opReplacementCost: s.opReplacementCost, opScribeAnnualSpend: s.opScribeAnnualSpend,
       edProviders: s.edProviders, edAnnualVisits: s.edVisits, edLwbsRate: s.edLwbsRate,
       edRevenuePerVisit: s.edRevenuePerVisit, edAdmissionRate: s.edAdmissionRate,
-      edAdmissionRevenue: s.edAdmissionRevenue, edTurnoverRate: s.edTurnoverRate, edReplacementCost: s.edReplacementCost,
+      edAdmissionRevenue: s.edAdmissionRevenue, edTurnoverRate: s.edTurnoverRate, edReplacementCost: s.edReplacementCost, edScribeAnnualSpend: s.edScribeAnnualSpend,
       ipProviders: s.ipProviders, ipAnnualAdmissions: s.ipAdmissions, ipDenialRate: s.ipDenialRate,
       ipAvgClaimValue: s.ipAvgClaimValue, ipTurnoverRate: s.ipTurnoverRate, ipReplacementCost: s.ipReplacementCost,
       ipDrgAtRiskRate: s.ipDrgAtRiskRate, ipDrgWeightIncrease: s.ipDrgWeightIncrease, ipDrgBasePayment: s.ipDrgBasePayment,
@@ -383,6 +385,9 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                     <NumberField label="Cost to replace one provider" value={formState.opReplacementCost}
                       onChange={v => update('opReplacementCost', v)} placeholder="e.g. 350,000" suffix="$"
                       hint="recruiting + training + lost revenue — typically $250k–$500k" />
+                    <NumberField label="Annual scribe / documentation support spend" value={formState.opScribeAnnualSpend}
+                      onChange={v => update('opScribeAnnualSpend', v)} placeholder="e.g. 500,000" suffix="$"
+                      hint="total annual cost of scribes, virtual scribes, or documentation support staff across all providers — leave blank if none" />
 
                     <SectionDivider label="Documentation Quality" />
                     <div className="grid grid-cols-2 gap-4">
@@ -437,6 +442,9 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                       <NumberField label="Cost to replace one provider" value={formState.edReplacementCost}
                         onChange={v => update('edReplacementCost', v)} placeholder="e.g. 350,000" suffix="$" />
                     </div>
+                    <NumberField label="Annual scribe / documentation support spend" value={formState.edScribeAnnualSpend}
+                      onChange={v => update('edScribeAnnualSpend', v)} placeholder="e.g. 300,000" suffix="$"
+                      hint="total annual cost of scribes or documentation support staff across all ED providers — leave blank if none" />
                   </div>
                 )}
 

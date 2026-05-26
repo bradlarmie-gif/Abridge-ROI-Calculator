@@ -23,6 +23,7 @@ export default function DataRequestModal({ open, onOpenChange, generateUrl, orgN
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
+  const [genError, setGenError] = useState(false);
 
   const reset = () => {
     setPhase('setup');
@@ -42,12 +43,13 @@ export default function DataRequestModal({ open, onOpenChange, generateUrl, orgN
   const handleGenerate = async () => {
     if (!repName.trim() || generating) return;
     setGenerating(true);
+    setGenError(false);
     try {
       const generatedUrl = await generateUrl(repName.trim(), orgName.trim());
       setUrl(generatedUrl);
       setPhase('guide');
     } catch {
-      // stay on setup
+      setGenError(true);
     } finally {
       setGenerating(false);
     }
@@ -109,6 +111,9 @@ export default function DataRequestModal({ open, onOpenChange, generateUrl, orgN
                   data-testid="input-org-name"
                 />
               </div>
+              {genError && (
+                <p className="text-[11px] text-red-500 -mb-2">Could not generate link — check your connection and try again.</p>
+              )}
               <button
                 onClick={handleGenerate}
                 disabled={!repName.trim() || generating}

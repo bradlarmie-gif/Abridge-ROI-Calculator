@@ -18,6 +18,7 @@ export interface ExploreIntakeResponse {
   opAnnualPaymentPerRaf?: number | null;
   opTurnoverRate?: number | null;
   opReplacementCost?: number | null;
+  opScribeAnnualSpend?: number | null;
 
   edProviders?: number | null;
   edAnnualVisits?: number | null;
@@ -27,6 +28,7 @@ export interface ExploreIntakeResponse {
   edAdmissionRevenue?: number | null;
   edTurnoverRate?: number | null;
   edReplacementCost?: number | null;
+  edScribeAnnualSpend?: number | null;
 
   ipProviders?: number | null;
   ipAnnualAdmissions?: number | null;
@@ -108,7 +110,12 @@ export async function generateIntakeFormUrl(opts?: { preSelectedSettings?: Explo
     orgName: opts?.orgName,
   };
   const encoded = encodeIntakePreseed(preseed);
-  return createShortLink('intake_form', encoded);
+  try {
+    return await createShortLink('intake_form', encoded);
+  } catch {
+    // Fallback: direct URL with encoded params (no database required)
+    return `${window.location.origin}/?intake_form=${encoded}`;
+  }
 }
 
 const SETTING_LABELS: Record<ExploreCareSetting, string> = {
@@ -143,6 +150,7 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
         line('$/wRVU conversion rate', data.opConversionFactor),
         line('Annual provider turnover', data.opTurnoverRate, { suffix: '%' }),
         line('Cost to replace one provider', data.opReplacementCost, { suffix: ' $' }),
+        line('Annual scribe / documentation support spend', data.opScribeAnnualSpend, { suffix: ' $' }),
         line('Claim denial rate', data.opDenialRate, { suffix: '%' }),
         line('Avg denied claim value', data.opAvgClaimValue, { suffix: ' $' }),
         line('Panel size', data.opPanelSize),
@@ -160,6 +168,7 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
         line('Revenue per admission', data.edAdmissionRevenue, { suffix: ' $' }),
         line('Annual provider turnover', data.edTurnoverRate, { suffix: '%' }),
         line('Cost to replace one provider', data.edReplacementCost, { suffix: ' $' }),
+        line('Annual scribe / documentation support spend', data.edScribeAnnualSpend, { suffix: ' $' }),
       );
     }
     if (s === 'inpatient') {

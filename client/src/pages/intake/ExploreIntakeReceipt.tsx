@@ -42,6 +42,7 @@ function getOutpatientFields(d: ExploreIntakeResponse): { section: string; field
     { section: "Workforce", fields: [
       { label: "Annual provider turnover", value: fmt(d.opTurnoverRate, { suffix: "%" }) },
       { label: "Cost to replace one provider", value: fmt(d.opReplacementCost, { prefix: "$" }) },
+      { label: "Annual scribe / documentation support spend", value: fmt(d.opScribeAnnualSpend, { prefix: "$" }) },
     ]},
     { section: "Documentation Quality", fields: [
       { label: "Claim denial rate", value: fmt(d.opDenialRate, { suffix: "%" }) },
@@ -70,6 +71,7 @@ function getEdFields(d: ExploreIntakeResponse): { section: string; fields: Field
     { section: "Workforce", fields: [
       { label: "Annual provider turnover", value: fmt(d.edTurnoverRate, { suffix: "%" }) },
       { label: "Cost to replace one provider", value: fmt(d.edReplacementCost, { prefix: "$" }) },
+      { label: "Annual scribe / documentation support spend", value: fmt(d.edScribeAnnualSpend, { prefix: "$" }) },
     ]},
   ];
 }
