@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  MethodologyHome,
+  MethodologyFramework,
   MethodologyOutpatient,
   MethodologyED,
   MethodologyInpatient,
@@ -14,12 +14,12 @@ interface LearnPathProps {
 }
 
 type CareSettingType = "outpatient" | "ed" | "nursing" | "inpatient";
-type LearnScreen = "home" | "outpatient" | "ed" | "inpatient" | "nursing";
+type LearnScreen = "framework" | "home" | "outpatient" | "ed" | "inpatient" | "nursing";
 
 export type { LearnScreen };
 
 export default function LearnPath({ onBack, initialScreen }: LearnPathProps) {
-  const [currentScreen, setCurrentScreen] = useState<LearnScreen>(initialScreen || "home");
+  const [currentScreen, setCurrentScreen] = useState<LearnScreen>(initialScreen || "framework");
 
   // Scroll to top on every screen change (mobile fix)
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function LearnPath({ onBack, initialScreen }: LearnPathProps) {
   };
 
   const handleBackToHome = () => {
-    setCurrentScreen("home");
+    setCurrentScreen("framework");
   };
 
   const handleNavigateToSetting = (setting: string) => {
@@ -52,10 +52,11 @@ export default function LearnPath({ onBack, initialScreen }: LearnPathProps) {
       return <MethodologyInpatient onBack={handleBackToHome} onHome={onBack} onNavigateToSetting={handleNavigateToSetting} />;
     case "nursing":
       return <MethodologyNursing onBack={handleBackToHome} onHome={onBack} onNavigateToSetting={handleNavigateToSetting} />;
+    case "framework":
     case "home":
     default:
       return (
-        <MethodologyHome
+        <MethodologyFramework
           onBack={onBack}
           onSelectSetting={handleSelectSetting}
         />
