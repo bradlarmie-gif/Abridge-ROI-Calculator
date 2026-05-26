@@ -324,6 +324,43 @@ export interface TimeDriverInputs {
   ipDocTimeDischargeExpanded: boolean;
   nursingDocTimePerEventEnabled: boolean;
   nursingDocTimePerEventExpanded: boolean;
+  // Scribe cost reduction (Workforce, quantified — OP + ED)
+  scribeCostReductionEnabled: boolean;
+  scribeCostReductionExpanded: boolean;
+  // OP Revenue qualitative
+  opPriorAuthP2PEnabled: boolean;
+  opPriorAuthP2PExpanded: boolean;
+  opClaimsReworkTimeEnabled: boolean;
+  opClaimsReworkTimeExpanded: boolean;
+  // OP Quality qualitative
+  opNoteCompletenessEnabled: boolean;
+  opNoteCompletenessExpanded: boolean;
+  opReferralDocQualityEnabled: boolean;
+  opReferralDocQualityExpanded: boolean;
+  // ED Capacity qualitative
+  edDoorToDispositionEnabled: boolean;
+  edDoorToDispositionExpanded: boolean;
+  // ED Revenue qualitative
+  edClaimsReworkTimeEnabled: boolean;
+  edClaimsReworkTimeExpanded: boolean;
+  // ED Quality qualitative
+  edNoteCompletenessEnabled: boolean;
+  edNoteCompletenessExpanded: boolean;
+  edSepsisBundleEnabled: boolean;
+  edSepsisBundleExpanded: boolean;
+  // IP Capacity qualitative
+  ipLengthOfStayEnabled: boolean;
+  ipLengthOfStayExpanded: boolean;
+  ipDischargeSummaryTimelinessEnabled: boolean;
+  ipDischargeSummaryTimelinessExpanded: boolean;
+  // IP Revenue qualitative
+  ipClaimsReworkTimeEnabled: boolean;
+  ipClaimsReworkTimeExpanded: boolean;
+  // IP Quality qualitative
+  ipPoaDocRateEnabled: boolean;
+  ipPoaDocRateExpanded: boolean;
+  ipNoteCompletenessEnabled: boolean;
+  ipNoteCompletenessExpanded: boolean;
 }
 
 // Documentation Quality inputs
@@ -731,6 +768,34 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipDocTimeDischargeExpanded: false,
     nursingDocTimePerEventEnabled: false,
     nursingDocTimePerEventExpanded: false,
+    scribeCostReductionEnabled: false,
+    scribeCostReductionExpanded: false,
+    opPriorAuthP2PEnabled: false,
+    opPriorAuthP2PExpanded: false,
+    opClaimsReworkTimeEnabled: false,
+    opClaimsReworkTimeExpanded: false,
+    opNoteCompletenessEnabled: false,
+    opNoteCompletenessExpanded: false,
+    opReferralDocQualityEnabled: false,
+    opReferralDocQualityExpanded: false,
+    edDoorToDispositionEnabled: false,
+    edDoorToDispositionExpanded: false,
+    edClaimsReworkTimeEnabled: false,
+    edClaimsReworkTimeExpanded: false,
+    edNoteCompletenessEnabled: false,
+    edNoteCompletenessExpanded: false,
+    edSepsisBundleEnabled: false,
+    edSepsisBundleExpanded: false,
+    ipLengthOfStayEnabled: false,
+    ipLengthOfStayExpanded: false,
+    ipDischargeSummaryTimelinessEnabled: false,
+    ipDischargeSummaryTimelinessExpanded: false,
+    ipClaimsReworkTimeEnabled: false,
+    ipClaimsReworkTimeExpanded: false,
+    ipPoaDocRateEnabled: false,
+    ipPoaDocRateExpanded: false,
+    ipNoteCompletenessEnabled: false,
+    ipNoteCompletenessExpanded: false,
   },
   otherFinancialBenefits: [],
   costDisplacementItems: [],
