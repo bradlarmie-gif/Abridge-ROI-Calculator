@@ -71,7 +71,7 @@ function ParticleCanvas() {
 
     function initParticles() {
       const w = canvas!.width, h = canvas!.height;
-      const n = Math.min(160, Math.floor((w * h) / 4500));
+      const n = Math.min(380, Math.floor((w * h) / 4500));
       pts = Array.from({ length: n }, () => {
         const a = 0.28 + Math.random() * 0.58;
         return {
