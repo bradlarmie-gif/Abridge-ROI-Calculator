@@ -395,7 +395,7 @@ const opDomainCards: OPDomainCardData[] = [
     badge: 'HEDIS & Preventive Care Attribution',
     northStar: 'Care Gap Closure Rate',
     direction: '↑',
-    northStarSub: "Care gaps aren't just clinical failures — they're documentation failures. When preventive services and chronic disease management are delivered but not captured with the specificity quality systems require, HEDIS and STARS scores suffer even when care quality is high.",
+    northStarSub: "Care gaps close through two mechanisms: documentation quality and physician presence. When documentation happens automatically, providers aren't mentally composing the note during the visit — they're fully in the encounter, which means they notice and act on more gaps. And when care is delivered, it gets captured with the specificity quality systems require.",
     matterBoxes: [
       {
         tag: 'Matters most if…',
@@ -405,6 +405,17 @@ const opDomainCards: OPDomainCardData[] = [
     alsoNote: "HCC capture and RAF score accuracy for value-based contracts. When chronic condition documentation is complete and specific, risk adjustment reflects the actual patient population — which protects per-member-per-month revenue in capitated arrangements.",
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
+      {
+        key: 'presence', label: 'Physician Presence in Visit ↑', sub: 'cognitive bandwidth freed',
+        detail: {
+          cols: [
+            { l: 'The second causal path', b: "Documentation burden doesn't just affect notes — it affects the visit itself. A physician planning to document after the encounter spends cognitive energy during the visit tracking what to remember, not fully engaging with the clinical checklist in front of them." },
+            { l: 'What changes with Abridge', b: "When documentation is happening automatically, the physician's attention is fully on the patient. That presence makes it more likely they notice an overdue screening, raise it with the patient, and act on it — not just capture it in the note afterward." },
+            { l: 'Why this matters', b: "This mechanism increases the rate at which care gaps are actually addressed during visits — not just the rate at which already-addressed gaps are properly documented. It's a distinct and additive effect." },
+          ],
+          grad: "This path is harder to isolate in data, but rising care gap closure rates in high-utilization Abridge practices — especially for proactive gaps the physician must raise — are the clearest indicator it's operating.",
+        },
+      },
       {
         key: 'capture', label: 'Preventive & Chronic Care Captured ↑', sub: 'delivered care documented',
         detail: {
