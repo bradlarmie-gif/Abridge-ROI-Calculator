@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 interface MethodologyNursingProps {
   onBack: () => void;
+  onHome?: () => void;
   onNavigateToSetting?: (setting: string) => void;
 }
 
@@ -1115,7 +1116,7 @@ function NursingValueArcSection() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyNursingProps) {
+export function MethodologyNursing({ onBack, onHome, onNavigateToSetting }: MethodologyNursingProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportPDF = async () => {
@@ -1135,7 +1136,7 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
       <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
         <div className="max-w-[1100px] mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={onBack} className="flex items-center cursor-pointer bg-transparent border-none p-0" data-testid="link-home-logo">
+            <button onClick={onHome ?? onBack} className="flex items-center cursor-pointer bg-transparent border-none p-0" data-testid="link-home-logo">
               <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
             </button>
             <span className="text-[#E5E5E5]">|</span>

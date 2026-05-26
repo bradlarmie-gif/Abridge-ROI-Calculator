@@ -45,13 +45,13 @@ export default function LearnPath({ onBack, initialScreen }: LearnPathProps) {
   // Render the appropriate methodology page based on current screen
   switch (currentScreen) {
     case "outpatient":
-      return <MethodologyOutpatient onBack={handleBackToHome} onNavigateToSetting={handleNavigateToSetting} />;
+      return <MethodologyOutpatient onBack={handleBackToHome} onHome={onBack} onNavigateToSetting={handleNavigateToSetting} />;
     case "ed":
-      return <MethodologyED onBack={handleBackToHome} onNavigateToSetting={handleNavigateToSetting} />;
+      return <MethodologyED onBack={handleBackToHome} onHome={onBack} onNavigateToSetting={handleNavigateToSetting} />;
     case "inpatient":
-      return <MethodologyInpatient onBack={handleBackToHome} onNavigateToSetting={handleNavigateToSetting} />;
+      return <MethodologyInpatient onBack={handleBackToHome} onHome={onBack} onNavigateToSetting={handleNavigateToSetting} />;
     case "nursing":
-      return <MethodologyNursing onBack={handleBackToHome} onNavigateToSetting={handleNavigateToSetting} />;
+      return <MethodologyNursing onBack={handleBackToHome} onHome={onBack} onNavigateToSetting={handleNavigateToSetting} />;
     case "home":
     default:
       return (
