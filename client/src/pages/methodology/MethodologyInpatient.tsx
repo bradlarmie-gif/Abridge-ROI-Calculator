@@ -397,7 +397,7 @@ const ipDomainCards: IPDomainCardData[] = [
     badge: 'Severity Capture & Risk Adjustment',
     northStar: 'Risk-Adjusted Quality Score Accuracy',
     direction: '↑',
-    northStarSub: "Quality programs measure outcomes relative to expected outcomes — and expected outcomes are calculated from documented complexity. When documentation understates severity, quality scores look worse than the care actually was. Documentation is the input to risk adjustment, not an afterthought.",
+    northStarSub: "Quality scores improve through two mechanisms: documentation accuracy and rounding quality. When hospitalists aren't carrying a documentation backlog into rounds, their clinical assessment is more thorough — more comorbidities recognized, more severity captured. And when that complexity is recognized, Abridge ensures it makes it into the record with the specificity risk adjustment requires.",
     matterBoxes: [
       {
         tag: 'Matters most if…',
@@ -407,6 +407,17 @@ const ipDomainCards: IPDomainCardData[] = [
     alsoNote: "CDI graduation — when CDI query volume drops consistently, it's the signal that documentation is capturing complexity at the point of care rather than requiring clarification after the fact. The quality and revenue stories converge here.",
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
+      {
+        key: 'presence', label: 'Rounding Quality ↑', sub: 'cognitive bandwidth during rounds',
+        detail: {
+          cols: [
+            { l: 'The second causal path', b: "A hospitalist managing 15–20 patients carries a documentation backlog into every rounding encounter. When part of their attention is on what they need to remember to document later, clinical assessment becomes shallower — subtle comorbidities get noted, not fully explored." },
+            { l: 'What changes with Abridge', b: "When documentation is captured automatically during rounds, the hospitalist's full attention is on the patient in front of them. That presence produces a more thorough clinical picture — comorbidities explored, severity recognized, plan reasoning articulated." },
+            { l: 'Why it matters for quality', b: "This mechanism is distinct from documentation accuracy: it increases the clinical complexity that gets recognized and documented in the first place, not just what gets captured from an already-complete clinical assessment. It's additive to the documentation-accuracy path." },
+          ],
+          grad: "This path is visible when CDI query rates drop without a concurrent CDI education initiative — meaning complexity is arriving complete, not just being coached in after the fact.",
+        },
+      },
       {
         key: 'complexity', label: 'Clinical Complexity Documented ↑', sub: 'conditions, severity captured',
         detail: {
