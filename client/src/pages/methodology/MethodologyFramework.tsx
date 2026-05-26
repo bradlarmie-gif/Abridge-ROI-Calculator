@@ -383,7 +383,7 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
       </section>
 
       {/* ── Transcription + Two Levers ─────────────────────────────────── */}
-      <section ref={leversRef} style={{ backgroundColor: "#0A0807", paddingTop: 96, paddingBottom: 96 }}>
+      <section ref={leversRef} style={{ backgroundColor: "#0A0807", paddingTop: 96, paddingBottom: 112 }}>
         <div className="max-w-[1080px] mx-auto px-6 md:px-10">
 
           {/* Transcription beat */}
@@ -407,46 +407,12 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
             </p>
           </motion.div>
 
-          {/* Lever connector visual */}
-          <motion.div
-            className="flex flex-col items-center mb-14"
-            initial={{ opacity: 0 }}
-            animate={leversInView ? { opacity: 1 } : {}}
-            transition={{ delay: 0.3, duration: 0.5 }}
+          {/* Two lever columns — pure editorial, no cards */}
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 56 }}
           >
-            <div className="w-px h-10" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0.35))" }} />
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.4)" }} />
-            <div className="relative w-full max-w-[620px] mt-0">
-              {/* Horizontal branch line */}
-              <motion.div
-                className="h-px absolute top-0 left-0 right-0"
-                style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.25) 20%, rgba(255,255,255,0.25) 80%, transparent)" }}
-                initial={{ scaleX: 0 }}
-                animate={leversInView ? { scaleX: 1 } : {}}
-                transition={{ delay: 0.5, duration: 0.5, ease: "easeOut" }}
-              />
-              {/* Left drop */}
-              <motion.div
-                className="absolute w-px h-8 left-0"
-                style={{ top: 0, background: "linear-gradient(to bottom, rgba(255,255,255,0.25), transparent)" }}
-                initial={{ scaleY: 0 }}
-                animate={leversInView ? { scaleY: 1 } : {}}
-                transition={{ delay: 0.85, duration: 0.3 }}
-              />
-              {/* Right drop */}
-              <motion.div
-                className="absolute w-px h-8 right-0"
-                style={{ top: 0, background: "linear-gradient(to bottom, rgba(255,255,255,0.25), transparent)" }}
-                initial={{ scaleY: 0 }}
-                animate={leversInView ? { scaleY: 1 } : {}}
-                transition={{ delay: 0.85, duration: 0.3 }}
-              />
-            </div>
-          </motion.div>
-
-          {/* Two lever columns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
-            {[
+            {([
               {
                 label: "Lever 1",
                 headline: "Time returns.",
@@ -456,45 +422,54 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
               {
                 label: "Lever 2",
                 headline: "Documentation reflects reality.",
-                sub: "Notes written with full attention capture what memory misses. Accuracy flows downstream.",
+                sub: "Notes written with full attention capture what memory misses. Accuracy flows downstream into revenue and outcomes.",
                 domains: DOMAINS.filter(d => d.lever === "quality"),
               },
-            ].map((lever, li) => (
+            ] as const).map((lever, li) => (
               <motion.div
                 key={lever.label}
-                className="rounded-2xl p-9"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={leversInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.9 + li * 0.1, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ delay: 0.2 + li * 0.12, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
               >
-                <p className="text-[10px] font-bold uppercase tracking-[2.5px] mb-4" style={{ color: "rgba(255,255,255,0.22)" }}>
+                <p className="text-[10px] font-bold uppercase tracking-[3px] mb-5" style={{ color: "rgba(255,255,255,0.2)" }}>
                   {lever.label}
                 </p>
-                <h3 className="text-[30px] md:text-[34px] font-bold text-white leading-[1.1] tracking-tight mb-4">
+                <h3
+                  className="font-bold text-white leading-[1.05] tracking-tight mb-5"
+                  style={{ fontSize: "clamp(30px, 3.2vw, 42px)" }}
+                >
                   {lever.headline}
                 </h3>
-                <p className="text-[14px] leading-relaxed mb-8" style={{ color: "rgba(255,255,255,0.38)" }}>
+                <p className="text-[15px] leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.36)" }}>
                   {lever.sub}
                 </p>
-                <div className="flex gap-2.5">
-                  {lever.domains.map(d => (
-                    <div
-                      key={d.key}
-                      className="flex-1 rounded-xl px-4 py-3.5"
-                      style={{ backgroundColor: `${d.color}18`, border: `1px solid ${d.color}28` }}
-                    >
-                      <p className="text-[10px] font-bold uppercase tracking-[2px] mb-1.5" style={{ color: d.color }}>
-                        {d.name}
-                      </p>
-                      <p className="text-[12.5px] leading-snug" style={{ color: "rgba(255,255,255,0.48)" }}>
-                        {d.tagline}
-                      </p>
-                    </div>
-                  ))}
+
+                {/* Domain list — accent bar + name + tagline, no chip boxes */}
+                <div className="space-y-6">
+                  {lever.domains.map(d => {
+                    const accentColor = d.color === "#333333" ? "rgba(255,255,255,0.28)" : d.color;
+                    const nameColor = d.color === "#333333" ? "rgba(255,255,255,0.45)" : d.color;
+                    return (
+                      <div key={d.key} className="flex gap-4">
+                        <div
+                          className="w-[2px] rounded-full flex-shrink-0"
+                          style={{ backgroundColor: accentColor, minHeight: 44 }}
+                        />
+                        <div>
+                          <p
+                            className="text-[10.5px] font-bold uppercase tracking-[2.5px] mb-1.5"
+                            style={{ color: nameColor }}
+                          >
+                            {d.name}
+                          </p>
+                          <p className="text-[14px] leading-snug" style={{ color: "rgba(255,255,255,0.44)" }}>
+                            {d.tagline}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </motion.div>
             ))}
