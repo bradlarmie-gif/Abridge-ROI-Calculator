@@ -116,7 +116,7 @@ function ParticleCanvas() {
             ctx!.beginPath();
             ctx!.moveTo(pos[i].x, pos[i].y);
             ctx!.lineTo(pos[j].x, pos[j].y);
-            ctx!.strokeStyle = `rgba(255, 218, 180, ${alpha})`;
+            ctx!.strokeStyle = `rgba(195, 205, 225, ${alpha})`;
             ctx!.stroke();
           }
         }
@@ -124,11 +124,11 @@ function ParticleCanvas() {
 
       // Glow particles (brighter subset — rendered with shadow)
       ctx!.shadowBlur = 10;
-      ctx!.shadowColor = "rgba(255, 185, 120, 0.75)";
+      ctx!.shadowColor = "rgba(170, 185, 220, 0.65)";
       for (const p of pos.filter(p => p.glow)) {
         ctx!.beginPath();
         ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(255, 230, 195, ${p.a})`;
+        ctx!.fillStyle = `rgba(215, 222, 238, ${p.a})`;
         ctx!.fill();
       }
 
@@ -137,7 +137,7 @@ function ParticleCanvas() {
       for (const p of pos.filter(p => !p.glow)) {
         ctx!.beginPath();
         ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(255, 218, 180, ${p.a})`;
+        ctx!.fillStyle = `rgba(190, 198, 218, ${p.a})`;
         ctx!.fill();
       }
 
@@ -324,7 +324,7 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
         {/* Radial depth vignette — adds warmth to center, darkness to edges */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse 70% 55% at 50% 48%, rgba(60,28,10,0.45) 0%, rgba(10,8,7,0.0) 65%)" }}
+          style={{ background: "radial-gradient(ellipse 70% 55% at 50% 48%, rgba(18,20,32,0.5) 0%, rgba(10,8,7,0.0) 65%)" }}
         />
 
         <div className="relative z-10 flex-1 flex items-center justify-center px-6 md:px-10 py-24">
