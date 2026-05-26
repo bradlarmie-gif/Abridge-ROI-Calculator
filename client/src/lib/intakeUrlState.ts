@@ -26,6 +26,8 @@ export interface ExploreIntakeResponse {
   edRevenuePerVisit?: number | null;
   edAdmissionRate?: number | null;
   edAdmissionRevenue?: number | null;
+  edDenialRate?: number | null;
+  edAvgClaimValue?: number | null;
   edTurnoverRate?: number | null;
   edReplacementCost?: number | null;
   edScribeAnnualSpend?: number | null;
@@ -60,6 +62,7 @@ export interface ExploreIntakeResponse {
   nursingOtHourlyRate?: number | null;
   nursingTurnoverRate?: number | null;
   nursingReplacementCost?: number | null;
+  nursingAgencySpend?: number | null;
   hapiRatePer1000?: number | null;
   fallRatePer1000?: number | null;
   cautiRatePer1000?: number | null;
@@ -166,6 +169,8 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
         line('Revenue per ED visit', data.edRevenuePerVisit, { suffix: ' $' }),
         line('% LWBS patients admitted', data.edAdmissionRate, { suffix: '%' }),
         line('Revenue per admission', data.edAdmissionRevenue, { suffix: ' $' }),
+        line('Claim denial rate', data.edDenialRate, { suffix: '%' }),
+        line('Avg denied claim value', data.edAvgClaimValue, { suffix: ' $' }),
         line('Annual provider turnover', data.edTurnoverRate, { suffix: '%' }),
         line('Cost to replace one provider', data.edReplacementCost, { suffix: ' $' }),
         line('Annual scribe / documentation support spend', data.edScribeAnnualSpend, { suffix: ' $' }),
@@ -178,11 +183,9 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
         line('Average length of stay (days)', data.ipAvgLos, { decimals: 1 }),
         line('Obs/IP status denial rate', data.ipDenialRate, { suffix: '%' }),
         line('Avg claim value at risk', data.ipAvgClaimValue, { suffix: ' $' }),
-        line("Documentation's role in successful appeals", data.ipDocAppealContribution, { suffix: '%' }),
         line('DRG at-risk rate', data.ipDrgAtRiskRate, { suffix: '%' }),
         line('DRG weight increase', data.ipDrgWeightIncrease, { decimals: 2 }),
         line('Base DRG payment', data.ipDrgBasePayment, { suffix: ' $' }),
-        line('DRG realization rate', data.ipDrgRealizationRate, { suffix: '%' }),
         line('CDI query rate', data.ipCdiQueryRate, { suffix: '%' }),
         line('Cost per CDI query', data.ipCdiCostPerQuery, { suffix: ' $' }),
         line('Concurrent review rate', data.ipConcurrentReviewRate, { suffix: '%' }),
@@ -191,10 +194,8 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
         line('Daily rate', data.ipConcurrentDailyRate, { suffix: ' $' }),
         line('Annual hospitalist turnover', data.ipTurnoverRate, { suffix: '%' }),
         line('Cost to replace one hospitalist', data.ipReplacementCost, { suffix: ' $' }),
-        line("Documentation burden's share of turnover", data.ipDocBurnoutShare, { suffix: '%' }),
         line('Avg revenue per E/M encounter', data.ipEmRevenuePerEncounter, { suffix: ' $' }),
         line('Consults per admission', data.ipEmConsultsPerAdmission, { decimals: 1 }),
-        line('E/M realization rate', data.ipEmRealizationRate, { suffix: '%' }),
       );
     }
     if (s === 'nursing') {
@@ -206,6 +207,7 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
         line('OT hourly rate', data.nursingOtHourlyRate, { suffix: ' $/hr' }),
         line('Annual nurse turnover', data.nursingTurnoverRate, { suffix: '%' }),
         line('Cost to replace one nurse', data.nursingReplacementCost, { suffix: ' $' }),
+        line('Annual agency / travel nurse spend', data.nursingAgencySpend, { suffix: ' $' }),
         line('HAPI rate / 1k pt days', data.hapiRatePer1000, { decimals: 1 }),
         line('Falls rate / 1k pt days', data.fallRatePer1000, { decimals: 1 }),
         line('CAUTI rate / 1k', data.cautiRatePer1000, { decimals: 1 }),

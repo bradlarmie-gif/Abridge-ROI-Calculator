@@ -151,6 +151,7 @@ interface IntakeFormState {
   opScribeAnnualSpend: number | null;
   edProviders: number | null; edVisits: number | null; edLwbsRate: number | null;
   edRevenuePerVisit: number | null; edAdmissionRate: number | null; edAdmissionRevenue: number | null;
+  edDenialRate: number | null; edAvgClaimValue: number | null;
   edTurnoverRate: number | null; edReplacementCost: number | null; edScribeAnnualSpend: number | null;
   ipProviders: number | null; ipAdmissions: number | null; ipDenialRate: number | null;
   ipAvgClaimValue: number | null; ipTurnoverRate: number | null; ipReplacementCost: number | null;
@@ -164,7 +165,8 @@ interface IntakeFormState {
   ipEmRealizationRate: number | null;
   nursingFTEs: number | null; nursingStaffedBeds: number | null; nursingOccupancyRate: number | null;
   nursingOtHoursPerWeek: number | null; nursingOtHourlyRate: number | null; nursingTurnoverRate: number | null;
-  nursingReplacementCost: number | null; hapiRate: number | null; fallRate: number | null;
+  nursingReplacementCost: number | null; nursingAgencySpend: number | null;
+  hapiRate: number | null; fallRate: number | null;
   cautiRate: number | null; clabsiRate: number | null;
 }
 
@@ -178,6 +180,7 @@ function getEmptyState(preseed?: IntakeFormPreseed): IntakeFormState {
     opScribeAnnualSpend: null,
     edProviders: null, edVisits: null, edLwbsRate: null,
     edRevenuePerVisit: null, edAdmissionRate: null, edAdmissionRevenue: null,
+    edDenialRate: null, edAvgClaimValue: null,
     edTurnoverRate: null, edReplacementCost: null, edScribeAnnualSpend: null,
     ipProviders: null, ipAdmissions: null, ipDenialRate: null,
     ipAvgClaimValue: null, ipTurnoverRate: null, ipReplacementCost: null,
@@ -191,7 +194,8 @@ function getEmptyState(preseed?: IntakeFormPreseed): IntakeFormState {
     ipEmRealizationRate: null,
     nursingFTEs: null, nursingStaffedBeds: null, nursingOccupancyRate: null,
     nursingOtHoursPerWeek: null, nursingOtHourlyRate: null, nursingTurnoverRate: null,
-    nursingReplacementCost: null, hapiRate: null, fallRate: null,
+    nursingReplacementCost: null, nursingAgencySpend: null,
+    hapiRate: null, fallRate: null,
     cautiRate: null, clabsiRate: null,
   };
 }
@@ -234,7 +238,8 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
       opTurnoverRate: s.opTurnoverRate, opReplacementCost: s.opReplacementCost, opScribeAnnualSpend: s.opScribeAnnualSpend,
       edProviders: s.edProviders, edAnnualVisits: s.edVisits, edLwbsRate: s.edLwbsRate,
       edRevenuePerVisit: s.edRevenuePerVisit, edAdmissionRate: s.edAdmissionRate,
-      edAdmissionRevenue: s.edAdmissionRevenue, edTurnoverRate: s.edTurnoverRate, edReplacementCost: s.edReplacementCost, edScribeAnnualSpend: s.edScribeAnnualSpend,
+      edAdmissionRevenue: s.edAdmissionRevenue, edDenialRate: s.edDenialRate, edAvgClaimValue: s.edAvgClaimValue,
+      edTurnoverRate: s.edTurnoverRate, edReplacementCost: s.edReplacementCost, edScribeAnnualSpend: s.edScribeAnnualSpend,
       ipProviders: s.ipProviders, ipAnnualAdmissions: s.ipAdmissions, ipDenialRate: s.ipDenialRate,
       ipAvgClaimValue: s.ipAvgClaimValue, ipTurnoverRate: s.ipTurnoverRate, ipReplacementCost: s.ipReplacementCost,
       ipDrgAtRiskRate: s.ipDrgAtRiskRate, ipDrgWeightIncrease: s.ipDrgWeightIncrease, ipDrgBasePayment: s.ipDrgBasePayment,
@@ -248,7 +253,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
       nursingFTEs: s.nursingFTEs, nursingStaffedBeds: s.nursingStaffedBeds,
       nursingOccupancyRate: s.nursingOccupancyRate, nursingOtHoursPerWeek: s.nursingOtHoursPerWeek,
       nursingOtHourlyRate: s.nursingOtHourlyRate, nursingTurnoverRate: s.nursingTurnoverRate,
-      nursingReplacementCost: s.nursingReplacementCost,
+      nursingReplacementCost: s.nursingReplacementCost, nursingAgencySpend: s.nursingAgencySpend,
       hapiRatePer1000: s.hapiRate, fallRatePer1000: s.fallRate,
       cautiRatePer1000: s.cautiRate, clabsiRatePer1000: s.clabsiRate,
     };
@@ -435,6 +440,14 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('edAdmissionRevenue', v)} placeholder="e.g. 12,000" suffix="$" />
                     </div>
 
+                    <SectionDivider label="Documentation Quality" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Claim denial rate" value={formState.edDenialRate}
+                        onChange={v => update('edDenialRate', v)} placeholder="e.g. 8" suffix="%" />
+                      <NumberField label="Avg denied claim value" value={formState.edAvgClaimValue}
+                        onChange={v => update('edAvgClaimValue', v)} placeholder="e.g. 500" suffix="$" />
+                    </div>
+
                     <SectionDivider label="Workforce" />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Annual provider turnover" value={formState.edTurnoverRate}
@@ -471,10 +484,6 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('ipAvgClaimValue', v)} placeholder="e.g. 10,000" suffix="$"
                         hint="avg $ of claims where Obs vs IP status is disputed" />
                     </div>
-                    <NumberField label="Documentation's role in successful appeals" value={formState.ipDocAppealContribution}
-                      onChange={v => update('ipDocAppealContribution', v)} placeholder="e.g. 20" suffix="%"
-                      hint="% of overturned denials where documentation quality was a deciding factor · typically 15–25%" />
-
                     <SectionDivider label="DRG Accuracy / CC-MCC Capture" />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="DRG at-risk rate" value={formState.ipDrgAtRiskRate}
@@ -489,9 +498,6 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('ipDrgBasePayment', v)} placeholder="e.g. 6,000" suffix="$"
                         hint="hospital-specific base rate" />
                     </div>
-                    <NumberField label="DRG realization rate" value={formState.ipDrgRealizationRate}
-                      onChange={v => update('ipDrgRealizationRate', v)} placeholder="e.g. 33" suffix="%"
-                      hint="% of identified DRG opportunity that converts to net revenue after coding, billing, and payer adjudication · typically 25–40%" />
 
                     <SectionDivider label="CDI Query Reduction" />
                     <div className="grid grid-cols-2 gap-4">
@@ -527,9 +533,6 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                       <NumberField label="Cost to replace one hospitalist" value={formState.ipReplacementCost}
                         onChange={v => update('ipReplacementCost', v)} placeholder="e.g. 300,000" suffix="$" />
                     </div>
-                    <NumberField label="Documentation burden's share of turnover" value={formState.ipDocBurnoutShare}
-                      onChange={v => update('ipDocBurnoutShare', v)} placeholder="e.g. 45" suffix="%"
-                      hint="% of departures where documentation burden was a contributing factor · typically 40–50% for hospitalists" />
 
                     <SectionDivider label="E/M Coding Accuracy" />
                     <div className="grid grid-cols-2 gap-4">
@@ -540,9 +543,6 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('ipEmConsultsPerAdmission', v)} placeholder="e.g. 1.0" step="0.1"
                         hint="avg specialist consults billed per inpatient stay" />
                     </div>
-                    <NumberField label="E/M realization rate" value={formState.ipEmRealizationRate}
-                      onChange={v => update('ipEmRealizationRate', v)} placeholder="e.g. 40" suffix="%"
-                      hint="% of identified E/M coding opportunity that converts to net revenue after payer adjudication" />
                   </div>
                 )}
 
@@ -570,6 +570,9 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                     <NumberField label="Cost to replace one nurse" value={formState.nursingReplacementCost}
                       onChange={v => update('nursingReplacementCost', v)} placeholder="e.g. 56,000" suffix="$"
                       hint="recruiting + training + agency fill — typically $40k–$75k" />
+                    <NumberField label="Current annual agency / travel nurse spend" value={formState.nursingAgencySpend}
+                      onChange={v => update('nursingAgencySpend', v)} placeholder="e.g. 2,000,000" suffix="$"
+                      hint="total annual spend on travel nurses, agency fill, and per-diem staff — leave blank if not tracked" />
 
                     <SectionDivider label="Quality metrics · optional, if you track these" />
                     <div className="grid grid-cols-2 gap-4">
