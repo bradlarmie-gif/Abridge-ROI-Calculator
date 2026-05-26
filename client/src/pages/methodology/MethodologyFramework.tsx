@@ -317,95 +317,109 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
         </div>
       </header>
 
-      {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section style={{ minHeight: "94vh", backgroundColor: "#0A0807", position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      {/* ── Single dark canvas wrapper — particles flow across hero + levers ── */}
+      <div style={{ position: "relative", backgroundColor: "#0A0807", overflow: "hidden" }}>
         <ParticleCanvas />
 
-        {/* Radial depth vignette — adds warmth to center, darkness to edges */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse 70% 55% at 50% 48%, rgba(18,20,32,0.5) 0%, rgba(10,8,7,0.0) 65%)" }}
-        />
+        {/* ── Hero ─────────────────────────────────────────────────────── */}
+        <section style={{ minHeight: "94vh", position: "relative", zIndex: 1, display: "flex", flexDirection: "column" }}>
+          {/* Radial depth vignette */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse 70% 55% at 50% 48%, rgba(18,20,32,0.5) 0%, rgba(10,8,7,0.0) 65%)" }}
+          />
 
-        <div className="relative z-10 flex-1 flex items-center justify-center px-6 md:px-10 py-24">
-          <motion.div
-            className="max-w-[700px] text-center"
-            initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-          >
+          <div className="relative z-10 flex-1 flex items-center justify-center px-6 md:px-10 py-24">
             <motion.div
-              className="inline-flex items-center gap-2.5 mb-10"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.7 }}
+              className="max-w-[700px] text-center"
+              initial={{ opacity: 0, y: 32 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="h-px w-10 bg-[#EA2C00]" />
-              <span className="text-[10px] font-bold uppercase tracking-[3.5px] text-[#EA2C00]">
-                The Value Framework
-              </span>
-              <div className="h-px w-10 bg-[#EA2C00]" />
-            </motion.div>
-
-            <h1
-              className="font-bold text-white leading-[1.0] tracking-[-0.025em] mb-8"
-              style={{ fontSize: "clamp(48px, 6.5vw, 76px)" }}
-            >
-              Healthcare runs<br />on conversations.
-            </h1>
-
-            <motion.p
-              className="leading-[1.85] max-w-[500px] mx-auto"
-              style={{ fontSize: 17, color: "rgba(255,255,255,0.46)" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              4.3 billion clinical encounters every year in the US. Each produces a note — written from memory, after the fact, by a clinician with twelve more patients today.
-            </motion.p>
-
-            <motion.div
-              className="mt-16 flex flex-col items-center gap-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-            >
-              <span className="text-[9.5px] uppercase tracking-[3px]" style={{ color: "rgba(255,255,255,0.18)" }}>Scroll</span>
               <motion.div
-                className="w-px h-10 rounded-full"
-                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.25), rgba(255,255,255,0.04))" }}
-                animate={{ scaleY: [0.3, 1, 0.3] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              />
+                className="inline-flex items-center gap-2.5 mb-10"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.7 }}
+              >
+                <div className="h-px w-10 bg-[#EA2C00]" />
+                <span className="text-[10px] font-bold uppercase tracking-[3.5px] text-[#EA2C00]">
+                  The Value Framework
+                </span>
+                <div className="h-px w-10 bg-[#EA2C00]" />
+              </motion.div>
+
+              <h1
+                className="font-bold text-white leading-[1.0] tracking-[-0.025em] mb-8"
+                style={{ fontSize: "clamp(48px, 6.5vw, 76px)" }}
+              >
+                Healthcare runs<br />on conversations.
+              </h1>
+
+              <motion.p
+                className="leading-[1.85] max-w-[500px] mx-auto"
+                style={{ fontSize: 17, color: "rgba(255,255,255,0.46)" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                4.3 billion clinical encounters every year in the US. Each produces a note — written from memory, after the fact, by a clinician with twelve more patients today.
+              </motion.p>
+
+              <motion.div
+                className="mt-16 flex flex-col items-center gap-3"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2 }}
+              >
+                <span className="text-[9.5px] uppercase tracking-[3px]" style={{ color: "rgba(255,255,255,0.18)" }}>Scroll</span>
+                <motion.div
+                  className="w-px h-10 rounded-full"
+                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.25), rgba(255,255,255,0.04))" }}
+                  animate={{ scaleY: [0.3, 1, 0.3] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </motion.div>
             </motion.div>
-          </motion.div>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* ── Transcription + Two Levers ─────────────────────────────────── */}
-      <section ref={leversRef} style={{ backgroundColor: "#0A0807", paddingTop: 96, paddingBottom: 112 }}>
-        <div className="max-w-[1080px] mx-auto px-6 md:px-10">
+        {/* ── Transcription + Two Levers ────────────────────────────────── */}
+        <section ref={leversRef} style={{ position: "relative", zIndex: 1, paddingTop: 96, paddingBottom: 120 }}>
+          <div className="max-w-[1080px] mx-auto px-6 md:px-10">
 
-          {/* Transcription beat */}
-          <motion.div
-            className="text-center mb-20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={leversInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <p className="text-[10px] font-bold uppercase tracking-[3px] mb-5" style={{ color: "rgba(255,255,255,0.22)" }}>
-              The intervention
-            </p>
-            <h2
-              className="font-bold text-white leading-[1.08] tracking-[-0.02em] mb-5"
-              style={{ fontSize: "clamp(34px, 4.5vw, 52px)" }}
+            {/* Transcription beat */}
+            <motion.div
+              className="text-center mb-20"
+              initial={{ opacity: 0, y: 20 }}
+              animate={leversInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
-              Abridge sits at<br />the transcription layer.
-            </h2>
-            <p className="text-[16px] leading-relaxed max-w-[480px] mx-auto" style={{ color: "rgba(255,255,255,0.38)" }}>
-              The layer where conversation becomes clinical record — automatically, in the room. When it exists, two things change downstream.
-            </p>
-          </motion.div>
+              <h2
+                className="font-bold text-white leading-[1.08] tracking-[-0.02em] mb-10"
+                style={{ fontSize: "clamp(34px, 4.5vw, 52px)" }}
+              >
+                Captured in the room.<br />Returned as the note.
+              </h2>
+
+              {/* Waveform — represents the capture moment */}
+              <div className="flex items-center justify-center gap-[3px] mb-10">
+                {[4,7,11,16,22,18,26,38,34,28,44,48,42,36,44,52,46,38,44,34,26,40,30,22,18,28,20,14,9,5].map((h, i) => (
+                  <motion.div
+                    key={i}
+                    className="rounded-full"
+                    style={{ width: 2, height: h, backgroundColor: "rgba(255,255,255,0.28)" }}
+                    initial={{ scaleY: 0, opacity: 0 }}
+                    animate={leversInView ? { scaleY: 1, opacity: 1 } : {}}
+                    transition={{ delay: 0.1 + i * 0.025, duration: 0.35, ease: "easeOut" }}
+                  />
+                ))}
+              </div>
+
+              <p className="text-[15px] leading-relaxed max-w-[420px] mx-auto" style={{ color: "rgba(255,255,255,0.36)" }}>
+                Every word spoken in every clinical encounter — automatically structured into complete documentation.
+              </p>
+            </motion.div>
 
           {/* Two lever columns — pure editorial, no cards */}
           <div
@@ -421,8 +435,8 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
               },
               {
                 label: "Lever 2",
-                headline: "Documentation reflects reality.",
-                sub: "Notes written with full attention capture what memory misses. Accuracy flows downstream into revenue and outcomes.",
+                headline: "The note matches the room.",
+                sub: "Notes written with full attention capture what memory misses. That accuracy flows downstream into revenue and outcomes.",
                 domains: DOMAINS.filter(d => d.lever === "quality"),
               },
             ] as const).map((lever, li) => (
@@ -476,6 +490,8 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
           </div>
         </div>
       </section>
+
+      </div>{/* end shared dark canvas wrapper */}
 
       {/* ── Four Domains ───────────────────────────────────────────────── */}
       <section ref={domainsRef} className="bg-[#F5F0EB] py-24 px-6 md:px-10">
