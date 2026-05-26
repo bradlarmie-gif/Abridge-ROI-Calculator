@@ -134,10 +134,11 @@ function NumberField({
   );
 }
 
-function SectionDivider({ label }: { label: string }) {
+function SectionDivider({ label, context }: { label: string; context?: string }) {
   return (
     <div className="border-t border-[#EDE8E2] pt-4 mt-5">
-      <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">{label}</p>
+      <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">{label}</p>
+      {context && <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-2">{context}</p>}
     </div>
   );
 }
@@ -359,14 +360,16 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                 transition={{ duration: 0.2 }}
                 className="bg-white rounded-xl border border-[#E8E3DD] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
               >
-                <div className="flex items-center gap-2 mb-5">
+                <div className="flex items-center gap-2 mb-1">
                   <Icon className="w-4.5 h-4.5 text-[#EA2C00]" />
                   <h3 className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-widest">{meta.label}</h3>
                 </div>
 
                 {settingId === "outpatient" && (
                   <div className="space-y-4">
-                    <SectionDivider label="Deployment" />
+                    <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">Tell us about your clinic's scale, productivity, and revenue baseline. Most of these numbers live in your EHR or billing system. Fill in what you have — nothing is required.</p>
+
+                    <SectionDivider label="Deployment" context="Anchors the model. Tells us how many providers and how much activity we're working with." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Physicians / APPs" value={formState.opProviders}
                         onChange={v => update('opProviders', v)} placeholder="e.g. 50" />
@@ -374,27 +377,17 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('opEncounters', v)} placeholder="e.g. 90,000" />
                     </div>
 
-                    <SectionDivider label="Time & Revenue" />
+                    <SectionDivider label="Productivity & Revenue" context="We use wRVU baseline and visit volume to model what reclaimed documentation time is worth. The conversion rate translates wRVU improvement to dollars." />
                     <div className="grid grid-cols-2 gap-4">
-                      <NumberField label="Revenue per visit" value={formState.opRevenuePerVisit}
-                        onChange={v => update('opRevenuePerVisit', v)} placeholder="e.g. 250" suffix="$" />
                       <NumberField label="Avg wRVU per encounter" value={formState.opCurrentWrvu}
                         onChange={v => update('opCurrentWrvu', v)} placeholder="e.g. 1.8" step="0.1" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
                       <NumberField label="$/wRVU conversion rate" value={formState.opConversionFactor}
                         onChange={v => update('opConversionFactor', v)} placeholder="e.g. 33" />
-                      <NumberField label="Annual provider turnover" value={formState.opTurnoverRate}
-                        onChange={v => update('opTurnoverRate', v)} placeholder="e.g. 6" suffix="%" />
                     </div>
-                    <NumberField label="Cost to replace one provider" value={formState.opReplacementCost}
-                      onChange={v => update('opReplacementCost', v)} placeholder="e.g. 350,000" suffix="$"
-                      hint="recruiting + training + lost revenue — typically $250k–$500k" />
-                    <NumberField label="Annual scribe / documentation support spend" value={formState.opScribeAnnualSpend}
-                      onChange={v => update('opScribeAnnualSpend', v)} placeholder="e.g. 500,000" suffix="$"
-                      hint="total annual cost of scribes, virtual scribes, or documentation support staff across all providers — leave blank if none" />
+                    <NumberField label="Revenue per visit" value={formState.opRevenuePerVisit}
+                      onChange={v => update('opRevenuePerVisit', v)} placeholder="e.g. 250" suffix="$" />
 
-                    <SectionDivider label="Documentation Quality" />
+                    <SectionDivider label="Claim Denials" context="Better documentation means fewer first-pass rejections. We use your denial baseline to size the revenue recovery opportunity." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Claim denial rate" value={formState.opDenialRate}
                         onChange={v => update('opDenialRate', v)} placeholder="e.g. 8" suffix="%" />
@@ -402,7 +395,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('opAvgClaimValue', v)} placeholder="e.g. 200" suffix="$" />
                     </div>
 
-                    <SectionDivider label="HCC / RAF — if you have Medicare Advantage patients" />
+                    <SectionDivider label="Medicare Advantage / HCC" context="Documentation gaps leave HCC capture on the table every year. Skip this section if Medicare Advantage isn't part of your payer mix." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Panel size" value={formState.opPanelSize}
                         onChange={v => update('opPanelSize', v)} placeholder="e.g. 1,500" />
@@ -412,12 +405,26 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                     <NumberField label="Annual payment per RAF point" value={formState.opAnnualPaymentPerRaf}
                       onChange={v => update('opAnnualPaymentPerRaf', v)} placeholder="e.g. 10,000" suffix="$"
                       hint="from your MA contract — typically $8k–$12k per RAF point/year" />
+
+                    <SectionDivider label="Workforce" context="Documentation burden is the leading driver of physician burnout and departure. We use your turnover rate and scribe spend to model the retention and cost-reduction impact." />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Annual provider turnover" value={formState.opTurnoverRate}
+                        onChange={v => update('opTurnoverRate', v)} placeholder="e.g. 6" suffix="%" />
+                      <NumberField label="Cost to replace one provider" value={formState.opReplacementCost}
+                        onChange={v => update('opReplacementCost', v)} placeholder="e.g. 350,000" suffix="$"
+                        hint="recruiting + training + lost revenue — typically $250k–$500k" />
+                    </div>
+                    <NumberField label="Annual scribe / documentation support spend" value={formState.opScribeAnnualSpend}
+                      onChange={v => update('opScribeAnnualSpend', v)} placeholder="e.g. 500,000" suffix="$"
+                      hint="total annual cost of scribes, virtual scribes, or documentation support staff — leave blank if none" />
                   </div>
                 )}
 
                 {settingId === "ed" && (
                   <div className="space-y-4">
-                    <SectionDivider label="Deployment" />
+                    <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">ED value concentrates in three areas: throughput, documentation quality, and provider retention. Fill in what you have — most lives in your EHR or billing system.</p>
+
+                    <SectionDivider label="Deployment" context="Scale anchors. Visit volume and provider count drive everything downstream." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="ED physicians / APPs" value={formState.edProviders}
                         onChange={v => update('edProviders', v)} placeholder="e.g. 20" />
@@ -425,7 +432,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('edVisits', v)} placeholder="e.g. 35,000" />
                     </div>
 
-                    <SectionDivider label="Throughput & Revenue" />
+                    <SectionDivider label="Throughput & Revenue" context="Documentation speed directly affects throughput. LWBS patients are both a safety and revenue signal — we model what faster charting recovers." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Current LWBS rate" value={formState.edLwbsRate}
                         onChange={v => update('edLwbsRate', v)} placeholder="e.g. 2.5" suffix="%" />
@@ -440,7 +447,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('edAdmissionRevenue', v)} placeholder="e.g. 12,000" suffix="$" />
                     </div>
 
-                    <SectionDivider label="Documentation Quality" />
+                    <SectionDivider label="Claim Denials" context="ED claims carry higher denial rates than most settings. We use your baseline to size what better documentation recovers in first-pass acceptance." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Claim denial rate" value={formState.edDenialRate}
                         onChange={v => update('edDenialRate', v)} placeholder="e.g. 8" suffix="%" />
@@ -448,7 +455,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('edAvgClaimValue', v)} placeholder="e.g. 500" suffix="$" />
                     </div>
 
-                    <SectionDivider label="Workforce" />
+                    <SectionDivider label="Workforce" context="Documentation burden is the leading driver of ED provider burnout. We use your turnover rate and scribe spend to model the retention and cost-reduction impact." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Annual provider turnover" value={formState.edTurnoverRate}
                         onChange={v => update('edTurnoverRate', v)} placeholder="e.g. 6" suffix="%" />
@@ -463,20 +470,20 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
 
                 {settingId === "inpatient" && (
                   <div className="space-y-4">
-                    <SectionDivider label="Deployment" />
+                    <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">Hospital medicine has more revenue drivers than any other setting — DRG accuracy, obs/IP defense, CDI reduction, concurrent review, and E/M billing. Fill in the sections your team has access to.</p>
+
+                    <SectionDivider label="Deployment" context="Scale anchors — these drive every estimate across revenue, workforce, and quality." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Hospitalists" value={formState.ipProviders}
                         onChange={v => update('ipProviders', v)} placeholder="e.g. 15" />
                       <NumberField label="Annual admissions" value={formState.ipAdmissions}
                         onChange={v => update('ipAdmissions', v)} placeholder="e.g. 5,000" />
                     </div>
-
-                    <SectionDivider label="Throughput" />
                     <NumberField label="Average length of stay" value={formState.ipAvgLos}
                       onChange={v => update('ipAvgLos', v)} placeholder="e.g. 4.5" step="0.1"
-                      hint="days · national median ~4.5 for hospital medicine · used to compute E/M charge volume" />
+                      hint="days — national median ~4.5 for hospital medicine" />
 
-                    <SectionDivider label="Obs/IP Status Defense" />
+                    <SectionDivider label="Obs / IP Status Denials" context="Obs vs. IP disputes are one of the most common and costly denial categories in hospital medicine. We use denial volume and claim value to model the defensibility improvement." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Obs/IP status denial rate" value={formState.ipDenialRate}
                         onChange={v => update('ipDenialRate', v)} placeholder="e.g. 5" suffix="%" />
@@ -484,38 +491,38 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('ipAvgClaimValue', v)} placeholder="e.g. 10,000" suffix="$"
                         hint="avg $ of claims where Obs vs IP status is disputed" />
                     </div>
-                    <SectionDivider label="DRG Accuracy / CC-MCC Capture" />
+
+                    <SectionDivider label="DRG Accuracy / CC-MCC Capture" context="Missing CC/MCC documentation reduces DRG weight — and net reimbursement. We use at-risk rate and weight lift to size the capture opportunity." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="DRG at-risk rate" value={formState.ipDrgAtRiskRate}
                         onChange={v => update('ipDrgAtRiskRate', v)} placeholder="e.g. 18" suffix="%"
-                        hint="% of admissions with documentation gaps" />
+                        hint="% of admissions with documentation gaps that affect DRG weight" />
                       <NumberField label="DRG weight increase" value={formState.ipDrgWeightIncrease}
                         onChange={v => update('ipDrgWeightIncrease', v)} placeholder="e.g. 0.4" step="0.1"
                         hint="avg weight lift when CC/MCC is captured" />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <NumberField label="Base DRG payment" value={formState.ipDrgBasePayment}
-                        onChange={v => update('ipDrgBasePayment', v)} placeholder="e.g. 6,000" suffix="$"
-                        hint="hospital-specific base rate" />
-                    </div>
+                    <NumberField label="Base DRG payment" value={formState.ipDrgBasePayment}
+                      onChange={v => update('ipDrgBasePayment', v)} placeholder="e.g. 6,000" suffix="$"
+                      hint="your hospital's base rate per DRG weight point" />
 
-                    <SectionDivider label="CDI Query Reduction" />
+                    <SectionDivider label="CDI Queries" context="CDI queries signal upfront documentation gaps. We use query volume and cost to model the reduction in back-end rework when documentation is captured at the point of care." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="CDI query rate" value={formState.ipCdiQueryRate}
                         onChange={v => update('ipCdiQueryRate', v)} placeholder="e.g. 30" suffix="%"
-                        hint="% of admissions generating CDI queries" />
+                        hint="% of admissions that generate a CDI query" />
                       <NumberField label="Cost per CDI query" value={formState.ipCdiCostPerQuery}
-                        onChange={v => update('ipCdiCostPerQuery', v)} placeholder="e.g. 50" suffix="$" />
+                        onChange={v => update('ipCdiCostPerQuery', v)} placeholder="e.g. 50" suffix="$"
+                        hint="staff time + physician time to respond" />
                     </div>
 
-                    <SectionDivider label="Concurrent Review / Continued Stay" />
+                    <SectionDivider label="Concurrent Review / Continued Stay" context="Continued-stay denials happen when documentation doesn't justify the ongoing level of care. We use your review and denial rates to model how much is defensible." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Concurrent review rate" value={formState.ipConcurrentReviewRate}
                         onChange={v => update('ipConcurrentReviewRate', v)} placeholder="e.g. 45" suffix="%"
                         hint="% of cases reviewed by payer" />
                       <NumberField label="Concurrent denial rate" value={formState.ipConcurrentDenialRate}
                         onChange={v => update('ipConcurrentDenialRate', v)} placeholder="e.g. 8" suffix="%"
-                        hint="% of reviews resulting in doc-sensitive denials" />
+                        hint="% of reviews resulting in documentation-sensitive denials" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Avg continued-stay days" value={formState.ipConcurrentAvgDays}
@@ -523,58 +530,64 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         hint="average days protected per defended stay" />
                       <NumberField label="Daily rate" value={formState.ipConcurrentDailyRate}
                         onChange={v => update('ipConcurrentDailyRate', v)} placeholder="e.g. 2,800" suffix="$"
-                        hint="hospital daily revenue rate" />
+                        hint="your hospital's daily revenue rate" />
                     </div>
 
-                    <SectionDivider label="Workforce" />
+                    <SectionDivider label="E/M Billing" context="Progress note and consult documentation quality directly affects E/M level accuracy. We use your current billing patterns to size the coding improvement opportunity." />
+                    <div className="grid grid-cols-2 gap-4">
+                      <NumberField label="Avg revenue per E/M encounter" value={formState.ipEmRevenuePerEncounter}
+                        onChange={v => update('ipEmRevenuePerEncounter', v)} placeholder="e.g. 50" suffix="$"
+                        hint="avg physician fee per H&P, progress note, or consult — typically $40–$80" />
+                      <NumberField label="Consults per admission" value={formState.ipEmConsultsPerAdmission}
+                        onChange={v => update('ipEmConsultsPerAdmission', v)} placeholder="e.g. 1.0" step="0.1"
+                        hint="avg specialist consults billed per inpatient stay" />
+                    </div>
+
+                    <SectionDivider label="Workforce" context="Documentation burden contributes to hospitalist burnout and departure. We use your turnover rate to model the retention impact." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Annual hospitalist turnover" value={formState.ipTurnoverRate}
                         onChange={v => update('ipTurnoverRate', v)} placeholder="e.g. 8" suffix="%" />
                       <NumberField label="Cost to replace one hospitalist" value={formState.ipReplacementCost}
                         onChange={v => update('ipReplacementCost', v)} placeholder="e.g. 300,000" suffix="$" />
                     </div>
-
-                    <SectionDivider label="E/M Coding Accuracy" />
-                    <div className="grid grid-cols-2 gap-4">
-                      <NumberField label="Avg revenue per E/M encounter" value={formState.ipEmRevenuePerEncounter}
-                        onChange={v => update('ipEmRevenuePerEncounter', v)} placeholder="e.g. 50" suffix="$"
-                        hint="avg physician fee per H&P, progress note, or consult · typically $40–$80" />
-                      <NumberField label="Consults per admission" value={formState.ipEmConsultsPerAdmission}
-                        onChange={v => update('ipEmConsultsPerAdmission', v)} placeholder="e.g. 1.0" step="0.1"
-                        hint="avg specialist consults billed per inpatient stay" />
-                    </div>
                   </div>
                 )}
 
                 {settingId === "nursing" && (
                   <div className="space-y-4">
-                    <SectionDivider label="Deployment" />
+                    <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">Nursing value centers on overtime reduction, retention, agency cost avoidance, and care quality. Fill in what your team tracks.</p>
+
+                    <SectionDivider label="Deployment" context="Scale anchors — FTEs, beds, and occupancy drive all downstream estimates." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Nurse FTEs" value={formState.nursingFTEs}
                         onChange={v => update('nursingFTEs', v)} placeholder="e.g. 300" />
                       <NumberField label="Staffed beds" value={formState.nursingStaffedBeds}
                         onChange={v => update('nursingStaffedBeds', v)} placeholder="e.g. 200" />
                     </div>
+                    <NumberField label="Occupancy rate" value={formState.nursingOccupancyRate}
+                      onChange={v => update('nursingOccupancyRate', v)} placeholder="e.g. 75" suffix="%" />
+
+                    <SectionDivider label="Overtime" context="Documentation-driven overtime is one of the fastest-moving metrics after Abridge deployment. These numbers let us model what post-shift charting time costs today." />
                     <div className="grid grid-cols-2 gap-4">
-                      <NumberField label="Occupancy rate" value={formState.nursingOccupancyRate}
-                        onChange={v => update('nursingOccupancyRate', v)} placeholder="e.g. 75" suffix="%" />
                       <NumberField label="OT hours / nurse / week" value={formState.nursingOtHoursPerWeek}
                         onChange={v => update('nursingOtHoursPerWeek', v)} placeholder="e.g. 4" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
                       <NumberField label="OT hourly rate" value={formState.nursingOtHourlyRate}
                         onChange={v => update('nursingOtHourlyRate', v)} placeholder="e.g. 75" suffix="$/hr" />
+                    </div>
+
+                    <SectionDivider label="Workforce" context="Turnover and agency spend are the two biggest variable costs in nursing. We model both the retention improvement and the downstream reduction in agency fill." />
+                    <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Annual nurse turnover" value={formState.nursingTurnoverRate}
                         onChange={v => update('nursingTurnoverRate', v)} placeholder="e.g. 18" suffix="%" />
+                      <NumberField label="Cost to replace one nurse" value={formState.nursingReplacementCost}
+                        onChange={v => update('nursingReplacementCost', v)} placeholder="e.g. 56,000" suffix="$"
+                        hint="recruiting + training + agency fill — typically $40k–$75k" />
                     </div>
-                    <NumberField label="Cost to replace one nurse" value={formState.nursingReplacementCost}
-                      onChange={v => update('nursingReplacementCost', v)} placeholder="e.g. 56,000" suffix="$"
-                      hint="recruiting + training + agency fill — typically $40k–$75k" />
                     <NumberField label="Current annual agency / travel nurse spend" value={formState.nursingAgencySpend}
                       onChange={v => update('nursingAgencySpend', v)} placeholder="e.g. 2,000,000" suffix="$"
                       hint="total annual spend on travel nurses, agency fill, and per-diem staff — leave blank if not tracked" />
 
-                    <SectionDivider label="Quality metrics · optional, if you track these" />
+                    <SectionDivider label="Quality Metrics" context="If you track hospital-acquired infections and falls, these are the clearest signals of the documentation-to-care-quality link. All optional — fill in only what your team measures." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="HAPI rate / 1k pt days" value={formState.hapiRate}
                         onChange={v => update('hapiRate', v)} placeholder="e.g. 1.5" step="0.1" />

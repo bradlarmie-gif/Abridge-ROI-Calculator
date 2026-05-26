@@ -65,23 +65,24 @@ function getOutpatientFields(d: ExploreIntakeResponse): { section: string; field
       { label: "Physicians / APPs", value: fmt(d.opProviders) },
       { label: "Annual encounters", value: fmt(d.opAnnualEncounters) },
     ]},
-    { section: "Time & Revenue", fields: [
-      { label: "Revenue per visit", value: fmt(d.opRevenuePerVisit, { prefix: "$" }) },
+    { section: "Productivity & Revenue", fields: [
       { label: "Avg wRVU per encounter", value: fmt(d.opCurrentWrvu, { decimals: 2 }) },
       { label: "$/wRVU conversion rate", value: fmt(d.opConversionFactor, { prefix: "$" }) },
+      { label: "Revenue per visit", value: fmt(d.opRevenuePerVisit, { prefix: "$" }) },
+    ]},
+    { section: "Claim Denials", fields: [
+      { label: "Claim denial rate", value: fmt(d.opDenialRate, { suffix: "%" }) },
+      { label: "Avg denied claim value", value: fmt(d.opAvgClaimValue, { prefix: "$" }) },
+    ]},
+    { section: "Medicare Advantage / HCC", fields: [
+      { label: "Panel size", value: fmt(d.opPanelSize) },
+      { label: "% panel on Medicare Advantage", value: fmt(d.opMaEnrollmentRate, { suffix: "%" }) },
+      { label: "Annual payment per RAF point", value: fmt(d.opAnnualPaymentPerRaf, { prefix: "$" }) },
     ]},
     { section: "Workforce", fields: [
       { label: "Annual provider turnover", value: fmt(d.opTurnoverRate, { suffix: "%" }) },
       { label: "Cost to replace one provider", value: fmt(d.opReplacementCost, { prefix: "$" }) },
-    ]},
-    { section: "Documentation Quality", fields: [
-      { label: "Claim denial rate", value: fmt(d.opDenialRate, { suffix: "%" }) },
-      { label: "Avg denied claim value", value: fmt(d.opAvgClaimValue, { prefix: "$" }) },
-    ]},
-    { section: "HCC / RAF", fields: [
-      { label: "Panel size", value: fmt(d.opPanelSize) },
-      { label: "% panel on Medicare Advantage", value: fmt(d.opMaEnrollmentRate, { suffix: "%" }) },
-      { label: "Annual payment per RAF point", value: fmt(d.opAnnualPaymentPerRaf, { prefix: "$" }) },
+      { label: "Annual scribe / documentation support spend", value: fmt(d.opScribeAnnualSpend, { prefix: "$" }) },
     ]},
   ];
 }
@@ -98,9 +99,14 @@ function getEdFields(d: ExploreIntakeResponse): { section: string; fields: Field
       { label: "% LWBS patients admitted", value: fmt(d.edAdmissionRate, { suffix: "%" }) },
       { label: "Revenue per admission", value: fmt(d.edAdmissionRevenue, { prefix: "$" }) },
     ]},
+    { section: "Claim Denials", fields: [
+      { label: "Claim denial rate", value: fmt(d.edDenialRate, { suffix: "%" }) },
+      { label: "Avg denied claim value", value: fmt(d.edAvgClaimValue, { prefix: "$" }) },
+    ]},
     { section: "Workforce", fields: [
       { label: "Annual provider turnover", value: fmt(d.edTurnoverRate, { suffix: "%" }) },
       { label: "Cost to replace one provider", value: fmt(d.edReplacementCost, { prefix: "$" }) },
+      { label: "Annual scribe / documentation support spend", value: fmt(d.edScribeAnnualSpend, { prefix: "$" }) },
     ]},
   ];
 }
@@ -110,40 +116,34 @@ function getInpatientFields(d: ExploreIntakeResponse): { section: string; fields
     { section: "Deployment", fields: [
       { label: "Hospitalists", value: fmt(d.ipProviders) },
       { label: "Annual admissions", value: fmt(d.ipAnnualAdmissions) },
+      { label: "Avg length of stay", value: d.ipAvgLos != null ? `${d.ipAvgLos.toFixed(1)} days` : null },
     ]},
-    { section: "Throughput", fields: [
-      { label: "Average length of stay", value: d.ipAvgLos != null ? `${d.ipAvgLos.toFixed(1)} days` : null },
-    ]},
-    { section: "Obs/IP Status Defense", fields: [
+    { section: "Obs / IP Status Denials", fields: [
       { label: "Obs/IP status denial rate", value: fmt(d.ipDenialRate, { suffix: "%" }) },
       { label: "Avg claim value at risk", value: fmt(d.ipAvgClaimValue, { prefix: "$" }) },
-      { label: "Documentation's role in successful appeals", value: fmt(d.ipDocAppealContribution, { suffix: "%" }) },
     ]},
     { section: "DRG Accuracy / CC-MCC Capture", fields: [
       { label: "DRG at-risk rate", value: fmt(d.ipDrgAtRiskRate, { suffix: "%" }) },
       { label: "DRG weight increase", value: d.ipDrgWeightIncrease != null ? d.ipDrgWeightIncrease.toFixed(2) : null },
       { label: "Base DRG payment", value: fmt(d.ipDrgBasePayment, { prefix: "$" }) },
-      { label: "DRG realization rate", value: fmt(d.ipDrgRealizationRate, { suffix: "%" }) },
     ]},
-    { section: "CDI Query Reduction", fields: [
+    { section: "CDI Queries", fields: [
       { label: "CDI query rate", value: fmt(d.ipCdiQueryRate, { suffix: "%" }) },
       { label: "Cost per CDI query", value: fmt(d.ipCdiCostPerQuery, { prefix: "$" }) },
     ]},
-    { section: "Concurrent Review", fields: [
+    { section: "Concurrent Review / Continued Stay", fields: [
       { label: "Concurrent review rate", value: fmt(d.ipConcurrentReviewRate, { suffix: "%" }) },
       { label: "Concurrent denial rate", value: fmt(d.ipConcurrentDenialRate, { suffix: "%" }) },
       { label: "Avg continued-stay days", value: d.ipConcurrentAvgDays != null ? d.ipConcurrentAvgDays.toFixed(1) : null },
       { label: "Daily rate", value: fmt(d.ipConcurrentDailyRate, { prefix: "$" }) },
     ]},
+    { section: "E/M Billing", fields: [
+      { label: "Avg revenue per E/M encounter", value: fmt(d.ipEmRevenuePerEncounter, { prefix: "$" }) },
+      { label: "Consults per admission", value: d.ipEmConsultsPerAdmission != null ? d.ipEmConsultsPerAdmission.toFixed(1) : null },
+    ]},
     { section: "Workforce", fields: [
       { label: "Annual hospitalist turnover", value: fmt(d.ipTurnoverRate, { suffix: "%" }) },
       { label: "Cost to replace one hospitalist", value: fmt(d.ipReplacementCost, { prefix: "$" }) },
-      { label: "Documentation burden's share of turnover", value: fmt(d.ipDocBurnoutShare, { suffix: "%" }) },
-    ]},
-    { section: "E/M Coding Accuracy", fields: [
-      { label: "Avg revenue per E/M encounter", value: fmt(d.ipEmRevenuePerEncounter, { prefix: "$" }) },
-      { label: "Consults per admission", value: d.ipEmConsultsPerAdmission != null ? d.ipEmConsultsPerAdmission.toFixed(1) : null },
-      { label: "E/M realization rate", value: fmt(d.ipEmRealizationRate, { suffix: "%" }) },
     ]},
   ];
 }
@@ -162,6 +162,7 @@ function getNursingFields(d: ExploreIntakeResponse): { section: string; fields: 
     { section: "Workforce", fields: [
       { label: "Annual nurse turnover", value: fmt(d.nursingTurnoverRate, { suffix: "%" }) },
       { label: "Cost to replace one nurse", value: fmt(d.nursingReplacementCost, { prefix: "$" }) },
+      { label: "Annual agency / travel nurse spend", value: fmt(d.nursingAgencySpend, { prefix: "$" }) },
     ]},
     { section: "Quality Metrics", fields: [
       { label: "HAPI rate / 1k pt days", value: fmt(d.hapiRatePer1000, { decimals: 1 }) },
@@ -185,7 +186,7 @@ function FooterBlock() {
   return (
     <View style={s.footer}>
       <Text style={s.footerText}>
-        This document contains organization-provided baseline data only. No ROI projections are included.
+        Share this PDF with your Abridge contact before the discovery call — they'll use it to build your value model. Your data stays private; nothing entered here was stored on any server.
       </Text>
     </View>
   );
@@ -223,11 +224,11 @@ function CoverPage({ data, repName, orgName }: { data: ExploreIntakeResponse; re
   const displayRep = repName ? `${repName} \u00B7 Abridge` : "Abridge Partner Success";
   return (
     <PDFCoverPage
-      reportLabel="Baseline Data Summary"
+      reportLabel="Pre-Call Data Summary"
       title={displayOrg}
       subtitle={settingsLabel}
       preparedBy={displayRep}
-      disclaimerText="This document contains organization-provided baseline data only. No ROI projections are included. Please send this PDF to your Abridge contact."
+      disclaimerText={`Thank you for taking the time to fill this in. Your Abridge contact will use these numbers to build a value model specific to ${displayOrg} — you'll review it together on the call. If anything looks off or you want to update a number, just let them know.`}
     />
   );
 }
