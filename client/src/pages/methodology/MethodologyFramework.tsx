@@ -351,7 +351,7 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
               className="font-bold text-white leading-[1.0] tracking-[-0.025em] mb-8"
               style={{ fontSize: "clamp(48px, 6.5vw, 76px)" }}
             >
-              Healthcare runs<br />on conversation.
+              Healthcare runs<br />on conversations.
             </h1>
 
             <motion.p
