@@ -883,7 +883,7 @@ export default function MeasureAllocate({
           ))}
         </div>
 
-        {fin.activeSettings.length > 1 && toggledTotal.low > 0 && fin.settingBreakdown && (
+        {fin.activeSettings.length > 1 && fin.settingBreakdown && (
           <div className="mt-6 mb-8 rounded-xl border border-[#E5E5E5] overflow-hidden" data-testid="table-setting-breakdown">
             <p className="text-[10px] text-[#AAAAAA] px-3 pt-2">
               All value streams included (toggle streams below to adjust)
